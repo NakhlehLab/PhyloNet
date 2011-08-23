@@ -70,11 +70,11 @@ public class GraphBuilderDOT implements GraphBuilder<Integer>
          throw new IllegalArgumentException("Unexpected hybrid type.");
     }
 
-    public void createDirectedEdge(Integer tail, Integer tip, BigDecimal branchLength, BigDecimal bootstrap, BigDecimal probability) {
+    public void createDirectedEdge(Integer tail, Integer tip, BigDecimal branchLength, BigDecimal support, BigDecimal probability) {
 
         String label = null;
 
-        if(branchLength != null || bootstrap != null || probability != null)
+        if(branchLength != null || support != null || probability != null)
         {
             label = "[label=\"";
 
@@ -83,8 +83,8 @@ public class GraphBuilderDOT implements GraphBuilder<Integer>
             if(branchLength != null)
                 adj.add("bl:" + branchLength.toPlainString());
 
-            if(bootstrap != null)
-                adj.add("bs:" + bootstrap.toPlainString());
+            if(support != null)
+                adj.add("bs:" + support.toPlainString());
 
             if(probability != null)
                 adj.add("p:" + probability);

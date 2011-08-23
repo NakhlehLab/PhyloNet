@@ -19,5 +19,5 @@ public interface GraphBuilder<N>
 
     public N createHybridNode(String label, HybridNodeType hybridType, BigInteger hybridNodeIndex);
 
-    public void createDirectedEdge(N tail, N tip, BigDecimal branchLength, BigDecimal bootstrap, BigDecimal probability);
+    public void createDirectedEdge(N tail, N tip, BigDecimal branchLength, BigDecimal support, BigDecimal probability);
 }

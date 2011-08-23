@@ -2,8 +2,6 @@ package edu.rice.bioinfo.library.language.richnewick._1_0.ast;
 
 import edu.rice.bioinfo.library.language.richnewick._1_0.HybridNodeType;
 import edu.rice.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
-import edu.rice.bioinfo.library.programming.Func;
-import edu.rice.bioinfo.library.programming.Func1;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -42,12 +40,12 @@ public class DAGFactory
                 }
             }, null);
 
-            BigDecimal bootstrap = sub.NetworkInfo.Bootstrap.execute(new BootstrapAlgo<BigDecimal, Object, RuntimeException>() {
-                public BigDecimal forBootstrapNonEmpty(BootstrapNonEmpty bootstrap, Object input)  {
-                    return new BigDecimal(bootstrap.BootstrapValue.Content);
+            BigDecimal support = sub.NetworkInfo.Support.execute(new SupportAlgo<BigDecimal, Object, RuntimeException>() {
+                public BigDecimal forSupportNonEmpty(SupportNonEmpty support, Object input)  {
+                    return new BigDecimal(support.SupportValue.Content);
                 }
 
-                public BigDecimal forBootstrapEmpty(BootstrapEmpty bootstrap, Object input)  {
+                public BigDecimal forSupportEmpty(SupportEmpty support, Object input)  {
                     return null;
                 }
             }, null);
@@ -63,7 +61,7 @@ public class DAGFactory
             }, null);
 
             T child = createNode(sub.NetworkInfo, builder, hybridIndexToNode);
-            builder.createDirectedEdge(parent, child, branchLength, bootstrap, probability);
+            builder.createDirectedEdge(parent, child, branchLength, support, probability);
             processDescendantList(child, sub.Descendants, builder, hybridIndexToNode);
         }
     }

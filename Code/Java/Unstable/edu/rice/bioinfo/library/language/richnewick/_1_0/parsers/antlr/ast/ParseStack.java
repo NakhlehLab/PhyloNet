@@ -1,6 +1,5 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.BootstrapResolver;
 import edu.rice.bioinfo.library.language.richnewick._1_0.ast.*;
 import org.antlr.runtime.*;
 import sun.reflect.generics.tree.VoidDescriptor;
@@ -14,7 +13,7 @@ interface ParseStack
 {
 
 
-    void pushUnquotedText(String text);
+    void pushUnquotedText(String text, int lineNumber, int columnNumber);
 
 
     void pushQuotedText(Token token);
@@ -28,21 +27,22 @@ interface ParseStack
 
     void pushHybridNodeQualifier(Token type, Token nodeIndex);
 
+    void pushNetworks();
 
-    void pushNetwork(boolean containsDescendantList);
+    void pushNetwork(Token rootedQualifier, boolean containsDescendantList);
 
 
     void pushProbability();
 
 
-    void pushBootstrap();
+    void pushSupport();
 
 
     void pushBranchLength();
 
 
     void pushNetworkInfo(boolean containsNodeLabel, boolean containsHybridNodeQualifier, boolean containsBranchLength,
-                         boolean containsBootstrap, boolean containsProbability);
+                         boolean containsSupport, boolean containsProbability);
 
 
     void pushNodeLabel();

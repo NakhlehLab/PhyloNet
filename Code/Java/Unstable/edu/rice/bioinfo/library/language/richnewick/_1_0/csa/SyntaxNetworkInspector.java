@@ -33,11 +33,11 @@ public interface SyntaxNetworkInspector<N>
 
     int getBranchLengthColumnNumber(N node);
 
-    String getBootstrapText(N node);
+    String getSupportText(N node);
 
-    int getBootstrapLineNumber(N node);
+    int getSupportLineNumber(N node);
 
-    int getBootstrapColumnNumber(N node);
+    int getSupportColumnNumber(N node);
 
     String getProbabilityText(N node);
 

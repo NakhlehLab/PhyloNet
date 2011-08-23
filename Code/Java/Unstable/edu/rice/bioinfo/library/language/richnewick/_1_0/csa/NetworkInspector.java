@@ -13,5 +13,5 @@ public interface NetworkInspector<N,E>
 
      N getTail(E edge);
 
-     String getProbabilityText(E edge);
+     String getEdgeProbabilityText(E edge);
 }

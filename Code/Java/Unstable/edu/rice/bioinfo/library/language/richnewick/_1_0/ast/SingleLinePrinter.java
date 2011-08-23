@@ -94,13 +94,13 @@ public class SingleLinePrinter
             }
         }, null);
 
-        final String bootstrapPart = info.Bootstrap.execute(new BootstrapAlgo<String, Object, RuntimeException>() {
+        final String supportPart = info.Support.execute(new SupportAlgo<String, Object, RuntimeException>() {
 
-            public String forBootstrapNonEmpty(BootstrapNonEmpty bootstrap, Object input) {
-               return (branchLengthPart == "" ? "::" : ":") + bootstrap.BootstrapValue.Content;
+            public String forSupportNonEmpty(SupportNonEmpty support, Object input) {
+               return (branchLengthPart == "" ? "::" : ":") + support.SupportValue.Content;
             }
 
-            public String forBootstrapEmpty(BootstrapEmpty bootstrap, Object input) {
+            public String forSupportEmpty(SupportEmpty support, Object input) {
                 return "";
             }
         }, null);
@@ -113,9 +113,9 @@ public class SingleLinePrinter
 
             public String forProbabilityNonEmpty(ProbabilityNonEmpty prob, Object input) {
 
-                if(branchLengthPart == "" && bootstrapPart == "")
+                if(branchLengthPart == "" && supportPart == "")
                     return ":::" + prob.ProbabilityValue.Content;
-                else if (bootstrapPart == "")
+                else if (supportPart == "")
                     return "::" + prob.ProbabilityValue.Content;
                 else
                     return ":" + prob.ProbabilityValue.Content;
@@ -123,6 +123,6 @@ public class SingleLinePrinter
             }
         }, null);
 
-        accum.append(labelPart + hybridPart + branchLengthPart + bootstrapPart + probabilityPart);
+        accum.append(labelPart + hybridPart + branchLengthPart + supportPart + probabilityPart);
     }
 }

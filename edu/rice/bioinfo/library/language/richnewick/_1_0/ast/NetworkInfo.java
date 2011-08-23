@@ -15,17 +15,17 @@ public class NetworkInfo implements AbstractSyntaxNode {
 
     public final BranchLength BranchLength;
 
-    public final Bootstrap Bootstrap;
+    public final Support Support;
 
     public final Probability Probability;
 
     public NetworkInfo(NodeLabel nodeLabel, HybridNodeQualifier qualifier, BranchLength branchLength,
-                       Bootstrap bootstrap, Probability probability)
+                       Support support, Probability probability)
     {
         NodeLabel = nodeLabel;
         HybridNodeQualifier = qualifier;
         BranchLength = branchLength;
-        Bootstrap = bootstrap;
+        Support = support;
         Probability = probability;
     }
 }

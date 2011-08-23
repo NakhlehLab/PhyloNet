@@ -1,18 +1,18 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.csa;
 
-import edu.rice.bioinfo.library.programming.Func;
 import edu.rice.bioinfo.library.programming.Func1;
 
-import javax.naming.NameNotFoundException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 public class ContextAnalyser
 {
-    public static <SN,NN,E> CSAError[] Analyse(Iterable<SN> syntaxNodes,  final SyntaxNetworkInspector<SN> syntaxInspector,
-                                               Iterable<NN> networkNodes, final NetworkInspector<NN,E> networkInspector,
-                                               final Func1<NN,SN> getFirstSyntaxContributor)
+    public static <SN,NN,E> List<CSAError> Analyse(Iterable<SN> syntaxNodes,  final SyntaxNetworkInspector<SN> syntaxInspector,
+                                                   Iterable<NN> networkNodes, final NetworkInspector<NN,E> networkInspector,
+                                                   final Func1<NN,SN> getPrimarySyntaxContributor)
     {
 
 
@@ -41,33 +41,33 @@ public class ContextAnalyser
             }
 
             /*
-             * Check to ensure bootstrap is a number between 0 and 1 inclusive.
+             * Check to ensure support is a number between 0 and 1 inclusive.
              */
-            String bootstrapStr = syntaxInspector.getBootstrapText(node);
-            if(bootstrapStr != null)
+            String supportStr = syntaxInspector.getSupportText(node);
+            if(supportStr != null)
             {
                 try
                 {
-                    BigDecimal bootstrap = new BigDecimal(bootstrapStr, MathContext.UNLIMITED);
+                    BigDecimal support = new BigDecimal(supportStr, MathContext.UNLIMITED);
 
-                    if(bootstrap.compareTo(BigDecimal.ZERO) == -1  || (bootstrap.compareTo(BigDecimal.ONE) == 1))
+                    if(support.compareTo(BigDecimal.ZERO) == -1  || (support.compareTo(BigDecimal.ONE) == 1))
                     {
-                        int bootstrapLine = syntaxInspector.getBootstrapLineNumber(node);
-                        int bootstrapColumn = syntaxInspector.getBootstrapColumnNumber(node);
+                        int supportLine = syntaxInspector.getSupportLineNumber(node);
+                        int supportColumn = syntaxInspector.getSupportColumnNumber(node);
 
                         errors.addLast(
-                                new CSAError(String.format("Bootstrap must be between zero and one inclusive.  Found '%s'.",
-                                        bootstrapStr),bootstrapLine,bootstrapColumn));
+                                new CSAError(String.format("Support must be between zero and one inclusive.  Found '%s'.",
+                                        supportStr),supportLine,supportColumn));
                     }
                 }
                 catch(NumberFormatException e)
                 {
-                    int bootstrapLine = syntaxInspector.getBootstrapLineNumber(node);
-                    int bootstrapColumn = syntaxInspector.getBootstrapColumnNumber(node);
+                    int supportLine = syntaxInspector.getSupportLineNumber(node);
+                    int supportColumn = syntaxInspector.getSupportColumnNumber(node);
 
                     errors.addLast(
-                            new CSAError(String.format("Bootstrap '%s' is not a recognisable number.",
-                                    bootstrapStr),bootstrapLine,bootstrapColumn));
+                            new CSAError(String.format("Support '%s' is not a recognisable number.",
+                                    supportStr),supportLine,supportColumn));
                 }
             }
 
@@ -158,16 +158,16 @@ public class ContextAnalyser
 
         for(NN node : networkNodes)
         {
-             /*
-             * Check to ensure that, for all the in edges to a node, the probabilities sum to one.
-             */
+            /*
+            * Check to ensure that, for all the in edges to a node, the probabilities sum to one.
+            */
 
             BigDecimal probSum = new BigDecimal("0", MathContext.UNLIMITED);
             int numParentsWithProb = 0;
             int numParents = 0;
             for(E edge : networkInspector.getAllInEdges(node))
             {
-                String parentProbText = networkInspector.getProbabilityText(edge);
+                String parentProbText = networkInspector.getEdgeProbabilityText(edge);
                 if(parentProbText != null)
                 {
                     numParentsWithProb++;
@@ -178,44 +178,64 @@ public class ContextAnalyser
                 numParents++;
             }
 
-            if(numParentsWithProb != numParents)
-            {
-                if(numParents != 1)
-                {
-                    SN syntaxNode = getFirstSyntaxContributor.execute(node);
-                    String nodeLabel = syntaxInspector.getNodeLabelText(syntaxNode);
+            SN syntaxNode = getPrimarySyntaxContributor.execute(node);
+            String nodeLabel = syntaxInspector.getNodeLabelText(syntaxNode);
 
-                    if(nodeLabel == null)
-                    {
-                        errors.add(new CSAError("Unnamed node's parents' do not all contain probabilities.", -1, -1));
-                    }
-                    else
-                    {
-                        errors.add(new CSAError(String.format("Node %s's parents' do not all contain probabilities.", nodeLabel),
-                                syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
-                                syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
-                    }
-                }
+            if(numParentsWithProb == 0)
+            {
+                // probability assumed to be equal distirbution among all parents
+                continue;
             }
-            else if(numParentsWithProb > 0 && probSum.compareTo(new BigDecimal("1", MathContext.UNLIMITED)) != 0)
-            {
-               SN syntaxNode = getFirstSyntaxContributor.execute(node);
-               String nodeLabel = syntaxInspector.getNodeLabelText(syntaxNode);
 
+            if(numParents == 1 && numParentsWithProb == 1 && probSum.compareTo(new BigDecimal("1", MathContext.UNLIMITED)) != 0)
+            {
                 if(nodeLabel == null)
                 {
-                    errors.add(new CSAError("Unnamed node's parents' probabilities do not all sum to one but "  + probSum.toPlainString(), -1, -1));
+                    errors.add(new CSAError("Unnamed node with single parent must have probability 1.  Found  "  + probSum.toPlainString(), -1, -1));
                 }
                 else
                 {
-                   errors.add(new CSAError(String.format("Node %s's parents' probabilities do not all sum to one but "  + probSum.toPlainString(), nodeLabel),
-                                           syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
-                                           syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
+                    errors.add(new CSAError(String.format("Node %s with single parent must have probability 1.  Found "  + probSum.toPlainString(), nodeLabel),
+                            syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
+                            syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
+                }
+
+                continue;
+            }
+
+            if(numParentsWithProb != numParents)
+            {
+
+
+                if(nodeLabel == null)
+                {
+                    errors.add(new CSAError("Unnamed node's parents' do not all contain probabilities.", -1, -1));
+                }
+                else
+                {
+                    errors.add(new CSAError(String.format("Node %s's parents' do not all contain probabilities.", nodeLabel),
+                            syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
+                            syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
+                }
+                continue;
+            }
+
+            if(probSum.compareTo(new BigDecimal("1", MathContext.UNLIMITED)) != 0)
+            {
+                if(nodeLabel == null)
+                {
+                    errors.add(new CSAError("Unnamed node's parents' probabilities do not all sum to 1. Found "  + probSum.toPlainString(), -1, -1));
+                }
+                else
+                {
+                    errors.add(new CSAError(String.format("Node %s's parents' probabilities do not all sum to 1.  Found "  + probSum.toPlainString(), nodeLabel),
+                            syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
+                            syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
                 }
             }
 
         }
 
-        return errors.toArray(new CSAError[0]);
+        return Collections.unmodifiableList(errors);
     }
 }

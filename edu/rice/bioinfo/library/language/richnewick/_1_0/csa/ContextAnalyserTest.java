@@ -2,12 +2,11 @@ package edu.rice.bioinfo.library.language.richnewick._1_0.csa;
 import edu.rice.bioinfo.library.programming.Func1Null;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Matchers;
 
 import static org.mockito.Mockito.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,7 +20,7 @@ public class ContextAnalyserTest
     @Test
     public void testAnalyse()
     {
-        CSAError[] result;
+        List<CSAError> result;
         SyntaxNetworkInspector syntaxInspector;
         NetworkInspector networkInspector;
 
@@ -37,16 +36,16 @@ public class ContextAnalyserTest
 
         // no errors over no nodes;
         result = ContextAnalyser.Analyse(new ArrayList<Object>(), null, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(0, result.length);
+        Assert.assertEquals(0, result.size());
 
         // one node, all zeros and hybrid type H index 1
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -58,16 +57,16 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(0, result.length);
+        Assert.assertEquals(0, result.size());
 
         // branch length must be a number
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("dogs");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(1);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(2);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -79,20 +78,20 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        CSAError error = result[0];
+        Assert.assertEquals(1, result.size());
+        CSAError error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
 
-        // bootstrap must be a number
+        // support must be a number
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("dogs");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(1);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(2);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("dogs");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(1);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(2);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -104,20 +103,20 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
 
-        // bootstrap must be a number between zero and one
+        // support must be a number between zero and one
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("1.5");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(1);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(2);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("1.5");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(1);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(2);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -129,8 +128,8 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("1.5"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
@@ -141,9 +140,9 @@ public class ContextAnalyserTest
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("dogs");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(1);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(2);
@@ -155,8 +154,8 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
@@ -167,9 +166,9 @@ public class ContextAnalyserTest
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("1.5");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(1);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(2);
@@ -181,8 +180,8 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("1.5"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
@@ -193,9 +192,9 @@ public class ContextAnalyserTest
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -207,8 +206,8 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
@@ -219,9 +218,9 @@ public class ContextAnalyserTest
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -233,8 +232,8 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(2);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
@@ -244,9 +243,9 @@ public class ContextAnalyserTest
         when(syntaxInspector.getBranchLengthText(anyObject())).thenReturn("0");
         when(syntaxInspector.getBranchLengthLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getBranchLengthColumnNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapText(anyObject())).thenReturn("0");
-        when(syntaxInspector.getBootstrapLineNumber(anyObject())).thenReturn(0);
-        when(syntaxInspector.getBootstrapColumnNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportText(anyObject())).thenReturn("0");
+        when(syntaxInspector.getSupportLineNumber(anyObject())).thenReturn(0);
+        when(syntaxInspector.getSupportColumnNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityText(anyObject())).thenReturn("0");
         when(syntaxInspector.getProbabilityLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getProbabilityColumnNumber(anyObject())).thenReturn(0);
@@ -258,8 +257,8 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(2);
 
         result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains("0"));
         Assert.assertEquals(1, error.LineNumber);
         Assert.assertEquals(2, error.ColumnNumber);
@@ -267,34 +266,48 @@ public class ContextAnalyserTest
         // an edge between a node and its only parent may be probability one
         networkInspector = mock(NetworkInspector.class);
         when(networkInspector.getAllInEdges(anyObject())).thenReturn(oneEdge);
-        when(networkInspector.getProbabilityText(anyObject())).thenReturn("1");
+        when(networkInspector.getEdgeProbabilityText(anyObject())).thenReturn("1");
 
-        result = ContextAnalyser.Analyse(new ArrayList<Object>(), null, oneNode, networkInspector, null);
-        Assert.assertEquals(0, result.length);
+        result = ContextAnalyser.Analyse(new ArrayList<Object>(), mock(SyntaxNetworkInspector.class), oneNode, networkInspector, Func1Null.Singleton);
+        Assert.assertEquals(0, result.size());
 
         // an edge between a node and its only parent must be probability one
         networkInspector = mock(NetworkInspector.class);
         when(networkInspector.getAllInEdges(anyObject())).thenReturn(oneEdge);
-        when(networkInspector.getProbabilityText(anyObject())).thenReturn(".3");
+        when(networkInspector.getEdgeProbabilityText(anyObject())).thenReturn(".3");
 
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getNodeLabelText(anyObject())).thenReturn(null);
 
         result = ContextAnalyser.Analyse(new ArrayList<Object>(), syntaxInspector, oneNode, networkInspector, Func1Null.Singleton);
-        Assert.assertEquals(1, result.length);
-        error = result[0];
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
         Assert.assertTrue(error.Message.contains(".3"));
 
         // probabilities of node's in edges may sum to one
         networkInspector = mock(NetworkInspector.class);
         when(networkInspector.getAllInEdges(anyObject())).thenReturn(twoEdges);
-        when(networkInspector.getProbabilityText(anyObject())).thenReturn(".5");
+        when(networkInspector.getEdgeProbabilityText(anyObject())).thenReturn(".5");
 
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getNodeLabelText(anyObject())).thenReturn(null);
 
         result = ContextAnalyser.Analyse(new ArrayList<Object>(), syntaxInspector, twoNodes, networkInspector, Func1Null.Singleton);
-        Assert.assertEquals(0, result.length);
+        Assert.assertEquals(0, result.size());
+
+        // probabilities of node's in edges must sum to one
+        networkInspector = mock(NetworkInspector.class);
+        when(networkInspector.getAllInEdges(anyObject())).thenReturn(twoEdges);
+        when(networkInspector.getEdgeProbabilityText(same(twoEdges.get(0)))).thenReturn(".5");
+        when(networkInspector.getEdgeProbabilityText(same(twoEdges.get(1)))).thenReturn(".6");
+
+        syntaxInspector = mock(SyntaxNetworkInspector.class);
+        when(syntaxInspector.getNodeLabelText(anyObject())).thenReturn(null);
+
+        result = ContextAnalyser.Analyse(new ArrayList<Object>(), syntaxInspector, oneNode, networkInspector, Func1Null.Singleton);
+        Assert.assertEquals(1, result.size());
+        error = result.get(0);
+        Assert.assertTrue(error.Message.contains("1.1"));
 
     }
 }

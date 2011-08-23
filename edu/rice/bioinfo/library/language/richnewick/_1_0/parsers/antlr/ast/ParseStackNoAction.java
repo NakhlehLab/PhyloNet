@@ -1,7 +1,10 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast;
 
 import edu.rice.bioinfo.library.language.richnewick._1_0.ast.AbstractSyntaxNode;
+import edu.rice.bioinfo.library.language.richnewick._1_0.ast.Network;
 import org.antlr.runtime.Token;
+
+import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +20,7 @@ public class ParseStackNoAction implements ParseStack {
         return null;
     }
 
-    public void pushUnquotedText(String text) {
+    public void pushUnquotedText(String text, int lineNumber, int columnNumber) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -37,7 +40,7 @@ public class ParseStackNoAction implements ParseStack {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void pushNetwork(boolean containsDescendantList) {
+    public void pushNetwork(Token rootageQualifier, boolean containsDescendantList) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -45,7 +48,7 @@ public class ParseStackNoAction implements ParseStack {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void pushBootstrap() {
+    public void pushSupport() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -53,12 +56,16 @@ public class ParseStackNoAction implements ParseStack {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void pushNetworkInfo(boolean containsNodeLabel, boolean containsHybridNodeQualifier, boolean containsBranchLength, boolean containsBootstrap, boolean containsProbability) {
+    public void pushNetworkInfo(boolean containsNodeLabel, boolean containsHybridNodeQualifier, boolean containsBranchLength, boolean containsSupport, boolean containsProbability) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void pushNodeLabel() {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void pushNetworks()
+    {
     }
 
     public AbstractSyntaxNode Pop() {

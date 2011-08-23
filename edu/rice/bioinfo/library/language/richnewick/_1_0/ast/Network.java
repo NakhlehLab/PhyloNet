@@ -15,8 +15,11 @@ public class Network implements AbstractSyntaxNode {
 
     public final NetworkInfo PrincipleInfo;
 
-    public Network(DescendantList principleDescendants, NetworkInfo principleInfo)
+    public final RootageQualifier RootageQualifier;
+
+    public Network(RootageQualifier rootageQualifier, DescendantList principleDescendants, NetworkInfo principleInfo)
     {
+        RootageQualifier = rootageQualifier;
         PrincipleDescendants = principleDescendants;
         PrincipleInfo = principleInfo;
     }

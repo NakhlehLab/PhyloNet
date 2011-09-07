@@ -17,69 +17,136 @@ class ParseStackAction implements ParseStack {
 
     private Stack<PySONNode> _parseStack = new Stack<PySONNode>();
 
-    public void pushIdentifier(String ident) {
+    private RuntimeException _exception = null;
 
-       _parseStack.push(new Identifier(ident));
+    public RuntimeException getException() {
+        return _exception;
     }
 
-    public void pushTreeAssignment(Token treeType)
+    public PySONNode pop()
     {
-        RichNewickAssignment assignment = (RichNewickAssignment)_parseStack.pop();
+        return _parseStack.pop();
+    }
 
-        if(PySONLexer.UTREE == treeType.getType())
-        {
-            _parseStack.push(new TreeAssignment(false, assignment));
+    public void pushIdentifier(Token ident) {
+        try {
+            _parseStack.push(new Identifier(ident.getText(), ident.getLine(), ident.getCharPositionInLine()));
+        } catch (RuntimeException e) {
+            _exception = e;
         }
-        else
+    }
+
+    public void pushTreeAssignment(Token treeType) {
+        try {
+            RichNewickAssignment assignment = (RichNewickAssignment) _parseStack.pop();
+
+            if (PySONLexer.UTREE == treeType.getType()) {
+                _parseStack.push(new TreeAssignment(false, assignment));
+            } else {
+                _parseStack.push(new TreeAssignment(true, assignment));
+            }
+        } catch (
+                RuntimeException e
+                )
+
         {
-            _parseStack.push(new TreeAssignment(true, assignment));
+            _exception = e;
         }
 
     }
 
     public void pushTreesBlockBody(boolean containsTranslation) {
 
-        if(containsTranslation)
-        {
+        try {
+            if (containsTranslation) {
 
-        }
-        else
-        {
-            LinkedList<TreeAssignment> assignments = new LinkedList<TreeAssignment>();
-            while(!_parseStack.empty() && _parseStack.peek() instanceof TreeAssignment)
-            {
-                assignments.addLast((TreeAssignment)_parseStack.pop());
+            } else {
+                LinkedList<TreeAssignment> assignments = new LinkedList<TreeAssignment>();
+                while (!_parseStack.empty() && _parseStack.peek() instanceof TreeAssignment) {
+                    assignments.addLast((TreeAssignment) _parseStack.pop());
+                }
+
+                _parseStack.push(new TreesBlockBodyWithoutTranslation(assignments));
             }
 
-            _parseStack.push(new TreesBlockBodyWithoutTranslation(assignments));
+        } catch (RuntimeException e) {
+            _exception = e;
         }
     }
 
     public void pushRichNewickAssignment(boolean isDefault) {
 
-        Identifier name = (Identifier)_parseStack.pop();
-        RichNewickString rnString = (RichNewickString)_parseStack.pop();
+        try {
+            RichNewickString rnString = (RichNewickString) _parseStack.pop();
+            Identifier name = (Identifier) _parseStack.pop();
 
-        _parseStack.push(new RichNewickAssignment(isDefault, name, rnString));
+
+            _parseStack.push(new RichNewickAssignment(isDefault, name, rnString));
+        } catch (RuntimeException e) {
+            _exception = e;
+        }
 
     }
 
     public void pushRichNewickString(String richNewickString) {
 
-        _parseStack.push(new RichNewickString(richNewickString));
+        try {
+            _parseStack.push(new RichNewickString(richNewickString));
+        } catch (RuntimeException e) {
+            _exception = e;
+        }
     }
 
 
     public void pushBlocks() {
 
-        LinkedList<Block> blocks = new LinkedList<Block>();
+        try {
 
-        while(!_parseStack.isEmpty())
+            LinkedList<Block> blocks = new LinkedList<Block>();
+
+            while (!_parseStack.isEmpty()) {
+                blocks.add((Block) _parseStack.pop());
+            }
+
+            _parseStack.push(new Blocks(blocks));
+        } catch (RuntimeException e) {
+            _exception = e;
+        }
+    }
+
+    public void pushPhylonetBlockBody()
+    {
+        LinkedList<PhyloNetCommand> commands = new LinkedList<PhyloNetCommand>();
+
+        while(!_parseStack.empty() && _parseStack.peek() instanceof PhyloNetCommand)
         {
-            blocks.add((Block)_parseStack.pop());
+            commands.addFirst((PhyloNetCommand)_parseStack.pop());
         }
 
-        _parseStack.push(new Blocks(blocks));
+        _parseStack.push(new PhyloNetBlockBody(commands));
+    }
+
+    public void pushPhylonetCommandPartQuote(Token part)
+    {
+        _parseStack.push(new PhyloNetCommandPart(part.getText(), part.getLine(), part.getCharPositionInLine()));
+    }
+
+    public void pushPhylonetCommandPartIdent()
+    {
+        Identifier ident = (Identifier)_parseStack.pop();
+        _parseStack.push(new PhyloNetCommandPart(ident.Content, ident.Line, ident.Col));
+    }
+
+    public void pushPhylonetCommand()
+    {
+        LinkedList<PhyloNetCommandPart> parts = new LinkedList<PhyloNetCommandPart>();
+
+        while(!_parseStack.empty() && _parseStack.peek() instanceof PhyloNetCommandPart)
+        {
+            parts.addFirst((PhyloNetCommandPart)_parseStack.pop());
+        }
+
+        _parseStack.push(new PhyloNetCommand(parts));
     }
 
 }

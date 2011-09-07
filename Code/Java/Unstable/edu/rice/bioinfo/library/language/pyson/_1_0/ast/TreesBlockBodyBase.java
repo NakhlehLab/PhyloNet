@@ -9,10 +9,15 @@ package edu.rice.bioinfo.library.language.pyson._1_0.ast;
  */
 public abstract class TreesBlockBodyBase implements TreesBlockBody
 {
-    public final Iterable<TreeAssignment> Assigments;
+    public final Iterable<TreeAssignment> Assignments;
+
+    public Iterable<TreeAssignment> getAssignments()
+    {
+       return Assignments;
+    }
 
     TreesBlockBodyBase(Iterable<TreeAssignment> assigments)
     {
-        Assigments =  assigments;
+        Assignments =  assigments;
     }
 }

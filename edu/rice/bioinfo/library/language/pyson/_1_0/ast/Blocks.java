@@ -9,10 +9,10 @@ package edu.rice.bioinfo.library.language.pyson._1_0.ast;
  */
 public class Blocks implements PySONNode{
 
-    public final Iterable<Block> Blocks;
+    public final Iterable<Block> Contents;
 
     public Blocks(Iterable<Block> blocks)
     {
-        Blocks = blocks;
+        Contents = blocks;
     }
 }

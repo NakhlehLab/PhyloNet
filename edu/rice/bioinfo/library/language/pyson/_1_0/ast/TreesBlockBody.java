@@ -9,4 +9,5 @@ package edu.rice.bioinfo.library.language.pyson._1_0.ast;
  */
 public interface TreesBlockBody extends Block {
 
+    Iterable<TreeAssignment> getAssignments();
 }

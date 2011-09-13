@@ -35,7 +35,7 @@ public class ContextAnalyserTest
         ArrayList<Object> twoEdges = twoNodes;
 
         // no errors over no nodes;
-        result = ContextAnalyser.Analyse(new ArrayList<Object>(), null, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(new ArrayList<Object>(), null, new ArrayList<Object>(), null, null);
         Assert.assertEquals(0, result.size());
 
         // one node, all zeros and hybrid type H index 1
@@ -56,7 +56,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(0, result.size());
 
         // branch length must be a number
@@ -77,7 +77,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         CSAError error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
@@ -102,7 +102,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
@@ -127,7 +127,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("1.5"));
@@ -153,7 +153,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
@@ -179,7 +179,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("1.5"));
@@ -205,7 +205,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(0);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(0);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
@@ -231,7 +231,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(1);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(2);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("dogs"));
@@ -256,7 +256,7 @@ public class ContextAnalyserTest
         when(syntaxInspector.getHybridNodeIndexLineNumber(anyObject())).thenReturn(1);
         when(syntaxInspector.getHybridNodeIndexColumnNumber(anyObject())).thenReturn(2);
 
-        result = ContextAnalyser.Analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
+        result = ContextAnalyser.analyse(oneNode, syntaxInspector, new ArrayList<Object>(), null, null);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("0"));
@@ -268,7 +268,7 @@ public class ContextAnalyserTest
         when(networkInspector.getAllInEdges(anyObject())).thenReturn(oneEdge);
         when(networkInspector.getEdgeProbabilityText(anyObject())).thenReturn("1");
 
-        result = ContextAnalyser.Analyse(new ArrayList<Object>(), mock(SyntaxNetworkInspector.class), oneNode, networkInspector, Func1Null.Singleton);
+        result = ContextAnalyser.analyse(new ArrayList<Object>(), mock(SyntaxNetworkInspector.class), oneNode, networkInspector, Func1Null.Singleton);
         Assert.assertEquals(0, result.size());
 
         // an edge between a node and its only parent must be probability one
@@ -279,7 +279,7 @@ public class ContextAnalyserTest
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getNodeLabelText(anyObject())).thenReturn(null);
 
-        result = ContextAnalyser.Analyse(new ArrayList<Object>(), syntaxInspector, oneNode, networkInspector, Func1Null.Singleton);
+        result = ContextAnalyser.analyse(new ArrayList<Object>(), syntaxInspector, oneNode, networkInspector, Func1Null.Singleton);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains(".3"));
@@ -292,7 +292,7 @@ public class ContextAnalyserTest
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getNodeLabelText(anyObject())).thenReturn(null);
 
-        result = ContextAnalyser.Analyse(new ArrayList<Object>(), syntaxInspector, twoNodes, networkInspector, Func1Null.Singleton);
+        result = ContextAnalyser.analyse(new ArrayList<Object>(), syntaxInspector, twoNodes, networkInspector, Func1Null.Singleton);
         Assert.assertEquals(0, result.size());
 
         // probabilities of node's in edges must sum to one
@@ -304,7 +304,7 @@ public class ContextAnalyserTest
         syntaxInspector = mock(SyntaxNetworkInspector.class);
         when(syntaxInspector.getNodeLabelText(anyObject())).thenReturn(null);
 
-        result = ContextAnalyser.Analyse(new ArrayList<Object>(), syntaxInspector, oneNode, networkInspector, Func1Null.Singleton);
+        result = ContextAnalyser.analyse(new ArrayList<Object>(), syntaxInspector, oneNode, networkInspector, Func1Null.Singleton);
         Assert.assertEquals(1, result.size());
         error = result.get(0);
         Assert.assertTrue(error.Message.contains("1.1"));

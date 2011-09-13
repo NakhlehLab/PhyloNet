@@ -1,13 +1,16 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.ast;
 
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadError;
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadException;
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReader;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseError;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorDefault;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorsException;
+import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
+import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReaderBase;
+import edu.rice.bioinfo.library.language.richnewick._1_0.csa.ASTContextAnalyser;
 import edu.rice.bioinfo.library.language.richnewick._1_0.csa.CSAError;
-import edu.rice.bioinfo.library.language.richnewick._1_0.csa.ContextAnalyser;
 import edu.rice.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
 import edu.rice.bioinfo.library.programming.Func1;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,39 +22,46 @@ import java.util.List;
  * Time: 10:20 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class RichNewickReaderAST implements RichNewickReader<Networks>
+public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
 {
-    public <N> Networks read(InputStream instream, GraphBuilder<N> graphBuilder) throws RichNewickReadException {
-        Networks networks = parse(instream);
+    public <N> RichNewickReadResult<Networks> read(InputStream instream, GraphBuilder<N> graphBuilder) throws IOException, CoordinateParseErrorsException {
 
+        final Networks networks = parse(instream);
+
+        final List<CSAError> errors = new LinkedList<CSAError>();
 
         for(Network network : networks.Networks)
         {
-            final ASTNetworkInspector inspector = new ASTNetworkInspector(network);
-            Func1<Object,NetworkInfo> networkNodeToPrimarySyntaxNode = new Func1<Object, NetworkInfo>() {
-                public NetworkInfo execute(Object networkNode) {
 
-                    return inspector.getPrimarySyntaxNode(networkNode);
-                }
-            };
-
-            List<CSAError> errors = ContextAnalyser.Analyse(inspector.getSyntaxNodes(), inspector, inspector.getNetworkNodes(), inspector, networkNodeToPrimarySyntaxNode);
+            for(CSAError error : ASTContextAnalyser.analyse(network))
+            {
+                errors.add(error);
+            }
 
             if(errors.size() > 0)
             {
-                LinkedList<RichNewickReadError> readErrors = new LinkedList<RichNewickReadError>();
+                LinkedList<CoordinateParseError> readErrors = new LinkedList<CoordinateParseError>();
                 for(CSAError csaError : errors)
                 {
-                    readErrors.add(new RichNewickReadError(csaError.Message, csaError.LineNumber, csaError.ColumnNumber));
+                    readErrors.add(new CoordinateParseErrorDefault(csaError.Message, csaError.LineNumber, csaError.ColumnNumber) {
+                    });
                 }
-                throw new RichNewickReadException(readErrors);
+                throw new CoordinateParseErrorsException(readErrors);
             }
 
             DAGFactory.makeDAG(network, graphBuilder);
         }
 
-        return networks;
+        return new RichNewickReadResult<Networks>() {
+            public Networks getNetwork() {
+                return networks;
+            }
+
+            public Iterable<CSAError> getContextErrors() {
+                return errors;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        };
     }
 
-    protected abstract Networks parse(InputStream instream) throws RichNewickReadException;
+    protected abstract Networks parse(InputStream instream) throws CoordinateParseErrorsException, IOException;
 }

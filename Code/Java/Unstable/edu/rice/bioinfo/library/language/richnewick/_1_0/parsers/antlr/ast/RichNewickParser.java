@@ -1,14 +1,13 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast;
 
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadError;
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadException;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseError;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorDefault;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.bioinfo.library.language.richnewick._1_0.ast.Networks;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 
-import javax.xml.transform.ErrorListener;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,28 +24,35 @@ public class RichNewickParser
     private RichNewickParser()
     {}
 
-    public static Networks parse(InputStream stream) throws IOException, RecognitionException, RichNewickReadException {
+    public static Networks parse(InputStream stream) throws IOException, CoordinateParseErrorsException {
         ANTLRInputStream antlrStream = new ANTLRInputStream(stream);
         ExtendedNewickLexer lexer = new ExtendedNewickLexer(antlrStream);
         ExtendedNewickParser antlrParser = new ExtendedNewickParser(new CommonTokenStream(lexer));
         return parse(antlrParser);
     }
 
-    static Networks parse(ExtendedNewickParser parser) throws IOException, RecognitionException, RichNewickReadException {
+    static Networks parse(ExtendedNewickParser parser) throws IOException, CoordinateParseErrorsException {
 
-        parser.networks();
+        LinkedList<CoordinateParseError> errors = new LinkedList<CoordinateParseError>();
+        try
+        {
+            parser.networks();
+        }
+        catch(RecognitionException e)
+        {
+            errors.add(new CoordinateParseErrorDefault(e.getMessage(), e.line, e.charPositionInLine));
+            throw new CoordinateParseErrorsException(errors);
+        }
 
-        List<ExtendedNewickParser.ErrorWrapper> errors = parser.getErrors();
+        List<ExtendedNewickParser.ErrorWrapper> errorWraps = parser.getErrors();
         if(errors.size() > 0)
         {
-            LinkedList<RichNewickReadError> newErrors = new LinkedList<RichNewickReadError>();
-
-            for(ExtendedNewickParser.ErrorWrapper error : errors)
+            for(ExtendedNewickParser.ErrorWrapper error : errorWraps)
             {
-                newErrors.add(new RichNewickReadError(error.Message, error.Line, error.Col));
+                errors.add(new CoordinateParseErrorDefault(error.Message, error.Line, error.Col));
             }
 
-            throw new RichNewickReadException(newErrors);
+            throw new CoordinateParseErrorsException(errors);
         }
 
         RuntimeException possibleException = parser.getParseStack().getException();

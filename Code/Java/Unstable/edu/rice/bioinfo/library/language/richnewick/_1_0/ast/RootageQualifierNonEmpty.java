@@ -9,7 +9,8 @@ package edu.rice.bioinfo.library.language.richnewick._1_0.ast;
  */
 public class RootageQualifierNonEmpty implements RootageQualifier
 {
-    public String Qualifier;
+    public final String Qualifier;
+
 
     public RootageQualifierNonEmpty(String qualifier)
     {
@@ -18,5 +19,10 @@ public class RootageQualifierNonEmpty implements RootageQualifier
 
     public <R, T, E extends Exception> R execute(RootageQualifierAlgo<R, T, E> algo, T input) throws E {
         return algo.forNonEmptyQualifier(this, input);
+    }
+
+    public boolean isRooted()
+    {
+        return Qualifier.toLowerCase().contains("r");
     }
 }

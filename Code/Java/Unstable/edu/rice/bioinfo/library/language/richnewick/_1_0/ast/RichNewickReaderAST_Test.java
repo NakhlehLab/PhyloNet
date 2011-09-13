@@ -1,7 +1,6 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.ast;
 
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadException;
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReader;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilderNoAction;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +28,7 @@ public abstract class RichNewickReaderAST_Test {
             reader.read(new ByteArrayInputStream("((H#1:::.6)A,(H#1:::.6)B)C;".getBytes()), GraphBuilderNoAction.Singleton);
             Assert.fail("Expected exception.");
         }
-        catch(RichNewickReadException e)
+        catch(CoordinateParseErrorsException e)
         {
 
         }

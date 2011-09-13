@@ -2,10 +2,8 @@ package edu.rice.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands;
 
 import edu.rice.bioinfo.library.language.pyson._1_0.ast.*;
 
-import java.awt.geom.NoninvertibleTransformException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +18,7 @@ public class SACFactoryFromAST {
     public static StringsAndCommands make(Blocks blocks)
     {
         final Map<String,String> identToRichNewickString = new HashMap<String,String>();
-        final LinkedList<Command> commands = new LinkedList<Command>();
+        final LinkedList<SyntaxCommand> commands = new LinkedList<SyntaxCommand>();
 
 
         for(Block block : blocks.Contents)
@@ -88,7 +86,7 @@ public class SACFactoryFromAST {
                         final String nameFinal = name;
                         final int lineFinal = line;
                         final int colFinal = col;
-                        commands.addFirst(new Command() {
+                        commands.add(new SyntaxCommand() {
                             public String getName() {
                                 return nameFinal;
                             }
@@ -119,7 +117,12 @@ public class SACFactoryFromAST {
                 return identToRichNewickString.get(identifier);
             }
 
-            public List<Command> getCommands() {
+            public Iterable<String> getRickNewickStringIdentifiers()
+            {
+                return identToRichNewickString.keySet();
+            }
+
+            public Iterable<SyntaxCommand> getCommands() {
                 return commands;  //To change body of implemented methods use File | Settings | File Templates.
             }
         };

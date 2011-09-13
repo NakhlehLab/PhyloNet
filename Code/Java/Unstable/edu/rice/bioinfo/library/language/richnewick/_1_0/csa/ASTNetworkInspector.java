@@ -1,7 +1,6 @@
-package edu.rice.bioinfo.library.language.richnewick._1_0.ast;
+package edu.rice.bioinfo.library.language.richnewick._1_0.csa;
 
-import edu.rice.bioinfo.library.language.richnewick._1_0.csa.NetworkInspector;
-import edu.rice.bioinfo.library.language.richnewick._1_0.csa.SyntaxNetworkInspector;
+import edu.rice.bioinfo.library.language.richnewick._1_0.ast.*;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -14,7 +13,7 @@ import java.util.Map;
  * Time: 1:22 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, NetworkInspector<Object, ASTNetworkInspector.Edge>
+class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, NetworkInspector<Object, ASTNetworkInspector.Edge>
 {
     public class Edge
     {

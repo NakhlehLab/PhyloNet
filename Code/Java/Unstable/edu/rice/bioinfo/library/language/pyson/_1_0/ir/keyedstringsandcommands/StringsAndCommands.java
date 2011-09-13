@@ -1,8 +1,5 @@
 package edu.rice.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands;
 
-import javax.print.DocFlavor;
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
@@ -14,5 +11,9 @@ public interface StringsAndCommands {
 
     String getRickNewickString(String identifier);
 
-    List<Command> getCommands();
+    Iterable<String> getRickNewickStringIdentifiers();
+
+    Iterable<SyntaxCommand> getCommands();
+
+
 }

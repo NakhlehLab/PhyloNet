@@ -9,9 +9,9 @@ package edu.rice.bioinfo.programs.phylonet.commands;
  */
 public class CommandFactory {
 
-    public static Command make(String commandName)
+    public static Command make(String sourceName)
     {
-        String lowerCommandName = commandName.toLowerCase();
+        String lowerCommandName = sourceName.toLowerCase();
 
         if(lowerCommandName.equals("symmetricdifference"))
         {
@@ -19,7 +19,7 @@ public class CommandFactory {
         }
         else
         {
-             throw new IllegalArgumentException(String.format("Unknown command name '%s'.", commandName));
+             throw new IllegalArgumentException(String.format("Unknown command name '%s'.", sourceName));
         }
 
     }

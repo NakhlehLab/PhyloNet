@@ -8,11 +8,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ContextAnalyser
+class ContextAnalyser
 {
-    public static <SN,NN,E> List<CSAError> Analyse(Iterable<SN> syntaxNodes,  final SyntaxNetworkInspector<SN> syntaxInspector,
-                                                   Iterable<NN> networkNodes, final NetworkInspector<NN,E> networkInspector,
-                                                   final Func1<NN,SN> getPrimarySyntaxContributor)
+    public static <SN,NN,E> List<CSAError> analyse(Iterable<SN> syntaxNodes, final SyntaxNetworkInspector<SN> syntaxInspector,
+                                                   Iterable<NN> networkNodes, final NetworkInspector<NN, E> networkInspector,
+                                                   final Func1<NN, SN> getPrimarySyntaxContributor)
     {
 
 

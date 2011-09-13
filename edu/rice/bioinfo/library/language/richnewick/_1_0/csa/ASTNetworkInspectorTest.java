@@ -1,4 +1,4 @@
-package edu.rice.bioinfo.library.language.richnewick._1_0.ast;
+package edu.rice.bioinfo.library.language.richnewick._1_0.csa;
 
 import edu.rice.bioinfo.library.language.richnewick._1_0.csa.SyntaxNetworkInspector;
 import org.junit.Test;

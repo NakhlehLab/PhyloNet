@@ -1,7 +1,9 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0;
 
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -13,5 +15,7 @@ import java.io.InputStream;
  */
 public interface RichNewickReader<T>
 {
-    public <N> T read(InputStream instream, GraphBuilder<N> graphBuilder) throws RichNewickReadException;
+    public <N> RichNewickReadResult<T> read(InputStream instream) throws CoordinateParseErrorsException, IOException;
+
+    public <N> RichNewickReadResult<T> read(InputStream instream, GraphBuilder<N> graphBuilder) throws CoordinateParseErrorsException, IOException;
 }

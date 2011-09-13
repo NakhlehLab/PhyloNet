@@ -1,7 +1,6 @@
 package edu.rice.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast;
 
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadError;
-import edu.rice.bioinfo.library.language.richnewick._1_0.RichNewickReadException;
+import edu.rice.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.bioinfo.library.language.richnewick._1_0.ast.Networks;
 import edu.rice.bioinfo.library.language.richnewick._1_0.ast.RichNewickReaderAST;
 import org.antlr.runtime.RecognitionException;
@@ -9,7 +8,6 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,24 +19,11 @@ import java.util.List;
 public class RichNewickReaderAST_ANTLR extends RichNewickReaderAST
 {
     @Override
-    protected Networks parse(InputStream instream) throws RichNewickReadException {
+    protected Networks parse(InputStream instream) throws IOException, CoordinateParseErrorsException {
 
-        try
-        {
+
             return RichNewickParser.parse(instream);
-        }
-        catch (IOException e)
-        {
-            ArrayList<RichNewickReadError> errors = new ArrayList<RichNewickReadError>();
-            errors.add(new RichNewickReadError(e.getMessage(), null, null));
-            throw new RichNewickReadException(errors);
-        }
-        catch (RecognitionException e)
-        {
-            ArrayList<RichNewickReadError> errors = new ArrayList<RichNewickReadError>();
-            errors.add(new RichNewickReadError(e.getMessage(), e.line, e.charPositionInLine));
-            throw new RichNewickReadException(errors);
-        }
+
 
 
     }

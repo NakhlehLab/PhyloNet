@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-09-07 17:34:43
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-09-09 13:53:08
 
 package edu.rice.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import java.util.LinkedList;
@@ -13,13 +13,13 @@ import java.util.ArrayList;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class PySONParser extends org.antlr.runtime.Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "BEGIN", "DEFAULT_INDICATOR", "ELSE", "END", "ID", "NESTED_ML_COMMENT", "NETWORK", "NETWORKS", "PHYLONET", "QUOTE", "START", "TRANSLATE", "TREE", "TREES", "UTREE", "WS", "','", "';'", "'='"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "BEGIN", "DEFAULT_INDICATOR", "ELSE", "END", "ID", "NESTED_ML_COMMENT", "NETWORK", "NETWORKS", "PHYLONET", "QUOTE", "ROOTAGE_QUALIFIER", "START", "TRANSLATE", "TREE", "TREES", "UTREE", "WS", "','", "';'", "'='"
     };
 
     public static final int EOF=-1;
-    public static final int T__20=20;
     public static final int T__21=21;
     public static final int T__22=22;
+    public static final int T__23=23;
     public static final int BEGIN=4;
     public static final int DEFAULT_INDICATOR=5;
     public static final int ELSE=6;
@@ -30,12 +30,13 @@ public class PySONParser extends org.antlr.runtime.Parser {
     public static final int NETWORKS=11;
     public static final int PHYLONET=12;
     public static final int QUOTE=13;
-    public static final int START=14;
-    public static final int TRANSLATE=15;
-    public static final int TREE=16;
-    public static final int TREES=17;
-    public static final int UTREE=18;
-    public static final int WS=19;
+    public static final int ROOTAGE_QUALIFIER=14;
+    public static final int START=15;
+    public static final int TRANSLATE=16;
+    public static final int TREE=17;
+    public static final int TREES=18;
+    public static final int UTREE=19;
+    public static final int WS=20;
 
     // delegates
     public Parser[] getDelegates() {
@@ -185,14 +186,15 @@ public class PySONParser extends org.antlr.runtime.Parser {
                 case NESTED_ML_COMMENT:
                 case NETWORK:
                 case QUOTE:
+                case ROOTAGE_QUALIFIER:
                 case START:
                 case TRANSLATE:
                 case TREE:
                 case UTREE:
                 case WS:
-                case 20:
                 case 21:
                 case 22:
+                case 23:
                     {
                     alt2=4;
                     }
@@ -318,7 +320,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             if ( (LA5_0==NETWORKS) ) {
                 int LA5_1 = input.LA(2);
 
-                if ( (LA5_1==21) ) {
+                if ( (LA5_1==22) ) {
                     int LA5_2 = input.LA(3);
 
                     if ( (LA5_2==TRANSLATE) ) {
@@ -356,7 +358,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                     {
                     match(input,NETWORKS,FOLLOW_NETWORKS_in_networks_block_body119); 
 
-                    match(input,21,FOLLOW_21_in_networks_block_body121); 
+                    match(input,22,FOLLOW_22_in_networks_block_body121); 
 
                     pushFollow(FOLLOW_translation_in_networks_block_body123);
                     translation();
@@ -403,7 +405,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                     {
                     match(input,NETWORKS,FOLLOW_NETWORKS_in_networks_block_body136); 
 
-                    match(input,21,FOLLOW_21_in_networks_block_body138); 
+                    match(input,22,FOLLOW_22_in_networks_block_body138); 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:77:29: ( NETWORK rich_newick_assignment )*
                     loop4:
@@ -467,7 +469,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             if ( (LA8_0==TREES) ) {
                 int LA8_1 = input.LA(2);
 
-                if ( (LA8_1==21) ) {
+                if ( (LA8_1==22) ) {
                     int LA8_2 = input.LA(3);
 
                     if ( (LA8_2==TRANSLATE) ) {
@@ -505,7 +507,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                     {
                     match(input,TREES,FOLLOW_TREES_in_trees_block_body170); 
 
-                    match(input,21,FOLLOW_21_in_trees_block_body172); 
+                    match(input,22,FOLLOW_22_in_trees_block_body172); 
 
                     pushFollow(FOLLOW_translation_in_trees_block_body174);
                     translation();
@@ -552,7 +554,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                     {
                     match(input,TREES,FOLLOW_TREES_in_trees_block_body185); 
 
-                    match(input,21,FOLLOW_21_in_trees_block_body187); 
+                    match(input,22,FOLLOW_22_in_trees_block_body187); 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:81:27: ( tree_assigment )*
                     loop7:
@@ -614,7 +616,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             {
             match(input,PHYLONET,FOLLOW_PHYLONET_in_phylonet_block_body214); 
 
-            match(input,21,FOLLOW_21_in_phylonet_block_body216); 
+            match(input,22,FOLLOW_22_in_phylonet_block_body216); 
 
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:84:17: ( phylonet_command )*
             loop9:
@@ -622,7 +624,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                 int alt9=2;
                 int LA9_0 = input.LA(1);
 
-                if ( (LA9_0==BEGIN||LA9_0==ID||(LA9_0 >= NETWORK && LA9_0 <= QUOTE)||(LA9_0 >= TRANSLATE && LA9_0 <= UTREE)||LA9_0==21) ) {
+                if ( (LA9_0==BEGIN||LA9_0==ID||(LA9_0 >= NETWORK && LA9_0 <= QUOTE)||(LA9_0 >= TRANSLATE && LA9_0 <= UTREE)||LA9_0==22) ) {
                     alt9=1;
                 }
 
@@ -702,7 +704,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             } while (true);
 
 
-            match(input,21,FOLLOW_21_in_phylonet_command235); 
+            match(input,22,FOLLOW_22_in_phylonet_command235); 
 
              stack.pushPhylonetCommand(); 
 
@@ -866,7 +868,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             state._fsp--;
 
 
-            match(input,22,FOLLOW_22_in_rich_newick_assignment296); 
+            match(input,23,FOLLOW_23_in_rich_newick_assignment296); 
 
             pushFollow(FOLLOW_rich_newick_string_in_rich_newick_assignment298);
             rich_newick_string();
@@ -922,7 +924,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                 int alt13=2;
                 int LA13_0 = input.LA(1);
 
-                if ( (LA13_0==20) ) {
+                if ( (LA13_0==21) ) {
                     alt13=1;
                 }
 
@@ -931,7 +933,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:100:40: ',' identifier WS identifier
             	    {
-            	    match(input,20,FOLLOW_20_in_translation320); 
+            	    match(input,21,FOLLOW_21_in_translation320); 
 
             	    pushFollow(FOLLOW_identifier_in_translation322);
             	    identifier();
@@ -956,7 +958,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             } while (true);
 
 
-            match(input,21,FOLLOW_21_in_translation330); 
+            match(input,22,FOLLOW_22_in_translation330); 
 
             }
 
@@ -982,7 +984,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:103:2: (~ ( TREES | NETWORKS | PHYLONET ) ';' (~ END )* )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:103:4: ~ ( TREES | NETWORKS | PHYLONET ) ';' (~ END )*
             {
-            if ( (input.LA(1) >= BEGIN && input.LA(1) <= NETWORK)||(input.LA(1) >= QUOTE && input.LA(1) <= TREE)||(input.LA(1) >= UTREE && input.LA(1) <= 22) ) {
+            if ( (input.LA(1) >= BEGIN && input.LA(1) <= NETWORK)||(input.LA(1) >= QUOTE && input.LA(1) <= TREE)||(input.LA(1) >= UTREE && input.LA(1) <= 23) ) {
                 input.consume();
                 state.errorRecovery=false;
             }
@@ -992,7 +994,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             }
 
 
-            match(input,21,FOLLOW_21_in_skip_body349); 
+            match(input,22,FOLLOW_22_in_skip_body349); 
 
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:103:35: (~ END )*
             loop14:
@@ -1000,7 +1002,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                 int alt14=2;
                 int LA14_0 = input.LA(1);
 
-                if ( ((LA14_0 >= BEGIN && LA14_0 <= ELSE)||(LA14_0 >= ID && LA14_0 <= 22)) ) {
+                if ( ((LA14_0 >= BEGIN && LA14_0 <= ELSE)||(LA14_0 >= ID && LA14_0 <= 23)) ) {
                     alt14=1;
                 }
 
@@ -1009,7 +1011,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
-            	    if ( (input.LA(1) >= BEGIN && input.LA(1) <= ELSE)||(input.LA(1) >= ID && input.LA(1) <= 22) ) {
+            	    if ( (input.LA(1) >= BEGIN && input.LA(1) <= ELSE)||(input.LA(1) >= ID && input.LA(1) <= 23) ) {
             	        input.consume();
             	        state.errorRecovery=false;
             	    }
@@ -1061,7 +1063,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                 int alt15=2;
                 int LA15_0 = input.LA(1);
 
-                if ( ((LA15_0 >= BEGIN && LA15_0 <= 20)||LA15_0==22) ) {
+                if ( ((LA15_0 >= BEGIN && LA15_0 <= 21)||LA15_0==23) ) {
                     alt15=1;
                 }
 
@@ -1072,7 +1074,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             	    {
             	    str=(Token)input.LT(1);
 
-            	    if ( (input.LA(1) >= BEGIN && input.LA(1) <= 20)||input.LA(1)==22 ) {
+            	    if ( (input.LA(1) >= BEGIN && input.LA(1) <= 21)||input.LA(1)==23 ) {
             	        input.consume();
             	        state.errorRecovery=false;
             	    }
@@ -1093,7 +1095,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             } while (true);
 
 
-            match(input,21,FOLLOW_21_in_rich_newick_string384); 
+            match(input,22,FOLLOW_22_in_rich_newick_string384); 
 
              stack.pushRichNewickString(accum.toString() + ';'); 
 
@@ -1163,7 +1165,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             {
             match(input,END,FOLLOW_END_in_end_semi443); 
 
-            match(input,21,FOLLOW_21_in_end_semi445); 
+            match(input,22,FOLLOW_22_in_end_semi445); 
 
             }
 
@@ -1190,59 +1192,59 @@ public class PySONParser extends org.antlr.runtime.Parser {
     public static final BitSet FOLLOW_BEGIN_in_block64 = new BitSet(new long[]{0x0000000000000800L});
     public static final BitSet FOLLOW_networks_block_body_in_block66 = new BitSet(new long[]{0x0000000000000080L});
     public static final BitSet FOLLOW_end_semi_in_block68 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BEGIN_in_block73 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_BEGIN_in_block73 = new BitSet(new long[]{0x0000000000040000L});
     public static final BitSet FOLLOW_trees_block_body_in_block75 = new BitSet(new long[]{0x0000000000000080L});
     public static final BitSet FOLLOW_end_semi_in_block80 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_BEGIN_in_block85 = new BitSet(new long[]{0x0000000000001000L});
     public static final BitSet FOLLOW_phylonet_block_body_in_block87 = new BitSet(new long[]{0x0000000000000080L});
     public static final BitSet FOLLOW_end_semi_in_block89 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BEGIN_in_block94 = new BitSet(new long[]{0x00000000007DE7F0L});
+    public static final BitSet FOLLOW_BEGIN_in_block94 = new BitSet(new long[]{0x0000000000FBE7F0L});
     public static final BitSet FOLLOW_skip_body_in_block96 = new BitSet(new long[]{0x0000000000000080L});
     public static final BitSet FOLLOW_end_semi_in_block108 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NETWORKS_in_networks_block_body119 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_networks_block_body121 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_NETWORKS_in_networks_block_body119 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_networks_block_body121 = new BitSet(new long[]{0x0000000000010000L});
     public static final BitSet FOLLOW_translation_in_networks_block_body123 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_NETWORK_in_networks_block_body126 = new BitSet(new long[]{0x0000000000079D30L});
+    public static final BitSet FOLLOW_NETWORK_in_networks_block_body126 = new BitSet(new long[]{0x00000000000F1D30L});
     public static final BitSet FOLLOW_rich_newick_assignment_in_networks_block_body128 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_NETWORKS_in_networks_block_body136 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_networks_block_body138 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_NETWORK_in_networks_block_body153 = new BitSet(new long[]{0x0000000000079D30L});
+    public static final BitSet FOLLOW_NETWORKS_in_networks_block_body136 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_networks_block_body138 = new BitSet(new long[]{0x0000000000000402L});
+    public static final BitSet FOLLOW_NETWORK_in_networks_block_body153 = new BitSet(new long[]{0x00000000000F1D30L});
     public static final BitSet FOLLOW_rich_newick_assignment_in_networks_block_body155 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_TREES_in_trees_block_body170 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_trees_block_body172 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_translation_in_trees_block_body174 = new BitSet(new long[]{0x0000000000050002L});
-    public static final BitSet FOLLOW_tree_assigment_in_trees_block_body177 = new BitSet(new long[]{0x0000000000050002L});
-    public static final BitSet FOLLOW_TREES_in_trees_block_body185 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_trees_block_body187 = new BitSet(new long[]{0x0000000000050002L});
-    public static final BitSet FOLLOW_tree_assigment_in_trees_block_body202 = new BitSet(new long[]{0x0000000000050002L});
-    public static final BitSet FOLLOW_PHYLONET_in_phylonet_block_body214 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_phylonet_block_body216 = new BitSet(new long[]{0x000000000027BD12L});
-    public static final BitSet FOLLOW_phylonet_command_in_phylonet_block_body218 = new BitSet(new long[]{0x000000000027BD12L});
-    public static final BitSet FOLLOW_phylonet_command_part_in_phylonet_command232 = new BitSet(new long[]{0x000000000027BD10L});
-    public static final BitSet FOLLOW_21_in_phylonet_command235 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TREES_in_trees_block_body170 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_trees_block_body172 = new BitSet(new long[]{0x0000000000010000L});
+    public static final BitSet FOLLOW_translation_in_trees_block_body174 = new BitSet(new long[]{0x00000000000A0002L});
+    public static final BitSet FOLLOW_tree_assigment_in_trees_block_body177 = new BitSet(new long[]{0x00000000000A0002L});
+    public static final BitSet FOLLOW_TREES_in_trees_block_body185 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_trees_block_body187 = new BitSet(new long[]{0x00000000000A0002L});
+    public static final BitSet FOLLOW_tree_assigment_in_trees_block_body202 = new BitSet(new long[]{0x00000000000A0002L});
+    public static final BitSet FOLLOW_PHYLONET_in_phylonet_block_body214 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_phylonet_block_body216 = new BitSet(new long[]{0x00000000004F3D12L});
+    public static final BitSet FOLLOW_phylonet_command_in_phylonet_block_body218 = new BitSet(new long[]{0x00000000004F3D12L});
+    public static final BitSet FOLLOW_phylonet_command_part_in_phylonet_command232 = new BitSet(new long[]{0x00000000004F3D10L});
+    public static final BitSet FOLLOW_22_in_phylonet_command235 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_identifier_in_phylonet_command_part247 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_QUOTE_in_phylonet_command_part256 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_tree_assigment269 = new BitSet(new long[]{0x0000000000079D30L});
+    public static final BitSet FOLLOW_set_in_tree_assigment269 = new BitSet(new long[]{0x00000000000F1D30L});
     public static final BitSet FOLLOW_rich_newick_assignment_in_tree_assigment277 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DEFAULT_INDICATOR_in_rich_newick_assignment291 = new BitSet(new long[]{0x0000000000079D10L});
-    public static final BitSet FOLLOW_identifier_in_rich_newick_assignment294 = new BitSet(new long[]{0x0000000000400000L});
-    public static final BitSet FOLLOW_22_in_rich_newick_assignment296 = new BitSet(new long[]{0x00000000007FFFF0L});
+    public static final BitSet FOLLOW_DEFAULT_INDICATOR_in_rich_newick_assignment291 = new BitSet(new long[]{0x00000000000F1D10L});
+    public static final BitSet FOLLOW_identifier_in_rich_newick_assignment294 = new BitSet(new long[]{0x0000000000800000L});
+    public static final BitSet FOLLOW_23_in_rich_newick_assignment296 = new BitSet(new long[]{0x0000000000FFFFF0L});
     public static final BitSet FOLLOW_rich_newick_string_in_rich_newick_assignment298 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRANSLATE_in_translation311 = new BitSet(new long[]{0x0000000000079D10L});
-    public static final BitSet FOLLOW_identifier_in_translation313 = new BitSet(new long[]{0x0000000000080000L});
-    public static final BitSet FOLLOW_WS_in_translation315 = new BitSet(new long[]{0x0000000000079D10L});
-    public static final BitSet FOLLOW_identifier_in_translation317 = new BitSet(new long[]{0x0000000000300000L});
-    public static final BitSet FOLLOW_20_in_translation320 = new BitSet(new long[]{0x0000000000079D10L});
-    public static final BitSet FOLLOW_identifier_in_translation322 = new BitSet(new long[]{0x0000000000080000L});
-    public static final BitSet FOLLOW_WS_in_translation324 = new BitSet(new long[]{0x0000000000079D10L});
-    public static final BitSet FOLLOW_identifier_in_translation326 = new BitSet(new long[]{0x0000000000300000L});
-    public static final BitSet FOLLOW_21_in_translation330 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_skip_body340 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_skip_body349 = new BitSet(new long[]{0x00000000007FFF72L});
-    public static final BitSet FOLLOW_set_in_rich_newick_string374 = new BitSet(new long[]{0x00000000007FFFF0L});
-    public static final BitSet FOLLOW_21_in_rich_newick_string384 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRANSLATE_in_translation311 = new BitSet(new long[]{0x00000000000F1D10L});
+    public static final BitSet FOLLOW_identifier_in_translation313 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_WS_in_translation315 = new BitSet(new long[]{0x00000000000F1D10L});
+    public static final BitSet FOLLOW_identifier_in_translation317 = new BitSet(new long[]{0x0000000000600000L});
+    public static final BitSet FOLLOW_21_in_translation320 = new BitSet(new long[]{0x00000000000F1D10L});
+    public static final BitSet FOLLOW_identifier_in_translation322 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_WS_in_translation324 = new BitSet(new long[]{0x00000000000F1D10L});
+    public static final BitSet FOLLOW_identifier_in_translation326 = new BitSet(new long[]{0x0000000000600000L});
+    public static final BitSet FOLLOW_22_in_translation330 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_skip_body340 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_skip_body349 = new BitSet(new long[]{0x0000000000FFFF72L});
+    public static final BitSet FOLLOW_set_in_rich_newick_string374 = new BitSet(new long[]{0x0000000000FFFFF0L});
+    public static final BitSet FOLLOW_22_in_rich_newick_string384 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_identifier398 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_END_in_end_semi443 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_21_in_end_semi445 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_END_in_end_semi443 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_end_semi445 = new BitSet(new long[]{0x0000000000000002L});
 
 }

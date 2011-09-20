@@ -12,6 +12,7 @@ import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
+import org.omg.Dynamic.Parameter;
 
 import java.io.*;
 import java.util.*;
@@ -30,7 +31,7 @@ public class Program {
     private static boolean _allowCommandExecution = true;
 
     // this function called if an error is detected. display error to user.
-    private static final  Proc3<String, Integer, Integer> _onErrorDetected = new Proc3<String, Integer, Integer>()
+    private static final  Proc3<String, Integer, Integer> _errorDetected = new Proc3<String, Integer, Integer>()
     {
         public void execute(String message, Integer line, Integer col) {
 
@@ -40,7 +41,7 @@ public class Program {
         }
     };
 
-    private static final Proc<String> _onResult = new Proc<String>()
+    private static final Proc<String> _displayResult = new Proc<String>()
     {
         public void execute(String s) {
 
@@ -50,7 +51,6 @@ public class Program {
 
     public static void main(String[] args) throws FileNotFoundException, IOException
     {
-        System.out.println();
 
         if(args.length != 1) // we only expect one parameter, the input nexus file
         {
@@ -78,7 +78,7 @@ public class Program {
         {
             for(CoordinateParseError error : e.Errors)
             {
-                _onErrorDetected.execute(error.getMessage(), error.getLineNumber(), error.getColumnNumber() );
+                _errorDetected.execute(error.getMessage(), error.getLineNumber(), error.getColumnNumber() );
             }
             return;
         }
@@ -90,10 +90,10 @@ public class Program {
         /*
          * Perform Context Sensitive Analysis
          */
-        Map<String,Network> sourceIdentToNetwork = makeNetworks(sac, _onErrorDetected); // make a Network representation of each defined Rich Newick string
+        Map<String,Network> sourceIdentToNetwork = makeNetworks(sac, _errorDetected); // make a Network representation of each defined Rich Newick string
                                                                                         // map is keyed by source code identifier of the string
 
-        ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, _onErrorDetected); // check the Networks for any context errors
+        ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, _errorDetected); // check the Networks for any context errors
 
         LinkedList<Command> commands = new LinkedList<Command>();
 
@@ -104,8 +104,8 @@ public class Program {
 
         for(Command command : commands)
         {
-            command.checkParams(_onErrorDetected);
-            command.checkContext(sourceIdentToNetwork, _onErrorDetected);
+            command.checkParams(_errorDetected);
+            command.checkContext(sourceIdentToNetwork, _errorDetected);
         }
 
         /*
@@ -116,7 +116,17 @@ public class Program {
         {
            for(Command command : commands)
            {
-               command.executeCommand(_onResult);
+               try
+               {
+                    showCommand(command.getDefiningSyntaxCommand());
+                    command.executeCommand(_displayResult);
+               }
+               catch(IOException e)
+               {
+                   SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
+                   _errorDetected.execute(String.format("Error executing command '%s' (%s).", motivatingSyntaxCommand.getName(), e.getMessage()),
+                                          motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
+               }
            }
         }
 
@@ -125,6 +135,18 @@ public class Program {
 
 
 
+    }
+
+    private static void showCommand(SyntaxCommand definingSyntaxCommand) {
+
+        StringBuffer accum = new StringBuffer("\n" + definingSyntaxCommand.getName());
+
+        for(edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.Parameter p : definingSyntaxCommand.getParameters())
+        {
+              accum.append(" " + p.getValue());
+        }
+
+        _displayResult.execute(accum.toString());
     }
 
 
@@ -184,7 +206,7 @@ public class Program {
 
     private static void showUsage() {
 
-        System.out.println("Usage: java -jar [phylonet.jar] [nexus file]");
+        System.out.println("\nUsage: java -jar [phylonet.jar] [nexus file]");
 
     }
 }

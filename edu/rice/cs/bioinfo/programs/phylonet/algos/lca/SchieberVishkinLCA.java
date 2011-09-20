@@ -542,7 +542,7 @@ public class SchieberVishkinLCA {
 		System.err.println("computed LCAs.");
 		System.err.println();
 	}
-	
+	    /*
 	public static void main(String[] args) {
 		
 		InputStream node_list_stream = System.in;
@@ -718,5 +718,5 @@ public class SchieberVishkinLCA {
 			// print the lca
 			output.println(lca.getName());
 		}
-	}
+	} */
 }

@@ -6,6 +6,8 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
+import java.awt.geom.Path2D;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,11 +20,9 @@ import java.util.Map;
  * Time: 5:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SymmetricDifference implements Command {
+public class SymmetricDifference extends CommandBase {
 
     private static final String _unnamedTaxonText = "[unnamed]";
-
-    private final SyntaxCommand _directive;
 
     private final ArrayList<Parameter> _params;
 
@@ -32,9 +32,11 @@ public class SymmetricDifference implements Command {
 
     private boolean _contextChecked = false;
 
+    private File _outFile;
+
     public SymmetricDifference(SyntaxCommand directive, ArrayList<Parameter> params)
     {
-        _directive = directive;
+        super(directive);
         _params = params;
     }
 
@@ -44,17 +46,19 @@ public class SymmetricDifference implements Command {
 
           if(2 > _params.size())
            {
+               SyntaxCommand directive = this.getDefiningSyntaxCommand();
                 errorDetected.execute(String.format("Expected at least 2 parameters for command %s but found %s.",
-                                                    _directive.getName(), _params.size()),
-                                                    _directive.getLine(), _directive.getColumn());
+                                                    directive.getName(), _params.size()),
+                                                    directive.getLine(), directive.getColumn());
                noError = false;
            }
 
            if(3 < _params.size())
            {
+                SyntaxCommand directive = this.getDefiningSyntaxCommand();
                 errorDetected.execute(String.format("Expected at most 3 parameters for command %s but found %s.",
-                                                    _directive.getName(), _params.size()),
-                                                    _directive.getLine(), _directive.getColumn());
+                                                    directive.getName(), _params.size()),
+                                                    directive.getLine(), directive.getColumn());
                noError = false;
            }
 
@@ -87,6 +91,33 @@ public class SymmetricDifference implements Command {
             noError = false;
             errorDetected.execute(String.format("Unknown identifier '%s'.", experimentalTreeParam.getValue()),
                                                 experimentalTreeParam.getLine(), experimentalTreeParam.getColumn());
+        }
+
+        if(_params.size() == 3)
+        {
+            Parameter outFileParam = _params.get(2);
+            _outFile = new File(outFileParam.getValue());
+
+            if(!_outFile.exists())
+            {
+                try
+                {
+                    _outFile.createNewFile();
+                    _outFile.delete();
+                }
+                catch(IOException e)
+                {
+                     noError = false;
+                    errorDetected.execute(String.format("Invalid file name: '%s'.", outFileParam.getValue()),
+                                                         outFileParam.getLine(), outFileParam.getColumn());
+                }
+                catch(SecurityException e)
+                {
+                     noError = false;
+                     errorDetected.execute(String.format("No access to file: '%s'.", outFileParam.getValue()),
+                                                         outFileParam.getLine(), outFileParam.getColumn());
+                }
+            }
         }
 
         HashSet<Object> nonRootDegree1Model = collectNonRootDegree1(_modelNetwork);
@@ -197,8 +228,7 @@ public class SymmetricDifference implements Command {
             }, null);
     }
 
-    public void executeCommand(Proc<String> onResult)
-    {
+    public void executeCommand(Proc<String> displayResult) throws IOException {
         if(!_contextChecked)
         {
             throw new IllegalStateException("checkContext must be called prior to execute.");
@@ -215,11 +245,31 @@ public class SymmetricDifference implements Command {
 
         sd.computeDifference(experamentalTree, modelTree);
 
-        onResult.execute(String.format("%s %s %s %s", sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2()));
 
+        String result =
+                String.format("False Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s\n",
+                        sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2());
 
+        if(_outFile == null)
+        {
+            displayResult.execute(result);
+        }
+        else
+        {
+            if(_outFile.exists())
+            {
+                _outFile.delete();
 
-
+            }
+            _outFile.createNewFile();
+            FileWriter fw = new FileWriter(_outFile);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(result);
+            bw.flush();
+            fw.flush();
+            bw.close();
+            fw.close();
+        }
     }
 
 

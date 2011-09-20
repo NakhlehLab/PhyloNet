@@ -54,31 +54,6 @@ public class BitVector implements Iterable<Boolean> {
 			_last_block_mask |= (0x0001 << i);
 		}
 	}
-
-	/**
-	 * Creates a bit vector from the string specified.  The string should contain the characters '0' and '1' only.  These are
-	 * interpretted as set and unset bits.  The string is read with the least significant bit on the right, most
-	 * significant bit on the left.
-	 * 
-	 * @param str is a string over the alphabet '0' and '1'.
-	 */
-	public BitVector(String str) {
-		this(str.length());
-		
-		int pos = str.length() - 1;
-		for(char c : str.toCharArray()) {
-			switch(c) {
-			case '0':
-				setValue(pos--,false);
-				break;
-			case '1':
-				setValue(pos--,true);
-				break;
-			default:
-				throw new RuntimeException("BitVector can be initialized by a string containing '0' and '1' only");
-			}
-		}
-	}
 	
 	/**
 	 * Creates a bit vector with the same length and value as the specified bit vector.

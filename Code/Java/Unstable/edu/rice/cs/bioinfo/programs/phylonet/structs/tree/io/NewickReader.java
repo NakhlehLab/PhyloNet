@@ -88,7 +88,7 @@ public class NewickReader {
 	 * construction of a tree, using the {@link STITree} implementation of the {@link MutableTree}
 	 * interface.  {@link readTree(Tree)} can be used to read the tree structure into
 	 * a different tree implementation. 
-	 */
+
 	public MutableTree readTree() throws IOException, ParseException {
 		
 		STITree<Object> tree = new STITree<Object>(isNextRooted());
@@ -96,7 +96,7 @@ public class NewickReader {
 		readTree(tree);
 		
 		return tree;
-	}
+	}  */
 	
 	public String readTreeName() throws IOException, ParseException {
 		
@@ -125,7 +125,7 @@ public class NewickReader {
 	 * @throws ParseException if the rootedness of this tree cannot be determined due to
 	 * a syntax error.  Once this exception is thrown, this object may not parse remaining
 	 * trees correctly.
-	 */
+
 	public boolean isNextRooted() throws IOException, ParseException {
 		
 		if(_next_tree_rooted == UNKNOWN) {
@@ -133,69 +133,8 @@ public class NewickReader {
 		}
 		
 		return (_next_tree_rooted == ROOTED);
-	}
-	
-	private boolean readRooted() throws IOException, ParseException {
-		
-		int token = _stok.nextToken();
-		boolean is_rooted = true;
-		
-		// if unspecified, the tree is rooted
-		if(token != LBRACE) {
-			_stok.pushBack();
-			is_rooted = true;
-		} else {
-			token = _stok.nextToken();
-			
-			if(token != AMPERSTAND) {
-				
-				// consume characters until we reach another brace
-				while(token != RBRACE && token != StreamTokenizer.TT_EOF) {
-					token = _stok.nextToken();
-				}
-				
-				throw new ParseException("& character expected");
-			}
-			
-			token = _stok.nextToken();
-			
-			if(token != StreamTokenizer.TT_WORD) {
-				
-				// consume characters until we reach another brace
-				while(token != RBRACE && token != StreamTokenizer.TT_EOF) {
-					token = _stok.nextToken();
-				}
-				
-				throw new ParseException("R or U character expected");
-			}
-			
-			if(_stok.sval.toUpperCase().equals("U")) {
-				is_rooted = false;
-			} else if(!_stok.sval.toUpperCase().equals("R")) {
-				// consume characters until we reach another brace
-				while(token != RBRACE && token != StreamTokenizer.TT_EOF) {
-					token = _stok.nextToken();
-				}
-				
-				throw new ParseException("R or U character expected");
-			}
-			
-			// read the right brace
-			token = _stok.nextToken();
-			
-			if(token != RBRACE) {
-				
-				// consume characters until we reach another brace
-				while(token != RBRACE && token != StreamTokenizer.TT_EOF) {
-					token = _stok.nextToken();
-				}
-				
-				throw new ParseException("] character expected");
-			}
-		}
-		
-		return is_rooted;
-	}
+	}   */
+
 
 	/**
 	 * This method reads a tree from the reader. The newick format is extended to include both bootstrap values
@@ -204,7 +143,7 @@ public class NewickReader {
 	 * @param tree
 	 * @throws IOException
 	 * @throws ParseException
-	 */
+
 	public void readTree(STITree<Double> tree) throws IOException, ParseException {
 		
 		// get the tree name
@@ -232,129 +171,15 @@ public class NewickReader {
 		}
 		
 		return;		
-	}
+	}      */
 	
-	/**
-	 * This method reads a node in the extended newick format (with both bootstraps and branch lengths).
-	 * 
-	 * @param node
-	 * @throws IOException
-	 * @throws ParseException
-	 */
-	private void readNode(STINode<Double> node) throws IOException, ParseException {
-		
-		// read the next token
-		int token = _stok.nextToken();
-		
-		// read left paren
-		if(token == LPAREN) {
-		
-			// read children
-			token = COMMA;
-			while(token == COMMA) {
-				STINode<Double> child = node.createChild();
-				
-				readNode(child);
-				
-				token = _stok.nextToken();
-			}
-			
-			if(token != RPAREN) {
-				throw new ParseException("')' expected");
-			}
-			
-			token = _stok.nextToken();
-		}
-		
-		// read name
-		if(token == StreamTokenizer.TT_WORD) {
-			
-			if(node.getTree().getNode(_stok.sval) != null) {
-				throw new ParseException("Duplicate node " + _stok.sval);
-			}
-			
-			node.setName(_stok.sval);
-			
-			token = _stok.nextToken();
-		}
-		
-		// read length and bootstrap values.
-		if(token == COLON) {
-			token = _stok.nextToken();
-			
-			if (token != COLON) {
-				// Either we have only branch lengths or both branch lengths and bootstraps
-				if(token != StreamTokenizer.TT_WORD) {
-					throw new ParseException("Branch length expected");
-				}
-			
-				double dist = 0;
-			
-				try {
-					dist = Double.parseDouble(_stok.sval);
-				} catch(NumberFormatException nfe) {
-					throw new ParseException("Number expected, found " + _stok.sval);
-				}
-			
-				node.setParentDistance(dist);
-				
-				// Check if we have the bootstrap value.
-				token = _stok.nextToken();
-				if (token == COLON) {	// yes
-					token = _stok.nextToken();
-					if (token != StreamTokenizer.TT_WORD) {
-						throw new ParseException("Bootstrap value expected");
-					}
-					
-					double bootstrap = 0;
-					
-					try {
-						bootstrap = Double.parseDouble(_stok.sval);
-					}
-					catch (NumberFormatException nfe) {
-						throw new ParseException("Number expected, found " + _stok.sval);
-					}
-					
-					node.setData(bootstrap);
-				}
-				else {	// no
-					node.setData(new Double(0));
-					
-					_stok.pushBack();
-				}
-			}
-			else {
-				// Only bootstrap is available.
-				token = _stok.nextToken();
-				if (token != StreamTokenizer.TT_WORD) {
-					throw new ParseException("Bootstrap value expected");
-				}
-				
-				double bootstrap = 0;
-				
-				try {
-					bootstrap = Double.parseDouble(_stok.sval);
-				}
-				catch (NumberFormatException nfe) {
-					throw new ParseException("Number expected, found " + _stok.sval);
-				}
-				
-				node.setData(bootstrap);				
-			}
-		} 
-		else {
-			_stok.pushBack();
-		}
-		
-		// done!
-		return;
-	}
+
 	
 	/**
 	 * This method reads a tree from the reader.  If the tree cannot be read, an exception will be thrown.
 	 * <code>tree</code> should be a newly created tree, with no other structure in it.  The structure of
 	 * the tree that is read will be pushed directly into the tree data structure underneath the root.
-	 */
+
 	public void readTree(MutableTree tree) throws IOException, ParseException {
 		
 		// get the tree name
@@ -382,70 +207,8 @@ public class NewickReader {
 		}
 		
 		return;
-	}
-	
-	private void readNode(TMutableNode node) throws IOException, ParseException {
-	
-		// read the next token
-		int token = _stok.nextToken();
-		
-		// read left paren
-		if(token == LPAREN) {
-		
-			// read children
-			token = COMMA;
-			while(token == COMMA) {
-				TMutableNode child = node.createChild();
-				
-				readNode(child);
-				
-				token = _stok.nextToken();
-			}
-			
-			if(token != RPAREN) {
-				throw new ParseException("')' expected");
-			}
-			
-			token = _stok.nextToken();
-		}
-		
-		// read name
-		if(token == StreamTokenizer.TT_WORD) {
-			
-			if(node.getTree().getNode(_stok.sval) != null) {
-				throw new ParseException("Duplicate node " + _stok.sval);
-			}
-			
-			node.setName(_stok.sval);
-			
-			token = _stok.nextToken();
-		}
-		
-		// read length and bootstrap values.
-		if(token == COLON) {
-			token = _stok.nextToken();
-			
-			if(token != StreamTokenizer.TT_WORD) {
-				throw new ParseException("Number expected");
-			}
-			
-			double dist = 0;
-			
-			try {
-				dist = Double.parseDouble(_stok.sval);
-			} catch(NumberFormatException nfe) {
-				throw new ParseException("Number expected, found " + _stok.sval);
-			}
-			
-			node.setParentDistance(dist);
-		} else {
-			_stok.pushBack();
-		}
-		
-		// done!
-		return;
-	}
-	
+	}  */
+
 	/**
 	 * Indicates whether the end of the reader has been reached.
 	 */

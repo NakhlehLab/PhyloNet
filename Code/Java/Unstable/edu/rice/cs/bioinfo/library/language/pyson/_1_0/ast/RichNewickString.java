@@ -11,8 +11,14 @@ public class RichNewickString implements PySONNode{
 
     public final String String;
 
-    public RichNewickString(String string)
+    public final int LineNumber;
+
+    public final int ColumnNumber;
+
+    public RichNewickString(String string, int lineNumber, int columnNumber)
     {
+        LineNumber = lineNumber;
+        ColumnNumber = columnNumber;
         String = string;
     }
 }

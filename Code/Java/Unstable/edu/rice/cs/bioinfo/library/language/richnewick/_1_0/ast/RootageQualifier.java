@@ -9,5 +9,9 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast;
  */
 public interface RootageQualifier
 {
+    public final String ROOTED = "[&R]";
+
+    public final String UNROOTED = "[&U]";
+
     public <R,T,E extends Exception> R execute(RootageQualifierAlgo<R,T,E> algo, T input) throws E;
 }

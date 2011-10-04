@@ -51,10 +51,21 @@ class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, Networ
 
     public ASTNetworkInspector(Network network)
     {
-        gatherInEdges(network.PrincipleInfo, network.PrincipleDescendants);
-        _networkNodes.add(network.PrincipleInfo);
-        _networkNodeToInEdges.put(network.PrincipleInfo, new LinkedList<Edge>());
-        _networkNodeToPrimarySyntaxNode.put(network.PrincipleInfo, network.PrincipleInfo);
+         network.execute(new NetworkAlgo<Object, Object, RuntimeException>() {
+            public Object forNetworkEmpty(NetworkEmpty network, Object input) throws RuntimeException {
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Object forNetworkNonEmpty(NetworkNonEmpty network, Object input) throws RuntimeException {
+                gatherInEdges(network.PrincipleInfo, network.PrincipleDescendants);
+                _networkNodes.add(network.PrincipleInfo);
+                _networkNodeToInEdges.put(network.PrincipleInfo, new LinkedList<Edge>());
+                _networkNodeToPrimarySyntaxNode.put(network.PrincipleInfo, network.PrincipleInfo);
+                return null;
+            }
+        }, null);
+
+
     }
 
     private void gatherInEdges(final NetworkInfo parent, DescendantList descendants)

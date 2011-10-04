@@ -15,6 +15,7 @@ public class RichNewickAssignment implements PySONNode{
 
     public final RichNewickString RHSRichNewickString;
 
+
     public RichNewickAssignment(boolean isDefault, Identifier lhsIdentifier, RichNewickString rhsRichNewickString)
     {
         IsDefault = isDefault;

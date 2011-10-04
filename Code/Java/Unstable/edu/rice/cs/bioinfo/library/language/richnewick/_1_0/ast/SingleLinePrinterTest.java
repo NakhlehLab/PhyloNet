@@ -39,7 +39,7 @@ public class SingleLinePrinterTest {
         networkDl.add(new Subtree(DescendantList.EMPTY_DESCENDANT_LIST, c));
 
 
-        Network network = new Network(RootageQualifierEmpty.Singleton, new DescendantList(networkDl), r);
+        NetworkNonEmpty network = new NetworkNonEmpty(RootageQualifierEmpty.Singleton, new DescendantList(networkDl), r);
 
         Assert.assertEquals("((A1,A2)A,B,C)R;", SingleLinePrinter.toString(network));
 

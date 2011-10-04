@@ -11,7 +11,7 @@ import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.*;
  */
 public class SingleLinePrinter
 {
-    public static String toString(Network network)
+    public static String toString(NetworkNonEmpty network)
     {
         StringBuffer accum = new StringBuffer();
 

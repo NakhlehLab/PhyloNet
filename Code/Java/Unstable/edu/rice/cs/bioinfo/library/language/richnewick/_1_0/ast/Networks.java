@@ -11,9 +11,9 @@ import java.nio.ReadOnlyBufferException;
  */
 public class Networks implements AbstractSyntaxNode {
 
-    public final Iterable<Network> Networks;
+    public final Iterable<NetworkNonEmpty> Networks;
 
-    public Networks(Iterable<Network> networks)
+    public Networks(Iterable<NetworkNonEmpty> networks)
     {
         Networks = networks;
     }

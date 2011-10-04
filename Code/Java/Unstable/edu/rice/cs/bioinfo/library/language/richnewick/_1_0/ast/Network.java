@@ -9,18 +9,8 @@ import java.nio.ReadOnlyBufferException;
  * Time: 4:10 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Network implements AbstractSyntaxNode {
+public interface Network extends AbstractSyntaxNode {
 
-    public final DescendantList PrincipleDescendants;
+    public <R,T,E extends Exception> R execute(NetworkAlgo<R,T,E> algo, T input) throws E;
 
-    public final NetworkInfo PrincipleInfo;
-
-    public final RootageQualifier RootageQualifier;
-
-    public Network(RootageQualifier rootageQualifier, DescendantList principleDescendants, NetworkInfo principleInfo)
-    {
-        RootageQualifier = rootageQualifier;
-        PrincipleDescendants = principleDescendants;
-        PrincipleInfo = principleInfo;
-    }
 }

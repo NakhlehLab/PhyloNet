@@ -1,4 +1,4 @@
-package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands;
+package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
 /**
  * Created by IntelliJ IDEA.

@@ -16,15 +16,17 @@ public interface ParseStack {
 
     public void pushTreesBlockBody(boolean containsTranslation);
 
-   // public void pushNetworksBlockBody(boolean containsTranslation);
+    public void pushNetworksBlockBody(boolean containsTranslation);
 
     public void pushRichNewickAssignment(boolean isDefault);
 
-    public void pushRichNewickString(String richNewickString);
+    public void pushRichNewickString(String richNewickString, int line, int col);
 
     public void pushBlocks();
 
     public void pushTreeAssignment(Token treeType);
+
+    public void pushNetworkAssignment();
 
     public PySONNode pop();
 
@@ -35,6 +37,10 @@ public interface ParseStack {
     public void pushPhylonetCommandPartQuote(Token text);
 
     public void pushPhylonetCommandPartIdent();
+
+    public void pushPhylonetCommandPartSetList(Token text);
+
+    public void pushPhylonetCommandPartIdSet(Token text);
 
     public void pushPhylonetCommand();
 

@@ -17,11 +17,23 @@ import java.util.Map;
  */
 public class DAGFactory
 {
-    public static <T> void makeDAG(Network network, GraphBuilder<T> builder)
+    public static <T> void makeDAG(Network network, final GraphBuilder<T> builder)
     {
-        Map<BigInteger,T> hybridIndexToNode = new HashMap<BigInteger, T>();
-        T parent = createNode(network.PrincipleInfo, builder, hybridIndexToNode);
-        processDescendantList(parent, network.PrincipleDescendants, builder, hybridIndexToNode);
+        network.execute(new NetworkAlgo<Object, Object, RuntimeException>() {
+            public Object forNetworkEmpty(NetworkEmpty network, Object input) throws RuntimeException {
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Object forNetworkNonEmpty(NetworkNonEmpty network, Object input) throws RuntimeException {
+
+                 Map<BigInteger,T> hybridIndexToNode = new HashMap<BigInteger, T>();
+                 T parent = createNode(network.PrincipleInfo, builder, hybridIndexToNode);
+                 processDescendantList(parent, network.PrincipleDescendants, builder, hybridIndexToNode);
+                return null;
+            }
+        }, null);
+
+
     }
 
 

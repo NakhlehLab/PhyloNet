@@ -138,7 +138,7 @@ class ParseStackAction implements ParseStack
                 descendants = DescendantList.EMPTY_DESCENDANT_LIST;
             }
 
-            _parseStack.push(new Network(rq, descendants,networkInfo));
+            _parseStack.push(new NetworkNonEmpty(rq, descendants,networkInfo));
         }
         catch(RuntimeException e)
         {
@@ -150,10 +150,10 @@ class ParseStackAction implements ParseStack
     {
         try
         {
-            LinkedList<Network> networks = new LinkedList<Network>();
+            LinkedList<NetworkNonEmpty> networks = new LinkedList<NetworkNonEmpty>();
             while(!_parseStack.empty())
             {
-                networks.addFirst((Network) _parseStack.pop());
+                networks.addFirst((NetworkNonEmpty) _parseStack.pop());
             }
 
             _parseStack.push(new Networks(networks));

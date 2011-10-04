@@ -7,7 +7,7 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
  * Time: 6:12 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TreeAssignment implements PySONNode
+public class TreeAssignment implements PySONNode, RNewickAssigmentContainer
 {
     public final boolean IsRooted;
 
@@ -17,5 +17,9 @@ public class TreeAssignment implements PySONNode
     {
         IsRooted = isRooted;
         Assignment = assigment;
+    }
+
+    public RichNewickAssignment getAssignment() {
+        return Assignment;
     }
 }

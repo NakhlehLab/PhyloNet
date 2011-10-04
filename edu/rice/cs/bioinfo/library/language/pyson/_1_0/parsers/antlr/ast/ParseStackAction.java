@@ -55,6 +55,21 @@ class ParseStackAction implements ParseStack {
 
     }
 
+    public void pushNetworkAssignment() {
+        try {
+            RichNewickAssignment assignment = (RichNewickAssignment) _parseStack.pop();
+            _parseStack.push(new NetworkAssignment(assignment));
+
+        } catch (
+                RuntimeException e
+                )
+
+        {
+            _exception = e;
+        }
+
+    }
+
     public void pushTreesBlockBody(boolean containsTranslation) {
 
         try {
@@ -67,6 +82,25 @@ class ParseStackAction implements ParseStack {
                 }
 
                 _parseStack.push(new TreesBlockBodyWithoutTranslation(assignments));
+            }
+
+        } catch (RuntimeException e) {
+            _exception = e;
+        }
+    }
+
+     public void pushNetworksBlockBody(boolean containsTranslation) {
+
+        try {
+            if (containsTranslation) {
+
+            } else {
+                LinkedList<NetworkAssignment> assignments = new LinkedList<NetworkAssignment>();
+                while (!_parseStack.empty() && _parseStack.peek() instanceof NetworkAssignment) {
+                    assignments.addLast((NetworkAssignment) _parseStack.pop());
+                }
+
+                _parseStack.push(new NetworksBlockBody(assignments));
             }
 
         } catch (RuntimeException e) {
@@ -88,10 +122,10 @@ class ParseStackAction implements ParseStack {
 
     }
 
-    public void pushRichNewickString(String richNewickString) {
+    public void pushRichNewickString(String richNewickString, int line, int col) {
 
         try {
-            _parseStack.push(new RichNewickString(richNewickString));
+            _parseStack.push(new RichNewickString(richNewickString, line, col));
         } catch (RuntimeException e) {
             _exception = e;
         }
@@ -128,13 +162,23 @@ class ParseStackAction implements ParseStack {
 
     public void pushPhylonetCommandPartQuote(Token part)
     {
-        _parseStack.push(new PhyloNetCommandPart(part.getText(), part.getLine(), part.getCharPositionInLine()));
+        _parseStack.push(new PhyloNetCommandPartQuote(part.getText(), part.getLine(), part.getCharPositionInLine()));
     }
 
     public void pushPhylonetCommandPartIdent()
     {
         Identifier ident = (Identifier)_parseStack.pop();
-        _parseStack.push(new PhyloNetCommandPart(ident.Content, ident.Line, ident.Col));
+        _parseStack.push(new PhyloNetCommandPartIdentifier(ident.Content, ident.Line, ident.Col));
+    }
+
+    public void pushPhylonetCommandPartSetList(Token text)
+    {
+          _parseStack.push(new PhyloNetCommandPartSetList(text.getText(), text.getLine(), text.getCharPositionInLine()));
+    }
+
+    public void pushPhylonetCommandPartIdSet(Token text)
+    {
+        _parseStack.push(new PhyloNetCommandPartIdentSet(text.getText(), text.getLine(), text.getCharPositionInLine()));
     }
 
     public void pushPhylonetCommand()

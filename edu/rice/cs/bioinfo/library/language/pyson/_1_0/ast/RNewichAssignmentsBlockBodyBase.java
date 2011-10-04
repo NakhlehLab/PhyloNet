@@ -7,16 +7,16 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
  * Time: 5:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class TreesBlockBodyBase implements TreesBlockBody
+public abstract class RNewichAssignmentsBlockBodyBase<T extends RNewickAssigmentContainer> implements RNewichAssignmentsBlockBody<T>
 {
-    public final Iterable<TreeAssignment> Assignments;
+    public final Iterable<T> Assignments;
 
-    public Iterable<TreeAssignment> getAssignments()
+    public Iterable<T> getAssignments()
     {
        return Assignments;
     }
 
-    TreesBlockBodyBase(Iterable<TreeAssignment> assigments)
+    RNewichAssignmentsBlockBodyBase(Iterable<T> assigments)
     {
         Assignments =  assigments;
     }

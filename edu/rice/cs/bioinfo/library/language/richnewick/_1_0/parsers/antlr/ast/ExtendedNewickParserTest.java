@@ -20,7 +20,7 @@ public class ExtendedNewickParserTest {
     @Test
     public void testNetwork() throws Exception {
 
-        Network network;
+        NetworkNonEmpty network;
 
 
 
@@ -31,9 +31,9 @@ public class ExtendedNewickParserTest {
 
         // test the string "R;G;"
         Networks networks = RichNewickParser.parse(testNetworkHelp("R;G;"));
-        Iterator<Network> networkElements = networks.Networks.iterator();
-        AssertNodeLabelOnly("R", 1, 0, networkElements.next().PrincipleInfo);
-        AssertNodeLabelOnly("G", 1, 2, networkElements.next().PrincipleInfo);
+        Iterator<NetworkNonEmpty> networkElements = networks.Networks.iterator();
+        AssertNodeLabelOnly("R", 1, 0, (networkElements.next()).PrincipleInfo);
+        AssertNodeLabelOnly("G", 1, 2, (networkElements.next()).PrincipleInfo);
         Assert.assertFalse(networkElements.hasNext());
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
@@ -298,11 +298,11 @@ public class ExtendedNewickParserTest {
 
     }
 
-    private Network SingleNetwork(Networks networks)
+    private NetworkNonEmpty SingleNetwork(Networks networks)
     {
-       Iterator<Network> i = networks.Networks.iterator();
+       Iterator<NetworkNonEmpty> i = networks.Networks.iterator();
 
-       Network first = i.next();
+       NetworkNonEmpty first = (NetworkNonEmpty)i.next();
 
        Assert.assertFalse(i.hasNext());
 

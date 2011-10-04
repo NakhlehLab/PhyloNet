@@ -7,7 +7,7 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
  * Time: 5:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TreesBlockBodyWithoutTranslation extends TreesBlockBodyBase {
+public class TreesBlockBodyWithoutTranslation extends RNewichAssignmentsBlockBodyBase<TreeAssignment> implements TreesBlockBody {
 
     public TreesBlockBodyWithoutTranslation(Iterable<TreeAssignment> assignments)
     {

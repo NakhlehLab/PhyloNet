@@ -1,7 +1,9 @@
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
+import org.w3c.dom.traversal.NodeIterator;
 
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -78,7 +80,31 @@ public class BlockContentsFactoryFromAST {
                     for(PhyloNetCommand command : phyloBlock.Commands)
                     {
                         PhyloNetCommandPart commandName = command.Parts.iterator().next();
-                        final String nameFinal = commandName.Content;
+                        final String nameFinal = commandName.execute(new PhyloNetCommandPartAlgo<String, Object, RuntimeException>() {
+                            public String forIdentifier(PhyloNetCommandPartIdentifier ident, Object input) throws RuntimeException {
+                               return ident.IdentContents;
+                            }
+
+                            public String forIdenList(PhyloNetCommandPartIdentList ident, Object input) throws RuntimeException {
+                                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                            }
+
+                            public String forQuote(PhyloNetCommandPartQuote quote, Object input) throws RuntimeException {
+                                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                            }
+
+                            public String forSetList(PhyloNetCommandPartSetList setList, Object input) throws RuntimeException {
+                                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                            }
+
+                            public String forIdentSet(PhyloNetCommandPartIdentSet identSet, Object input) throws RuntimeException {
+                                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                            }
+
+                            public String forTaxaMap(PhyloNetCommandPartTaxaMap taxaMap, Object input) throws RuntimeException {
+                                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                            }
+                        }, null);
                         final int lineFinal = commandName.Line;
                         final int colFinal = commandName.Col;
 
@@ -138,17 +164,19 @@ public class BlockContentsFactoryFromAST {
         {
             if(first)
             {
+                first = false;
                 continue;
             }
             else
             {
+                /*
                 String partString = part.Content;
                 if((partString.startsWith("\"") && partString.endsWith("\"")) ||
                         (partString.startsWith("\'") && partString.endsWith("\'")))
                 {
                     partString = partString.substring(1, partString.length() - 1);
                 }
-                final String partStringFinal = partString;
+                final String partStringFinal = partString;     */
 
 
 
@@ -158,55 +186,37 @@ public class BlockContentsFactoryFromAST {
                 Parameter p = part.execute(new PhyloNetCommandPartAlgo<Parameter, Object, RuntimeException>() {
                     public Parameter forIdentifier(PhyloNetCommandPartIdentifier ident, Object input) throws RuntimeException {
 
-                        return new Parameter() {
-                            public int getLine() {
-                                return lineFinal;  //To change body of implemented methods use File | Settings | File Templates.
-                            }
-
-                            public int getColumn() {
-                                return colFinal;  //To change body of implemented methods use File | Settings | File Templates.
-                            }
-
-                            public String getValue() {
-                                return partStringFinal;  //To change body of implemented methods use File | Settings | File Templates.
-                            }
-
-                            public <R, T, E extends Exception> R execute(ParameterAlgo<R, T, E> algo, T input) throws E {
-                                return algo.forIdentifier(this, input);
-                            }
-
-                        };
+                        return new ParameterIdent(lineFinal,  colFinal, ident.IdentContents);
 
                     }
 
                     public Parameter forQuote(PhyloNetCommandPartQuote quote, Object input) throws RuntimeException {
 
-                        return new Parameter() {
-                            public int getLine() {
-                                return lineFinal;  //To change body of implemented methods use File | Settings | File Templates.
-                            }
-
-                            public int getColumn() {
-                                return colFinal;  //To change body of implemented methods use File | Settings | File Templates.
-                            }
-
-                            public String getValue() {
-                                return partStringFinal;  //To change body of implemented methods use File | Settings | File Templates.
-                            }
-
-                            public <R, T, E extends Exception> R execute(ParameterAlgo<R, T, E> algo, T input) throws E {
-                                return algo.forQuote(this, input);
-                            }
-
-                        };
+                        return new ParameterQuote(lineFinal,  colFinal,quote.TotalText);
                     }
 
                     public Parameter forSetList(PhyloNetCommandPartSetList setList, Object input) throws RuntimeException {
-                        return new ParameterTaxonSetList(lineFinal, colFinal, partStringFinal);
+                        return new ParameterTaxonSetList(lineFinal, colFinal, setList.PartContents);
                     }
 
-                    public Parameter forIdentSet(PhyloNetCommandPartIdentSet setList, Object input) throws RuntimeException {
-                        return new ParameterIdentSet(lineFinal, colFinal, partStringFinal);
+                    public Parameter forIdentSet(PhyloNetCommandPartIdentSet set, Object input) throws RuntimeException {
+                        return new ParameterIdentSet(lineFinal, colFinal, set.PartContents);
+                    }
+
+                    public Parameter forTaxaMap(PhyloNetCommandPartTaxaMap taxaMap, Object input) throws RuntimeException {
+                        return new ParameterTaxonSetList(lineFinal, colFinal, taxaMap.PartContents);
+                    }
+
+                      public Parameter forIdenList(PhyloNetCommandPartIdentList ident, Object input) throws RuntimeException {
+
+                          LinkedList<String> elements = new LinkedList<String>();
+
+                          for(Identifier identElement : ident.List.Elements)
+                          {
+                                elements.add(identElement.Content);
+                          }
+
+                          return new ParameterIdentList(lineFinal, colFinal, elements);
                     }
                 }, null);
 

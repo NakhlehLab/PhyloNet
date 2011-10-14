@@ -9,12 +9,9 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
  */
 public abstract class PhyloNetCommandPart extends PySONNodeLineAndCol {
 
-    public final String Content;
-
-    public PhyloNetCommandPart(String part, int line, int col)
+    public PhyloNetCommandPart(int line, int col)
     {
         super(line, col);
-        Content = part;
     }
 
     public abstract <R,T,E extends Exception> R execute(PhyloNetCommandPartAlgo<R,T,E> algo, T input) throws E;

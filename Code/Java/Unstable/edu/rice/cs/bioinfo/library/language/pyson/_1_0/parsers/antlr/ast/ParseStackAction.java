@@ -171,6 +171,24 @@ class ParseStackAction implements ParseStack {
         _parseStack.push(new PhyloNetCommandPartIdentifier(ident.Content, ident.Line, ident.Col));
     }
 
+    public void pushPhylonetCommandPartIdentList() {
+
+        IdentList ident = (IdentList)_parseStack.pop();
+        _parseStack.push(new PhyloNetCommandPartIdentList(ident, ident.Line, ident.Col));
+
+    }
+
+    public void pushIdentList(int numElements, Token startToken)
+    {
+        LinkedList<Identifier> elements = new LinkedList<Identifier>();
+        for(int i=0; i<numElements; i++)
+        {
+          elements.add((Identifier)_parseStack.pop());
+        }
+
+        _parseStack.push(new IdentList(startToken.getLine(), startToken.getCharPositionInLine(), elements));
+    }
+
     public void pushPhylonetCommandPartSetList(Token text)
     {
           _parseStack.push(new PhyloNetCommandPartSetList(text.getText(), text.getLine(), text.getCharPositionInLine()));
@@ -179,6 +197,11 @@ class ParseStackAction implements ParseStack {
     public void pushPhylonetCommandPartIdSet(Token text)
     {
         _parseStack.push(new PhyloNetCommandPartIdentSet(text.getText(), text.getLine(), text.getCharPositionInLine()));
+    }
+
+    public void pushPhylonetCommandPartTaxaMap(Token text)
+    {
+        _parseStack.push(new PhyloNetCommandPartTaxaMap(text.getText(), text.getLine(), text.getCharPositionInLine()));
     }
 
     public void pushPhylonetCommand()

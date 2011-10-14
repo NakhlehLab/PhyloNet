@@ -1,11 +1,15 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.NetNodes;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,41 +20,143 @@ import java.util.HashSet;
  */
 public class NetworkTransformer {
 
-    static Tree toTree(Network network)
+    static <T> Network fromClassicNetwork(edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network<T> classicNetwork)
     {
-        if(network.PrincipleInfo == null)
+        if(classicNetwork.isEmpty())
         {
-            STITree<Object> empytTree = new STITree<Object>();
-            return empytTree;
+            return NetworkEmpty.Singleton;
         }
+        else
+        {
+            NetNode<T> root = classicNetwork.getRoot();
+            ArrayList<NetNode<T>> nodeToHybridIndex = new ArrayList<NetNode<T>>();
+            NetworkInfo rootInfo = makeInfo(root, null, nodeToHybridIndex);
+            Iterable<Subtree> subtrees = makeSubtrees(root, nodeToHybridIndex);
 
-        final STITree<Object> tbr =  network.RootageQualifier.execute(new RootageQualifierAlgo<STITree<Object>, Object, RuntimeException>() {
-            public STITree<Object> forEmptyQualifier(RootageQualifierEmpty rootageQualifierEmpty, Object o) throws RuntimeException {
-               return new STITree<Object>(true);
-            }
+            return new NetworkNonEmpty(new RootageQualifierNonEmpty(RootageQualifier.ROOTED),
+                                       new DescendantList(subtrees),
+                                       rootInfo);
+        }
+    }
 
-            public STITree<Object> forNonEmptyQualifier(RootageQualifierNonEmpty rootageQualifierNonEmpty, Object o) throws RuntimeException {
+    private static <T> Iterable<Subtree> makeSubtrees(NetNode<T> root, ArrayList<NetNode<T>> nodeToHybridIndex) {
 
-                return new STITree<Object>(rootageQualifierNonEmpty.isRooted());
-            }
-        }, null);
+        LinkedList<Subtree> tbr = new LinkedList<Subtree>();
 
-        STINode<Object> primaryNode = tbr.getRoot();
-        setNodeName(primaryNode, network.PrincipleInfo);
+        for(NetNode<T> child : root.getChildren())
+        {
+            NetworkInfo childInfo = makeInfo(child, root, nodeToHybridIndex);
+            DescendantList dl = new DescendantList(makeSubtrees(child, nodeToHybridIndex));
 
-
-
-
-        HashSet<NetworkInfo> seenNodes = new HashSet<NetworkInfo>();
-        seenNodes.add(network.PrincipleInfo);
-
-        buildTree(primaryNode, network.PrincipleDescendants, seenNodes);
+            tbr.add(new Subtree(dl, childInfo));
+        }
 
         return tbr;
     }
 
-    private static void buildTree(STINode<Object> parent, DescendantList children,
-                                  HashSet<NetworkInfo> seenNodes)
+    private static <T> NetworkInfo makeInfo(NetNode<T> node, NetNode<T> parent, ArrayList<NetNode<T>> nodeToHybridIndex)
+    {
+        boolean isHybrid = node.getIndeg() > 1;
+        int hybridIndex = -1;
+
+        HybridNodeQualifier hybridQuualifier = null;
+        if(isHybrid)
+        {
+            if(nodeToHybridIndex.contains(node))
+            {
+                hybridIndex = nodeToHybridIndex.indexOf(node) + 1;
+            }
+            else
+            {
+                hybridIndex = nodeToHybridIndex.size() + 1;
+                nodeToHybridIndex.add(node);
+            }
+
+            hybridQuualifier = new HybridNodeQualifierNonEmpty(new Text(hybridIndex + "", -1, -1, false));
+        }
+        else
+        {
+            hybridQuualifier = HybridNodeQualifierEmpty.Singleton;
+        }
+
+        BranchLength bl = BranchLengthEmpty.Singleton;
+
+        if(parent != null)
+        {
+            double parentDistance = node.getParentDistance(parent);
+
+            if(parentDistance > 0)
+            {
+                bl = new BranchLengthNonEmpty(new Text(parentDistance + "", -1, -1, false));
+            }
+
+        }
+
+        return new NetworkInfo(new NodeLabelNonEmpty(new Text(node.getName(), -1, -1, false)),
+                               hybridQuualifier, bl , SupportEmpty.Singleton, ProbabilityEmpty.Singleton );
+    }
+
+    static STITree<Object> toTree(Network network)
+    {
+        return toTree(network, new Func1<NetworkInfo, Object>() {
+            public Object execute(NetworkInfo networkInfo) {
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
+    }
+
+    static <T> STITree<T> toTree(Network network, final Func1<NetworkInfo, T> getData)
+    {
+        return network.execute(new NetworkAlgo<STITree<T>, Object, RuntimeException>() {
+
+            public STITree<T> forNetworkEmpty(NetworkEmpty networkEmpty, Object o) throws RuntimeException {
+
+                return new STITree<T>();
+
+            }
+
+            public STITree<T> forNetworkNonEmpty(NetworkNonEmpty network, Object o) throws RuntimeException {
+
+                if(network.PrincipleInfo == null)
+                {
+                    STITree<T> empytTree = new STITree<T>();
+                    return empytTree;
+                }
+
+                final STITree<T> tbr =  network.RootageQualifier.execute(new RootageQualifierAlgo<STITree<T>, Object, RuntimeException>() {
+                    public STITree<T> forEmptyQualifier(RootageQualifierEmpty rootageQualifierEmpty, Object o) throws RuntimeException {
+                        return new STITree<T>(true);
+                    }
+
+                    public STITree<T> forNonEmptyQualifier(RootageQualifierNonEmpty rootageQualifierNonEmpty, Object o) throws RuntimeException {
+
+                        return new STITree<T>(rootageQualifierNonEmpty.isRooted());
+                    }
+                }, null);
+
+                STINode<T> primaryNode = tbr.getRoot();
+                setNodeInfo(primaryNode, network.PrincipleInfo);
+                primaryNode.setData(getData.execute(network.PrincipleInfo));
+
+                HashSet<NetworkInfo> seenNodes = new HashSet<NetworkInfo>();
+                seenNodes.add(network.PrincipleInfo);
+
+                buildTree(primaryNode, network.PrincipleDescendants, seenNodes, getData);
+
+                return tbr;
+            }
+        }, null);
+
+
+
+
+
+
+
+    }
+
+    private static <T> void buildTree(STINode<T> parent, DescendantList children,
+                                  HashSet<NetworkInfo> seenNodes, Func1<NetworkInfo, T> getData)
     {
 
         for(Subtree child : children.Subtrees)
@@ -64,22 +170,39 @@ public class NetworkTransformer {
                 throw new IllegalArgumentException("Passed network is cyclic.");
             }
 
-            STINode<Object> treeChild = parent.createChild();
-            setNodeName(treeChild, child.NetworkInfo);
+            STINode<T> treeChild = parent.createChild();
+            setNodeInfo(treeChild, child.NetworkInfo);
+            treeChild.setData(getData.execute(child.NetworkInfo));
 
-            buildTree(treeChild, child.Descendants, seenNodes);
+            buildTree(treeChild, child.Descendants, seenNodes, getData);
         }
     }
 
-    private static void setNodeName(STINode<Object> treeNode, NetworkInfo networkNode)
+    private static <T> void setNodeInfo(final STINode<T> treeNode, NetworkInfo networkNode)
     {
-           String nodeName = networkNode.NodeLabel.execute(new NodeLabelAlgo<String, Object, RuntimeException>() {
+        String nodeName = networkNode.NodeLabel.execute(new NodeLabelAlgo<String, Object, RuntimeException>() {
             public String forNodeLabelNonEmpty(NodeLabelNonEmpty nodeLabelNonEmpty, Object o) throws RuntimeException {
                 return nodeLabelNonEmpty.Label.Content;
             }
 
             public String forNodeLabelEmpty(NodeLabelEmpty nodeLabelEmpty, Object o) throws RuntimeException {
                 return STITree.NO_NAME;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }, null);
+
+        networkNode.BranchLength.execute(new BranchLengthAlgo<Object, Object, RuntimeException>() {
+            public Object forBranchLengthEmpty(BranchLengthEmpty branchLengthEmpty, Object o) throws RuntimeException {
+
+                treeNode.setParentDistance(STINode.NO_DISTANCE);
+                return null;
+
+            }
+
+            public Object forBranchLengthNonEmpty(BranchLengthNonEmpty branchLengthNonEmpty, Object o) throws RuntimeException {
+
+                treeNode.setParentDistance(Double.parseDouble(branchLengthNonEmpty.Length.Content));
+                return null;
+
             }
         }, null);
 

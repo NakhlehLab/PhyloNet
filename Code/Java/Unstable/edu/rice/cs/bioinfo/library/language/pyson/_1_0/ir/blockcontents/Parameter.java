@@ -13,7 +13,5 @@ public interface Parameter {
 
     public int getColumn();
 
-    public String getValue();
-
     public <R,T,E extends Exception> R execute(ParameterAlgo<R,T,E> algo, T input) throws E;
 }

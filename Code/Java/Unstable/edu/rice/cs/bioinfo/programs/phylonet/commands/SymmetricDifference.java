@@ -1,16 +1,13 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
-import java.awt.geom.Path2D;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -20,141 +17,93 @@ import java.util.Map;
  * Time: 5:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SymmetricDifference extends CommandBase {
+public class SymmetricDifference extends CommandBaseFileOut {
 
     private static final String _unnamedTaxonText = "[unnamed]";
 
-    private final ArrayList<Parameter> _params;
+    private NetworkNonEmpty _modelNetwork;
 
-    private Network _modelNetwork;
-
-    private Network _experimentalNetwork;
+    private NetworkNonEmpty _experimentalNetwork;
 
     private boolean _contextChecked = false;
 
-    private File _outFile;
-
     public SymmetricDifference(SyntaxCommand directive, ArrayList<Parameter> params)
     {
-        super(directive);
-        _params = params;
+        super(directive, params);
     }
 
-    public boolean checkParams(Proc3<String,Integer,Integer> errorDetected) {
+    public boolean checkParams(Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String,Integer,Integer> errorDetected) {
 
-          boolean noError = true;
+         boolean noError = this.assertParamsCount(2, 3, errorDetected);
 
-          if(2 > _params.size())
-           {
-               SyntaxCommand directive = this.getDefiningSyntaxCommand();
-                errorDetected.execute(String.format("Expected at least 2 parameters for command %s but found %s.",
-                                                    directive.getName(), _params.size()),
-                                                    directive.getLine(), directive.getColumn());
-               noError = false;
-           }
-
-           if(3 < _params.size())
-           {
-                SyntaxCommand directive = this.getDefiningSyntaxCommand();
-                errorDetected.execute(String.format("Expected at most 3 parameters for command %s but found %s.",
-                                                    directive.getName(), _params.size()),
-                                                    directive.getLine(), directive.getColumn());
-               noError = false;
-           }
-
-        return noError;
+        if(noError)
+        {
+            return checkContext(sourceIdentToNetwork, errorDetected);
+        }
+        else
+        {
+            return noError;
+        }
     }
 
-    public boolean checkContext(Map<String,Network> sourceIdentToNetwork, Proc3<String,Integer,Integer> errorDetected)
+    private boolean checkContext(Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String,Integer,Integer> errorDetected)
     {
-         boolean noError = true;
+        boolean noError = true;
 
-        Parameter modelTreeParam = _params.get(0);
-        if(sourceIdentToNetwork.containsKey(modelTreeParam.getValue()))
+        Parameter modelTreeParam = params.get(0);
+        noError = assertNetworkExists(sourceIdentToNetwork, modelTreeParam, errorDetected);
+
+        String modelTreeParamValue = null;
+        if(noError)
         {
-            _modelNetwork  = sourceIdentToNetwork.get(modelTreeParam.getValue());
-        }
-        else
-        {
-            noError = false;
-            errorDetected.execute(String.format("Unknown identifier '%s'.", modelTreeParam.getValue()),
-                                                modelTreeParam.getLine(), modelTreeParam.getColumn());
+            modelTreeParamValue = modelTreeParam.execute(GetSimpleParamValue.Singleton, null);
+            _modelNetwork  = sourceIdentToNetwork.get(modelTreeParamValue);
         }
 
-        Parameter experimentalTreeParam = _params.get(1);
-        if(sourceIdentToNetwork.containsKey(experimentalTreeParam.getValue()))
+        Parameter experimentalTreeParam = params.get(1);
+        noError = assertNetworkExists(sourceIdentToNetwork, experimentalTreeParam, errorDetected);
+
+        String experimentalTreeParamValue = null;
+        if(noError)
         {
-            _experimentalNetwork = sourceIdentToNetwork.get(experimentalTreeParam.getValue());
-        }
-        else
-        {
-            noError = false;
-            errorDetected.execute(String.format("Unknown identifier '%s'.", experimentalTreeParam.getValue()),
-                                                experimentalTreeParam.getLine(), experimentalTreeParam.getColumn());
+            experimentalTreeParamValue = experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
+            _experimentalNetwork = sourceIdentToNetwork.get(experimentalTreeParamValue);
         }
 
-        if(_params.size() == 3)
+        if(params.size() == 3)
         {
-            Parameter outFileParam = _params.get(2);
-            _outFile = new File(outFileParam.getValue());
-
-            if(!_outFile.exists())
-            {
-                try
-                {
-                    _outFile.createNewFile();
-                    _outFile.delete();
-                }
-                catch(IOException e)
-                {
-                     noError = false;
-                    errorDetected.execute(String.format("Invalid file name: '%s'.", outFileParam.getValue()),
-                                                         outFileParam.getLine(), outFileParam.getColumn());
-                }
-                catch(SecurityException e)
-                {
-                     noError = false;
-                     errorDetected.execute(String.format("No access to file: '%s'.", outFileParam.getValue()),
-                                                         outFileParam.getLine(), outFileParam.getColumn());
-                }
-            }
+            Parameter outFileParam = params.get(2);
+            noError = this.checkOutFileContext(outFileParam, errorDetected);
         }
 
-        HashSet<Object> nonRootDegree1Model = collectNonRootDegree1(_modelNetwork);
-        HashSet<Object> nonRootDegree1Exp = collectNonRootDegree1(_experimentalNetwork);
+        HashSet<Object> nonRootDegree1Model = _modelNetwork != null ? collectNonRootDegree1(_modelNetwork) : null;
+        HashSet<Object> nonRootDegree1Exp   = _experimentalNetwork != null ? collectNonRootDegree1(_experimentalNetwork) : null;
 
-        NodeLabelAlgo<String,Object,RuntimeException> taxonNameExtractor = new NodeLabelAlgo<String, Object, RuntimeException>() {
-                    public String forNodeLabelNonEmpty(NodeLabelNonEmpty nodeLabelNonEmpty, Object o) throws RuntimeException {
-                        return nodeLabelNonEmpty.Label.Content;
-                    }
+       if(nonRootDegree1Model != null && nonRootDegree1Exp != null)
+       {
+           for(Object taxon : nonRootDegree1Model)
+           {
+               if(!nonRootDegree1Exp.remove(taxon))
+               {
+                   errorDetected.execute(String.format("Taxon '%s' in network '%s' does not appear in the network '%s'.",
+                           taxon, modelTreeParamValue, experimentalTreeParamValue), modelTreeParam.getLine(), modelTreeParam.getColumn());
+                   noError = false;
+               }
+           }
 
-                    public String forNodeLabelEmpty(NodeLabelEmpty nodeLabelEmpty, Object o) throws RuntimeException {
-                        return _unnamedTaxonText;
-                    }
-                };
-
-        for(Object taxon : nonRootDegree1Model)
-        {
-            if(!nonRootDegree1Exp.remove(taxon))
-            {
-                errorDetected.execute(String.format("Taxon '%s' in network '%s' does not appear in the network '%s'. ",
-                                                    taxon, modelTreeParam.getValue(), experimentalTreeParam.getValue()), modelTreeParam.getLine(), modelTreeParam.getColumn());
-                noError = false;
-            }
-        }
-
-        for(Object taxon : nonRootDegree1Exp)
-        {
-            errorDetected.execute(String.format("Taxon '%s' in network '%s' does not appear in the network '%s'. ",
-                                                taxon, experimentalTreeParam.getValue(), modelTreeParam.getValue()), experimentalTreeParam.getLine(), experimentalTreeParam.getColumn());
-            noError = false;
-        }
+           for(Object taxon : nonRootDegree1Exp)
+           {
+               errorDetected.execute(String.format("Taxon '%s' in network '%s' does not appear in the network '%s'.",
+                       taxon, experimentalTreeParamValue, modelTreeParamValue), experimentalTreeParam.getLine(), experimentalTreeParam.getColumn());
+               noError = false;
+           }
+       }
 
         _contextChecked = true;
         return noError;
     }
 
-    private HashSet<Object> collectNonRootDegree1(final Network network) {
+    private HashSet<Object> collectNonRootDegree1(final NetworkNonEmpty network) {
 
         final HashSet<Object> tbr = new HashSet<Object>();
 
@@ -228,7 +177,7 @@ public class SymmetricDifference extends CommandBase {
             }, null);
     }
 
-    public void executeCommand(Proc<String> displayResult) throws IOException {
+    protected String produceResult() {
         if(!_contextChecked)
         {
             throw new IllegalStateException("checkContext must be called prior to execute.");
@@ -250,30 +199,8 @@ public class SymmetricDifference extends CommandBase {
                 String.format("False Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s\n",
                         sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2());
 
-        if(_outFile == null)
-        {
-            displayResult.execute(result);
-        }
-        else
-        {
-            if(_outFile.exists())
-            {
-                _outFile.delete();
-
-            }
-            _outFile.createNewFile();
-            FileWriter fw = new FileWriter(_outFile);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(result);
-            bw.flush();
-            fw.flush();
-            bw.close();
-            fw.close();
-        }
+        return result;
     }
 
 
-    public <R, T, E extends Exception> R execute(CommandAlgo<R, T, E> algo, T input) throws E {
-        return algo.forSymmetricDifference(this, input);
-    }
 }

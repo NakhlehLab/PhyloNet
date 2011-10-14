@@ -1,5 +1,7 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast;
 
+import edu.rice.cs.bioinfo.library.programming.Func;
+import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.*;
 
 /**
@@ -13,17 +15,26 @@ public class SingleLinePrinter
 {
     public static String toString(NetworkNonEmpty network)
     {
+        return toString(network, new Func1<String, String>() {
+            public String execute(String s) {
+                return s;
+            }
+        });
+    }
+
+    public static String toString(NetworkNonEmpty network, Func1<String,String> supportTransformer)
+    {
         StringBuffer accum = new StringBuffer();
 
 
-        appendDescendantsList(network.PrincipleDescendants, accum);
-        appendInfo(network.PrincipleInfo, accum);
+        appendDescendantsList(network.PrincipleDescendants, accum, supportTransformer);
+        appendInfo(network.PrincipleInfo, accum, supportTransformer);
         accum.append(';');
 
         return accum.toString();
     }
 
-    private static void appendDescendantsList(DescendantList descendants, StringBuffer accum)
+    private static void appendDescendantsList(DescendantList descendants, StringBuffer accum, Func1<String,String> supportTransformer)
     {
         Object[] subtrees = IterableHelp.toArray(descendants.Subtrees);
 
@@ -34,8 +45,8 @@ public class SingleLinePrinter
         for(int i = 0; i<subtrees.length; i++)
         {
             Subtree subtree = (Subtree) subtrees[i];
-            appendDescendantsList(subtree.Descendants, accum);
-            appendInfo(subtree.NetworkInfo, accum);
+            appendDescendantsList(subtree.Descendants, accum, supportTransformer);
+            appendInfo(subtree.NetworkInfo, accum, supportTransformer);
 
             if(i != subtrees.length -1)
                 accum.append(",");
@@ -46,7 +57,7 @@ public class SingleLinePrinter
 
     }
 
-    private static void appendInfo(NetworkInfo info, final StringBuffer accum)
+    private static void appendInfo(NetworkInfo info, final StringBuffer accum, final Func1<String,String> supportTransformer)
     {
         String labelPart = info.NodeLabel.execute(new NodeLabelAlgo<String, Object, RuntimeException>() {
 
@@ -97,7 +108,7 @@ public class SingleLinePrinter
         final String supportPart = info.Support.execute(new SupportAlgo<String, Object, RuntimeException>() {
 
             public String forSupportNonEmpty(SupportNonEmpty support, Object input) {
-               return (branchLengthPart == "" ? "::" : ":") + support.SupportValue.Content;
+               return (branchLengthPart == "" ? "::" : ":") + supportTransformer.execute(support.SupportValue.Content);
             }
 
             public String forSupportEmpty(SupportEmpty support, Object input) {

@@ -3,18 +3,15 @@ package edu.rice.cs.bioinfo.programs.phylonet;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Blocks;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.SACFactoryFromAST;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.StringsAndCommands;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickParser;
-import edu.rice.cs.bioinfo.library.programming.Proc;
-import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
-import org.omg.Dynamic.Parameter;
-
 import java.io.*;
+import java.security.KeyStore;
 import java.util.*;
 
 /**
@@ -25,29 +22,6 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class Program {
-
-    // tracks whether the program should execute commands from script during execution phase.
-    // flip to false on syntax or context errors.
-    private static boolean _allowCommandExecution = true;
-
-    // this function called if an error is detected. display error to user.
-    private static final  Proc3<String, Integer, Integer> _errorDetected = new Proc3<String, Integer, Integer>()
-    {
-        public void execute(String message, Integer line, Integer col) {
-
-            int oneBasedColumn = col + 1;
-            System.err.println(String.format("Error at [%s,%s]: %s", line, oneBasedColumn, message));
-            _allowCommandExecution = false;
-        }
-    };
-
-    private static final Proc<String> _displayResult = new Proc<String>()
-    {
-        public void execute(String s) {
-
-            System.out.println(s);
-        }
-    };
 
     public static void main(String[] args) throws FileNotFoundException, IOException
     {
@@ -60,11 +34,38 @@ public class Program {
 
         File nexusFile = new File(args[0]);
 
-        if(!nexusFile.exists()) // assert the file the user gave us actually exists
+
+        if(!nexusFile.isFile()) // assert the file the user gave us actually exists
         {
             showFileDoesNotExist(nexusFile);
-            return;
         }
+        else
+        {
+            run(new FileInputStream(nexusFile), System.err, System.out);
+        }
+    }
+
+    static void run(InputStream nexusStream, final PrintStream errorStream,
+                                             final PrintStream displaySteam) throws IOException
+    {
+             Proc<String> display = new Proc<String>()
+             {
+                public void execute(String s) {
+
+                     displaySteam.println(s);
+                }
+             };
+
+             final Container<Boolean> allowCommandExecution = new Container<Boolean>(true);
+             Proc3<String, Integer, Integer> errorDetected = new Proc3<String, Integer, Integer>()
+             {
+                public void execute(String message, Integer line, Integer col) {
+
+                    int oneBasedColumn = col + 1;
+                    errorStream.println(String.format("\nError at [%s,%s]: %s", line, oneBasedColumn, message));
+                    allowCommandExecution.setContents(false);
+                }
+             };
 
         /*
          * Parse input nexus file to AST. Report and terminate on syntax errors.
@@ -72,96 +73,141 @@ public class Program {
         Blocks blocks;
         try
         {
-            blocks = parseToBlocks(new FileInputStream(nexusFile)); // Exception thrown on syntax errors.
+            blocks = parseToBlocks(nexusStream); // Exception thrown on syntax errors.
         }
         catch(CoordinateParseErrorsException e)  // syntax errors detected
         {
             for(CoordinateParseError error : e.Errors)
             {
-                _errorDetected.execute(error.getMessage(), error.getLineNumber(), error.getColumnNumber() );
+                errorDetected.execute(error.getMessage(), error.getLineNumber(), error.getColumnNumber() );
             }
             return;
         }
 
         // no syntax errors at this point
 
-        StringsAndCommands sac = SACFactoryFromAST.make(blocks); // covert AST to our IR
+        BlockContents blockContents = BlockContentsFactoryFromAST.make(blocks); // covert AST to our IR
 
         /*
          * Perform Context Sensitive Analysis
          */
-        Map<String,Network> sourceIdentToNetwork = makeNetworks(sac, _errorDetected); // make a Network representation of each defined Rich Newick string
+        Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, errorDetected); // make a Network representation of each defined Rich Newick string
                                                                                         // map is keyed by source code identifier of the string
 
-        ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, _errorDetected); // check the Networks for any context errors
+        ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, blockContents, errorDetected); // check the Networks for any context errors
 
         LinkedList<Command> commands = new LinkedList<Command>();
 
-        for(SyntaxCommand sCommand : sac.getCommands())
+        for(SyntaxCommand sCommand : blockContents.getCommands())
         {
-            commands.add(CommandFactory.make(sCommand));
+            try
+            {
+                commands.add(CommandFactory.make(sCommand));
+            }
+            catch(IllegalArgumentException e)
+            {
+                errorDetected.execute(e.getMessage(), sCommand.getLine(), sCommand.getColumn());
+            }
         }
 
         for(Command command : commands)
         {
-            command.checkParams(_errorDetected);
-            command.checkContext(sourceIdentToNetwork, _errorDetected);
+            command.checkParams(sourceIdentToNetwork, errorDetected);
         }
 
         /*
          * Execute commands if no errors detected
          */
 
-        if(_allowCommandExecution)
+        if(allowCommandExecution.getContents())
         {
            for(Command command : commands)
            {
                try
                {
-                    showCommand(command.getDefiningSyntaxCommand());
-                    command.executeCommand(_displayResult);
+                    showCommand(command.getDefiningSyntaxCommand(), display);
+                    command.executeCommand(display);
                }
                catch(IOException e)
                {
                    SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
-                   _errorDetected.execute(String.format("Error executing command '%s' (%s).", motivatingSyntaxCommand.getName(), e.getMessage()),
+                   errorDetected.execute(String.format("Error executing command '%s' (%s).", motivatingSyntaxCommand.getName(), e.getMessage()),
                                           motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
                }
            }
         }
-
-
-        return;
-
-
-
     }
 
-    private static void showCommand(SyntaxCommand definingSyntaxCommand) {
+    private static void showCommand(SyntaxCommand definingSyntaxCommand, Proc<String> displayResult) {
 
         StringBuffer accum = new StringBuffer("\n" + definingSyntaxCommand.getName());
 
-        for(edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.Parameter p : definingSyntaxCommand.getParameters())
+
+
+        for(edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter p : definingSyntaxCommand.getParameters())
         {
-              accum.append(" " + p.getValue());
+              String paramValue = p.execute(new ParameterAlgo<String, Object, RuntimeException>() {
+
+                  public String forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
+                      return parameterIdent.Content;
+                  }
+
+                  public String forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
+                     StringBuilder b = new StringBuilder();
+                     b.append("(");
+
+                    Iterator<String> elements = parameterIdentList.Elements.iterator();
+
+                    if(elements.hasNext())
+                    {
+                        b.append(elements.next());
+                    }
+
+                    while(elements.hasNext())
+                    {
+                        b.append(elements.next());
+                    }
+
+                     b.append(")");
+
+                      return b.toString();
+                  }
+
+                  public String forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
+                      return "\"" + parameterQuote.UnquotedText + "\"";
+                  }
+
+                  public String forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
+                      return parameterTaxonSetList.OriginalSource;
+                  }
+
+                  public String forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
+                      return parameterIdentSet.OriginalSource;
+                  }
+
+                  public String forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
+                      return parameterTaxaMap.OriginalSource;
+                  }
+              }, null);
+              accum.append(" " + paramValue);
         }
 
-        _displayResult.execute(accum.toString());
+        displayResult.execute(accum.toString());
     }
 
 
-    private static Map<String, Network> makeNetworks(StringsAndCommands sac, Proc3<String, Integer, Integer> errorDetected) throws IOException {
+    private static Map<String, NetworkNonEmpty> makeNetworks(BlockContents blockContents, Proc3<String, Integer, Integer> errorDetected) throws IOException {
 
-        HashMap<String,Network> tbr = new HashMap<String, Network>();
-        for(String richNewickSourceIdent : sac.getRickNewickStringIdentifiers())
+        HashMap<String,NetworkNonEmpty> tbr = new HashMap<String, NetworkNonEmpty>();
+        for(String richNewickSourceIdent : blockContents.getRickNewickAssignmentIdentifiers())
         {
-            String richNewickString = sac.getRickNewickString(richNewickSourceIdent);
+            RichNewickAssignment assignment = blockContents.getRichNewickAssigment(richNewickSourceIdent);
 
 
             try
             {
-                Iterator<Network> oneNetwork = RichNewickParser.parse(
-                        new ByteArrayInputStream(richNewickString.getBytes())).Networks.iterator();
+                Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
+                        new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();
 
                 if(!oneNetwork.hasNext())
                 {
@@ -170,7 +216,7 @@ public class Program {
                             -1, -1);
                 }
 
-                Network network = oneNetwork.next();
+                NetworkNonEmpty network = oneNetwork.next();
 
                 if(oneNetwork.hasNext())
                 {
@@ -194,14 +240,14 @@ public class Program {
         return tbr;
     }
 
-    private static Blocks parseToBlocks(FileInputStream fileInputStream) throws IOException, CoordinateParseErrorsException {
+    private static Blocks parseToBlocks(InputStream nexusStream) throws IOException, CoordinateParseErrorsException {
 
-        return edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast.Parser.parse(fileInputStream);
+        return edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast.Parser.parse(nexusStream);
 
     }
 
     private static void showFileDoesNotExist(File inFile) {
-        //To change body of created methods use File | Settings | File Templates.
+        System.err.println(String.format("\nNo such file '%s'", inFile.getName())); 
     }
 
     private static void showUsage() {

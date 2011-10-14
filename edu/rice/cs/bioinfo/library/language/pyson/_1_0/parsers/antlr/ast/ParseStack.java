@@ -14,6 +14,8 @@ public interface ParseStack {
 
     public void pushIdentifier(Token ident);
 
+    public void pushIdentList(int numElementsInList, Token startToken);
+
     public void pushTreesBlockBody(boolean containsTranslation);
 
     public void pushNetworksBlockBody(boolean containsTranslation);
@@ -38,9 +40,13 @@ public interface ParseStack {
 
     public void pushPhylonetCommandPartIdent();
 
+    public void pushPhylonetCommandPartIdentList();
+
     public void pushPhylonetCommandPartSetList(Token text);
 
     public void pushPhylonetCommandPartIdSet(Token text);
+
+    public void pushPhylonetCommandPartTaxaMap(Token text);
 
     public void pushPhylonetCommand();
 

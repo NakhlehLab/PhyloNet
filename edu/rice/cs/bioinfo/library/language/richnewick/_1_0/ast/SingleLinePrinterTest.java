@@ -43,5 +43,23 @@ public class SingleLinePrinterTest {
 
         Assert.assertEquals("((A1,A2)A,B,C)R;", SingleLinePrinter.toString(network));
 
+         NetworkInfo z = new NetworkInfo(new NodeLabelNonEmpty(new Text("Z", 1, 0, false)), new HybridNodeQualifierNonEmpty(new Text("1", -1, -1, false)),
+                BranchLengthEmpty.Singleton, SupportEmpty.Singleton, ProbabilityEmpty.Singleton);
+
+        ArrayList<Subtree> a1Children = new ArrayList<Subtree>();
+        a1Children.add(new Subtree(DescendantList.EMPTY_DESCENDANT_LIST, z));
+
+        ArrayList<Subtree> a2Children = new ArrayList<Subtree>();
+        a2Children.add(new Subtree(DescendantList.EMPTY_DESCENDANT_LIST, z));
+
+        aChildren = new ArrayList<Subtree>();
+        aChildren.add(new Subtree(new DescendantList(a1Children), a1));
+        aChildren.add(new Subtree(new DescendantList(a2Children), a2));
+
+        network = new NetworkNonEmpty(RootageQualifierEmpty.Singleton, new DescendantList(aChildren), a);
+
+         Assert.assertEquals("((Z#1)A1,(Z#1)A2)A;", SingleLinePrinter.toString(network));
+
+
     }
 }

@@ -1,8 +1,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.BlockContents;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.RichNewickAssignment;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.ASTContextAnalyser;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.*;
@@ -19,19 +21,37 @@ import java.util.*;
  */
 class ContextSensitiveAnalyser {
 
-    public static void analyseNetworks(Map<String,Network> sourceIdentToNetwork, Proc3<String,Integer,Integer> errorDetected)
+    public static void analyseNetworks(Map<String,NetworkNonEmpty> sourceIdentToNetwork, BlockContents blockContents, final Proc3<String,Integer,Integer> errorDetected)
     {
-
-
        for(String rNewickStringIdent : sourceIdentToNetwork.keySet())
        {
-           Network network = sourceIdentToNetwork.get(rNewickStringIdent);
+           final NetworkNonEmpty network = sourceIdentToNetwork.get(rNewickStringIdent);
 
+           for(CSAError error : ASTContextAnalyser.analyse(network))
+           {
+               errorDetected.execute(error.Message, -1, -1);
+           }
 
-               for(CSAError error : ASTContextAnalyser.analyse(network))
-               {
-                    errorDetected.execute(error.Message, -1, -1);
-               }
+           final RichNewickAssignment assigment = blockContents.getRichNewickAssigment(rNewickStringIdent);
+
+           if(assigment.isDefinedByNetworksBlock())
+           {
+               network.RootageQualifier.execute(new RootageQualifierAlgo<Object, Object, RuntimeException>() {
+                   public Object forEmptyQualifier(RootageQualifierEmpty rootageQualifierEmpty, Object o) throws RuntimeException {
+                       return null;  //To change body of implemented methods use File | Settings | File Templates.
+                   }
+
+                   public Object forNonEmptyQualifier(RootageQualifierNonEmpty rootageQualifierNonEmpty, Object o) throws RuntimeException {
+
+                       if(!rootageQualifierNonEmpty.isRooted())
+                       {
+                           errorDetected.execute("Networks may not be unrooted.", assigment.getRichNewickStringLine(), assigment.getRichNewickStringColumn());
+                       }
+                       return null;
+                   }
+               }, null);
+           }
+
 
        }
     }

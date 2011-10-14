@@ -1,7 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 
 import java.util.ArrayList;
 
@@ -24,9 +24,21 @@ public class CommandFactory {
             params.add(p);
         }
 
-        if(lowerCommandName.equals("symmetricdifference"))
+        if(lowerCommandName.equals("symmetricdifference") || lowerCommandName.equals("rf"))
         {
             return new SymmetricDifference(directive, params);
+        }
+        else if(lowerCommandName.equals("lca"))
+        {
+            return new LCA(directive, params);
+        }
+        else if(lowerCommandName.equals("mast"))
+        {
+            return new MAST(directive, params);
+        }
+        else if(lowerCommandName.equals("riatahgt"))
+        {
+            return new RIATAHGT(directive, params);
         }
         else
         {

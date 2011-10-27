@@ -204,7 +204,7 @@ public class BlockContentsFactoryFromAST {
                     }
 
                     public Parameter forTaxaMap(PhyloNetCommandPartTaxaMap taxaMap, Object input) throws RuntimeException {
-                        return new ParameterTaxonSetList(lineFinal, colFinal, taxaMap.PartContents);
+                        return new ParameterTaxaMap(lineFinal, colFinal, taxaMap.Map);
                     }
 
                       public Parameter forIdenList(PhyloNetCommandPartIdentList ident, Object input) throws RuntimeException {

@@ -21,10 +21,10 @@ public class ParserTest {
     {
         Blocks blocks;
 
-        blocks = Parser.parse(testBlocksHelp("#NEXUS"));
+        blocks = Parser.parse(new ByteArrayInputStream("#NEXUS".getBytes()));
         Assert.assertFalse(blocks.Contents.iterator().hasNext());
 
-        blocks = Parser.parse(testBlocksHelp("#NEXUS\n" +
+        blocks = Parser.parse(new ByteArrayInputStream(("#NEXUS\n" +
             "\n" +
             "BEGIN TREES;\n" +
             "\n" +
@@ -39,7 +39,7 @@ public class ParserTest {
             "\tSymmetricDifference network1 tree2 \"C:\\output\\symDiffResult1.txt\";\n" +
             "\tSymmetricDifference network2 tree3 \"C:\\output\\symDiffResult2.txt\";\n" +
             "\n" +
-            "END;"));
+            "END;").getBytes()));
 
 
     }

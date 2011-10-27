@@ -2,7 +2,9 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
 import org.antlr.runtime.Token;
+import sun.plugin.javascript.navig4.Link;
 
+import javax.lang.model.element.NestingKind;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -199,9 +201,36 @@ class ParseStackAction implements ParseStack {
         _parseStack.push(new PhyloNetCommandPartIdentSet(text.getText(), text.getLine(), text.getCharPositionInLine()));
     }
 
-    public void pushPhylonetCommandPartTaxaMap(Token text)
+    public void pushPhylonetCommandPartTaxaMap()
     {
-        _parseStack.push(new PhyloNetCommandPartTaxaMap(text.getText(), text.getLine(), text.getCharPositionInLine()));
+        TaxaMap map = (TaxaMap)_parseStack.pop();
+        _parseStack.push(new PhyloNetCommandPartTaxaMap(map));
+    }
+
+    public void pushTaxaMap(int numKeys, Token startToken)
+    {
+        LinkedList<TaxaMapEntry> entries = new LinkedList<TaxaMapEntry>();
+
+        for(int i = 0; i<numKeys; i++)
+        {
+            entries.addFirst((TaxaMapEntry) _parseStack.pop());
+        }
+
+        _parseStack.push(new TaxaMap(startToken.getLine(), startToken.getCharPositionInLine(), entries));
+    }
+
+    public void pushTaxaMapEntry(int numValues)
+    {
+        LinkedList<Identifier> values = new LinkedList<Identifier>();
+
+        for(int i = 0; i<numValues; i++)
+        {
+            values.addFirst((Identifier)_parseStack.pop());
+        }
+
+        Identifier key = (Identifier)_parseStack.pop();
+
+        _parseStack.push(new TaxaMapEntry(key, values));
     }
 
     public void pushPhylonetCommand()

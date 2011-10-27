@@ -6,10 +6,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.NetNodes;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import org.apache.commons.io.monitor.FileAlterationListener;
+import sun.text.normalizer.IntTrie;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -208,4 +208,214 @@ public class NetworkTransformer {
 
         treeNode.setName(nodeName);
     }
+
+    public static String toPhylonetNewick(NetworkNonEmpty network)
+    {
+        if(network.execute(ContainsHybridNode.Singleton, null))
+        {
+            throw new IllegalArgumentException("Passed network is not a tree.");
+        }
+
+        SingleLinePrinter printer = new SingleLinePrinter();
+        printer.setExcludeProbability(true);
+        printer.setSupportTransformer(new TransformSupportToBase100());
+        return printer.toString(network);
+
+    }
+
+    public static String toENewick(NetworkNonEmpty network)
+    {
+        if(!network.execute(ContainsHybridNode.Singleton, null))
+        {
+            return toPhylonetNewick(network);
+        }
+
+        Map<String, NetworkNonEmpty> hybridIndexToSubNetwork = new HashMap<String, NetworkNonEmpty>();
+        buildSubNetworks(hybridIndexToSubNetwork, network.PrincipleInfo, network.PrincipleDescendants);
+        Map<String, String> hybridIndexToHybridNodeLabel = makeHybridIndexToHybridNodeLabelMapping(network);
+
+        NetworkNonEmpty relabeledNetwork = makeRelabeledNetwork(network, hybridIndexToHybridNodeLabel);
+
+        SingleLinePrinter printer = new SingleLinePrinter();
+        printer.setSupportTransformer(new TransformSupportToBase100());
+
+        StringBuilder b = new StringBuilder();
+        b.append("N = " + printer.toString(relabeledNetwork));
+
+        for(String hybridNodeIndex : hybridIndexToSubNetwork.keySet())
+        {
+            NetworkNonEmpty subNetwork =  hybridIndexToSubNetwork.get(hybridNodeIndex);
+            String rootLabel =  hybridIndexToHybridNodeLabel.get(hybridNodeIndex);
+            NetworkNonEmpty relabeledSubNetwork = makeRelabeledNetwork(subNetwork, hybridIndexToHybridNodeLabel);
+            String relabeledString = printer.toString(relabeledSubNetwork);
+
+            // at this point relabeledString will be a newick style string that looks something like:
+            //        (A,B)R;
+            // but in eNewick for the repeated trees of a network we need the form:
+            //        R = (A,B);
+            String relabeledStringWithoutApendedRoot = relabeledString.substring(0, relabeledString.length()-2) + ";";
+            b.append("\n" + rootLabel + " = " + relabeledStringWithoutApendedRoot);
+        }
+
+        return b.toString();
+    }
+
+    private static NetworkNonEmpty makeRelabeledNetwork(NetworkNonEmpty network, Map<String, String> hybridIndexToHybridNodeLabel) {
+
+        return new NetworkNonEmpty(network.RootageQualifier,
+                makeRelabeledDL(network.PrincipleDescendants, hybridIndexToHybridNodeLabel),
+                makeRelabeledNode(network.PrincipleInfo, hybridIndexToHybridNodeLabel));
+
+    }
+
+    private static DescendantList makeRelabeledDL(DescendantList descendents, Map<String, String> hybridIndexToHybridNodeLabel)
+    {
+        LinkedList<Subtree> trees = new LinkedList<Subtree>();
+
+        for(Subtree t : descendents.Subtrees)
+        {
+            Boolean isHybridNode = t.NetworkInfo.HybridNodeQualifier.execute(new IsHybridNode(), null);
+
+            NetworkInfo newInfo = makeRelabeledNode(t.NetworkInfo, hybridIndexToHybridNodeLabel);
+            DescendantList newDl = isHybridNode ? DescendantList.EMPTY_DESCENDANT_LIST : makeRelabeledDL(t.Descendants, hybridIndexToHybridNodeLabel);
+            trees.add(new Subtree(newDl,newInfo));
+        }
+
+        return new DescendantList(trees);
+    }
+
+    private static NetworkInfo makeRelabeledNode(final NetworkInfo node, final Map<String, String> hybridIndexToHybridNodeLabel) {
+
+       return node.HybridNodeQualifier.execute(new HybridNodeQualifierAlgo<NetworkInfo, Object, RuntimeException>() {
+
+           public NetworkInfo forHybridNodeQualifierEmpty(HybridNodeQualifierEmpty hybridNodeQualifierEmpty, Object o) throws RuntimeException {
+               return node;
+           }
+
+           public NetworkInfo forHybridNodeQualifierNonEmpty(HybridNodeQualifierNonEmpty hybridNodeQualifierNonEmpty, Object o) throws RuntimeException {
+
+               NodeLabel label = new NodeLabelNonEmpty(new Text(hybridIndexToHybridNodeLabel.get(hybridNodeQualifierNonEmpty.HybridNodeIndex.Content), -1, -1, false));
+               return new NetworkInfo(label, HybridNodeQualifierEmpty.Singleton, node.BranchLength, node.Support, node.Probability);
+
+           }
+
+           public NetworkInfo forHybridNodeQualifierWithType(HybridNodeQualifierWithType hybridNodeQualifierWithType, Object o) throws RuntimeException {
+
+               return forHybridNodeQualifierNonEmpty(hybridNodeQualifierWithType, o);
+           }
+
+       }, null);
+    }
+
+    private static Map<String, String> makeHybridIndexToHybridNodeLabelMapping(NetworkNonEmpty network)
+    {
+        HashMap<String,String> hybridIndexToHybridNodeLabel = new HashMap<String, String>();
+
+         HashSet<String> labelSet = new HashSet<String>();
+
+        for(String label : network.execute(new ExtractNodeLabels(), null))
+        {
+            if(!labelSet.contains(label))
+            {
+                labelSet.add(label);
+            }
+        }
+
+       makeHybridIndexToHybridNodeLabelMappingHelp(network.PrincipleInfo, network.PrincipleDescendants, labelSet, hybridIndexToHybridNodeLabel);
+
+        return hybridIndexToHybridNodeLabel;
+
+
+    }
+
+    private static void makeHybridIndexToHybridNodeLabelMappingHelp(NetworkInfo node, DescendantList children, final HashSet<String> labelSet,
+                                                                    final HashMap<String, String> hybridIndexToHybridNodeLabel)
+    {
+       final String hybridNodeIndex = node.HybridNodeQualifier.execute(new HybridNodeQualifierAlgo<String, Object, RuntimeException>() {
+            public String forHybridNodeQualifierEmpty(HybridNodeQualifierEmpty hybridNodeQualifierEmpty, Object o) throws RuntimeException {
+                return null;
+            }
+
+            public String forHybridNodeQualifierNonEmpty(HybridNodeQualifierNonEmpty hybridNodeQualifierNonEmpty, Object o) throws RuntimeException {
+                return hybridNodeQualifierNonEmpty.HybridNodeIndex.Content;
+            }
+
+            public String forHybridNodeQualifierWithType(HybridNodeQualifierWithType hybridNodeQualifierWithType, Object o) throws RuntimeException {
+                 return hybridNodeQualifierWithType.HybridNodeIndex.Content;
+            }
+        }, null);
+
+        if(hybridNodeIndex != null)
+        {
+            node.NodeLabel.execute(new NodeLabelAlgo<Object, Object, RuntimeException>() {
+                public Object forNodeLabelNonEmpty(NodeLabelNonEmpty nodeLabelNonEmpty, Object o) throws RuntimeException {
+
+                    hybridIndexToHybridNodeLabel.put(hybridNodeIndex, nodeLabelNonEmpty.Label.Content);
+                    return null;
+                }
+
+                public Object forNodeLabelEmpty(NodeLabelEmpty nodeLabelEmpty, Object o) throws RuntimeException {
+
+                    String label;
+                    do
+                    {
+                        label = UUID.randomUUID().toString().replace("-", "");
+                    }
+                    while(!labelSet.contains(label));
+                    hybridIndexToHybridNodeLabel.put(hybridNodeIndex, label);
+
+                    return null;
+
+
+                }
+            }, null);
+        }
+
+        for(Subtree t: children.Subtrees)
+        {
+            makeHybridIndexToHybridNodeLabelMappingHelp(t.NetworkInfo, t.Descendants, labelSet, hybridIndexToHybridNodeLabel);
+        }
+
+
+    }
+
+    private static void buildSubNetworks(final Map<String, NetworkNonEmpty> hybridIndexToSubNetwork, final NetworkInfo node, final DescendantList children)
+    {
+
+        node.HybridNodeQualifier.execute(new HybridNodeQualifierAlgo<Object, Object, RuntimeException>()
+        {
+            public Object forHybridNodeQualifierEmpty(HybridNodeQualifierEmpty hybridNodeQualifierEmpty, Object o) throws RuntimeException {
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Object forHybridNodeQualifierNonEmpty(HybridNodeQualifierNonEmpty hybridNodeQualifierNonEmpty, Object o) throws RuntimeException {
+
+                String hybridNodeIndex = hybridNodeQualifierNonEmpty.HybridNodeIndex.Content;
+
+                if(!hybridIndexToSubNetwork.containsKey(hybridNodeIndex))
+                {
+                    NetworkNonEmpty subNetwork = new NetworkNonEmpty(new RootageQualifierNonEmpty(RootageQualifier.ROOTED), children, node);
+                    hybridIndexToSubNetwork.put(hybridNodeIndex, subNetwork);
+                }
+                else if(children.Subtrees.iterator().hasNext())
+                {
+                     NetworkNonEmpty subNetwork = new NetworkNonEmpty(new RootageQualifierNonEmpty(RootageQualifier.ROOTED), children, node);
+                     hybridIndexToSubNetwork.put(hybridNodeIndex, subNetwork);
+                }
+
+                return null;
+            }
+
+            public Object forHybridNodeQualifierWithType(HybridNodeQualifierWithType hybridNodeQualifierWithType, Object o) throws RuntimeException {
+                return forHybridNodeQualifierNonEmpty(hybridNodeQualifierWithType, o);
+            }
+        }, null);
+
+        for(Subtree tree : children.Subtrees)
+        {
+            buildSubNetworks(hybridIndexToSubNetwork, tree.NetworkInfo, tree.Descendants);
+        }
+    }
+
+
 }

@@ -13,28 +13,49 @@ import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.*;
  */
 public class SingleLinePrinter
 {
-    public static String toString(NetworkNonEmpty network)
+    private boolean _excludeProbability = false;
+
+    public void setExcludeProbability(boolean value)
     {
-        return toString(network, new Func1<String, String>() {
-            public String execute(String s) {
-                return s;
-            }
-        });
+        _excludeProbability = value;
     }
 
-    public static String toString(NetworkNonEmpty network, Func1<String,String> supportTransformer)
+    private Func1<String,String> _supportTransformer = null;
+
+    public void setSupportTransformer(Func1<String,String> value)
     {
+        _supportTransformer = value;
+    }
+
+    private Func1<String,String> _hybridQualifierTransformer;
+
+    public void setHybridQualifierTransformer(Func1<String,String> value)
+    {
+        _hybridQualifierTransformer = value;
+    }
+
+    private Func1<String,String> _nodeLabelTransformer;
+
+    public void setNodeLabelTransformer(Func1<String,String> value)
+    {
+        _nodeLabelTransformer = value;
+    }
+
+
+    public String toString(NetworkNonEmpty network)
+    {
+
         StringBuffer accum = new StringBuffer();
 
 
-        appendDescendantsList(network.PrincipleDescendants, accum, supportTransformer);
-        appendInfo(network.PrincipleInfo, accum, supportTransformer);
+        appendDescendantsList(network.PrincipleDescendants, accum);
+        appendInfo(network.PrincipleInfo, accum);
         accum.append(';');
 
         return accum.toString();
     }
 
-    private static void appendDescendantsList(DescendantList descendants, StringBuffer accum, Func1<String,String> supportTransformer)
+    private void appendDescendantsList(DescendantList descendants, StringBuffer accum)
     {
         Object[] subtrees = IterableHelp.toArray(descendants.Subtrees);
 
@@ -45,8 +66,8 @@ public class SingleLinePrinter
         for(int i = 0; i<subtrees.length; i++)
         {
             Subtree subtree = (Subtree) subtrees[i];
-            appendDescendantsList(subtree.Descendants, accum, supportTransformer);
-            appendInfo(subtree.NetworkInfo, accum, supportTransformer);
+            appendDescendantsList(subtree.Descendants, accum);
+            appendInfo(subtree.NetworkInfo, accum);
 
             if(i != subtrees.length -1)
                 accum.append(",");
@@ -57,7 +78,7 @@ public class SingleLinePrinter
 
     }
 
-    private static void appendInfo(NetworkInfo info, final StringBuffer accum, final Func1<String,String> supportTransformer)
+    private void appendInfo(NetworkInfo info, final StringBuffer accum)
     {
         String labelPart = info.NodeLabel.execute(new NodeLabelAlgo<String, Object, RuntimeException>() {
 
@@ -78,6 +99,7 @@ public class SingleLinePrinter
                return "";
            }
        }, null);
+       labelPart = _nodeLabelTransformer != null ? _nodeLabelTransformer.execute(labelPart) : labelPart;
 
        String hybridPart = info.HybridNodeQualifier.execute(new HybridNodeQualifierAlgo<String, Object, RuntimeException>() {
 
@@ -93,6 +115,7 @@ public class SingleLinePrinter
                return "#" + qualifier.HybridNodeType.Content + qualifier.HybridNodeIndex.Content;
            }
        }, null);
+       hybridPart = _hybridQualifierTransformer != null ? _hybridQualifierTransformer.execute(hybridPart) : hybridPart;
 
         final String branchLengthPart = info.BranchLength.execute(new BranchLengthAlgo<String, Object, RuntimeException>() {
 
@@ -108,7 +131,8 @@ public class SingleLinePrinter
         final String supportPart = info.Support.execute(new SupportAlgo<String, Object, RuntimeException>() {
 
             public String forSupportNonEmpty(SupportNonEmpty support, Object input) {
-               return (branchLengthPart == "" ? "::" : ":") + supportTransformer.execute(support.SupportValue.Content);
+               return (branchLengthPart == "" ? "::" : ":") +
+                       _supportTransformer == null ? support.SupportValue.Content : _supportTransformer.execute(support.SupportValue.Content);
             }
 
             public String forSupportEmpty(SupportEmpty support, Object input) {
@@ -116,7 +140,7 @@ public class SingleLinePrinter
             }
         }, null);
 
-        String probabilityPart = info.Probability.execute(new ProbabilityAlgo<String, Object, RuntimeException>() {
+        String probabilityPart = _excludeProbability ? "" : info.Probability.execute(new ProbabilityAlgo<String, Object, RuntimeException>() {
 
             public String forProbabilityEmpty(ProbabilityEmpty prob, Object input)  {
                 return "";

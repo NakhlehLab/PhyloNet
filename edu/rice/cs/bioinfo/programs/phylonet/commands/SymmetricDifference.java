@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
@@ -27,14 +28,23 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     private boolean _contextChecked = false;
 
-    public SymmetricDifference(SyntaxCommand directive, ArrayList<Parameter> params)
-    {
-        super(directive, params);
+    SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 
-    public boolean checkParams(Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String,Integer,Integer> errorDetected) {
+    protected int getMinNumParams()
+    {
+        return 2;
+    }
 
-         boolean noError = this.assertParamsCount(2, 3, errorDetected);
+    protected int getMaxNumParams()
+    {
+        return 3;
+    }
+
+    public boolean checkParamsForCommand() {
+
+        boolean noError = true;
 
         if(noError)
         {
@@ -50,8 +60,16 @@ public class SymmetricDifference extends CommandBaseFileOut {
     {
         boolean noError = true;
 
-        Parameter modelTreeParam = params.get(0);
-        noError = assertNetworkExists(sourceIdentToNetwork, modelTreeParam, errorDetected);
+        ParameterIdent modelTreeParam = this.assertParameterIdent(params.get(0));
+
+        if(modelTreeParam != null)
+        {
+            noError = assertNetworkExists(modelTreeParam);
+        }
+        else
+        {
+            noError = false;
+        }
 
         String modelTreeParamValue = null;
         if(noError)
@@ -60,8 +78,16 @@ public class SymmetricDifference extends CommandBaseFileOut {
             _modelNetwork  = sourceIdentToNetwork.get(modelTreeParamValue);
         }
 
-        Parameter experimentalTreeParam = params.get(1);
-        noError = assertNetworkExists(sourceIdentToNetwork, experimentalTreeParam, errorDetected);
+        ParameterIdent experimentalTreeParam = this.assertParameterIdent(params.get(1));
+
+        if(experimentalTreeParam != null)
+        {
+            noError = assertNetworkExists(experimentalTreeParam);
+        }
+        else
+        {
+            noError = false;
+        }
 
         String experimentalTreeParamValue = null;
         if(noError)

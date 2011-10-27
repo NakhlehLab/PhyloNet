@@ -20,7 +20,7 @@ public interface Command {
 
     public SyntaxCommand getDefiningSyntaxCommand();
 
-    public boolean checkParams(Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String,Integer,Integer> errorDetected);
+    public boolean checkParams();
 
     public void executeCommand(Proc<String> displayResult) throws IOException;
 

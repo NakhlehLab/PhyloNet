@@ -21,6 +21,10 @@ public class Text implements AbstractSyntaxNode
 
     public Text(String content, int lineNumberStart, int columnNumberStart, boolean originallyQuoted)
     {
+        if(content == null)
+        {
+            throw new IllegalArgumentException("content may not be null.");
+        }
         Content = content;
         LineNumberStart = lineNumberStart;
         ColumnNumberStart = columnNumberStart;

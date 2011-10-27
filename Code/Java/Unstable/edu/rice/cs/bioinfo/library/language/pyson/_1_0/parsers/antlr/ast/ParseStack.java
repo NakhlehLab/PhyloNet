@@ -46,7 +46,11 @@ public interface ParseStack {
 
     public void pushPhylonetCommandPartIdSet(Token text);
 
-    public void pushPhylonetCommandPartTaxaMap(Token text);
+    public void pushPhylonetCommandPartTaxaMap();
+
+    public void pushTaxaMap(int numKeys, Token startToken);
+
+    public void pushTaxaMapEntry(int numValues);
 
     public void pushPhylonetCommand();
 

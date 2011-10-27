@@ -28,10 +28,10 @@ public class Parser
         ANTLRInputStream antlrStream = new ANTLRInputStream(stream);
         PySONLexer lexer = new PySONLexer(antlrStream);
         PySONParser parser = new PySONParser(new CommonTokenStream(lexer));
-        return parse(parser);
+        return parse(parser, lexer);
     }
 
-    static Blocks parse(PySONParser parser) throws IOException, CoordinateParseErrorsException {
+    static Blocks parse(PySONParser parser, PySONLexer lexer) throws IOException, CoordinateParseErrorsException {
 
         try
         {
@@ -43,6 +43,19 @@ public class Parser
             List<CoordinateParseError> accum = new ArrayList<CoordinateParseError>();
             accum.add(error);
             throw new CoordinateParseErrorsException(accum);
+        }
+
+        List<PySONLexer.ErrorWrapper> lexErrors = lexer.getErrors();
+        if(lexErrors.size() > 0)
+        {
+            LinkedList<CoordinateParseError> newErrors = new LinkedList<CoordinateParseError>();
+
+            for(PySONLexer.ErrorWrapper error : lexErrors)
+            {
+                newErrors.add(new CoordinateParseErrorDefault(error.Message, error.Line, error.Col));
+            }
+
+            throw new CoordinateParseErrorsException(newErrors);
         }
 
         List<PySONParser.ErrorWrapper> errors = parser.getErrors();

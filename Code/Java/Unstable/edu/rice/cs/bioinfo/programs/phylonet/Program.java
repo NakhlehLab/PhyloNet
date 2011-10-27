@@ -102,7 +102,7 @@ public class Program {
         {
             try
             {
-                commands.add(CommandFactory.make(sCommand));
+                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, errorDetected));
             }
             catch(IllegalArgumentException e)
             {
@@ -112,7 +112,7 @@ public class Program {
 
         for(Command command : commands)
         {
-            command.checkParams(sourceIdentToNetwork, errorDetected);
+            command.checkParams();
         }
 
         /*

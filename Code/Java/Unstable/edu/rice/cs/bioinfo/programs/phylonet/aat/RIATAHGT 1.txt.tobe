@@ -1,0 +1,61 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree speceiesTree = ((e,(f,g):0.63:.70)::.80,((a,(b,c):0.5:.80):0.5:.67,d):0.6);
+Tree geneTree1 = (((a,b):0.5:.70,c):0.6:.80,(d,((e,f):0.4:.70,g)::.70)::.80);
+Tree geneTree2 = ((e,(f,g):0.5:.70):0.6:.80,((a,b):0.5:.90,(c,d):0.5:.87):0.57:.72);
+
+END;
+
+
+BEGIN PHYLONET;
+
+RIATAHGT speceiesTree {geneTree1, geneTree2};
+
+END;
+===
+
+RIATAHGT speceiesTree {geneTree1, geneTree2}
+species tree: ((e,(f,g)I3:0.63)I4,((a,(b,c)I1:0.5)I2:0.5,d)I0)I5;
+gene tree: (((a,b):0.5,c):0.6,(((e,f):0.4,g),d));
+There are 3 component(s), which account(s) for 27 solution(s), each of size 3
+-----------------------------------------------------------------------------------------------------
+Component I5:
+Subsolution1:
+	d -> I4 (70.0)
+Subsolution2:
+	I4 -> d (80.0)
+Subsolution3:
+	I5 -> I2 (67.0) [time violation?]
+-----------------------------------------------------------------------------------------------------
+	Component I4:
+	Subsolution1:
+		e -> f 
+	Subsolution2:
+		I4 -> g  [time violation?]
+	Subsolution3:
+		f -> e 
+-----------------------------------------------------------------------------------------------------
+	Component I2:
+	Subsolution1:
+		b -> a 
+	Subsolution2:
+		I2 -> c  [time violation?]
+	Subsolution3:
+		a -> b 
+
+*****************************************************************************************************
+species tree: ((e,(f,g)I3:0.63)I4,((a,(b,c)I0:0.5)I1:0.5,d)I2:0.6)I5;
+gene tree: ((e,(f,g):0.5)I4:0.6,((a,b):0.5,(c,d):0.5):0.57);
+There are 1 component(s), which account(s) for 1 solution(s), each of size 1
+-----------------------------------------------------------------------------------------------------
+	Component I2:
+	Subsolution1:
+		d -> c 
+
+*****************************************************************************************************
+Consensus network for this set of gene trees
+((e,(f,g)I3:0.63)I4,((a,(b,c)I0:0.5)I1:0.5,d)I2:0.6)I5;
+
+===

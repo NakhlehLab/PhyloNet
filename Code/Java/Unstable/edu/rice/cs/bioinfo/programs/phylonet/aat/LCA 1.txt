@@ -1,0 +1,29 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = ((1,4,3),2);
+Tree tree2 = ((1,2),(4,3));
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+LCA tree1 ({1, 4} {2, 3});
+LCA tree2 ({1,4},{2,3});
+
+END;
+===
+
+LCA tree1 ({1, 4} {2, 3})
+((1,4,3)I0,2)I1;
+I0
+I1
+
+LCA tree2 ({1,4},{2,3})
+((1,2)I1,(4,3)I0)I2;
+I2
+I2
+===

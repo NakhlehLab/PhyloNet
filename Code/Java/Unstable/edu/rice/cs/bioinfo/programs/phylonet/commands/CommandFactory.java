@@ -47,6 +47,14 @@ public class CommandFactory {
         {
             return new DeepCoalCount(directive, params, sourceIdentToNetwork, errorDetected);
         }
+        else if(lowerCommandName.equals("processgt"))
+        {
+            return new ProcessGT(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("charnet"))
+        {
+            return new CharNet(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

@@ -11,7 +11,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.CSAError;
  */
 public interface RichNewickReadResult<N> {
 
-    public N getNetwork();
+    public N getNetworks();
 
     public Iterable<CSAError> getContextErrors();
 }

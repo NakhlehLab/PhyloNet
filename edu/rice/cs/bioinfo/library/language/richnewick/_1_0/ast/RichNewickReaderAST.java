@@ -53,7 +53,7 @@ public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
         }
 
         return new RichNewickReadResult<Networks>() {
-            public Networks getNetwork() {
+            public Networks getNetworks() {
                 return networks;
             }
 

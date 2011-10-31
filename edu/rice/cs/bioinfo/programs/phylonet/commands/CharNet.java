@@ -1,0 +1,188 @@
+package edu.rice.cs.bioinfo.programs.phylonet.commands;
+
+import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+
+import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkCluster;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTripartition;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import sun.net.ConnectionResetException;
+import sun.nio.cs.HistoricallyNamedCharset;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Map;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: Matt
+ * Date: 10/27/11
+ * Time: 4:04 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public class CharNet extends CommandBaseFileOut {
+
+    enum Method
+    {
+        Tree,Tri,Cluster;
+    }
+
+    private Method _method;
+
+    private NetworkNonEmpty _inputNetwork;
+
+    CharNet(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    }
+
+    @Override
+    protected int getMinNumParams() {
+        return 3;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    protected int getMaxNumParams() {
+        return 4;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    protected boolean checkParamsForCommand()
+    {
+        boolean noError = true;
+
+        ParameterIdent inputNetworkParameter = this.assertParameterIdent(params.get(0));
+
+        if(inputNetworkParameter != null)
+        {
+            if(this.assertNetworkExists(inputNetworkParameter))
+            {
+                _inputNetwork = this.sourceIdentToNetwork.get(inputNetworkParameter.Content);
+            }
+            else
+            {
+                noError = false;
+            }
+        }
+        else
+        {
+            noError = false;
+        }
+
+        ParamExtractor mSwitch = new ParamExtractor("m", this.params);
+        boolean sawDashM = mSwitch.ContainsSwitch;
+
+        if(sawDashM)
+        {
+             if(mSwitch.PostSwitchValue != null)
+             {
+                 String simplePlusOneValueLower = mSwitch.PostSwitchValue.toLowerCase();
+
+                 if(simplePlusOneValueLower.equals("tree"))
+                 {
+                     _method = Method.Tree;
+                 }
+                 else if(simplePlusOneValueLower.equals("tri"))
+                 {
+                     _method = Method.Tri;
+                 }
+                 else if(simplePlusOneValueLower.equals("cluster"))
+                 {
+                     _method = Method.Cluster;
+                 }
+                 else
+                 {
+                     this.errorDetected.execute("Unknown method '" + mSwitch.PostSwitchValue + "'", mSwitch.PostSwitchParam.getLine(), mSwitch.PostSwitchParam.getColumn());
+                     noError = false;
+                 }
+             }
+            else
+             {
+                 this.errorDetected.execute("Expected subsequent method value 'tree', 'tri' or 'cluster'.", mSwitch.SwitchParam.getLine(), mSwitch.SwitchParam.getColumn());
+                    noError = false;
+
+             }
+        }
+        else
+        {
+             this.errorDetected.execute("Expected mandatory parameter '-m [tree|tri|cluster]'", this.getDefiningSyntaxCommand().getLine(),
+                                                                                                   this.getDefiningSyntaxCommand().getColumn());
+             noError = false;
+        }
+
+
+          return noError;
+    }
+
+     @Override
+    protected String produceResult()
+    {
+        if(_method == null)
+        {
+            throw new IllegalStateException("_method should be non-null.");
+        }
+
+        if(_inputNetwork == null)
+        {
+            throw new IllegalStateException("_inputNetwork should be non-null.");
+        }
+
+        String eNewickInputNetwork = NetworkTransformer.toENewick(_inputNetwork);
+
+       // Read the input network.
+		ExNewickReader<String> enr = new ExNewickReader<String>(new StringReader(eNewickInputNetwork));
+
+        Network<String> net;
+        try
+        {
+		    net = enr.readNetwork();
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        StringBuilder result = new StringBuilder();
+        if(_method == Method.Tree)
+        {
+            for (NetworkTree<String> nt : Networks.getTrees(net)) {
+                String tree = nt.makeTree().toString();
+
+                try
+                {
+                    String rTree = StringTransformer.toRNewickTree(tree);
+				    result.append(rTree.toString() + "\n");
+                }
+                catch(CoordinateParseErrorsException e)
+                {
+                    throw new RuntimeException(e);
+                }
+			}
+        }
+        else if(_method == Method.Tri)
+        {
+            for (NetworkTripartition<String> ntp : Networks.getTripartitions(net)) {
+				for (int i = 0; i < ntp.getTripartitionNode().getIndeg(); i++) {
+					result.append(ntp.toString() + "\n");
+				}
+			}
+        }
+        else if(_method == Method.Cluster)
+        {
+	        for (NetworkCluster<String> nc : Networks.getClusters(net))
+            {
+				result.append(nc.toString() + "\n");
+			}
+		}
+
+        return result.toString();
+
+    }
+}

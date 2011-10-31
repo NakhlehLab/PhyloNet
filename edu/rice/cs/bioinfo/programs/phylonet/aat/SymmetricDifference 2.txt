@@ -1,0 +1,42 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = [&U]((1,4,3),2);
+Tree tree2 = [&U]((1,2),(4,3));
+Tree tree3 = ((1,3,4),2);
+
+END;
+
+BEGIN SO;
+
+jkadjfklajdfklja
+dfjsdk
+fja
+
+
+
+END;
+
+BEGIN PHYLONET;
+
+SymmetricDifference tree1 tree2;
+SymmetricDifference tree2 tree3;
+
+END;
+===
+
+SymmetricDifference tree1 tree2
+False Negatives: 0
+False Positives: 1
+# Internal Edges Model: 1
+# Internal Edges Experimental: 0
+
+
+SymmetricDifference tree2 tree3
+False Negatives: 1
+False Positives: 0
+# Internal Edges Model: 0
+# Internal Edges Experimental: 1
+
+===

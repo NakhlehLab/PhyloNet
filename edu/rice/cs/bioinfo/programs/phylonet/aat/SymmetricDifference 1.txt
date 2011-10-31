@@ -1,0 +1,36 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network tree1 = [&U]((1,4,2));
+Network tree2 = [&U]((1,2),(4,3));
+Network tree3 = ((1,3,4),2);
+
+END;
+
+BEGIN SO;
+
+jkadjfklajdfklja
+dfjsdk
+fja
+
+
+
+END;
+
+BEGIN PHYLONET;
+
+SymmetricDifference tree1 tree2;
+SymmetricDifference tree2 tree3;
+
+END;
+===
+===
+
+Error at [5,17]: Networks may not be unrooted.
+
+Error at [6,17]: Networks may not be unrooted.
+
+Error at [23,21]: Taxon '[unnamed]' in network 'tree1' does not appear in the network 'tree2'.
+
+Error at [23,27]: Taxon '3' in network 'tree2' does not appear in the network 'tree1'.

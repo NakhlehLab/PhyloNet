@@ -1,0 +1,27 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree speceiesTree = ((((a,b),c),d),e);
+Tree geneTree1 = (((a,b,c),d),e);
+Tree geneTree2 = ((a,b),(c,e,d));
+Tree geneTree3 = ((a,b),c,d,e);
+
+END;
+
+
+BEGIN PHYLONET;
+
+ProcessGT {speceiesTree} {geneTree1, geneTree2, geneTree3};
+
+END;
+===
+
+ProcessGT {speceiesTree} {geneTree1, geneTree2, geneTree3}
+Species_Tree#1 = ((((a,b),c),d),e);
+Resulting gene trees:
+(((c,(a,b)),d),e);
+((a,b),(c,e,d));
+(e,(d,((a,b),c)));
+
+===

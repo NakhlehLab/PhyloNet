@@ -1,0 +1,367 @@
+package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
+
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * This class implements the methodes declared in the interface NetNode.
+ *
+ * @author Cuong Than
+ *
+ * @param <T> indicates the type of additional data this node stores.
+ *
+ * June 12, 06: Created
+ */
+public class BniNetNode<T> implements NetNode<T> {
+	/**
+	 * This constructor instantiates an isolated, no-name node.
+	 */
+	public BniNetNode()
+	{
+		_data = null;
+		_name = NO_NAME;
+		_children = null;
+		_parents = null;
+		_parent_distances = null;
+	}
+
+	/**
+	 * This constructor instantiates an isolated node. It can also intialize
+	 * the node name and data stored in it.
+	 *
+	 * @param name: The name of the node to be created.
+	 * @param data: Data stored in this node.
+	 */
+	public BniNetNode(String name, T data)
+	{
+		this();
+		setName(name);
+		setData(data);
+	}
+
+	/**
+	 * This function returns the name of the node.
+	 */
+	public String getName()
+	{
+		return _name;
+	}
+
+	/**
+	 * This function returns data stored in this node.
+	 */
+	public T getData()
+	{
+		return _data;
+	}
+
+	/**
+	 * This function computes the indegree of a node. The indegree is equal to the number of
+	 * parents it has.
+	 */
+	public int getIndeg()
+	{
+		if (_parents == null) {
+			return 0;
+		}
+		else {
+			return _parents.size();
+		}
+	}
+
+	/**
+	 * This function computes the outdegree of a node. The outdegree of a node is equal to the number
+	 * of children it has.
+	 */
+	public int getOutdeg()
+	{
+		if (_children == null) {
+			return 0;
+		}
+		else {
+			return _children.size();
+		}
+	}
+
+	/**
+	 * This function checks if a node is the root of the network it belongs.
+	 *
+	 * @return <code>true</code> if this node is the root; <code>false</code> if it's not.
+	 */
+	public boolean isRoot()
+	{
+		return (getIndeg() == 0);
+	}
+
+
+	/**
+	 * This function checks if a node is a leaf of a network.
+	 *
+	 * @return <code>true</code> if this node is a leaf; <code>false</code> otherwise.
+	 */
+	public boolean isLeaf()
+	{
+		return (getOutdeg() == 0);
+	}
+
+	/**
+	 * This function checks if a node is a tree node, i.e. it has only one parent.
+	 *
+	 * @return <code>true</code> if it is a tree node; <code>false</code> otherwise.
+	 */
+	public boolean isTreeNode()
+	{
+		return (getIndeg() < 2);
+	}
+
+	/**
+	 * This function checks if a node is a network node, i.e. it has more than one parent.
+	 *
+	 * @return <code>true</code> if this node is a network node; <code>false</code> otherwise.
+	 */
+	public boolean isNetworkNode()
+	{
+		return (getIndeg() > 1);
+	}
+
+	/**
+	 * This function gets all (immediate) child nodes of this node.
+	 *
+	 * @return an iterable list of children of this node. If this node is a leaf, it returns an empty list.
+	 */
+	public Iterable<NetNode<T>> getChildren()
+	{
+		if (_children == null) {
+			return new LinkedList<NetNode<T>>();	// Empty list of children.
+		}
+		else {
+			return _children;
+		}
+	}
+
+	/**
+	 * This function gets all (immediate) parents of this node.
+	 *
+	 * @return an iterable list of parents of this node. If this node has no parents, it returns an empty list.
+	 */
+	public Iterable<NetNode<T>> getParents()
+	{
+		if (_parents == null) {
+			return new LinkedList<NetNode<T>>();	// Empty list of parents.
+		}
+		else {
+			return _parents;
+		}
+	}
+
+	/**
+	 * This function returns the number of parent of a node.
+	 */
+	public int getParentNumber(){
+		return _parents.size();
+	}
+
+	/**
+	 * This function returns the distance from this node to one of its parent.
+	 *
+	 * @param parent: The parent node that we want to compute the distance from this node to it.
+
+	 * @return the distance from this node to <code>parent</code>. If <code>parent</code> is actually
+	 * not a parent of this node, this function returns the constanct <code>Double.NaN</code>.
+	 */
+	public double getParentDistance(NetNode<T> parent)
+	{
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is actually not a parent of this node.
+			return Double.NaN;
+		}
+		else {
+			return _parent_distances.get(i).doubleValue();
+		}
+	}
+
+	/**
+	 * This function updates the data stored in this node.
+	 *
+	 * @param data: The reference to the new data that we want to store in this node.
+	 */
+	public void setData(T data)
+	{
+		_data = data;
+	}
+
+	/**
+	 * This function changes the name of this node.
+	 *
+	 * @param name: The new name for this node.
+	 */
+	public void setName(String name)
+	{
+		_name = name;
+	}
+
+	/**
+	 * This functions sets the distance from this calling node to <code>parent</code> with
+	 * the new value <code>newDistance</code>.
+	 *
+	 * @param parent: A parent of this node that it wants to modify the distance.
+	 * @param distance: New value for the distance from this node to <code>parent</code>.
+	 *
+	 * @return: <code>true</code> if the operation parent is indeed a parent of this node;
+	 * <code>false</code> otherwise.
+	 */
+	public boolean setParentDistance(NetNode<T> parent, double distance)
+	{
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
+			return false;
+		}
+		else {
+			// Update the distance.
+			_parent_distances.remove(i);
+			_parent_distances.add(i, new Double(distance));
+
+			return true;
+		}
+	}
+
+	/**
+	 * This function connects an existing node (the node that makes a call to this
+	 * function) to another node <code>child</code>. The calling code will add <code>child</code>
+	 * to its list of children if <code>child</code> has not been already a child of the calling node.
+	 *
+	 * @param child: The node that the calling node wants to connects to.
+	 * @param distance: The distance between the calling code and <code>child</code>.
+	 *
+	 * @return <code>true</code> if this function succeeded; <code>false</code> otherwise.
+	 */
+	public boolean adoptChild(NetNode<T> child, double distance)
+	{
+		return adoptChild(child, distance, 1.0);
+	}
+
+	/**
+	 * This function connects an existing node (the node that makes a call to this
+	 * function) to another node <code>child</code>. The calling code will add <code>child</code>
+	 * to its list of children if <code>child</code> has not been already a child of the calling node.
+	 *
+	 * @param child: The node that the calling node wants to connects to.
+	 * @param distance: The distance between the calling code and <code>child</code>.
+	 * @param gamma: The alleles proportion
+	 *
+	 * @return <code>true</code> if this function succeeded; <code>false</code> otherwise.
+	 */
+	public boolean adoptChild(NetNode<T> child, double distance, double gamma)
+	{
+		assert(child instanceof BniNetNode);
+
+		if (_children == null) {
+			_children = new LinkedList<NetNode<T>>();
+		}
+		if(_gammas == null){
+			_gammas = new LinkedList<Double>();
+		}
+
+		BniNetNode<T> ref = (BniNetNode<T>) child;
+
+		if (!_children.contains(ref)) {	// child is not already in this node's list of children.
+			// Update info. for this node.
+			_children.add(ref);
+			_gammas.add(gamma);
+			// Update info. for child.
+			if (ref._parents == null) {
+				ref._parents = new LinkedList<NetNode<T>>();
+				ref._parent_distances = new LinkedList<Double>();
+			}
+			ref._parents.add(this);
+			ref._parent_distances.add(new Double(distance));
+
+			return true;
+		}
+		else {	// child is already a child of this node; exit.
+			return false;
+		}
+	}
+
+	/**
+	 * This function makes <code>child</code> no longer a child of this node.
+	 *
+	 * @param child: The node to be removed.
+	 *
+	 * @return: <code>true</code> if <code>child</code> is indeed a child of this node.
+	 */
+	public boolean removeChild(NetNode<T> child)
+	{
+		assert(child instanceof BniNetNode);
+
+		// Delete link from this node to child.
+		int index = -1;
+		if (_children == null){
+			return false;
+		}
+		index = _children.indexOf(child);
+		if(index == -1){
+			return false;	// child is not in the list _children; exit.
+		}
+		_children.remove(index);
+
+		_gammas.remove(index);
+		// Delete link from child to this node.
+		BniNetNode<T> ref = (BniNetNode<T>) child;
+		int i = ref._parents.indexOf(this);
+
+		ref._parents.remove(i);
+		ref._parent_distances.remove(i);
+		return true;
+	}
+
+	/**
+	 * This function adds a new gamma value to the gamma list
+	 */
+	public void addGamma(double gamma){
+		_gammas.add(gamma);
+	}
+
+	/**
+	 * This function resets the gamma value of the index_th child
+	 */
+	public void setGamma(int index, double gamma){
+		_gammas.set(index, gamma);
+	}
+
+	/**
+	 * This function gets the gamma value of the index_th child
+	 */
+	public double getGamma(int index){
+		return _gammas.get(index);
+	}
+
+	/**
+	 * This function gets the gamma value of its child node <code>node</code>
+	 */
+	public double getGamma(NetNode<T> node){
+
+		return _gammas.get(_children.indexOf(node));
+	}
+
+	/**
+	 * This function removes the gamma value of the index_th child
+	 */
+	public double removeGamma(int index){
+		return _gammas.remove(index);
+	}
+
+
+	// Data members
+	private T _data;		// Additional data we want to store in this node
+	private String _name;	// Node's name
+	private List<NetNode<T>> _children;		// List of this node's children
+	private List<NetNode<T>> _parents;		// List of parents of this node.
+	private List<Double> _gammas;           // List of gammas to its children
+	private List<Double> _parent_distances;	// List of distances from this node to its parents.
+}
+

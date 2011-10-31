@@ -20,6 +20,7 @@ import java.util.*;
  */
 public class NetworkTransformer {
 
+
     static <T> Network fromClassicNetwork(edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network<T> classicNetwork)
     {
         if(classicNetwork.isEmpty())
@@ -209,7 +210,7 @@ public class NetworkTransformer {
         treeNode.setName(nodeName);
     }
 
-    public static String toPhylonetNewick(NetworkNonEmpty network)
+    public static String toENewickTree(NetworkNonEmpty network)
     {
         if(network.execute(ContainsHybridNode.Singleton, null))
         {
@@ -227,7 +228,7 @@ public class NetworkTransformer {
     {
         if(!network.execute(ContainsHybridNode.Singleton, null))
         {
-            return toPhylonetNewick(network);
+            return toENewickTree(network);
         }
 
         Map<String, NetworkNonEmpty> hybridIndexToSubNetwork = new HashMap<String, NetworkNonEmpty>();

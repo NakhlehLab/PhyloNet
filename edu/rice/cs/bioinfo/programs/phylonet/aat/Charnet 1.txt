@@ -17,5 +17,4 @@ END;
 Charnet net -m tree
 ((a,(b,c)),(e,d));
 ((a,b),((d,c),e));
-
 ===

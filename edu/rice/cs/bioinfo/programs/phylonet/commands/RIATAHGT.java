@@ -63,176 +63,57 @@ public class RIATAHGT extends CommandBaseFileOut
 
          boolean noError = true;
 
-         int expectedSpeciesTreeParamIndex = 0;
+        _speciesTree = this.assertAndGetNetwork(0);
+        noError = noError && _speciesTree != null;
 
-         for(int i = 0; i<=3 && i<this.params.size(); i++)
-         {
-             Parameter ithParam = params.get(i);
+        ParameterIdentSet geneTreesParam = this.assertParameterIdentSet(1);
+        noError = noError && geneTreesParam != null;
 
-             String ithParamValue = ithParam.execute(GetSimpleParamValue.Singleton, null);
+        ParamExtractor pExtract = new ParamExtractor("p", this.params, this.errorDetected);
+        noError = noError && !pExtract.DuplicateSwitch;
 
-             if(ithParamValue != null)
-             {
-                 if(ithParamValue.toLowerCase().equals("-p"))
-                 {
-                     if(_nodePrefixValue == null)
-                     {
-                         if(i + 1 < this.params.size())
-                         {
-                             Parameter ithPlusOneParam = this.params.get(i + 1);
-                             _nodePrefixValue = ithPlusOneParam.execute(GetSimpleParamValue.Singleton, null);
-                             expectedSpeciesTreeParamIndex = i + 2;
-
-                             if(_nodePrefixValue == null)
-                             {
-                                 noError = false;
-                                 errorDetected.execute("Invalid node prefix.", ithPlusOneParam.getLine(), ithPlusOneParam.getColumn());
-                             }
-                         }
-                         else
-                         {
-                             noError = false;
-                             errorDetected.execute("Expected value after switch -p.", ithParam.getLine(), ithParam.getColumn());
-                         }
-                     }
-                     else
-                     {
-                         noError = false;
-                         errorDetected.execute("Duplicate switch -p", ithParam.getLine(), ithParam.getColumn());
-                     }
-                 }
-                 else if(ithParamValue.toLowerCase().equals("-e"))
-                 {
-                     _expandedOutputParam = this.params.get(i);
-                     expectedSpeciesTreeParamIndex = i + 1;
-                 }
-                 else if(ithParamValue.toLowerCase().equals("-u"))
-                 {
-                     _refined = false;
-                     _collapsed = false;
-                     expectedSpeciesTreeParamIndex = i + 1;
-                 }
-             }
-         }
-
-
-         ParameterIdentSet geneTreesParam = null;
-         ParameterIdent speciesTreeParam = null;
-
-
-
-         noError = this.params.get(expectedSpeciesTreeParamIndex).execute(new ParameterAlgo<Boolean, Boolean, RuntimeException>() {
-             public Boolean forIdentifier(ParameterIdent parameter, Boolean o) throws RuntimeException {
-                 return o;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forIdentList(ParameterIdentList parameterIdentList, Boolean aBoolean) throws RuntimeException {
-                 return null;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forQuote(ParameterQuote parameter, Boolean o) throws RuntimeException {
-                 return o;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Boolean o) throws RuntimeException {
-                 return error(parameterTaxonSetList);
-             }
-
-             public Boolean forIdentSet(ParameterIdentSet parameterIdentSet, Boolean o) throws RuntimeException {
-                return error(parameterIdentSet);
-             }
-
-             public Boolean forTaxaMap(ParameterTaxaMap parameterTaxaMap, Boolean aBoolean) throws RuntimeException {
-                 return error(parameterTaxaMap);
-             }
-
-             private Boolean error(Parameter p)
-             {
-                errorDetected.execute("Expected species tree identifier.", p.getLine(), p.getColumn());
-                return false;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-         }, noError);
-
-         if(noError)
-         {
-             speciesTreeParam = this.assertParameterIdent(params.get(expectedSpeciesTreeParamIndex));
-
-             if(speciesTreeParam == null)
-             {
-                 noError = false;
-             }
-
-         }
-
-         noError = this.params.get(expectedSpeciesTreeParamIndex + 1).execute(new ParameterAlgo<Boolean, Boolean, RuntimeException>()
-         {
-             public Boolean forIdentifier(ParameterIdent parameter, Boolean aBoolean) throws RuntimeException {
-                 error(parameter);
-                 return false;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forIdentList(ParameterIdentList parameterIdentList, Boolean aBoolean) throws RuntimeException {
-                 error(parameterIdentList);
-                 return false;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forQuote(ParameterQuote parameter, Boolean aBoolean) throws RuntimeException {
-                 error(parameter);
-                 return false;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Boolean aBoolean) throws RuntimeException {
-                 error(parameterTaxonSetList);
-                 return false;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forIdentSet(ParameterIdentSet parameterIdentSet, Boolean aBoolean) throws RuntimeException {
-                 return aBoolean;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             public Boolean forTaxaMap(ParameterTaxaMap parameterTaxaMap, Boolean aBoolean) throws RuntimeException {
-                 error(parameterTaxaMap);
-                 return false;  //To change body of implemented methods use File | Settings | File Templates.
-             }
-
-             private void error(Parameter parameter) {
-                 errorDetected.execute("Expected gene trees identifier set. (e.g. {tree1, tree2}).", parameter.getLine(), parameter.getColumn());
-             }
-
-         }, noError);
-
-         if(noError)
-         {
-             geneTreesParam = (ParameterIdentSet) this.params.get(expectedSpeciesTreeParamIndex + 1);
-         }
-
-
-         if(noError)
-         {
-             return checkContext(sourceIdentToNetwork, errorDetected, geneTreesParam, speciesTreeParam);
-         }
-         else
-         {
-             return false;
-         }
-    }
-
-    private boolean checkContext(Map<String, NetworkNonEmpty> sourceIdentToNetwork, final Proc3<String, Integer, Integer> errorDetected,
-                                 ParameterIdentSet geneTrees, ParameterIdent speciesTree)
-    {
-        boolean noError = true;
-
-        noError = this.assertNetworkExists(speciesTree);
-
-        if(noError)
+        if(pExtract.ContainsSwitch)
         {
-            _speciesTree = sourceIdentToNetwork.get(speciesTree.execute(GetSimpleParamValue.Singleton, null));
+            if(pExtract.PostSwitchParam != null)
+            {
+                if(pExtract.PostSwitchValue != null)
+                {
+                   _nodePrefixValue = pExtract.PostSwitchValue;
+                }
+                else
+                {
+                    errorDetected.execute("Invalid node prefix.", pExtract.PostSwitchParam.getLine(), pExtract.PostSwitchParam.getColumn());
+                    noError = false;
+                }
+            }
+            else
+            {
+                  noError = false;
+                  errorDetected.execute("Expected value after switch -p.", pExtract.SwitchParam.getLine(), pExtract.SwitchParam.getColumn());
+            }
+
         }
 
-        for(String geneTreeIdent : geneTrees.Elements)
+        ParamExtractor eExtract = new ParamExtractor("e", this.params, this.errorDetected);
+        noError = noError && !eExtract.DuplicateSwitch;
+
+        if(eExtract.ContainsSwitch)
         {
-            noError = this.assertNetworkExists(geneTreeIdent, geneTrees.getLine(), geneTrees.getColumn());
+            _expandedOutputParam = eExtract.SwitchParam;
+        }
+
+        ParamExtractor uExtract = new ParamExtractor("u", this.params, this.errorDetected);
+        noError = noError && !uExtract.DuplicateSwitch;
+
+        if(uExtract.ContainsSwitch)
+        {
+            _refined = false;
+            _collapsed = false;
+        }
+
+        for(String geneTreeIdent : geneTreesParam.Elements)
+        {
+            noError = this.assertNetworkExists(geneTreeIdent, geneTreesParam.getLine(), geneTreesParam.getColumn());
             if(noError)
             {
                 _geneTrees.add(sourceIdentToNetwork.get(geneTreeIdent));
@@ -240,7 +121,7 @@ public class RIATAHGT extends CommandBaseFileOut
         }
 
 
-        return noError;
+       return noError;
     }
 
     @Override

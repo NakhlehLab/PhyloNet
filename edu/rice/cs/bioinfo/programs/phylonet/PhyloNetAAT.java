@@ -17,7 +17,7 @@ import java.io.*;
 public class PhyloNetAAT {
 
 
-    private static String delim = "===";
+    private static String delim = "\n===\n";
 
 
     @Test
@@ -31,6 +31,7 @@ public class PhyloNetAAT {
             }
             }))
         {
+            System.out.println("Testing " + file.getAbsolutePath());
             String fileContents = FileUtils.readFileToString(file);
             fileContents = fileContents.replace("\r", "");
             String[] parts = fileContents.split(delim);
@@ -39,9 +40,14 @@ public class PhyloNetAAT {
             {
                 String nexus = parts[0];
                 String display = parts[1];
-                display = display.substring(1);
                 String error = parts[2];
-                error = error.substring(1);
+                checkTest(nexus, display, error, file.getName());
+            }
+            else if(parts.length == 2)
+            {
+                String nexus = parts[0];
+                String display = parts[1];
+                String error = "";
                 checkTest(nexus, display, error, file.getName());
             }
             else

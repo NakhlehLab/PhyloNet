@@ -57,7 +57,7 @@ class MAST extends CommandBaseFileOut
         {
             _allSwitch = params.get(0);
             _potentialTreeSetParam = params.get(1);
-            _outFile = params.get(2);
+            noError = noError && this.checkOutFileContext(2);
         }
         else if(params.size() == 2)
         {
@@ -143,11 +143,6 @@ class MAST extends CommandBaseFileOut
     {
         Boolean noError = true;
 
-        if(_outFile != null)
-        {
-            noError = this.checkOutFileContext(_outFile, errorDetected);
-        }
-
         Boolean rootedness = null;
 
         for(String networkName : _treeSetParameter.Elements)
@@ -196,7 +191,7 @@ class MAST extends CommandBaseFileOut
             Iterator<Tree> trees = _treeSet.iterator();
             Set<Tree> mastSet = emm.computeMultipleMasts(trees.next(), trees.next());
 
-            result.append("Number of MASTs: " + mastSet.size());
+            result.append("\nNumber of MASTs: " + mastSet.size());
 
             for (Tree mast : mastSet) {
                 NetworkNonEmpty netMast = (NetworkNonEmpty) TreeTransformer.toNetwork(mast);
@@ -218,7 +213,7 @@ class MAST extends CommandBaseFileOut
             }
 
             NetworkNonEmpty netMast = (NetworkNonEmpty) TreeTransformer.toNetwork(outTree);
-            result.append(new SingleLinePrinter().toString(netMast));
+            result.append("\n" + new SingleLinePrinter().toString(netMast));
         }
 
         return result.toString();

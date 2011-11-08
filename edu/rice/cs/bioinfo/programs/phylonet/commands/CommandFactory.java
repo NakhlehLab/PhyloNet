@@ -55,6 +55,22 @@ public class CommandFactory {
         {
             return new CharNet(directive, params, sourceIdentToNetwork, errorDetected);
         }
+         else if(lowerCommandName.equals("cmpnets"))
+        {
+            return new CmpNets(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("simgtinnetwork"))
+        {
+            return new SimGTinNetwork(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("countcoal"))
+        {
+           return new CountCoal(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("genst"))
+        {
+            return new GenST(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

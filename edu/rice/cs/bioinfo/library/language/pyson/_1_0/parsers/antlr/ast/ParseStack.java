@@ -54,4 +54,8 @@ public interface ParseStack {
 
     public void pushPhylonetCommand();
 
+    public void pushFASTAEntry(int numIdentsInDesc);
+
+    public void pushFASTABlockBody();
+
 }

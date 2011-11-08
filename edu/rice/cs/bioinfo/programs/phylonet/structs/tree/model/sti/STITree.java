@@ -69,7 +69,7 @@ public class STITree<D extends Object> implements MutableTree {
 	
 	/**
 	 * Construct a tree from the newick string.
-
+       */
 	public STITree(String newick_string) throws IOException, ParseException {
 		NewickReader nr = new NewickReader(new StringReader(newick_string));
 		
@@ -80,7 +80,7 @@ public class STITree<D extends Object> implements MutableTree {
 
 		
 		nr.readTree(this);
-	}  */
+	}
 	
 	/**
 	 * Create a tree with a specified rootedness.

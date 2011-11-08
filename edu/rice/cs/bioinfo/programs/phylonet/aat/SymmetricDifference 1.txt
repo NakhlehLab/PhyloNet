@@ -25,7 +25,9 @@ SymmetricDifference tree2 tree3;
 
 END;
 ===
+
 ===
+
 
 Error at [5,17]: Networks may not be unrooted.
 

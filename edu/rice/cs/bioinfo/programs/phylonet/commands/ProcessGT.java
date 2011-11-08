@@ -59,14 +59,14 @@ public class ProcessGT extends CommandBaseFileOut
         boolean noError = true;
 
 
-        ParameterIdentSet speciesTreesIdents = super.assertParameterIdentSet(this.params.get(0));
+        ParameterIdentSet speciesTreesIdents = super.assertParameterIdentSet(0);
         if(speciesTreesIdents != null)
         {
             _speciesTrees = assertNetworksExist(speciesTreesIdents);
             noError = _speciesTrees != null && noError;
         }
 
-        ParameterIdentSet geneTreesIdents = super.assertParameterIdentSet(this.params.get(1));
+        ParameterIdentSet geneTreesIdents = super.assertParameterIdentSet(1);
         if(geneTreesIdents != null)
         {
             _geneTrees = assertNetworksExist(geneTreesIdents);
@@ -124,8 +124,8 @@ public class ProcessGT extends CommandBaseFileOut
         int index = 1;
 		for(Tree st: speciesTrees){
 			GeneTreeRefinement.processGeneTrees(geneTrees, st, taxonMap, _geneTreesRooted, _bootstrap, null);
-			result.append("Species_Tree#" + (index++ ) + " = " + st.toStringWD() + "\n");
-			result.append("Resulting gene trees: ");
+			result.append("\nSpecies_Tree#" + (index++ ) + " = " + st.toStringWD() + "\n");
+			result.append("Resulting gene trees:");
 			for(Tree gt: geneTrees){
 				result.append("\n" + gt.toString());
 			}

@@ -60,46 +60,19 @@ public class SymmetricDifference extends CommandBaseFileOut {
     {
         boolean noError = true;
 
-        ParameterIdent modelTreeParam = this.assertParameterIdent(params.get(0));
+        Parameter modelTreeParam = params.get(0);
+        _modelNetwork = this.assertAndGetNetwork(0);
+        String modelTreeParamValue = _modelNetwork == null ? null : modelTreeParam.execute(GetSimpleParamValue.Singleton, null);
+        noError = noError && _modelNetwork != null;
 
-        if(modelTreeParam != null)
-        {
-            noError = assertNetworkExists(modelTreeParam);
-        }
-        else
-        {
-            noError = false;
-        }
-
-        String modelTreeParamValue = null;
-        if(noError)
-        {
-            modelTreeParamValue = modelTreeParam.execute(GetSimpleParamValue.Singleton, null);
-            _modelNetwork  = sourceIdentToNetwork.get(modelTreeParamValue);
-        }
-
-        ParameterIdent experimentalTreeParam = this.assertParameterIdent(params.get(1));
-
-        if(experimentalTreeParam != null)
-        {
-            noError = assertNetworkExists(experimentalTreeParam);
-        }
-        else
-        {
-            noError = false;
-        }
-
-        String experimentalTreeParamValue = null;
-        if(noError)
-        {
-            experimentalTreeParamValue = experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
-            _experimentalNetwork = sourceIdentToNetwork.get(experimentalTreeParamValue);
-        }
+        Parameter experimentalTreeParam = params.get(1);
+        _experimentalNetwork = this.assertAndGetNetwork(1);
+        String experimentalTreeParamValue = _experimentalNetwork == null ? null : experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
+        noError = noError && _experimentalNetwork != null;
 
         if(params.size() == 3)
         {
-            Parameter outFileParam = params.get(2);
-            noError = this.checkOutFileContext(outFileParam, errorDetected);
+            noError = this.checkOutFileContext(2);
         }
 
         HashSet<Object> nonRootDegree1Model = _modelNetwork != null ? collectNonRootDegree1(_modelNetwork) : null;
@@ -222,7 +195,7 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
 
         String result =
-                String.format("False Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s\n",
+                String.format("\nFalse Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s",
                         sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2());
 
         return result;

@@ -64,7 +64,29 @@ public abstract class CommandBase implements Command {
         return noError;
     }
 
-    protected boolean assertNetworkExists(ParameterIdent parameterIdent)
+    protected NetworkNonEmpty assertAndGetNetwork(int paramIndex)
+    {
+        ParameterIdent ident = this.assertParameterIdent(paramIndex);
+
+        if(ident != null)
+        {
+            if(!sourceIdentToNetwork.containsKey(ident.Content))
+            {
+                errorDetected.execute(String.format("Unknown identifier '%s'.", ident.Content), ident.getLine(), ident.getColumn());
+                return null;
+            }
+            else
+            {
+                return sourceIdentToNetwork.get(ident.Content);
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private boolean assertNetworkExists(ParameterIdent parameterIdent)
     {
         return assertNetworkExists(parameterIdent.Content, parameterIdent.getLine(), parameterIdent.getColumn());
     }
@@ -149,8 +171,10 @@ public abstract class CommandBase implements Command {
 
     protected abstract void executeCommandHelp(Proc<String> displayResult) throws IOException;
 
-    protected ParameterIdent assertParameterIdent(Parameter param)
+    protected ParameterIdent assertParameterIdent(int paramIndent)
     {
+        Parameter param = this.params.get(paramIndent);
+
         return param.execute(new ParameterAlgo<ParameterIdent, Object, RuntimeException>() {
 
             public ParameterIdent forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
@@ -186,8 +210,9 @@ public abstract class CommandBase implements Command {
         }, null);
     }
 
-    protected ParameterIdentSet assertParameterIdentSet(Parameter param)
+    protected ParameterIdentSet assertParameterIdentSet(int paramIndex)
     {
+        Parameter param = this.params.get(paramIndex);
         return param.execute(new ParameterAlgo<ParameterIdentSet, Object, RuntimeException>()
         {
             public ParameterIdentSet forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {

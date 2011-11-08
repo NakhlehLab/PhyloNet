@@ -23,5 +23,4 @@ Resulting gene trees:
 (((c,(a,b)),d),e);
 ((a,b),(c,e,d));
 (e,(d,((a,b),c)));
-
 ===

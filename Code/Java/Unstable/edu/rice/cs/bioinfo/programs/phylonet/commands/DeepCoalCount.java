@@ -56,8 +56,8 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
         boolean noError = true;
 
-        ParameterIdentSet speciesTreeParam = this.assertParameterIdentSet(this.params.get(0));
-        ParameterIdentSet geneTreeParam    = this.assertParameterIdentSet(this.params.get(1));
+        ParameterIdentSet speciesTreeParam = this.assertParameterIdentSet(0);
+        ParameterIdentSet geneTreeParam    = this.assertParameterIdentSet(1);
 
         for(int i = 2; i<this.params.size(); i++)
         {
@@ -169,7 +169,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
                {
                     Tree speciesTree = nr.readTree();
                     int coalNum = DeepCoalescencesCounter.countExtraCoal(geneTrees, speciesTree, _treatGeneTreesAsRooted, _bootstrap);
-                    result.append("Species_Tree#" + (index++ ) + " = " + speciesTree.toStringWD() + "\n");
+                    result.append("\nSpecies_Tree#" + (index++ ) + " = " + speciesTree.toStringWD() + "\n");
 			        result.append("Total number of extra lineages: " + coalNum);
                }
                catch(Exception e)

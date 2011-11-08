@@ -32,11 +32,9 @@ False Positives: 1
 # Internal Edges Model: 1
 # Internal Edges Experimental: 0
 
-
 SymmetricDifference tree2 tree3
 False Negatives: 1
 False Positives: 0
 # Internal Edges Model: 0
 # Internal Edges Experimental: 1
-
 ===

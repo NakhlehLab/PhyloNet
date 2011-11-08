@@ -25,6 +25,7 @@ public class Program {
 
     public static void main(String[] args) throws FileNotFoundException, IOException
     {
+        System.out.print("");
 
         if(args.length != 1) // we only expect one parameter, the input nexus file
         {
@@ -43,6 +44,9 @@ public class Program {
         {
             run(new FileInputStream(nexusFile), System.err, System.out);
         }
+
+        System.out.print("\n");
+
     }
 
     static void run(InputStream nexusStream, final PrintStream errorStream,
@@ -52,7 +56,7 @@ public class Program {
              {
                 public void execute(String s) {
 
-                     displaySteam.println(s);
+                     displaySteam.print(s);
                 }
              };
 
@@ -62,7 +66,7 @@ public class Program {
                 public void execute(String message, Integer line, Integer col) {
 
                     int oneBasedColumn = col + 1;
-                    errorStream.println(String.format("\nError at [%s,%s]: %s", line, oneBasedColumn, message));
+                    errorStream.print(String.format("\n\nError at [%s,%s]: %s", line, oneBasedColumn, message));
                     allowCommandExecution.setContents(false);
                 }
              };
@@ -119,10 +123,16 @@ public class Program {
          * Execute commands if no errors detected
          */
 
+        boolean first = true;
         if(allowCommandExecution.getContents())
         {
            for(Command command : commands)
            {
+               if(!first)
+               {
+                  display.execute("\n");
+
+               }
                try
                {
                     showCommand(command.getDefiningSyntaxCommand(), display);
@@ -134,6 +144,9 @@ public class Program {
                    errorDetected.execute(String.format("Error executing command '%s' (%s).", motivatingSyntaxCommand.getName(), e.getMessage()),
                                           motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
                }
+
+
+               first = false;
            }
         }
     }
@@ -165,7 +178,7 @@ public class Program {
 
                     while(elements.hasNext())
                     {
-                        b.append(elements.next());
+                        b.append(", " + elements.next());
                     }
 
                      b.append(")");
@@ -186,7 +199,7 @@ public class Program {
                   }
 
                   public String forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
-                      return parameterTaxaMap.OriginalSource;
+                      return null;
                   }
               }, null);
               accum.append(" " + paramValue);

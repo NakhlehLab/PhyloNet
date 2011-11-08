@@ -42,6 +42,9 @@ public class LCA extends CommandBaseFileOut {
 
        boolean noError = true;
 
+        _network = this.assertAndGetNetwork(0);
+        noError = noError && _network != null;
+
 
             final Parameter setFamilyParam = params.get(1);
 
@@ -97,15 +100,13 @@ public class LCA extends CommandBaseFileOut {
                 }
             }, noError);
 
+        if(params.size() == 3)
+        {
+            noError = this.checkOutFileContext(2);
+        }
 
-        if(noError)
-        {
-            return checkContext(sourceIdentToNetwork, errorDetected);
-        }
-        else
-        {
-            return noError;
-        }
+
+        return noError;
     }
 
     private boolean addTaxonToSet(StringBuffer taxonNameUnderConstruction, HashSet<String> set, Proc3<String,Integer,Integer> errorDetected, int lineNum, int i, Parameter setFamilyParam)
@@ -123,35 +124,6 @@ public class LCA extends CommandBaseFileOut {
         }
     }
 
-    private boolean checkContext(Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        boolean noError = true;
-
-        if(params.size() == 3)
-        {
-            Parameter outFileParam = params.get(2);
-            noError = this.checkOutFileContext(outFileParam, errorDetected);
-        }
-
-        ParameterIdent treeParam = this.assertParameterIdent(params.get(0));
-
-        if(treeParam != null)
-        {
-            noError = this.assertNetworkExists(treeParam);
-        }
-        else
-        {
-            noError = false;
-        }
-
-        if(noError)
-        {
-            String treeParamValue = treeParam.execute(GetSimpleParamValue.Singleton, null);
-            _network  = sourceIdentToNetwork.get(treeParamValue);
-        }
-
-        return noError;
-    }
-
     public String produceResult()
     {
 
@@ -163,7 +135,7 @@ public class LCA extends CommandBaseFileOut {
         NetworkNonEmpty autoLabeledNetwork = (NetworkNonEmpty) TreeTransformer.toNetwork(tree);
         String richNewickString = new SingleLinePrinter().toString(autoLabeledNetwork);
 
-        result.append(richNewickString);
+        result.append("\n" + richNewickString);
 
         SchieberVishkinLCA solver = new SchieberVishkinLCA(tree);
 

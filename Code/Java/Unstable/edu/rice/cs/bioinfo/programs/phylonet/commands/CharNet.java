@@ -58,25 +58,10 @@ public class CharNet extends CommandBaseFileOut {
     {
         boolean noError = true;
 
-        ParameterIdent inputNetworkParameter = this.assertParameterIdent(params.get(0));
+        _inputNetwork = this.assertAndGetNetwork(0);
+        noError = noError && _inputNetwork != null;
 
-        if(inputNetworkParameter != null)
-        {
-            if(this.assertNetworkExists(inputNetworkParameter))
-            {
-                _inputNetwork = this.sourceIdentToNetwork.get(inputNetworkParameter.Content);
-            }
-            else
-            {
-                noError = false;
-            }
-        }
-        else
-        {
-            noError = false;
-        }
-
-        ParamExtractor mSwitch = new ParamExtractor("m", this.params);
+        ParamExtractor mSwitch = new ParamExtractor("m", this.params, this.errorDetected);
         boolean sawDashM = mSwitch.ContainsSwitch;
 
         if(sawDashM)
@@ -152,25 +137,28 @@ public class CharNet extends CommandBaseFileOut {
         StringBuilder result = new StringBuilder();
         if(_method == Method.Tree)
         {
+            boolean first = true;
             for (NetworkTree<String> nt : Networks.getTrees(net)) {
                 String tree = nt.makeTree().toString();
 
                 try
                 {
                     String rTree = StringTransformer.toRNewickTree(tree);
-				    result.append(rTree.toString() + "\n");
+				    result.append("\n" + rTree.toString());
                 }
                 catch(CoordinateParseErrorsException e)
                 {
                     throw new RuntimeException(e);
                 }
+                first = false;
 			}
         }
         else if(_method == Method.Tri)
         {
+
             for (NetworkTripartition<String> ntp : Networks.getTripartitions(net)) {
 				for (int i = 0; i < ntp.getTripartitionNode().getIndeg(); i++) {
-					result.append(ntp.toString() + "\n");
+					result.append("\n" + ntp.toString());
 				}
 			}
         }
@@ -178,7 +166,7 @@ public class CharNet extends CommandBaseFileOut {
         {
 	        for (NetworkCluster<String> nc : Networks.getClusters(net))
             {
-				result.append(nc.toString() + "\n");
+				result.append("\n" + nc.toString());
 			}
 		}
 

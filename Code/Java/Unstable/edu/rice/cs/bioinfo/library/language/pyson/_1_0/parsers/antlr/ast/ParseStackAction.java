@@ -2,9 +2,7 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
 import org.antlr.runtime.Token;
-import sun.plugin.javascript.navig4.Link;
 
-import javax.lang.model.element.NestingKind;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -243,6 +241,31 @@ class ParseStackAction implements ParseStack {
         }
 
         _parseStack.push(new PhyloNetCommand(parts));
+    }
+
+    public void pushFASTAEntry(int numIdentsInDesc)
+    {
+        Identifier sequence = (Identifier)_parseStack.pop();
+
+        for(int i = 0; i<numIdentsInDesc; i++)
+        {
+            _parseStack.pop();
+        }
+
+        Identifier ident = (Identifier)_parseStack.pop();
+
+        _parseStack.push(new FASTAEntry(ident, sequence));
+    }
+
+    public void pushFASTABlockBody()
+    {
+        LinkedList<FASTAEntry> entries = new LinkedList<FASTAEntry>();
+        while(!_parseStack.empty() && _parseStack.peek() instanceof FASTAEntry)
+        {
+            entries.add( (FASTAEntry) _parseStack.pop());
+        }
+
+        _parseStack.push(new FASTABlockBody(entries));
     }
 
 }

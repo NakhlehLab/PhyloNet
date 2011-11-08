@@ -37,9 +37,11 @@ abstract class CommandBaseFileOut extends CommandBase{
 
 
 
-    protected  boolean checkOutFileContext(final Parameter outFileParam, final Proc3<String, Integer, Integer> errorDetected)
+    protected  boolean checkOutFileContext(int outFileParamIndex)
     {
         boolean noError = true;
+
+        final Parameter outFileParam = this.params.get(outFileParamIndex);
 
           _outFile = outFileParam.execute(new ParameterAlgo<File, Object, RuntimeException>() {
               public File forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {

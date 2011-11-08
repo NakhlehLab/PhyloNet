@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.util.List;
 
@@ -22,7 +23,9 @@ public class ParamExtractor
 
     public final Parameter PostSwitchParam;
 
-    ParamExtractor(String switchValue, List<Parameter> params)
+    public final boolean DuplicateSwitch;
+
+    ParamExtractor(String switchValue, List<Parameter> params, Proc3<String, Integer, Integer> errorDetected)
     {
         for(int i = 0; i<params.size(); i++)
         {
@@ -31,6 +34,7 @@ public class ParamExtractor
 
             if(simpleValue != null && simpleValue.toLowerCase().equals("-" + switchValue))
             {
+
                 ContainsSwitch = true;
                 SwitchParam = ithParam;
                 if(i<params.size()-1)
@@ -44,6 +48,21 @@ public class ParamExtractor
                     PostSwitchParam = null;
 
                 }
+
+                for(int j = i + 1; j<params.size(); j++)
+                {
+                    Parameter jthParam = params.get(j);
+                    simpleValue = jthParam.execute(GetSimpleParamValue.Singleton, null);
+
+                     if(simpleValue != null && simpleValue.toLowerCase().equals("-" + switchValue))
+                     {
+                         errorDetected.execute("Duplicate switch -" + switchValue, jthParam.getLine(), jthParam.getColumn());
+                         DuplicateSwitch = true;
+                         return;
+                     }
+                }
+                DuplicateSwitch = false;
+
                 return;
             }
         }
@@ -51,6 +70,7 @@ public class ParamExtractor
         SwitchParam = null;
         PostSwitchValue = null;
         PostSwitchParam = null;
+        DuplicateSwitch = false;
 
     }
 }

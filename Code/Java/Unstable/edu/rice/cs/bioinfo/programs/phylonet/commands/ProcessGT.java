@@ -15,10 +15,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 
 /**
@@ -36,6 +33,8 @@ public class ProcessGT extends CommandBaseFileOut
 
     private  double _bootstrap = 1;
 
+    private HashMap<String, List<String>> _taxonMap = null;
+
     private boolean _geneTreesRooted = true;
 
     ProcessGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -50,7 +49,7 @@ public class ProcessGT extends CommandBaseFileOut
 
     protected int getMaxNumParams()
     {
-        return 7;
+        return 8;
     }
 
     @Override
@@ -73,11 +72,46 @@ public class ProcessGT extends CommandBaseFileOut
             noError = _geneTrees != null && noError;
         }
 
-        if(!noError)
+         ParamExtractor uParam = new ParamExtractor("u", this.params, this.errorDetected);
+        if(uParam.ContainsSwitch)
         {
-            _speciesTrees = null;
-            _geneTrees = null;
+            _geneTreesRooted = false;
         }
+
+        ParamExtractor bParam = new ParamExtractor("b", this.params, this.errorDetected);
+        if(bParam.ContainsSwitch)
+        {
+            if(bParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _bootstrap = Double.parseDouble(bParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized bootstrap value " + bParam.PostSwitchValue, bParam.PostSwitchParam.getLine(), bParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -b.", bParam.SwitchParam.getLine(), bParam.SwitchParam.getColumn());
+            }
+        }
+
+
+        ParamExtractorAllelListMap aParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
+
+        if(aParam.ContainsSwitch)
+        {
+            noError = noError && aParam.IsValidMap;
+
+            if(aParam.IsValidMap)
+            {
+                _taxonMap = aParam.ValueMap;
+            }
+        }
+
+        checkAndSetOutFile(bParam, aParam);
 
         return noError;
     }

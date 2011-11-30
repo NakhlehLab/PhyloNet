@@ -20,13 +20,11 @@ import java.util.*;
  */
 class MAST extends CommandBaseFileOut
 {
-    Parameter _outFile = null;
+    private boolean _computeAll = false;
 
-    Parameter _allSwitch = null;
+   // Parameter _potentialTreeSetParam = null;
 
-    Parameter _potentialTreeSetParam = null;
-
-    ParameterIdentSet _treeSetParameter = null;
+  //  ParameterIdentSet _treeSetParameter = null;
 
     Set<Tree> _treeSet = new HashSet<Tree>();
 
@@ -50,116 +48,24 @@ class MAST extends CommandBaseFileOut
 
         boolean noError = true;
 
-        final String allSwitchText = "-a";
+        ParameterIdentSet treesIdentSet = this.assertParameterIdentSet(0);
+        noError = noError && treesIdentSet != null;
 
-        Parameter potentialTreeSetParam = null;
-        if(params.size() == 3)
+        if(treesIdentSet != null)
         {
-            _allSwitch = params.get(0);
-            _potentialTreeSetParam = params.get(1);
-            noError = noError && this.checkOutFileContext(2);
-        }
-        else if(params.size() == 2)
-        {
-            noError = params.get(0).execute(new ParameterAlgo<Boolean, Boolean, RuntimeException>() {
+            LinkedList<NetworkNonEmpty> trees = this.assertNetworksExist(treesIdentSet);
 
-                public Boolean forIdentifier(ParameterIdent parameter, Boolean noError) throws RuntimeException {
-                   _allSwitch = params.get(0);
-                   _potentialTreeSetParam = params.get(1);
-                   return noError;
-                }
-
-                public Boolean forIdentList(ParameterIdentList parameterIdentList, Boolean aBoolean) throws RuntimeException {
-                   return false;
-                }
-
-                public Boolean forQuote(ParameterQuote parameter, Boolean noError) throws RuntimeException {
-                   return false;
-                }
-
-                public Boolean forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Boolean noError) throws RuntimeException {
-                    return false;  //To change body of implemented methods use File | Settings | File Templates.
-                }
-
-                public Boolean forIdentSet(ParameterIdentSet parameterIdentSet, Boolean noError) throws RuntimeException {
-                    _treeSetParameter = parameterIdentSet;
-                    return noError;
-                }
-
-                public Boolean forTaxaMap(ParameterTaxaMap parameterTaxaMap, Boolean aBoolean) throws RuntimeException {
-                    return false;
-                }
-
-            }, noError);
-        }
-        else if(params.size() == 1)
-        {
-            _potentialTreeSetParam = params.get(0);
-        }
-
-        if(_allSwitch != null)
-        {
-            String switchText = _allSwitch.execute(GetSimpleParamValue.Singleton, null);
-
-            if(switchText != null)
+            Boolean rootedness = null;
+            for(NetworkNonEmpty tree : trees)
             {
-                if(!switchText.toLowerCase().equals(allSwitchText))
-                {
-                    errorDetected.execute(
-                            String.format("Expected '%s' switch for command '%s'.", allSwitchText, this.getDefiningSyntaxCommand()),
-                            _allSwitch.getLine(), _allSwitch.getColumn());
-                    noError = false;
-                }
-            }
-        }
-
-        if(_treeSetParameter == null && _potentialTreeSetParam != null)
-        {
-            try
-            {
-                _treeSetParameter = (ParameterIdentSet)_potentialTreeSetParam;
-            }
-            catch(ClassCastException e)
-            {
-                errorDetected.execute("Expected set of networks or trees.",
-                        _potentialTreeSetParam.getLine(), _potentialTreeSetParam.getColumn());
-                noError = false;
-            }
-        }
-
-
-        if(noError)
-        {
-            return checkContext(sourceIdentToNetwork, errorDetected);
-        }
-        else
-        {
-            return noError;
-        }
-
-    }
-
-    private boolean checkContext(Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected)
-    {
-        Boolean noError = true;
-
-        Boolean rootedness = null;
-
-        for(String networkName : _treeSetParameter.Elements)
-        {
-            noError = noError && this.assertNetworkExists(networkName, _treeSetParameter.getLine(), _treeSetParameter.getColumn());
-
-            if(noError)
-            {
-                Network n = sourceIdentToNetwork.get(networkName);
-                Tree treeForm = NetworkTransformer.toTree(n);
+                Tree treeForm = NetworkTransformer.toTree(tree);
 
                 if(rootedness != null)
                 {
                    if(rootedness != treeForm.isRooted())
                    {
                        errorDetected.execute(
-                               String.format("All trees for for MAST must be rooted or unrooted.  Unexpected rootendess for tree '%s'.", networkName),
+                               String.format("All trees for for MAST must be rooted or unrooted."),
                                this.getDefiningSyntaxCommand().getLine(), this.getDefiningSyntaxCommand().getColumn());
                        noError = false;
                    }
@@ -174,17 +80,39 @@ class MAST extends CommandBaseFileOut
             }
         }
 
-         return  noError;
+        final String allSwitchText = "-a";
+        ParamExtractor allSwitch = new ParamExtractor("a", this.params, this.errorDetected);
+        _computeAll = allSwitch.ContainsSwitch;
 
+        if(params.size() == 3)
+        {
+            noError = noError && this.checkOutFileContext(2);
+
+            if(!allSwitch.ContainsSwitch)
+            {
+                Parameter param0 = this.params.get(0);
+              errorDetected.execute(
+                            String.format("Expected '%s' switch for command '%s'.", allSwitchText, this.getDefiningSyntaxCommand()),
+                            param0.getLine(), param0.getColumn());
+                    noError = false;
+            }
+        }
+        else if(!allSwitch.ContainsSwitch && params.size() == 2)
+        {
+            noError = noError && this.checkOutFileContext(1);
+        }
+
+        return noError;
 
     }
+
 
     @Override
     protected String produceResult() {
 
         StringBuilder result = new StringBuilder();
 
-        if(_allSwitch != null)
+        if(_computeAll)
         {
             ExMultipleMasts emm = new ExMultipleMasts();
 

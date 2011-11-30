@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-11-03 16:17:38
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-11-22 14:20:47
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import java.util.LinkedList;
@@ -1094,40 +1094,46 @@ public class PySONParser extends org.antlr.runtime.Parser {
 
 
     // $ANTLR start "taxa_map"
-    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:150:1: taxa_map : s= '<' ( taxa_map_entry ';' )+ '>' ;
+    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:150:1: taxa_map : s= '<' taxa_map_entry ( ';' taxa_map_entry )+ '>' ;
     public final void taxa_map() throws RecognitionException {
         Token s=null;
 
-         int numKeys = 0; 
+         int numKeys = 1; 
         try {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:150:36: (s= '<' ( taxa_map_entry ';' )+ '>' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:152:2: s= '<' ( taxa_map_entry ';' )+ '>'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:150:36: (s= '<' taxa_map_entry ( ';' taxa_map_entry )+ '>' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:152:2: s= '<' taxa_map_entry ( ';' taxa_map_entry )+ '>'
             {
             s=(Token)match(input,28,FOLLOW_28_in_taxa_map560); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:152:7: ( taxa_map_entry ';' )+
+            pushFollow(FOLLOW_taxa_map_entry_in_taxa_map561);
+            taxa_map_entry();
+
+            state._fsp--;
+
+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:152:22: ( ';' taxa_map_entry )+
             int cnt12=0;
             loop12:
             do {
                 int alt12=2;
                 int LA12_0 = input.LA(1);
 
-                if ( (LA12_0==BEGIN||LA12_0==ID||(LA12_0 >= NETWORK && LA12_0 <= PHYLONET)||(LA12_0 >= TRANSLATE && LA12_0 <= UTREE)) ) {
+                if ( (LA12_0==27) ) {
                     alt12=1;
                 }
 
 
                 switch (alt12) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:152:9: taxa_map_entry ';'
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:152:23: ';' taxa_map_entry
             	    {
-            	    pushFollow(FOLLOW_taxa_map_entry_in_taxa_map563);
+            	    match(input,27,FOLLOW_27_in_taxa_map564); 
+
+            	    pushFollow(FOLLOW_taxa_map_entry_in_taxa_map566);
             	    taxa_map_entry();
 
             	    state._fsp--;
 
-
-            	    match(input,27,FOLLOW_27_in_taxa_map565); 
 
             	    numKeys++;
 
@@ -1144,7 +1150,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
             } while (true);
 
 
-            match(input,30,FOLLOW_30_in_taxa_map570); 
+            match(input,30,FOLLOW_30_in_taxa_map572); 
 
              stack.pushTaxaMap(numKeys, s); 
 
@@ -1173,15 +1179,15 @@ public class PySONParser extends org.antlr.runtime.Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:155:2: ( identifier ':' identifier ( ',' identifier )* )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:155:4: identifier ':' identifier ( ',' identifier )*
             {
-            pushFollow(FOLLOW_identifier_in_taxa_map_entry586);
+            pushFollow(FOLLOW_identifier_in_taxa_map_entry588);
             identifier();
 
             state._fsp--;
 
 
-            match(input,26,FOLLOW_26_in_taxa_map_entry588); 
+            match(input,26,FOLLOW_26_in_taxa_map_entry590); 
 
-            pushFollow(FOLLOW_identifier_in_taxa_map_entry590);
+            pushFollow(FOLLOW_identifier_in_taxa_map_entry592);
             identifier();
 
             state._fsp--;
@@ -1202,9 +1208,9 @@ public class PySONParser extends org.antlr.runtime.Parser {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:155:31: ',' identifier
             	    {
-            	    match(input,25,FOLLOW_25_in_taxa_map_entry593); 
+            	    match(input,25,FOLLOW_25_in_taxa_map_entry595); 
 
-            	    pushFollow(FOLLOW_identifier_in_taxa_map_entry595);
+            	    pushFollow(FOLLOW_identifier_in_taxa_map_entry597);
             	    identifier();
 
             	    state._fsp--;
@@ -1294,13 +1300,14 @@ public class PySONParser extends org.antlr.runtime.Parser {
     public static final BitSet FOLLOW_END_in_end_semi540 = new BitSet(new long[]{0x0000000008000000L});
     public static final BitSet FOLLOW_27_in_end_semi542 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_28_in_taxa_map560 = new BitSet(new long[]{0x00000000003C3910L});
-    public static final BitSet FOLLOW_taxa_map_entry_in_taxa_map563 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_27_in_taxa_map565 = new BitSet(new long[]{0x00000000403C3910L});
-    public static final BitSet FOLLOW_30_in_taxa_map570 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_identifier_in_taxa_map_entry586 = new BitSet(new long[]{0x0000000004000000L});
-    public static final BitSet FOLLOW_26_in_taxa_map_entry588 = new BitSet(new long[]{0x00000000003C3910L});
-    public static final BitSet FOLLOW_identifier_in_taxa_map_entry590 = new BitSet(new long[]{0x0000000002000002L});
-    public static final BitSet FOLLOW_25_in_taxa_map_entry593 = new BitSet(new long[]{0x00000000003C3910L});
-    public static final BitSet FOLLOW_identifier_in_taxa_map_entry595 = new BitSet(new long[]{0x0000000002000002L});
+    public static final BitSet FOLLOW_taxa_map_entry_in_taxa_map561 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_27_in_taxa_map564 = new BitSet(new long[]{0x00000000003C3910L});
+    public static final BitSet FOLLOW_taxa_map_entry_in_taxa_map566 = new BitSet(new long[]{0x0000000048000000L});
+    public static final BitSet FOLLOW_30_in_taxa_map572 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_identifier_in_taxa_map_entry588 = new BitSet(new long[]{0x0000000004000000L});
+    public static final BitSet FOLLOW_26_in_taxa_map_entry590 = new BitSet(new long[]{0x00000000003C3910L});
+    public static final BitSet FOLLOW_identifier_in_taxa_map_entry592 = new BitSet(new long[]{0x0000000002000002L});
+    public static final BitSet FOLLOW_25_in_taxa_map_entry595 = new BitSet(new long[]{0x00000000003C3910L});
+    public static final BitSet FOLLOW_identifier_in_taxa_map_entry597 = new BitSet(new long[]{0x0000000002000002L});
 
 }

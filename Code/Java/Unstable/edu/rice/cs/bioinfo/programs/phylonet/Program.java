@@ -42,7 +42,7 @@ public class Program {
         }
         else
         {
-            run(new FileInputStream(nexusFile), System.err, System.out);
+            run(new FileInputStream(nexusFile), System.err, System.out, new Random());
         }
 
         System.out.print("\n");
@@ -50,7 +50,7 @@ public class Program {
     }
 
     static void run(InputStream nexusStream, final PrintStream errorStream,
-                                             final PrintStream displaySteam) throws IOException
+                                             final PrintStream displaySteam, Random rand) throws IOException
     {
              Proc<String> display = new Proc<String>()
              {
@@ -106,7 +106,7 @@ public class Program {
         {
             try
             {
-                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, errorDetected));
+                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, errorDetected, rand));
             }
             catch(IllegalArgumentException e)
             {

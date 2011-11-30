@@ -131,8 +131,9 @@ public class SingleLinePrinter
         final String supportPart = info.Support.execute(new SupportAlgo<String, Object, RuntimeException>() {
 
             public String forSupportNonEmpty(SupportNonEmpty support, Object input) {
-               return (branchLengthPart == "" ? "::" : ":") +
-                       _supportTransformer == null ? support.SupportValue.Content : _supportTransformer.execute(support.SupportValue.Content);
+                String prefix =  (branchLengthPart == "" ? "::" : ":");
+                String suffix =  _supportTransformer == null ? support.SupportValue.Content : _supportTransformer.execute(support.SupportValue.Content);
+               return  prefix + suffix;
             }
 
             public String forSupportEmpty(SupportEmpty support, Object input) {

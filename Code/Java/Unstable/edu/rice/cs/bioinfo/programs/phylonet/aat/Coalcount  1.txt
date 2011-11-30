@@ -1,0 +1,20 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network net1 = ((a,b),(c,(d,(e,(f,g)))));
+Network net2 = ((f,b),(c,(d,(a,(e,g)))));
+
+END;
+
+
+BEGIN PHYLONET;
+
+countCoal net1 net2;
+
+END;
+===
+
+countCoal net1 net2
+4
+===

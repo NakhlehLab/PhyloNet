@@ -58,7 +58,7 @@ public class SingleLinePrinterTest {
 
         network = new NetworkNonEmpty(RootageQualifierEmpty.Singleton, new DescendantList(aChildren), a);
 
-         Assert.assertEquals("((Z#1)A1,(Z#1)A2)A;", new SingleLinePrinter().toString(network));
+        Assert.assertEquals("((Z#1)A1,(Z#1)A2)A;", new SingleLinePrinter().toString(network));
 
 
     }

@@ -16,7 +16,7 @@ public class ParameterIdentSet extends ParameterBase
 
     public final String OriginalSource;
 
-    ParameterIdentSet(int line, int column, String value) {
+    public ParameterIdentSet(int line, int column, String value) {
         super(line, column);
 
         OriginalSource = value;
@@ -31,6 +31,12 @@ public class ParameterIdentSet extends ParameterBase
 
         Elements = llElements;
 
+    }
+
+     public ParameterIdentSet(int line, int column, Iterable<String> elements) {
+        super(line, column);
+         OriginalSource = null;
+         Elements = elements;
     }
 
     public <R, T, E extends Exception> R execute(ParameterAlgo<R, T, E> algo, T input) throws E {

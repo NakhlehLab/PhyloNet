@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-11-03 16:17:38
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-11-22 14:20:47
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import java.util.LinkedList;
@@ -1058,17 +1058,17 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:4: ( ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' | ':' )+ )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' | ':' )+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:4: ( ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' )+ )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' )+
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' | ':' )+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' )+
             int cnt1=0;
             loop1:
             do {
                 int alt1=2;
                 int LA1_0 = input.LA(1);
 
-                if ( ((LA1_0 >= '-' && LA1_0 <= ':')||(LA1_0 >= 'A' && LA1_0 <= 'Z')||LA1_0=='\\'||LA1_0=='_'||(LA1_0 >= 'a' && LA1_0 <= 'z')) ) {
+                if ( ((LA1_0 >= '-' && LA1_0 <= '9')||(LA1_0 >= 'A' && LA1_0 <= 'Z')||LA1_0=='\\'||LA1_0=='_'||(LA1_0 >= 'a' && LA1_0 <= 'z')) ) {
                     alt1=1;
                 }
 
@@ -1077,7 +1077,7 @@ public class PySONLexer extends Lexer {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
-            	    if ( (input.LA(1) >= '-' && input.LA(1) <= ':')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
+            	    if ( (input.LA(1) >= '-' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
             	        input.consume();
             	    }
             	    else {
@@ -1891,11 +1891,11 @@ public class PySONLexer extends Lexer {
     static final String DFA5_specialS =
         "\6\uffff}>";
     static final String[] DFA5_transitionS = {
-            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\16\2\6\uffff\32\2\1\uffff"+
+            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\15\2\7\uffff\32\2\1\uffff"+
             "\1\2\2\uffff\1\2\1\uffff\32\2",
-            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\16\2\6\uffff\32\2\1"+
+            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\15\2\7\uffff\32\2\1"+
             "\uffff\1\2\2\uffff\1\2\1\uffff\32\2",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\13\uffff\1\5\16\2\6\uffff\32"+
+            "\2\3\2\uffff\1\3\22\uffff\1\3\13\uffff\1\5\15\2\7\uffff\32"+
             "\2\1\uffff\1\2\2\uffff\1\2\1\uffff\32\2\2\uffff\1\4",
             "\2\3\2\uffff\1\3\22\uffff\1\3\13\uffff\1\5\120\uffff\1\4",
             "",
@@ -1950,14 +1950,14 @@ public class PySONLexer extends Lexer {
     static final String[] DFA11_transitionS = {
             "\2\1\2\uffff\1\1\22\uffff\1\1\132\uffff\1\2",
             "\2\1\2\uffff\1\1\22\uffff\1\1\132\uffff\1\2",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\16\4\6\uffff\32\4\1"+
+            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\7\uffff\32\4\1"+
             "\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\16\4\6\uffff\32\4\1"+
+            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\7\uffff\32\4\1"+
             "\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
-            "\2\5\2\uffff\1\5\22\uffff\1\5\13\uffff\1\6\16\4\6\uffff\32"+
+            "\2\5\2\uffff\1\5\22\uffff\1\5\13\uffff\1\6\15\4\7\uffff\32"+
             "\4\1\uffff\1\4\2\uffff\1\4\1\uffff\32\4\2\uffff\1\7",
             "\2\5\2\uffff\1\5\22\uffff\1\5\13\uffff\1\6\120\uffff\1\7",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\16\4\6\uffff\32\4\1"+
+            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\7\uffff\32\4\1"+
             "\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
             "\2\10\2\uffff\1\10\22\uffff\1\10\10\uffff\1\11\2\uffff\1\12"+
             "\116\uffff\1\12",
@@ -2053,34 +2053,34 @@ public class PySONLexer extends Lexer {
         }
     }
     static final String DFA15_eotS =
-        "\1\uffff\1\27\2\uffff\1\33\5\uffff\4\34\1\26\2\34\1\uffff\3\26\15"+
-        "\uffff\4\34\1\uffff\2\34\5\uffff\6\34\1\74\1\uffff\1\34\1\100\4"+
-        "\34\2\uffff\1\34\1\107\1\uffff\1\34\1\111\1\34\1\113\1\uffff\1\34"+
-        "\1\uffff\1\34\1\uffff\1\34\1\uffff\2\34\1\122\1\123\1\34\1\125\2"+
-        "\uffff\1\126\2\uffff";
+        "\1\uffff\1\27\10\uffff\4\42\1\26\2\42\1\uffff\3\26\14\uffff\1\42"+
+        "\1\uffff\3\42\1\uffff\2\42\5\uffff\6\42\1\74\1\uffff\1\42\1\100"+
+        "\4\42\2\uffff\1\42\1\107\1\uffff\1\42\1\111\1\42\1\113\1\uffff\1"+
+        "\42\1\uffff\1\42\1\uffff\1\42\1\uffff\2\42\1\122\1\123\1\42\1\125"+
+        "\2\uffff\1\126\2\uffff";
     static final String DFA15_eofS =
         "\127\uffff";
     static final String DFA15_minS =
-        "\1\0\1\11\2\uffff\1\55\5\uffff\1\110\1\122\1\124\1\105\1\116\1\105"+
-        "\1\116\1\uffff\1\0\1\11\1\0\15\uffff\1\131\1\101\1\122\1\124\1\uffff"+
-        "\1\107\1\104\2\uffff\1\0\2\uffff\1\114\1\105\1\116\1\105\1\127\1"+
-        "\111\1\55\1\0\1\117\1\55\1\123\1\105\1\117\1\116\2\uffff\1\116\1"+
-        "\55\1\uffff\1\114\1\55\1\122\1\55\1\uffff\1\105\1\uffff\1\101\1"+
-        "\uffff\1\113\1\uffff\2\124\2\55\1\105\1\55\2\uffff\1\55\2\uffff";
+        "\1\0\1\11\10\uffff\1\110\1\122\1\124\1\105\1\116\1\105\1\116\1\uffff"+
+        "\1\0\1\11\1\0\14\uffff\1\131\1\uffff\1\101\1\122\1\124\1\uffff\1"+
+        "\107\1\104\2\uffff\1\0\2\uffff\1\114\1\105\1\116\1\105\1\127\1\111"+
+        "\1\55\1\0\1\117\1\55\1\123\1\105\1\117\1\116\2\uffff\1\116\1\55"+
+        "\1\uffff\1\114\1\55\1\122\1\55\1\uffff\1\105\1\uffff\1\101\1\uffff"+
+        "\1\113\1\uffff\2\124\2\55\1\105\1\55\2\uffff\1\55\2\uffff";
     static final String DFA15_maxS =
-        "\1\uffff\1\173\2\uffff\1\172\5\uffff\1\150\1\162\1\164\1\145\1\156"+
-        "\1\145\1\156\1\uffff\1\uffff\1\172\1\uffff\15\uffff\1\171\1\145"+
-        "\1\162\1\164\1\uffff\1\147\1\144\2\uffff\1\uffff\2\uffff\1\154\1"+
-        "\145\1\156\1\145\1\167\1\151\1\172\1\uffff\1\157\1\172\1\163\1\145"+
-        "\1\157\1\156\2\uffff\1\156\1\172\1\uffff\1\154\1\172\1\162\1\172"+
-        "\1\uffff\1\145\1\uffff\1\141\1\uffff\1\153\1\uffff\2\164\2\172\1"+
-        "\145\1\172\2\uffff\1\172\2\uffff";
+        "\1\uffff\1\173\10\uffff\1\150\1\162\1\164\1\145\1\156\1\145\1\156"+
+        "\1\uffff\1\uffff\1\172\1\uffff\14\uffff\1\171\1\uffff\1\145\1\162"+
+        "\1\164\1\uffff\1\147\1\144\2\uffff\1\uffff\2\uffff\1\154\1\145\1"+
+        "\156\1\145\1\167\1\151\1\172\1\uffff\1\157\1\172\1\163\1\145\1\157"+
+        "\1\156\2\uffff\1\156\1\172\1\uffff\1\154\1\172\1\162\1\172\1\uffff"+
+        "\1\145\1\uffff\1\141\1\uffff\1\153\1\uffff\2\164\2\172\1\145\1\172"+
+        "\2\uffff\1\172\2\uffff";
     static final String DFA15_acceptS =
-        "\2\uffff\1\2\1\3\1\uffff\1\5\1\6\1\7\1\10\1\11\7\uffff\1\24\3\uffff"+
-        "\1\32\1\33\1\1\1\27\1\2\1\3\1\4\1\24\1\5\1\6\1\7\1\10\1\11\4\uffff"+
-        "\1\16\2\uffff\1\25\1\26\1\uffff\1\31\1\32\16\uffff\1\23\1\30\2\uffff"+
-        "\1\13\4\uffff\1\30\1\uffff\1\22\1\uffff\1\14\1\uffff\1\17\6\uffff"+
-        "\1\15\1\12\1\uffff\1\21\1\20";
+        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\7\uffff\1\24\3\uffff"+
+        "\1\32\1\33\1\1\1\27\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1"+
+        "\24\3\uffff\1\16\2\uffff\1\25\1\26\1\uffff\1\31\1\32\16\uffff\1"+
+        "\23\1\30\2\uffff\1\13\4\uffff\1\30\1\uffff\1\22\1\uffff\1\14\1\uffff"+
+        "\1\17\6\uffff\1\15\1\12\1\uffff\1\21\1\20";
     static final String DFA15_specialS =
         "\1\2\21\uffff\1\1\1\uffff\1\0\26\uffff\1\4\11\uffff\1\3\41\uffff}>";
     static final String[] DFA15_transitionS = {
@@ -2092,13 +2092,13 @@ public class PySONLexer extends Lexer {
             "\2\30\2\uffff\1\30\22\uffff\1\30\132\uffff\1\30",
             "",
             "",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
             "",
             "",
             "",
             "",
             "",
-            "\1\42\37\uffff\1\42",
+            "",
+            "\1\41\37\uffff\1\41",
             "\1\43\37\uffff\1\43",
             "\1\44\37\uffff\1\44",
             "\1\45\37\uffff\1\45",
@@ -2107,7 +2107,7 @@ public class PySONLexer extends Lexer {
             "\1\50\37\uffff\1\50",
             "",
             "\0\51",
-            "\2\52\2\uffff\1\52\22\uffff\1\52\14\uffff\16\52\6\uffff\32"+
+            "\2\52\2\uffff\1\52\22\uffff\1\52\14\uffff\15\52\7\uffff\32"+
             "\52\1\uffff\1\52\2\uffff\1\52\1\uffff\32\52",
             "\46\54\1\53\64\54\1\uffff\uffa4\54",
             "",
@@ -2122,8 +2122,8 @@ public class PySONLexer extends Lexer {
             "",
             "",
             "",
-            "",
             "\1\56\37\uffff\1\56",
+            "",
             "\1\60\3\uffff\1\57\33\uffff\1\60\3\uffff\1\57",
             "\1\61\37\uffff\1\61",
             "\1\62\37\uffff\1\62",
@@ -2142,11 +2142,11 @@ public class PySONLexer extends Lexer {
             "\1\71\37\uffff\1\71",
             "\1\72\37\uffff\1\72",
             "\1\73\37\uffff\1\73",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "\133\54\1\uffff\1\54\1\75\uffa2\54",
             "\1\76\37\uffff\1\76",
-            "\16\34\6\uffff\22\34\1\77\7\34\1\uffff\1\34\2\uffff\1\34\1"+
-            "\uffff\22\34\1\77\7\34",
+            "\15\42\7\uffff\22\42\1\77\7\42\1\uffff\1\42\2\uffff\1\42\1"+
+            "\uffff\22\42\1\77\7\42",
             "\1\101\37\uffff\1\101",
             "\1\102\37\uffff\1\102",
             "\1\103\37\uffff\1\103",
@@ -2154,12 +2154,12 @@ public class PySONLexer extends Lexer {
             "",
             "",
             "\1\106\37\uffff\1\106",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "",
             "\1\110\37\uffff\1\110",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "\1\112\37\uffff\1\112",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "",
             "\1\114\37\uffff\1\114",
             "",
@@ -2169,14 +2169,14 @@ public class PySONLexer extends Lexer {
             "",
             "\1\117\37\uffff\1\117",
             "\1\120\37\uffff\1\120",
-            "\16\34\6\uffff\22\34\1\121\7\34\1\uffff\1\34\2\uffff\1\34\1"+
-            "\uffff\22\34\1\121\7\34",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\22\42\1\121\7\42\1\uffff\1\42\2\uffff\1\42\1"+
+            "\uffff\22\42\1\121\7\42",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "\1\124\37\uffff\1\124",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "",
             "",
-            "\16\34\6\uffff\32\34\1\uffff\1\34\2\uffff\1\34\1\uffff\32\34",
+            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
             "",
             ""
     };

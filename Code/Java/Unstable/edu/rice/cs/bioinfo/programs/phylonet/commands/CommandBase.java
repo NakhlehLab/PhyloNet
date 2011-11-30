@@ -183,28 +183,67 @@ public abstract class CommandBase implements Command {
 
             public ParameterIdent forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
 
-                errorDetected.execute("Expected network identifier, found parameter identifier list.", parameterIdentList.getLine(), parameterIdentList.getColumn());
+                errorDetected.execute("Expected identifier, found parameter identifier list.", parameterIdentList.getLine(), parameterIdentList.getColumn());
                 return null;
             }
 
             public ParameterIdent forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
 
-                errorDetected.execute("Expected network identifier, found quoted parameter.", parameterQuote.getLine(), parameterQuote.getColumn());
+                errorDetected.execute("Expected identifier, found quoted parameter.", parameterQuote.getLine(), parameterQuote.getColumn());
                 return null;
             }
 
             public ParameterIdent forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
-               errorDetected.execute("Expected network identifier, found taxon set list.", parameterTaxonSetList.getLine(), parameterTaxonSetList.getColumn());
+               errorDetected.execute("Expected identifier, found taxon set list.", parameterTaxonSetList.getLine(), parameterTaxonSetList.getColumn());
                 return null;
             }
 
             public ParameterIdent forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
-                errorDetected.execute("Expected network identifier, found identifier set list.", parameterIdentSet.getLine(), parameterIdentSet.getColumn());
+                errorDetected.execute("Expected identifier, found identifier set list.", parameterIdentSet.getLine(), parameterIdentSet.getColumn());
                 return null;
             }
 
             public ParameterIdent forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
-                errorDetected.execute("Expected network identifier, taxa map.", parameterTaxaMap.getLine(), parameterTaxaMap.getColumn());
+                errorDetected.execute("Expected identifier, found taxa map.", parameterTaxaMap.getLine(), parameterTaxaMap.getColumn());
+                return null;
+            }
+        }, null);
+    }
+
+     protected ParameterQuote assertQuotedParameter(int paramIndent)
+    {
+        Parameter param = this.params.get(paramIndent);
+
+        return param.execute(new ParameterAlgo<ParameterQuote, Object, RuntimeException>() {
+
+            public ParameterQuote forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
+                errorDetected.execute("Expected quoted parameter, found identifier.", parameterIdent.getLine(), parameterIdent.getColumn());
+                return null;
+            }
+
+            public ParameterQuote forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
+
+                errorDetected.execute("Expected quoted parameter, found parameter identifier list.", parameterIdentList.getLine(), parameterIdentList.getColumn());
+                return null;
+            }
+
+            public ParameterQuote forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
+
+               return parameterQuote;
+            }
+
+            public ParameterQuote forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
+               errorDetected.execute("Expected quoted parameter, found taxon set list.", parameterTaxonSetList.getLine(), parameterTaxonSetList.getColumn());
+                return null;
+            }
+
+            public ParameterQuote forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
+                errorDetected.execute("Expected quoted parameter, found identifier set list.", parameterIdentSet.getLine(), parameterIdentSet.getColumn());
+                return null;
+            }
+
+            public ParameterQuote forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
+                errorDetected.execute("Expected quoted parameter, found taxa map.", parameterTaxaMap.getLine(), parameterTaxaMap.getColumn());
                 return null;
             }
         }, null);

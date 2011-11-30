@@ -7,6 +7,7 @@ import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +18,9 @@ import java.util.Map;
  */
 public class CommandFactory {
 
-    public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected)
+
+
+    public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, Random rand)
     {
         String lowerCommandName = directive.getName().toLowerCase();
 
@@ -70,6 +73,38 @@ public class CommandFactory {
         else if(lowerCommandName.equals("genst"))
         {
             return new GenST(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("gencplex"))
+        {
+            return new GenCPLEX(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_mdc"))
+        {
+            return new InferST_MDC(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_mdc_time"))
+        {
+            return new InferST_MDC_Time(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_mdc_ur"))
+        {
+            return new InferST_MDC_UR(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_glass"))
+        {
+            return new InfterST_MDC_GLASS(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_dv"))
+        {
+            return new InferST_DV(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_mc"))
+        {
+            return new InferST_MC(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("infer_st_bootstrap"))
+        {
+            return new InferST_Bootstrap(directive, params, sourceIdentToNetwork, errorDetected, rand);
         }
         else
         {

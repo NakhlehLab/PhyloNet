@@ -1,0 +1,25 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network g1 = ((((a,b),c),d),e);
+Network g2 = ((((a,b),c),d),e);
+Network g3 = ((((a,b),c),d),e);
+Network g4 = ((a,b),((c,e),d));
+Network g5 = ((a,c),((b,e),d));
+Network g6 = ((((a,b),c),d),e);
+Network g7 = ((a,b),((c,e),d));
+END;
+
+
+BEGIN PHYLONET;
+
+Infer_ST_DV {g1, g2, g3, g4, g5, g6, g7};
+
+END;
+===
+
+Infer_ST_DV {g1, g2, g3, g4, g5, g6, g7}
+1 tree(s) has(have) the frequency of 57%
+((((a,b),c),d),e);
+===

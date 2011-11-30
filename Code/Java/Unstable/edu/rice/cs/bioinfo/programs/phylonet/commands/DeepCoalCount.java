@@ -14,10 +14,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 import java.io.StringReader;
 import java.security.cert.TrustAnchor;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,7 +25,7 @@ import java.util.Map;
  */
 public class DeepCoalCount extends CommandBaseFileOut {
 
-    private Object taxonMap = null;
+    private HashMap<String,String> _taxonMap = null;
 
     private boolean  _treatGeneTreesAsRooted = true;
 
@@ -49,7 +46,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
     protected int getMaxNumParams()
     {
-        return 6;
+        return 8;
     }
 
     public boolean checkParamsForCommand() {
@@ -57,35 +54,51 @@ public class DeepCoalCount extends CommandBaseFileOut {
         boolean noError = true;
 
         ParameterIdentSet speciesTreeParam = this.assertParameterIdentSet(0);
+        noError = noError && speciesTreeParam != null;
+
         ParameterIdentSet geneTreeParam    = this.assertParameterIdentSet(1);
+        noError = noError && geneTreeParam != null;
 
-        for(int i = 2; i<this.params.size(); i++)
+        ParamExtractor uParam = new ParamExtractor("u", this.params, this.errorDetected);
+        if(uParam.ContainsSwitch)
         {
-            Parameter ithParam = params.get(i);
-            String value = params.get(i).execute(GetSimpleParamValue.Singleton, null);
+            _treatGeneTreesAsRooted = false;
+        }
 
-            if(value != null)
+        ParamExtractor bParam = new ParamExtractor("b", this.params, this.errorDetected);
+        if(bParam.ContainsSwitch)
+        {
+            if(bParam.PostSwitchParam != null)
             {
-                if(value.toLowerCase().equals("-b"))
+                try
                 {
-                    if(i + 1 < params.size())
-                    {
-                        Parameter ithPlusOneParam = params.get(i + 1);
-
-                    }
-                    else
-                    {
-                        errorDetected.execute("Expected threshold value after -b switch.", ithParam.getLine(), ithParam.getColumn());
-                    }
+                    _bootstrap = Double.parseDouble(bParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized bootstrap value " + bParam.PostSwitchValue, bParam.PostSwitchParam.getLine(), bParam.PostSwitchParam.getColumn());
                 }
             }
             else
             {
-                errorDetected.execute("Expected -b or -a switches.", ithParam.getLine(), ithParam.getColumn());
+                errorDetected.execute("Expected value after switch -b.", bParam.SwitchParam.getLine(), bParam.SwitchParam.getColumn());
             }
-
         }
 
+
+        ParamExtractorAllelMap aParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+
+        if(aParam.ContainsSwitch)
+        {
+            noError = noError && aParam.IsValidMap;
+
+            if(aParam.IsValidMap)
+            {
+                _taxonMap = aParam.ValueMap;
+            }
+        }
+
+        checkAndSetOutFile(bParam, aParam);
 
         if(noError)
         {
@@ -138,8 +151,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
         StringBuffer result = new StringBuffer();
 
-       if(taxonMap == null)
-       {
+
            List<Tree> geneTrees = new LinkedList<Tree>();
 
            for(NetworkNonEmpty geneTree : _geneTrees)
@@ -168,7 +180,16 @@ public class DeepCoalCount extends CommandBaseFileOut {
                try
                {
                     Tree speciesTree = nr.readTree();
-                    int coalNum = DeepCoalescencesCounter.countExtraCoal(geneTrees, speciesTree, _treatGeneTreesAsRooted, _bootstrap);
+                    int coalNum;
+
+                    if(_taxonMap == null)
+                    {
+                       coalNum = DeepCoalescencesCounter.countExtraCoal(geneTrees, speciesTree, _treatGeneTreesAsRooted, _bootstrap);
+                    }
+                    else
+                    {
+                       coalNum = DeepCoalescencesCounter.countExtraCoal(geneTrees, speciesTree, _taxonMap, _treatGeneTreesAsRooted, _bootstrap);
+                    }
                     result.append("\nSpecies_Tree#" + (index++ ) + " = " + speciesTree.toStringWD() + "\n");
 			        result.append("Total number of extra lineages: " + coalNum);
                }
@@ -177,7 +198,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
                    errorDetected.execute(e.getMessage(), -1, -1);
                }
            }
-       }
+
 
         return result.toString();
 

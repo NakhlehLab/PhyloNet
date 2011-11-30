@@ -14,11 +14,14 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.Ne
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import sun.net.ConnectionResetException;
 import sun.nio.cs.HistoricallyNamedCharset;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,7 +31,7 @@ import java.util.Map;
  * Time: 4:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class CharNet extends CommandBaseFileOut {
+public class CmpNets extends CommandBaseFileOut {
 
     enum Method
     {
@@ -37,20 +40,23 @@ public class CharNet extends CommandBaseFileOut {
 
     private Method _method;
 
-    private NetworkNonEmpty _inputNetwork;
+    private NetworkNonEmpty _inputNetwork1;
 
-    CharNet(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    private NetworkNonEmpty _inputNetwork2;
+
+
+    CmpNets(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 
     @Override
     protected int getMinNumParams() {
-        return 3;  //To change body of implemented methods use File | Settings | File Templates.
+        return 4;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     protected int getMaxNumParams() {
-        return 4;  //To change body of implemented methods use File | Settings | File Templates.
+        return 5;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -58,10 +64,13 @@ public class CharNet extends CommandBaseFileOut {
     {
         boolean noError = true;
 
-        _inputNetwork = this.assertAndGetNetwork(0);
-        noError = noError && _inputNetwork != null;
+        _inputNetwork1 = this.assertAndGetNetwork(0);
+        noError = noError && _inputNetwork1 != null;
 
-        ParamExtractor mSwitch = new ParamExtractor("m", this.params, this.errorDetected);
+        _inputNetwork2 = this.assertAndGetNetwork(1);
+        noError = noError && _inputNetwork2 != null;
+
+        ParamExtractor mSwitch = new ParamExtractor("m", this.params, errorDetected);
         boolean sawDashM = mSwitch.ContainsSwitch;
 
         if(sawDashM)
@@ -102,7 +111,7 @@ public class CharNet extends CommandBaseFileOut {
              noError = false;
         }
 
-        this.checkAndSetOutFile(mSwitch);
+         this.checkAndSetOutFile(mSwitch);
 
           return noError;
     }
@@ -115,20 +124,41 @@ public class CharNet extends CommandBaseFileOut {
             throw new IllegalStateException("_method should be non-null.");
         }
 
-        if(_inputNetwork == null)
+        if(_inputNetwork1 == null)
         {
-            throw new IllegalStateException("_inputNetwork should be non-null.");
+            throw new IllegalStateException("_inputNetwork1 should be non-null.");
         }
 
-        String eNewickInputNetwork = NetworkTransformer.toENewick(_inputNetwork);
+        if(_inputNetwork2 == null)
+        {
+            throw new IllegalStateException("_inputNetwork2 should be non-null.");
+        }
+
+        String eNewickInputNetwork1 = NetworkTransformer.toENewick(_inputNetwork1);
 
        // Read the input network.
-		ExNewickReader<String> enr = new ExNewickReader<String>(new StringReader(eNewickInputNetwork));
+		ExNewickReader<Object> enr = new ExNewickReader<Object>(new StringReader(eNewickInputNetwork1));
 
-        Network<String> net;
+        Network<Object> net1;
         try
         {
-		    net = enr.readNetwork();
+		    net1 = enr.readNetwork();
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+
+
+        String eNewickInputNetwork2 = NetworkTransformer.toENewick(_inputNetwork2);
+
+       // Read the input network.
+		enr = new ExNewickReader<Object>(new StringReader(eNewickInputNetwork2));
+
+        Network<Object> net2;
+        try
+        {
+		    net2 = enr.readNetwork();
         }
         catch(Exception e)
         {
@@ -136,40 +166,58 @@ public class CharNet extends CommandBaseFileOut {
         }
 
         StringBuilder result = new StringBuilder();
-        if(_method == Method.Tree)
-        {
-            boolean first = true;
-            for (NetworkTree<String> nt : Networks.getTrees(net)) {
-                String tree = nt.makeTree().toString();
+        List<NetworkCluster<Object>> clusters1 = null, clusters2 = null;
 
-                try
-                {
-                    String rTree = StringTransformer.toRNewickTree(tree);
-				    result.append("\n" + rTree.toString());
-                }
-                catch(CoordinateParseErrorsException e)
-                {
-                    throw new RuntimeException(e);
-                }
-                first = false;
-			}
-        }
-        else if(_method == Method.Tri)
+       if(_method == Method.Cluster)
         {
-
-            for (NetworkTripartition<String> ntp : Networks.getTripartitions(net)) {
-				for (int i = 0; i < ntp.getTripartitionNode().getIndeg(); i++) {
-					result.append("\n" + ntp.toString());
+            if (clusters1 == null) {
+				clusters1 = new LinkedList<NetworkCluster<Object>>();
+				for (NetworkCluster<Object> nc : Networks.getClusters(net1)) {
+					clusters1.add(nc);
 				}
 			}
-        }
-        else if(_method == Method.Cluster)
-        {
-	        for (NetworkCluster<String> nc : Networks.getClusters(net))
-            {
-				result.append("\n" + nc.toString());
+			if (clusters2 == null) {
+				clusters2 = new LinkedList<NetworkCluster<Object>>();
+				for (NetworkCluster<Object> nc : Networks.getClusters(net2)) {
+					clusters2.add(nc);
+				}
 			}
+
+			double dist[] = Networks.computeClusterDistance(clusters1, clusters2);
+			result.append("\n" + "The cluster-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2]);
 		}
+        else if(_method == Method.Tri)
+        {
+            List<NetworkTripartition<Object>> partitions1 = new LinkedList<NetworkTripartition<Object>>();
+			List<NetworkTripartition<Object>> partitions2 = new LinkedList<NetworkTripartition<Object>>();
+
+			for (NetworkTripartition<Object> ntp : Networks.getTripartitions(net1)) {
+				partitions1.add(ntp);
+			}
+			for (NetworkTripartition<Object> ntp : Networks.getTripartitions(net2)) {
+				partitions2.add(ntp);
+			}
+
+			double dist[] = Networks.computeTripartitionDistance(partitions1, partitions2);
+			result.append("\n" + "The tripartition-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2]);
+        }
+        else if(_method == Method.Tree)
+       {
+          LinkedList<Tree> trees1 =new LinkedList<Tree>();
+          LinkedList<Tree> trees2 =new LinkedList<Tree>();
+
+
+           for (NetworkTree<Object> nt : Networks.getTrees(net1)) {
+               trees1.add(nt.makeTree());
+           }
+
+           for (NetworkTree<Object> nt : Networks.getTrees(net2)) {
+               trees2.add(nt.makeTree());
+           }
+
+           double dist[] = Networks.computeTreeDistance(trees1, trees2);
+		   result.append("\nThe tree-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2]);
+       }
 
         return result.toString();
 

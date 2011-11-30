@@ -1,0 +1,20 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network net1 = ((a,(b,(c)x#1)),((d,x#1),e));
+Network net2 = ((((a, (c)x#1), d), (b, x)), e);
+
+END;
+
+
+BEGIN PHYLONET;
+
+Cmpnets net1 net2 -m cluster;
+
+END;
+===
+
+Cmpnets net1 net2 -m cluster
+The cluster-based distance between two networks: 0.8333333333333334 0.8 0.8166666666666667
+===

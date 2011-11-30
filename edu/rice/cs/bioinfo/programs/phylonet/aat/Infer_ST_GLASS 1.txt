@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network g1 = ((((a,b),c),d),e);
+Network g2 = (((a,b),((c,e),d));
+Network g3 = ((a,c),((b,e),d));
+
+END;
+
+
+BEGIN PHYLONET;
+
+Infer_ST_GLASS {g1, g2, g3};
+
+END;
+===
+
+Infer_ST_GLASS {g1, g2, g3}
+(e,(d,(c,(a,b))));
+===

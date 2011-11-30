@@ -12,8 +12,8 @@ END;
 BEGIN PHYLONET;
 
 MAST {tree1, tree2};
-MAST -a {tree1, tree2};
-MAST -A {tree1, tree2};
+MAST {tree1, tree2} -a;
+MAST {tree1, tree2} -A;
 
 END;
 ===
@@ -21,11 +21,11 @@ END;
 MAST {tree1, tree2}
 ((4,3),2);
 
-MAST -a {tree1, tree2}
+MAST {tree1, tree2} -a
 Number of MASTs: 1
 ((4,3),2);
 
-MAST -A {tree1, tree2}
+MAST {tree1, tree2} -A
 Number of MASTs: 1
 ((4,3),2);
 ===

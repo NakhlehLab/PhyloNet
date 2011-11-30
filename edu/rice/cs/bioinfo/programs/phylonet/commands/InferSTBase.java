@@ -1,0 +1,194 @@
+package edu.rice.cs.bioinfo.programs.phylonet.commands;
+
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: Matt
+ * Date: 11/9/11
+ * Time: 4:06 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public abstract class InferSTBase extends CommandBaseFileOut
+{
+    class ThresholdResult
+    {
+        public final boolean NoError;
+
+        public final double Threshold;
+
+        public final ParamExtractor Extractor;
+
+        public ThresholdResult(boolean  noError, double threshold, ParamExtractor extractor)
+        {
+            NoError = noError;
+            Threshold = threshold;
+            Extractor = extractor;
+        }
+    }
+
+    class TaxonMapResult
+    {
+        public final boolean NoError;
+
+        public final Map<String,String> TaxonMap;
+
+        public final ParamExtractor Extractor;
+
+        public TaxonMapResult(boolean  noError, Map<String,String> taxonMap, ParamExtractor extractor)
+        {
+            NoError = noError;
+            TaxonMap = taxonMap;
+            Extractor = extractor;
+        }
+    }
+
+    protected Iterable<NetworkNonEmpty> _geneTrees;
+
+    private ArrayList<Proc<String>> _stGeneratedObservers = new ArrayList<Proc<String>>();
+
+    protected void SpeciesTreeGenerated(String treeNewick)
+    {
+        for(Proc<String> observer : _stGeneratedObservers)
+        {
+            observer.execute(treeNewick);
+        }
+    }
+
+    InferSTBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    }
+
+    @Override
+    protected abstract int getMinNumParams();
+
+    @Override
+    protected abstract int getMaxNumParams();
+
+    @Override
+    protected boolean checkParamsForCommand()
+    {
+       boolean noError = true;
+
+        ParameterIdentSet geneTreesParam = this.assertParameterIdentSet(0);
+        noError = noError && geneTreesParam != null;
+
+        if(noError)
+        {
+            _geneTrees = this.assertNetworksExist(geneTreesParam);
+        }
+
+        return noError;
+    }
+
+     @Override
+    protected abstract String produceResult();
+
+    protected List<Tree> GetGeneTreesAsSTIDoubleTreeList()
+    {
+        List<Tree> trees = new ArrayList<Tree>();
+
+        for(NetworkNonEmpty geneTree : _geneTrees)
+        {
+            try
+            {
+                NewickReader nr = new NewickReader(new StringReader(NetworkTransformer.toENewick(geneTree)));
+			    STITree<Double> gt = new STITree<Double>(true);
+		        nr.readTree(gt);
+			    trees.add(gt);
+            }
+            catch(Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return trees;
+    }
+
+     protected List<Tree> GetGeneTreesAsTreeList()
+    {
+        List<Tree> trees = new ArrayList<Tree>();
+
+        for(NetworkNonEmpty geneTree : _geneTrees)
+        {
+            try
+            {
+                NewickReader nr = new NewickReader(new StringReader(NetworkTransformer.toENewick(geneTree)));
+			    Tree tr = nr.readTree();
+				trees.add(tr);
+            }
+            catch(Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return trees;
+    }
+
+    protected ThresholdResult assignThreshold(double defaultBootstrap)
+    {
+        double bootstrap = defaultBootstrap;
+        boolean noError = true;
+
+        ParamExtractor bParam = new ParamExtractor("b", this.params, this.errorDetected);
+        if(bParam.ContainsSwitch)
+        {
+            if(bParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    bootstrap = Double.parseDouble(bParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unknown bootstrap '" + bParam.PostSwitchValue + "'.", bParam.PostSwitchParam.getLine(), bParam.PostSwitchParam.getColumn());
+                    noError = false;
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after bootstrap switch.", bParam.SwitchParam.getLine(), bParam.SwitchParam.getColumn());
+                noError = false;
+            }
+        }
+
+        return new ThresholdResult(noError, bootstrap, bParam);
+    }
+
+    protected TaxonMapResult assignTaxonMap()
+    {
+        ParamExtractorAllelMap aParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+        boolean noError = true;
+        HashMap<String,String> taxonMap = null;
+
+        if(aParam.ContainsSwitch)
+        {
+            noError = noError && aParam.IsValidMap;
+
+            if(aParam.IsValidMap)
+            {
+                taxonMap = aParam.ValueMap;
+            }
+        }
+
+        return new TaxonMapResult(noError, taxonMap, aParam);
+    }
+
+
+}

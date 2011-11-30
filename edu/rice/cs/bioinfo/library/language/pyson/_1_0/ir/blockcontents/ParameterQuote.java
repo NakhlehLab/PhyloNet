@@ -13,7 +13,7 @@ public class ParameterQuote extends ParameterBase {
 
     public ParameterQuote(int line, int column, String wholeText) {
         super(line, column);
-        UnquotedText = wholeText.substring(1, wholeText.length()-2);
+        UnquotedText = wholeText.substring(1, wholeText.length()-1);
     }
 
     public <R, T, E extends Exception> R execute(ParameterAlgo<R, T, E> algo, T input) throws E {

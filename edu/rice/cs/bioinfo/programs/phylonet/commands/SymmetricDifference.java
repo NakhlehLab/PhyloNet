@@ -26,8 +26,6 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     private NetworkNonEmpty _experimentalNetwork;
 
-    private boolean _contextChecked = false;
-
     SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
@@ -62,13 +60,15 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
         Parameter modelTreeParam = params.get(0);
         _modelNetwork = this.assertAndGetNetwork(0);
-        String modelTreeParamValue = _modelNetwork == null ? null : modelTreeParam.execute(GetSimpleParamValue.Singleton, null);
         noError = noError && _modelNetwork != null;
+        String modelTreeParamValue = _modelNetwork == null ? null : modelTreeParam.execute(GetSimpleParamValue.Singleton, null);
+
 
         Parameter experimentalTreeParam = params.get(1);
         _experimentalNetwork = this.assertAndGetNetwork(1);
-        String experimentalTreeParamValue = _experimentalNetwork == null ? null : experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
         noError = noError && _experimentalNetwork != null;
+        String experimentalTreeParamValue = _experimentalNetwork == null ? null : experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
+
 
         if(params.size() == 3)
         {
@@ -98,7 +98,6 @@ public class SymmetricDifference extends CommandBaseFileOut {
            }
        }
 
-        _contextChecked = true;
         return noError;
     }
 
@@ -177,10 +176,7 @@ public class SymmetricDifference extends CommandBaseFileOut {
     }
 
     protected String produceResult() {
-        if(!_contextChecked)
-        {
-            throw new IllegalStateException("checkContext must be called prior to execute.");
-        }
+
 
         Tree modelTree = NetworkTransformer.toTree(_modelNetwork);
         Tree experamentalTree = NetworkTransformer.toTree(_experimentalNetwork);

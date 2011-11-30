@@ -1,0 +1,19 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network st = ((((a:1,b:2),c:3),d:4),e:5);
+Network gt = (((a:1,b:2,c:3),d:4),e:5);
+
+END;
+
+
+BEGIN PHYLONET;
+
+gencplex {st} {gt} 2 2 "C:\temp\cplex" ;
+
+END;
+===
+
+gencplex {st} {gt} 2 2 "C:\temp\cplex"
+===

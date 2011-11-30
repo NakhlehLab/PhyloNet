@@ -1,0 +1,20 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network net1 = ((a,(b,(c)x#1)),((d,x#1),e));
+Network net2 = ((((a, (c)x#1), d), (b, x)), e);
+
+END;
+
+
+BEGIN PHYLONET;
+
+Cmpnets net1 net2 -m tree;
+
+END;
+===
+
+Cmpnets net1 net2 -m tree
+The tree-based distance between two networks: 1.0 1.0 1.0
+===

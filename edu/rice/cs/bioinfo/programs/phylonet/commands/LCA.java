@@ -20,7 +20,7 @@ import java.util.*;
  */
 public class LCA extends CommandBaseFileOut {
 
-    private NetworkNonEmpty _network;
+    private NetworkNonEmpty _tree;
 
     private ArrayList<Set<String>> _setFamilyList = new ArrayList<Set<String>>();
 
@@ -40,65 +40,65 @@ public class LCA extends CommandBaseFileOut {
 
     public boolean checkParamsForCommand() {
 
-       boolean noError = true;
+        boolean noError = true;
 
-        _network = this.assertAndGetNetwork(0);
-        noError = noError && _network != null;
+        _tree = this.assertAndGetNetwork(0);
+        noError = noError && _tree != null;
 
 
-            final Parameter setFamilyParam = params.get(1);
+        final Parameter setFamilyParam = params.get(1);
 
-            noError = setFamilyParam.execute(new ParameterAlgo<Boolean, Boolean, RuntimeException>() {
-                public Boolean forIdentifier(ParameterIdent parameter, Boolean o) throws RuntimeException {
-                    return unExpectedCase();
-                }
+        noError = setFamilyParam.execute(new ParameterAlgo<Boolean, Boolean, RuntimeException>() {
+            public Boolean forIdentifier(ParameterIdent parameter, Boolean o) throws RuntimeException {
+                return unExpectedCase();
+            }
 
-                public Boolean forIdentList(ParameterIdentList parameterIdentList, Boolean aBoolean) throws RuntimeException {
-                    return unExpectedCase();
-                }
+            public Boolean forIdentList(ParameterIdentList parameterIdentList, Boolean aBoolean) throws RuntimeException {
+                return unExpectedCase();
+            }
 
-                public Boolean forQuote(ParameterQuote parameter, Boolean o) throws RuntimeException {
-                    return unExpectedCase();
-                }
+            public Boolean forQuote(ParameterQuote parameter, Boolean o) throws RuntimeException {
+                return unExpectedCase();
+            }
 
-                public Boolean forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Boolean noError) throws RuntimeException {
+            public Boolean forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Boolean noError) throws RuntimeException {
 
-                    for(Iterable<String> set : parameterTaxonSetList.TaxonSetList)
-                    {
-                        HashSet<String> taxa = new HashSet<String>();
-                        for(String element : set)
-                        {
-                            if(!taxa.contains(element))
-                            {
-                                taxa.add(element);
-                            }
-                            else
-                            {
-                                errorDetected.execute(
-                                        String.format("Duplicate taxon '%s'.", element), setFamilyParam.getLine(), setFamilyParam.getColumn());
-                                noError = false;
-                            }
-                        }
-                        _setFamilyList.add(taxa);
-                    }
-
-                    return noError;
-                }
-
-                public Boolean forIdentSet(ParameterIdentSet parameterIdentSet, Boolean o) throws RuntimeException {
-                    return unExpectedCase();
-                }
-
-                public Boolean forTaxaMap(ParameterTaxaMap parameterTaxaMap, Boolean aBoolean) throws RuntimeException {
-                   return unExpectedCase();
-                }
-
-                private Boolean unExpectedCase()
+                for(Iterable<String> set : parameterTaxonSetList.TaxonSetList)
                 {
-                    errorDetected.execute("Expected a set list. (E.g. '({A,B},{C,D})')", setFamilyParam.getLine(), setFamilyParam.getColumn());
-                    return false;
+                    HashSet<String> taxa = new HashSet<String>();
+                    for(String element : set)
+                    {
+                        if(!taxa.contains(element))
+                        {
+                            taxa.add(element);
+                        }
+                        else
+                        {
+                            errorDetected.execute(
+                                    String.format("Duplicate taxon '%s'.", element), setFamilyParam.getLine(), setFamilyParam.getColumn());
+                            noError = false;
+                        }
+                    }
+                    _setFamilyList.add(taxa);
                 }
-            }, noError);
+
+                return noError;
+            }
+
+            public Boolean forIdentSet(ParameterIdentSet parameterIdentSet, Boolean o) throws RuntimeException {
+                return unExpectedCase();
+            }
+
+            public Boolean forTaxaMap(ParameterTaxaMap parameterTaxaMap, Boolean aBoolean) throws RuntimeException {
+                return unExpectedCase();
+            }
+
+            private Boolean unExpectedCase()
+            {
+                errorDetected.execute("Expected a set list. (E.g. '({A,B},{C,D})')", setFamilyParam.getLine(), setFamilyParam.getColumn());
+                return false;
+            }
+        }, noError);
 
         if(params.size() == 3)
         {
@@ -129,7 +129,7 @@ public class LCA extends CommandBaseFileOut {
 
         StringBuilder result = new StringBuilder();
 
-        MutableTree tree = NetworkTransformer.toTree(_network);
+        MutableTree tree = NetworkTransformer.toTree(_tree);
         Trees.autoLabelNodes(tree);
 
         NetworkNonEmpty autoLabeledNetwork = (NetworkNonEmpty) TreeTransformer.toNetwork(tree);

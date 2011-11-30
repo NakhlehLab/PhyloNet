@@ -56,12 +56,13 @@ public class RIATAHGT extends CommandBaseFileOut
 
     protected int getMaxNumParams()
     {
-        return 6;
+        return 7;
     }
 
     public boolean checkParamsForCommand() {
 
-         boolean noError = true;
+        boolean noError = true;
+        int optionalParamCount = 0;
 
         _speciesTree = this.assertAndGetNetwork(0);
         noError = noError && _speciesTree != null;
@@ -74,8 +75,10 @@ public class RIATAHGT extends CommandBaseFileOut
 
         if(pExtract.ContainsSwitch)
         {
+            optionalParamCount++;
             if(pExtract.PostSwitchParam != null)
             {
+                optionalParamCount++;
                 if(pExtract.PostSwitchValue != null)
                 {
                    _nodePrefixValue = pExtract.PostSwitchValue;
@@ -99,6 +102,7 @@ public class RIATAHGT extends CommandBaseFileOut
 
         if(eExtract.ContainsSwitch)
         {
+            optionalParamCount++;
             _expandedOutputParam = eExtract.SwitchParam;
         }
 
@@ -107,6 +111,7 @@ public class RIATAHGT extends CommandBaseFileOut
 
         if(uExtract.ContainsSwitch)
         {
+            optionalParamCount++;
             _refined = false;
             _collapsed = false;
         }
@@ -119,6 +124,8 @@ public class RIATAHGT extends CommandBaseFileOut
                 _geneTrees.add(sourceIdentToNetwork.get(geneTreeIdent));
             }
         }
+
+        checkAndSetOutFile(pExtract);
 
 
        return noError;
@@ -157,12 +164,19 @@ public class RIATAHGT extends CommandBaseFileOut
 		List<String> nextLines = new LinkedList<String>();
 
 
-			try {
 				NewickReader nr = new NewickReader(new StringReader(firstLine));
 
 
 				// speciesTree = (STITree<Object>) nr.readTree();
-				nr.readTree(speciesTree);
+                try
+                {
+				    nr.readTree(speciesTree);
+                }
+			    catch(Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+
 				Trees.removeBinaryNodes(speciesTree);
 
 				for (NetworkNonEmpty g : _geneTrees) {
@@ -171,16 +185,19 @@ public class RIATAHGT extends CommandBaseFileOut
 
 					// STITree<Object> gt = (STITree<Object>) nr.readTree();
 					STITree<Double> gt = new STITree<Double>(true);
-					nr.readTree(gt);
+                    try
+                    {
+					    nr.readTree(gt);
+                    }
+			        catch(Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
 
 					Trees.removeBinaryNodes(gt);
 					geneTrees.add(gt);
 				}
-			}
-			catch(Exception e)
-            {
-                throw new RuntimeException(e);
-            }
+
 
 
 		// Compute HGT events and print to the output.
@@ -229,7 +246,7 @@ public class RIATAHGT extends CommandBaseFileOut
 			eb.computeBootstrap();
 
 			if (_expandedOutputParam == null) {
-				result.append("species tree: " + copy.toString()+ "\n");
+				result.append("\nspecies tree: " + copy.toString()+ "\n");
 				result.append("gene tree: " + gt.toString()+ "\n");
 
 				// Add bootstrap values to events.
@@ -259,7 +276,7 @@ public class RIATAHGT extends CommandBaseFileOut
 			}
 			else {
 				// Display in the non-compact format.
-				result.append("species tree: " + copy.toString()+ "\n");
+				result.append("\nspecies tree: " + copy.toString()+ "\n");
 				result.append("gene tree: " + gt.toString()+ "\n");
 
 				List<HgtScenario> scenarios = hgt.enumerateSolutions();

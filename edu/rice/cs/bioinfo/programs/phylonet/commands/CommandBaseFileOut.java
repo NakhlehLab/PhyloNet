@@ -5,6 +5,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
+import javax.jws.soap.SOAPBinding;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -120,6 +121,31 @@ abstract class CommandBaseFileOut extends CommandBase{
             fw.flush();
             bw.close();
             fw.close();
+    }
+
+    protected void checkAndSetOutFile(ParamExtractor... valueSwitches)
+    {
+        if(params.size() > this.getMinNumParams())
+        {
+            Parameter penUltimate = this.params.get(params.size()-2);
+
+            for(ParamExtractor p : valueSwitches)
+            {
+                if(penUltimate == p)
+                {
+                    return;
+                }
+            }
+
+
+                Parameter lastParam = this.params.get(params.size()-1);
+                String paramValue = lastParam.execute(GetSimpleParamValue.Singleton, null);
+                if(paramValue != null && !paramValue.startsWith("-"))
+                {
+                    this.checkOutFileContext(params.size()-1);
+                }
+
+        }
     }
 
     public void executeCommandHelp(Proc<String> displayResult) throws IOException {

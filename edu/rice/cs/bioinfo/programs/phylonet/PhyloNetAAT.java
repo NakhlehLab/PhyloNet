@@ -6,6 +6,7 @@ import sun.net.idn.StringPrep;
 
 import java.awt.geom.Path2D;
 import java.io.*;
+import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,6 +19,8 @@ public class PhyloNetAAT {
 
 
     private static String delim = "\n===\n";
+
+    private static Random _rand = new Random(23);
 
 
     @Test
@@ -64,7 +67,7 @@ public class PhyloNetAAT {
         String faultMessage = testFile + " failed.";
         ByteArrayOutputStream display = new ByteArrayOutputStream();
         ByteArrayOutputStream error = new ByteArrayOutputStream();
-        Program.run(new ByteArrayInputStream(nexus.getBytes()), new PrintStream(error), new PrintStream(display));
+        Program.run(new ByteArrayInputStream(nexus.getBytes()), new PrintStream(error), new PrintStream(display), _rand);
         Assert.assertEquals(faultMessage, expectedStdError, error.toString().replace("\r", ""));
         Assert.assertEquals(faultMessage,  expectedStdOut, display.toString().replace("\r", ""));
     }

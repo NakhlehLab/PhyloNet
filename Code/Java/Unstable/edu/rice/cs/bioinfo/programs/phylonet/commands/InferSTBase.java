@@ -1,9 +1,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -61,12 +62,9 @@ public abstract class InferSTBase extends CommandBaseFileOut
 
     private ArrayList<Proc<String>> _stGeneratedObservers = new ArrayList<Proc<String>>();
 
-    protected void SpeciesTreeGenerated(String treeNewick)
+    public void addSTTreeGeneratedListener(Proc<String> listener)
     {
-        for(Proc<String> observer : _stGeneratedObservers)
-        {
-            observer.execute(treeNewick);
-        }
+        _stGeneratedObservers.add(listener);
     }
 
     InferSTBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
@@ -84,7 +82,7 @@ public abstract class InferSTBase extends CommandBaseFileOut
     {
        boolean noError = true;
 
-        ParameterIdentSet geneTreesParam = this.assertParameterIdentSet(0);
+        ParameterIdentList geneTreesParam = this.assertParameterIdentList(0);
         noError = noError && geneTreesParam != null;
 
         if(noError)
@@ -168,7 +166,45 @@ public abstract class InferSTBase extends CommandBaseFileOut
             }
         }
 
+        if(noError && bParam.ContainsSwitch && _geneTrees != null)
+        {
+            for(NetworkNonEmpty gt : _geneTrees)
+            {
+                noError = noError && assignThresholdHelp(gt.PrincipleInfo, gt.PrincipleDescendants);
+            }
+        }
+
         return new ThresholdResult(noError, bootstrap, bParam);
+    }
+
+    private boolean assignThresholdHelp(NetworkInfo info, DescendantList descendantList)
+    {
+        if(info.Support.execute(new SupportAlgo<Boolean, Object, RuntimeException>()
+        {
+            public Boolean forSupportNonEmpty(SupportNonEmpty supportNonEmpty, Object o) throws RuntimeException {
+                return false;
+            }
+
+            public Boolean forSupportEmpty(SupportEmpty supportEmpty, Object o) throws RuntimeException {
+                return true;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }, null))
+        {
+            errorDetected.execute(
+                    String.format("If bootstrap switch is specified for '%s', all gene tree nodes must have a support value.", _motivatingCommand.getName()),
+                                  _motivatingCommand.getLine(), _motivatingCommand.getColumn());
+            return false;
+        }
+
+        for(Subtree childTree : descendantList.Subtrees)
+        {
+            if(!assignThresholdHelp(childTree.NetworkInfo, childTree.Descendants))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected TaxonMapResult assignTaxonMap()
@@ -188,6 +224,14 @@ public abstract class InferSTBase extends CommandBaseFileOut
         }
 
         return new TaxonMapResult(noError, taxonMap, aParam);
+    }
+
+     protected void speciesTreeGenerated(String treeNewick)
+    {
+        for(Proc<String> observer : _stGeneratedObservers)
+        {
+            observer.execute(treeNewick);
+        }
     }
 
 

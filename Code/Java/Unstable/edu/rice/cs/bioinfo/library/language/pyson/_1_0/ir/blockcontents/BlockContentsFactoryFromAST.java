@@ -1,9 +1,8 @@
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
-import org.w3c.dom.traversal.NodeIterator;
 
-import java.io.FileInputStream;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -20,6 +19,7 @@ public class BlockContentsFactoryFromAST {
     public static BlockContents make(Blocks blocks)
     {
         final Map<String,RichNewickAssignment> identToRichNewickAssignment = new HashMap<String,RichNewickAssignment>();
+        final Map<String,StringBuilder> taxonToSequence = new HashMap<String,StringBuilder>();
         final LinkedList<SyntaxCommand> commands = new LinkedList<SyntaxCommand>();
 
 
@@ -29,6 +29,26 @@ public class BlockContentsFactoryFromAST {
                 public Object forTreesBlock(TreesBlockBody treesBlock, Object input) throws RuntimeException {
                    forRNewichAssignmentsBlockBody(treesBlock, true);
                    return null;
+                }
+
+                public Object forDataBlock(DataBlockBody dataBlock, Object input) throws RuntimeException
+                {
+                    for(AbstractMap.SimpleImmutableEntry<Identifier,Identifier> sequencePair : dataBlock.SequencePairs)
+                    {
+                        StringBuilder sequence = new StringBuilder();
+                        if(taxonToSequence.containsKey(sequencePair.getKey().Content))
+                        {
+                            sequence = taxonToSequence.get(sequencePair.getKey().Content);
+                        }
+                        else
+                        {
+                            taxonToSequence.put(sequencePair.getKey().Content, sequence);
+                        }
+
+                        sequence.append(sequencePair.getValue().Content);
+                    }
+
+                    return null;
                 }
 
                  public Object forNetworksBlock(NetworksBlockBody networksBlock, Object input) throws RuntimeException {
@@ -138,7 +158,17 @@ public class BlockContentsFactoryFromAST {
             }, null);
         }
 
-        return new BlockContents() {
+        return new BlockContents()
+        {
+            public  Iterable<String> getDataBlockSequenceKeys()
+            {
+                return  taxonToSequence.keySet();
+            }
+
+            public String getDataBlockSequence(String taxonKey)
+            {
+                return taxonToSequence.get(taxonKey).toString();
+            }
 
             public RichNewickAssignment getRichNewickAssigment(String identifier) {
                 return identToRichNewickAssignment.get(identifier);
@@ -213,7 +243,7 @@ public class BlockContentsFactoryFromAST {
 
                           for(Identifier identElement : ident.List.Elements)
                           {
-                                elements.add(identElement.Content);
+                                elements.addFirst(identElement.Content);
                           }
 
                           return new ParameterIdentList(lineFinal, colFinal, elements);

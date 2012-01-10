@@ -58,4 +58,6 @@ public interface ParseStack {
 
     public void pushFASTABlockBody();
 
+    public void pushDataBlockBody(int numPairs);
+
 }

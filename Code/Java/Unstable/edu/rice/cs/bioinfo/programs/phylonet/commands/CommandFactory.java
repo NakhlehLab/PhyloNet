@@ -106,6 +106,10 @@ public class CommandFactory {
         {
             return new InferST_Bootstrap(directive, params, sourceIdentToNetwork, errorDetected, rand);
         }
+        else if(lowerCommandName.equals("infer_st_mdc_ilp"))
+        {
+            return new InferST_MDC_ILP(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

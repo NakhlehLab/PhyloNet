@@ -11,11 +11,11 @@ END;
 
 BEGIN PHYLONET;
 
-Infer_ST_MC {g1, g2, g3};
+Infer_ST_MC (g1, g2, g3);
 
 END;
 ===
 
-Infer_ST_MC {g1, g2, g3}
+Infer_ST_MC (g1, g2, g3)
 (e,(d,(c,(a,b))));
 ===

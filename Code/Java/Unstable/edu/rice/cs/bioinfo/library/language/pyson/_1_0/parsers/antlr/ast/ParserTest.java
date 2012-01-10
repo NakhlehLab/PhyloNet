@@ -41,6 +41,13 @@ public class ParserTest {
             "\n" +
             "END;").getBytes()));
 
+         blocks = Parser.parse(new ByteArrayInputStream(("#NEXUS\n" +
+            "BEGIN PHYLONET;\n" +
+            "\n" +
+            "<z:a1,a2,a; y:b1,b2:b; c:c; d:d; e:e;>;" +
+            "\n" +
+            "END;").getBytes()));
+
 
     }
 

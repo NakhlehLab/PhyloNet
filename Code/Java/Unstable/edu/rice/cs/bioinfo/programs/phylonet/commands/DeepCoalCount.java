@@ -39,12 +39,12 @@ public class DeepCoalCount extends CommandBaseFileOut {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 
-    protected int getMinNumParams()
+    public int getMinNumParams()
     {
         return 2;
     }
 
-    protected int getMaxNumParams()
+    public int getMaxNumParams()
     {
         return 8;
     }
@@ -98,6 +98,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
             }
         }
 
+        noError = noError && checkForUnknownSwitches("u", "b", "a");
         checkAndSetOutFile(bParam, aParam);
 
         if(noError)

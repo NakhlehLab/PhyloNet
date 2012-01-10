@@ -131,7 +131,7 @@ abstract class CommandBaseFileOut extends CommandBase{
 
             for(ParamExtractor p : valueSwitches)
             {
-                if(penUltimate == p)
+                if(penUltimate == p.SwitchParam)
                 {
                     return;
                 }
@@ -158,6 +158,7 @@ abstract class CommandBaseFileOut extends CommandBase{
         }
         else
         {
+            displayResult.execute("\nWriting output to " + _outFile.getAbsolutePath());
             this.writeResultToFile(result.toString());
         }
     }

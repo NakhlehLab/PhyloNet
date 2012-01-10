@@ -4,9 +4,13 @@ import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Blocks;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.CSAError;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickParser;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
@@ -90,14 +94,30 @@ public class Program {
 
         // no syntax errors at this point
 
-        BlockContents blockContents = BlockContentsFactoryFromAST.make(blocks); // covert AST to our IR
-
         /*
          * Perform Context Sensitive Analysis
          */
+        boolean containsDuplicates = ContextSensitiveAnalyser.checkforDuplicateAssignmentIdentifiers(blocks, errorDetected);
+
+        // if we already have errors, don't continue.  Else we will get confusing cascades.
+        if(containsDuplicates)
+        {
+            return;
+        }
+
+        BlockContents blockContents = BlockContentsFactoryFromAST.make(blocks); // covert AST to our IR
+
+
         Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, errorDetected); // make a Network representation of each defined Rich Newick string
                                                                                         // map is keyed by source code identifier of the string
 
+        // if we already have errors, don't continue.  Else we will get confusing cascades.
+        if(!allowCommandExecution.getContents())
+        {
+            return;
+        }
+
+        ContextSensitiveAnalyser.checkforHybridNodesInTrees(sourceIdentToNetwork, blockContents, errorDetected);
         ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, blockContents, errorDetected); // check the Networks for any context errors
 
         LinkedList<Command> commands = new LinkedList<Command>();
@@ -199,7 +219,40 @@ public class Program {
                   }
 
                   public String forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
-                      return null;
+
+                      StringBuilder b = new StringBuilder();
+                      b.append("<");
+
+                      boolean firstKey = true;
+                      for(Map.Entry<String,List<String>> entry : parameterTaxaMap._mappings)
+                      {
+                          if(!firstKey)
+                          {
+                              b.append("; ");
+
+                          }
+
+                           b.append(entry.getKey() + ":");
+                           firstKey = false;
+
+
+                          boolean firstValueEntry = true;
+                          for(String mapEntry : entry.getValue())
+                          {
+                             if(!firstValueEntry)
+                             {
+                               b.append(",");
+                             }
+
+                             b.append(mapEntry);
+                             firstValueEntry = false;
+                          }
+                      }
+
+                      b.append(">");
+
+                      return b.toString();
+
                   }
               }, null);
               accum.append(" " + paramValue);
@@ -217,37 +270,60 @@ public class Program {
             RichNewickAssignment assignment = blockContents.getRichNewickAssigment(richNewickSourceIdent);
 
 
+            RichNewickReadResult<Networks> readResult = null;
             try
             {
-                Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
-                        new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();
-
-                if(!oneNetwork.hasNext())
-                {
-                    errorDetected.execute(
-                            String.format("Rich Newick string %s does not define a network.", richNewickSourceIdent),
-                            -1, -1);
-                }
-
-                NetworkNonEmpty network = oneNetwork.next();
-
-                if(oneNetwork.hasNext())
-                {
-                     errorDetected.execute(
-                            String.format("Rich Newick string %s does defines more than one network.", richNewickSourceIdent),
-                            -1, -1);
-                    continue;
-                }
-
-                tbr.put(richNewickSourceIdent, network);
+               RichNewickReaderAST_ANTLR reader = new RichNewickReaderAST_ANTLR();
+               readResult = reader.read(new ByteArrayInputStream(assignment.getRichNewickString().getBytes()));
+             /*  Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
+                        new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();  */
             }
             catch(CoordinateParseErrorsException e)
             {
                 for(CoordinateParseError error : e.Errors)
                 {
-                    errorDetected.execute(error.getMessage(), -1, -1);
+                    errorDetected.execute(error.getMessage(), assignment.getRichNewickStringLine() + error.getLineNumber() -1, assignment.getRichNewickStringColumn() + error.getColumnNumber());
                 }
+                return new HashMap<String, NetworkNonEmpty>();
             }
+            catch(RuntimeException e)
+            {
+                errorDetected.execute("Invalid Rich Newick string.", assignment.getRichNewickStringLine(), assignment.getRichNewickStringColumn());
+                return new HashMap<String, NetworkNonEmpty>();
+            }
+
+            boolean sawError = false;
+            for(CSAError error : readResult.getContextErrors())
+            {
+                errorDetected.execute(error.Message, assignment.getRichNewickStringLine() + error.LineNumber -1, assignment.getRichNewickStringColumn() + error.ColumnNumber);
+                sawError = true;
+            }
+
+            if(sawError)
+            {
+                return new HashMap<String, NetworkNonEmpty>();
+            }
+
+            Iterator<NetworkNonEmpty> networks = readResult.getNetworks().Networks.iterator();
+            if(!networks.hasNext())
+            {
+                errorDetected.execute(
+                        String.format("Rich Newick string '%s' does not define a network.", richNewickSourceIdent),
+                        assignment.getRichNewickStringLine(), assignment.getRichNewickStringColumn());
+            }
+
+            NetworkNonEmpty network = networks.next();
+
+            if(networks.hasNext())
+            {
+                errorDetected.execute(
+                        String.format("Rich Newick string '%s' defines more than one network.", richNewickSourceIdent),
+                        assignment.getRichNewickStringLine(), assignment.getRichNewickStringColumn());
+                continue;
+            }
+
+            tbr.put(richNewickSourceIdent, network);
+
         }
 
         return tbr;

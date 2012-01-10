@@ -53,6 +53,8 @@ public class InferST_MC extends InferSTBase
             _treesRooted = false;
         }
 
+        noError = noError && checkForUnknownSwitches("u", "a");
+
         this.checkAndSetOutFile();
 
        return  noError;
@@ -89,7 +91,9 @@ public class InferST_MC extends InferSTBase
 			}
 		}
 
-        result.append("\n" + inferredTree.toStringWD());
+        String tree = inferredTree.toStringWD();
+        this.speciesTreeGenerated(tree);
+        result.append("\n" + tree);
 
         return result.toString();
     }

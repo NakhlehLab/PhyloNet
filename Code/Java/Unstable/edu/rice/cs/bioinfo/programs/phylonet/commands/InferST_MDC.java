@@ -113,9 +113,12 @@ public class InferST_MDC extends InferSTBase
         _bootstrap = tr.Threshold;
         noError = noError && tr.NoError;
 
+
         TaxonMapResult result = assignTaxonMap();
         noError = noError && result.NoError;
         _taxonMap = result.TaxonMap;
+
+         noError = noError && checkForUnknownSwitches("e", "t", "x", "ur", "b", "a");
 
         this.checkAndSetOutFile(eParam, tr.Extractor, result.Extractor, tParam);
 
@@ -146,7 +149,9 @@ public class InferST_MDC extends InferSTBase
 		}
 
         for(Solution s: solutions){
-				result.append("\n " + s._st.toStringWD()+" "+s._totalCoals+" extra lineages in total");
+                String tree = s._st.toStringWD();
+                this.speciesTreeGenerated(tree);
+				result.append("\n" + s._st.toStringWD()+" "+s._totalCoals+" extra lineages in total");
 			}
 
         return result.toString();

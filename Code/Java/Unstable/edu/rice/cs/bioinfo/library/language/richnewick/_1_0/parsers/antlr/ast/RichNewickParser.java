@@ -45,7 +45,7 @@ public class RichNewickParser
         }
 
         List<ExtendedNewickParser.ErrorWrapper> errorWraps = parser.getErrors();
-        if(errors.size() > 0)
+        if(errorWraps.size() > 0)
         {
             for(ExtendedNewickParser.ErrorWrapper error : errorWraps)
             {

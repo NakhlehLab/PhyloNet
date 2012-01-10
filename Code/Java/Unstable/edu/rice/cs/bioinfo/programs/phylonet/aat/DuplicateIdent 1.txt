@@ -1,0 +1,15 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network a = ((((a,b),c),d),e);
+Network b = ((((a,b),c),d),e);
+Network a = ((((a,b),c),d),e);
+
+END;
+===
+
+===
+
+
+Error at [7,9]: Duplicate identifier 'a'.

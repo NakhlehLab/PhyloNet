@@ -1,0 +1,15 @@
+#NEXUS
+
+BEGIN PHYLONET;
+
+countCoal net1 net2;
+
+END;
+===
+
+===
+
+
+Error at [5,11]: Unknown identifier 'net1'.
+
+Error at [5,16]: Unknown identifier 'net2'.

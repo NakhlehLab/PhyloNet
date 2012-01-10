@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network tree1 = ((4#H1)2,(4#H1)3)1;
+Network tree2 = ((1,2),(4,3));
+
+END;
+
+
+BEGIN PHYLONET;
+
+SymmetricDifference tree1 tree2;
+
+END;
+===
+
+===
+
+
+Error at [13,21]: Expected 'tree1' to be a tree but found network with hybrid node.

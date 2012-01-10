@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree = ((1,2),(4,3));
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+LCA tree ({1,4},{5,3});
+
+END;
+===
+
+===
+
+
+Error at [13,10]: Taxon name '5' does not appear in tree 'tree'.

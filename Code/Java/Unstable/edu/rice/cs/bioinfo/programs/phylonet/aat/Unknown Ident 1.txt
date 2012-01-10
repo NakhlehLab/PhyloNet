@@ -1,0 +1,20 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network net1 = ((a,b),(c,(d,(e,(f,g)))));
+
+END;
+
+
+BEGIN PHYLONET;
+
+countCoal net1 net2;
+
+END;
+===
+
+===
+
+
+Error at [12,16]: Unknown identifier 'net2'.

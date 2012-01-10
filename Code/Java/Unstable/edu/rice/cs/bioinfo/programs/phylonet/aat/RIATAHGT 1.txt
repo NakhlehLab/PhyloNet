@@ -1,0 +1,24 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network speceiesTree = ((C#1)A,(C#1)B)R;
+Network geneTree1 = ((C#1)A,(C#1)B)R;
+Network geneTree2 = ((e,(f,g):0.5:.70):0.6:.80,((a,b):0.5:.90,(c,d):0.5:.87):0.57:.72);
+
+END;
+
+
+BEGIN PHYLONET;
+
+RIATAHGT speceiesTree {geneTree1, geneTree2};
+
+END;
+===
+
+===
+
+
+Error at [14,10]: Expected 'speceiesTree' to be a tree but found network with hybrid node.
+
+Error at [14,23]: Expected 'geneTree1' to be a tree but found network with hybrid node.

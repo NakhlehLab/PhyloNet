@@ -1,0 +1,22 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = ((1,4,3),2);
+Tree tree2 = ((1,2),(4,3));
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+MAST {tree1, tree2} -x;
+
+END;
+===
+
+===
+
+
+Error at [14,21]: Unknown switch -x

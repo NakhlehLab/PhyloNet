@@ -1,0 +1,24 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = [&U]((1,4,3),2);
+Tree tree2 = [&U]((1,),(4,3));
+
+END;
+
+
+BEGIN PHYLONET;
+
+SymmetricDifference tree1 tree2;
+
+
+END;
+===
+
+===
+
+
+Error at [13,21]: Taxon '2' in network 'tree1' does not appear in the network 'tree2'.
+
+Error at [13,27]: Taxon '[unnamed]' in network 'tree2' does not appear in the network 'tree1'.

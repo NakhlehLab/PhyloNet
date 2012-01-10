@@ -59,13 +59,13 @@ public class SymmetricDifference extends CommandBaseFileOut {
         boolean noError = true;
 
         Parameter modelTreeParam = params.get(0);
-        _modelNetwork = this.assertAndGetNetwork(0);
+        _modelNetwork = this.assertAndGetTree(0);
         noError = noError && _modelNetwork != null;
         String modelTreeParamValue = _modelNetwork == null ? null : modelTreeParam.execute(GetSimpleParamValue.Singleton, null);
 
 
         Parameter experimentalTreeParam = params.get(1);
-        _experimentalNetwork = this.assertAndGetNetwork(1);
+        _experimentalNetwork = this.assertAndGetTree(1);
         noError = noError && _experimentalNetwork != null;
         String experimentalTreeParamValue = _experimentalNetwork == null ? null : experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
 

@@ -38,5 +38,10 @@ public abstract class RichNewickReaderAST_Test {
                     GraphBuilderNoAction.Singleton);
 
 
+        reader.read(
+                    new ByteArrayInputStream("A,B;".getBytes()),
+                    GraphBuilderNoAction.Singleton);
+
+
     }
 }

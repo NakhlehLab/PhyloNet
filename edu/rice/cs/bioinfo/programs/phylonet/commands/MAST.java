@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.ContainsHybridNode;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.SingleLinePrinter;
@@ -53,30 +54,48 @@ class MAST extends CommandBaseFileOut
 
         if(treesIdentSet != null)
         {
-            LinkedList<NetworkNonEmpty> trees = this.assertNetworksExist(treesIdentSet);
+           // LinkedList<NetworkNonEmpty> networks = this.assertNetworksExist(treesIdentSet);
 
             Boolean rootedness = null;
-            for(NetworkNonEmpty tree : trees)
+            for(String potentialTreeIdent : treesIdentSet.Elements)
             {
-                Tree treeForm = NetworkTransformer.toTree(tree);
+                NetworkNonEmpty potentialTree = this.sourceIdentToNetwork.get(potentialTreeIdent);
 
-                if(rootedness != null)
+                if(potentialTree.execute(ContainsHybridNode.Singleton, null))
                 {
-                   if(rootedness != treeForm.isRooted())
-                   {
-                       errorDetected.execute(
-                               String.format("All trees for for MAST must be rooted or unrooted."),
-                               this.getDefiningSyntaxCommand().getLine(), this.getDefiningSyntaxCommand().getColumn());
-                       noError = false;
-                   }
+                    noError = false;
+                    this.errorDetected.execute(String.format("Expected '%s' to be a tree but contains a hybrid node.", potentialTreeIdent)
+                                               ,treesIdentSet.getLine(), treesIdentSet.getColumn());
                 }
                 else
                 {
-                    rootedness = treeForm.isRooted();
-                    _allUnrooted = !treeForm.isRooted();
-                }
+                    Tree treeForm = NetworkTransformer.toTree(potentialTree);
 
-                _treeSet.add(treeForm);
+                    if(rootedness != null)
+                    {
+                        if(rootedness != treeForm.isRooted())
+                        {
+                            errorDetected.execute(
+                                    String.format("All trees for MAST must be rooted or unrooted."),
+                                    treesIdentSet.getLine(), treesIdentSet.getColumn());
+                            noError = false;
+                        }
+                    }
+                    else
+                    {
+                        rootedness = treeForm.isRooted();
+                        _allUnrooted = !treeForm.isRooted();
+                    }
+
+                    if(treeForm.getLeafCount() < 3)
+                    {
+                        noError = false;
+                        this.errorDetected.execute(String.format("All trees to MAST must have at least three leaves. '%s' does not.", potentialTreeIdent),
+                                                   treesIdentSet.getLine(), treesIdentSet.getColumn());
+                    }
+
+                    _treeSet.add(treeForm);
+                }
             }
         }
 
@@ -100,6 +119,13 @@ class MAST extends CommandBaseFileOut
         else if(!allSwitch.ContainsSwitch && params.size() == 2)
         {
             noError = noError && this.checkOutFileContext(1);
+        }
+
+         noError = noError && checkForUnknownSwitches("a");
+
+        if(!noError)
+        {
+            _treeSet = null;
         }
 
         return noError;

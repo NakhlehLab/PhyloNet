@@ -44,12 +44,12 @@ public class CharNet extends CommandBaseFileOut {
     }
 
     @Override
-    protected int getMinNumParams() {
+    public int getMinNumParams() {
         return 3;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    protected int getMaxNumParams() {
+    public int getMaxNumParams() {
         return 4;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

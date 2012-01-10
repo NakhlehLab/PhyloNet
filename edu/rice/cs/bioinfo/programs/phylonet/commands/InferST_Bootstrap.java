@@ -1,16 +1,17 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.consensus.TreeConsensusCalculator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Random;
+import java.io.StringReader;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -88,7 +89,7 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
             }
         }
 
-        final int stCommandIndex =  sParam.ContainsSwitch ? 2 : 1;
+        final int stCommandIndex =  sParam.ContainsSwitch ? 3 : 1;
         final ParameterIdent stCommand = this.assertParameterIdent(stCommandIndex);
         noError = noError && stCommand != null;
 
@@ -124,9 +125,11 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
     @Override
       protected String produceResult() {
 
+        Set<Tree> st_set = new LinkedHashSet<Tree>();
+        TreeConsensusCalculator tcc = new TreeConsensusCalculator();
         for(int i=0; i<_numRepititions; i++)
         {
-            final ParameterIdentSet originalSet = (ParameterIdentSet)_exampleCommand.getParameters().iterator().next();
+            final ParameterIdentList originalSet = (ParameterIdentList)_exampleCommand.getParameters().iterator().next();
             final Iterable<String> resampledGeneTreeIdents = resampleGeneTrees(originalSet);
             SyntaxCommand executionCommand = new SyntaxCommand() {
                 public int getLine() {
@@ -144,7 +147,7 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
                 public Iterable<Parameter> getParameters() {
 
                     Object[] params = IterableHelp.toArray(_exampleCommand.getParameters());
-                    params[0] = new ParameterIdentSet(originalSet.getLine(), originalSet.getColumn(), resampledGeneTreeIdents);
+                    params[0] = new ParameterIdentList(originalSet.getLine(), originalSet.getColumn(), resampledGeneTreeIdents);
 
                     ArrayList<Parameter> tbr = new ArrayList<Parameter>();
 
@@ -158,14 +161,45 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
             };
 
             InferSTBase inferCommand = (InferSTBase) CommandFactory.make(executionCommand, this.sourceIdentToNetwork, this.errorDetected, _rand);
-            inferCommand.checkParams();
+
+            final Set<Tree> sts = new LinkedHashSet<Tree>();
+            inferCommand.addSTTreeGeneratedListener(new Proc<String>() {
+                public void execute(String tree) {
+                    NewickReader nr = new NewickReader(new StringReader(tree));
+
+                    try
+                    {
+                        sts.add(nr.readTree());
+                    }
+                    catch(Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+            });
+            boolean noError = inferCommand.checkParams();
+            if(!noError)
+            {
+                throw new RuntimeException("Failed execution error check: " + this.getDefiningSyntaxCommand().getName());
+            }
             inferCommand.produceResult();
+
+            if(sts.size() == 1){
+					st_set.add(sts.iterator().next());
+				}
+				else{
+					st_set.add(tcc.computeRootedConsensus(sts, 0.5));
+				}
         }
 
-        return "";
+        tcc.setOutputEdgeWeightsAreSupports(true);
+		Tree st = tcc.computeRootedConsensus(st_set, _threshold);
+
+        return "\n" + st.toNewick();
       }
 
-    private Iterable<String> resampleGeneTrees(ParameterIdentSet parameter)
+    private Iterable<String> resampleGeneTrees(ParameterIdentList parameter)
     {
         Object[] geneTreeIdents = IterableHelp.toArray(parameter.Elements);
 

@@ -14,12 +14,12 @@ END;
 
 BEGIN PHYLONET;
 
-Infer_ST_DV {g1, g2, g3, g4, g5, g6, g7};
+Infer_ST_DV (g1, g2, g3, g4, g5, g6, g7);
 
 END;
 ===
 
-Infer_ST_DV {g1, g2, g3, g4, g5, g6, g7}
+Infer_ST_DV (g1, g2, g3, g4, g5, g6, g7)
 1 tree(s) has(have) the frequency of 57%
 ((((a,b),c),d),e);
 ===

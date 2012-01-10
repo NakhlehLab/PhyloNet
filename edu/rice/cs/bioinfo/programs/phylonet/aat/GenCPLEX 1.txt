@@ -10,7 +10,7 @@ END;
 
 BEGIN PHYLONET;
 
-gencplex {st} {gt} 2 2 "C:\temp\cplex" ;
+gencplex {st} {gt} 2 2 "C:\temp\cplex";
 
 END;
 ===

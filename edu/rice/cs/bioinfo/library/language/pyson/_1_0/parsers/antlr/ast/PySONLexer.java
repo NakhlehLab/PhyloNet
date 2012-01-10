@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-11-22 14:20:47
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2011-12-12 14:41:20
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import java.util.LinkedList;
@@ -12,33 +12,43 @@ import java.util.ArrayList;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class PySONLexer extends Lexer {
     public static final int EOF=-1;
-    public static final int T__23=23;
-    public static final int T__24=24;
-    public static final int T__25=25;
-    public static final int T__26=26;
-    public static final int T__27=27;
-    public static final int T__28=28;
-    public static final int T__29=29;
-    public static final int T__30=30;
+    public static final int T__33=33;
+    public static final int T__34=34;
+    public static final int T__35=35;
+    public static final int T__36=36;
+    public static final int T__37=37;
+    public static final int T__38=38;
+    public static final int T__39=39;
+    public static final int T__40=40;
     public static final int BEGIN=4;
-    public static final int DEFAULT_INDICATOR=5;
-    public static final int ELSE=6;
-    public static final int END=7;
-    public static final int ID=8;
-    public static final int ID_SET=9;
-    public static final int NESTED_ML_COMMENT=10;
-    public static final int NETWORK=11;
-    public static final int NETWORKS=12;
-    public static final int PHYLONET=13;
-    public static final int QUOTE=14;
-    public static final int ROOTAGE_QUALIFIER=15;
-    public static final int START=16;
-    public static final int TAXON_SET_LIST=17;
-    public static final int TRANSLATE=18;
-    public static final int TREE=19;
-    public static final int TREES=20;
-    public static final int UTREE=21;
-    public static final int WS=22;
+    public static final int DATA=5;
+    public static final int DATATYPE=6;
+    public static final int DEFAULT_INDICATOR=7;
+    public static final int DIMENSIONS=8;
+    public static final int ELSE=9;
+    public static final int END=10;
+    public static final int FORMAT=11;
+    public static final int GAP=12;
+    public static final int ID=13;
+    public static final int ID_SET=14;
+    public static final int MATRIX=15;
+    public static final int MISSING=16;
+    public static final int NCHAR=17;
+    public static final int NESTED_ML_COMMENT=18;
+    public static final int NETWORK=19;
+    public static final int NETWORKS=20;
+    public static final int NTAX=21;
+    public static final int PHYLONET=22;
+    public static final int QUOTE=23;
+    public static final int ROOTAGE_QUALIFIER=24;
+    public static final int START=25;
+    public static final int SYMBOLS=26;
+    public static final int TAXON_SET_LIST=27;
+    public static final int TRANSLATE=28;
+    public static final int TREE=29;
+    public static final int TREES=30;
+    public static final int UTREE=31;
+    public static final int WS=32;
 
     public class ErrorWrapper
     {
@@ -82,10 +92,10 @@ public class PySONLexer extends Lexer {
     }
     public String getGrammarFileName() { return "D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g"; }
 
-    // $ANTLR start "T__23"
-    public final void mT__23() throws RecognitionException {
+    // $ANTLR start "T__33"
+    public final void mT__33() throws RecognitionException {
         try {
-            int _type = T__23;
+            int _type = T__33;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:34:7: ( '(' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:34:9: '('
@@ -101,12 +111,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__23"
+    // $ANTLR end "T__33"
 
-    // $ANTLR start "T__24"
-    public final void mT__24() throws RecognitionException {
+    // $ANTLR start "T__34"
+    public final void mT__34() throws RecognitionException {
         try {
-            int _type = T__24;
+            int _type = T__34;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:35:7: ( ')' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:35:9: ')'
@@ -122,12 +132,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__24"
+    // $ANTLR end "T__34"
 
-    // $ANTLR start "T__25"
-    public final void mT__25() throws RecognitionException {
+    // $ANTLR start "T__35"
+    public final void mT__35() throws RecognitionException {
         try {
-            int _type = T__25;
+            int _type = T__35;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:36:7: ( ',' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:36:9: ','
@@ -143,12 +153,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__25"
+    // $ANTLR end "T__35"
 
-    // $ANTLR start "T__26"
-    public final void mT__26() throws RecognitionException {
+    // $ANTLR start "T__36"
+    public final void mT__36() throws RecognitionException {
         try {
-            int _type = T__26;
+            int _type = T__36;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:37:7: ( ':' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:37:9: ':'
@@ -164,12 +174,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__26"
+    // $ANTLR end "T__36"
 
-    // $ANTLR start "T__27"
-    public final void mT__27() throws RecognitionException {
+    // $ANTLR start "T__37"
+    public final void mT__37() throws RecognitionException {
         try {
-            int _type = T__27;
+            int _type = T__37;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:38:7: ( ';' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:38:9: ';'
@@ -185,12 +195,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__27"
+    // $ANTLR end "T__37"
 
-    // $ANTLR start "T__28"
-    public final void mT__28() throws RecognitionException {
+    // $ANTLR start "T__38"
+    public final void mT__38() throws RecognitionException {
         try {
-            int _type = T__28;
+            int _type = T__38;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:39:7: ( '<' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:39:9: '<'
@@ -206,12 +216,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__28"
+    // $ANTLR end "T__38"
 
-    // $ANTLR start "T__29"
-    public final void mT__29() throws RecognitionException {
+    // $ANTLR start "T__39"
+    public final void mT__39() throws RecognitionException {
         try {
-            int _type = T__29;
+            int _type = T__39;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:40:7: ( '=' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:40:9: '='
@@ -227,12 +237,12 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__29"
+    // $ANTLR end "T__39"
 
-    // $ANTLR start "T__30"
-    public final void mT__30() throws RecognitionException {
+    // $ANTLR start "T__40"
+    public final void mT__40() throws RecognitionException {
         try {
-            int _type = T__30;
+            int _type = T__40;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:41:7: ( '>' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:41:9: '>'
@@ -248,15 +258,15 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "T__30"
+    // $ANTLR end "T__40"
 
     // $ANTLR start "DEFAULT_INDICATOR"
     public final void mDEFAULT_INDICATOR() throws RecognitionException {
         try {
             int _type = DEFAULT_INDICATOR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:158:2: ( '*' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:158:4: '*'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:163:2: ( '*' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:163:4: '*'
             {
             match('*'); 
 
@@ -276,8 +286,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = PHYLONET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:160:9: ( ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:160:11: ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:165:9: ( ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:165:11: ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
                 input.consume();
@@ -370,13 +380,191 @@ public class PySONLexer extends Lexer {
     }
     // $ANTLR end "PHYLONET"
 
+    // $ANTLR start "DATA"
+    public final void mDATA() throws RecognitionException {
+        try {
+            int _type = DATA;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:169:6: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:169:8: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' )
+            {
+            if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "DATA"
+
+    // $ANTLR start "DIMENSIONS"
+    public final void mDIMENSIONS() throws RecognitionException {
+        try {
+            int _type = DIMENSIONS;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:172:2: ( ( 'D' | 'd' ) ( 'I' | 'i' ) ( 'M' | 'm' ) ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:172:4: ( 'D' | 'd' ) ( 'I' | 'i' ) ( 'M' | 'm' ) ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'S' | 's' )
+            {
+            if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "DIMENSIONS"
+
     // $ANTLR start "TREE"
     public final void mTREE() throws RecognitionException {
         try {
             int _type = TREE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:164:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:164:10: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:175:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:175:10: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                 input.consume();
@@ -434,8 +622,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = UTREE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:166:8: ( ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:166:11: ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:177:8: ( ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:177:11: ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='U'||input.LA(1)=='u' ) {
                 input.consume();
@@ -503,8 +691,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NETWORK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:168:9: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:168:11: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:9: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:11: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -587,13 +775,625 @@ public class PySONLexer extends Lexer {
     }
     // $ANTLR end "NETWORK"
 
+    // $ANTLR start "NTAX"
+    public final void mNTAX() throws RecognitionException {
+        try {
+            int _type = NTAX;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:181:6: ( ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'X' | 'x' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:181:8: ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'X' | 'x' )
+            {
+            if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='X'||input.LA(1)=='x' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "NTAX"
+
+    // $ANTLR start "NCHAR"
+    public final void mNCHAR() throws RecognitionException {
+        try {
+            int _type = NCHAR;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:183:7: ( ( 'N' | 'n' ) ( 'C' | 'c' ) ( 'H' | 'h' ) ( 'A' | 'a' ) ( 'R' | 'r' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:183:9: ( 'N' | 'n' ) ( 'C' | 'c' ) ( 'H' | 'h' ) ( 'A' | 'a' ) ( 'R' | 'r' )
+            {
+            if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='C'||input.LA(1)=='c' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='H'||input.LA(1)=='h' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "NCHAR"
+
+    // $ANTLR start "FORMAT"
+    public final void mFORMAT() throws RecognitionException {
+        try {
+            int _type = FORMAT;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:8: ( ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:10: ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' )
+            {
+            if ( input.LA(1)=='F'||input.LA(1)=='f' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "FORMAT"
+
+    // $ANTLR start "DATATYPE"
+    public final void mDATATYPE() throws RecognitionException {
+        try {
+            int _type = DATATYPE;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:9: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'Y' | 'y' ) ( 'P' | 'p' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'Y' | 'y' ) ( 'P' | 'p' ) ( 'E' | 'e' )
+            {
+            if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='Y'||input.LA(1)=='y' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "DATATYPE"
+
+    // $ANTLR start "SYMBOLS"
+    public final void mSYMBOLS() throws RecognitionException {
+        try {
+            int _type = SYMBOLS;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:189:9: ( ( 'S' | 's' ) ( 'Y' | 'y' ) ( 'M' | 'm' ) ( 'B' | 'b' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:189:11: ( 'S' | 's' ) ( 'Y' | 'y' ) ( 'M' | 'm' ) ( 'B' | 'b' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'S' | 's' )
+            {
+            if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='Y'||input.LA(1)=='y' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "SYMBOLS"
+
+    // $ANTLR start "GAP"
+    public final void mGAP() throws RecognitionException {
+        try {
+            int _type = GAP;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:5: ( ( 'G' | 'g' ) ( 'A' | 'a' ) ( 'P' | 'p' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:7: ( 'G' | 'g' ) ( 'A' | 'a' ) ( 'P' | 'p' )
+            {
+            if ( input.LA(1)=='G'||input.LA(1)=='g' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "GAP"
+
+    // $ANTLR start "MATRIX"
+    public final void mMATRIX() throws RecognitionException {
+        try {
+            int _type = MATRIX;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:193:8: ( ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'I' | 'i' ) ( 'X' | 'x' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:193:10: ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'I' | 'i' ) ( 'X' | 'x' )
+            {
+            if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='X'||input.LA(1)=='x' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "MATRIX"
+
+    // $ANTLR start "MISSING"
+    public final void mMISSING() throws RecognitionException {
+        try {
+            int _type = MISSING;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'G' | 'g' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'G' | 'g' )
+            {
+            if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='G'||input.LA(1)=='g' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "MISSING"
+
     // $ANTLR start "START"
     public final void mSTART() throws RecognitionException {
         try {
             int _type = START;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:171:2: ( '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:171:4: '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:198:2: ( '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:198:4: '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' )
             {
             match('#'); 
 
@@ -663,8 +1463,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = BEGIN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:173:8: ( ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:173:10: ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:200:8: ( ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:200:10: ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' )
             {
             if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
                 input.consume();
@@ -732,8 +1532,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TRANSLATE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:176:2: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:176:4: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:2: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:4: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                 input.consume();
@@ -841,8 +1641,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NETWORKS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:2: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:4: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:206:2: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:206:4: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -940,8 +1740,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TREES;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:181:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:181:9: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:208:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:208:9: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                 input.consume();
@@ -1009,8 +1809,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = END;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:183:5: ( ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:183:7: ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:210:5: ( ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:210:7: ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' )
             {
             if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                 input.consume();
@@ -1058,17 +1858,17 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:4: ( ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' )+ )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' )+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:4: ( ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+ )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '-' | '.' | '\\\\' | '/' )+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+
             int cnt1=0;
             loop1:
             do {
                 int alt1=2;
                 int LA1_0 = input.LA(1);
 
-                if ( ((LA1_0 >= '-' && LA1_0 <= '9')||(LA1_0 >= 'A' && LA1_0 <= 'Z')||LA1_0=='\\'||LA1_0=='_'||(LA1_0 >= 'a' && LA1_0 <= 'z')) ) {
+                if ( ((LA1_0 >= '-' && LA1_0 <= '9')||LA1_0=='?'||(LA1_0 >= 'A' && LA1_0 <= 'Z')||LA1_0=='\\'||LA1_0=='_'||(LA1_0 >= 'a' && LA1_0 <= 'z')) ) {
                     alt1=1;
                 }
 
@@ -1077,7 +1877,7 @@ public class PySONLexer extends Lexer {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
-            	    if ( (input.LA(1) >= '-' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
+            	    if ( (input.LA(1) >= '-' && input.LA(1) <= '9')||input.LA(1)=='?'||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
             	        input.consume();
             	    }
             	    else {
@@ -1116,12 +1916,12 @@ public class PySONLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:7: ( '\"' (~ ( '\"' ) )* '\"' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:9: '\"' (~ ( '\"' ) )* '\"'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:214:7: ( '\"' (~ ( '\"' ) )* '\"' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:214:9: '\"' (~ ( '\"' ) )* '\"'
             {
             match('\"'); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:13: (~ ( '\"' ) )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:214:13: (~ ( '\"' ) )*
             loop2:
             do {
                 int alt2=2;
@@ -1173,21 +1973,21 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ID_SET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:2: ( '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:4: '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:2: ( '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:4: '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}'
             {
             match('{'); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:8: ( ( WS )* ID ( WS )* ',' )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:8: ( ( WS )* ID ( WS )* ',' )*
             loop5:
             do {
                 int alt5=2;
                 alt5 = dfa5.predict(input);
                 switch (alt5) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:9: ( WS )* ID ( WS )* ','
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:9: ( WS )* ID ( WS )* ','
             	    {
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:9: ( WS )*
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:9: ( WS )*
             	    loop3:
             	    do {
             	        int alt3=2;
@@ -1200,7 +2000,7 @@ public class PySONLexer extends Lexer {
 
             	        switch (alt3) {
             	    	case 1 :
-            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:9: WS
+            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:9: WS
             	    	    {
             	    	    mWS(); 
 
@@ -1217,7 +2017,7 @@ public class PySONLexer extends Lexer {
             	    mID(); 
 
 
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:16: ( WS )*
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:16: ( WS )*
             	    loop4:
             	    do {
             	        int alt4=2;
@@ -1230,7 +2030,7 @@ public class PySONLexer extends Lexer {
 
             	        switch (alt4) {
             	    	case 1 :
-            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:190:16: WS
+            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:16: WS
             	    	    {
             	    	    mWS(); 
 
@@ -1255,7 +2055,7 @@ public class PySONLexer extends Lexer {
             } while (true);
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:15: ( WS )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:15: ( WS )*
             loop6:
             do {
                 int alt6=2;
@@ -1268,7 +2068,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt6) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:15: WS
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:15: WS
             	    {
             	    mWS(); 
 
@@ -1285,7 +2085,7 @@ public class PySONLexer extends Lexer {
             mID(); 
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:22: ( WS )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:22: ( WS )*
             loop7:
             do {
                 int alt7=2;
@@ -1298,7 +2098,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:22: WS
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:22: WS
             	    {
             	    mWS(); 
 
@@ -1330,21 +2130,21 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TAXON_SET_LIST;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:2: ( '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:4: '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:2: ( '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:4: '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')'
             {
             match('('); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*
             loop11:
             do {
                 int alt11=2;
                 alt11 = dfa11.predict(input);
                 switch (alt11) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:9: ( WS )* ID_SET ( ( WS )* ',' )?
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:9: ( WS )* ID_SET ( ( WS )* ',' )?
             	    {
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:9: ( WS )*
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:9: ( WS )*
             	    loop8:
             	    do {
             	        int alt8=2;
@@ -1357,7 +2157,7 @@ public class PySONLexer extends Lexer {
 
             	        switch (alt8) {
             	    	case 1 :
-            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:9: WS
+            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:9: WS
             	    	    {
             	    	    mWS(); 
 
@@ -1374,14 +2174,14 @@ public class PySONLexer extends Lexer {
             	    mID_SET(); 
 
 
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:20: ( ( WS )* ',' )?
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:20: ( ( WS )* ',' )?
             	    int alt10=2;
             	    alt10 = dfa10.predict(input);
             	    switch (alt10) {
             	        case 1 :
-            	            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:21: ( WS )* ','
+            	            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:21: ( WS )* ','
             	            {
-            	            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:21: ( WS )*
+            	            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:21: ( WS )*
             	            loop9:
             	            do {
             	                int alt9=2;
@@ -1394,7 +2194,7 @@ public class PySONLexer extends Lexer {
 
             	                switch (alt9) {
             	            	case 1 :
-            	            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:194:21: WS
+            	            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:21: WS
             	            	    {
             	            	    mWS(); 
 
@@ -1425,10 +2225,10 @@ public class PySONLexer extends Lexer {
             } while (true);
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:14: ( ( WS )* ID_SET ( WS )* )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:15: ( WS )* ID_SET ( WS )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:14: ( ( WS )* ID_SET ( WS )* )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:15: ( WS )* ID_SET ( WS )*
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:15: ( WS )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:15: ( WS )*
             loop12:
             do {
                 int alt12=2;
@@ -1441,7 +2241,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt12) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:15: WS
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:15: WS
             	    {
             	    mWS(); 
 
@@ -1458,7 +2258,7 @@ public class PySONLexer extends Lexer {
             mID_SET(); 
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:26: ( WS )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:26: ( WS )*
             loop13:
             do {
                 int alt13=2;
@@ -1471,7 +2271,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt13) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:26: WS
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:26: WS
             	    {
             	    mWS(); 
 
@@ -1506,8 +2306,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ROOTAGE_QUALIFIER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:198:2: ( '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:198:4: '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:2: ( '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:4: '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']'
             {
             match('['); 
 
@@ -1541,12 +2341,12 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NESTED_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:201:3: ( '[' (~ ( '[' | ']' ) )* ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:201:6: '[' (~ ( '[' | ']' ) )* ']'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:3: ( '[' (~ ( '[' | ']' ) )* ']' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:6: '[' (~ ( '[' | ']' ) )* ']'
             {
             match('['); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:201:10: (~ ( '[' | ']' ) )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:10: (~ ( '[' | ']' ) )*
             loop14:
             do {
                 int alt14=2;
@@ -1600,8 +2400,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:9: ( ' ' | '\\t' | '\\r' | '\\n' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:230:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:230:9: ( ' ' | '\\t' | '\\r' | '\\n' )
             {
             if ( (input.LA(1) >= '\t' && input.LA(1) <= '\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -1631,8 +2431,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:6: ( . )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:8: .
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:239:6: ( . )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:239:8: .
             {
             matchAny(); 
 
@@ -1648,70 +2448,70 @@ public class PySONLexer extends Lexer {
     // $ANTLR end "ELSE"
 
     public void mTokens() throws RecognitionException {
-        // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:8: ( T__23 | T__24 | T__25 | T__26 | T__27 | T__28 | T__29 | T__30 | DEFAULT_INDICATOR | PHYLONET | TREE | UTREE | NETWORK | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | ROOTAGE_QUALIFIER | NESTED_ML_COMMENT | WS | ELSE )
-        int alt15=27;
+        // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:8: ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | ROOTAGE_QUALIFIER | NESTED_ML_COMMENT | WS | ELSE )
+        int alt15=37;
         alt15 = dfa15.predict(input);
         switch (alt15) {
             case 1 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:10: T__23
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:10: T__33
                 {
-                mT__23(); 
+                mT__33(); 
 
 
                 }
                 break;
             case 2 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:16: T__24
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:16: T__34
                 {
-                mT__24(); 
+                mT__34(); 
 
 
                 }
                 break;
             case 3 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:22: T__25
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:22: T__35
                 {
-                mT__25(); 
+                mT__35(); 
 
 
                 }
                 break;
             case 4 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:28: T__26
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:28: T__36
                 {
-                mT__26(); 
+                mT__36(); 
 
 
                 }
                 break;
             case 5 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:34: T__27
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:34: T__37
                 {
-                mT__27(); 
+                mT__37(); 
 
 
                 }
                 break;
             case 6 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:40: T__28
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:40: T__38
                 {
-                mT__28(); 
+                mT__38(); 
 
 
                 }
                 break;
             case 7 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:46: T__29
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:46: T__39
                 {
-                mT__29(); 
+                mT__39(); 
 
 
                 }
                 break;
             case 8 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:52: T__30
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:52: T__40
                 {
-                mT__30(); 
+                mT__40(); 
 
 
                 }
@@ -1733,135 +2533,215 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 11 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:85: TREE
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:85: DATA
+                {
+                mDATA(); 
+
+
+                }
+                break;
+            case 12 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:90: DIMENSIONS
+                {
+                mDIMENSIONS(); 
+
+
+                }
+                break;
+            case 13 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:101: TREE
                 {
                 mTREE(); 
 
 
                 }
                 break;
-            case 12 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:90: UTREE
+            case 14 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:106: UTREE
                 {
                 mUTREE(); 
 
 
                 }
                 break;
-            case 13 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:96: NETWORK
+            case 15 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:112: NETWORK
                 {
                 mNETWORK(); 
 
 
                 }
                 break;
-            case 14 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:104: START
+            case 16 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:120: NTAX
+                {
+                mNTAX(); 
+
+
+                }
+                break;
+            case 17 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:125: NCHAR
+                {
+                mNCHAR(); 
+
+
+                }
+                break;
+            case 18 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:131: FORMAT
+                {
+                mFORMAT(); 
+
+
+                }
+                break;
+            case 19 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:138: DATATYPE
+                {
+                mDATATYPE(); 
+
+
+                }
+                break;
+            case 20 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:147: SYMBOLS
+                {
+                mSYMBOLS(); 
+
+
+                }
+                break;
+            case 21 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:155: GAP
+                {
+                mGAP(); 
+
+
+                }
+                break;
+            case 22 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:159: MATRIX
+                {
+                mMATRIX(); 
+
+
+                }
+                break;
+            case 23 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:166: MISSING
+                {
+                mMISSING(); 
+
+
+                }
+                break;
+            case 24 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:174: START
                 {
                 mSTART(); 
 
 
                 }
                 break;
-            case 15 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:110: BEGIN
+            case 25 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:180: BEGIN
                 {
                 mBEGIN(); 
 
 
                 }
                 break;
-            case 16 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:116: TRANSLATE
+            case 26 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:186: TRANSLATE
                 {
                 mTRANSLATE(); 
 
 
                 }
                 break;
-            case 17 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:126: NETWORKS
+            case 27 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:196: NETWORKS
                 {
                 mNETWORKS(); 
 
 
                 }
                 break;
-            case 18 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:135: TREES
+            case 28 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:205: TREES
                 {
                 mTREES(); 
 
 
                 }
                 break;
-            case 19 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:141: END
+            case 29 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:211: END
                 {
                 mEND(); 
 
 
                 }
                 break;
-            case 20 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:145: ID
+            case 30 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:215: ID
                 {
                 mID(); 
 
 
                 }
                 break;
-            case 21 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:148: QUOTE
+            case 31 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:218: QUOTE
                 {
                 mQUOTE(); 
 
 
                 }
                 break;
-            case 22 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:154: ID_SET
+            case 32 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:224: ID_SET
                 {
                 mID_SET(); 
 
 
                 }
                 break;
-            case 23 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:161: TAXON_SET_LIST
+            case 33 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:231: TAXON_SET_LIST
                 {
                 mTAXON_SET_LIST(); 
 
 
                 }
                 break;
-            case 24 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:176: ROOTAGE_QUALIFIER
+            case 34 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:246: ROOTAGE_QUALIFIER
                 {
                 mROOTAGE_QUALIFIER(); 
 
 
                 }
                 break;
-            case 25 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:194: NESTED_ML_COMMENT
+            case 35 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:264: NESTED_ML_COMMENT
                 {
                 mNESTED_ML_COMMENT(); 
 
 
                 }
                 break;
-            case 26 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:212: WS
+            case 36 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:282: WS
                 {
                 mWS(); 
 
 
                 }
                 break;
-            case 27 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:215: ELSE
+            case 37 :
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:285: ELSE
                 {
                 mELSE(); 
 
@@ -1891,12 +2771,13 @@ public class PySONLexer extends Lexer {
     static final String DFA5_specialS =
         "\6\uffff}>";
     static final String[] DFA5_transitionS = {
-            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\15\2\7\uffff\32\2\1\uffff"+
-            "\1\2\2\uffff\1\2\1\uffff\32\2",
-            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\15\2\7\uffff\32\2\1"+
-            "\uffff\1\2\2\uffff\1\2\1\uffff\32\2",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\13\uffff\1\5\15\2\7\uffff\32"+
-            "\2\1\uffff\1\2\2\uffff\1\2\1\uffff\32\2\2\uffff\1\4",
+            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\15\2\5\uffff\1\2\1\uffff"+
+            "\32\2\1\uffff\1\2\2\uffff\1\2\1\uffff\32\2",
+            "\2\1\2\uffff\1\1\22\uffff\1\1\14\uffff\15\2\5\uffff\1\2\1\uffff"+
+            "\32\2\1\uffff\1\2\2\uffff\1\2\1\uffff\32\2",
+            "\2\3\2\uffff\1\3\22\uffff\1\3\13\uffff\1\5\15\2\5\uffff\1\2"+
+            "\1\uffff\32\2\1\uffff\1\2\2\uffff\1\2\1\uffff\32\2\2\uffff\1"+
+            "\4",
             "\2\3\2\uffff\1\3\22\uffff\1\3\13\uffff\1\5\120\uffff\1\4",
             "",
             ""
@@ -1932,7 +2813,7 @@ public class PySONLexer extends Lexer {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "()* loopback of 190:8: ( ( WS )* ID ( WS )* ',' )*";
+            return "()* loopback of 217:8: ( ( WS )* ID ( WS )* ',' )*";
         }
     }
     static final String DFA11_eotS =
@@ -1950,15 +2831,16 @@ public class PySONLexer extends Lexer {
     static final String[] DFA11_transitionS = {
             "\2\1\2\uffff\1\1\22\uffff\1\1\132\uffff\1\2",
             "\2\1\2\uffff\1\1\22\uffff\1\1\132\uffff\1\2",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\7\uffff\32\4\1"+
-            "\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\7\uffff\32\4\1"+
-            "\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
-            "\2\5\2\uffff\1\5\22\uffff\1\5\13\uffff\1\6\15\4\7\uffff\32"+
-            "\4\1\uffff\1\4\2\uffff\1\4\1\uffff\32\4\2\uffff\1\7",
+            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\5\uffff\1\4\1\uffff"+
+            "\32\4\1\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
+            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\5\uffff\1\4\1\uffff"+
+            "\32\4\1\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
+            "\2\5\2\uffff\1\5\22\uffff\1\5\13\uffff\1\6\15\4\5\uffff\1\4"+
+            "\1\uffff\32\4\1\uffff\1\4\2\uffff\1\4\1\uffff\32\4\2\uffff\1"+
+            "\7",
             "\2\5\2\uffff\1\5\22\uffff\1\5\13\uffff\1\6\120\uffff\1\7",
-            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\7\uffff\32\4\1"+
-            "\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
+            "\2\3\2\uffff\1\3\22\uffff\1\3\14\uffff\15\4\5\uffff\1\4\1\uffff"+
+            "\32\4\1\uffff\1\4\2\uffff\1\4\1\uffff\32\4",
             "\2\10\2\uffff\1\10\22\uffff\1\10\10\uffff\1\11\2\uffff\1\12"+
             "\116\uffff\1\12",
             "\2\10\2\uffff\1\10\22\uffff\1\10\10\uffff\1\11\2\uffff\1\12"+
@@ -1997,7 +2879,7 @@ public class PySONLexer extends Lexer {
             this.transition = DFA11_transition;
         }
         public String getDescription() {
-            return "()* loopback of 194:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*";
+            return "()* loopback of 221:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*";
         }
     }
     static final String DFA10_eotS =
@@ -2049,47 +2931,64 @@ public class PySONLexer extends Lexer {
             this.transition = DFA10_transition;
         }
         public String getDescription() {
-            return "194:20: ( ( WS )* ',' )?";
+            return "221:20: ( ( WS )* ',' )?";
         }
     }
     static final String DFA15_eotS =
-        "\1\uffff\1\27\10\uffff\4\42\1\26\2\42\1\uffff\3\26\14\uffff\1\42"+
-        "\1\uffff\3\42\1\uffff\2\42\5\uffff\6\42\1\74\1\uffff\1\42\1\100"+
-        "\4\42\2\uffff\1\42\1\107\1\uffff\1\42\1\111\1\42\1\113\1\uffff\1"+
-        "\42\1\uffff\1\42\1\uffff\1\42\1\uffff\2\42\1\122\1\123\1\42\1\125"+
-        "\2\uffff\1\126\2\uffff";
+        "\1\uffff\1\34\10\uffff\11\47\1\33\2\47\1\uffff\3\33\14\uffff\1\47"+
+        "\1\uffff\14\47\1\uffff\2\47\5\uffff\13\47\1\130\3\47\1\134\1\uffff"+
+        "\1\47\1\140\1\47\1\143\3\47\1\147\3\47\1\uffff\3\47\2\uffff\2\47"+
+        "\1\uffff\1\47\1\162\1\uffff\1\47\1\164\1\47\1\uffff\1\166\4\47\1"+
+        "\173\1\uffff\3\47\1\uffff\1\47\1\uffff\1\47\1\uffff\1\u0081\1\47"+
+        "\1\u0083\1\47\1\uffff\4\47\1\u008a\1\uffff\1\u008b\1\uffff\1\u008c"+
+        "\1\u008d\1\u008e\2\47\1\u0091\5\uffff\1\47\1\u0093\1\uffff\1\u0094"+
+        "\2\uffff";
     static final String DFA15_eofS =
-        "\127\uffff";
+        "\u0095\uffff";
     static final String DFA15_minS =
-        "\1\0\1\11\10\uffff\1\110\1\122\1\124\1\105\1\116\1\105\1\116\1\uffff"+
-        "\1\0\1\11\1\0\14\uffff\1\131\1\uffff\1\101\1\122\1\124\1\uffff\1"+
-        "\107\1\104\2\uffff\1\0\2\uffff\1\114\1\105\1\116\1\105\1\127\1\111"+
-        "\1\55\1\0\1\117\1\55\1\123\1\105\1\117\1\116\2\uffff\1\116\1\55"+
-        "\1\uffff\1\114\1\55\1\122\1\55\1\uffff\1\105\1\uffff\1\101\1\uffff"+
-        "\1\113\1\uffff\2\124\2\55\1\105\1\55\2\uffff\1\55\2\uffff";
+        "\1\0\1\11\10\uffff\1\110\1\101\1\122\1\124\1\103\1\117\1\131\2\101"+
+        "\1\116\1\105\1\116\1\uffff\1\0\1\11\1\0\14\uffff\1\131\1\uffff\1"+
+        "\124\1\115\1\101\1\122\1\124\1\101\1\110\1\122\1\115\1\120\1\124"+
+        "\1\123\1\uffff\1\107\1\104\2\uffff\1\0\2\uffff\1\114\1\101\2\105"+
+        "\1\116\1\105\1\127\1\130\1\101\1\115\1\102\1\55\1\122\1\123\1\111"+
+        "\1\55\1\0\1\117\1\55\1\116\1\55\1\123\1\105\1\117\1\55\1\122\1\101"+
+        "\1\117\1\uffff\2\111\1\116\2\uffff\1\116\1\131\1\uffff\1\123\1\55"+
+        "\1\uffff\1\114\1\55\1\122\1\uffff\1\55\1\124\1\114\1\130\1\116\1"+
+        "\55\1\uffff\1\105\1\120\1\111\1\uffff\1\101\1\uffff\1\113\1\uffff"+
+        "\1\55\1\123\1\55\1\107\1\uffff\1\124\1\105\1\117\1\124\1\55\1\uffff"+
+        "\1\55\1\uffff\3\55\1\116\1\105\1\55\5\uffff\1\123\1\55\1\uffff\1"+
+        "\55\2\uffff";
     static final String DFA15_maxS =
-        "\1\uffff\1\173\10\uffff\1\150\1\162\1\164\1\145\1\156\1\145\1\156"+
-        "\1\uffff\1\uffff\1\172\1\uffff\14\uffff\1\171\1\uffff\1\145\1\162"+
-        "\1\164\1\uffff\1\147\1\144\2\uffff\1\uffff\2\uffff\1\154\1\145\1"+
-        "\156\1\145\1\167\1\151\1\172\1\uffff\1\157\1\172\1\163\1\145\1\157"+
-        "\1\156\2\uffff\1\156\1\172\1\uffff\1\154\1\172\1\162\1\172\1\uffff"+
-        "\1\145\1\uffff\1\141\1\uffff\1\153\1\uffff\2\164\2\172\1\145\1\172"+
-        "\2\uffff\1\172\2\uffff";
+        "\1\uffff\1\173\10\uffff\1\150\1\151\1\162\2\164\1\157\1\171\1\141"+
+        "\1\151\1\156\1\145\1\156\1\uffff\1\uffff\1\172\1\uffff\14\uffff"+
+        "\1\171\1\uffff\1\164\1\155\1\145\1\162\1\164\1\141\1\150\1\162\1"+
+        "\155\1\160\1\164\1\163\1\uffff\1\147\1\144\2\uffff\1\uffff\2\uffff"+
+        "\1\154\1\141\2\145\1\156\1\145\1\167\1\170\1\141\1\155\1\142\1\172"+
+        "\1\162\1\163\1\151\1\172\1\uffff\1\157\1\172\1\156\1\172\1\163\1"+
+        "\145\1\157\1\172\1\162\1\141\1\157\1\uffff\2\151\1\156\2\uffff\1"+
+        "\156\1\171\1\uffff\1\163\1\172\1\uffff\1\154\1\172\1\162\1\uffff"+
+        "\1\172\1\164\1\154\1\170\1\156\1\172\1\uffff\1\145\1\160\1\151\1"+
+        "\uffff\1\141\1\uffff\1\153\1\uffff\1\172\1\163\1\172\1\147\1\uffff"+
+        "\1\164\1\145\1\157\1\164\1\172\1\uffff\1\172\1\uffff\3\172\1\156"+
+        "\1\145\1\172\5\uffff\1\163\1\172\1\uffff\1\172\2\uffff";
     static final String DFA15_acceptS =
-        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\7\uffff\1\24\3\uffff"+
-        "\1\32\1\33\1\1\1\27\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1"+
-        "\24\3\uffff\1\16\2\uffff\1\25\1\26\1\uffff\1\31\1\32\16\uffff\1"+
-        "\23\1\30\2\uffff\1\13\4\uffff\1\30\1\uffff\1\22\1\uffff\1\14\1\uffff"+
-        "\1\17\6\uffff\1\15\1\12\1\uffff\1\21\1\20";
+        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\14\uffff\1\36\3\uffff"+
+        "\1\44\1\45\1\1\1\41\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1"+
+        "\36\14\uffff\1\30\2\uffff\1\37\1\40\1\uffff\1\43\1\44\34\uffff\1"+
+        "\25\3\uffff\1\35\1\42\2\uffff\1\13\2\uffff\1\15\3\uffff\1\20\6\uffff"+
+        "\1\42\3\uffff\1\34\1\uffff\1\16\1\uffff\1\21\4\uffff\1\31\5\uffff"+
+        "\1\22\1\uffff\1\26\6\uffff\1\17\1\24\1\27\1\12\1\23\2\uffff\1\33"+
+        "\1\uffff\1\32\1\14";
     static final String DFA15_specialS =
-        "\1\2\21\uffff\1\1\1\uffff\1\0\26\uffff\1\4\11\uffff\1\3\41\uffff}>";
+        "\1\4\26\uffff\1\0\1\uffff\1\1\37\uffff\1\3\22\uffff\1\2\110\uffff}>";
     static final String[] DFA15_transitionS = {
-            "\11\26\2\25\2\26\1\25\22\26\1\25\1\26\1\22\1\16\4\26\1\1\1\2"+
-            "\1\11\1\26\1\3\15\21\1\4\1\5\1\6\1\7\1\10\2\26\1\21\1\17\2\21"+
-            "\1\20\10\21\1\15\1\21\1\12\3\21\1\13\1\14\5\21\1\24\1\21\2\26"+
-            "\1\21\1\26\1\21\1\17\2\21\1\20\10\21\1\15\1\21\1\12\3\21\1\13"+
-            "\1\14\5\21\1\23\uff84\26",
-            "\2\30\2\uffff\1\30\22\uffff\1\30\132\uffff\1\30",
+            "\11\33\2\32\2\33\1\32\22\33\1\32\1\33\1\27\1\23\4\33\1\1\1\2"+
+            "\1\11\1\33\1\3\15\26\1\4\1\5\1\6\1\7\1\10\1\26\1\33\1\26\1\24"+
+            "\1\26\1\13\1\25\1\17\1\21\5\26\1\22\1\16\1\26\1\12\2\26\1\20"+
+            "\1\14\1\15\5\26\1\31\1\26\2\33\1\26\1\33\1\26\1\24\1\26\1\13"+
+            "\1\25\1\17\1\21\5\26\1\22\1\16\1\26\1\12\2\26\1\20\1\14\1\15"+
+            "\5\26\1\30\uff84\33",
+            "\2\35\2\uffff\1\35\22\uffff\1\35\132\uffff\1\35",
             "",
             "",
             "",
@@ -2098,85 +2997,165 @@ public class PySONLexer extends Lexer {
             "",
             "",
             "",
-            "\1\41\37\uffff\1\41",
-            "\1\43\37\uffff\1\43",
-            "\1\44\37\uffff\1\44",
-            "\1\45\37\uffff\1\45",
             "\1\46\37\uffff\1\46",
-            "\1\47\37\uffff\1\47",
-            "\1\50\37\uffff\1\50",
-            "",
-            "\0\51",
-            "\2\52\2\uffff\1\52\22\uffff\1\52\14\uffff\15\52\7\uffff\32"+
-            "\52\1\uffff\1\52\2\uffff\1\52\1\uffff\32\52",
-            "\46\54\1\53\64\54\1\uffff\uffa4\54",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\1\56\37\uffff\1\56",
-            "",
-            "\1\60\3\uffff\1\57\33\uffff\1\60\3\uffff\1\57",
+            "\1\50\7\uffff\1\51\27\uffff\1\50\7\uffff\1\51",
+            "\1\52\37\uffff\1\52",
+            "\1\53\37\uffff\1\53",
+            "\1\56\1\uffff\1\54\16\uffff\1\55\16\uffff\1\56\1\uffff\1\54"+
+            "\16\uffff\1\55",
+            "\1\57\37\uffff\1\57",
+            "\1\60\37\uffff\1\60",
             "\1\61\37\uffff\1\61",
-            "\1\62\37\uffff\1\62",
-            "",
-            "\1\63\37\uffff\1\63",
+            "\1\62\7\uffff\1\63\27\uffff\1\62\7\uffff\1\63",
             "\1\64\37\uffff\1\64",
-            "",
-            "",
-            "\122\54\1\65\2\54\1\65\5\54\1\uffff\26\54\1\65\2\54\1\65\uff8a"+
-            "\54",
-            "",
-            "",
+            "\1\65\37\uffff\1\65",
             "\1\66\37\uffff\1\66",
-            "\1\67\37\uffff\1\67",
-            "\1\70\37\uffff\1\70",
-            "\1\71\37\uffff\1\71",
-            "\1\72\37\uffff\1\72",
-            "\1\73\37\uffff\1\73",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
-            "\133\54\1\uffff\1\54\1\75\uffa2\54",
+            "",
+            "\0\67",
+            "\2\70\2\uffff\1\70\22\uffff\1\70\14\uffff\15\70\5\uffff\1\70"+
+            "\1\uffff\32\70\1\uffff\1\70\2\uffff\1\70\1\uffff\32\70",
+            "\46\72\1\71\64\72\1\uffff\uffa4\72",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\74\37\uffff\1\74",
+            "",
+            "\1\75\37\uffff\1\75",
             "\1\76\37\uffff\1\76",
-            "\15\42\7\uffff\22\42\1\77\7\42\1\uffff\1\42\2\uffff\1\42\1"+
-            "\uffff\22\42\1\77\7\42",
+            "\1\100\3\uffff\1\77\33\uffff\1\100\3\uffff\1\77",
             "\1\101\37\uffff\1\101",
             "\1\102\37\uffff\1\102",
             "\1\103\37\uffff\1\103",
             "\1\104\37\uffff\1\104",
-            "",
-            "",
+            "\1\105\37\uffff\1\105",
             "\1\106\37\uffff\1\106",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
-            "",
+            "\1\107\37\uffff\1\107",
             "\1\110\37\uffff\1\110",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
-            "\1\112\37\uffff\1\112",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
+            "\1\111\37\uffff\1\111",
             "",
-            "\1\114\37\uffff\1\114",
+            "\1\112\37\uffff\1\112",
+            "\1\113\37\uffff\1\113",
+            "",
+            "",
+            "\122\72\1\114\2\72\1\114\5\72\1\uffff\26\72\1\114\2\72\1\114"+
+            "\uff8a\72",
+            "",
             "",
             "\1\115\37\uffff\1\115",
-            "",
             "\1\116\37\uffff\1\116",
-            "",
             "\1\117\37\uffff\1\117",
             "\1\120\37\uffff\1\120",
-            "\15\42\7\uffff\22\42\1\121\7\42\1\uffff\1\42\2\uffff\1\42\1"+
-            "\uffff\22\42\1\121\7\42",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
+            "\1\121\37\uffff\1\121",
+            "\1\122\37\uffff\1\122",
+            "\1\123\37\uffff\1\123",
             "\1\124\37\uffff\1\124",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
+            "\1\125\37\uffff\1\125",
+            "\1\126\37\uffff\1\126",
+            "\1\127\37\uffff\1\127",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\131\37\uffff\1\131",
+            "\1\132\37\uffff\1\132",
+            "\1\133\37\uffff\1\133",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\133\72\1\uffff\1\72\1\135\uffa2\72",
+            "\1\136\37\uffff\1\136",
+            "\15\47\5\uffff\1\47\1\uffff\23\47\1\137\6\47\1\uffff\1\47\2"+
+            "\uffff\1\47\1\uffff\23\47\1\137\6\47",
+            "\1\141\37\uffff\1\141",
+            "\15\47\5\uffff\1\47\1\uffff\22\47\1\142\7\47\1\uffff\1\47\2"+
+            "\uffff\1\47\1\uffff\22\47\1\142\7\47",
+            "\1\144\37\uffff\1\144",
+            "\1\145\37\uffff\1\145",
+            "\1\146\37\uffff\1\146",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\150\37\uffff\1\150",
+            "\1\151\37\uffff\1\151",
+            "\1\152\37\uffff\1\152",
+            "",
+            "\1\153\37\uffff\1\153",
+            "\1\154\37\uffff\1\154",
+            "\1\155\37\uffff\1\155",
             "",
             "",
-            "\15\42\7\uffff\32\42\1\uffff\1\42\2\uffff\1\42\1\uffff\32\42",
+            "\1\157\37\uffff\1\157",
+            "\1\160\37\uffff\1\160",
+            "",
+            "\1\161\37\uffff\1\161",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "",
+            "\1\163\37\uffff\1\163",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\165\37\uffff\1\165",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\167\37\uffff\1\167",
+            "\1\170\37\uffff\1\170",
+            "\1\171\37\uffff\1\171",
+            "\1\172\37\uffff\1\172",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "",
+            "\1\174\37\uffff\1\174",
+            "\1\175\37\uffff\1\175",
+            "\1\176\37\uffff\1\176",
+            "",
+            "\1\177\37\uffff\1\177",
+            "",
+            "\1\u0080\37\uffff\1\u0080",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\u0082\37\uffff\1\u0082",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\u0084\37\uffff\1\u0084",
+            "",
+            "\1\u0085\37\uffff\1\u0085",
+            "\1\u0086\37\uffff\1\u0086",
+            "\1\u0087\37\uffff\1\u0087",
+            "\1\u0088\37\uffff\1\u0088",
+            "\15\47\5\uffff\1\47\1\uffff\22\47\1\u0089\7\47\1\uffff\1\47"+
+            "\2\uffff\1\47\1\uffff\22\47\1\u0089\7\47",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\u008f\37\uffff\1\u008f",
+            "\1\u0090\37\uffff\1\u0090",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\u0092\37\uffff\1\u0092",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
             "",
             ""
     };
@@ -2211,37 +3190,59 @@ public class PySONLexer extends Lexer {
             this.transition = DFA15_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__23 | T__24 | T__25 | T__26 | T__27 | T__28 | T__29 | T__30 | DEFAULT_INDICATOR | PHYLONET | TREE | UTREE | NETWORK | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | ROOTAGE_QUALIFIER | NESTED_ML_COMMENT | WS | ELSE );";
+            return "1:1: Tokens : ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | ROOTAGE_QUALIFIER | NESTED_ML_COMMENT | WS | ELSE );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA15_20 = input.LA(1);
+                        int LA15_23 = input.LA(1);
 
                         s = -1;
-                        if ( (LA15_20=='&') ) {s = 43;}
+                        if ( ((LA15_23 >= '\u0000' && LA15_23 <= '\uFFFF')) ) {s = 55;}
 
-                        else if ( ((LA15_20 >= '\u0000' && LA15_20 <= '%')||(LA15_20 >= '\'' && LA15_20 <= 'Z')||(LA15_20 >= '\\' && LA15_20 <= '\uFFFF')) ) {s = 44;}
-
-                        else s = 22;
+                        else s = 27;
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 1 : 
-                        int LA15_18 = input.LA(1);
+                        int LA15_25 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA15_18 >= '\u0000' && LA15_18 <= '\uFFFF')) ) {s = 41;}
+                        if ( (LA15_25=='&') ) {s = 57;}
 
-                        else s = 22;
+                        else if ( ((LA15_25 >= '\u0000' && LA15_25 <= '%')||(LA15_25 >= '\'' && LA15_25 <= 'Z')||(LA15_25 >= '\\' && LA15_25 <= '\uFFFF')) ) {s = 58;}
+
+                        else s = 27;
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 2 : 
+                        int LA15_76 = input.LA(1);
+
+                        s = -1;
+                        if ( (LA15_76==']') ) {s = 93;}
+
+                        else if ( ((LA15_76 >= '\u0000' && LA15_76 <= 'Z')||LA15_76=='\\'||(LA15_76 >= '^' && LA15_76 <= '\uFFFF')) ) {s = 58;}
+
+                        if ( s>=0 ) return s;
+                        break;
+
+                    case 3 : 
+                        int LA15_57 = input.LA(1);
+
+                        s = -1;
+                        if ( (LA15_57=='R'||LA15_57=='U'||LA15_57=='r'||LA15_57=='u') ) {s = 76;}
+
+                        else if ( ((LA15_57 >= '\u0000' && LA15_57 <= 'Q')||(LA15_57 >= 'S' && LA15_57 <= 'T')||(LA15_57 >= 'V' && LA15_57 <= 'Z')||(LA15_57 >= '\\' && LA15_57 <= 'q')||(LA15_57 >= 's' && LA15_57 <= 't')||(LA15_57 >= 'v' && LA15_57 <= '\uFFFF')) ) {s = 58;}
+
+                        if ( s>=0 ) return s;
+                        break;
+
+                    case 4 : 
                         int LA15_0 = input.LA(1);
 
                         s = -1;
@@ -2265,51 +3266,39 @@ public class PySONLexer extends Lexer {
 
                         else if ( (LA15_0=='P'||LA15_0=='p') ) {s = 10;}
 
-                        else if ( (LA15_0=='T'||LA15_0=='t') ) {s = 11;}
+                        else if ( (LA15_0=='D'||LA15_0=='d') ) {s = 11;}
 
-                        else if ( (LA15_0=='U'||LA15_0=='u') ) {s = 12;}
+                        else if ( (LA15_0=='T'||LA15_0=='t') ) {s = 12;}
 
-                        else if ( (LA15_0=='N'||LA15_0=='n') ) {s = 13;}
+                        else if ( (LA15_0=='U'||LA15_0=='u') ) {s = 13;}
 
-                        else if ( (LA15_0=='#') ) {s = 14;}
+                        else if ( (LA15_0=='N'||LA15_0=='n') ) {s = 14;}
 
-                        else if ( (LA15_0=='B'||LA15_0=='b') ) {s = 15;}
+                        else if ( (LA15_0=='F'||LA15_0=='f') ) {s = 15;}
 
-                        else if ( (LA15_0=='E'||LA15_0=='e') ) {s = 16;}
+                        else if ( (LA15_0=='S'||LA15_0=='s') ) {s = 16;}
 
-                        else if ( ((LA15_0 >= '-' && LA15_0 <= '9')||LA15_0=='A'||(LA15_0 >= 'C' && LA15_0 <= 'D')||(LA15_0 >= 'F' && LA15_0 <= 'M')||LA15_0=='O'||(LA15_0 >= 'Q' && LA15_0 <= 'S')||(LA15_0 >= 'V' && LA15_0 <= 'Z')||LA15_0=='\\'||LA15_0=='_'||LA15_0=='a'||(LA15_0 >= 'c' && LA15_0 <= 'd')||(LA15_0 >= 'f' && LA15_0 <= 'm')||LA15_0=='o'||(LA15_0 >= 'q' && LA15_0 <= 's')||(LA15_0 >= 'v' && LA15_0 <= 'z')) ) {s = 17;}
+                        else if ( (LA15_0=='G'||LA15_0=='g') ) {s = 17;}
 
-                        else if ( (LA15_0=='\"') ) {s = 18;}
+                        else if ( (LA15_0=='M'||LA15_0=='m') ) {s = 18;}
 
-                        else if ( (LA15_0=='{') ) {s = 19;}
+                        else if ( (LA15_0=='#') ) {s = 19;}
 
-                        else if ( (LA15_0=='[') ) {s = 20;}
+                        else if ( (LA15_0=='B'||LA15_0=='b') ) {s = 20;}
 
-                        else if ( ((LA15_0 >= '\t' && LA15_0 <= '\n')||LA15_0=='\r'||LA15_0==' ') ) {s = 21;}
+                        else if ( (LA15_0=='E'||LA15_0=='e') ) {s = 21;}
 
-                        else if ( ((LA15_0 >= '\u0000' && LA15_0 <= '\b')||(LA15_0 >= '\u000B' && LA15_0 <= '\f')||(LA15_0 >= '\u000E' && LA15_0 <= '\u001F')||LA15_0=='!'||(LA15_0 >= '$' && LA15_0 <= '\'')||LA15_0=='+'||(LA15_0 >= '?' && LA15_0 <= '@')||(LA15_0 >= ']' && LA15_0 <= '^')||LA15_0=='`'||(LA15_0 >= '|' && LA15_0 <= '\uFFFF')) ) {s = 22;}
+                        else if ( ((LA15_0 >= '-' && LA15_0 <= '9')||LA15_0=='?'||LA15_0=='A'||LA15_0=='C'||(LA15_0 >= 'H' && LA15_0 <= 'L')||LA15_0=='O'||(LA15_0 >= 'Q' && LA15_0 <= 'R')||(LA15_0 >= 'V' && LA15_0 <= 'Z')||LA15_0=='\\'||LA15_0=='_'||LA15_0=='a'||LA15_0=='c'||(LA15_0 >= 'h' && LA15_0 <= 'l')||LA15_0=='o'||(LA15_0 >= 'q' && LA15_0 <= 'r')||(LA15_0 >= 'v' && LA15_0 <= 'z')) ) {s = 22;}
 
-                        if ( s>=0 ) return s;
-                        break;
+                        else if ( (LA15_0=='\"') ) {s = 23;}
 
-                    case 3 : 
-                        int LA15_53 = input.LA(1);
+                        else if ( (LA15_0=='{') ) {s = 24;}
 
-                        s = -1;
-                        if ( (LA15_53==']') ) {s = 61;}
+                        else if ( (LA15_0=='[') ) {s = 25;}
 
-                        else if ( ((LA15_53 >= '\u0000' && LA15_53 <= 'Z')||LA15_53=='\\'||(LA15_53 >= '^' && LA15_53 <= '\uFFFF')) ) {s = 44;}
+                        else if ( ((LA15_0 >= '\t' && LA15_0 <= '\n')||LA15_0=='\r'||LA15_0==' ') ) {s = 26;}
 
-                        if ( s>=0 ) return s;
-                        break;
-
-                    case 4 : 
-                        int LA15_43 = input.LA(1);
-
-                        s = -1;
-                        if ( (LA15_43=='R'||LA15_43=='U'||LA15_43=='r'||LA15_43=='u') ) {s = 53;}
-
-                        else if ( ((LA15_43 >= '\u0000' && LA15_43 <= 'Q')||(LA15_43 >= 'S' && LA15_43 <= 'T')||(LA15_43 >= 'V' && LA15_43 <= 'Z')||(LA15_43 >= '\\' && LA15_43 <= 'q')||(LA15_43 >= 's' && LA15_43 <= 't')||(LA15_43 >= 'v' && LA15_43 <= '\uFFFF')) ) {s = 44;}
+                        else if ( ((LA15_0 >= '\u0000' && LA15_0 <= '\b')||(LA15_0 >= '\u000B' && LA15_0 <= '\f')||(LA15_0 >= '\u000E' && LA15_0 <= '\u001F')||LA15_0=='!'||(LA15_0 >= '$' && LA15_0 <= '\'')||LA15_0=='+'||LA15_0=='@'||(LA15_0 >= ']' && LA15_0 <= '^')||LA15_0=='`'||(LA15_0 >= '|' && LA15_0 <= '\uFFFF')) ) {s = 27;}
 
                         if ( s>=0 ) return s;
                         break;

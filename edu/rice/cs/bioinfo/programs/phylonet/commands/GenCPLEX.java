@@ -60,7 +60,7 @@ public class GenCPLEX extends CommandBase  {
 
         if(noError)
         {
-            _syntaxTrees = this.assertNetworksExist(syntaxTreesParam);
+            _syntaxTrees = this.assertTreesExist(syntaxTreesParam);
         }
 
         ParameterIdentSet geneTreesParam = this.assertParameterIdentSet(1);
@@ -68,7 +68,7 @@ public class GenCPLEX extends CommandBase  {
 
         if(noError)
         {
-            _geneTrees = this.assertNetworksExist(geneTreesParam);
+            _geneTrees = this.assertTreesExist(geneTreesParam);
         }
 
         ParameterIdent deepCoalWeightParam = this.assertParameterIdent(2);

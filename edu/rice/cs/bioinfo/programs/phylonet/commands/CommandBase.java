@@ -1,14 +1,17 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.ContainsHybridNode;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import sun.text.normalizer.Trie;
 
+import javax.jws.soap.SOAPBinding;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -21,7 +24,7 @@ import java.util.Map;
  */
 public abstract class CommandBase implements Command {
 
-    private SyntaxCommand _motivatingCommand;
+    protected SyntaxCommand _motivatingCommand;
 
     protected final ArrayList<Parameter> params;
 
@@ -86,6 +89,32 @@ public abstract class CommandBase implements Command {
         }
     }
 
+    protected NetworkNonEmpty assertAndGetTree(int paramIndex)
+    {
+        NetworkNonEmpty network = assertAndGetNetwork(paramIndex);
+
+        if(network != null)
+        {
+            if(network.execute(ContainsHybridNode.Singleton, null))
+            {
+                ParameterIdent p = (ParameterIdent) params.get(paramIndex);
+                errorDetected.execute(String.format("Expected '%s' to be a tree but found network with hybrid node.", p.Content), p.getLine(), p.getColumn());
+                return null;
+            }
+            else
+            {
+                return network;
+            }
+        }
+        else
+        {
+            return null;
+        }
+
+    }
+
+
+
     private boolean assertNetworkExists(ParameterIdent parameterIdent)
     {
         return assertNetworkExists(parameterIdent.Content, parameterIdent.getLine(), parameterIdent.getColumn());
@@ -105,7 +134,74 @@ public abstract class CommandBase implements Command {
 
     }
 
-    protected LinkedList<NetworkNonEmpty> assertNetworksExist(ParameterIdentSet identList)
+    protected boolean assertTreeExists(String treeName, int line, int col)
+    {
+        if(!sourceIdentToNetwork.containsKey(treeName))
+        {
+            errorDetected.execute(String.format("Unknown identifier '%s'.", treeName), line, col);
+            return false;
+        }
+        else
+        {
+            Network network = sourceIdentToNetwork.get(treeName);
+            if(network.execute(ContainsHybridNode.Singleton, null))
+            {
+                errorDetected.execute(String.format("Expected '%s' to be a tree but found network with hybrid node.", treeName), line,col);
+                return false;
+            }
+
+            return true;
+        }
+
+    }
+
+
+
+    protected LinkedList<NetworkNonEmpty> assertNetworksExist(ParameterIdentSet identSet)
+    {
+        LinkedList<NetworkNonEmpty> accum = new LinkedList<NetworkNonEmpty>();
+
+        for(String ident : identSet.Elements)
+        {
+            if(assertNetworkExists(ident, identSet.getLine(), identSet.getColumn()))
+            {
+                if(accum != null)
+                {
+                    accum.add(sourceIdentToNetwork.get(ident));
+                }
+            }
+            else
+            {
+                accum = null;
+            }
+        }
+
+        return accum;
+    }
+
+     protected LinkedList<NetworkNonEmpty> assertTreesExist(ParameterIdentSet identSet)
+    {
+        LinkedList<NetworkNonEmpty> accum = new LinkedList<NetworkNonEmpty>();
+
+        for(String ident : identSet.Elements)
+        {
+            if(assertTreeExists(ident, identSet.getLine(), identSet.getColumn()))
+            {
+                if(accum != null)
+                {
+                    accum.add(sourceIdentToNetwork.get(ident));
+                }
+            }
+            else
+            {
+                accum = null;
+            }
+        }
+
+        return accum;
+    }
+
+    protected LinkedList<NetworkNonEmpty> assertNetworksExist(ParameterIdentList identList)
     {
         LinkedList<NetworkNonEmpty> accum = new LinkedList<NetworkNonEmpty>();
 
@@ -210,9 +306,9 @@ public abstract class CommandBase implements Command {
         }, null);
     }
 
-     protected ParameterQuote assertQuotedParameter(int paramIndent)
+     protected ParameterQuote assertQuotedParameter(int paramIndex)
     {
-        Parameter param = this.params.get(paramIndent);
+        Parameter param = this.params.get(paramIndex);
 
         return param.execute(new ParameterAlgo<ParameterQuote, Object, RuntimeException>() {
 
@@ -255,22 +351,22 @@ public abstract class CommandBase implements Command {
         return param.execute(new ParameterAlgo<ParameterIdentSet, Object, RuntimeException>()
         {
             public ParameterIdentSet forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found identifier.", parameterIdent.getColumn(), parameterIdent.getLine());
+                errorDetected.execute("Expected identifier set, found identifier.", parameterIdent.getLine(), parameterIdent.getColumn());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             public ParameterIdentSet forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found identifier list.", parameterIdentList.getColumn(), parameterIdentList.getLine());
+                errorDetected.execute("Expected identifier set, found identifier list.", parameterIdentList.getLine(), parameterIdentList.getColumn());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             public ParameterIdentSet forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found quoted identifier.", parameterQuote.getColumn(), parameterQuote.getLine());
+                errorDetected.execute("Expected identifier set, found quoted parameter.", parameterQuote.getLine(), parameterQuote.getColumn());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             public ParameterIdentSet forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found identifier set list.", parameterTaxonSetList.getColumn(), parameterTaxonSetList.getLine());
+                errorDetected.execute("Expected identifier set, found identifier set list.", parameterTaxonSetList.getLine(), parameterTaxonSetList.getColumn());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
@@ -285,6 +381,84 @@ public abstract class CommandBase implements Command {
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
         }, null);
+    }
+
+    protected ParameterIdentList assertParameterIdentList(int paramIndex)
+    {
+        Parameter param = this.params.get(paramIndex);
+        return param.execute(new ParameterAlgo<ParameterIdentList, Object, RuntimeException>()
+        {
+            public ParameterIdentList forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier list, found identifier.", parameterIdent.getColumn(), parameterIdent.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ParameterIdentList forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
+                  return parameterIdentList;
+            }
+
+            public ParameterIdentList forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier set, found quoted parameter.", parameterQuote.getColumn(), parameterQuote.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ParameterIdentList forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier set, found identifier set list.", parameterTaxonSetList.getColumn(), parameterTaxonSetList.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ParameterIdentList forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
+
+                  errorDetected.execute("Expected identifier list, found identifier set.", parameterIdentSet.getColumn(), parameterIdentSet.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+            }
+
+            public ParameterIdentList forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier set, found taxa map.", parameterTaxaMap.getColumn(), parameterTaxaMap.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }, null);
+    }
+
+    protected  boolean checkForUnknownSwitches(String... expectedSwitches)
+    {
+        boolean  noError = true;
+
+        HashSet<String> exepctedLower = new HashSet<String>();
+
+        for(String s : expectedSwitches)
+        {
+            exepctedLower.add(s.toLowerCase());
+        }
+
+        for(Parameter p : this.params)
+        {
+            if(p instanceof ParameterIdent)
+            {
+                ParameterIdent ident = (ParameterIdent)p;
+                if(ident.Content.startsWith("-"))
+                {
+                    if(ident.Content.length() > 1)
+                    {
+                        String switchKey = ident.Content.substring(1).toLowerCase();
+
+                        if(!exepctedLower.contains(switchKey))
+                        {
+                            errorDetected.execute("Unknown switch -" + switchKey, p.getLine(), p.getColumn());
+                            noError = false;
+                        }
+                    }
+                    else
+                    {
+                        errorDetected.execute("Expected switch name after -.", p.getLine(), p.getColumn());
+                        noError = false;
+                    }
+                }
+            }
+        }
+
+        return noError;
     }
 
 

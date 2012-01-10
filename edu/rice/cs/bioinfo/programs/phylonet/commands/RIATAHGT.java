@@ -64,7 +64,7 @@ public class RIATAHGT extends CommandBaseFileOut
         boolean noError = true;
         int optionalParamCount = 0;
 
-        _speciesTree = this.assertAndGetNetwork(0);
+        _speciesTree = this.assertAndGetTree(0);
         noError = noError && _speciesTree != null;
 
         ParameterIdentSet geneTreesParam = this.assertParameterIdentSet(1);
@@ -116,16 +116,21 @@ public class RIATAHGT extends CommandBaseFileOut
             _collapsed = false;
         }
 
-        for(String geneTreeIdent : geneTreesParam.Elements)
+        if(geneTreesParam != null)
         {
-            noError = this.assertNetworkExists(geneTreeIdent, geneTreesParam.getLine(), geneTreesParam.getColumn());
-            if(noError)
-            {
-                _geneTrees.add(sourceIdentToNetwork.get(geneTreeIdent));
-            }
-        }
 
-        checkAndSetOutFile(pExtract);
+            for(String geneTreeIdent : geneTreesParam.Elements)
+            {
+                noError = this.assertTreeExists(geneTreeIdent, geneTreesParam.getLine(), geneTreesParam.getColumn());
+                if(noError)
+                {
+                    _geneTrees.add(sourceIdentToNetwork.get(geneTreeIdent));
+                }
+            }
+
+            noError = noError && checkForUnknownSwitches("e", "p", "u");
+            checkAndSetOutFile(pExtract);
+        }
 
 
        return noError;

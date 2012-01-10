@@ -8,15 +8,6 @@ Tree tree3 = ((1,3,4),2);
 
 END;
 
-BEGIN SO;
-
-jkadjfklajdfklja
-dfjsdk
-fja
-
-
-
-END;
 
 BEGIN PHYLONET;
 

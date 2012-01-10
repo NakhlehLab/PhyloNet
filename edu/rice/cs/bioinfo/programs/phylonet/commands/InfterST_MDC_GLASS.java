@@ -1,13 +1,19 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
+import com.sun.jmx.snmp.SnmpString;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterTaxaMap;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.GLASSInference;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.TaxaDistanceMatrix;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +26,9 @@ import java.util.Map;
  */
 public class InfterST_MDC_GLASS extends InferSTBase
 {
-     private Map<String,String> _taxonMap;
+    private Map<String,String> _taxonMap;
+
+    private TaxaDistanceMatrix _distanceMatrix;
 
     InfterST_MDC_GLASS(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
@@ -39,36 +47,143 @@ public class InfterST_MDC_GLASS extends InferSTBase
     @Override
     protected boolean checkParamsForCommand()
     {
-        boolean noError = super.checkParamsForCommand();
+       boolean noError = true;
 
-         TaxonMapResult result = assignTaxonMap();
+       Parameter firstParam = this.params.get(0);
+       if(firstParam instanceof ParameterIdentList)
+       {
+           _geneTrees = this.assertNetworksExist((ParameterIdentList)firstParam);
+       }
+       else if(firstParam instanceof ParameterTaxaMap)
+       {
+           ParameterTaxaMap distanceMap = (ParameterTaxaMap)firstParam;
+
+           HashSet<String> taxaInMap = new HashSet<String>();
+
+           for(Map.Entry<String, List<String>> entry : distanceMap._mappings)
+           {
+               taxaInMap.add(entry.getKey());
+               List<String> taxonDistancePairs = entry.getValue();
+               for(int i = 0; i<taxonDistancePairs.size(); i+=2)
+               {
+                   taxaInMap.add(taxonDistancePairs.get(i));
+               }
+           }
+           String[] taxa = taxaInMap.toArray(new String[0]);
+           _distanceMatrix = new TaxaDistanceMatrix(taxa);
+
+
+           for(Map.Entry<String, List<String>> entry : distanceMap._mappings)
+           {
+               String taxon1 = entry.getKey();
+               List<String> taxonDistancePairs = entry.getValue();
+
+               if(taxonDistancePairs.size() % 2 != 0)
+               {
+                    noError = false;
+                    this.errorDetected.execute("Odd number of taxon/distance entries found in the entries for taxon '" + taxon1 + "'.",
+                                               distanceMap.getLine(), distanceMap.getColumn());
+               }
+
+               HashSet<String> seenMapKeys = new HashSet<String>();
+               for(int i = 0; i<taxonDistancePairs.size(); i+=2)
+               {
+                   String taxon2 = taxonDistancePairs.get(i);
+                   String stringDistance = taxonDistancePairs.get(i+1);
+
+                   try
+                   {
+                        double distance = Double.parseDouble(stringDistance);
+                        String mapKey1 = taxon1.toLowerCase() + taxon2.toLowerCase();
+                        String mapKey2 = taxon2.toLowerCase() + taxon1.toLowerCase();
+
+                       if(!seenMapKeys.contains(mapKey1) && !seenMapKeys.contains(mapKey2))
+                       {
+                           seenMapKeys.add(mapKey1);
+                           seenMapKeys.add(mapKey2);
+
+                           STITreeCluster c = new STITreeCluster(taxa);
+				           c.addLeaf(taxon1);
+				           c.addLeaf(taxon2);
+				           _distanceMatrix.put(c, distance);
+                       }
+                       else
+                       {
+                           this.errorDetected.execute(
+                                   String.format("Duplicate mapping between taxa '%s' and '%s'.", taxon1, taxon2),
+                                   distanceMap.getLine(), distanceMap.getColumn());
+                           noError = false;
+                       }
+
+
+                   }
+                   catch(NumberFormatException e)
+                   {
+                       noError = false;
+                       this.errorDetected.execute("Unknown number '" + stringDistance + "'.", distanceMap.getLine(), distanceMap.getColumn());
+                   }
+               }
+
+
+
+           }
+
+
+       }
+       else
+       {
+           noError = false;
+           this.errorDetected.execute("Expected first parameter to command InfterST_MDC_GLASS to be an identifier list or distance map.",
+                                       firstParam.getLine(), firstParam.getColumn());
+       }
+
+        TaxonMapResult result = assignTaxonMap();
         noError = noError && result.NoError;
         _taxonMap = result.TaxonMap;
+
+         noError = noError && checkForUnknownSwitches("a");
+
+        if(!noError)
+        {
+            _geneTrees = null;
+            _distanceMatrix = null;
+        }
 
         return noError;
     }
 
     @Override
     protected String produceResult() {
-          if(_geneTrees == null)
+        if(_geneTrees == null && _distanceMatrix == null)
         {
             throw new IllegalStateException();
         }
 
         StringBuffer result = new StringBuffer();
 
-        List<Tree> trees = GetGeneTreesAsTreeList();
+
 
         GLASSInference inference = new GLASSInference();
 		Tree inferredTree;
 
-        if(_taxonMap == null){
+        if(_distanceMatrix != null)
+        {
+            inferredTree = inference.inferSpeciesTreeFromTaxa(_distanceMatrix);
+        }
+        else if(_taxonMap == null)
+        {
+                List<Tree> trees = GetGeneTreesAsTreeList();
 				inferredTree = inference.inferSpeciesTree(trees);
-			}else{
+	    }
+        else
+        {
+                List<Tree> trees = GetGeneTreesAsTreeList();
 				inferredTree = inference.inferSpeciesTree(trees, _taxonMap);
-			}
+		}
 
-        result.append("\n" + inferredTree.toString());
+        String tree = inferredTree.toString();
+        this.speciesTreeGenerated(tree);
+        result.append("\n" + tree);
 
         return result.toString();
     }

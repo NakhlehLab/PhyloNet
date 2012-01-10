@@ -1,14 +1,19 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.DAGFactory;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.SingleLinePrinter;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.lca.SchieberVishkinLCA;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -42,7 +47,7 @@ public class LCA extends CommandBaseFileOut {
 
         boolean noError = true;
 
-        _tree = this.assertAndGetNetwork(0);
+        _tree = this.assertAndGetTree(0);
         noError = noError && _tree != null;
 
 
@@ -105,6 +110,43 @@ public class LCA extends CommandBaseFileOut {
             noError = this.checkOutFileContext(2);
         }
 
+        /**
+         * Check to see all the taxon names in the set family appear in the tree.
+         */
+        if(noError)
+        {
+            final HashSet<String> taxonNames = new HashSet<String>();
+            DAGFactory.makeDAG(_tree, new GraphBuilder<Object>()
+            {
+                public Object createNode(String s) {
+                    if(!taxonNames.contains(s))
+                        taxonNames.add(s);
+                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                }
+
+                public Object createHybridNode(String s, HybridNodeType hybridNodeType, BigInteger bigInteger) {
+                    // its a tree, so this should never be called.
+                    return null;
+                }
+
+                public void createDirectedEdge(Object o, Object o1, BigDecimal bigDecimal, BigDecimal bigDecimal1, BigDecimal bigDecimal2) {
+                    //To change body of implemented methods use File | Settings | File Templates.
+                }
+            });
+
+            for(Set<String> set : _setFamilyList)
+            {
+                for(String taxonName : set)
+                {
+                    if(!taxonNames.contains(taxonName))
+                    {
+                        ParameterIdent treeIdent = (ParameterIdent)this.params.get(0);
+                        this.errorDetected.execute(String.format("Taxon name '%s' does not appear in tree '%s'.", taxonName, treeIdent.Content), setFamilyParam.getLine(), setFamilyParam.getColumn());
+                        noError = false;
+                    }
+                }
+            }
+        }
 
         return noError;
     }

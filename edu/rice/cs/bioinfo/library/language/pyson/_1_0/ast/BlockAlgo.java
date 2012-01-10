@@ -14,4 +14,6 @@ public interface BlockAlgo<R, T, E extends Exception> {
     public R forNetworksBlock(NetworksBlockBody treesBlock, T input) throws E;
 
     public R forPhylonetBlockBody(PhyloNetBlockBody phyloBlock, T input) throws E;
+
+    public R forDataBlock(DataBlockBody dataBlock, T input) throws E;
 }

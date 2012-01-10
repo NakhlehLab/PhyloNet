@@ -11,11 +11,11 @@ END;
 
 BEGIN PHYLONET;
 
-Infer_ST_MDC_Time {g1, g2, g3};
+Infer_ST_MDC_Time (g1, g2, g3);
 
 END;
 ===
 
-Infer_ST_MDC_Time {g1, g2, g3}
+Infer_ST_MDC_Time (g1, g2, g3)
 (e:0,(d:0,(c:0,(a:0,b:0):1):2):5):0; 8 extra lineages in total
 ===

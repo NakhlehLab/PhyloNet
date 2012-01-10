@@ -24,6 +24,10 @@ import java.util.List;
  */
 public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
 {
+    public <N> RichNewickReadResult<Networks> read(InputStream instream) throws IOException, CoordinateParseErrorsException {
+      return read(instream, null);
+    }
+
     public <N> RichNewickReadResult<Networks> read(InputStream instream, GraphBuilder<N> graphBuilder) throws IOException, CoordinateParseErrorsException {
 
         final Networks networks = parse(instream);
@@ -49,7 +53,10 @@ public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
                 throw new CoordinateParseErrorsException(readErrors);
             }
 
-            DAGFactory.makeDAG(network, graphBuilder);
+            if(graphBuilder != null)
+            {
+                DAGFactory.makeDAG(network, graphBuilder);
+            }
         }
 
         return new RichNewickReadResult<Networks>() {

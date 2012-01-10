@@ -11,11 +11,11 @@ END;
 
 BEGIN PHYLONET;
 
-Infer_ST_MDC_UR {g1, g2, g3};
+Infer_ST_MDC_UR (g1, g2, g3);
 
 END;
 ===
 
-Infer_ST_MDC_UR {g1, g2, g3}
+Infer_ST_MDC_UR (g1, g2, g3)
 (c,((a,b),(d,e))); 3 extra lineages in total
 ===

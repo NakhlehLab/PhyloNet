@@ -29,12 +29,12 @@ public class CountCoal extends CommandBaseFileOut {
     }
 
     @Override
-    protected int getMinNumParams() {
+    public int getMinNumParams() {
         return 2;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    protected int getMaxNumParams() {
+    public int getMaxNumParams() {
         return 3;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -43,10 +43,10 @@ public class CountCoal extends CommandBaseFileOut {
 
         boolean  noError = true;
 
-        _tree1 = this.assertAndGetNetwork(0);
+        _tree1 = this.assertAndGetTree(0);
         noError = noError && _tree1 != null;
 
-        _tree2 = this.assertAndGetNetwork(1);
+        _tree2 = this.assertAndGetTree(1);
         noError = noError && _tree2 != null;
 
         if(this.params.size() == 3)

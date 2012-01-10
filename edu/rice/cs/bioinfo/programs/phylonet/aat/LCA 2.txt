@@ -1,0 +1,23 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network tree1 = ((1,4,3),2);
+Network tree2 = ((1#H1)2,(1#H1)4)3;
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+LCA tree1 ({1, 4} {2, 3});
+LCA tree2 ({1,4},{2,3});
+
+END;
+===
+
+===
+
+
+Error at [15,5]: Expected 'tree2' to be a tree but found network with hybrid node.

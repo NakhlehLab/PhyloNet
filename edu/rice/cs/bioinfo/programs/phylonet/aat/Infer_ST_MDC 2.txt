@@ -1,0 +1,22 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network g1 = ((((a,b),c),d),e);
+Network g2 = ((a,b),((c,e),d));
+Network g3 = ((a,c),((b,e),d));
+
+END;
+
+
+BEGIN PHYLONET;
+
+Infer_ST_MDC (g1, g2, g3) -b .5;
+
+END;
+===
+
+===
+
+
+Error at [14,1]: If bootstrap switch is specified for 'Infer_ST_MDC', all gene tree nodes must have a support value.

@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network net1 = ((a,b),(c,(d,(e,(f,g)))));
+Network net2 = ((f,b),(c,(d,(a,(e,g)))));
+
+END;
+
+
+BEGIN PHYLONET;
+
+genst {missing} "C:\temp\genst.out.txt";
+
+END;
+===
+
+===
+
+
+Error at [13,7]: Unknown identifier 'missing'.

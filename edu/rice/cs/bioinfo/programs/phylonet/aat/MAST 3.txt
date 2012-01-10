@@ -1,0 +1,22 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network tree1 = ((1,4,3),2);
+Network tree2 = ((c#H1)a,(c#H1)b)r;
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+MAST {tree1, tree2};
+
+END;
+===
+
+===
+
+
+Error at [14,6]: Expected 'tree2' to be a tree but contains a hybrid node.

@@ -1,0 +1,22 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = ((1,4,3),2);
+Tree tree2 = [&U]((1,2),(4,3));
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+MAST {tree1, tree2};
+
+END;
+===
+
+===
+
+
+Error at [14,6]: All trees for MAST must be rooted or unrooted.

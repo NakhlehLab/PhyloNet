@@ -1,0 +1,13 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree t = ((c#H1)b,(c#H1)a)r;
+
+END;
+===
+
+===
+
+
+Error at [5,10]: Trees may not contain hybrid nodes.

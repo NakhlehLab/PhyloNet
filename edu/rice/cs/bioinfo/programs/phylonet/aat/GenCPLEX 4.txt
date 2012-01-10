@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network st = ((((a:1,b:2),c:3),d:4),e:5);
+Network gt = (((a:1,b:2,c:3),d:4),e:5);
+
+END;
+
+
+BEGIN PHYLONET;
+
+gencplex {xt} {gt} 2 2 "C:\temp\cplex";
+
+END;
+===
+
+===
+
+
+Error at [13,10]: Unknown identifier 'xt'.

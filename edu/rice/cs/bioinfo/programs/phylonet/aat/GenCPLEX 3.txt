@@ -1,0 +1,27 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network st = ((((a:1,b:2),c:3),d:4),e:5);
+Network gt = (((a:1,b:2,c:3),d:4),e:5);
+
+END;
+
+
+BEGIN PHYLONET;
+
+gencplex 2 2 {st} {gt} "C:\temp\cplex";
+
+END;
+===
+
+===
+
+
+Error at [13,10]: Expected identifier set, found identifier.
+
+Error at [13,12]: Expected identifier set, found identifier.
+
+Error at [13,14]: Expected identifier, found identifier set list.
+
+Error at [13,19]: Expected identifier, found identifier set list.

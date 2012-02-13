@@ -92,7 +92,7 @@ public class InferST_MC extends InferSTBase
 		}
 
         String tree = inferredTree.toStringWD();
-        this.speciesTreeGenerated(tree);
+        this.treeGenerated(tree);
         result.append("\n" + tree);
 
         return result.toString();

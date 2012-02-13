@@ -158,10 +158,14 @@ public class ProcessGT extends CommandBaseFileOut
         int index = 1;
 		for(Tree st: speciesTrees){
 			GeneTreeRefinement.processGeneTrees(geneTrees, st, taxonMap, _geneTreesRooted, _bootstrap, null);
-			result.append("\nSpecies_Tree#" + (index++ ) + " = " + st.toStringWD() + "\n");
+            String stString = st.toStringWD();
+            this.treeGenerated(stString);
+			result.append("\nSpecies_Tree#" + (index++ ) + " = " + stString + "\n");
 			result.append("Resulting gene trees:");
 			for(Tree gt: geneTrees){
-				result.append("\n" + gt.toString());
+                String geneTreeString = gt.toString();
+				result.append("\n" + geneTreeString);
+                this.treeGenerated(geneTreeString);
 			}
 		}
 

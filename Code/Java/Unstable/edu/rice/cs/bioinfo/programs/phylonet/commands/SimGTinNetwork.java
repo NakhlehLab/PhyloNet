@@ -119,6 +119,7 @@ public class SimGTinNetwork extends CommandBaseFileOut
         String[] gts =  new SimGTInNetwork().generateGTs(_t1, _t2, _gamma, _n);
 
           for(String tr: gts){
+                this.treeGenerated(tr);
 				result.append("\n" + tr);
 			}
 

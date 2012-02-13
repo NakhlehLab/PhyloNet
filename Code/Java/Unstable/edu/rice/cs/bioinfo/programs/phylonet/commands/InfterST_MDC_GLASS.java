@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import com.sun.jmx.snmp.SnmpString;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterTaxaMap;
@@ -182,7 +181,7 @@ public class InfterST_MDC_GLASS extends InferSTBase
 		}
 
         String tree = inferredTree.toString();
-        this.speciesTreeGenerated(tree);
+        this.treeGenerated(tree);
         result.append("\n" + tree);
 
         return result.toString();

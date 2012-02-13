@@ -146,6 +146,7 @@ public class CharNet extends CommandBaseFileOut {
                 {
                     String rTree = StringTransformer.toRNewickTree(tree);
 				    result.append("\n" + rTree.toString());
+                    this.treeGenerated(rTree);
                 }
                 catch(CoordinateParseErrorsException e)
                 {

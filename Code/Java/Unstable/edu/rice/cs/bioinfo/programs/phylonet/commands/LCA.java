@@ -178,6 +178,8 @@ public class LCA extends CommandBaseFileOut {
         String richNewickString = new SingleLinePrinter().toString(autoLabeledNetwork);
 
         result.append("\n" + richNewickString);
+        this.treeGenerated(richNewickString);
+
 
         SchieberVishkinLCA solver = new SchieberVishkinLCA(tree);
 

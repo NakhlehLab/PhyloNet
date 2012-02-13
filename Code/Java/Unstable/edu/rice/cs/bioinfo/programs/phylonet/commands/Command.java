@@ -24,4 +24,6 @@ public interface Command {
 
     public void executeCommand(Proc<String> displayResult) throws IOException;
 
+    public void addSTTreeGeneratedListener(Proc<String> listener);
+
 }

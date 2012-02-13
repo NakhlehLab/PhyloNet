@@ -4,7 +4,6 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCURInference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCURInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -116,7 +115,7 @@ public class InferST_MDC_UR extends InferSTBase
         noError = noError && result.NoError;
         _taxonMap = result.TaxonMap;
 
-         noError = noError && checkForUnknownSwitches("e", "t", "x", "ur", "a");
+         noError = noError && checkForUnknownSwitches("e", "t", "x", "ur", "a", "b");
 
         this.checkAndSetOutFile(eParam, tr.Extractor, result.Extractor, tParam);
 
@@ -134,7 +133,9 @@ public class InferST_MDC_UR extends InferSTBase
 
         StringBuffer result = new StringBuffer();
 
-        List<Tree> trees = GetGeneTreesAsTreeList();
+//        List<Tree> trees = GetGeneTreesAsTreeList();
+
+         List<Tree> trees = GetGeneTreesAsSTIDoubleTreeList();
 
         MDCURInference_DP inference = new MDCURInference_DP();
 
@@ -147,7 +148,7 @@ public class InferST_MDC_UR extends InferSTBase
 
 			for(Solution s: solutions){
                 String tree =  s._st.toString();
-                this.speciesTreeGenerated(tree);
+                this.treeGenerated(tree);
 				result.append("\n" + tree +" "+s._totalCoals+" extra lineages in total");
 			}
 

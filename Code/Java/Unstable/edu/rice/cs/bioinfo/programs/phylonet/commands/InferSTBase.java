@@ -60,12 +60,7 @@ public abstract class InferSTBase extends CommandBaseFileOut
 
     protected Iterable<NetworkNonEmpty> _geneTrees;
 
-    private ArrayList<Proc<String>> _stGeneratedObservers = new ArrayList<Proc<String>>();
 
-    public void addSTTreeGeneratedListener(Proc<String> listener)
-    {
-        _stGeneratedObservers.add(listener);
-    }
 
     InferSTBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
@@ -226,13 +221,7 @@ public abstract class InferSTBase extends CommandBaseFileOut
         return new TaxonMapResult(noError, taxonMap, aParam);
     }
 
-     protected void speciesTreeGenerated(String treeNewick)
-    {
-        for(Proc<String> observer : _stGeneratedObservers)
-        {
-            observer.execute(treeNewick);
-        }
-    }
+
 
 
 }

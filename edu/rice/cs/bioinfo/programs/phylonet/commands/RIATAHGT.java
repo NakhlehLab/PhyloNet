@@ -252,7 +252,9 @@ public class RIATAHGT extends CommandBaseFileOut
 
 			if (_expandedOutputParam == null) {
 				result.append("\nspecies tree: " + copy.toString()+ "\n");
-				result.append("gene tree: " + gt.toString()+ "\n");
+                String geneTreeString = gt.toString();
+				result.append("gene tree: " + geneTreeString+ "\n");
+                this.treeGenerated(geneTreeString);
 
 				// Add bootstrap values to events.
 
@@ -282,7 +284,9 @@ public class RIATAHGT extends CommandBaseFileOut
 			else {
 				// Display in the non-compact format.
 				result.append("\nspecies tree: " + copy.toString()+ "\n");
-				result.append("gene tree: " + gt.toString()+ "\n");
+				String geneTreeString = gt.toString();
+				result.append("gene tree: " + geneTreeString+ "\n");
+                this.treeGenerated(geneTreeString);
 
 				List<HgtScenario> scenarios = hgt.enumerateSolutions();
 				int count = 1;
@@ -309,7 +313,9 @@ public class RIATAHGT extends CommandBaseFileOut
                             }
 
                             public Object forNetworkNonEmpty(NetworkNonEmpty networkNonEmpty, Object o) throws RuntimeException {
-                                result.append(new SingleLinePrinter().toString(networkNonEmpty));
+                                String networkString = new SingleLinePrinter().toString(networkNonEmpty);
+                                result.append(networkString);
+                                treeGenerated(networkString);
                                 return null;
                             }
                         }, null);

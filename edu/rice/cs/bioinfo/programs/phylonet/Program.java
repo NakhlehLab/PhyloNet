@@ -14,6 +14,8 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.Ri
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
+import edu.rice.cs.bioinfo.programs.phylonet.commands.NexusOut;
+
 import java.io.*;
 import java.security.KeyStore;
 import java.util.*;
@@ -26,6 +28,8 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class Program {
+
+
 
     public static void main(String[] args) throws FileNotFoundException, IOException
     {
@@ -65,7 +69,7 @@ public class Program {
              };
 
              final Container<Boolean> allowCommandExecution = new Container<Boolean>(true);
-             Proc3<String, Integer, Integer> errorDetected = new Proc3<String, Integer, Integer>()
+             final Proc3<String, Integer, Integer> errorDetected = new Proc3<String, Integer, Integer>()
              {
                 public void execute(String message, Integer line, Integer col) {
 
@@ -144,19 +148,62 @@ public class Program {
          */
 
         boolean first = true;
+         BufferedWriter nexusOut = null;
         if(allowCommandExecution.getContents())
         {
-           for(Command command : commands)
+           int commandNumber = 1;
+           for(final Command command : commands)
            {
-               if(!first)
+               final int commandNumberCapture = commandNumber;
+               final BufferedWriter nexusOutCapture = nexusOut;
+               if(commandNumber != 1)
                {
                   display.execute("\n");
 
                }
                try
                {
+                    command.addSTTreeGeneratedListener(new Proc<String>()
+                    {
+                        private int _treeNumber = 1;
+
+                        public void execute(String newickTree) {
+
+                            if(nexusOutCapture != null)
+                            {
+                                try
+                                {
+                                    if(commandNumberCapture == 2)
+                                    {
+                                       nexusOutCapture.write("\n");
+                                    }
+                                    nexusOutCapture.write("\n" + commandNumberCapture + "_" + command.getDefiningSyntaxCommand().getName() + "_" + _treeNumber + " = " + newickTree);
+                                    _treeNumber++;
+                                }
+                                catch(IOException e)
+                                {
+                                   SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
+                                   errorDetected.execute("Error writing to nexus out file. (" + e.getMessage() + ")", motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
+                                }
+                            }
+                        }
+                    });
                     showCommand(command.getDefiningSyntaxCommand(), display);
                     command.executeCommand(display);
+
+                   if(command instanceof NexusOut)
+                   {
+                      if(nexusOut != null)
+                      {
+                           nexusOut.write("\n\nEND;");
+                           nexusOut.flush();
+                           nexusOut.close();
+                      }
+
+                      nexusOut = new BufferedWriter(new FileWriter((((NexusOut)command).getNexusOutFile())));
+                      nexusOut.write("#NEXUS");
+                      nexusOut.write("\n\nBEGIN TREES;");
+                   }
                }
                catch(IOException e)
                {
@@ -166,8 +213,15 @@ public class Program {
                }
 
 
-               first = false;
+               commandNumber++;
            }
+        }
+
+        if(nexusOut != null)
+        {
+           nexusOut.write("\n\nEND;");
+           nexusOut.flush();
+           nexusOut.close();
         }
     }
 

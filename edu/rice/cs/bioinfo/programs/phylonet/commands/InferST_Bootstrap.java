@@ -196,7 +196,10 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
         tcc.setOutputEdgeWeightsAreSupports(true);
 		Tree st = tcc.computeRootedConsensus(st_set, _threshold);
 
-        return "\n" + st.toNewick();
+        String stString = st.toNewick();
+
+        this.treeGenerated(stString);
+        return "\n" + stString;
       }
 
     private Iterable<String> resampleGeneTrees(ParameterIdentList parameter)

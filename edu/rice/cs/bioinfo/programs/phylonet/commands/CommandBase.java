@@ -34,6 +34,21 @@ public abstract class CommandBase implements Command {
 
     private boolean _checkParamsCalled = false;
 
+    private ArrayList<Proc<String>> _stGeneratedObservers = new ArrayList<Proc<String>>();
+
+    public void addSTTreeGeneratedListener(Proc<String> listener)
+    {
+        _stGeneratedObservers.add(listener);
+    }
+
+     protected void treeGenerated(String treeNewick)
+    {
+        for(Proc<String> observer : _stGeneratedObservers)
+        {
+            observer.execute(treeNewick);
+        }
+    }
+
     CommandBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String,NetworkNonEmpty> sourceIdentToNetwork,
                 Proc3<String, Integer, Integer> errorDetected)
     {

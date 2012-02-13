@@ -150,7 +150,7 @@ public class InferST_MDC extends InferSTBase
 
         for(Solution s: solutions){
                 String tree = s._st.toStringWD();
-                this.speciesTreeGenerated(tree);
+                this.treeGenerated(tree);
 				result.append("\n" + s._st.toStringWD()+" "+s._totalCoals+" extra lineages in total");
 			}
 

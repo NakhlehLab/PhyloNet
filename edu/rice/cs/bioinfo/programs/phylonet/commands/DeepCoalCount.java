@@ -191,8 +191,10 @@ public class DeepCoalCount extends CommandBaseFileOut {
                     {
                        coalNum = DeepCoalescencesCounter.countExtraCoal(geneTrees, speciesTree, _taxonMap, _treatGeneTreesAsRooted, _bootstrap);
                     }
-                    result.append("\nSpecies_Tree#" + (index++ ) + " = " + speciesTree.toStringWD() + "\n");
+                    String speciesTreeString = speciesTree.toStringWD();
+                    result.append("\nSpecies_Tree#" + (index++ ) + " = " + speciesTreeString + "\n");
 			        result.append("Total number of extra lineages: " + coalNum);
+                    this.treeGenerated(speciesTreeString);
                }
                catch(Exception e)
                {

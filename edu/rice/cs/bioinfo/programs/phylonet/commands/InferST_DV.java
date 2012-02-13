@@ -63,7 +63,7 @@ public class InferST_DV extends InferSTBase
 					+ inference.getFrequency() + "%");
 			for (Tree tr : inferredTrees){
                 String tree = tr.toString();
-                this.speciesTreeGenerated(tree);
+                this.treeGenerated(tree);
 				result.append("\n" + tree);
 			}
 

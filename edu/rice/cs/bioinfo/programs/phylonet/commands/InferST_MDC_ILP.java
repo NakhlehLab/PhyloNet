@@ -5,22 +5,12 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.DeepCoalescencesCounter;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCURInference_ILP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.awt.geom.Path2D;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +94,7 @@ public class InferST_MDC_ILP extends InferSTBase
 		}
 
         String tree = sol._st.toStringWD();
-        this.speciesTreeGenerated(tree);
+        this.treeGenerated(tree);
 
         result.append("\n" + tree +" "+sol._totalCoals+" extra lineages in total");
 

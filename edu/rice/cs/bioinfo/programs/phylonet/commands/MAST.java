@@ -149,7 +149,9 @@ class MAST extends CommandBaseFileOut
 
             for (Tree mast : mastSet) {
                 NetworkNonEmpty netMast = (NetworkNonEmpty) TreeTransformer.toNetwork(mast);
-				result.append("\n" + new SingleLinePrinter().toString(netMast));
+                String netMastString = new SingleLinePrinter().toString(netMast);
+                this.treeGenerated(netMastString);
+				result.append("\n" + netMastString);
 			}
         }
         else
@@ -167,7 +169,9 @@ class MAST extends CommandBaseFileOut
             }
 
             NetworkNonEmpty netMast = (NetworkNonEmpty) TreeTransformer.toNetwork(outTree);
-            result.append("\n" + new SingleLinePrinter().toString(netMast));
+            String netMastString = new SingleLinePrinter().toString(netMast);
+            this.treeGenerated(netMastString);
+            result.append("\n" + netMastString);
         }
 
         return result.toString();

@@ -110,6 +110,10 @@ public class CommandFactory {
         {
             return new InferST_MDC_ILP(directive, params, sourceIdentToNetwork, errorDetected);
         }
+        else if(lowerCommandName.equals("nexus_out"))
+        {
+            return new NexusOut(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

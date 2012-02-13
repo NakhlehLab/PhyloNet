@@ -86,7 +86,7 @@ public class InferST_MDC_Time extends InferSTBase
 		}
 
         String tree = s._st.toStringWD();
-        this.speciesTreeGenerated(tree);
+        this.treeGenerated(tree);
         result.append("\n" + s._st.toStringWD()+" "+s._totalCoals+" extra lineages in total");
 
         return result.toString();

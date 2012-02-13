@@ -1,0 +1,42 @@
+
+species tree: ((e,(f,g)f3:0.63)f4,((a,(b,c)f1:0.5)f2:0.5,d)f0)f5;
+gene tree: (((a,b):0.5,c):0.6,(((e,f):0.4,g),d));
+There are 3 component(s), which account(s) for 27 solution(s), each of size 3
+-----------------------------------------------------------------------------------------------------
+Component f5:
+Subsolution1:
+	d -> f4 (70.0)
+Subsolution2:
+	f5 -> f2 (67.0) [time violation?]
+Subsolution3:
+	f4 -> d (80.0)
+-----------------------------------------------------------------------------------------------------
+	Component f4:
+	Subsolution1:
+		f4 -> g  [time violation?]
+	Subsolution2:
+		f -> e 
+	Subsolution3:
+		e -> f 
+-----------------------------------------------------------------------------------------------------
+	Component f2:
+	Subsolution1:
+		a -> b 
+	Subsolution2:
+		f2 -> c  [time violation?]
+	Subsolution3:
+		b -> a 
+
+*****************************************************************************************************
+
+species tree: ((e,(f,g)f3:0.63)f4,((a,(b,c)f0:0.5)f1:0.5,d)f2:0.6)f5;
+gene tree: ((e,(f,g):0.5)f4:0.6,((a,b):0.5,(c,d):0.5):0.57);
+There are 1 component(s), which account(s) for 1 solution(s), each of size 1
+-----------------------------------------------------------------------------------------------------
+	Component f2:
+	Subsolution1:
+		d -> c 
+
+*****************************************************************************************************
+Consensus network for this set of gene trees
+((e,(f,g)f3:0.63)f4,((a,(b,c)f0:0.5)f1:0.5,d)f2:0.6)f5;

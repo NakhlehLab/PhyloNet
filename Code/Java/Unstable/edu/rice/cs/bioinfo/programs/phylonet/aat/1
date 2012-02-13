@@ -1,0 +1,4 @@
+
+ (d:0,((a:0,b:0):1,(c:0,e:0):2):3):0; 6 extra lineages in total
+ ((d:0,e:0):3,(c:0,(a:0,b:0):1):2):0; 6 extra lineages in total
+ (d:0,(e:0,(c:0,(a:0,b:0):1):2):3):0; 6 extra lineages in total

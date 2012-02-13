@@ -1,0 +1,22 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree model = ((e,(f,g)),((a,(b,c)),d));
+Tree exp = (((a,b),c),(d,((e,f),g)));
+END;
+
+
+BEGIN PHYLONET;
+
+SymmetricDifference model exp;
+
+END;
+===
+
+SymmetricDifference model exp
+False Negatives: 2
+False Positives: 2
+# Internal Edges Model: 4
+# Internal Edges Experimental: 4
+===

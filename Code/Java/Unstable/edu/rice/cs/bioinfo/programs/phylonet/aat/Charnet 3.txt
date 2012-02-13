@@ -1,0 +1,24 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network net = ((a,(b,(c)x#1)),((x#1,d),e));
+
+END;
+
+
+BEGIN PHYLONET;
+
+Charnet net -m cluster;
+
+END;
+===
+
+Charnet net -m cluster
+a b c
+e d
+b c
+a b
+e d c
+d c
+===

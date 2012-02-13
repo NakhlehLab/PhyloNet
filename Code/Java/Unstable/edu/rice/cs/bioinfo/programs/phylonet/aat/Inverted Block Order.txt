@@ -1,0 +1,19 @@
+#NEXUS
+
+BEGIN PHYLONET;
+
+Charnet net -m tree;
+
+END;
+
+BEGIN NETWORKS;
+
+Network net = ((a,(b,(c)x#1)),((x#1,d),e));
+
+END;
+===
+
+Charnet net -m tree
+((a,(b,c)),(e,d));
+((a,b),((d,c),e));
+===

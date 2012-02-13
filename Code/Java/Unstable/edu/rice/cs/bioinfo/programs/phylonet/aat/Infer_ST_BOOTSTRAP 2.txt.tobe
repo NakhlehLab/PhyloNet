@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN NETWORKS;
+
+Network g1 = ((((a:5,b:5):4,c:9):3,d:12):3,e:15);
+Network g2 = ((a:6,b:6):11,((c:12,e:12):2,d:14):3);
+Network g3 = ((a:8,c:8):7,((b:14,e:14):1,d:15));
+
+END;
+
+
+BEGIN PHYLONET;
+
+Infer_ST_BOOTSTRAP 3 -s .6 Infer_ST_MDC_Time (g1, g2, g3);
+
+END;
+===
+
+Infer_ST_BOOTSTRAP 3 -s .6 Infer_ST_MDC_Time (g1, g2, g3)
+(e:1.0,(((a:1.0,b:1.0):1.0,c:1.0):1.0,d:1.0):1.0);
+===

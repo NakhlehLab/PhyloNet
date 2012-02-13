@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree speceiesTree = ((((a:1,b:2),c:3),d:4),e:5);
+Tree geneTree1 = (((a:1,b:2,c:3),d:4),e:5);
+END;
+
+
+BEGIN PHYLONET;
+
+ProcessGT {speceiesTree} {geneTree1};
+
+END;
+===
+
+ProcessGT {speceiesTree} {geneTree1}
+Species_Tree#1 = ((((a,b),c),d),e);
+Resulting gene trees:
+(((c:3.0,(a:1.0,b:2.0)),d:4.0),e:5.0);
+===

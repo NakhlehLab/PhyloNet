@@ -1,0 +1,24 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = ((a,(b,c)),d);
+Tree tree2 = (((a,b),c),d);
+
+
+END;
+
+
+BEGIN PHYLONET;
+
+MAST {tree1, tree2} -a;
+
+END;
+===
+
+MAST {tree1, tree2} -a
+Number of MASTs: 3
+((a,c),d);
+(d,(b,c));
+((a,b),d);
+===

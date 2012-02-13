@@ -1,0 +1,21 @@
+#NEXUS
+
+BEGIN TREES;
+
+Tree tree1 = ((e,(f,g)),((a,(b,c)),d));
+
+END;
+
+
+BEGIN PHYLONET;
+
+LCA tree1 ({f}, {a,d}, {e, a, b, c});
+END;
+===
+
+LCA tree1 ({f}, {a,d}, {e, a, b, c})
+((e,(f,g)I3)I4,((a,(b,c)I0)I1,d)I2)I5;
+f
+I2
+I5
+===

@@ -68,7 +68,7 @@ public abstract class CommandBase implements Command {
         }
     }
 
-    CommandBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String,NetworkNonEmpty> sourceIdentToNetwork,
+    public CommandBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String,NetworkNonEmpty> sourceIdentToNetwork,
                 Proc3<String, Integer, Integer> errorDetected)
     {
         _motivatingCommand = motivatingCommand;

@@ -129,6 +129,11 @@ class ContextSensitiveAnalyser {
                 public Boolean forPhylonetBlockBody(PhyloNetBlockBody phyloNetBlockBody, Object o) throws RuntimeException {
                     return false;  //To change body of implemented methods use File | Settings | File Templates.
                 }
+
+                public Boolean forDataBlock(DataBlockBody dataBlock, Object o) throws RuntimeException {
+                  return false;
+                }
+
             }, null);
         }
 

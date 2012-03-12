@@ -22,8 +22,6 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import junit.framework.Assert;
 import org.junit.Test;
-import sun.awt.geom.AreaOp;
-import sun.plugin.javascript.navig4.Link;
 
 import java.util.LinkedList;
 

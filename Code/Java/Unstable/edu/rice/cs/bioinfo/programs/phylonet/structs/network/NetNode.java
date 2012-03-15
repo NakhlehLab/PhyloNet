@@ -67,6 +67,24 @@ public interface NetNode<T> extends Serializable {
 	 */
 	public double getParentDistance(NetNode<T> parent);
 
+    /**
+     * Returns the probability property of the edge between this node and the given parent.
+     *
+     * @param parent The parent that defines the in-edge to this node containing the desired probability property.
+     * @return  The [0...1] probability property.
+     * @throws IllegalArgumentException if the given node is not a parent of the node.
+     */
+    public double getParentProbability(NetNode<T> parent);
+
+    /**
+     * Sets the probability property of the edge between this node and the given parent.
+     *
+     * @param parent The parent that defines the in-edge to this node containing the desired probability property.
+     * @param  probability The new probability value.
+     * @throws IllegalArgumentException if the given node is not a parent of the node.
+     */
+    public void setParentProbability(NetNode<T> parent, double probability);
+
 	/**
 	 * @return in-degree of a node, which equals to the number of parents of this node.
 	 */
@@ -146,30 +164,6 @@ public interface NetNode<T> extends Serializable {
 	 * <code>false</code> otherwise.
 	 */
 	public boolean setParentDistance(NetNode<T> parent, double distance);
-
-	/**
-	 * This function adds the gamma value stored in this node.
-	 *
-	 * @param gamma is the new gamma.
-	 */
-	public void addGamma(double gamma);
-
-	/**
-	 * This function updates the gamma value stored in this node.
-	 *
-	 * @param gamma is the new gamma.
-	 */
-	public void setGamma(int index, double gamma);
-
-	/**
-	 * This function returns the gamma value stored in this node.
-	 */
-	public double getGamma(int index);
-
-	/**
-	 * This function returns the gamma value stored in this node.
-	 */
-	public double getGamma(NetNode<T> child);
 
 	/**
 	 * This function returns the number of parent of a node.

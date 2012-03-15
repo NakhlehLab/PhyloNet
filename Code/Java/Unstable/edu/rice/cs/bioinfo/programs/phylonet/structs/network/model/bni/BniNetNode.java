@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 
 import java.util.LinkedList;
@@ -281,16 +282,21 @@ public class BniNetNode<T> implements NetNode<T> {
 		if (_children == null) {
 			_children = new LinkedList<NetNode<T>>();
 		}
-		if(_gammas == null){
-			_gammas = new LinkedList<Double>();
+		if(_parent_probabiliites == null){
+			_parent_probabiliites = new LinkedList<Double>();
 		}
+
+        if(_parent_support == null)
+        {
+            _parent_support = new LinkedList<Double>();
+        }
 
 		BniNetNode<T> ref = (BniNetNode<T>) child;
 
 		if (!_children.contains(ref)) {	// child is not already in this node's list of children.
 			// Update info. for this node.
 			_children.add(ref);
-			_gammas.add(gamma);
+			_parent_probabiliites.add(gamma);
 			// Update info. for child.
 			if (ref._parents == null) {
 				ref._parents = new LinkedList<NetNode<T>>();
@@ -328,7 +334,8 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 		_children.remove(index);
 
-		_gammas.remove(index);
+		_parent_probabiliites.remove(index);
+        _parent_support.remove(index);
 		// Delete link from child to this node.
 		BniNetNode<T> ref = (BniNetNode<T>) child;
 		int i = ref._parents.indexOf(this);
@@ -338,40 +345,70 @@ public class BniNetNode<T> implements NetNode<T> {
 		return true;
 	}
 
-	/**
-	 * This function adds a new gamma value to the gamma list
-	 */
-	public void addGamma(double gamma){
-		_gammas.add(gamma);
+	public void setParentProbability(NetNode<T> parent, double probability)
+	{
+        if(probability < 0 || probability > 1)
+        {
+            throw new IllegalArgumentException("Probability values must be between zer and one.  Found: " + probability);
+        }
+
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
+
+            throw new IllegalArgumentException("Passed parent is not a parent of the node.");
+		}
+		else {
+			// Update the distance.
+			_parent_probabiliites.remove(i);
+			_parent_probabiliites.add(i, new Double(probability));
+		}
 	}
 
-	/**
-	 * This function resets the gamma value of the index_th child
-	 */
-	public void setGamma(int index, double gamma){
-		_gammas.set(index, gamma);
+    public double getParentProbability(NetNode<T> parent)
+    {
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
+
+            throw new IllegalArgumentException("Passed parent is not a parent of the node.");
+		}
+		else {
+			return _parent_probabiliites.get(i);
+		}
 	}
 
-	/**
-	 * This function gets the gamma value of the index_th child
-	 */
-	public double getGamma(int index){
-		return _gammas.get(index);
+    public void setParentSupport(NetNode<T> parent, double support)
+	{
+        if(support < 0 || support > 1)
+        {
+            throw new IllegalArgumentException("Support values must be between zer and one.  Found: " + support);
+        }
+
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
+
+            throw new IllegalArgumentException("Passed parent is not a parent of the node.");
+		}
+		else {
+			// Update the distance.
+			_parent_support.remove(i);
+			_parent_support.add(i, new Double(support));
+		}
 	}
 
-	/**
-	 * This function gets the gamma value of its child node <code>node</code>
-	 */
-	public double getGamma(NetNode<T> node){
+    public double getParentSupport(NetNode<T> parent)
+    {
+		int i = _parents.indexOf(parent);
 
-		return _gammas.get(_children.indexOf(node));
-	}
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
 
-	/**
-	 * This function removes the gamma value of the index_th child
-	 */
-	public double removeGamma(int index){
-		return _gammas.remove(index);
+            throw new IllegalArgumentException("Passed parent is not a parent of the node.");
+		}
+		else {
+			return _parent_support.get(i);
+		}
 	}
 
 
@@ -380,7 +417,8 @@ public class BniNetNode<T> implements NetNode<T> {
 	private String _name;	// Node's name
 	private List<NetNode<T>> _children;		// List of this node's children
 	private List<NetNode<T>> _parents;		// List of parents of this node.
-	private List<Double> _gammas;           // List of gammas to its children
+	private List<Double> _parent_probabiliites;           // List of gammas to its children
+    private List<Double> _parent_support;           // List of gammas to its children
 	private List<Double> _parent_distances;	// List of distances from this node to its parents.
 }
 

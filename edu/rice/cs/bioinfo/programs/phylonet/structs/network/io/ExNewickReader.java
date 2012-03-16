@@ -195,7 +195,7 @@ public class ExNewickReader<T> {
 		else{
 			nodes.push(root);
 			BniNetNode<T> nnode = new BniNetNode<T>();
-			root.adoptChild(nnode, BniNetNode.NO_DISTANCE,1);
+			root.adoptChild(nnode, BniNetNode.NO_DISTANCE);
 			nodes.push(nnode);
 		}
 
@@ -242,7 +242,7 @@ public class ExNewickReader<T> {
 				child = nodes.pop();
 				child.setName(name);
 				BniNetNode<T> parent = nodes.peek();
-				parent.adoptChild(child, distance, gamma);
+                child.setParentProbability(parent, gamma);
 
 				// Prepare a spare node for the next child.
 				if (tt == ',') {

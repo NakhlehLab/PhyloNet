@@ -22,6 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 import com.sun.javaws.exceptions.InvalidArgumentException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 
+import java.sql.Ref;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -261,49 +262,31 @@ public class BniNetNode<T> implements NetNode<T> {
 	 */
 	public boolean adoptChild(NetNode<T> child, double distance)
 	{
-		return adoptChild(child, distance, 1.0);
-	}
-
-	/**
-	 * This function connects an existing node (the node that makes a call to this
-	 * function) to another node <code>child</code>. The calling code will add <code>child</code>
-	 * to its list of children if <code>child</code> has not been already a child of the calling node.
-	 *
-	 * @param child: The node that the calling node wants to connects to.
-	 * @param distance: The distance between the calling code and <code>child</code>.
-	 * @param gamma: The alleles proportion
-	 *
-	 * @return <code>true</code> if this function succeeded; <code>false</code> otherwise.
-	 */
-	public boolean adoptChild(NetNode<T> child, double distance, double gamma)
-	{
 		assert(child instanceof BniNetNode);
+
 
 		if (_children == null) {
 			_children = new LinkedList<NetNode<T>>();
 		}
-		if(_parent_probabiliites == null){
-			_parent_probabiliites = new LinkedList<Double>();
-		}
 
-        if(_parent_support == null)
-        {
-            _parent_support = new LinkedList<Double>();
-        }
 
 		BniNetNode<T> ref = (BniNetNode<T>) child;
 
 		if (!_children.contains(ref)) {	// child is not already in this node's list of children.
 			// Update info. for this node.
 			_children.add(ref);
-			_parent_probabiliites.add(gamma);
+
 			// Update info. for child.
 			if (ref._parents == null) {
 				ref._parents = new LinkedList<NetNode<T>>();
 				ref._parent_distances = new LinkedList<Double>();
+                ref._parent_support = new LinkedList<Double>();
+                ref._parent_probabiliites = new LinkedList<Double>();
 			}
 			ref._parents.add(this);
 			ref._parent_distances.add(new Double(distance));
+            ref._parent_support.add(Double.NaN);
+            ref._parent_probabiliites.add(1.0);
 
 			return true;
 		}

@@ -97,7 +97,7 @@ public class NetworkFactoryFromRNNetwork
             {
                 if(hybridNodeIndexToNetNode.containsKey(hybidNodeIndex))
                 {
-                    return hybridNodeIndexToNetNode.get(principleInfo);
+                    return hybridNodeIndexToNetNode.get(hybidNodeIndex);
                 }
                 else
                 {

@@ -92,10 +92,10 @@ public class Networks
 			NetNode<T> parent = node.getParents().iterator().next();	// Node's only parent.
 			NetNode<T> child = node.getChildren().iterator().next();	// Node's only child.
 			double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-			double gamma = node.getGamma(0) * parent.getGamma(node);
+			//double gamma = node.getGamma(0) * parent.getGamma(node);
 			parent.removeChild(node);
 			node.removeChild(child);
-			parent.adoptChild(child, distance, gamma);
+		//	parent.adoptChild(child, distance, gamma);
 		}
 	}
 

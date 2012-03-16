@@ -85,6 +85,24 @@ public interface NetNode<T> extends Serializable {
      */
     public void setParentProbability(NetNode<T> parent, double probability);
 
+    /**
+     * Returns the support property of the edge between this node and the given parent.
+     *
+     * @param parent The parent that defines the in-edge to this node containing the desired support property.
+     * @return  The [0...1] probability property.
+     * @throws IllegalArgumentException if the given node is not a parent of the node.
+     */
+    public double getParentSupport(NetNode<T> parent);
+
+    /**
+     * Sets the support property of the edge between this node and the given parent.
+     *
+     * @param parent The parent that defines the in-edge to this node containing the desired support property.
+     * @param  support The new support value.
+     * @throws IllegalArgumentException if the given node is not a parent of the node.
+     */
+    public void setParentSupport(NetNode<T> parent, double support);
+
 	/**
 	 * @return in-degree of a node, which equals to the number of parents of this node.
 	 */
@@ -116,19 +134,6 @@ public interface NetNode<T> extends Serializable {
 	 * @return <code>true</code> if this function succeeded; <code>false</code> otherwise.
 	 */
 	public boolean adoptChild(NetNode<T> child, double distance);
-
-	/**
-	 * This function connects an existing node (the node that makes a call to this
-	 * function) to another node <code>child</code>. The calling code will add <code>child</code>
-	 * to its list of children if <code>child</code> has not been already a child of the calling node.
-	 *
-	 * @param child: The node that the calling node wants to connects to.
-	 * @param distance: The distance between the calling code and <code>child</code>.
-	 * @param gamma: The alleles proportion.
-	 *
-	 * @return <code>true</code> if this function succeeded; <code>false</code> otherwise.
-	 */
-	public boolean adoptChild(NetNode<T> child, double distance, double gamma);
 
 	/**
 	 * This function makes <code>child</code> no longer a child of this node.

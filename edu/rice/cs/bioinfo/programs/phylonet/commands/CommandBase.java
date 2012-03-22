@@ -47,9 +47,9 @@ public abstract class CommandBase implements Command {
 
     protected final ArrayList<Parameter> params;
 
-    protected  final Map<String,NetworkNonEmpty> sourceIdentToNetwork;
+    protected final Map<String,NetworkNonEmpty> sourceIdentToNetwork;
 
-    protected  final Proc3<String, Integer, Integer> errorDetected;
+    protected final Proc3<String, Integer, Integer> errorDetected;
 
     private boolean _checkParamsCalled = false;
 

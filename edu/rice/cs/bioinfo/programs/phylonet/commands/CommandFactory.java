@@ -133,6 +133,10 @@ public class CommandFactory {
         {
             return new NexusOut(directive, params, sourceIdentToNetwork, errorDetected);
         }
+        else if(lowerCommandName.equals("calgtprob"))
+        {
+            return new CalGTProbInNetwork(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

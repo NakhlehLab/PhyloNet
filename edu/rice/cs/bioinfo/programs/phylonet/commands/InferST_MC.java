@@ -62,7 +62,7 @@ public class InferST_MC extends InferSTBase
 
        boolean noError = super.checkParamsForCommand();
 
-         TaxonMapResult result = assignTaxonMap();
+        TaxonMapResult result = assignTaxonMap();
         noError = noError && result.NoError;
         _taxonMap = result.TaxonMap;
 

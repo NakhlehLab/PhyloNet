@@ -242,6 +242,7 @@ public class ExNewickReader<T> {
 				child = nodes.pop();
 				child.setName(name);
 				BniNetNode<T> parent = nodes.peek();
+                parent.adoptChild(child, distance);
                 child.setParentProbability(parent, gamma);
 
 				// Prepare a spare node for the next child.

@@ -31,9 +31,9 @@ public class GeneTreeProbability {
     public GeneTreeProbability(){
         _netTaxa = new ArrayList<String>();
         _stTaxa = new ArrayList<String>();
-        _nname2tamount = new HashMap<String,Integer>();
-        _hname2tnodes = new HashMap<String,List<TNode>>();
-        _tname2nname = new HashMap<String,String>();
+        _nname2tamount = new TreeMap<String,Integer>();
+        _hname2tnodes = new TreeMap<String,List<TNode>>();
+        _tname2nname = new TreeMap<String,String>();
         _printDetails = false;
     }
 
@@ -170,8 +170,13 @@ public class GeneTreeProbability {
 
         for(TNode b: _mulTree.postTraverse()){
             String nname = _tname2nname.get(b.getName());
+
+            if(nname != null)
+            {
+
             if(_hname2tnodes.containsKey(nname)){
                 continue;
+            }
             }
             int u = calculateU(_mulTree, b, mapping, history);
             if(u==0)continue;
@@ -351,10 +356,16 @@ public class GeneTreeProbability {
 
         for (TNode node : st.postTraverse()) {
             String name = _tname2nname.get(node.getName());
-            List<TNode> nodelist = _hname2tnodes.get(name);
-            if(nodelist!=null){
-                nodelist.add(node);
+
+            if(name != null)
+            {
+                 List<TNode> nodelist = _hname2tnodes.get(name);
+                if(nodelist!=null){
+                    nodelist.add(node);
+                }
             }
+
+
         }
     }
 

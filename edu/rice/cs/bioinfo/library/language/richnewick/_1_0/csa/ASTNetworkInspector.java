@@ -52,6 +52,13 @@ class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, Networ
 
     private Map<Object, LinkedList<Edge>> _networkNodeToInEdges = new HashMap<Object, LinkedList<Edge>>();
 
+    private LinkedList<Edge> _edges = new LinkedList<Edge>();
+
+    public Iterable<Edge> getEdges()
+    {
+        return _edges;
+    }
+
     private LinkedList<NetworkInfo> _syntaxNodes = new LinkedList<NetworkInfo>();
 
     private Map<Object, NetworkInfo> _networkNodeToPrimarySyntaxNode = new HashMap<Object, NetworkInfo>();
@@ -68,19 +75,26 @@ class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, Networ
         return _networkNodes;
     }
 
+    private final NetworkInfo _rootNode;
+
+    public NetworkInfo getRootNode()
+    {
+        return _rootNode;
+    }
+
     public ASTNetworkInspector(Network network)
     {
-         network.execute(new NetworkAlgo<Object, Object, RuntimeException>() {
-            public Object forNetworkEmpty(NetworkEmpty network, Object input) throws RuntimeException {
+         _rootNode = network.execute(new NetworkAlgo<NetworkInfo, Object, RuntimeException>() {
+            public NetworkInfo forNetworkEmpty(NetworkEmpty network, Object input) throws RuntimeException {
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
-            public Object forNetworkNonEmpty(NetworkNonEmpty network, Object input) throws RuntimeException {
+            public NetworkInfo forNetworkNonEmpty(NetworkNonEmpty network, Object input) throws RuntimeException {
                 gatherInEdges(network.PrincipleInfo, network.PrincipleDescendants);
                 _networkNodes.add(network.PrincipleInfo);
                 _networkNodeToInEdges.put(network.PrincipleInfo, new LinkedList<Edge>());
                 _networkNodeToPrimarySyntaxNode.put(network.PrincipleInfo, network.PrincipleInfo);
-                return null;
+                return network.PrincipleInfo;
             }
         }, null);
 
@@ -103,6 +117,7 @@ class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, Networ
                     LinkedList<Edge> inEdges = new LinkedList<Edge>();
                     inEdges.add(edge);
                     _networkNodeToInEdges.put(child, inEdges);
+                    _edges.add(edge);
                     _networkNodes.add(child);
                     _networkNodeToPrimarySyntaxNode.put(child, child);
                     return null;
@@ -138,6 +153,7 @@ class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, Networ
 
                     Edge edge = new Edge(parent, child, getProbabilityText(child));
                     inEdges.add(edge);
+                    _edges.add(edge);
                 }
 
             }, null);

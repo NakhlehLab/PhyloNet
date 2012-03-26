@@ -28,9 +28,13 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa;
  */
 public interface NetworkInspector<N,E>
 {
+     N getRootNode();
+
      Iterable<E> getAllInEdges(N node);
 
      N getTail(E edge);
 
      String getEdgeProbabilityText(E edge);
+
+    Iterable<E> getEdges();
 }

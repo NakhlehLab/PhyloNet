@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2012 Rice University.
+ *
+ * This file is part of PhyloNet.
+ *
+ * PhyloNet is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PhyloNet is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PhyloNet.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
@@ -69,14 +88,14 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
         }
 
-        ParamExtractor uParam = new ParamExtractor("p", this.params, this.errorDetected);
-        if(uParam.ContainsSwitch)
+        ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
+        if(pParam.ContainsSwitch)
         {
             _printDetail = true;
         }
 
         noError = noError && checkForUnknownSwitches("p", "a");
-        checkAndSetOutFile(aParam);
+        checkAndSetOutFile(aParam, pParam);
 
         return  noError;
     }
@@ -97,7 +116,8 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
             catch(Exception e)
             {
-                errorDetected.execute(e.getMessage(), -1, -1);
+                errorDetected.execute(e.getMessage(),
+                        this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
             }
         }
 
@@ -106,15 +126,16 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
         Iterator<Double> probList;
         GeneTreeProbability gtp = new GeneTreeProbability();
-        probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, _printDetail).iterator();
-        result.append("\n");
+        probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, true).iterator();
+     //   result.append("\n");
         double total = 0;
         for(Tree gt: geneTrees){
             double prob = probList.next();
             total += prob;
+            System.out.println(Double.doubleToRawLongBits(prob));
             result.append("\n" + gt.toString() + " : " + prob);
         }
-        result.append("\n\n" + "Total probability: " + total);
+        result.append("\n" + "Total probability: " + total);
 
         return result.toString();
 

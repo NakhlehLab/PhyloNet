@@ -80,6 +80,22 @@ public interface TNode {
 	 */
 	public int getChildCount();
 
+
+    /**
+     * @return returns all nodes that share an edge with this node.
+     */
+    public Iterable<? extends TNode> getAdjacentNodes();
+
+    /**
+     * @return  returns the number of nodes adjacent to this node.
+     */
+    public int getAdjacentNodeCount();
+
+    /**
+     * @return returns the number of edges incident to this node.
+     */
+    public int getDegree();
+
 	/**
 	 * @return <code>true</code> if this node is a leaf node and has no children.
 	 */

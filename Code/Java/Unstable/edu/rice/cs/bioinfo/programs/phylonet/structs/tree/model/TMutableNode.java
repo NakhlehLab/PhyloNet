@@ -76,6 +76,20 @@ public interface TMutableNode extends TNode {
 	 * @param nchild is the child for this node to adopt.
 	 */
 	public void adoptChild(TMutableNode nchild);
+
+    /**
+     * Changes the parent of this node.
+     *
+     * @param newParent the new parent for this node.
+     */
+    public void setParent(TMutableNode newParent);
+
+    /**
+     * Deletes the edge connecting this node to the given node.
+     *
+     * @param adjacentNode the adjacent node to this node that defines the edge to remove.
+     */
+    public void removeEdge(TMutableNode adjacentNode);
 	
 	/**
 	 * This method removes this node and all its children from the tree.
@@ -98,6 +112,8 @@ public interface TMutableNode extends TNode {
 	
 	// overriden methods from TNode
 	public Iterable<? extends TMutableNode> getChildren();
+
+    public Iterable<? extends TMutableNode> getAdjacentNodes();
 	
 	public TMutableNode getParent();
 	

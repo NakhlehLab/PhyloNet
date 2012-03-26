@@ -54,13 +54,33 @@ public class Program {
     {
         System.out.print("");
 
-        if(args.length != 1) // we only expect one parameter, the input nexus file
+        if(args.length !=1 && args.length != 2) // we only expect one or two parameters, the input nexus file and a random seed
         {
             showUsage();
             return;
         }
 
         File nexusFile = new File(args[0]);
+
+        Random rand;
+        if(args.length == 2)
+        {
+            try
+            {
+                long seed = Long.parseLong(args[1]);
+                rand = new Random(seed);
+            }
+            catch(NumberFormatException e)
+            {
+                System.err.println("Unknown random seed: " +args[1]);
+                showUsage();
+                return;
+            }
+        }
+        else
+        {
+            rand = new Random();
+        }
 
 
         if(!nexusFile.isFile()) // assert the file the user gave us actually exists
@@ -69,7 +89,7 @@ public class Program {
         }
         else
         {
-            run(new FileInputStream(nexusFile), System.err, System.out, new Random());
+            run(new FileInputStream(nexusFile), System.err, System.out, rand);
         }
 
         System.out.print("\n");
@@ -414,7 +434,7 @@ public class Program {
 
     private static void showUsage() {
 
-        System.out.println("\nUsage: java -jar [phylonet.jar] [nexus file]");
+        System.out.println("\nUsage: java -jar phylonet.jar nexus_file [random seed integer]");
 
     }
 }

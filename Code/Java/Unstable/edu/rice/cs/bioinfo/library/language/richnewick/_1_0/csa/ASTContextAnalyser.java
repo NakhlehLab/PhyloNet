@@ -19,8 +19,7 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkInfo;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 /**
@@ -42,7 +41,28 @@ public class ASTContextAnalyser {
                 }
                };
 
+        boolean isRooted = network.execute(new NetworkAlgo<Boolean, Object, RuntimeException>() {
+            public Boolean forNetworkEmpty(NetworkEmpty network, Object input) throws RuntimeException {
+                return false;
+            }
+
+            public Boolean forNetworkNonEmpty(NetworkNonEmpty network, Object input) throws RuntimeException {
+
+                return network.RootageQualifier.execute(new RootageQualifierAlgo<Boolean, Object, RuntimeException>() {
+
+                    public Boolean forEmptyQualifier(RootageQualifierEmpty rootage, Object input) throws RuntimeException {
+                       return true;
+                    }
+
+                    public Boolean forNonEmptyQualifier(RootageQualifierNonEmpty rootage, Object input) throws RuntimeException {
+
+                        return rootage.isRooted();
+                    }
+                }, null);
+            }
+        }, null);
+
         return ContextAnalyser.analyse(inspector.getSyntaxNodes(), inspector, inspector.getNetworkNodes(),
-                                       inspector, networkNodeToPrimarySyntaxNode);
+                                       inspector, networkNodeToPrimarySyntaxNode, isRooted);
     }
 }

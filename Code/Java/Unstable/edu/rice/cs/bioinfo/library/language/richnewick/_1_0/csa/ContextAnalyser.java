@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.math.BigDecimal;
@@ -31,11 +32,34 @@ class ContextAnalyser
 {
     public static <SN,NN,E> List<CSAError> analyse(Iterable<SN> syntaxNodes, final SyntaxNetworkInspector<SN> syntaxInspector,
                                                    Iterable<NN> networkNodes, final NetworkInspector<NN, E> networkInspector,
-                                                   final Func1<NN, SN> getPrimarySyntaxContributor)
+                                                   final Func1<NN, SN> getPrimarySyntaxContributor, boolean isRooted)
     {
 
-
         LinkedList<CSAError> errors = new LinkedList<CSAError>();
+        if(!isRooted)
+        {
+            NN rootNode = networkInspector.getRootNode();
+            SN rootNodeSyntax = getPrimarySyntaxContributor.execute(rootNode);
+            String rootLabel = syntaxInspector.getNodeLabelText(rootNodeSyntax);
+
+            int rootOutEdgesCount = 0;
+
+            for(E edge : networkInspector.getEdges())
+            {
+                if(networkInspector.getTail(edge).equals(rootNode))
+                {
+                    rootOutEdgesCount++;
+                }
+            }
+
+            if(rootLabel != null && rootOutEdgesCount == 2)
+            {
+                errors.add(new CSAError("Unrooted trees of the form ((...)A, (...)B) may not contain labes at the root position because A and B are considered adjacent.",
+                                         syntaxInspector.getNodeLabelTextLineNumber(rootNodeSyntax), syntaxInspector.getNodeLabelTextColumnNumber(rootNodeSyntax)));
+            }
+        }
+
+
         for(SN node : syntaxNodes)
         {
             /*

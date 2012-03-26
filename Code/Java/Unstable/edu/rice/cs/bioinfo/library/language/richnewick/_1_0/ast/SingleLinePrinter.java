@@ -64,7 +64,23 @@ public class SingleLinePrinter
     public String toString(NetworkNonEmpty network)
     {
 
-        StringBuffer accum = new StringBuffer();
+        final StringBuffer accum = new StringBuffer();
+
+        network.RootageQualifier.execute(new RootageQualifierAlgo<Object, Object, RuntimeException>() {
+            public Object forEmptyQualifier(RootageQualifierEmpty rootage, Object input) throws RuntimeException {
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Object forNonEmptyQualifier(RootageQualifierNonEmpty rootage, Object input) throws RuntimeException {
+
+                if(!rootage.isRooted())
+                {
+                    accum.append("[&U]");
+                }
+
+                return null;
+            }
+        }, null);
 
 
         appendDescendantsList(network.PrincipleDescendants, accum);

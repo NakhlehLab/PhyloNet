@@ -21,10 +21,13 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti;
 
 import java.util.*;
 
+import com.sun.deploy.security.MozillaJSSDSASignature;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
+
+import javax.swing.*;
 
 
 public class STINode<D extends Object> implements TMutableNode {
@@ -152,8 +155,23 @@ public class STINode<D extends Object> implements TMutableNode {
 	public void adoptChild(TMutableNode nchild) {
 		STINode<D> child = (STINode<D>) nchild;
 
+        if(child._tree == null)
+        {
+            for(TNode c : nchild.postTraverse())
+            {
+               STINode mc = (STINode)c;
+               mc._tree = _tree;
+               _tree._nodes.put(mc._id, mc);
+               _tree._node_set.add(mc);
+               if(mc._name != null)
+                   _tree._name2node.put(mc._name, mc);
+            }
+        }
+
 		// sanity check to make sure that the child is a member of this tree
 		assert child._tree == _tree;
+
+
 		
 		if(child._parent == this) {
 			return;
@@ -168,6 +186,44 @@ public class STINode<D extends Object> implements TMutableNode {
 		
 		_tree._leaf_count = STITree.UNCOUNTED;
 	}
+
+    public void setParent(TMutableNode newParent)
+    {
+        if(isRoot())
+        {
+            throw new IllegalStateException("Roots may not change parents.");
+        }
+
+        this.getParent().removeChild(this, false);
+        _parent = null;
+        newParent.adoptChild(this);
+    }
+
+    public void removeEdge(TMutableNode adjacentNode)
+    {
+        if(adjacentNode.equals(_parent))
+        {
+            _parent.removeChild(this, false);
+            this._tree = null;
+
+            for(TNode d : this.postTraverse())
+            {
+                ((STINode)d)._tree = null;
+            }
+        }
+        else
+        {
+            removeChild(adjacentNode, false);
+            STINode adjST = (STINode)adjacentNode;
+
+            adjST._tree = null;
+
+            for(Object d : adjST.postTraverse())
+            {
+                ((STINode)d)._tree = null;
+            }
+        }
+    }
 
 	public void removeChild(TMutableNode child, boolean adopt_all) {
 		STINode<D> batichild = (STINode<D>) child;
@@ -248,6 +304,42 @@ protected void removeSelf2(boolean iterator) {
 			}
 		};
 	}
+
+    public Iterable<STINode<D>> getAdjacentNodes()
+    {
+        if(isRoot())
+        {
+            return getChildren();
+        }
+        else
+        {
+            LinkedList<STINode<D>> accum = new LinkedList<STINode<D>>();
+            for(STINode<D> node : getChildren())
+            {
+                accum.add(node);
+            }
+
+            accum.add(getParent());
+
+            return accum;
+        }
+
+
+
+    }
+
+    public int getAdjacentNodeCount()
+    {
+        if(isRoot())
+        {
+            return getChildCount();
+        }
+        else
+        {
+            return getChildCount() + 1;
+        }
+
+    }
 	
 	public List<STINode<D>> removeAllChildren(){
 		List<STINode<D>> children = new ArrayList<STINode<D>>(_children);
@@ -262,6 +354,18 @@ protected void removeSelf2(boolean iterator) {
 	public int getChildCount() {
 		return _children.size();
 	}
+
+    public int getDegree()
+    {
+        if(isRoot())
+        {
+            return _children.size();
+        }
+        else
+        {
+            return _children.size() + 1;
+        }
+    }
 
 	public boolean isLeaf() {
 		return _children.isEmpty();

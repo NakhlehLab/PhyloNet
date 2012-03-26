@@ -126,13 +126,13 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
         Iterator<Double> probList;
         GeneTreeProbability gtp = new GeneTreeProbability();
-        probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, true).iterator();
+        probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, _printDetail).iterator();
      //   result.append("\n");
         double total = 0;
         for(Tree gt: geneTrees){
             double prob = probList.next();
             total += prob;
-            System.out.println(Double.doubleToRawLongBits(prob));
+
             result.append("\n" + gt.toString() + " : " + prob);
         }
         result.append("\n" + "Total probability: " + total);

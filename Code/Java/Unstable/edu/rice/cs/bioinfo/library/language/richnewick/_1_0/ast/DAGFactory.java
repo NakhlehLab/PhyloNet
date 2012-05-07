@@ -25,6 +25,8 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphB
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -43,11 +45,73 @@ public class DAGFactory
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
-            public Object forNetworkNonEmpty(NetworkNonEmpty network, Object input) throws RuntimeException {
+            public Object forNetworkNonEmpty(final NetworkNonEmpty network, Object input) throws RuntimeException {
 
-                 Map<BigInteger,T> hybridIndexToNode = new HashMap<BigInteger, T>();
-                 T parent = createNode(network.PrincipleInfo, builder, hybridIndexToNode);
-                 processDescendantList(parent, network.PrincipleDescendants, builder, hybridIndexToNode);
+                final Map<BigInteger,T> hybridIndexToNode = new HashMap<BigInteger, T>();
+
+                network.RootageQualifier.execute(new RootageQualifierAlgo<Object, Object, RuntimeException>() {
+                    public Object forEmptyQualifier(RootageQualifierEmpty rootage, Object input) throws RuntimeException {
+
+
+                        performBuild(network.PrincipleInfo, network.PrincipleDescendants);
+                        return null;
+                    }
+
+                    public Object forNonEmptyQualifier(RootageQualifierNonEmpty rootage, Object input) throws RuntimeException {
+
+                        if(!rootage.isRooted())
+                        {
+                            // unrooted trees where root has only two children maps to special graph topology.
+                            Iterator<Subtree> principleSubsIt = network.PrincipleDescendants.Subtrees.iterator();
+
+                            if(principleSubsIt.hasNext())
+                            {
+                               Subtree syntaxRootFirstChild = principleSubsIt.next();
+                               if(principleSubsIt.hasNext())
+                               {
+                                  Subtree syntaxRootSecondChild = principleSubsIt.next();
+
+                                   if(!principleSubsIt.hasNext()) // unrooted and two children from syntax root, speical case
+                                   {
+                                       LinkedList<Subtree> newFirstChildChildren = new LinkedList<Subtree>();
+
+                                       for(Subtree firstChildChild : syntaxRootFirstChild.Descendants.Subtrees)
+                                       {
+                                            newFirstChildChildren.add(firstChildChild);
+                                       }
+                                       newFirstChildChildren.add(syntaxRootSecondChild);
+
+                                       DescendantList newDecList = new DescendantList(newFirstChildChildren);
+
+                                       performBuild(syntaxRootFirstChild.NetworkInfo, newDecList);
+                                       return null;
+
+                                   }
+                               }
+                            }
+                        }
+
+                        performBuild(network.PrincipleInfo, network.PrincipleDescendants);
+                        return null;
+
+                    }
+
+                    private void performBuild(NetworkInfo principleInfo, DescendantList pincipleDesc)
+                    {
+                        T parent = createNode(principleInfo, builder, hybridIndexToNode);
+                        processDescendantList(parent, pincipleDesc, builder, hybridIndexToNode);
+
+                    }
+
+                }, null);
+
+
+
+
+
+
+
+
                 return null;
             }
         }, null);

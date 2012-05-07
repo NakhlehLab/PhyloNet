@@ -40,4 +40,15 @@ public class IterableHelp {
 
         return accum.toArray();
     }
+
+    public static int count(Iterable elements)
+    {
+        int i = 0;
+        for(Object element : elements)
+        {
+            i++;
+        }
+
+        return i;
+    }
 }

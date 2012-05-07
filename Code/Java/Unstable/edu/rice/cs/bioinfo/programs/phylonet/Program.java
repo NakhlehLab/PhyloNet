@@ -99,7 +99,7 @@ public class Program {
     static void run(InputStream nexusStream, final PrintStream errorStream,
                                              final PrintStream displaySteam, Random rand) throws IOException
     {
-             Proc<String> display = new Proc<String>()
+             Proc1<String> display = new Proc1<String>()
              {
                 public void execute(String s) {
 
@@ -202,7 +202,7 @@ public class Program {
                }
                try
                {
-                    command.addSTTreeGeneratedListener(new Proc<String>()
+                    command.addSTTreeGeneratedListener(new Proc1<String>()
                     {
                         private int _treeNumber = 1;
 
@@ -264,7 +264,7 @@ public class Program {
         }
     }
 
-    private static void showCommand(SyntaxCommand definingSyntaxCommand, Proc<String> displayResult) {
+    private static void showCommand(SyntaxCommand definingSyntaxCommand, Proc1<String> displayResult) {
 
         StringBuffer accum = new StringBuffer("\n" + definingSyntaxCommand.getName());
 

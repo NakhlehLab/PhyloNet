@@ -22,7 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.io.File;
@@ -100,7 +100,7 @@ public class NexusOut extends CommandBase {
     }
 
     @Override
-    protected void executeCommandHelp(Proc<String> displayResult) throws IOException {
+    protected void executeCommandHelp(Proc1<String> displayResult) throws IOException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }

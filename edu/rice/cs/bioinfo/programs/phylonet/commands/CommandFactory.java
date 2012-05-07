@@ -128,7 +128,7 @@ public class CommandFactory {
         else if(lowerCommandName.equals("infer_st_mdc_ilp"))
         {
             return new InferST_MDC_ILP(directive, params, sourceIdentToNetwork, errorDetected);
-        }  /*
+        }
         else if(lowerCommandName.equals("nninterchange"))
         {
             return new NearestNeighborInterchange(directive, params, sourceIdentToNetwork, errorDetected, rand);
@@ -137,10 +137,10 @@ public class CommandFactory {
         {
             return new SubtreePruneAndRegraft(directive, params, sourceIdentToNetwork, errorDetected, rand);
         }
-        else if(lowerCommandName.equals("tbreconnect"))
+        else if(lowerCommandName.equals("tbreconnection"))
         {
             return new TreeBisectionAndReconnection(directive, params, sourceIdentToNetwork, errorDetected, rand);
-        }           */
+        }
         else if(lowerCommandName.equals("nexus_out"))
         {
             return new NexusOut(directive, params, sourceIdentToNetwork, errorDetected);

@@ -21,7 +21,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.consensus.TreeConsensusCalculator;
@@ -182,7 +182,7 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
             InferSTBase inferCommand = (InferSTBase) CommandFactory.make(executionCommand, this.sourceIdentToNetwork, this.errorDetected, _rand);
 
             final Set<Tree> sts = new LinkedHashSet<Tree>();
-            inferCommand.addSTTreeGeneratedListener(new Proc<String>() {
+            inferCommand.addSTTreeGeneratedListener(new Proc1<String>() {
                 public void execute(String tree) {
                     NewickReader nr = new NewickReader(new StringReader(tree));
 

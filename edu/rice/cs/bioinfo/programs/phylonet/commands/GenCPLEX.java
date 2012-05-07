@@ -21,7 +21,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.ilp.IlpGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -144,7 +144,7 @@ public class GenCPLEX extends CommandBase  {
     }
 
     @Override
-    protected void executeCommandHelp(Proc<String> displayResult) throws IOException
+    protected void executeCommandHelp(Proc1<String> displayResult) throws IOException
     {
         if(_deepCoalWeightParam == null || _geneTrees == null || _numCoalCount == null || _outDir == null || _syntaxTrees == null)
         {

@@ -23,7 +23,7 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.ContainsHybridNode;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import sun.text.normalizer.Trie;
 
@@ -53,16 +53,16 @@ public abstract class CommandBase implements Command {
 
     private boolean _checkParamsCalled = false;
 
-    private ArrayList<Proc<String>> _stGeneratedObservers = new ArrayList<Proc<String>>();
+    private ArrayList<Proc1<String>> _stGeneratedObservers = new ArrayList<Proc1<String>>();
 
-    public void addSTTreeGeneratedListener(Proc<String> listener)
+    public void addSTTreeGeneratedListener(Proc1<String> listener)
     {
         _stGeneratedObservers.add(listener);
     }
 
      protected void treeGenerated(String treeNewick)
     {
-        for(Proc<String> observer : _stGeneratedObservers)
+        for(Proc1<String> observer : _stGeneratedObservers)
         {
             observer.execute(treeNewick);
         }
@@ -284,7 +284,7 @@ public abstract class CommandBase implements Command {
         return _motivatingCommand;
     }
 
-    public void executeCommand(Proc<String> displayResult) throws IOException
+    public void executeCommand(Proc1<String> displayResult) throws IOException
     {
         if(!_checkParamsCalled)
         {
@@ -299,7 +299,7 @@ public abstract class CommandBase implements Command {
         }
     }
 
-    protected abstract void executeCommandHelp(Proc<String> displayResult) throws IOException;
+    protected abstract void executeCommandHelp(Proc1<String> displayResult) throws IOException;
 
     protected ParameterIdent assertParameterIdent(int paramIndent)
     {

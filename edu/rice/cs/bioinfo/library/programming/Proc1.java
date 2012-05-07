@@ -26,7 +26,7 @@ package edu.rice.cs.bioinfo.library.programming;
  * Time: 5:23 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface Proc<T> {
+public interface Proc1<T> {
 
     public void execute(T input);
 }

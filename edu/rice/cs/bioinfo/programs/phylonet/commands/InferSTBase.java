@@ -24,7 +24,7 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;

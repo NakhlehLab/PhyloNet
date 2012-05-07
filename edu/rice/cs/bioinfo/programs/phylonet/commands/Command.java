@@ -22,7 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.io.IOException;
@@ -41,8 +41,8 @@ public interface Command {
 
     public boolean checkParams();
 
-    public void executeCommand(Proc<String> displayResult) throws IOException;
+    public void executeCommand(Proc1<String> displayResult) throws IOException;
 
-    public void addSTTreeGeneratedListener(Proc<String> listener);
+    public void addSTTreeGeneratedListener(Proc1<String> listener);
 
 }

@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.GraphReadOnly;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidator;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
 import edu.rice.cs.bioinfo.library.programming.*;
 

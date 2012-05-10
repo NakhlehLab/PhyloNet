@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
+import javax.swing.text.Element;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,6 +41,17 @@ public class IterableHelp {
         }
 
         return accum.toArray();
+    }
+
+    public static <E> List<E> toList(Iterable<E> elements)
+    {
+        List<E> result = new LinkedList<E>();
+
+        for(E element : elements)
+        {
+            result.add(element);
+        }
+        return result;
     }
 
     public static int count(Iterable elements)

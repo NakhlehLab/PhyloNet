@@ -1,11 +1,9 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
+import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.*;
 import edu.rice.cs.bioinfo.library.programming.*;
-import org.junit.internal.matchers.Each;
 
-import java.nio.ReadOnlyBufferException;
 import java.util.*;
 
 /**
@@ -55,7 +53,7 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
 
                 Tuple<N,N> nodesOfDestinationEdge = network.getNodesOfEdge(destinationEdge);
 
-                if(!isReachable(network, nodesOfSourceEdge.Item1, nodesOfDestinationEdge.Item2))
+                if(!isPath(network, nodesOfDestinationEdge.Item2, nodesOfSourceEdge.Item1))
                 {
                     NodeInjector.NodeInjectorUndoAction<G,N,E> undoDestination = NodeInjector.injectNodeIntoEdge(network, destinationEdge, destinationEdgeGlueNode, _makeEdge, false);
 
@@ -76,54 +74,32 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
         network.removeNode(destinationEdgeGlueNode);
     }
 
-    protected boolean isReachable(G network, N sourceNode, N destinationNode)
+    protected boolean isPath(G network, N start, N end)
     {
-        HashSet<N> ancestorsOfSourceNode = new HashSet<N>();
         LinkedList<N> toExpand = new LinkedList<N>();
-        toExpand.push(sourceNode);
+
+        toExpand.push(start);
 
         while(toExpand.size() > 0)
         {
             N node = toExpand.pop();
+
+            if(end.equals(node))
+            {
+                return true;
+            }
 
             for(E edge : network.getIncidentEdges(node))
             {
                 Tuple<N,N> nodesOfEdge = network.getNodesOfEdge(edge);
 
-                if(nodesOfEdge.Item2.equals(node))
+                if(nodesOfEdge.Item1.equals(node))
                 {
-                   if(!ancestorsOfSourceNode.contains(nodesOfEdge.Item1))
-                   {
-                       ancestorsOfSourceNode.add(nodesOfEdge.Item1);
-                       toExpand.push(nodesOfEdge.Item1);
-                   }
+                    toExpand.push(nodesOfEdge.Item2);
                 }
             }
         }
 
-        toExpand.push(destinationNode);
-
-        while(toExpand.size() > 0)
-        {
-            N node = toExpand.pop();
-
-            if(ancestorsOfSourceNode.contains(node))
-            {
-                return true;
-            }
-            else
-            {
-                for(E edge : network.getIncidentEdges(node))
-                {
-                    Tuple<N,N> nodesOfEdge = network.getNodesOfEdge(edge);
-
-                    if(nodesOfEdge.Item1.equals(node))
-                    {
-                        toExpand.push(nodesOfEdge.Item2);
-                    }
-                }
-            }
-        }
 
         return false;
 

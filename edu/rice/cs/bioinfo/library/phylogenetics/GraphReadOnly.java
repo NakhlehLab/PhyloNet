@@ -1,4 +1,4 @@
-package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement;
+package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.*;
 
@@ -18,6 +18,8 @@ public interface GraphReadOnly<N,E>
     Tuple<N,N> getNodesOfEdge(E edge);
 
     Iterable<E> getIncidentEdges(N node);
+
+    E getEdge(N source, N destination);
 
     boolean isRooted();
 

@@ -1,9 +1,11 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.Graph;
+import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import org.junit.*;
-import org.junit.internal.matchers.Each;
+
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,57 +20,220 @@ public abstract class ReticulateEdgeAdditionTest<G extends Graph<String, Tuple<S
 
     private Func1<G,String> _makeNode;
 
-    public ReticulateEdgeAdditionTest(Func1<G,String> makeNode, Func3<G,String,String, Tuple<String,String>> makeEdge)
+    public ReticulateEdgeAdditionTest()
     {
-       _makeEdge = makeEdge;
-       _makeNode = makeNode;
+        _makeEdge = new Func3<G, String, String, Tuple<String, String>>() {
+            public Tuple<String, String> execute(G network, String source, String destination) {
+                return makeEdge(network, source, destination);
+            }
+        };
+        _makeNode = new Func1<G, String>() {
+
+            private int _i = 0;
+            public String execute(G network)
+            {
+               return makeNode(network, "_" + (++_i));
+            }
+        };
     }
 
     protected abstract G makeNetwork(String... nodes);
 
     protected abstract boolean containsEdge(G network, String source, String destination);
 
+    protected abstract String makeNode(G network, String node);
+
+    protected abstract Tuple<String,String> makeEdge(G network, String source, String destination);
+
     @Test
     public void testComputeRearrangementsWithoutValidationCase1()
     {
-         G network = makeNetwork("R", "A", "B");
-         network.addEdge(_makeEdge.execute(network, "R", "A"));
-         network.addEdge(_makeEdge.execute(network, "R", "B"));
+        G network = makeNetwork(new String[] { "R", "A", "B" },
+                                new String[][] { new String[] { "R", "A" },
+                                                 new String[] { "R", "B" }});
 
-        final Ref<Integer> numCases = new Ref<Integer>(0);
-        final Ref<Boolean> case1Covered = new Ref<Boolean>(false);
-        final Ref<Boolean> case2Covered = new Ref<Boolean>(false);
-        new ReticulateEdgeAdditionInPlace<G, String, Tuple<String,String>>(_makeNode, _makeEdge).computeRearrangementsWithoutValidation(network,
+        final LinkedList<G> expectedNetworks = new LinkedList<G>();
+        String[] neighborNodes = new String[] { "R", "A", "B", "_1", "_2" };
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "R", "_2" },
+                                                         new String[] { "_1", "A" },
+                                                         new String[] { "_2", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes, new String[][]{
+                new String[]{"_1", "_2"},
+                new String[]{"R", "_1"},
+                new String[]{"R", "_2"},
+                new String[]{"_2", "A"},
+                new String[]{"_1", "B"}}));
+        testComputeRearrangementsWithoutValidationHelp(network, expectedNetworks);
+
+    }
+
+    @Test
+    public void testComputeRearrangementsWithoutValidationCase2()
+    {
+        G network = makeNetwork(new String[] { "R", "A", "1", "B", "C" },
+                                new String[][] { new String[] { "R", "A" },
+                                                 new String[] { "R", "1" },
+                                                 new String[] { "1", "B" },
+                                                 new String[] { "1", "C" } });
+
+        final LinkedList<G> expectedNetworks = new LinkedList<G>();
+        String[] neighborNodes = new String[] { "R", "A", "1", "B", "C", "_1", "_2" };
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "1" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "_1", "A" },
+                                                         new String[] { "1", "C" },
+                                                         new String[] { "1", "_2" },
+                                                         new String[] { "_2", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "1" },
+                                                         new String[] { "R", "_2" },
+                                                         new String[] { "_2", "A" },
+                                                         new String[] { "1", "C" },
+                                                         new String[] { "1", "_1" },
+                                                         new String[] { "_1", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "R", "_2" },
+                                                         new String[] { "_1", "A" },
+                                                         new String[] { "_2", "1" },
+                                                         new String[] { "1", "C" },
+                                                         new String[] { "1", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "R", "_2" },
+                                                         new String[] { "_2", "A" },
+                                                         new String[] { "_1", "1" },
+                                                         new String[] { "1", "C" },
+                                                         new String[] { "1", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "R", "1" },
+                                                         new String[] { "_1", "A" },
+                                                         new String[] { "1", "_2" },
+                                                         new String[] { "_2", "C" },
+                                                         new String[] { "1", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "_2" },
+                                                         new String[] { "R", "1" },
+                                                         new String[] { "_2", "A" },
+                                                         new String[] { "1", "_1" },
+                                                         new String[] { "_1", "C" },
+                                                         new String[] { "1", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "A" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "_1", "1" },
+                                                         new String[] { "1", "C" },
+                                                         new String[] { "1", "_2" },
+                                                         new String[] { "_2", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "A" },
+                                                         new String[] { "R", "_1" },
+                                                         new String[] { "_1", "1" },
+                                                         new String[] { "1", "_2" },
+                                                         new String[] { "_2", "C" },
+                                                         new String[] { "1", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "A" },
+                                                         new String[] { "R", "1" },
+                                                         new String[] { "1", "_1" },
+                                                         new String[] { "1", "_2" },
+                                                         new String[] { "_1", "C" },
+                                                         new String[] { "_2", "B" } }));
+        expectedNetworks.add(makeNetwork(neighborNodes,  new String[][] {
+                                                         new String[] { "_1", "_2" },
+                                                         new String[] { "R", "A" },
+                                                         new String[] { "R", "1" },
+                                                         new String[] { "1", "_1" },
+                                                         new String[] { "1", "_2" },
+                                                         new String[] { "_2", "C" },
+                                                         new String[] { "_1", "B" } }));
+        testComputeRearrangementsWithoutValidationHelp(network, expectedNetworks);
+
+
+    }
+
+    private void testComputeRearrangementsWithoutValidationHelp(G network, final Collection<G> expectedNetworks)
+    {
+         new ReticulateEdgeAdditionInPlace<G, String, Tuple<String,String>>(_makeNode, _makeEdge).computeRearrangementsWithoutValidation(network,
                 new Proc4<G, Tuple<String, String>, Tuple<String, String>, Tuple<String, String>>() {
-            public void execute(G network, Tuple<String, String> sourceEdge, Tuple<String, String> destinationEdge, Tuple<String, String> reticulateEdge)
-            {
-                Assert.assertTrue(containsEdge(network, "R", reticulateEdge.Item1));
-                Assert.assertTrue(containsEdge(network, "R", reticulateEdge.Item2));
-                Assert.assertFalse(containsEdge(network, "R", "A"));
-                Assert.assertFalse(containsEdge(network, "R", "B"));
-                Assert.assertTrue(containsEdge(network, reticulateEdge.Item1, reticulateEdge.Item2));
-                Assert.assertTrue(containsEdge(network, sourceEdge.Item1, reticulateEdge.Item1));
-                Assert.assertTrue(containsEdge(network, destinationEdge.Item1, reticulateEdge.Item2));
+                    public void execute(G network, Tuple<String, String> sourceEdge, Tuple<String, String> destinationEdge, Tuple<String, String> reticulateEdge)
+                    {
 
-                if(sourceEdge.Item2.equals("A"))
-                {
-                    Assert.assertTrue(containsEdge(network, reticulateEdge.Item1, "A"));
-                    Assert.assertTrue(containsEdge(network, reticulateEdge.Item2, "B"));
-                    case1Covered.set(true);
-                }
-                else  if(sourceEdge.Item2.equals("B"))
-                {
-                    Assert.assertTrue(containsEdge(network, reticulateEdge.Item1, "B"));
-                    Assert.assertTrue(containsEdge(network, reticulateEdge.Item2, "A"));
-                    case2Covered.set(true);
-                }
-                numCases.set(numCases.get() + 1);
-            }
-        });
+                        G toBeRemoved = null;
+                        for(G expectedNetwork : expectedNetworks)
+                        {
+                            if(areSameNetwork(network, expectedNetwork))
+                            {
+                                toBeRemoved = expectedNetwork;
+                                break;
+                            }
+                        }
 
-        Assert.assertTrue(case1Covered.get());
-        Assert.assertTrue(case2Covered.get());
-        Assert.assertTrue(numCases.get() == 2);
+                        if(toBeRemoved != null)
+                        {
+                            expectedNetworks.remove(toBeRemoved);
+                        }
+                        else
+                        {
+                            Assert.fail("Generated unexpected network.");
+                        }
+                    }
+                });
+
+        Assert.assertTrue(expectedNetworks.size() == 0);
+    }
+
+    private G makeNetwork(String[] nodes, String[][] edges)
+    {
+        G network = makeNetwork();
+
+        for(String node: nodes)
+        {
+            network.addNode(makeNode(network, node));
+        }
+
+        for(String[] edge : edges)
+        {
+            network.addEdge(_makeEdge.execute(network, edge[0], edge[1]));
+        }
+
+        return network;
+    }
+
+    private boolean areSameNetwork(G net1, G net2)
+    {
+        List<String> net1Nodes = IterableHelp.toList(net1.getNodes());
+        List<String> net2Nodes  = IterableHelp.toList(net2.getNodes());
+
+        if(net1Nodes.size() != net2Nodes.size())
+        {
+            return false;
+        }
+
+        List<Tuple<String,String>> net1Edges = IterableHelp.toList(net1.getEdges());
+        List<Tuple<String,String>> net2Edges = IterableHelp.toList(net2.getEdges());
+
+        if(net1Edges.size() != net2Edges.size())
+        {
+            return false;
+        }
+
+        return net1Nodes.containsAll(net2Nodes) && net1Edges.containsAll(net2Edges);
+
 
     }
 }

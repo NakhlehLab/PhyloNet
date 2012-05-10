@@ -1,4 +1,4 @@
-package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement;
+package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.*;
 

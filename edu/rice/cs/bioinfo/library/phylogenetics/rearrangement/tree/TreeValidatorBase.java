@@ -1,12 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.GraphReadOnly;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.GraphValidator;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
-
-import javax.xml.soap.Node;
-import java.util.HashSet;
-import java.util.LinkedList;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphValidator;
 
 /**
  * Created by IntelliJ IDEA.

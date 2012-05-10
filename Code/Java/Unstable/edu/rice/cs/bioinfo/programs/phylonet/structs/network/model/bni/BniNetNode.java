@@ -317,8 +317,8 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 		_children.remove(index);
 
-		_parent_probabiliites.remove(index);
-        _parent_support.remove(index);
+		//_parent_probabiliites.remove(index);
+        //_parent_support.remove(index);
 		// Delete link from child to this node.
 		BniNetNode<T> ref = (BniNetNode<T>) child;
 		int i = ref._parents.indexOf(this);
@@ -334,15 +334,15 @@ public class BniNetNode<T> implements NetNode<T> {
         {
             throw new IllegalArgumentException("Probability values must be between zer and one.  Found: " + probability);
         }
-
 		int i = _parents.indexOf(parent);
-
+        
 		if (i == -1) {	// parent is not a parent of this node. Operation failed.
 
             throw new IllegalArgumentException("Passed parent is not a parent of the node.");
 		}
 		else {
 			// Update the distance.
+
 			_parent_probabiliites.remove(i);
 			_parent_probabiliites.add(i, new Double(probability));
 		}

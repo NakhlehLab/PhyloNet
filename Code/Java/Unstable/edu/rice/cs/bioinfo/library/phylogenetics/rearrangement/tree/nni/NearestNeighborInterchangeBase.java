@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 

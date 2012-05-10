@@ -1,6 +1,5 @@
-package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement;
+package edu.rice.cs.bioinfo.library.phylogenetics;
 import edu.rice.cs.bioinfo.library.programming.*;
-import sun.reflect.generics.tree.Tree;
 
 import java.util.*;
 

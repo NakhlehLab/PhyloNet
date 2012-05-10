@@ -13,22 +13,6 @@ import edu.uci.ics.jung.graph.*;
  */
 public class ReticulateEdgeAdditionTestJung extends ReticulateEdgeAdditionTest<JungGraphToGraphAdapterBase<String, Tuple<String, String>>>
 {
-    public ReticulateEdgeAdditionTestJung()
-    {
-        super(new Func1<JungGraphToGraphAdapterBase<String, Tuple<String, String>>, String>()
-        {           int i = 0;
-                    public String execute(JungGraphToGraphAdapterBase<String, Tuple<String, String>> input1) {
-                        return "_" + (++i);
-                    }
-                },
-        new Func3<JungGraphToGraphAdapterBase<String, Tuple<String, String>>, String, String, Tuple<String, String>>()
-        {
-            public Tuple<String, String> execute(JungGraphToGraphAdapterBase<String, Tuple<String, String>> arg1, String node1, String node2) {
-                return new Tuple<String, String>(node1, node2);
-            }
-        });
-    }
-
     @Override
     protected JungGraphToGraphAdapterBase<String, Tuple<String, String>> makeNetwork(String... nodes) {
         Graph<String, Tuple<String,String>> g = new DirectedSparseGraph<String, Tuple<String, String>>();
@@ -50,5 +34,15 @@ public class ReticulateEdgeAdditionTestJung extends ReticulateEdgeAdditionTest<J
     protected boolean containsEdge(JungGraphToGraphAdapterBase<String, Tuple<String, String>> network, String source, String destination)
     {
         return network.Graph.containsEdge(new Tuple(source, destination));
+    }
+
+    @Override
+    protected String makeNode(JungGraphToGraphAdapterBase<String, Tuple<String, String>> network, String node) {
+       return node;
+    }
+
+    @Override
+    protected Tuple<String, String> makeEdge(JungGraphToGraphAdapterBase<String, Tuple<String, String>> network, String source, String destination) {
+        return new Tuple<String, String>(source, destination);
     }
 }

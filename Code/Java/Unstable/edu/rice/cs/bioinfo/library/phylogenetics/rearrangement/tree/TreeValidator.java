@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.GraphReadOnly;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 
 /**
  * Created by IntelliJ IDEA.

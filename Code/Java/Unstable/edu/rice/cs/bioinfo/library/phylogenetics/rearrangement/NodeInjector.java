@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement;
 
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Node;
+import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.programming.*;
 
 public class NodeInjector

@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.Graph;
+import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 

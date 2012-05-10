@@ -391,30 +391,28 @@ public class STITree<D extends Object> implements MutableTree {
 			doRerooting(node);
 		}
 	}
-	
-	
-	
-	private void doRerooting(TNode node){
-		STINode parent = (STINode)(node.getParent());
-		if(parent == null){
-			return;
-		}
-		if(parent.getID()!=_root.getID()){
-			doRerooting(node.getParent());
-		}
-		
-		parent._children.remove(node);
-		
-		if(parent.getChildCount()==1){
-			parent = (STINode)parent._children.get(0);
-		}
-		
-		((STINode)node)._children.add(parent);
-		parent._parent = (STINode)node;
-		_root=((STINode)node);
-		_root._parent = null;
-		//_root._children.add((STINode)node.getParent());
-	}
+
+
+    private void doRerooting(TNode node){
+        STINode parent = (STINode)(node.getParent());
+        if(parent == null){
+            return;
+        }
+        if(!parent.isRoot()){
+            doRerooting(node.getParent());
+        }
+        parent._children.remove(node);
+        if(parent.getChildCount()==1){
+            ((STINode)node).adoptChild(parent);
+            ((STINode)node).removeChild(parent, true);
+        }
+        else{
+            ((STINode)node).adoptChild(parent);
+        }
+
+        _root=((STINode)node);
+        _root._parent = null;
+    }
 	
 	public STINode<D> selectRandomNode(boolean include_leaves, boolean include_root) {
 		

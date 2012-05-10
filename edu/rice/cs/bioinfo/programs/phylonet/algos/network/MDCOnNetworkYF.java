@@ -34,15 +34,9 @@ public class MDCOnNetworkYF {
 
         for(Tree gt: gts){
             Trees.removeBinaryNodes((MutableTree)gt);
-            int internalNum = 0;
-            for(TNode node:gt.postTraverse()){
-                if(!node.isLeaf()){
-                    internalNum++;
-                }
-            }
             List<STITreeCluster> gtClusters = new ArrayList<STITreeCluster>();
             String[] gtTaxa = gt.getLeaves();
-            int[][] gtclConstitution = new int[internalNum][2];
+            int[][] gtclConstitution = new int[gt.getNodeCount()-gtTaxa.length][2];
             processGT(gt,gtTaxa, gtclConstitution, gtClusters);
 
             if(!checkLeafAgreement(species2alleles, gtTaxa)){

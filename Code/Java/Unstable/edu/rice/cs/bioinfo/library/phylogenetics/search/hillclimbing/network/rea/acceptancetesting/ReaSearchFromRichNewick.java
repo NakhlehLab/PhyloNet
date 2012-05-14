@@ -57,7 +57,13 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
 
         expectedGen1Neighbors.add(makeNetwork("((A,6#1)5,((C)6#1,B)I)R;"));
         expectedGen1Neighbors.add(makeNetwork("((A)6#1,((C, 6#1)5,B)I)R;"));
-        final G gen1Best = expectedGen1Neighbors.getFirst();
+        expectedGen1Neighbors.add(makeNetwork("((A,6#1)5,((C,B)I)6#1)R;"));
+        expectedGen1Neighbors.add(makeNetwork("((A)6#1,((C,B)I,6#1)5)R;"));
+        expectedGen1Neighbors.add(makeNetwork("(A,(6#1,(C,(B)6#1)I)5)R;")); // best
+        expectedGen1Neighbors.add(makeNetwork("(A,(6#1,((C)6#1,B)I)5)R;"));
+        expectedGen1Neighbors.add(makeNetwork("(A,((C,6#1)5,(B)6#1)I)R;"));
+        expectedGen1Neighbors.add(makeNetwork("(A,((B,6#1)5,(C)6#1)I)R;"));
+        final G gen1Best = expectedGen1Neighbors.get(4);
 
         LinkedList<G> expectedGen2Neighbors = new LinkedList<G>();
         expectedGen2Neighbors.add(makeNetwork("(((A,6#1)5, 8#2)7,(((C)6#1,B)I)8#2)R;"));

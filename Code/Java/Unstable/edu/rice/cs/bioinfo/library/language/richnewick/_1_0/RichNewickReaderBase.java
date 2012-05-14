@@ -20,11 +20,13 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0;
 
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.CSAError;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilderNoAction;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,9 +37,53 @@ import java.io.InputStream;
  */
 public abstract class RichNewickReaderBase<T> implements RichNewickReader<T> {
 
-    public <N> RichNewickReadResult<T> read(InputStream instream) throws CoordinateParseErrorsException, IOException {
+    public RichNewickReadResult<T> read(InputStream instream) throws CoordinateParseErrorsException, IOException {
         return read(instream, GraphBuilderNoAction.Singleton);
     }
 
     public abstract <N> RichNewickReadResult<T> read(InputStream instream, GraphBuilder<N> graphBuilder) throws CoordinateParseErrorsException, IOException;
+
+    public T readAnyErrorToRuntimeException(InputStream instream)
+    {
+        try
+        {
+            RichNewickReadResult<T> result = read(instream);
+            Iterator<CSAError> errors = result.getContextErrors().iterator();
+            if(errors.hasNext())
+            {
+                throw new RuntimeException(errors.next().Message);
+            }
+            else
+            {
+                return result.getNetworks();
+            }
+
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public <N> T readAnyErrorToRuntimeException(InputStream instream, GraphBuilder<N> graphBuilder)
+    {
+       try
+        {
+            RichNewickReadResult<T> result = read(instream, graphBuilder);
+            Iterator<CSAError> errors = result.getContextErrors().iterator();
+            if(errors.hasNext())
+            {
+                throw new RuntimeException(errors.next().Message);
+            }
+            else
+            {
+                return result.getNetworks();
+            }
+
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 }

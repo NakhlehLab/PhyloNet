@@ -1,0 +1,147 @@
+package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting;
+
+import cern.jet.stat.Gamma;
+import com.sun.org.apache.bcel.internal.generic.NEW;
+import edu.rice.cs.bioinfo.library.phylogenetics.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimber;
+import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
+import junit.framework.Assert;
+import org.junit.Test;
+import sun.plugin.javascript.navig4.Link;
+import sun.reflect.generics.tree.Tree;
+
+import javax.xml.transform.Source;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: Matt
+ * Date: 5/13/12
+ * Time: 2:57 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<String>>>
+{
+    protected abstract G makeNetwork(String richNewick);
+
+    protected Func1<G, String> makeNode = new Func1<G, String>()
+    {
+        private int counter = 0;
+
+        public String execute(G input1) {
+            return IterableHelp.count(input1.getNodes()) + "";
+        }
+    };
+
+    protected Func3<G, String, String, PhyloEdge<String>> makeEdge = new Func3<G, String, String, PhyloEdge<String>>()
+    {
+        public PhyloEdge<String> execute(G arg1, String source, String destination) {
+            return new PhyloEdge<String>(source, destination);
+        }
+    };
+
+    @Test
+    public void testInPlace1()
+    {
+        G network = makeNetwork("(A,(C,B)I)R;");
+        ReticulateEdgeAddition<G,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<G, String, PhyloEdge<String>>(makeNode, makeEdge);
+        ReaHillClimber<G,String,PhyloEdge<String>> searcher = new ReaHillClimber<G, String, PhyloEdge<String>>(reaStrategy);
+
+        LinkedList<G> expectedGen1Neighbors = new LinkedList<G>();
+
+        expectedGen1Neighbors.add(makeNetwork("((A,6#1)5,((C)6#1,B)I)R;"));
+        expectedGen1Neighbors.add(makeNetwork("((A)6#1,((C, 6#1)5,B)I)R;"));
+        final G gen1Best = expectedGen1Neighbors.getFirst();
+
+        LinkedList<G> expectedGen2Neighbors = new LinkedList<G>();
+        expectedGen2Neighbors.add(makeNetwork("(((A,6#1)5, 8#2)7,(((C)6#1,B)I)8#2)R;"));
+        final G gen2Best = expectedGen2Neighbors.getFirst();
+
+        final Queue<LinkedList<G>> expectedGenerations = new LinkedList<LinkedList<G>>();
+        expectedGenerations.offer(expectedGen1Neighbors);
+        expectedGenerations.offer(expectedGen2Neighbors);
+
+        Func1<G, Double> getScore = new Func1<G, Double>() {
+            public Double execute(G input) {
+
+                if(expectedGenerations.size() > 0)
+                {
+                    G toRemove = null;
+                    for(G net : expectedGenerations.peek())
+                    {
+                        if(areSameNetwork(net, input))
+                        {
+                            toRemove = net;
+                            break;
+                        }
+                    }
+
+                    if(toRemove != null)
+                    {
+                        expectedGenerations.peek().remove(toRemove);
+                        if(expectedGenerations.peek().size() == 0)
+                        {
+                            expectedGenerations.remove();
+                        }
+                    }
+                }
+
+                if(areSameNetwork(input, gen1Best))
+                {
+                    return 1.0;
+                }
+                else if(areSameNetwork(input, gen2Best))
+                {
+                    return 2.0;
+                }
+                else
+                {
+                    return 0.0;
+                }
+            }
+        };
+
+        Comparator<Double> isBetterNetwork = new Comparator<Double>() {
+            public int compare(Double o1, Double o2)
+            {
+                return Double.compare(o1, o2);
+            }
+        };
+
+        HillClimbResult<G,Double> result = searcher.search(network, getScore, isBetterNetwork);
+        Assert.assertTrue(expectedGenerations.size() == 0);
+        Assert.assertTrue(areSameNetwork(result.LocalOptimum, gen2Best));
+        Assert.assertTrue(result.LocalOptimumScore == 2.0);
+
+
+    }
+
+    private boolean areSameNetwork(G net1, G net2)
+    {
+        List<String> net1Nodes = IterableHelp.toList(net1.getNodes());
+        List<String> net2Nodes  = IterableHelp.toList(net2.getNodes());
+
+        if(net1Nodes.size() != net2Nodes.size())
+        {
+            return false;
+        }
+
+        List net1Edges = IterableHelp.toList(net1.getEdges());
+        List net2Edges = IterableHelp.toList(net2.getEdges());
+
+        if(net1Edges.size() != net2Edges.size())
+        {
+            return false;
+        }
+
+        return net1Nodes.containsAll(net2Nodes) && net1Edges.containsAll(net2Edges);
+
+
+    }
+}

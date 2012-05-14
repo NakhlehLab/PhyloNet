@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
+import edu.rice.cs.bioinfo.library.phylogenetics.IsDestinationNode;
 import edu.rice.cs.bioinfo.library.programming.*;
 
 public class NodeInjector
@@ -37,7 +38,7 @@ public class NodeInjector
     {
 
         Tuple<N, N> edgeNodes = graph.getNodesOfEdge(edge);
-        boolean item1isSource = graph.isRooted() && graph.isDestinationNode(edgeNodes.Item2, edge);
+        boolean item1isSource = graph.isRooted() &&  new IsDestinationNode().execute(graph, edgeNodes.Item2, edge);
         graph.removeEdge(edge);
         E edgeToAdd1 = null;
         E edgeToAdd2 = null;

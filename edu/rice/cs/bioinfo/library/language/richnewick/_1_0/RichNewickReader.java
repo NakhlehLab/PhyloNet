@@ -34,7 +34,14 @@ import java.io.InputStream;
  */
 public interface RichNewickReader<T>
 {
-    public <N> RichNewickReadResult<T> read(InputStream instream) throws CoordinateParseErrorsException, IOException;
+    public RichNewickReadResult<T> read(InputStream instream) throws CoordinateParseErrorsException, IOException;
 
     public <N> RichNewickReadResult<T> read(InputStream instream, GraphBuilder<N> graphBuilder) throws CoordinateParseErrorsException, IOException;
+
+    public T readAnyErrorToRuntimeException(InputStream instream);
+
+    public <N> T readAnyErrorToRuntimeException(InputStream instream, GraphBuilder<N> graphBuilder);
+
+
+
 }

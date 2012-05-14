@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
+import edu.rice.cs.bioinfo.library.phylogenetics.IsDestinationNode;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
@@ -75,13 +76,14 @@ public class NearestNeighborInterchangeInPlace<T extends Graph<N,E>, N,E> extend
     private void swapDoubleDegreeThree(T tree, Proc4<T,E,E,E> rearrangementComputed, E internalEdge, N internalEdgeNodeA, N internalEdgeNodeB) {
 
         LinkedList<E> swapEdgesA = new LinkedList<E>();
+        IsDestinationNode<T,N,E> isDestinationNode = new IsDestinationNode();
         for(E edge : tree.getIncidentEdges(internalEdgeNodeA))
         {
             if(!edge.equals(internalEdge))
             {
                 if(tree.isRooted())
                 {
-                    if(!tree.isDestinationNode(internalEdgeNodeA, edge))
+                    if(!isDestinationNode.execute(tree, internalEdgeNodeA, edge))
                     {
                         swapEdgesA.add(edge);
                     }
@@ -101,7 +103,7 @@ public class NearestNeighborInterchangeInPlace<T extends Graph<N,E>, N,E> extend
             {
                 if(tree.isRooted())
                 {
-                    if(!tree.isDestinationNode(internalEdgeNodeB, edge))
+                    if(!isDestinationNode.execute(tree, internalEdgeNodeB, edge))
                     {
                        swapEdgesB.add(edge);
                     }

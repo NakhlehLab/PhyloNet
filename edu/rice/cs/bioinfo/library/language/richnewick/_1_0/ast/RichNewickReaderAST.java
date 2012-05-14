@@ -43,7 +43,7 @@ import java.util.List;
  */
 public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
 {
-    public <N> RichNewickReadResult<Networks> read(InputStream instream) throws IOException, CoordinateParseErrorsException {
+    public RichNewickReadResult<Networks> read(InputStream instream) throws IOException, CoordinateParseErrorsException {
       return read(instream, null);
     }
 

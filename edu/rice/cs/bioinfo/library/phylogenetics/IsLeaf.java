@@ -24,7 +24,7 @@ public class IsLeaf<N,E> implements Predicate2<GraphReadOnly<N,E>, N>
 
             if(!incidentEdges.hasNext())
             {
-                if(tree.isRooted() && tree.isDestinationNode(node, edge))
+                if(tree.isRooted() && new IsDestinationNode().execute(tree, node, edge))
                 {
                     return true;
                 }

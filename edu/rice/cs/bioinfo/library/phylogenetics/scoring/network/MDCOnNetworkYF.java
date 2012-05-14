@@ -540,7 +540,7 @@ public class MDCOnNetworkYF {
         totalCoverNode = new BitSet(totalNodeNum);
         GetInDegree<N,E> getInDegree = new GetInDegree<N, E>();
         IsLeaf<N,E> isLeaf = new IsLeaf<N, E>();
-        GetDirectSuccessors<N,E> getParents = new GetDirectSuccessors<N, E>();
+        GetDirectPredecessors<N,E> getParents = new GetDirectPredecessors<N, E>();
         for(N trNode: net.getNodes()){
 
             int inDegree = getInDegree.execute(net, trNode);

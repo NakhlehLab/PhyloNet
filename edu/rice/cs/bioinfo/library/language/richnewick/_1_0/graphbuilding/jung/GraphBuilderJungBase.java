@@ -9,6 +9,7 @@ import edu.uci.ics.jung.graph.Graph;
 import java.io.OptionalDataException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.UUID;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,6 +36,10 @@ public abstract class GraphBuilderJungBase<G extends Graph<N,E>, N,E> implements
     protected abstract G makeEmptyGraph();
 
     public N createNode(String label) {
+        if(label == null)
+        {
+            label = UUID.randomUUID().toString();
+        }
         N node = _makeNode.execute(label);
         Graph.addVertex(node);
         return node;

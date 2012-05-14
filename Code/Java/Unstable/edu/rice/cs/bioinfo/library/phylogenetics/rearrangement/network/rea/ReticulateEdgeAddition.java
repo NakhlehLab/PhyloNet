@@ -16,4 +16,6 @@ public interface ReticulateEdgeAddition<G,N,E> extends NetworkValidator<N,E>
     void computeRearrangementsWithValidation(G network, Proc4<G,E,E,E> rearrangementComputed);
 
     void computeRearrangementsWithoutValidation(G network, Proc4<G,E,E,E> rearrangementComputed);
+
+    G perormRearrangementWithoutValidation(G network, E sourceEdge, E destinationEdge);
 }

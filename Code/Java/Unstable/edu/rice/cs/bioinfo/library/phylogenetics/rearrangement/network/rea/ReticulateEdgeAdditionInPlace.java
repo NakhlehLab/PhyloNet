@@ -74,6 +74,34 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
         network.removeNode(destinationEdgeGlueNode);
     }
 
+    public G perormRearrangementWithoutValidation(G network, E sourceEdge, E destinationEdge)
+    {
+        Tuple<N,N> nodesOfSourceEdge = network.getNodesOfEdge(sourceEdge);
+        Tuple<N,N> nodesOfDestinationEdge = network.getNodesOfEdge(destinationEdge);
+
+        N sourceEdgeGlueNode = _makeNode.execute(network);
+        network.addNode(sourceEdgeGlueNode);
+        N destinationEdgeGlueNode = _makeNode.execute(network);
+        network.addNode(destinationEdgeGlueNode);
+
+        NodeInjector.injectNodeIntoEdge(network, sourceEdge, sourceEdgeGlueNode, _makeEdge, false);
+
+        if(!isPath(network, nodesOfDestinationEdge.Item2, nodesOfSourceEdge.Item1))
+        {
+            NodeInjector.injectNodeIntoEdge(network, destinationEdge, destinationEdgeGlueNode, _makeEdge, false);
+
+            E reticulateEdge = _makeEdge.execute(network, sourceEdgeGlueNode, destinationEdgeGlueNode);
+            network.addEdge(reticulateEdge);
+
+            return network;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Given rearrangement would introduce a cycle.");
+        }
+
+    }
+
     protected boolean isPath(G network, N start, N end)
     {
         LinkedList<N> toExpand = new LinkedList<N>();

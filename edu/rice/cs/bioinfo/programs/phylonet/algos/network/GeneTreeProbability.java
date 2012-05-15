@@ -329,7 +329,7 @@ public class GeneTreeProbability {
             int index = 0;
             for (NetNode<Double> child : parent.getChildren()) {
                 TMutableNode copy;
-                if (child.getName() == NetNode.NO_NAME) {
+                if (child.getName().equals(NetNode.NO_NAME)) {
                     child.setName("hnode" + (nameid++));
                 }
 
@@ -469,6 +469,7 @@ public class GeneTreeProbability {
             }
         }
         Map<Integer, BitSet> map = new HashMap<Integer, BitSet>();
+
         for (TNode node : tree.postTraverse()) {
             BitSet bs = new BitSet(nnode);
             for(TNode child : node.getChildren()) {
@@ -482,6 +483,7 @@ public class GeneTreeProbability {
             }
             bs.set(id);
             map.put(id, bs);
+
         }
         return matrix;
     }
@@ -496,7 +498,7 @@ public class GeneTreeProbability {
         int nstnode = st.getNodeCount();
         _M = new boolean[nstnode][ngtnode];
 
-        Map<Integer, BitSet> gt_id2bs = new HashMap<Integer, BitSet>();
+        Map<Integer, BitSet> gtId2bs = new HashMap<Integer, BitSet>();
         List<Integer> rmlist = new ArrayList<Integer>();
         for (TNode node : gt.postTraverse()) {
             BitSet bs = new BitSet(_stTaxa.size());
@@ -507,19 +509,19 @@ public class GeneTreeProbability {
             }
             else {
                 for (TNode child : node.getChildren()) {
-                    BitSet childCluster = gt_id2bs.get(child.getID());
+                    BitSet childCluster = gtId2bs.get(child.getID());
                     bs.or(childCluster);
                 }
             }
-            gt_id2bs.put(node.getID(), bs);
+            gtId2bs.put(node.getID(), bs);
         }
 
-        for(Integer rmid: rmlist){
-            gt_id2bs.remove(rmid);
+        for(Integer rmid: rmlist) {
+            gtId2bs.remove(rmid);
         }
         rmlist.clear();
 
-        Map<Integer, BitSet> st_id2bs = new HashMap<Integer, BitSet>();
+        Map<Integer, BitSet> stId2bs = new HashMap<Integer, BitSet>();
         for (TNode node : st.postTraverse()) {
             BitSet bs = new BitSet(_stTaxa.size());
             int stID = node.getID();
@@ -529,28 +531,28 @@ public class GeneTreeProbability {
             }
             else {
                 for (TNode child : node.getChildren()) {
-                    BitSet childCluster = st_id2bs.get(child.getID());
+                    BitSet childCluster = stId2bs.get(child.getID());
                     bs.or(childCluster);
                 }
             }
-            st_id2bs.put(stID, bs);
+            stId2bs.put(stID, bs);
 
-            for(Map.Entry<Integer, BitSet> entry : gt_id2bs.entrySet()){
-                int gt_id = entry.getKey();
-                BitSet gt_bs = (BitSet) entry.getValue().clone();
-                gt_bs.and(bs);
-                if(gt_bs.equals(entry.getValue())){
-                    rmlist.add(gt_id);
-                    _M[stID][gt_id] = true;
+            for(Map.Entry<Integer, BitSet> entry : gtId2bs.entrySet()){
+                int gtId = entry.getKey();
+                BitSet gtBs = (BitSet) entry.getValue().clone();
+                gtBs.and(bs);
+                if(gtBs.equals(entry.getValue())){
+                    rmlist.add(gtId);
+                    _M[stID][gtId] = true;
                     for(int i=0; i< _S.length; i++){
                         if(_S[i][stID]){
-                            _M[i][gt_id] = true;
+                            _M[i][gtId] = true;
                         }
                     }
                 }
             }
             for(int rmid: rmlist){
-                gt_id2bs.remove(rmid);
+                gtId2bs.remove(rmid);
             }
         }
     }
@@ -665,22 +667,21 @@ public class GeneTreeProbability {
      */
     private int calculateU(Tree st, TNode node, int[] mapping, int[] history){
         int u = 0;
-        for(int i=0; i<mapping.length; i++){
-            int mappingID = st.getNode(_stTaxa.get(mapping[i])).getID();
-            if(node.isLeaf()){
-                if(node.getID() == mappingID){
+        for (int aMapping : mapping) {
+            int mappingID = st.getNode(_stTaxa.get(aMapping)).getID();
+            if (node.isLeaf()) {
+                if (node.getID() == mappingID) {
                     u++;
                 }
-            }
-            else{
-                if(_S[node.getID()][mappingID]){
+            } else {
+                if (_S[node.getID()][mappingID]) {
                     u++;
                 }
             }
         }
-        for(int i=0; i<history.length; i++){
-            if(history[i]!=-1){
-                if(_S[node.getID()][history[i]]){
+        for (int aHistory : history) {
+            if (aHistory != -1) {
+                if (_S[node.getID()][aHistory]) {
                     u--;
                 }
             }
@@ -696,8 +697,8 @@ public class GeneTreeProbability {
      */
     private int calculateC(TNode node, int[] history){
         int c = 0;
-        for(int i=0; i<history.length; i++){
-            if(history[i]==node.getID()){
+        for (int aHistory : history) {
+            if (aHistory == node.getID()) {
                 c++;
             }
         }
@@ -774,7 +775,7 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to print matrix for debugging
+     * The function is to _printDetails matrix for debugging
      */
     private void printMatrix(boolean[][] matrix){
         for(int i=0; i<matrix.length; i++){
@@ -791,7 +792,7 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to print a list of coalescent histories for debugging
+     * The function is to _printDetails a list of coalescent histories for debugging
      */
     private void printHistories(List<int[]> histories){
         System.out.println("total size:"+histories.size());
@@ -805,7 +806,7 @@ public class GeneTreeProbability {
     }
 
     /**
-     * The function is to print coalescent histories for debugging
+     * The function is to _printDetails coalescent histories for debugging
      */
     private void printHistory(int[] history){
         System.out.print("[");
@@ -847,23 +848,23 @@ public class GeneTreeProbability {
      */
     private class CEPair {
 
-        public int clusterID;
-        public int edgeID;
+        public int _clusterID;
+        public int _edgeID;
 
         public CEPair(){}
 
         public CEPair(int cluster, int edge) {
-            edgeID = edge;
-            clusterID = cluster;
+            _edgeID = edge;
+            _clusterID = cluster;
         }
 
         public void set(int cluster, int edge) {
-            edgeID = edge;
-            clusterID = cluster;
+            _edgeID = edge;
+            _clusterID = cluster;
         }
 
         public int hashCode() {
-            return edgeID;
+            return _edgeID;
         }
 
         public boolean equals(Object o) {
@@ -873,11 +874,11 @@ public class GeneTreeProbability {
 
             CEPair p2 = (CEPair) o;
 
-            return (clusterID == p2.clusterID) && (edgeID == p2.edgeID);
+            return (_clusterID == p2._clusterID) && (_edgeID == p2._edgeID);
         }
 
         public String toString(){
-            return "edge:"+ edgeID +"/node:"+ clusterID;
+            return "edge:"+ _edgeID +"/node:"+ _clusterID;
         }
     }
 

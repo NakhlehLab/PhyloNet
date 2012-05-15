@@ -45,15 +45,12 @@ public class MDCOnNetworkYF {
 
 
             HashSet<String> gtTaxaSet = new HashSet<String>();
-            for(String taxon: gtTaxa){
-                gtTaxaSet.add(taxon);
-            }
+            Collections.addAll(gtTaxaSet, gtTaxa);
 
             cleanNetwork(network);
             HashMap<BitSet, List<Configuration>> edge2ACminus = new HashMap<BitSet, List<Configuration>>();
 
             int netNodeIndex = 0;
-            int numLineages = gtClusters.size();
             int xl = Integer.MAX_VALUE;
             for(NetNode<List<Configuration>> node: walkNetwork(network)){
                 //System.out.println(edge2ACminus);
@@ -70,7 +67,7 @@ public class MDCOnNetworkYF {
                 //set AC for a node
                 if(node.isLeaf()){
 
-                    Configuration config = new Configuration(gtTaxa, numLineages);
+                    Configuration config = new Configuration(gtTaxa);
                     if(species2alleles == null){
                         if(gtTaxaSet.contains(node.getName())){
                             STITreeCluster cl = new STITreeCluster(gtTaxa);
@@ -117,7 +114,7 @@ public class MDCOnNetworkYF {
                             netNodeLineages = new BitSet[_netNodeNum][2];
                             for(int i=0; i< _netNodeNum; i++){
                                 for(int j=0; j<2; j++){
-                                    netNodeLineages[i][j] = new BitSet(numLineages);
+                                    netNodeLineages[i][j] = new BitSet();
                                 }
                             }
                         }
@@ -125,19 +122,19 @@ public class MDCOnNetworkYF {
                             System.out.print("AC1: {");
                             for(Configuration config: AC1){
                                 System.out.print(config.toString(gtClusters)+"  ");
-                            };
+                            }
                             System.out.println("}");
                             System.out.print("AC2: {");
                             for(Configuration config: AC2){
                                 System.out.print(config.toString(gtClusters)+"  ");
-                            };
+                            }
                             System.out.println("}");
                         }
                         for(Configuration config1: AC1){
                             for(Configuration config2: AC2){
                                 //System.out.println("here2");
                                 if(config1.isCompatible(config2)){
-                                    Configuration mergedConfig = new Configuration(config1, config2, numLineages);
+                                    Configuration mergedConfig = new Configuration(config1, config2);
 
                                     if(totalCover){
 
@@ -155,7 +152,7 @@ public class MDCOnNetworkYF {
                                             for(int i=0; i< _netNodeNum; i++){
                                                 for(int j=0; j<2; j++){
                                                     netNodeLineages[i][j].and(mergedConfig._netNodeLineages[i][j]);
-                                                    //System.out.print(netNodeLineages[i][0].cardinality() + "/" + netNodeLineages[i][1].cardinality() + "   ");
+                                                    //System.out._printDetail(netNodeLineages[i][0].cardinality() + "/" + netNodeLineages[i][1].cardinality() + "   ");
                                                 }
                                             }
                                         }
@@ -195,7 +192,7 @@ public class MDCOnNetworkYF {
                     System.out.print("AC: {");
                     for(Configuration config: CACs){
                         System.out.print(config.toString(gtClusters)+"  ");
-                    };
+                    }
                     System.out.println("}");
                 }
                 //set AC- for a node
@@ -209,7 +206,7 @@ public class MDCOnNetworkYF {
                     xlList.add(xl);
 
                     for(int i=0; i< _netNodeNum; i++){
-                        //System.out.print(optimalConfig._netNodeLineages[i][0].cardinality() + "/" + optimalConfig._netNodeLineages[i][1].cardinality() + "   ");
+                        //System.out._printDetail(optimalConfig._netNodeLineages[i][0].cardinality() + "/" + optimalConfig._netNodeLineages[i][1].cardinality() + "   ");
                         _totalNetNodeLinNum[i][0] += optimalConfig._netNodeLineages[i][0].cardinality();
                         _totalNetNodeLinNum[i][1] += optimalConfig._netNodeLineages[i][1].cardinality();
                     }
@@ -246,7 +243,7 @@ public class MDCOnNetworkYF {
                         System.out.print("ACminus: {");
                         for(Configuration config: ACminus){
                             System.out.print(config.toString(gtClusters)+"  ");
-                        };
+                        }
                         System.out.println("}");
                     }
                 }
@@ -258,8 +255,8 @@ public class MDCOnNetworkYF {
                         int numLineage = config.getLineageCount();
                         for(int i=0; i<=numLineage; i++){
                             for(BitSet selectedLineages: getSelected(numLineage,i)){
-                                Configuration newConfig1 = new Configuration(gtTaxa, numLineages);
-                                Configuration newConfig2 = new Configuration(gtTaxa, numLineages);
+                                Configuration newConfig1 = new Configuration(gtTaxa);
+                                Configuration newConfig2 = new Configuration(gtTaxa);
                                 newConfig1.setNetNodeLineageNum(config._netNodeLineages);
                                 newConfig2.setNetNodeLineageNum(config._netNodeLineages);
 
@@ -323,7 +320,7 @@ public class MDCOnNetworkYF {
                             System.out.print("ACminus to " + parentNode.getName()+ ": {");
                             for(Configuration config: ACminus){
                                 System.out.print(config.toString(gtClusters)+"  ");
-                            };
+                            }
                             System.out.println("}");
 
                         }
@@ -401,7 +398,7 @@ public class MDCOnNetworkYF {
                 _netNodeNum++;
             }
         }
-        _netTaxa = (String[]) taxa.toArray(new String[0]);
+        _netTaxa = taxa.toArray(new String[0]);
         _totalNetNodeLinNum = new int[_netNodeNum][2];
         computeNodeCoverage(net);
     }
@@ -431,9 +428,9 @@ public class MDCOnNetworkYF {
             map.put(node, cl);
         }
 
-        for(int i=0; i< gtTaxa.length; i++){
+        for (String taxon : gtTaxa) {
             STITreeCluster cl = new STITreeCluster(gtTaxa);
-            cl.addLeaf(gtTaxa[i]);
+            cl.addLeaf(taxon);
             gtClusters.add(cl);
         }
 
@@ -486,7 +483,6 @@ public class MDCOnNetworkYF {
         node2index.put(net.getRoot(), 0);
 
         while(!stack.isEmpty()){
-
             NetNode topNode = stack.peek();
             int index = node2index.get(topNode);
             if(index == topNode.getOutdeg()){
@@ -599,14 +595,14 @@ public class MDCOnNetworkYF {
         //int[][] _netNodeLinNum;
         BitSet[][] _netNodeLineages;
 
-        public Configuration(String[] gtTaxa, int numLineages){
-            _lineages = new BitSet(numLineages);
+        public Configuration(String[] gtTaxa){
+            _lineages = new BitSet();
             _netNodeIndex = new int[_netNodeNum];
             //_netNodeLinNum = new int[_netNodeNum][2];
             _netNodeLineages = new BitSet[_netNodeNum][2];
             for(int i=0; i< _netNodeNum; i++){
                 for(int j=0; j<2; j++){
-                    _netNodeLineages[i][j] = new BitSet(numLineages);
+                    _netNodeLineages[i][j] = new BitSet();
                 }
             }
             _coverage = new STITreeCluster(gtTaxa);
@@ -614,7 +610,7 @@ public class MDCOnNetworkYF {
         }
 
 
-        public Configuration(Configuration config1, Configuration config2, int numLineages){
+        public Configuration(Configuration config1, Configuration config2){
             _lineages = (BitSet)config1._lineages.clone();
             _lineages.or(config2._lineages);
             _xl = config1._xl + config2._xl;
@@ -625,7 +621,7 @@ public class MDCOnNetworkYF {
             _netNodeLineages = new BitSet[_netNodeNum][2];
             for(int i=0; i< _netNodeNum; i++){
                 for(int j=0; j<2; j++){
-                    _netNodeLineages[i][j] = new BitSet(numLineages);
+                    _netNodeLineages[i][j] = new BitSet();
                 }
             }
             for(int i=0; i< _netNodeNum; i++){
@@ -755,13 +751,7 @@ public class MDCOnNetworkYF {
             }
 
             Configuration config = (Configuration) o;
-            if (config._coverage.equals(_coverage) && config._lineages.equals(_lineages) && Arrays.equals(config._netNodeIndex,_netNodeIndex)) {
-                return true;
-            }
-            else {
-                return false;
-
-            }
+            return config._coverage.equals(_coverage) && config._lineages.equals(_lineages) && Arrays.equals(config._netNodeIndex, _netNodeIndex);
         }
 
         public int hashCode(){

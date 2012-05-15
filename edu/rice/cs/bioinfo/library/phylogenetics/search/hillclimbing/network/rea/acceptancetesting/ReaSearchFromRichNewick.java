@@ -12,6 +12,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import sun.plugin.javascript.navig4.Link;
 import sun.reflect.generics.tree.Tree;
+import sun.text.normalizer.IntTrie;
 
 import javax.xml.transform.Source;
 import java.util.Comparator;
@@ -120,7 +121,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
             }
         };
 
-        HillClimbResult<G,Double> result = searcher.search(network, getScore, isBetterNetwork);
+        HillClimbResult<G,Double> result = searcher.search(network, getScore, isBetterNetwork, Integer.MAX_VALUE);
         Assert.assertTrue(expectedGenerations.size() == 0);
         Assert.assertTrue(areSameNetwork(result.LocalOptimum, gen2Best));
         Assert.assertTrue(result.LocalOptimumScore == 2.0);

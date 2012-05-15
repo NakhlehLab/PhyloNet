@@ -14,37 +14,43 @@ import java.util.Comparator;
 public abstract class HillClimberBase<T> implements HillClimber<T>
 {
     @Override
-    public <S> HillClimbResult<T,S> search(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator)
+    public <S> HillClimbResult<T,S> search(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, int maxIterations)
     {
         S score = getScore.execute(solution);
-        return search(solution, getScore, scoreComparator, new Ref<S>(score));
+        return search(solution, getScore, scoreComparator, maxIterations, score);
     }
 
 
-    private <S> HillClimbResult<T,S> search(T bestSeenSolution, Func1<T,S> getScore, Comparator<S> scoreComparator, Ref<S> bestSeenSolutionScore)
+    private <S> HillClimbResult<T,S> search(T bestSeenSolution, Func1<T,S> getScore, Comparator<S> scoreComparator, int maxIterations, S bestSeenSolutionScore)
     {
-        Ref<Func1<T,T>>  getBetterSolution = new Ref<Func1<T, T>>(null);
+        for(int i = 1; true; i++)
+        {
+            Ref<Func1<T,T>>  getBetterNeighbor = new Ref<Func1<T, T>>(null);
+            Ref<S> newBestScore = new Ref<S>(null);
+            boolean sawBetterSolution = considerNeighborhood(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore);
+            if(sawBetterSolution)
+            {
+                bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
+                bestSeenSolutionScore = newBestScore.get();
+            }
 
-        boolean sawBetterSolution = considerNeighborhood(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterSolution);
-        if(sawBetterSolution)
-        {
-            bestSeenSolution = getBetterSolution.get().execute(bestSeenSolution);
-            return search(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore);
-        }
-        else
-        {
-            return new HillClimbResult<T,S>(bestSeenSolution, bestSeenSolutionScore.get());
+            if(!sawBetterSolution || i == maxIterations)
+            {
+                return new HillClimbResult<T,S>(bestSeenSolution, bestSeenSolutionScore);
+            }
+
         }
     }
 
-    protected abstract <S> boolean considerNeighborhood(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, Ref<S> bestSeenSolutionScore, Ref<Func1<T,T>>  getBetterSolution);
+    protected abstract <S> boolean considerNeighborhood(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore,
+                                                        Ref<Func1<T,T>>  getBetterSolution, Ref<S> newBestScore);
 
-    protected <S> boolean considerSolution(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, Ref<S> bestSeenSolutionScore)
+    protected <S> boolean considerSolution(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore, Ref<S> newBestScore)
     {
         S solutionScore =  getScore.execute(solution);
-        if(scoreComparator.compare(solutionScore, bestSeenSolutionScore.get()) == 1)
+        if(scoreComparator.compare(solutionScore, bestSeenSolutionScore) == 1)
         {
-            bestSeenSolutionScore.set(solutionScore);
+            newBestScore.set(solutionScore);
             return true;
         }
         return false;

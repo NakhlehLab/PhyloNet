@@ -12,5 +12,6 @@ import java.util.Comparator;
  */
 public interface HillClimber<T>
 {
-    public <S> HillClimbResult<T,S> search(T startSolution, Func1<T,S> getScore, Comparator<S> scoreComparator);
+    public <S> HillClimbResult<T,S> search(T startSolution, Func1<T,S> getScore, Comparator<S> scoreComparator,
+                                           int maxIterations);
 }

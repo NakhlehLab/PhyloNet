@@ -61,13 +61,47 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         expectedGen1Neighbors.add(makeNetwork("((A,6#1)5,((C,B)I)6#1)R;"));
         expectedGen1Neighbors.add(makeNetwork("((A)6#1,((C,B)I,6#1)5)R;"));
         expectedGen1Neighbors.add(makeNetwork("(A,(6#1,(C,(B)6#1)I)5)R;")); // best
+        expectedGen1Neighbors.add(makeNetwork("((A,6#1)5,(C,(B)6#1)I)R;"));
         expectedGen1Neighbors.add(makeNetwork("(A,(6#1,((C)6#1,B)I)5)R;"));
+        expectedGen1Neighbors.add(makeNetwork("((A)6#1,(C,(B,6#1)5)I)R;"));
         expectedGen1Neighbors.add(makeNetwork("(A,((C,6#1)5,(B)6#1)I)R;"));
         expectedGen1Neighbors.add(makeNetwork("(A,((B,6#1)5,(C)6#1)I)R;"));
         final G gen1Best = expectedGen1Neighbors.get(4);
 
         LinkedList<G> expectedGen2Neighbors = new LinkedList<G>();
-        expectedGen2Neighbors.add(makeNetwork("(((A,6#1)5, 8#2)7,(((C)6#1,B)I)8#2)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A,8#2)7,((6#1,((B)6#1,C)I)5)8#2)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A,8#2)7,(6#1,(((B)6#1,C)I)8#2)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A,8#2)7,((C,6#1)I,((B)6#1)8#2)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A,8#2)7,((B)6#1,(6#1,(C)8#2)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A,8#2)7,(((B)8#2)6#1,(6#1,C)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A,8#2)7,((B)6#1,((6#1)8#2,C)I)5)R;"));
+
+        expectedGen2Neighbors.add(makeNetwork("((A)8#2,((6#1,((B)6#1,C)I)5,8#2)7)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)6#1,((C,6#1)I)8#2)5,8#2)7)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((((B)8#2)6#1,(C,6#1)I)5,8#2)7)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)6#1,((C)8#2,6#1)I)5,8#2)7)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)6#1,(C,(6#1)8#2)I)5,8#2)7)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((((B)6#1)8#2,(C,6#1)I)5,8#2)7)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A)8#2,((6#1,C)I,((B)6#1,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((6#1,C)I)8#2,((B)6#1,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((6#1)8#2,C)I,((B)6#1,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((6#1,C)I,(((B)8#2)6#1,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((6#1,(C)8#2)I,((B)6#1,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A)8#2,((B)6#1,((C,6#1)I,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)6#1)8#2,((C,6#1)I,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((B)6#1,((C,(6#1)8#2)I,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)8#2)6#1,((C,6#1)I,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((B)6#1,(((C)8#2,6#1)I,8#2)7)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A)8#2,((B)6#1,(C,(6#1,8#2)7)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)8#2)6#1,(C,(6#1,8#2)7)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((B)6#1,((C)8#2,(6#1,8#2)7)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)6#1)8#2,(C,(6#1,8#2)7)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A)8#2,(((B,8#2)7)6#1,(C,6#1)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B,8#2)7)6#1,((C)8#2,6#1)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("((A)8#2,((B)6#1,((C,8#2)7,6#1)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)8#2)6#1,((C,8#2)7,6#1)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,((B)6#1,((C,8#2)7,(6#1)8#2)I)5)R;"));
+        expectedGen2Neighbors.add(makeNetwork("(A,(((B)6#1)8#2,((C,8#2)7,6#1)I)5)R;"));
         final G gen2Best = expectedGen2Neighbors.getFirst();
 
         final Queue<LinkedList<G>> expectedGenerations = new LinkedList<LinkedList<G>>();
@@ -75,6 +109,9 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         expectedGenerations.offer(expectedGen2Neighbors);
 
         Func1<G, Double> getScore = new Func1<G, Double>() {
+
+            private boolean _first = true;
+
             public Double execute(G input) {
 
                 if(expectedGenerations.size() > 0)
@@ -97,8 +134,13 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
                             expectedGenerations.remove();
                         }
                     }
+                    else if(!_first && toRemove == null)
+                    {
+                        Assert.fail("Unexpected network generated");
+                    }
                 }
 
+                _first = false;
                 if(areSameNetwork(input, gen1Best))
                 {
                     return 1.0;
@@ -121,7 +163,9 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
             }
         };
 
-        HillClimbResult<G,Double> result = searcher.search(network, getScore, isBetterNetwork, Integer.MAX_VALUE);
+        HillClimbResult<G,Double> result = searcher.search(network, getScore, isBetterNetwork, 2);
+        Assert.assertTrue(expectedGen1Neighbors.size() == 0);
+        Assert.assertTrue(expectedGen2Neighbors.size() == 0);
         Assert.assertTrue(expectedGenerations.size() == 0);
         Assert.assertTrue(areSameNetwork(result.LocalOptimum, gen2Best));
         Assert.assertTrue(result.LocalOptimumScore == 2.0);

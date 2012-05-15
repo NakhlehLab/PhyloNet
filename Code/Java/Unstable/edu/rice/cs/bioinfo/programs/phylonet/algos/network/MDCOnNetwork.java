@@ -15,6 +15,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 public class MDCOnNetwork {
     boolean _printDetail;
 
+    public void setPrintDetails(boolean p){
+        _printDetail = p;
+    }
     /**
      * The public function for calculating the probabilities.
      * @param	net 	the given network
@@ -22,8 +25,7 @@ public class MDCOnNetwork {
      * @param	alleles2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
      * @return	a list of probabilities corresponding to the list of gene trees.
      */
-    public List<Integer> countExtraCoal(Network net, List<Tree> gts, Map<String, String> alleles2species, boolean toPrint){
-        _printDetail = toPrint;
+    public List<Integer> countExtraCoal(Network net, List<Tree> gts, Map<String, String> alleles2species){
         List<Integer> xlList = new ArrayList<Integer>();
         Map<String,Integer> nname2tamount = new HashMap<String,Integer>();
         Tree superst = networkToTree(net, nname2tamount);
@@ -231,9 +233,7 @@ public class MDCOnNetwork {
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         List<String> taxa = new LinkedList<String>();	// List of species taxa.
 
-        for (String t : cluster.getTaxa()) {
-            taxa.add(t);
-        }
+        Collections.addAll(taxa, cluster.getTaxa());
 
         int count = 0;
         for (TNode node : tr.postTraverse()) {

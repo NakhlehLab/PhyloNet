@@ -14,6 +14,13 @@ import java.util.Comparator;
 public abstract class HillClimberBase<T> implements HillClimber<T>
 {
     @Override
+    public <S> HillClimbResult<T,S> search(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator)
+    {
+        S score = getScore.execute(solution);
+        return search(solution, getScore, scoreComparator, null, score);
+    }
+
+    @Override
     public <S> HillClimbResult<T,S> search(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, int maxIterations)
     {
         S score = getScore.execute(solution);
@@ -21,7 +28,7 @@ public abstract class HillClimberBase<T> implements HillClimber<T>
     }
 
 
-    private <S> HillClimbResult<T,S> search(T bestSeenSolution, Func1<T,S> getScore, Comparator<S> scoreComparator, int maxIterations, S bestSeenSolutionScore)
+    private <S> HillClimbResult<T,S> search(T bestSeenSolution, Func1<T,S> getScore, Comparator<S> scoreComparator, Integer maxIterations, S bestSeenSolutionScore)
     {
         for(int i = 1; true; i++)
         {
@@ -34,7 +41,7 @@ public abstract class HillClimberBase<T> implements HillClimber<T>
                 bestSeenSolutionScore = newBestScore.get();
             }
 
-            if(!sawBetterSolution || i == maxIterations)
+            if(!sawBetterSolution || maxIterations == null ? false : i == maxIterations.intValue())
             {
                 return new HillClimbResult<T,S>(bestSeenSolution, bestSeenSolutionScore);
             }

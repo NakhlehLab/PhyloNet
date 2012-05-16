@@ -23,6 +23,9 @@ public class MDCOnNetworkYF {
     int _totalNodeNum;
     int[][] _totalNetNodeLinNum;
 
+    public int[][] getNetNodeLinNum(){
+        return _totalNetNodeLinNum;
+    }
 
 
     public List<Integer> countExtraCoal(Network<List<Configuration>> network, List<Tree> gts, Map<String, List<String>> species2alleles){

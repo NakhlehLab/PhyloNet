@@ -22,14 +22,28 @@ public class MDCOnNetworkYF {
     boolean _printDetail;
     int _netNodeNum;
     int _totalNodeNum;
-    double[][] _totalNetNodeLinNum;
+    int[][] _totalNetNodeLinNum;
 
 
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
 
-
+    public double[] getHybridProbabilities(){
+        double[] probabilities = new double[_totalNetNodeLinNum.length];
+        int index = 0;
+        for(int[] lineageNum: _totalNetNodeLinNum){
+            double total = lineageNum[0]+lineageNum[1];
+            if(total == 0){
+                probabilities[index] = 0;
+            }
+            else{
+                probabilities[index] = lineageNum[0]/total;
+            }
+            index++;
+        }
+        return probabilities;
+    }
 
     public <N1,E1,N2,E2> List<Integer> countExtraCoal(Graph<N1,E1> network, Iterable<Graph<N2,E2>> gts, Map<String, List<String>> species2alleles,
                                                       Func1<N1,String> getNetworkNodeLabel, Func1<N2,String> getGTNodeLabel,
@@ -144,6 +158,18 @@ public class MDCOnNetworkYF {
                                             }
                                         }
                                         else if(minimum == mergedConfig._xl){
+                                            for(Configuration optimal: CACs){
+                                                if(optimal._coverage.equals(mergedConfig._coverage)){
+                                                    if(optimal.getLineageCount() > mergedConfig.getLineageCount()){
+                                                        CACs.remove(optimal);
+                                                        CACs.add(mergedConfig);
+                                                    }
+                                                }
+                                                else{
+                                                    CACs.add(mergedConfig);
+                                                }
+                                            }
+
                                             for(int i=0; i< _netNodeNum; i++){
                                                 for(int j=0; j<2; j++){
                                                     netNodeLineages[i][j].and(mergedConfig._netNodeLineages[i][j]);
@@ -291,11 +317,12 @@ public class MDCOnNetworkYF {
                             ACminus = ACminus2;
                         }
                         N1 parentNode = it.next();
-                        if(getNetworkDistance.execute(network, network.getEdge(parentNode,node)) != 0.0){
+                        //TODO
+                        //if(getNetworkDistance.execute(network, network.getEdge(parentNode,node)) != 0.0){
                             for(Configuration config: ACminus){
                                 config.addExtraLineage(Math.max(0, config.getLineageCount()-1));
                             }
-                        }
+                        //}
                         BitSet newEdge = new BitSet();
                         newEdge.set(netNode2id.get(node));
                         newEdge.set(netNode2id.get(parentNode));
@@ -379,7 +406,7 @@ public class MDCOnNetworkYF {
             }
         }
         _netTaxa = (String[]) taxa.toArray(new String[0]);
-        _totalNetNodeLinNum = new double[_netNodeNum][2];
+        _totalNetNodeLinNum = new int[_netNodeNum][2];
         computeNodeCoverage(net, getDistance, netNode2id);
     }
 

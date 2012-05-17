@@ -87,6 +87,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung{
         _optimalNetworks = new ArrayList<String>();
         _optimalScore = Integer.MAX_VALUE;
 
+        _optimalProbabilities = new ArrayList<double[]>();
         geneTrees.add(makeNetwork("((Scer,Spar),(Smik,(Skud,Sbay)));"));
 
         ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
@@ -555,7 +556,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung{
             public int compare(Integer o1, Integer o2)
             {
                 System.out.println(o1 + " vs. " + o2);
-                //return 0;
+          //     return 0;
                 return Double.compare(o2, o1);
             }
         };

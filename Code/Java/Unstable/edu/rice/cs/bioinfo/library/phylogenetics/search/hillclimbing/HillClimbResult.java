@@ -13,9 +13,12 @@ public class HillClimbResult<T, S>
 
     public final S LocalOptimumScore;
 
-    public HillClimbResult(T localOptimum, S localOptimumScore)
+    public final int NumIterationsPerformed;
+
+    public HillClimbResult(T localOptimum, S localOptimumScore, int numIterationsPerformed)
     {
         LocalOptimum = localOptimum;
         LocalOptimumScore = localOptimumScore;
+        NumIterationsPerformed = numIterationsPerformed;
     }
 }

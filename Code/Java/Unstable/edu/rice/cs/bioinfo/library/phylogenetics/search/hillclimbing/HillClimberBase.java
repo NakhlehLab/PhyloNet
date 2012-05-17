@@ -43,7 +43,7 @@ public abstract class HillClimberBase<T> implements HillClimber<T>
 
             if((!sawBetterSolution )|| (maxIterations == null ? false : i == maxIterations.intValue()))
             {
-                return new HillClimbResult<T,S>(bestSeenSolution, bestSeenSolutionScore);
+                return new HillClimbResult<T,S>(bestSeenSolution, bestSeenSolutionScore, i);
             }
 
         }

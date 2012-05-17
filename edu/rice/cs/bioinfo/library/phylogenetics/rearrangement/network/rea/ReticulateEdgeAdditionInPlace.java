@@ -53,6 +53,8 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
 
                 Tuple<N,N> nodesOfDestinationEdge = network.getNodesOfEdge(destinationEdge);
 
+
+
                 if(!isPath(network, nodesOfDestinationEdge.Item2, nodesOfSourceEdge.Item1))
                 {
                     NodeInjector.NodeInjectorUndoAction<G,N,E> undoDestination = NodeInjector.injectNodeIntoEdge(network, destinationEdge, destinationEdgeGlueNode, _makeEdge, false);

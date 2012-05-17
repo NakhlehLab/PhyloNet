@@ -27,12 +27,14 @@ public class ReaHillClimber<G,N,E> extends HillClimberBase<G>
     protected <S> boolean considerNeighborhood(G solution, final Func1<G, S> getScore, final Comparator<S> scoreComparator, final S bestSeenSolutionScore,
                                                final Ref<Func1<G, G>> getBetterSolution, final Ref<S> newBestScore) {
         final Ref<Boolean> sawBetterSolution = new Ref<Boolean>(false);
+        final Ref<S> currentBestSeenSolutionScore = new Ref<S>(bestSeenSolutionScore);
        _reaStrategy.computeRearrangementsWithoutValidation(solution, new Proc4<G, E, E, E>() {
            public void execute(G neighbor, final E sourceEdge, final E destinationEdge, final E reticulateEdge) {
 
-               if(ReaHillClimber.this.considerSolution(neighbor, getScore, scoreComparator, bestSeenSolutionScore, newBestScore))
+               if(ReaHillClimber.this.considerSolution(neighbor, getScore, scoreComparator, currentBestSeenSolutionScore.get(), newBestScore))
                {
                    sawBetterSolution.set(true);
+                   currentBestSeenSolutionScore.set(newBestScore.get());
                    getBetterSolution.set(new Func1<G, G>()
                    {
                         public G execute(G network)

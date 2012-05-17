@@ -4,6 +4,9 @@ import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
@@ -13,9 +16,11 @@ import edu.rice.cs.bioinfo.library.programming.*;
  */
 public interface ReticulateEdgeAddition<G,N,E> extends NetworkValidator<N,E>
 {
-    void computeRearrangementsWithValidation(G network, Proc4<G,E,E,E> rearrangementComputed);
+    Map<N,Set<N>> computeRearrangements(G network, boolean validateNetwork, Proc4<G,E,E,E> rearrangementComputed);
 
-    void computeRearrangementsWithoutValidation(G network, Proc4<G,E,E,E> rearrangementComputed);
+    <S extends Set<N>> void computeRearrangements(G network, boolean validateNetwork, Proc4<G,E,E,E> rearrangementComputed, Map<N,S> nodeToAncestors);
 
-    G perormRearrangementWithoutValidation(G network, E sourceEdge, E destinationEdge);
+    G performRearrangement(G network, boolean validateNetwork, E sourceEdge, E destinationEdge);
+
+    <S extends Set<N>> G performRearrangement(G network, boolean validateNetwork, E sourceEdge, E destinationEdge, Map<N,S> nodeToAncestors, Func<S> makeSet);
 }

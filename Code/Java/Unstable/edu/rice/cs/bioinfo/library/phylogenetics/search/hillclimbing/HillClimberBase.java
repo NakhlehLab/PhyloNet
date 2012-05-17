@@ -11,30 +11,31 @@ import java.util.Comparator;
  * Time: 12:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class HillClimberBase<T> implements HillClimber<T>
+public abstract class HillClimberBase<T1,T2> implements HillClimber<T1>
 {
     @Override
-    public <S> HillClimbResult<T,S> search(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator)
+    public <S> HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator)
     {
         S score = getScore.execute(solution);
         return search(solution, getScore, scoreComparator, null, score);
     }
 
     @Override
-    public <S> HillClimbResult<T,S> search(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, int maxIterations)
+    public <S> HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, int maxIterations)
     {
         S score = getScore.execute(solution);
         return search(solution, getScore, scoreComparator, maxIterations, score);
     }
 
 
-    private <S> HillClimbResult<T,S> search(T bestSeenSolution, Func1<T,S> getScore, Comparator<S> scoreComparator, Integer maxIterations, S bestSeenSolutionScore)
+    private <S> HillClimbResult<T1,S> search(T1 bestSeenSolution, Func1<T1,S> getScore, Comparator<S> scoreComparator, Integer maxIterations, S bestSeenSolutionScore)
     {
+        Ref<T2> searchState = new Ref<T2>(null);
         for(int i = 1; true; i++)
         {
-            Ref<Func1<T,T>>  getBetterNeighbor = new Ref<Func1<T, T>>(null);
+            Ref<Func1<T1,T1>>  getBetterNeighbor = new Ref<Func1<T1, T1>>(null);
             Ref<S> newBestScore = new Ref<S>(null);
-            boolean sawBetterSolution = considerNeighborhood(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore);
+            boolean sawBetterSolution = considerNeighborhood(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, i, getBetterNeighbor, newBestScore, searchState);
             if(sawBetterSolution)
             {
                 bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
@@ -43,16 +44,16 @@ public abstract class HillClimberBase<T> implements HillClimber<T>
 
             if((!sawBetterSolution )|| (maxIterations == null ? false : i == maxIterations.intValue()))
             {
-                return new HillClimbResult<T,S>(bestSeenSolution, bestSeenSolutionScore, i);
+                return new HillClimbResult<T1,S>(bestSeenSolution, bestSeenSolutionScore, i);
             }
 
         }
     }
 
-    protected abstract <S> boolean considerNeighborhood(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore,
-                                                        Ref<Func1<T,T>>  getBetterSolution, Ref<S> newBestScore);
+    protected abstract <S> boolean considerNeighborhood(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore, int iterationNumber,
+                                                        Ref<Func1<T1,T1>>  getBetterSolution, Ref<S> newBestScore, Ref<T2> searchState);
 
-    protected <S> boolean considerSolution(T solution, Func1<T,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore, Ref<S> newBestScore)
+    protected <S> boolean considerSolution(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore, Ref<S> newBestScore)
     {
         S solutionScore =  getScore.execute(solution);
         if(scoreComparator.compare(solutionScore, bestSeenSolutionScore) == 1)

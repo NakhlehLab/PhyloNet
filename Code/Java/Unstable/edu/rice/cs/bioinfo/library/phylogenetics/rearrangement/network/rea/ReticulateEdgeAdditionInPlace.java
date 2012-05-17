@@ -1,8 +1,13 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
+import edu.rice.cs.bioinfo.library.phylogenetics.FindAllAncestors;
+import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
 import edu.rice.cs.bioinfo.library.programming.*;
+import org.junit.internal.matchers.Each;
+import org.mockito.internal.matchers.Null;
 
 import java.util.*;
 
@@ -13,11 +18,20 @@ import java.util.*;
  * Time: 6:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends ReticulateEdgeAdditionBase<G,N,E>
+public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends NetworkValidatorBase<N,E> implements ReticulateEdgeAddition<G,N,E>
 {
     private final Func3<G, N, N, E> _makeEdge;
 
     private final Func1<G, N> _makeNode;
+
+    private Map<N, HashSet<N>> _nodeToAncestors = new HashMap<N, HashSet<N>>();
+
+    private Func1<G, Map<N,Set<N>>> _findAllAncestorsStrategy = new FindAllAncestors<G,N,E>();
+
+    public void setFindAllAncestorsStrategy(Func1<G, Map<N,Set<N>>> newStrategy)
+    {
+        _findAllAncestorsStrategy = newStrategy;
+    }
 
     public ReticulateEdgeAdditionInPlace(Func1<G, N> makeNode, Func3<G, N, N, E> makeEdge)
     {
@@ -25,8 +39,26 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
         _makeNode = makeNode;
     }
 
-    public void computeRearrangementsWithoutValidation(G network, Proc4<G,E,E,E> rearrangementComputed)
+    @Override
+    public Map<N,Set<N>> computeRearrangements(G network, boolean valdiateNetwork, Proc4<G,E,E,E> rearrangementComputed)
     {
+        if(valdiateNetwork)
+        {
+            this.assertValidNetwork(network);
+        }
+        Map<N,Set<N>> nodeToAncestors = _findAllAncestorsStrategy.execute(network);
+        computeRearrangements(network, false, rearrangementComputed, nodeToAncestors);
+        return nodeToAncestors;
+    }
+
+    @Override
+    public <S extends Set<N>> void computeRearrangements(G network, boolean validateNetwork, Proc4<G,E,E,E> rearrangementComputed, Map<N,S> nodeToAncestors)
+    {
+        if(validateNetwork)
+        {
+            this.assertValidNetwork(network);
+        }
+
         N sourceEdgeGlueNode = _makeNode.execute(network);
         network.addNode(sourceEdgeGlueNode);
         N destinationEdgeGlueNode = _makeNode.execute(network);
@@ -53,9 +85,9 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
 
                 Tuple<N,N> nodesOfDestinationEdge = network.getNodesOfEdge(destinationEdge);
 
+                boolean wouldIntroduceCycle = wouldIntroduceCycle(nodeToAncestors, nodesOfSourceEdge, nodesOfDestinationEdge);
 
-
-                if(!isPath(network, nodesOfDestinationEdge.Item2, nodesOfSourceEdge.Item1))
+                if(!wouldIntroduceCycle)
                 {
                     NodeInjector.NodeInjectorUndoAction<G,N,E> undoDestination = NodeInjector.injectNodeIntoEdge(network, destinationEdge, destinationEdgeGlueNode, _makeEdge, false);
 
@@ -76,24 +108,59 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
         network.removeNode(destinationEdgeGlueNode);
     }
 
-    public G perormRearrangementWithoutValidation(G network, E sourceEdge, E destinationEdge)
+    private <S extends Set<N>> boolean wouldIntroduceCycle(Map<N, S> nodeToAncestors, Tuple<N, N> nodesOfSourceEdge, Tuple<N, N> nodesOfDestinationEdge) {
+
+        return nodesOfSourceEdge.Item1.equals(nodesOfDestinationEdge.Item2) ||
+                nodeToAncestors.get(nodesOfSourceEdge.Item1).contains(nodesOfDestinationEdge.Item2);
+    }
+
+    public G performRearrangement(G network, boolean validateNetwork, E sourceEdge, E destinationEdge)
     {
+        Map<N,Set<N>> nodeToAncestors = _findAllAncestorsStrategy.execute(network);
+        Func<Set<N>> makeSet = new Func<Set<N>>() {
+            @Override
+            public Set<N> execute() {
+                return new HashSet<N>();
+            }
+        };
+        return performRearrangement(network, validateNetwork, sourceEdge, destinationEdge, nodeToAncestors, makeSet);
+    }
+
+    public <S extends Set<N>> G performRearrangement(G network, boolean validateNetwork, E sourceEdge, E destinationEdge,
+                                                     Map<N,S> nodeToAncestors, Func<S> makeSet)
+    {
+        if(validateNetwork)
+        {
+            this.assertValidNetwork(network);
+        }
+
         Tuple<N,N> nodesOfSourceEdge = network.getNodesOfEdge(sourceEdge);
         Tuple<N,N> nodesOfDestinationEdge = network.getNodesOfEdge(destinationEdge);
 
-        N sourceEdgeGlueNode = _makeNode.execute(network);
-        network.addNode(sourceEdgeGlueNode);
-        N destinationEdgeGlueNode = _makeNode.execute(network);
-        network.addNode(destinationEdgeGlueNode);
+        boolean wouldIntroduceCycle = wouldIntroduceCycle(nodeToAncestors, nodesOfSourceEdge, nodesOfDestinationEdge);
 
-        NodeInjector.injectNodeIntoEdge(network, sourceEdge, sourceEdgeGlueNode, _makeEdge, false);
-
-        if(!isPath(network, nodesOfDestinationEdge.Item2, nodesOfSourceEdge.Item1))
+        if(!wouldIntroduceCycle)
         {
+            N sourceEdgeGlueNode = _makeNode.execute(network);
+            network.addNode(sourceEdgeGlueNode);
+            N destinationEdgeGlueNode = _makeNode.execute(network);
+            network.addNode(destinationEdgeGlueNode);
+
+            NodeInjector.injectNodeIntoEdge(network, sourceEdge, sourceEdgeGlueNode, _makeEdge, false);
             NodeInjector.injectNodeIntoEdge(network, destinationEdge, destinationEdgeGlueNode, _makeEdge, false);
 
             E reticulateEdge = _makeEdge.execute(network, sourceEdgeGlueNode, destinationEdgeGlueNode);
             network.addEdge(reticulateEdge);
+
+            nodeToAncestors.put(sourceEdgeGlueNode, makeSet.execute());
+            nodeToAncestors.put(destinationEdgeGlueNode, makeSet.execute());
+
+            updateAncestorsToIncludeNewParent(nodeToAncestors, sourceEdgeGlueNode, nodesOfSourceEdge.Item1);
+            nodeToAncestors.get(nodesOfSourceEdge.Item2).add(sourceEdgeGlueNode);
+            updateAncestorsToIncludeNewParent(nodeToAncestors, destinationEdgeGlueNode, sourceEdgeGlueNode);
+            updateAncestorsToIncludeNewParent(nodeToAncestors, destinationEdgeGlueNode, nodesOfDestinationEdge.Item1);
+            updateAncestorsToIncludeNewParent(nodeToAncestors, nodesOfDestinationEdge.Item2, destinationEdgeGlueNode);
+
 
             return network;
         }
@@ -104,34 +171,13 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Ret
 
     }
 
-    protected boolean isPath(G network, N start, N end)
+    private <S extends Set<N>> void updateAncestorsToIncludeNewParent(Map<N,S> nodeToAncestors, N node, N newParent)
     {
-        LinkedList<N> toExpand = new LinkedList<N>();
-
-        toExpand.push(start);
-
-        while(toExpand.size() > 0)
-        {
-            N node = toExpand.pop();
-
-            if(end.equals(node))
-            {
-                return true;
-            }
-
-            for(E edge : network.getIncidentEdges(node))
-            {
-                Tuple<N,N> nodesOfEdge = network.getNodesOfEdge(edge);
-
-                if(nodesOfEdge.Item1.equals(node))
-                {
-                    toExpand.push(nodesOfEdge.Item2);
-                }
-            }
-        }
-
-
-        return false;
-
+        S parentAncestors = nodeToAncestors.get(newParent);
+        S nodeAncestors = nodeToAncestors.get(node);
+        nodeAncestors.addAll(parentAncestors);
+        nodeAncestors.add(newParent);
     }
+
+
 }

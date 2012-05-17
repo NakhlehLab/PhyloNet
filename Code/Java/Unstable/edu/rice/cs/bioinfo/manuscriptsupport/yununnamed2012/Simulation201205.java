@@ -91,7 +91,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung{
         geneTrees.add(makeNetwork("((Scer,Spar),(Smik,(Skud,Sbay)));"));
 
         ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy);
+        ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
 
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, species2alleles);
         Comparator<Integer> comparator = getScoreComparator();
@@ -135,7 +135,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung{
         _optimalScore = Integer.MAX_VALUE;
         //_optimalScores = new ArrayList<Integer>();
         ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy);
+        ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
         
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, null, resolutionNum);
         Comparator<Integer> comparator = getScoreComparator();
@@ -174,7 +174,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung{
                             _optimalScore = Integer.MAX_VALUE;
                             _optimalProbabilities = new ArrayList<double[]>();
                             ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-                            ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy);
+                            ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
                             Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, species2alleles);
                             Comparator<Integer> comparator = getScoreComparator();
                             searcher.search(_network, scorer, comparator, 1); // search starts here

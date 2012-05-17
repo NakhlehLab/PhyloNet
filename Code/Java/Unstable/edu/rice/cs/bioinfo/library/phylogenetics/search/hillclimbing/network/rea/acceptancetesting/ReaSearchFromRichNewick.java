@@ -52,7 +52,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
     {
         G network = makeNetwork("(A,(C,B)I)R;");
         ReticulateEdgeAddition<G,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<G, String, PhyloEdge<String>>(makeNode, makeEdge);
-        ReaHillClimber<G,String,PhyloEdge<String>> searcher = new ReaHillClimber<G, String, PhyloEdge<String>>(reaStrategy);
+        ReaHillClimber<G,String,PhyloEdge<String>> searcher = new ReaHillClimber<G, String, PhyloEdge<String>>(reaStrategy, false);
 
         LinkedList<G> expectedGen1Neighbors = new LinkedList<G>();
 

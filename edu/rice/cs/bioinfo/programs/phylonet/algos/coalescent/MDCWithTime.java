@@ -51,7 +51,7 @@ public class MDCWithTime {
 			return null;
 		}
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: trees){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
@@ -103,7 +103,7 @@ public class MDCWithTime {
 		}
 
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: trees){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
@@ -1052,7 +1052,7 @@ public class MDCWithTime {
 	 * Compute the number of extra lineages contributed by a branch in one tree when single allele is contained
 	 *
 	 * @param br	the branch being computed
-	 * @param tree		a given gene tree
+	 * @param tr		a given gene tree
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -1124,7 +1124,7 @@ public class MDCWithTime {
 	 * Compute the number of extra lineages contributed by a branch in one tree when multiple alleles are contained
 	 *
 	 * @param br	the branch being computed
-	 * @param tree		a given gene tree
+	 * @param tr		a given gene tree
 	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
 	 *
 	 * @return the number of extra lineage

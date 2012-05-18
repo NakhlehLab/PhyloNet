@@ -229,7 +229,7 @@ public class Trees {
 	/**
 	 * compute if a tree is binary
 	 *
-	 * @param A tree
+	 * @param tree
 	 * @return true if the tree is binary
 	 * @author yy9
      */
@@ -647,7 +647,7 @@ public class Trees {
 	/**
 	 * get all the possible clusters over given taxa
 	 *
-	 * @param tr1
+	 * @param taxa
 	 * @return
 	 */
 	public static List<STITreeCluster> getAllClusters(String[] taxa) {
@@ -876,6 +876,9 @@ public class Trees {
 		List<TNode> nodestomodify = new ArrayList<TNode>();
 
 		for(TNode node: new PostTraversal<Object>(tr.getRoot())){
+            if(node.isLeaf() || node.isRoot()){
+                continue;
+            }
 			Double bootstrap = ((STINode<Double>)node).getData();
 			if(bootstrap==null){
 				return -1;

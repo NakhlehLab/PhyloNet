@@ -23,7 +23,7 @@ public class PhyloEdge<T>
         _branchLength = newBranchLength;
     }
 
-    private double _support = 1.0;
+    private double _support = 100;
 
     public double getSupport()
     {
@@ -32,13 +32,13 @@ public class PhyloEdge<T>
 
     public void setSupport(double newSupport)
     {
-        if(newSupport <= 1.0 && newSupport >= 0.0)
+        if(newSupport <= 100 && newSupport >= 0.0)
         {
             _support = newSupport;
         }
         else
         {
-            throw new IllegalArgumentException("Support value must be between zero and one inclusive.  Found: " + newSupport);
+            throw new IllegalArgumentException("Support value must be between zero and a hundred inclusive.  Found: " + newSupport);
         }
     }
 
@@ -90,5 +90,11 @@ public class PhyloEdge<T>
                candidate.getBranchLength() == this.getBranchLength() &&
                candidate.getProbabilty() == this.getProbabilty() &&
                candidate.getSupport() == this.getSupport();
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "(" + Source + "," + Destination + ")";
     }
 }

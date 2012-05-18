@@ -61,7 +61,7 @@ public class MDCInference_DP
 			throw new IllegalArgumentException("empty or null list of trees");
 		}
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: trees){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
@@ -150,7 +150,7 @@ public class MDCInference_DP
 			throw new RuntimeException("Gene trees have leaf named " + error + "that hasn't been defined in the mapping file");
 		}
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: trees){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
@@ -888,7 +888,7 @@ public class MDCInference_DP
 	 * @param trees
 	 * @param stTaxa
 	 * @param taxonMap
-	 * @param resulting clusters
+	 * @param clusters
 	 *
 	 * @return the maximal number of clusters
 	 */
@@ -948,7 +948,7 @@ public class MDCInference_DP
 	 *
 	 * @param trees
 	 * @param stTaxa
-	 * @param resulting clusters
+	 * @param clusters
 	 *
 	 * @return the maximal number of clusters
 	 */
@@ -956,13 +956,6 @@ public class MDCInference_DP
 		return computeAllClusters(trees, stTaxa, null, clusters);
 	}
 
-
-	/**
-	 * This function analyzes the options in command
-	 *
-	 * @param 	args	the list of options in command
-	 * @return	the options being decomposed
-	 */
 
 
 	private int getResolutionsNumber(int nodeNumber){

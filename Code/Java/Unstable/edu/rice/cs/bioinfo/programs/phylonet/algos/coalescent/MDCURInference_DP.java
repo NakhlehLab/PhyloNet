@@ -102,7 +102,7 @@ public class MDCURInference_DP
 			throw new IllegalArgumentException("empty or null list of trees");
 		}
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: trees){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
@@ -181,7 +181,7 @@ public class MDCURInference_DP
 			throw new RuntimeException("Gene trees have leaf named " + error + "that hasn't been defined in the mapping file");
 		}
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: trees){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");

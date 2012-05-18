@@ -46,7 +46,7 @@ public class InferST_MDC extends InferSTBase
     private boolean _explore = false;
     private double _proportion = 0;
 	private boolean _exhaust = false;
-	private double _bootstrap = 1;
+	private double _bootstrap = 100;
 	private double _time = -1;
 	private boolean _unresolved = false;
 
@@ -128,7 +128,7 @@ public class InferST_MDC extends InferSTBase
 
 
 
-        ThresholdResult tr = this.assignThreshold(1);
+        ThresholdResult tr = this.assignThreshold(100);
         _bootstrap = tr.Threshold;
         noError = noError && tr.NoError;
 

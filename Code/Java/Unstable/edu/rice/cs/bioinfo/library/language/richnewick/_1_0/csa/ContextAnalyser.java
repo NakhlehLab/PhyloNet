@@ -93,13 +93,13 @@ class ContextAnalyser
                 {
                     BigDecimal support = new BigDecimal(supportStr, MathContext.UNLIMITED);
 
-                    if(support.compareTo(BigDecimal.ZERO) == -1  || (support.compareTo(BigDecimal.ONE) == 1))
+                    if(support.compareTo(BigDecimal.ZERO) == -1  || (support.compareTo(BigDecimal.valueOf(100)) == 1))
                     {
                         int supportLine = syntaxInspector.getSupportLineNumber(node);
                         int supportColumn = syntaxInspector.getSupportColumnNumber(node);
 
                         errors.addLast(
-                                new CSAError(String.format("Support must be between zero and one inclusive.  Found '%s'.",
+                                new CSAError(String.format("Support must be between zero and a hundred inclusive.  Found '%s'.",
                                         supportStr),supportLine,supportColumn));
                     }
                 }

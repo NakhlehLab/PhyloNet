@@ -42,7 +42,7 @@ public class InferST_MDC_Time extends InferSTBase
 {
 
     private Map<String,String> _taxonMap;
-	private double _bootstrap = 1;
+	private double _bootstrap = 100;
 
 
     InferST_MDC_Time(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
@@ -65,7 +65,7 @@ public class InferST_MDC_Time extends InferSTBase
         boolean noError = super.checkParamsForCommand();
 
 
-        ThresholdResult tr = this.assignThreshold(1);
+        ThresholdResult tr = this.assignThreshold(100);
         _bootstrap = tr.Threshold;
         noError = noError && tr.NoError;
 

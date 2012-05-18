@@ -1,13 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.FindAllAncestors;
-import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
+import edu.rice.cs.bioinfo.library.phylogenetics.FindAllPredecessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
 import edu.rice.cs.bioinfo.library.programming.*;
-import org.junit.internal.matchers.Each;
-import org.mockito.internal.matchers.Null;
 
 import java.util.*;
 
@@ -26,7 +23,7 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Net
 
     private Map<N, HashSet<N>> _nodeToAncestors = new HashMap<N, HashSet<N>>();
 
-    private Func1<G, Map<N,Set<N>>> _findAllAncestorsStrategy = new FindAllAncestors<G,N,E>();
+    private Func1<G, Map<N,Set<N>>> _findAllAncestorsStrategy = new FindAllPredecessors<G,N,E>();
 
     public void setFindAllAncestorsStrategy(Func1<G, Map<N,Set<N>>> newStrategy)
     {

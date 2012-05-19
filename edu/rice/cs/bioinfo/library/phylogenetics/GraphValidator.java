@@ -1,5 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.RootageQualifier;
 import edu.rice.cs.bioinfo.library.programming.*;
+import org.junit.internal.matchers.Each;
 
 import java.util.*;
 
@@ -69,64 +71,62 @@ public class GraphValidator
 
     private static <N,E> HashSet<N> assertNoCycle(GraphReadOnly<N,E> graph, N searchRoot)
     {
-        LinkedList<N> nodeNeighbors = new LinkedList<N>();
+        HashSet<N> unfinishedNodes = new HashSet<N>();
+        HashSet<N> finishedNodes = new HashSet<N>();
 
-        for(E edge : graph.getIncidentEdges(searchRoot))
+        boolean isGraphRooted = graph.isRooted();
+
+        for(E incidentToRoot : graph.getIncidentEdges(searchRoot))
         {
-            Tuple<N,N> nodesOfEdge = graph.getNodesOfEdge(edge);
-            if(nodesOfEdge.Item1.equals(searchRoot))
+            Tuple<N,N> nodesOfEdge = graph.getNodesOfEdge(incidentToRoot);
+            N nonRoot = (N) nodesOfEdge.other(searchRoot);
+
+            if(searchRoot.equals(nonRoot))
             {
-                nodeNeighbors.addLast(nodesOfEdge.Item2);
+                throw new IllegalArgumentException("Root contains a self loop.");
             }
-            else
-            {
-                nodeNeighbors.addLast(nodesOfEdge.Item1);
-            }
+            dfsVisit(graph, isGraphRooted, nonRoot, searchRoot, unfinishedNodes, finishedNodes);
+            finishedNodes.add(searchRoot);
         }
 
-        HashSet<N> seenNodes = new HashSet<N>();
-        seenNodes.add(searchRoot);
 
-        for(N nodeNeighbor : nodeNeighbors)
-        {
-            dfsExplore(graph, graph.isRooted(), searchRoot, nodeNeighbor, seenNodes);
-        }
-
-        return seenNodes;
+        return finishedNodes;
     }
 
-    private static <N,E> void dfsExplore(GraphReadOnly<N,E> tree, boolean isRooted, N parent, N child, HashSet<N> seenNodes)
+    private static <N,E> void dfsVisit(GraphReadOnly<N,E> graph, boolean isGraphRooted, N node, N searchParent,  HashSet<N> unfinishedNodes, HashSet<N> finishedNodes)
     {
-        if (seenNodes.contains(child))
+        unfinishedNodes.add(node);
+
+        for(E incidentEdge : graph.getIncidentEdges(node))
         {
-            throw new IllegalArgumentException("Given graph contains a cycle.");
-        }
-        seenNodes.add(child);
+            Tuple<N,N> nodesOfEdge = graph.getNodesOfEdge(incidentEdge);
 
-        LinkedList<N> searchNeighbors = new LinkedList<N>();
-
-        for(E edge : tree.getIncidentEdges(child))
-        {
-            Tuple<N,N> nodesOfEdge = tree.getNodesOfEdge(edge);
-            N otherNode = (N) nodesOfEdge.other(child);
-
-            if(!otherNode.equals(parent))
+            if(isGraphRooted && nodesOfEdge.Item2.equals(node)) // incoming edge
             {
-                if(isRooted && nodesOfEdge.Item2 == otherNode)
-                {
-                    searchNeighbors.addLast(otherNode);
-                }
-                else if(!isRooted)
-                {
-                    searchNeighbors.addLast(otherNode);
-                }
+                continue;
             }
-        }
 
-        for(N nonParentChild : searchNeighbors)
-        {
-            dfsExplore(tree, isRooted, child, nonParentChild, seenNodes);
+            N otherNode =  (N) nodesOfEdge.other(node);
+
+            if(otherNode.equals(searchParent)) // edge we just came from
+            {
+                continue;
+            }
+
+            if(finishedNodes.contains(otherNode)) // already fully explored this node.
+            {
+                continue;
+            }
+
+            if(unfinishedNodes.contains(otherNode))
+            {
+                throw new IllegalArgumentException("Given graph contains a cycle.");
+            }
+
+            dfsVisit(graph, isGraphRooted, otherNode, node, unfinishedNodes, finishedNodes);
         }
+        finishedNodes.add(node);
+
     }
 
 

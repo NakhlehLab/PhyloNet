@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics.scoring.network;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.programming.*;
+import junit.framework.Assert;
 
 import java.util.*;
 
@@ -498,6 +499,7 @@ public class MDCOnNetworkYF {
 
 
     private <N,E> List<N> walkNetwork(GraphReadOnly<N,E> net, N root){
+
         Stack<N> stack = new Stack<N>();
         List<N> searchedNodes = new ArrayList<N>();
         if(root == null){

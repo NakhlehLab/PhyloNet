@@ -18,6 +18,12 @@ public class FindAllPredecessors<G extends GraphReadOnly<N,E>, N,E> implements F
 
     @Override
     public Map<N, Set<N>> execute(G network) {
+
+        if(!network.isRooted())
+        {
+            throw new IllegalArgumentException("Given graph must be rooted");
+        }
+
          HashMap<N, Set<N>> nodeToAncestors = new HashMap<N, Set<N>>();
 
         N root = new FindRoot<N,E>().execute(network);

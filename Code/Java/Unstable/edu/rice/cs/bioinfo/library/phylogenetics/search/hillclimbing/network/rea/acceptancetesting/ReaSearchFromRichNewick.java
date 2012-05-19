@@ -14,11 +14,11 @@ import sun.plugin.javascript.navig4.Link;
 import sun.reflect.generics.tree.Tree;
 import sun.text.normalizer.IntTrie;
 
+import javax.swing.event.ListSelectionEvent;
 import javax.xml.transform.Source;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.io.Console;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -169,6 +169,44 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         Assert.assertTrue(expectedGenerations.size() == 0);
         Assert.assertTrue(areSameNetwork(result.LocalOptimum, gen2Best));
         Assert.assertTrue(result.LocalOptimumScore == 2.0);
+
+
+    }
+
+    @Test
+    public void testInPlace2()
+    {
+        for(int i = 0; i<1000; i++)
+        {
+            G network = makeNetwork("((D,(E,C)X)K,(B,A)Z)R;");
+            ReticulateEdgeAddition<G,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<G, String, PhyloEdge<String>>(makeNode, makeEdge);
+            ReaHillClimber<G,String,PhyloEdge<String>> searcher = new ReaHillClimber<G, String, PhyloEdge<String>>(reaStrategy, true);
+
+
+
+            Func1<G, Double> getScore = new Func1<G, Double>()
+            {
+
+                @Override
+                public Double execute(G input) {
+
+                     GraphValidator.assertValidGraph(input);
+
+                    return Double.MAX_VALUE;
+                }
+            };
+
+            Comparator<Double> isBetterNetwork = new Comparator<Double>()
+            {
+                @Override
+                public int compare(Double o1, Double o2) {
+                    return 1;  //To change body of implemented methods use File | Settings | File Templates.
+                }
+            };
+
+            HillClimbResult<G,Double> result = searcher.search(network, getScore, isBetterNetwork, 2);
+            int j = 0;
+        }
 
 
     }

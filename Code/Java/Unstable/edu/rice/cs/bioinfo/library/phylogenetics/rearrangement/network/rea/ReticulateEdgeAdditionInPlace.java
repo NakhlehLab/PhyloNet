@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.FindAllPredecessors;
+import edu.rice.cs.bioinfo.library.phylogenetics.FindSuccessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
@@ -150,13 +151,30 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Net
             network.addEdge(reticulateEdge);
 
             nodeToAncestors.put(sourceEdgeGlueNode, makeSet.execute());
-            nodeToAncestors.put(destinationEdgeGlueNode, makeSet.execute());
+            S destinationEdgeGlueNodeAncestors = makeSet.execute();
+            nodeToAncestors.put(destinationEdgeGlueNode, destinationEdgeGlueNodeAncestors);
 
             updateAncestorsToIncludeNewParent(nodeToAncestors, sourceEdgeGlueNode, nodesOfSourceEdge.Item1);
-            nodeToAncestors.get(nodesOfSourceEdge.Item2).add(sourceEdgeGlueNode);
             updateAncestorsToIncludeNewParent(nodeToAncestors, destinationEdgeGlueNode, sourceEdgeGlueNode);
+
             updateAncestorsToIncludeNewParent(nodeToAncestors, destinationEdgeGlueNode, nodesOfDestinationEdge.Item1);
-            updateAncestorsToIncludeNewParent(nodeToAncestors, nodesOfDestinationEdge.Item2, destinationEdgeGlueNode);
+
+
+            FindSuccessors<N,E> findSuccessors = new FindSuccessors<N,E>();
+
+            for(N node : findSuccessors.execute(network, sourceEdgeGlueNode))
+            {
+                nodeToAncestors.get(node).add(sourceEdgeGlueNode);
+            }
+
+            for(N node : findSuccessors.execute(network, destinationEdgeGlueNode))
+            {
+                S ancestors = nodeToAncestors.get(node);
+                ancestors.add(destinationEdgeGlueNode);
+                ancestors.addAll(destinationEdgeGlueNodeAncestors);
+            }
+
+             this.assertValidNetwork(network);
 
 
             return network;

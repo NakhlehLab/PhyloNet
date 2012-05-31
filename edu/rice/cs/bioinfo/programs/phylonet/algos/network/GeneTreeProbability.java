@@ -76,26 +76,23 @@ public class GeneTreeProbability {
             }
             _R = calculateSorR(gt);
             List<String> gtTaxa = Arrays.asList(gt.getLeaves());
-            List<String> netTaxa = new ArrayList<String>();
             List<List<String>> allelesList = new ArrayList<List<String>>();
-            //List<Integer> alleleNum = new ArrayList<Integer>();
-            List<Integer> upper = new ArrayList<Integer>();
+            for(int i=0; i<_netTaxa.size(); i++){
+                allelesList.add(new ArrayList<String>());
+            }
+
+            int[] upper = new int[_netTaxa.size()];
             for(String gtleaf: gtTaxa){
                 String nleaf = gtleaf;
                 if(allele2species!=null){
                     nleaf = allele2species.get(gtleaf);
                 }
-                int index = netTaxa.indexOf(nleaf);
-                if(index==-1){
-                    netTaxa.add(nleaf);
-                    List<String> alleles = new ArrayList<String>();
-                    alleles.add(gtleaf);
-                    allelesList.add(alleles);
-                    upper.add(_nname2tamount.get(nleaf));
+                int index = _netTaxa.indexOf(nleaf);
+                List<String> alleles = allelesList.get(index);
+                if(alleles.size()==0){
+                    upper[index] = _nname2tamount.get(nleaf);
                 }
-                else{
-                    allelesList.get(index).add(gtleaf);
-                }
+                alleles.add(gtleaf);
             }
 
             List<int[]> mergeNumber = new ArrayList<int[]>();
@@ -108,8 +105,8 @@ public class GeneTreeProbability {
             double gtprob = 0;
             do{
                 int[] mapping = new int[gtTaxa.size()];
-                for(int i=0; i<netTaxa.size(); i++){
-                    String baseName = netTaxa.get(i);
+                for(int i=0; i<_netTaxa.size(); i++){
+                    String baseName = _netTaxa.get(i);
                     List<String> alleles = allelesList.get(i);
                     int[] subscribes = mergeNumber.get(i);
                     for(int j=0; j<alleles.size(); j++){
@@ -152,6 +149,257 @@ public class GeneTreeProbability {
             System.out.println("Total probability of all gene trees: "+totalprob);
         }
         return problist;
+    }
+
+
+    public Map<int[],Double> findOptimalMapping(Network<Double> net, List<Tree> gts, Map<String,String> allele2species){
+        networkToTree(net);
+        for(NetNode leaf: net.getLeaves()){
+            _netTaxa.add(leaf.getName());
+        }
+
+        for(Map.Entry<String, Integer> entry: _nname2tamount.entrySet()){
+            if(entry.getValue() > 1)
+                for(int i=1; i<=entry.getValue(); i++){
+                    String name = entry.getKey();
+                    _tname2nname.put(name+"_"+i, name);
+                }
+        }
+        _S = calculateSorR(_mulTree);
+        computeNodesUnderHybrid(_mulTree);
+
+        Map<int[],Double> results = new HashMap<int[],Double>();
+        for(Tree gt: gts){
+            if(_printDetails){
+                System.out.println("Gene tree " + gt+" :");
+            }
+            _R = calculateSorR(gt);
+            List<String> gtTaxa = Arrays.asList(gt.getLeaves());
+            List<List<String>> allelesList = new ArrayList<List<String>>();
+            for(int i=0; i<_netTaxa.size(); i++){
+                allelesList.add(new ArrayList<String>());
+            }
+            int[] upper = new int[_netTaxa.size()];
+            for(String gtleaf: gtTaxa){
+                String nleaf = gtleaf;
+                if(allele2species!=null){
+                    nleaf = allele2species.get(gtleaf);
+                }
+                int index = _netTaxa.indexOf(nleaf);
+                List<String> alleles = allelesList.get(index);
+                if(alleles.size()==0){
+                    upper[index] = _nname2tamount.get(nleaf);
+                }
+                alleles.add(gtleaf);
+            }
+
+            List<int[]> mergeNumber = new ArrayList<int[]>();
+            for(List<String> alleles: allelesList){
+                int[] first = new int[alleles.size()];
+                Arrays.fill(first, 1);
+                mergeNumber.add(first);
+            }
+
+            double maxProb = -1;
+            List<int[]> optimalMappings = new ArrayList<int[]>();
+            List<int[]> optimalHistories = new ArrayList<int[]>();
+
+            do{
+                int[] mapping = new int[gtTaxa.size()];
+                for(int i=0; i<_netTaxa.size(); i++){
+                    String baseName = _netTaxa.get(i);
+                    List<String> alleles = allelesList.get(i);
+                    int[] subscribes = mergeNumber.get(i);
+                    for(int j=0; j<alleles.size(); j++){
+                        mapping[gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
+                    }
+                }
+                //TODO
+                if(_printDetails){
+                    for(int i=0; i<mapping.length; i++){
+                        System.out.print(gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
+                    }
+                    System.out.println();
+                }
+
+                List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
+
+                for(int[] history: histories){
+                    double prob = Double.parseDouble(computeProbability(mapping, history, false));
+                    if(prob >= maxProb){
+                        if(prob > maxProb){
+                            maxProb = prob;
+                            optimalMappings.clear();
+                            optimalHistories.clear();
+                        }
+                        optimalMappings.add(mapping);
+                        optimalHistories.add(history);                        
+                    }
+
+                    results.put(history, prob);
+                }
+                if(_printDetails)
+                    System.out.println("");
+
+            }while(mergeNumberAddOne(mergeNumber,upper));
+
+            /*
+               if(print){
+                   System.out.println("Probability:" + maxProb);
+                   for(int i=0; i<optimalMappings.size(); i++){
+                       int[] mapping = optimalMappings.get(i);
+                       int[] history = optimalHistories.get(i);
+                       System.out.println("Mapping:");
+                       for(int j=0; j<mapping.length; j++){
+                           System.out.print(gt_taxa.get(j)+"->"+st_taxa.get(mapping[j])+"\t");
+                       }
+                       System.out.println();
+                       System.out.println("History:");
+                       for(int j=0; j<history.length; j++){
+                           if(history[j] != -1){
+                               System.out.println(gt.getNode(j).toString() + ":" + st.getNode(history[j]).toString(Tree.NEWICK_FORMAT));
+                           }
+                       }
+                   }
+                   System.out.println();
+               }
+               */
+            //allOptimalHistories.add(optimalHistories);
+        }
+
+        return results;
+    }
+
+    /**
+     * The public function for calculating the probabilities.
+     * @param	net 	the given network
+     * @param 	gts		the given set of gene trees
+     * @param	allele2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
+     * @return	a list of probabilities corresponding to the list of gene trees.
+     */
+    public List<Double> calculateExpectXL(Network<Double> net, List<Tree> gts, Map<String,String> allele2species){
+        networkToTree(net);
+        //System.out.println(st.toNewickWD());
+        //System.exit(0);
+
+        //String[] leaves = {"a","b1","b2","b3","c"};
+        //gts = Trees.generateAllBinaryTrees(leaves);
+        //System.out.println(gts.size());
+        //System.exit(0);
+
+        for(NetNode leaf: net.getLeaves()){
+            _netTaxa.add(leaf.getName());
+        }
+
+        //
+        for(Map.Entry<String, Integer> entry: _nname2tamount.entrySet()){
+            if(entry.getValue() > 1)
+                for(int i=1; i<=entry.getValue(); i++){
+                    String name = entry.getKey();
+                    _tname2nname.put(name+"_"+i, name);
+                }
+        }
+        _S = calculateSorR(_mulTree);
+        computeNodesUnderHybrid(_mulTree);
+
+        List<Double> xllist = new ArrayList<Double>();
+        for(Tree gt: gts){
+            if(_printDetails){
+                System.out.println("Gene tree " + gt+" :");
+            }
+            _R = calculateSorR(gt);
+            List<String> gtTaxa = Arrays.asList(gt.getLeaves());
+            List<List<String>> allelesList = new ArrayList<List<String>>();
+            for(int i=0; i<_netTaxa.size(); i++){
+                allelesList.add(new ArrayList<String>());
+            }
+            int[] upper = new int[_netTaxa.size()];
+            for(String gtleaf: gtTaxa){
+                String nleaf = gtleaf;
+                if(allele2species!=null){
+                    nleaf = allele2species.get(gtleaf);
+                }
+                int index = _netTaxa.indexOf(nleaf);
+                List<String> alleles = allelesList.get(index);
+                if(alleles.size()==0){
+                    upper[index] = _nname2tamount.get(nleaf);
+                }
+                alleles.add(gtleaf);
+            }
+
+            List<int[]> mergeNumber = new ArrayList<int[]>();
+            for(List<String> alleles: allelesList){
+                int[] first = new int[alleles.size()];
+                Arrays.fill(first, 1);
+                mergeNumber.add(first);
+            }
+
+            double gtprob = 0;
+            double expectedXL = 0;
+            do{
+                int[] mapping = new int[gtTaxa.size()];
+                for(int i=0; i<_netTaxa.size(); i++){
+                    String baseName = _netTaxa.get(i);
+                    List<String> alleles = allelesList.get(i);
+                    int[] subscribes = mergeNumber.get(i);
+                    for(int j=0; j<alleles.size(); j++){
+                        mapping[gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
+                    }
+                }
+
+                //TODO
+
+                if(_printDetails){
+                    for(int i=0; i<mapping.length; i++){
+                        System.out.print(gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
+                    }
+                    System.out.println();
+                }
+
+                List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
+
+                if(_printDetails){
+                    System.out.println("Mapping:");
+                    for(int j=0; j<mapping.length; j++){
+                        System.out.print(gtTaxa.get(j)+"->"+_stTaxa.get(mapping[j])+"\t");
+                    }
+                    System.out.println();
+                }
+
+                for(int[] history: histories){
+                    String result = computeProbability(mapping, history, true);
+                    int index = result.indexOf("|");
+                    double prob = Double.parseDouble(result.substring(0, index));
+                    gtprob += prob;
+                    int xl = Integer.parseInt(result.substring(index+1));
+                    expectedXL += xl * prob;
+
+                    if(_printDetails){
+                        System.out.println("History:");
+                        for(int j=0; j<history.length; j++){
+                            if(history[j] != -1){
+                                System.out.println(gt.getNode(j).toString() + ":" + _mulTree.getNode(history[j]).toString());
+                            }
+                        }
+                        System.out.println(xl + ":" + prob);
+                        System.out.println();
+                    }
+                }
+
+                if(_printDetails)
+                    System.out.println("");
+
+            }while(mergeNumberAddOne(mergeNumber,upper));
+
+            //System.out.println();
+            //TODO
+            expectedXL = expectedXL / gtprob;
+            //System.out.println(expectedXL);
+            xllist.add(expectedXL);
+
+        }
+
+        return xllist;
     }
 
 
@@ -289,10 +537,10 @@ public class GeneTreeProbability {
         }
     }
 
-    private boolean mergeNumberAddOne(List<int[]> mergeNumber, List<Integer> upper){
+    private boolean mergeNumberAddOne(List<int[]> mergeNumber, int[] upper){
         for(int i=0; i<mergeNumber.size(); i++){
             int[] partNumber = mergeNumber.get(i);
-            int max = upper.get(i);
+            int max = upper[i];
             for(int j=0; j<partNumber.length; j++){
                 if(partNumber[j]==max){
                     partNumber[j] = 1;

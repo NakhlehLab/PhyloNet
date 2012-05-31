@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting;
 
-import cern.jet.stat.Gamma;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
@@ -10,14 +8,7 @@ import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import junit.framework.Assert;
 import org.junit.Test;
-import sun.plugin.javascript.navig4.Link;
-import sun.reflect.generics.tree.Tree;
-import sun.text.normalizer.IntTrie;
 
-import javax.swing.event.ListSelectionEvent;
-import javax.xml.transform.Source;
-import java.io.Console;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**

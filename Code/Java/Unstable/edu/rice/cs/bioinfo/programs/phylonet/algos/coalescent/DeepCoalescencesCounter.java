@@ -227,8 +227,7 @@ public class DeepCoalescencesCounter {
 		for (Tree tr : trees) {
 			if(rooted){
 				weight += getClusterCoalNum_rooted(tr, cluster);
-				//TODO
-				//weight += getClusterCoalNum_rooted(tr, cluster) * ((STINode<Integer>)tr.getRoot()).getData();
+
 			}
 			else{
 				weight += getClusterCoalNum_unrooted(tr, cluster);

@@ -106,7 +106,7 @@ public class ExNewickReader<T> {
 	private void getInput() throws IOException, ExNewickException
 	{
 		BufferedReader br = new BufferedReader(_reader);
-
+        
 		// Read the first non-blank line as the main tree.
 		while ((_first_line = br.readLine()) != null) {
 			_first_line = _first_line.trim();

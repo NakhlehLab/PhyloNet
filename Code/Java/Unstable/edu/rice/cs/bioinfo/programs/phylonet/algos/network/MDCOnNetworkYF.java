@@ -16,56 +16,71 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.*;
  */
 public class MDCOnNetworkYF {
     String[] _netTaxa;
-    Map<NetNode, Integer> _netNode2id;
     BitSet _totalCoverNode;
     boolean _printDetail = false;
     int _netNodeNum;
     int _totalNodeNum;
-    int[][] _totalNetNodeLinNum;
+    double[][] _totalNetNodeLinNum;
+    
+    List<Double> _weights;
 
-    public int[][] getNetNodeLinNum(){
+    public double[][] getNetNodeLinNum(){
         return _totalNetNodeLinNum;
     }
 
+    public double[] getHybridProbabilities(){
+        double[] probabilities = new double[_totalNetNodeLinNum.length];
+        int index = 0;
+        for(double[] lineageNum: _totalNetNodeLinNum){
+            double total = lineageNum[0]+lineageNum[1];
+            if(total == 0){
+                probabilities[index] = 0;
+            }
+            else{
+                probabilities[index] = lineageNum[0]/total;
+            }
+            index++;
+        }
+        return probabilities;
+    }
+    
+    public void setWeights(List<Double> weights){
+        _weights = new ArrayList<Double>();
+        _weights.addAll(weights);
+    }
 
-    public List<Integer> countExtraCoal(Network<List<Configuration>> network, List<Tree> gts, Map<String, List<String>> species2alleles){
+
+    public List<Integer> countExtraCoal(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
+
         List<Integer> xlList = new ArrayList<Integer>();
         processNetwork(network);
         //System.out.println(gts.size());
         //System.exit(0);
         //int pos = 0;
-
+        Iterator<Double> weightit = _weights.iterator();
         for(Tree gt: gts){
             Trees.removeBinaryNodes((MutableTree)gt);
             List<STITreeCluster> gtClusters = new ArrayList<STITreeCluster>();
             String[] gtTaxa = gt.getLeaves();
             int[][] gtclConstitution = new int[gt.getNodeCount()-gtTaxa.length][2];
             processGT(gt,gtTaxa, gtclConstitution, gtClusters);
-
             if(!checkLeafAgreement(species2alleles, gtTaxa)){
                 throw new RuntimeException("Gene tree " + gt + " has leaf that the network doesn't have.");
             }
 
-
             HashSet<String> gtTaxaSet = new HashSet<String>();
             Collections.addAll(gtTaxaSet, gtTaxa);
 
-            cleanNetwork(network);
             HashMap<BitSet, List<Configuration>> edge2ACminus = new HashMap<BitSet, List<Configuration>>();
-
             int netNodeIndex = 0;
             int xl = Integer.MAX_VALUE;
-            for(NetNode<List<Configuration>> node: walkNetwork(network)){
+            for(NetNode<Integer> node: walkNetwork(network)){
                 //System.out.println(edge2ACminus);
                 if(_printDetail){
                     System.out.println();
-                    System.out.println("On node #" + _netNode2id.get(node) + " " + node.getName());
+                    System.out.println("On node #" + node.getData() + " " + node.getName());
                 }
-                List<Configuration> CACs = node.getData();
-                if(CACs == null){
-                    CACs = new ArrayList<Configuration>();
-                    node.setData(CACs);
-                }
+                List<Configuration> CACs = new ArrayList<Configuration>();
 
                 //set AC for a node
                 if(node.isLeaf()){
@@ -92,26 +107,29 @@ public class MDCOnNetworkYF {
                 }
                 else{
                     if(node.getOutdeg() == 1){
-                        Iterator<NetNode<List<Configuration>>> childNode = node.getChildren().iterator();
+                        Iterator<NetNode<Integer>> childNode = node.getChildren().iterator();
                         BitSet edge = new BitSet();
-                        edge.set(_netNode2id.get(node));
-                        edge.set(_netNode2id.get(childNode.next()));
-                        CACs.addAll(edge2ACminus.get(edge));
+                        edge.set(node.getData());
+                        edge.set(childNode.next().getData());
+                        CACs.addAll(edge2ACminus.remove(edge));
+                        edge2ACminus.remove(edge);
                     }
                     else{
                         //TODO only on binary nodes
 
-                        Iterator<NetNode<List<Configuration>>> childNode = node.getChildren().iterator();
+                        Iterator<NetNode<Integer>> childNode = node.getChildren().iterator();
                         BitSet edge1 = new BitSet();
-                        edge1.set(_netNode2id.get(node));
-                        edge1.set(_netNode2id.get(childNode.next()));
-                        List<Configuration> AC1 = edge2ACminus.get(edge1);
+                        edge1.set(node.getData());
+                        edge1.set(childNode.next().getData());
+                        List<Configuration> AC1 = edge2ACminus.remove(edge1);
                         BitSet edge2 = new BitSet();
-                        edge2.set(_netNode2id.get(node));
-                        edge2.set(_netNode2id.get(childNode.next()));
-                        List<Configuration> AC2 = edge2ACminus.get(edge2);
+                        edge2.set(node.getData());
+                        edge2.set(childNode.next().getData());
+                        List<Configuration> AC2 = edge2ACminus.remove(edge2);
+                        edge2ACminus.remove(edge1);
+                        edge2ACminus.remove(edge2);
                         int minimum = Integer.MAX_VALUE;
-                        boolean totalCover = _totalCoverNode.get(_netNode2id.get(node));
+                        boolean totalCover = _totalCoverNode.get(node.getData());
                         BitSet[][] netNodeLineages = null;
                         if(totalCover){
                             netNodeLineages = new BitSet[_netNodeNum][2];
@@ -182,7 +200,7 @@ public class MDCOnNetworkYF {
                                                   */
                                     }
                                 }
-                                
+
                             }
                         }
                         if(totalCover){
@@ -208,10 +226,11 @@ public class MDCOnNetworkYF {
                     xl = optimalConfig._xl;
                     xlList.add(xl);
 
+                    double weight = weightit.next();
                     for(int i=0; i< _netNodeNum; i++){
                         //System.out._printDetail(optimalConfig._netNodeLineages[i][0].cardinality() + "/" + optimalConfig._netNodeLineages[i][1].cardinality() + "   ");
-                        _totalNetNodeLinNum[i][0] += optimalConfig._netNodeLineages[i][0].cardinality();
-                        _totalNetNodeLinNum[i][1] += optimalConfig._netNodeLineages[i][1].cardinality();
+                        _totalNetNodeLinNum[i][0] += optimalConfig._netNodeLineages[i][0].cardinality() * weight;
+                        _totalNetNodeLinNum[i][1] += optimalConfig._netNodeLineages[i][1].cardinality() * weight;
                     }
                     //System.out.println();
                 }
@@ -238,8 +257,8 @@ public class MDCOnNetworkYF {
                     }
 
                     BitSet newEdge = new BitSet();
-                    newEdge.set(_netNode2id.get(node));
-                    newEdge.set(_netNode2id.get(node.getParents().iterator().next()));
+                    newEdge.set(node.getData());
+                    newEdge.set(node.getParents().iterator().next().getData());
                     edge2ACminus.put(newEdge, ACminus);
 
                     if(_printDetail){
@@ -299,7 +318,7 @@ public class MDCOnNetworkYF {
                          System.out.println(ACminus2);
                          System.out.println();
                          */
-                    Iterator<NetNode<List<Configuration>>> it = node.getParents().iterator();
+                    Iterator<NetNode<Integer>> it = node.getParents().iterator();
                     for(int i=0; i<2; i++){
                         List<Configuration> ACminus;
                         if(i==0){
@@ -308,15 +327,15 @@ public class MDCOnNetworkYF {
                         else{
                             ACminus = ACminus2;
                         }
-                        NetNode<List<Configuration>> parentNode = it.next();
+                        NetNode<Integer> parentNode = it.next();
                         if(node.getParentDistance(parentNode) != 0){
                             for(Configuration config: ACminus){
                                 config.addExtraLineage(Math.max(0, config.getLineageCount()-1));
                             }
                         }
                         BitSet newEdge = new BitSet();
-                        newEdge.set(_netNode2id.get(node));
-                        newEdge.set(_netNode2id.get(parentNode));
+                        newEdge.set(node.getData());
+                        newEdge.set(parentNode.getData());
                         edge2ACminus.put(newEdge, ACminus);
 
                         if(_printDetail){
@@ -334,7 +353,7 @@ public class MDCOnNetworkYF {
             }
 
         }
-        
+
         return xlList;
     }
 
@@ -387,14 +406,13 @@ public class MDCOnNetworkYF {
     }
 
 
-    private void processNetwork(Network<List<Configuration>> net){
+    private void processNetwork(Network<Integer> net){
         removeBinaryNodes(net);
         _netNodeNum = 0;
         _totalNodeNum = 0;
-        _netNode2id = new HashMap<NetNode, Integer>();
         List<String> taxa = new ArrayList<String>();
-        for(NetNode<List<Configuration>> node: net.dfs()){
-            _netNode2id.put(node, _totalNodeNum++);
+        for(NetNode<Integer> node: net.dfs()){
+            node.setData(_totalNodeNum++);
             if(node.isLeaf()){
                 taxa.add(node.getName());
             }else if(node.isNetworkNode()){
@@ -402,7 +420,7 @@ public class MDCOnNetworkYF {
             }
         }
         _netTaxa = taxa.toArray(new String[0]);
-        _totalNetNodeLinNum = new int[_netNodeNum][2];
+        _totalNetNodeLinNum = new double[_netNodeNum][2];
         computeNodeCoverage(net);
     }
 
@@ -451,23 +469,23 @@ public class MDCOnNetworkYF {
     }
 
 
-    private void removeBinaryNodes(Network<List<Configuration>> net)
+    private void removeBinaryNodes(Network<Integer> net)
     {
         // Find all binary nodes.
-        List<NetNode<List<Configuration>>> binaryNodes = new LinkedList<NetNode<List<Configuration>>>();
-        for (NetNode<List<Configuration>> node : net.bfs()) {
+        List<NetNode> binaryNodes = new LinkedList<NetNode>();
+        for (NetNode node : net.bfs()) {
             if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
                 binaryNodes.add(node);
             }
         }
 
         // Remove them.
-        for (NetNode<List<Configuration>> node : binaryNodes) {
-            NetNode<List<Configuration>> child = node.getChildren().iterator().next();	// Node's only child.
+        for (NetNode<Integer> node : binaryNodes) {
+            NetNode child = node.getChildren().iterator().next();	// Node's only child.
             if(child.getIndeg() != 1){
                 continue;
             }
-            NetNode<List<Configuration>> parent = node.getParents().iterator().next();	// Node's only parent.
+            NetNode parent = node.getParents().iterator().next();	// Node's only parent.
             double distance = node.getParentDistance(parent) + child.getParentDistance(node);
             double gamma = node.getParentProbability(parent) * child.getParentProbability(node);
             parent.removeChild(node);
@@ -478,7 +496,7 @@ public class MDCOnNetworkYF {
     }
 
 
-    private List<NetNode> walkNetwork(Network net){
+    private List<NetNode> walkNetwork(Network<Integer> net){
         Stack<NetNode> stack = new Stack<NetNode>();
         List<NetNode> searchedNodes = new ArrayList<NetNode>();
         stack.push(net.getRoot());
@@ -496,7 +514,7 @@ public class MDCOnNetworkYF {
                 for(int i=0; i<index; i++){
                     it.next();
                 }
-                NetNode<List<Configuration>> child = it.next();
+                NetNode child = it.next();
                 if(searchedNodes.contains(child)){
                     node2index.put(topNode, index + 1);
                 }
@@ -511,18 +529,12 @@ public class MDCOnNetworkYF {
     }
 
 
-    private void cleanNetwork(Network<List<Configuration>> net){
-        for(NetNode<List<Configuration>> node: net.bfs()){
-            node.setData(null);
-        }
-    }
-
-    private void computeNodeCoverage(Network<List<Configuration>> net){
+    private void computeNodeCoverage(Network<Integer> net){
         _totalCoverNode = new BitSet(_totalNodeNum);
-        for(NetNode<List<Configuration>> trNode: net.getTreeNodes()){
+        for(NetNode<Integer> trNode: net.getTreeNodes()){
             if(trNode.isRoot()){
                 //System.out.println(_netNode2id.get(trNode)==null);
-                _totalCoverNode.set(_netNode2id.get(trNode), true);
+                _totalCoverNode.set(trNode.getData(), true);
             }
             else if(!trNode.isLeaf()){
                 NetNode parent = trNode.getParents().iterator().next();
@@ -532,7 +544,7 @@ public class MDCOnNetworkYF {
                 parent.adoptChild(trNode, distance);
                 if(disconnect){
                     //System.out.println(_netNode2id.get(trNode)==null);
-                    _totalCoverNode.set(_netNode2id.get(trNode), true);
+                    _totalCoverNode.set(trNode.getData(), true);
                 }
             }
         }
@@ -575,16 +587,16 @@ public class MDCOnNetworkYF {
     }
 
 
-    private boolean isValidNetwork(Network<List<Configuration>> net){
+    private boolean isValidNetwork(Network<Integer> net){
         BitSet visited = new BitSet();
         BitSet seen = new BitSet();
-        for(NetNode<List<Configuration>> node: net.bfs()){
-            visited.set(_netNode2id.get(node), true);
-            for(NetNode parent: node.getParents()){
-                seen.set(_netNode2id.get(parent), true);
+        for(NetNode<Integer> node: net.bfs()){
+            visited.set(node.getData(), true);
+            for(NetNode<Integer> parent: node.getParents()){
+                seen.set(parent.getData(), true);
             }
-            for(NetNode child: node.getChildren()){
-                seen.set(_netNode2id.get(child), true);
+            for(NetNode<Integer> child: node.getChildren()){
+                seen.set(child.getData(), true);
             }
         }
         return visited.cardinality()==seen.cardinality();

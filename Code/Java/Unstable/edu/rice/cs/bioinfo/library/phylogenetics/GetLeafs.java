@@ -1,7 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.*;
-import sun.plugin.javascript.navig4.Link;
+//import sun.plugin.javascript.navig4.Link;
 
 import java.util.LinkedList;
 

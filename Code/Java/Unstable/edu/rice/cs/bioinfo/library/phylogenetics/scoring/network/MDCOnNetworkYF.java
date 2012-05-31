@@ -54,7 +54,6 @@ public class MDCOnNetworkYF {
                                                       Func2<GraphReadOnly<N2,E2>, E2, Double> getGTProbability,
                                                       Func4<N1,N1,Double,Double,E1> makeNetworkEdge,
                                                       Func4<N2,N2,Double,Double,E2> makeGTEdge){
-        Map<N1,List<Configuration>> nodeToConfigurationList = new HashMap<N1, List<Configuration>>();
         List<Integer> xlList = new ArrayList<Integer>();
         Map<N1, Integer> netNode2id = new HashMap<N1,Integer>();
         processNetwork(network, getNetworkNodeLabel, netNode2id, getNetworkDistance, getNetworkProbability, makeNetworkEdge);
@@ -74,7 +73,6 @@ public class MDCOnNetworkYF {
             _gtClusters = new ArrayList<STITreeCluster>();
             processGT(gt, gtTaxa, getGTNodeLabel, getGTDistance, getGTProbability, makeGTEdge);
 
-            cleanNetwork(network, nodeToConfigurationList);
             HashMap<BitSet, List<Configuration>> edge2ACminus = new HashMap<BitSet, List<Configuration>>();
 
             int netNodeIndex = 0;
@@ -85,7 +83,6 @@ public class MDCOnNetworkYF {
                     System.out.println("On node #" + netNode2id.get(node) + " " + node);
                 }
                 ArrayList<Configuration> CACs =  new ArrayList<Configuration>();
-                nodeToConfigurationList.put(node, CACs);
 
                 //set AC for a node
                 if(isLeaf.execute(network, node)){
@@ -117,7 +114,7 @@ public class MDCOnNetworkYF {
                         BitSet edge = new BitSet();
                         edge.set(netNode2id.get(node));
                         edge.set(netNode2id.get(childNodes.next()));
-                        CACs.addAll(edge2ACminus.get(edge));
+                        CACs.addAll(edge2ACminus.remove(edge));
                     }
                     else{
                         //TODO only on binary nodes
@@ -126,11 +123,11 @@ public class MDCOnNetworkYF {
                         BitSet edge1 = new BitSet();
                         edge1.set(netNode2id.get(node));
                         edge1.set(netNode2id.get(childNodes.next()));
-                        List<Configuration> AC1 = edge2ACminus.get(edge1);
+                        List<Configuration> AC1 = edge2ACminus.remove(edge1);
                         BitSet edge2 = new BitSet();
                         edge2.set(netNode2id.get(node));
                         edge2.set(netNode2id.get(childNodes.next()));
-                        List<Configuration> AC2 = edge2ACminus.get(edge2);
+                        List<Configuration> AC2 = edge2ACminus.remove(edge2);
                         int minimum = Integer.MAX_VALUE;
                         boolean totalCover = _totalCoverNode.get(netNode2id.get(node));
                         BitSet[][] netNodeLineages = null;
@@ -537,12 +534,6 @@ public class MDCOnNetworkYF {
         return searchedNodes;
     }
 
-
-    private <N,E> void cleanNetwork(GraphReadOnly<N,E> net, Map<N,List<Configuration>> nodeToConfigurationList){
-        for(N node: net.getNodes()){
-            nodeToConfigurationList.put(node, null);
-        }
-    }
 
     private <N,E> void computeNodeCoverage(Graph<N,E> net, Func2<GraphReadOnly<N,E>, E, Double> getDistance, Map<N, Integer> netNode2id){
         _totalCoverNode = new BitSet(_totalNodeNum);

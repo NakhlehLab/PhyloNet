@@ -131,11 +131,11 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
         double total = 0;
         for(Tree gt: geneTrees){
             double prob = probList.next();
-            total += prob;
+            total += Math.log(prob);
 
             result.append("\n" + gt.toString() + " : " + prob);
         }
-        result.append("\n" + "Total probability: " + total);
+        result.append("\n" + "Total log probability: " + total);
 
         return result.toString();
 

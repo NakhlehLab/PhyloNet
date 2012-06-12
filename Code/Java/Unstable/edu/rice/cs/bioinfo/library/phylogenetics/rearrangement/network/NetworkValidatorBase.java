@@ -14,10 +14,6 @@ public class NetworkValidatorBase<N,E> implements NetworkValidator<N,E>
 {
     public void assertValidNetwork(GraphReadOnly<N, E> network)
     {
-        if(!network.isRooted())
-        {
-            throw new IllegalArgumentException("Passed graph must be rooted.");
-        }
         GraphValidator.assertValidGraph(network);
     }
 }

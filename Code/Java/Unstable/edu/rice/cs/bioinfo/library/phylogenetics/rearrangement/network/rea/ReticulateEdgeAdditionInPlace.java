@@ -38,7 +38,7 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Net
     }
 
     @Override
-    public Map<N,Set<N>> computeRearrangements(G network, boolean valdiateNetwork, Proc4<G,E,E,E> rearrangementComputed)
+    public Map<N,Set<N>> computeRearrangements(G network, boolean valdiateNetwork, Func4<G,E,E,E,Boolean> rearrangementComputed)
     {
         if(valdiateNetwork)
         {
@@ -50,7 +50,7 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Net
     }
 
     @Override
-    public <S extends Set<N>> void computeRearrangements(G network, boolean validateNetwork, Proc4<G,E,E,E> rearrangementComputed, Map<N,S> nodeToAncestors)
+    public <S extends Set<N>> void computeRearrangements(G network, boolean validateNetwork, Func4<G,E,E,E,Boolean> rearrangementComputed, Map<N,S> nodeToAncestors)
     {
         if(validateNetwork)
         {
@@ -69,13 +69,20 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Net
             networkEdges.add(edge);
         }
 
+        boolean continueNeighborhoodGeneration = true;
         for(E sourceEdge : networkEdges)
         {
+            if(!continueNeighborhoodGeneration)
+                break;
+
             Tuple<N,N> nodesOfSourceEdge = network.getNodesOfEdge(sourceEdge);
             NodeInjector.NodeInjectorUndoAction<G,N,E> undoSource = NodeInjector.injectNodeIntoEdge(network, sourceEdge, sourceEdgeGlueNode, _makeEdge, false);
 
             for(E destinationEdge : networkEdges)
             {
+                if(!continueNeighborhoodGeneration)
+                    break;
+
                 if(destinationEdge.equals(sourceEdge))
                 {
                     continue;
@@ -92,7 +99,7 @@ public class ReticulateEdgeAdditionInPlace<G extends Graph<N,E>,N,E> extends Net
                     E reticulateEdge = _makeEdge.execute(network, sourceEdgeGlueNode, destinationEdgeGlueNode);
                     network.addEdge(reticulateEdge);
 
-                    rearrangementComputed.execute(network, sourceEdge, destinationEdge, reticulateEdge);
+                    continueNeighborhoodGeneration = rearrangementComputed.execute(network, sourceEdge, destinationEdge, reticulateEdge);
 
                     network.removeEdge(reticulateEdge);
 

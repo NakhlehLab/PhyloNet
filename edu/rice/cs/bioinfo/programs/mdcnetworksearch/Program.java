@@ -1,4 +1,5 @@
 package edu.rice.cs.bioinfo.programs.mdcnetworksearch;
+import com.sun.java.browser.plugin2.liveconnect.v1.Result;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.jung.GraphBuilderDirectedSparse;
@@ -9,11 +10,13 @@ import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAdditionInPlace;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.MDCOnNetworkYF;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimber;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimberObservable;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PseudoMetropolisHastingsResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.network.srna.SrnaPseudoMetropolisHastings;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
@@ -254,26 +257,41 @@ public class Program
                     }
                 };
 
+                long numExams = -1;
+                long generation = -1;
+                int minScore = -1;
                  switch (algoNum)
                  {
+
                      case 0:
-                         searchSteepestAscent(startTree, getScore, isBetterScore, maxExaminations, initialFound, betterFound, reaStrategy);
+                         HillClimbResult<GraphAdapter,Integer> result1 = searchSteepestAscent(startTree, getScore, isBetterScore, maxExaminations, initialFound, betterFound, reaStrategy);
+                         numExams = result1.ExaminationsCount;
+                         generation = result1.GenerationCount;
+                         minScore = result1.BestExaminedScore;
                          break;
                      case 1:
-                         searchFirstBetterAscent(startTree, getScore, isBetterScore, maxExaminations, initialFound, betterFound, reaStrategy);
+                         HillClimbResult<GraphAdapter,Integer> result2 = searchFirstBetterAscent(startTree, getScore, isBetterScore, maxExaminations, initialFound, betterFound, reaStrategy);
+                         numExams = result2.ExaminationsCount;
+                         generation = result2.GenerationCount;
+                         minScore = result2.BestExaminedScore;
                          break;
                      case 2:
-                         searchPMH(startTree, getScore, divideScore, rand, maxExaminations, initialFound, betterFound, reaStrategy);
+                         PseudoMetropolisHastingsResult<GraphAdapter, Integer> result3 = searchPMH(startTree, getScore, divideScore, rand, maxExaminations, initialFound, betterFound, reaStrategy);
+                         numExams = result3.ExaminationsCount;
+                         generation = result3.GenerationCount;
+                         minScore = result3.BestExaminedScore;
                          break;
 
                  }
+
+                logger.info(trialCapture + ", " + generation + ", " + numExams + ", " + minScore);
             }
         }
 
 
     }
 
-    private static void searchPMH(GraphAdapter startTree, Func1<GraphAdapter,Integer> getScore, Func2<Integer,Integer,Double> divideScore,
+    private static PseudoMetropolisHastingsResult<GraphAdapter, Integer> searchPMH(GraphAdapter startTree, Func1<GraphAdapter,Integer> getScore, Func2<Integer,Integer,Double> divideScore,
                                   Random rand, long maxExaminations, Proc2<GraphAdapter,Integer> initialFound,
                                   Proc4<GraphAdapter,Integer,Long,Long> betterFound,
                                   ReticulateEdgeAddition<GraphAdapter,String,PhyloEdge<String>> reaStrategy)
@@ -284,10 +302,10 @@ public class Program
         searcher.addInitialSolutionScoreComputedListener(initialFound);
         searcher.addBetterSolutionFoundListener(betterFound);
 
-        searcher.search(startTree, getScore, divideScore, false, rand, maxExaminations);
+        return searcher.search(startTree, getScore, divideScore, false, rand, maxExaminations);
     }
 
-    private static void searchSteepestAscent(GraphAdapter startTree, Func1<GraphAdapter, Integer> getScore, Comparator<Integer> betterScore,
+    private static HillClimbResult<GraphAdapter,Integer> searchSteepestAscent(GraphAdapter startTree, Func1<GraphAdapter, Integer> getScore, Comparator<Integer> betterScore,
                                              long maxExaminations, Proc2<GraphAdapter, Integer> initialFound,
                                              Proc4<GraphAdapter, Integer, Long, Long> betterFound,
                                              ReticulateEdgeAddition<GraphAdapter, String, PhyloEdge<String>> reaStrategy) {
@@ -298,10 +316,10 @@ public class Program
         climber.addInitialSolutionScoreComputedListener(initialFound);
         climber.addBetterSolutionFoundListener(betterFound);
 
-        climber.search(startTree, getScore, betterScore, maxExaminations);
+        return climber.search(startTree, getScore, betterScore, maxExaminations);
     }
 
-    private static void searchFirstBetterAscent(GraphAdapter startTree, Func1<GraphAdapter, Integer> getScore, Comparator<Integer> betterScore,
+    private static HillClimbResult<GraphAdapter,Integer> searchFirstBetterAscent(GraphAdapter startTree, Func1<GraphAdapter, Integer> getScore, Comparator<Integer> betterScore,
                                                 long maxExaminations, Proc2<GraphAdapter, Integer> initialFound,
                                                 Proc4<GraphAdapter, Integer, Long, Long> betterFound,
                                                 ReticulateEdgeAddition<GraphAdapter, String, PhyloEdge<String>> reaStrategy) {
@@ -312,7 +330,7 @@ public class Program
         climber.addInitialSolutionScoreComputedListener(initialFound);
         climber.addBetterSolutionFoundListener(betterFound);
 
-        climber.search(startTree, getScore, betterScore, maxExaminations);
+        return climber.search(startTree, getScore, betterScore, maxExaminations);
     }
 
     private static DirectedSparseGraph<String,PhyloEdge<String>> readSingleNetwork(String richNewickString) throws IOException, CoordinateParseErrorsException

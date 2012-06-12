@@ -169,8 +169,8 @@ public abstract class ReticulateEdgeAdditionTest<G extends Graph<String, Tuple<S
     private void testComputeRearrangementsWithoutValidationHelp(G network, final Collection<G> expectedNetworks)
     {
          new ReticulateEdgeAdditionInPlace<G, String, Tuple<String,String>>(_makeNode, _makeEdge).computeRearrangements(network, false,
-                new Proc4<G, Tuple<String, String>, Tuple<String, String>, Tuple<String, String>>() {
-                    public void execute(G network, Tuple<String, String> sourceEdge, Tuple<String, String> destinationEdge, Tuple<String, String> reticulateEdge)
+                new Func4<G, Tuple<String, String>, Tuple<String, String>, Tuple<String, String>,Boolean>() {
+                    public Boolean execute(G network, Tuple<String, String> sourceEdge, Tuple<String, String> destinationEdge, Tuple<String, String> reticulateEdge)
                     {
 
                         G toBeRemoved = null;
@@ -191,6 +191,8 @@ public abstract class ReticulateEdgeAdditionTest<G extends Graph<String, Tuple<S
                         {
                             Assert.fail("Generated unexpected network.");
                         }
+
+                        return true;
                     }
                 });
 

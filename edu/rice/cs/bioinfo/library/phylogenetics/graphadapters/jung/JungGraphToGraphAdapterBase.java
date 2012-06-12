@@ -16,12 +16,12 @@ public abstract class JungGraphToGraphAdapterBase<N,E> implements edu.rice.cs.bi
 {
     public final Graph<N,E> Graph;
 
-    private final Func1<E, Tuple<N,N>> _edgeToTuple;
+    protected Func1<E, Tuple<N,N>> edgeToTuple;
 
     public JungGraphToGraphAdapterBase(Graph<N,E> graph, Func1<E, Tuple<N, N>> edgeToTuple)
     {
         Graph = graph;
-        _edgeToTuple = edgeToTuple;
+        this.edgeToTuple = edgeToTuple;
     }
 
      public void addNode(N node)
@@ -35,7 +35,7 @@ public abstract class JungGraphToGraphAdapterBase<N,E> implements edu.rice.cs.bi
     }
 
     public void addEdge(E edge) {
-        Tuple<N,N> nodesOfEdge = _edgeToTuple.execute(edge);
+        Tuple<N,N> nodesOfEdge = edgeToTuple.execute(edge);
         Graph.addEdge(edge, nodesOfEdge.Item1, nodesOfEdge.Item2);
     }
 

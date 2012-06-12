@@ -16,9 +16,9 @@ import java.util.Set;
  */
 public interface ReticulateEdgeAddition<G,N,E> extends NetworkValidator<N,E>
 {
-    Map<N,Set<N>> computeRearrangements(G network, boolean validateNetwork, Proc4<G,E,E,E> rearrangementComputed);
+    Map<N,Set<N>> computeRearrangements(G network, boolean validateNetwork, Func4<G,E,E,E,Boolean> rearrangementComputed);
 
-    <S extends Set<N>> void computeRearrangements(G network, boolean validateNetwork, Proc4<G,E,E,E> rearrangementComputed, Map<N,S> nodeToAncestors);
+    <S extends Set<N>> void computeRearrangements(G network, boolean validateNetwork, Func4<G,E,E,E,Boolean> rearrangementComputed, Map<N,S> nodeToAncestors);
 
     G performRearrangement(G network, boolean validateNetwork, E sourceEdge, E destinationEdge);
 

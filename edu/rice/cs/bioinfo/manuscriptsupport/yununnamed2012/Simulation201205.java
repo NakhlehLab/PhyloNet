@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.manuscriptsupport.yununnamed2012;
 import java.util.*;
 import java.io.*;
 
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
@@ -21,7 +22,6 @@ import edu.rice.cs.bioinfo.library.programming.Func4;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimber;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
@@ -102,7 +102,8 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
 
 
         ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
+        ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Integer> searcher =
+                new ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>,Integer>(reaStrategy, false);
 
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, species2alleles);
         Comparator<Integer> comparator = getScoreComparator();
@@ -110,12 +111,12 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
 
         int index = _optimalNetworks.size();
         //System.out.println(result.NumIterationsPerformed);
-        if(result.NumIterationsPerformed < r){
+        if(result.GenerationCount < r){
             index = 1;
             int first = 0;
             for(String net: _optimalNetworks){
                 int numHybrid = 0;
-                for(int i=1; i<=(result.NumIterationsPerformed+1); i++){
+                for(int i=1; i<=(result.GenerationCount+1); i++){
                     if(net.contains("#H"+i)){
                         numHybrid = i;
                     }
@@ -198,7 +199,8 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
         _optimalScore = Integer.MAX_VALUE;
         //_optimalScores = new ArrayList<Integer>();
         ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
+        ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Integer> searcher =
+                new ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>,Integer>(reaStrategy, false);
 
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, null, resolutionNum);
         Comparator<Integer> comparator = getScoreComparator();
@@ -212,7 +214,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
         System.out.println();
         //System.out.println(_optimalScores);
 
-        System.out.println(result.LocalOptimumScore);
+        System.out.println(result.BestExaminedScore);
     }
 
     private void inferSingleAlleleNetworks(int id){
@@ -235,19 +237,19 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                                 _optimalScore = Integer.MAX_VALUE;
                                 _optimalProbabilities = new ArrayList<double[]>();
                                 ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-                                ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
+                                ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Integer> searcher = new ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>,Integer>(reaStrategy, false);
                                 Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, species2alleles);
                                 Comparator<Integer> comparator = getScoreComparator();
                                 HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Integer> result = searcher.search(_network, scorer, comparator, r); // search starts here
                                 double usedTime = (System.currentTimeMillis() - startTime) / 1e3;
 
                                 int index = _optimalNetworks.size();
-                                if(result.NumIterationsPerformed < r){
+                                if(result.GenerationCount < r){
                                     index = 1;
                                     int first = 0;
                                     for(String net: _optimalNetworks){
                                         int numHybrid = 0;
-                                        for(int i=1; i<=(result.NumIterationsPerformed+1); i++){
+                                        for(int i=1; i<=(result.GenerationCount+1); i++){
                                             if(net.contains("#H"+i)){
                                                 numHybrid = i;
                                             }
@@ -279,7 +281,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile, true));
                                 bw.append("Rep"+ k + ":");
                                 bw.newLine();
-                                bw.append("Number of hybrid nodes:  " + result.NumIterationsPerformed);
+                                bw.append("Number of hybrid nodes:  " + result.GenerationCount);
                                 bw.newLine();
                                 bw.append("Extra lineages:  "+ _optimalScore);
                                 bw.newLine();
@@ -330,19 +332,19 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                                     _optimalScore = Integer.MAX_VALUE;
                                     _optimalProbabilities = new ArrayList<double[]>();
                                     ReticulateEdgeAddition<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-                                    ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> searcher = new ReaHillClimber<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(reaStrategy, false);
+                                    ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Integer> searcher = new ReaHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>,Integer>(reaStrategy, false);
                                     Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(geneTrees, species2alleles);
                                     Comparator<Integer> comparator = getScoreComparator();
                                     HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Integer> result = searcher.search(_network, scorer, comparator, r); // search starts here
                                     double usedTime = (System.currentTimeMillis() - startTime) / 1e3;
 
                                     int index = _optimalNetworks.size();
-                                    if(result.NumIterationsPerformed < r){
+                                    if(result.GenerationCount < r){
                                         index = 1;
                                         int first = 0;
                                         for(String net: _optimalNetworks){
                                             int numHybrid = 0;
-                                            for(int i=1; i<=(result.NumIterationsPerformed+1); i++){
+                                            for(int i=1; i<=(result.GenerationCount+1); i++){
                                                 if(net.contains("#H"+i)){
                                                     numHybrid = i;
                                                 }
@@ -374,7 +376,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                                     BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile, true));
                                     bw.append("Rep"+ k + ":");
                                     bw.newLine();
-                                    bw.append("Number of hybrid nodes:  " + result.NumIterationsPerformed);
+                                    bw.append("Number of hybrid nodes:  " + result.GenerationCount);
                                     bw.newLine();
                                     bw.append("Extra lineages:  "+ _optimalScore);
                                     bw.newLine();
@@ -706,11 +708,11 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                     _optimalNetworks.clear();
                     _optimalNetworks.add(networkToString());
                     _optimalProbabilities.clear();
-                    _optimalProbabilities.add(scorer.getHybridProbabilities());
+                //    _optimalProbabilities.add(scorer.getHybridProbabilities());
                 }
                 else if(total == _optimalScore){
                     _optimalNetworks.add(networkToString());
-                    _optimalProbabilities.add(scorer.getHybridProbabilities());
+                  //  _optimalProbabilities.add(scorer.getHybridProbabilities());
                 }
                 return total;
             }

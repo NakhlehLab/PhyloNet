@@ -1,13 +1,13 @@
-package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing;
+package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc;
 
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
- * Date: 5/13/12
- * Time: 8:07 PM
+ * Date: 6/11/12
+ * Time: 2:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class HillClimbResult<T, S>
+public class PseudoMetropolisHastingsResult<T, S>
 {
     public final T BestExaminedNetwork;
 
@@ -17,7 +17,7 @@ public class HillClimbResult<T, S>
 
     public final long GenerationCount;
 
-    public HillClimbResult(T bestExaminedNetwork, S bestExaminedScore, long examinationCount, long generationCount)
+    public PseudoMetropolisHastingsResult(T bestExaminedNetwork, S bestExaminedScore, long examinationCount, long generationCount)
     {
         BestExaminedNetwork = bestExaminedNetwork;
         BestExaminedScore = bestExaminedScore;

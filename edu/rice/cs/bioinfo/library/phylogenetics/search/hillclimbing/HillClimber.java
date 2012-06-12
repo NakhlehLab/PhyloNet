@@ -10,10 +10,10 @@ import java.util.Comparator;
  * Time: 1:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface HillClimber<T>
+public interface HillClimber<T,S>
 {
-    public <S> HillClimbResult<T,S> search(T startSolution, Func1<T,S> getScore, Comparator<S> scoreComparator);
+    public HillClimbResult<T,S> search(T startSolution, Func1<T,S> getScore, Comparator<S> scoreComparator);
 
-    public <S> HillClimbResult<T,S> search(T startSolution, Func1<T,S> getScore, Comparator<S> scoreComparator,
-                                           int maxIterations);
+    public HillClimbResult<T,S> search(T startSolution, Func1<T,S> getScore, Comparator<S> scoreComparator,
+                                       long maxExaminations);
 }

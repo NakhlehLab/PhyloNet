@@ -3,7 +3,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.re
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimber;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import junit.framework.Assert;
@@ -43,7 +43,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
     {
         G network = makeNetwork("(A,(C,B)I)R;");
         ReticulateEdgeAddition<G,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<G, String, PhyloEdge<String>>(makeNode, makeEdge);
-        ReaHillClimber<G,String,PhyloEdge<String>> searcher = new ReaHillClimber<G, String, PhyloEdge<String>>(reaStrategy, false);
+        ReaHillClimberSteepestAscent<G,String,PhyloEdge<String>, Double> searcher = new ReaHillClimberSteepestAscent<G, String, PhyloEdge<String>, Double>(reaStrategy, false);
 
         LinkedList<G> expectedGen1Neighbors = new LinkedList<G>();
 
@@ -158,8 +158,8 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         Assert.assertTrue(expectedGen1Neighbors.size() == 0);
         Assert.assertTrue(expectedGen2Neighbors.size() == 0);
         Assert.assertTrue(expectedGenerations.size() == 0);
-        Assert.assertTrue(areSameNetwork(result.LocalOptimum, gen2Best));
-        Assert.assertTrue(result.LocalOptimumScore == 2.0);
+        Assert.assertTrue(areSameNetwork(result.BestExaminedNetwork, gen2Best));
+        Assert.assertTrue(result.BestSeenScore == 2.0);
 
 
     }
@@ -171,7 +171,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         {
             G network = makeNetwork("((D,(E,C)X)K,(B,A)Z)R;");
             ReticulateEdgeAddition<G,String,PhyloEdge<String>> reaStrategy = new ReticulateEdgeAdditionInPlace<G, String, PhyloEdge<String>>(makeNode, makeEdge);
-            ReaHillClimber<G,String,PhyloEdge<String>> searcher = new ReaHillClimber<G, String, PhyloEdge<String>>(reaStrategy, true);
+            ReaHillClimberSteepestAscent<G,String,PhyloEdge<String>,Double> searcher = new ReaHillClimberSteepestAscent<G, String, PhyloEdge<String>,Double>(reaStrategy, true);
 
 
 

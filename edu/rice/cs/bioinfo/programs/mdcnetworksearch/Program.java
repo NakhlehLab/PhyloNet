@@ -125,6 +125,7 @@ public class Program
 
     public static void main(String[] args) throws Exception
     {
+         long maxExaminations = Long.parseLong(args[0]);
 
         Appender fbAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-firstBetter.txt", false);
         Appender saAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-steepest.txt", false);
@@ -133,7 +134,7 @@ public class Program
 
 
         Random rand = new Random(42);
-        long maxExaminations = 20;
+
 
         for(int algoNum = 0; algoNum<3; algoNum++)
         {

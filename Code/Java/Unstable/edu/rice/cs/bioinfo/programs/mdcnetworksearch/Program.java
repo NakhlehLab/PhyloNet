@@ -257,10 +257,13 @@ public class Program
                  {
                      case 0:
                          searchSteepestAscent(startTree, getScore, isBetterScore, maxExaminations, initialFound, betterFound, reaStrategy);
+                         break;
                      case 1:
                          searchFirstBetterAscent(startTree, getScore, isBetterScore, maxExaminations, initialFound, betterFound, reaStrategy);
+                         break;
                      case 2:
                          searchPMH(startTree, getScore, divideScore, rand, maxExaminations, initialFound, betterFound, reaStrategy);
+                         break;
 
                  }
             }

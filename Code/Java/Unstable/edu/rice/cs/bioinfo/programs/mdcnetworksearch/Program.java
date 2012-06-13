@@ -4,6 +4,7 @@ import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsExcepti
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.jung.GraphBuilderDirectedSparse;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
@@ -20,12 +21,15 @@ import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PseudoMetropo
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.network.srna.SrnaPseudoMetropolisHastings;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
+import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import org.apache.log4j.*;
 import org.w3c.dom.traversal.NodeIterator;
 
+import javax.print.DocFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -141,6 +145,7 @@ public class Program
 
         for(int algoNum = 0; algoNum<3; algoNum++)
         {
+            algoNum = 2;
             logger.removeAllAppenders();
             if(algoNum == 0)
             {
@@ -212,6 +217,15 @@ public class Program
 
                     public Integer execute(GraphAdapter input)
                     {
+                        Func1<String,String> getStringString = new Func1<String, String>() {
+                            @Override
+                            public String execute(String input) {
+                                return input;
+                            }
+                        };
+                        StringWriter w = new StringWriter();
+                        new JungRichNewickPrinterCompact().print( (DirectedGraph) input.Graph, getStringString, w);
+                        String rn = w.toString();
                         List<Integer> xls = new MDCOnNetworkYF().countExtraCoal(input, geneTrees, null, _getNodeLabel, _getNodeLabel, _getDistance, _getProbability, _getDistance, _getProbability, _makeEdge, _makeEdge);
 
                         int sum = 0;

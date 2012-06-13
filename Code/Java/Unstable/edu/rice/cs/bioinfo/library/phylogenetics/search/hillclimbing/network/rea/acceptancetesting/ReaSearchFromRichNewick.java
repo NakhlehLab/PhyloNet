@@ -159,7 +159,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         Assert.assertTrue(expectedGen2Neighbors.size() == 0);
         Assert.assertTrue(expectedGenerations.size() == 0);
         Assert.assertTrue(areSameNetwork(result.BestExaminedNetwork, gen2Best));
-        Assert.assertTrue(result.BestSeenScore == 2.0);
+        Assert.assertTrue(result.BestExaminedScore == 2.0);
 
 
     }

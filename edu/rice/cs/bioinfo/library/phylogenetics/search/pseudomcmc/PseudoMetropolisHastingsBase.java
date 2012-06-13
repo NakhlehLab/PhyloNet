@@ -95,7 +95,8 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
         {
             _bestSeenSolution = solution.DeepCopy();
             _bestSeenSolutionScore = solutionScore;
-            this.fireBetterSolutionFoundEvent(solution, solutionScore);
+            if(acceptProb > 1)
+                this.fireBetterSolutionFoundEvent(solution, solutionScore);
             _searchParentScore = solutionScore;
             return false;
         }

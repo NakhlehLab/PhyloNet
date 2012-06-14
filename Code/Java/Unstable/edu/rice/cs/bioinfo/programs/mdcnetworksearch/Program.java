@@ -17,6 +17,7 @@ import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimber
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PMHGenerationLimitRestartSearcher;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PseudoMetropolisHastingsResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.network.srna.SrnaPseudoMetropolisHastings;
 import edu.rice.cs.bioinfo.library.programming.*;
@@ -45,7 +46,14 @@ public class Program
 {
     private static final  Func1<String, String> _makeNode = new Func1<String, String>()
     {
+        private int _count = 0;
+
         public String execute(String node) {
+
+            if(node == null)
+            {
+                return "i" + (_count++);
+            }
             return node;  //To change body of implemented methods use File | Settings | File Templates.
         }
     };
@@ -132,7 +140,7 @@ public class Program
 
     public static void main(String[] args) throws Exception
     {
-         long maxExaminations = Long.parseLong(args[0]);
+         long maxExaminations = 200;
 
         Appender fbAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-firstBetter.txt", false);
         Appender saAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-steepest.txt", false);
@@ -145,7 +153,6 @@ public class Program
 
         for(int algoNum = 0; algoNum<3; algoNum++)
         {
-            algoNum = 2;
             logger.removeAllAppenders();
             if(algoNum == 0)
             {
@@ -212,11 +219,13 @@ public class Program
                                 });
 
 
+                final Ref<Integer> getScoreCallsCount = new Ref<Integer>(0);
                 Func1<GraphAdapter,Integer> getScore = new Func1<GraphAdapter, Integer>() {
 
 
                     public Integer execute(GraphAdapter input)
                     {
+                        getScoreCallsCount.set(getScoreCallsCount.get() + 1);
                         Func1<String,String> getStringString = new Func1<String, String>() {
                             @Override
                             public String execute(String input) {
@@ -252,14 +261,14 @@ public class Program
                 Proc4<GraphAdapter,Integer,Long,Long> betterFound = new Proc4<GraphAdapter,Integer,Long,Long>() {
                     @Override
                     public void execute(GraphAdapter input1, Integer score, Long examinationsCount, Long depth) {
-                        logger.info(trialCapture + ", " + depth + ", " + examinationsCount + ", " + score);
+                        logger.info(trialCapture + ", " + depth + ", " + getScoreCallsCount.get() + ", " + score);
                     }
                 };
 
                 Proc2<GraphAdapter, Integer> initialFound = new Proc2<GraphAdapter, Integer>() {
                     @Override
                     public void execute(GraphAdapter input1, Integer score) {
-                        logger.info(trialCapture + ", 0, 1, " + score);
+                        logger.info(trialCapture + ", 0, " + getScoreCallsCount.get() + ", " + score);
                     }
                 };
 
@@ -298,25 +307,42 @@ public class Program
 
                  }
 
-                logger.info(trialCapture + ", " + generation + ", " + numExams + ", " + minScore);
+                logger.info("*" + trialCapture + ", " + generation + ", " + numExams + ", " + minScore);
             }
         }
+
+        fbAppender.close();
+        saAppender.close();
+        mhAppender.close();
 
 
     }
 
     private static PseudoMetropolisHastingsResult<GraphAdapter, Integer> searchPMH(GraphAdapter startTree, Func1<GraphAdapter,Integer> getScore, Func2<Integer,Integer,Double> divideScore,
-                                  Random rand, long maxExaminations, Proc2<GraphAdapter,Integer> initialFound,
-                                  Proc4<GraphAdapter,Integer,Long,Long> betterFound,
-                                  ReticulateEdgeAddition<GraphAdapter,String,PhyloEdge<String>> reaStrategy)
+                                  Random rand, long maxExaminations, final Proc2<GraphAdapter,Integer> initialFound,
+                                  final Proc4<GraphAdapter,Integer,Long,Long> betterFound,
+                                  final ReticulateEdgeAddition<GraphAdapter,String,PhyloEdge<String>> reaStrategy)
     {
-        SrnaPseudoMetropolisHastings<GraphAdapter, String, PhyloEdge<String>,Integer>
+
+        int generationLimit = 10;
+
+        Func<SrnaPseudoMetropolisHastings<GraphAdapter, String, PhyloEdge<String>,Integer>> makeSearcher = new Func<SrnaPseudoMetropolisHastings<GraphAdapter, String, PhyloEdge<String>, Integer>>() {
+            @Override
+            public SrnaPseudoMetropolisHastings<GraphAdapter, String, PhyloEdge<String>, Integer> execute() {
+
+                SrnaPseudoMetropolisHastings<GraphAdapter, String, PhyloEdge<String>,Integer>
                 searcher = new SrnaPseudoMetropolisHastings<GraphAdapter, String, PhyloEdge<String>,Integer>(reaStrategy, true);
 
-        searcher.addInitialSolutionScoreComputedListener(initialFound);
-        searcher.addBetterSolutionFoundListener(betterFound);
+                searcher.addInitialSolutionScoreComputedListener(initialFound);
+                searcher.addBetterSolutionFoundListener(betterFound);
 
-        return searcher.search(startTree, getScore, divideScore, false, rand, maxExaminations);
+                return searcher;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        };
+
+
+
+        return new PMHGenerationLimitRestartSearcher(makeSearcher).search(startTree, getScore, divideScore, false, rand, maxExaminations, generationLimit);
     }
 
     private static HillClimbResult<GraphAdapter,Integer> searchSteepestAscent(GraphAdapter startTree, Func1<GraphAdapter, Integer> getScore, Comparator<Integer> betterScore,

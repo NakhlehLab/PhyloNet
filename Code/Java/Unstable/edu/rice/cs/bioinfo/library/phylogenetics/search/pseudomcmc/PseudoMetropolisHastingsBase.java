@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.ObservableGenerationalScoringSearcherBase;
 import edu.rice.cs.bioinfo.library.programming.*;
 import org.apache.commons.io.filefilter.FalseFileFilter;
+import sun.font.TrueTypeFont;
 
 import java.util.Comparator;
 import java.util.Random;
@@ -27,7 +28,9 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
         return _continueSearch;
     }
 
-    private Long _maxExaminations;
+    private Long _maxExaminations = null;
+
+    private Long _maxGenerations = null;
 
     private T _bestSeenSolution;
 
@@ -44,14 +47,15 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
     private Random _rand;
 
       @Override
-      public PseudoMetropolisHastingsResult<T, S> search(T solution, Func1<T,S> getScore, Func2<S,S,Double> divideScore, boolean maximize, Random randomSource, long maxExaminations)
+      public PseudoMetropolisHastingsResult<T, S> search(T solution, Func1<T,S> getScore, Func2<S,S,Double> divideScore, boolean maximize, Random randomSource, long maxExaminations, long maxGeneration)
       {
           _maxExaminations = maxExaminations;
+          _maxGenerations = maxGeneration;
           return search(solution, getScore, divideScore, maximize, randomSource);
       }
 
 
-     @Override
+    @Override
     public PseudoMetropolisHastingsResult<T, S> search(T solution, Func1<T,S> getScore, Func2<S,S,Double> divideScore, boolean maximize, Random randomSource)
     {
         _getScore = getScore;
@@ -65,9 +69,9 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
         _searchParentScore = _bestSeenSolutionScore;
 
 
-        this.incrementGenerationNumber();
-        for(; _continueSearch; this.incrementGenerationNumber())
+        while(_continueSearch && (_maxGenerations == null ? true : getGenerationNumber() + 1 <= _maxGenerations))
         {
+            this.incrementGenerationNumber();
             solution = considerNeighborhood(solution);
         }
 

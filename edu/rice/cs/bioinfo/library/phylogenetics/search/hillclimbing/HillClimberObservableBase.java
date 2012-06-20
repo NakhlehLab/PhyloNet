@@ -50,8 +50,9 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
 
     private HillClimbResult<T1,S> search(T1 bestSeenSolution, Func1<T1,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore)
     {
-        for(; _continueSearch; this.incrementGenerationNumber())
+        while(_continueSearch)
         {
+            this.incrementGenerationNumber();
             Ref<Func1<T1,T1>>  getBetterNeighbor = new Ref<Func1<T1, T1>>(null);
             Ref<S> newBestScore = new Ref<S>(null);
             boolean sawBetterSolution = considerNeighborhood(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore);

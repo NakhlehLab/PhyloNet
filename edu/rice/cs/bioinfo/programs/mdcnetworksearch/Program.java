@@ -14,6 +14,7 @@ import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.MDCOnNetworkYF;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimber;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimberObservable;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.KSteepestAscentBase;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
@@ -140,19 +141,21 @@ public class Program
 
     public static void main(String[] args) throws Exception
     {
-         long maxExaminations = 200;
+         long maxExaminations = 2000;
 
         Appender fbAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-firstBetter.txt", false);
         Appender saAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-steepest.txt", false);
         Appender mhAppender = new FileAppender(new PatternLayout("%m\n") ,"expout-pmh.txt", false);
+        Appender kSteepest = new FileAppender(new PatternLayout("%m\n") ,"expout-ksteepest.txt", false);
         final Logger logger = Logger.getLogger(Program.class);
 
 
         Random rand = new Random(42);
 
 
-        for(int algoNum = 0; algoNum<3; algoNum++)
+        for(int algoNum = 0; algoNum<4; algoNum++)
         {
+            algoNum = 3;
             logger.removeAllAppenders();
             if(algoNum == 0)
             {
@@ -165,6 +168,10 @@ public class Program
             else if(algoNum == 2)
             {
                 logger.addAppender(mhAppender);
+            }
+            else if(algoNum == 3)
+            {
+                logger.addAppender(kSteepest);
             }
             else
             {
@@ -242,6 +249,10 @@ public class Program
                         {
                             sum+=i;
                         }
+                        if(sum == 0)
+                        {
+                            int j = 0;
+                        }
                         return sum;
                     }
                 };
@@ -280,6 +291,13 @@ public class Program
                     }
                 };
 
+                Func2<Integer,Integer,Integer> getScoreDelta = new Func2<Integer, Integer, Integer>() {
+                    @Override
+                    public Integer execute(Integer input1, Integer input2) {
+                        return input2 - input1;
+                    }
+                };
+
                 long numExams = -1;
                 long generation = -1;
                 int minScore = -1;
@@ -304,6 +322,12 @@ public class Program
                          generation = result3.GenerationCount;
                          minScore = result3.BestExaminedScore;
                          break;
+                     case 3:
+                        HillClimbResult<GraphAdapter,Integer> result4 = searchKSteepest(startTree, getScore, isBetterScore, getScoreDelta, maxExaminations, initialFound, betterFound, reaStrategy);
+                        numExams = result4.ExaminationsCount;
+                         generation = result4.GenerationCount;
+                         minScore = result4.BestExaminedScore;
+                         break;
 
                  }
 
@@ -316,6 +340,14 @@ public class Program
         mhAppender.close();
 
 
+    }
+
+    private static HillClimbResult<GraphAdapter,Integer> searchKSteepest(GraphAdapter startTree, Func1<GraphAdapter, Integer> getScore, Comparator<Integer> betterScore, Func2<Integer, Integer, Integer> getScoreDelta, long maxExaminations, Proc2<GraphAdapter, Integer> initialFound, Proc4<GraphAdapter, Integer, Long, Long> betterFound, ReticulateEdgeAddition<GraphAdapter, String, PhyloEdge<String>> reaStrategy)
+    {
+        KSteepestAscentBase<GraphAdapter,Integer> searcher = new SrnaKSteepestAscent(50, getScoreDelta, reaStrategy, true);
+        searcher.addInitialSolutionScoreComputedListener(initialFound);
+        searcher.addBetterSolutionFoundListener(betterFound);
+        return searcher.search(startTree, getScore, betterScore, maxExaminations);
     }
 
     private static PseudoMetropolisHastingsResult<GraphAdapter, Integer> searchPMH(GraphAdapter startTree, Func1<GraphAdapter,Integer> getScore, Func2<Integer,Integer,Double> divideScore,

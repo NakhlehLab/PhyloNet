@@ -19,7 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 
 import java.util.HashMap;
 import java.util.Map;

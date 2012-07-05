@@ -1,8 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting.jung;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.jung.GraphBuilderDirectedSparse;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedSparse;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting.ReaSearchFromRichNewick;

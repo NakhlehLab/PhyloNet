@@ -20,16 +20,14 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.

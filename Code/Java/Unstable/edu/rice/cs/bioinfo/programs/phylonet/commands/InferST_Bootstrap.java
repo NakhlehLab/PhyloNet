@@ -20,13 +20,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.consensus.TreeConsensusCalculator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 import java.io.StringReader;

@@ -1,10 +1,10 @@
 package edu.rice.cs.bioinfo.programs.mdcnetworksearch;
-import com.sun.java.browser.plugin2.liveconnect.v1.Result;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.jung.GraphBuilderDirectedSparse;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedSparse;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
@@ -12,12 +12,10 @@ import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.Retic
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAdditionInPlace;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.MDCOnNetworkYF;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimber;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimberObservable;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.KSteepestAscentBase;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PMHGenerationLimitRestartSearcher;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PseudoMetropolisHastingsResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.network.srna.SrnaPseudoMetropolisHastings;
@@ -26,9 +24,7 @@ import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.Ite
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import org.apache.log4j.*;
-import org.w3c.dom.traversal.NodeIterator;
 
-import javax.print.DocFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -103,7 +99,7 @@ public class Program
     static class GraphAdapter extends DirectedGraphToGraphAdapter<String,PhyloEdge<String>> implements DeepCopyable<GraphAdapter>
     {
 
-        public GraphAdapter(edu.uci.ics.jung.graph.Graph<String, PhyloEdge<String>> stringPhyloEdgeGraph, Func1<PhyloEdge<String>, Tuple<String, String>> edgeToTuple) {
+        public GraphAdapter(DirectedGraph<String, PhyloEdge<String>> stringPhyloEdgeGraph, Func1<PhyloEdge<String>, Tuple<String, String>> edgeToTuple) {
             super(stringPhyloEdgeGraph, edgeToTuple);
         }
         @Override
@@ -117,7 +113,7 @@ public class Program
         @Override
         public GraphAdapter DeepCopy() {
 
-            edu.uci.ics.jung.graph.Graph<String, PhyloEdge<String>> cloneGraph = new DirectedSparseGraph<String, PhyloEdge<String>>();
+            DirectedGraph<String, PhyloEdge<String>> cloneGraph = new DirectedSparseGraph<String, PhyloEdge<String>>();
 
             for(String node : this.Graph.getVertices())
             {

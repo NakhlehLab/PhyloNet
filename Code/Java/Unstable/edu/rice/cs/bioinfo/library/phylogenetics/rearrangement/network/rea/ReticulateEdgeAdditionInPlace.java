@@ -3,7 +3,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 import edu.rice.cs.bioinfo.library.phylogenetics.FindAllPredecessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.FindSuccessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.NodeInjector;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
 import edu.rice.cs.bioinfo.library.programming.*;
 

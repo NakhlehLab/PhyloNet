@@ -2,7 +2,7 @@
 //
 //import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.Parameter;
 //import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.keyedstringsandcommands.SyntaxCommand;
-//import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
+//import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Network;
 //import edu.rice.cs.bioinfo.library.programming.Proc3;
 //import edu.rice.cs.bioinfo.library.programming.Proc;
 //import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;

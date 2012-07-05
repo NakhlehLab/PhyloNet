@@ -19,10 +19,8 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
-import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.EventBootstrap;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.HgtEvent;
@@ -31,12 +29,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.RiataHgt;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.HgtReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import javax.xml.transform.Result;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;

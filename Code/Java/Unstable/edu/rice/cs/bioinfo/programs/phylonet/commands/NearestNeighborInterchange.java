@@ -19,25 +19,13 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.nni.NNISearcherNeighborsExpansiveInPlace;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.uci.ics.jung.graph.Graph;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;

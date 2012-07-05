@@ -1,10 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.RichNewickReaderAST;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.jung.GraphBuilderDirectedSparse;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedSparse;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.MDCOnNetworkYFFromRichNewick;
@@ -14,7 +11,6 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
-import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.

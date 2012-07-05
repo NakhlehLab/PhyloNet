@@ -19,7 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 

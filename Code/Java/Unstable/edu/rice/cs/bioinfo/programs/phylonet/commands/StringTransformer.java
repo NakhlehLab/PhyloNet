@@ -20,16 +20,14 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.SingleLinePrinter;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.SingleLinePrinter;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Iterator;
 
 /**

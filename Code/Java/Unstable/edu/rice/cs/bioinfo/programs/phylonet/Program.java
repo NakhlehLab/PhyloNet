@@ -23,20 +23,18 @@ import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Blocks;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.CSAError;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickParser;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickParser;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.NexusOut;
 
 import java.io.*;
-import java.security.KeyStore;
 import java.util.*;
 
 /**

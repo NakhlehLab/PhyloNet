@@ -93,20 +93,25 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
 
 
         double acceptProb = _maximize ? _divideScore.execute(solutionScore, _searchParentScore):
-                _divideScore.execute(_searchParentScore, solutionScore);
+                                        _divideScore.execute(_searchParentScore, solutionScore);
 
-        if(acceptProb >= 1 || _rand.nextDouble() <= acceptProb)
+        if(_rand.nextDouble() <= acceptProb)
         {
-            _bestSeenSolution = solution.DeepCopy();
-            _bestSeenSolutionScore = solutionScore;
-            if(acceptProb > 1)
+            boolean solutionIsNewBestSeen = (_maximize ? _divideScore.execute(solutionScore, _bestSeenSolutionScore):
+                                                         _divideScore.execute(_bestSeenSolutionScore, solutionScore)) > 1.0;
+
+            if(solutionIsNewBestSeen)
+            {
+                _bestSeenSolution = solution.DeepCopy();
+                _bestSeenSolutionScore = solutionScore;
                 this.fireBetterSolutionFoundEvent(solution, solutionScore);
+            }
             _searchParentScore = solutionScore;
             return false;
         }
         else
         {
-            return true && _continueSearch;
+            return _continueSearch;
         }
 
     }

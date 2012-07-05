@@ -20,14 +20,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.ContainsHybridNode;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Network;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.ContainsHybridNode;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Network;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import sun.text.normalizer.Trie;
 
-import javax.jws.soap.SOAPBinding;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;

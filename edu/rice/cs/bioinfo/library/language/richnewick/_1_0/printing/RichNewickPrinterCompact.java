@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.Probability;
+//import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Probability;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Ref;

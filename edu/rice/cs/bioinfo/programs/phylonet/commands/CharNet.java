@@ -21,9 +21,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -32,9 +31,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.Ne
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTripartition;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import sun.net.ConnectionResetException;
-import sun.nio.cs.HistoricallyNamedCharset;
 
 import java.io.StringReader;
 import java.util.ArrayList;

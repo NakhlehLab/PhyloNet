@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Graph;
 
 /**
@@ -13,8 +14,11 @@ import edu.uci.ics.jung.graph.Graph;
  */
 public class DirectedGraphToGraphAdapter<N,E> extends JungGraphToGraphAdapterBase<N,E>
 {
-    public DirectedGraphToGraphAdapter(Graph<N, E> graph, Func1<E, Tuple<N, N>> edgeToTuple) {
+    public final DirectedGraph<N,E> Graph;
+
+    public DirectedGraphToGraphAdapter(DirectedGraph<N, E> graph, Func1<E, Tuple<N, N>> edgeToTuple) {
         super(graph, edgeToTuple);
+        Graph = graph;
     }
 
     public boolean isRooted() {

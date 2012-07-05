@@ -21,17 +21,13 @@ package edu.rice.cs.bioinfo.programs.phylonet;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.BlockContents;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.RichNewickAssignment;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.ASTContextAnalyser;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.csa.CSAError;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.ASTContextAnalyser;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
-import edu.rice.cs.bioinfo.programs.phylonet.commands.*;
 
 import java.util.*;
-import java.util.zip.Adler32;
 
 /**
  * Created by IntelliJ IDEA.

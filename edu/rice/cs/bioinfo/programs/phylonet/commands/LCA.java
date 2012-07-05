@@ -21,10 +21,10 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.DAGFactory;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.SingleLinePrinter;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.GraphBuilder;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.DAGFactory;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.SingleLinePrinter;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.lca.SchieberVishkinLCA;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
@@ -135,10 +135,9 @@ public class LCA extends CommandBaseFileOut {
         if(noError)
         {
             final HashSet<String> taxonNames = new HashSet<String>();
-            DAGFactory.makeDAG(_tree, new GraphBuilder<Object>()
-            {
+            DAGFactory.makeDAG(_tree, new GraphBuilder<Object>() {
                 public Object createNode(String s) {
-                    if(!taxonNames.contains(s))
+                    if (!taxonNames.contains(s))
                         taxonNames.add(s);
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }

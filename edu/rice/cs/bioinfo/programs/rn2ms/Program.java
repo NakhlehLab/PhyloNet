@@ -1,8 +1,9 @@
 package edu.rice.cs.bioinfo.programs.rn2ms;
 
 import com.sun.org.apache.bcel.internal.generic.RETURN;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.graphbuilding.jung.GraphBuilderDirectedSparse;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import com.sun.org.apache.xpath.internal.NodeSet;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
@@ -13,6 +14,7 @@ import org.apache.commons.collections15.Transformer;
 import javax.swing.text.html.HTMLDocument;
 import java.io.ByteArrayInputStream;
 import java.io.Console;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.*;
@@ -42,6 +44,8 @@ public class Program
     {
         public BigDecimal BranchLength;
 
+        public BigDecimal Probability;
+
         public Integer PopulationNumber;
     }
 
@@ -62,36 +66,56 @@ public class Program
             new  Func5<NetworkNode, NetworkNode, BigDecimal, BigDecimal, BigDecimal,NetworkEdge>()
             {
                 @Override
-                public NetworkEdge execute(NetworkNode arg1, NetworkNode arg2, BigDecimal branchLength, BigDecimal arg4, BigDecimal arg5) {
+                public NetworkEdge execute(NetworkNode arg1, NetworkNode arg2, BigDecimal branchLength, BigDecimal arg4, BigDecimal prob) {
                     NetworkEdge edge = new NetworkEdge();
                     edge.BranchLength = branchLength;
+                    edge.Probability = prob;
                     return edge;
                 }
             };
 
     public static void main(String[] args)
     {
-        if(args.length != 1)
+        Proc1<String> out = new Proc1<String>() {
+            public void execute(String input) {
+                   System.out.print(input);
+            }
+        };
+
+        Proc1<String> error = new Proc1<String>() {
+            public void execute(String input) {
+                System.err.print(input);
+            }
+        };
+
+        run(args, out, error);
+    }
+
+    static void run(String[] args, final Proc1<String> out, Proc1<String> error)
+    {
+         if(args.length != 2)
         {
-            System.err.println("Usage: java -jar rn2ms.jar rich_newick_string");
+            error.execute("Usage: java -jar rn2ms.jar num_gt rich_newick_string");
         }
 
-        String networkNewick = args[0];
+        int num_gt = Integer.parseInt(args[0]);
+        String networkNewick = args[1];
 
-        GraphBuilderDirectedSparse<NetworkNode,NetworkEdge> graphBuilder = new GraphBuilderDirectedSparse<NetworkNode, NetworkEdge>(_makeNode, _makeEdge);
+        GraphBuilderDirectedOrderedSparse<NetworkNode,NetworkEdge> graphBuilder = new GraphBuilderDirectedOrderedSparse<NetworkNode, NetworkEdge>(_makeNode, _makeEdge);
 
         RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
         rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(networkNewick.getBytes()), graphBuilder);
 
         DirectedGraph<NetworkNode,NetworkEdge> graph = graphBuilder.Graph;
 
-
         Map<String,Integer> taxonLabelToPopNumber = new HashMap<String,Integer>();
         NetworkNode root = null;
+        HashSet<NetworkNode> leaves = new HashSet<NetworkNode>();
         for(NetworkNode n : graph.getVertices())
         {
             if(graph.getOutEdges(n).size() == 0) // leaf node
             {
+                leaves.add(n);
                 taxonLabelToPopNumber.put(n.RNLabel, _nextPopNumber);
                 _nextPopNumber++;
             }
@@ -102,6 +126,13 @@ public class Program
             }
         }
 
+        if(!isUltrametric(graph, leaves))
+        {
+            error.execute("Given newtwork must be ultrametric.");
+            return;
+        }
+
+
         assignBackTimes(graph, root);
 
         List<NetworkNode> netNodesByBackTimeAsc = new LinkedList<NetworkNode>(graph.getVertices());
@@ -111,26 +142,95 @@ public class Program
         assignPopulationNumbersToEdges(netNodesByBackTimeAsc, graph, taxonLabelToPopNumber);
         List<PopCommand> commands = generateSplitAndJoinCommands(netNodesByBackTimeAsc, graph, taxonLabelToPopNumber.keySet());
 
-        System.out.println("Node to population:");
-        System.out.println(taxonLabelToPopNumber);
-        System.out.println("MS command:");
+        out.execute("Node to population:\n");
+        out.execute(taxonLabelToPopNumber.toString() + "\n");
+        out.execute("MS command:\n");
+
+        String ones = " ";
+
+        for(int i = 0; i<taxonLabelToPopNumber.size(); i++)
+        {
+            ones+= "1 ";
+        }
+
+        out.execute("ms " + taxonLabelToPopNumber.size() + " " + num_gt + " -T -I " + taxonLabelToPopNumber.size() + ones);
 
         for(PopCommand command : commands)
         {
             command.execute(new PopCommandAlgo<Object, Object, RuntimeException>() {
                 public Object forSplit(Split split, Object input) throws RuntimeException {
-                    System.out.print("-es " + split.BackTime + " " + split.OldPopulationNumber + " ");
+                    out.execute("-es " + split.BackTime + " " + split.OldPopulationNumber + " " + split.OldPopulationProbability + " ");
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
 
                 public Object forJoin(Join join, Object input) throws RuntimeException {
-                    System.out.print("-ej " + join.BackTime + " " + join.SecondaryPopulationNumber + " " + join.PrimaryPopulationNumber + " ");
+                    out.execute("-ej " + join.BackTime + " " + join.SecondaryPopulationNumber + " " + join.PrimaryPopulationNumber + " ");
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
             }, null);
         }
+    }
+
+    private static boolean isUltrametric(DirectedGraph<NetworkNode, NetworkEdge> graph, Set<NetworkNode> leafs)
+    {
+        Map<NetworkNode, BigDecimal> pathLengthToLeafs = new HashMap<NetworkNode, BigDecimal>();
+
+        LinkedList<NetworkNode> workingList = new LinkedList<NetworkNode>();
+
+        for(NetworkNode leaf : leafs)
+        {
+            pathLengthToLeafs.put(leaf, BigDecimal.ZERO);
+            workingList.add(leaf);
+        }
+
+        while(!workingList.isEmpty())
+        {
+            NetworkNode destNode = workingList.remove();
+            BigDecimal lengthFromDestNodeToLeaf = pathLengthToLeafs.get(destNode);
+
+            for(NetworkEdge incomingEdge : graph.getInEdges(destNode))
+            {
+                Pair<NetworkNode> nodesOfEdge = graph.getEndpoints(incomingEdge);
+                NetworkNode sourceNode = nodesOfEdge.getFirst();
+                BigDecimal foundPathLength = pathLengthToLeafs.get(sourceNode);
+
+                BigDecimal expectedPathLength =  lengthFromDestNodeToLeaf.add(incomingEdge.BranchLength);
+
+                if(foundPathLength == null)
+                {
+                    pathLengthToLeafs.put(sourceNode, expectedPathLength);
+                    workingList.add(sourceNode);
+                }
+                else if(!foundPathLength.equals(expectedPathLength))
+                {
+                    return false;
+                }
+            }
+
+        }
 
 
+        return true;
+
+    }
+
+    private static BigDecimal computeArbitraryRootToLeafPathLength(DirectedGraph<NetworkNode, NetworkEdge> graph, NetworkNode root) {
+
+        BigDecimal totalPathLength = BigDecimal.ZERO;
+
+        NetworkNode i = root;
+        Collection<NetworkNode> iDirectSucs = graph.getSuccessors(i);
+
+        while(iDirectSucs.size() > 0)
+        {
+            NetworkEdge arbOutEdge = graph.getOutEdges(i).iterator().next();
+            NetworkNode nextI = graph.getEndpoints(arbOutEdge).getSecond();
+            totalPathLength.add(arbOutEdge.BranchLength);
+            i = nextI;
+            iDirectSucs = graph.getSuccessors(i);
+        }
+
+        return totalPathLength;
 
     }
 
@@ -148,7 +248,7 @@ public class Program
             }
             else if(inEdges.size() == 1 && !taxonLabels.contains(node.RNLabel))
             {
-                int primaryPopNumber = inEdges.iterator().next().PopulationNumber;
+                int primaryPopNumber = inEdges.get(0).PopulationNumber;
                 int secondaryPopNumber = (primaryPopNumber == outEdges.get(0).PopulationNumber ?
                                 outEdges.get(1).PopulationNumber :
                                 outEdges.get(0).PopulationNumber);
@@ -158,10 +258,10 @@ public class Program
             else if(inEdges.size() == 2 )
             {
                 int oldPopNumber = outEdges.get(0).PopulationNumber;
-                int newPopNumber = (inEdges.get(0).PopulationNumber == oldPopNumber ?
-                                inEdges.get(1).PopulationNumber :
-                                inEdges.get(0).PopulationNumber);
-                commands.add(new Split(node.BackTime, oldPopNumber, newPopNumber));
+                NetworkEdge newPopInEdge = (inEdges.get(0).PopulationNumber == oldPopNumber ?
+                                inEdges.get(1) :
+                                inEdges.get(0));
+                commands.add(new Split(node.BackTime, oldPopNumber, newPopInEdge.PopulationNumber, BigDecimal.ONE.subtract(newPopInEdge.Probability)));
             }
 
         }
@@ -171,12 +271,12 @@ public class Program
 
     private static void assignPopulationNumbersToEdges(List<NetworkNode> netNodesByBackTimeAsc, DirectedGraph<NetworkNode,NetworkEdge> graph, Map<String, Integer> taxonLabelToPopNumber) {
 
-         netNodesByBackTimeAsc = new LinkedList<NetworkNode>(netNodesByBackTimeAsc);
+        netNodesByBackTimeAsc = new LinkedList<NetworkNode>(netNodesByBackTimeAsc);
 
         while(netNodesByBackTimeAsc.size() > 1)
         {
             BigDecimal headBackTime = netNodesByBackTimeAsc.get(0).BackTime;
-            for(int i = 0; i<netNodesByBackTimeAsc.size() && netNodesByBackTimeAsc.get(i).BackTime.equals(headBackTime); i++)
+            nodes: for(int i = 0; i<netNodesByBackTimeAsc.size() && netNodesByBackTimeAsc.get(i).BackTime.equals(headBackTime); i++)
             {
                 NetworkNode iNode = netNodesByBackTimeAsc.get(i);
 
@@ -184,7 +284,7 @@ public class Program
                 {
                     if(outEdge.PopulationNumber == null)
                     {
-                        continue;
+                        continue nodes;
                     }
                 }
 

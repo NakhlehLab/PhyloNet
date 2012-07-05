@@ -1,11 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.acceptancetesting.scoring.MDCOnNetworkYF.Jung;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.RichNewickReaderAST;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
-import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
-import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.MDCOnNetworkYFFromRichNewick;
 
 /**
  * Created by IntelliJ IDEA.

@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.acceptancetesting.search.hillclimbing.network.rea.jung;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.RichNewickReaderAST;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting.jung.ReaSearchFromRichNewickJung;
 
 /**

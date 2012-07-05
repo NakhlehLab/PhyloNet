@@ -14,10 +14,13 @@ class Split extends PopCommand
 
     public final int NewPopulationNumber;
 
-    Split(BigDecimal backTime, int oldPopulationNumber, int newPopulationNumber) {
+    public final BigDecimal OldPopulationProbability;
+
+    Split(BigDecimal backTime, int oldPopulationNumber, int newPopulationNumber, BigDecimal oldPopulationProb) {
         super(backTime);
         OldPopulationNumber = oldPopulationNumber;
         NewPopulationNumber = newPopulationNumber;
+        OldPopulationProbability = oldPopulationProb;
     }
 
 

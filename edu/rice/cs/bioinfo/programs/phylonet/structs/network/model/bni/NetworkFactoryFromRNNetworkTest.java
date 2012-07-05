@@ -19,8 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
-import com.sun.javaws.jnl.LaunchDesc;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import org.junit.*;
@@ -28,8 +27,6 @@ import org.junit.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static org.mockito.Mockito.*;
 
 /**
  * Created by IntelliJ IDEA.

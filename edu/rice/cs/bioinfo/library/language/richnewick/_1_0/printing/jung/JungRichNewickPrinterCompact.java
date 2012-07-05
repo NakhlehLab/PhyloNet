@@ -6,7 +6,6 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Graph;
-import org.junit.internal.matchers.Each;
 
 import java.io.StringWriter;
 import java.lang.reflect.Array;
@@ -58,7 +57,7 @@ public class JungRichNewickPrinterCompact<V> extends RichNewickPrinterCompact<V>
         Func2<V,V,String> noDetail = new Func2<V, V, String>() {
             @Override
             public String execute(V input1, V input2) {
-                return "";
+                return null;
             }
         };
 

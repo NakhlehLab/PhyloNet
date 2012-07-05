@@ -19,9 +19,9 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;

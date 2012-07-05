@@ -1,5 +1,4 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.RootageQualifier;
 import edu.rice.cs.bioinfo.library.programming.*;
 import org.junit.internal.matchers.Each;
 

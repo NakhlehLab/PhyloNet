@@ -20,7 +20,8 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.IsRooted;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
@@ -29,18 +30,14 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.DeepCoalescencesCo
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
 
-import javax.swing.text.html.HTMLDocument;
-import java.awt.*;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.ReadOnlyBufferException;
 import java.util.*;
 import java.util.List;
 

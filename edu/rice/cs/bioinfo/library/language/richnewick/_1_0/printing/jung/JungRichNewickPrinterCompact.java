@@ -23,6 +23,7 @@ import java.util.Map;
 public class JungRichNewickPrinterCompact<V> extends RichNewickPrinterCompact<V>
 {
 
+
     public <E> void print(final DirectedGraph<V,E> digraph, Func1<V, String> getLabel, StringWriter writer)
     {
         final Map<V,String> hybridNodeToHybridIndex = new HashMap<V, String>();
@@ -32,7 +33,7 @@ public class JungRichNewickPrinterCompact<V> extends RichNewickPrinterCompact<V>
         {
             if(digraph.getInEdges(vertex).size() > 1)
             {
-                hybridNodeToHybridIndex.put(vertex, hybridNodeToHybridIndex.size() + "");
+                hybridNodeToHybridIndex.put(vertex, (hybridNodeToHybridIndex.size() + 1) + "");
             }
             else if(digraph.getInEdges(vertex).size() == 0)
             {
@@ -54,12 +55,6 @@ public class JungRichNewickPrinterCompact<V> extends RichNewickPrinterCompact<V>
             }
         };
 
-        Func2<V,V,String> noDetail = new Func2<V, V, String>() {
-            @Override
-            public String execute(V input1, V input2) {
-                return null;
-            }
-        };
 
         Func1<V, Iterable<V>> getDestinationNodes = new Func1<V, Iterable<V>>() {
             @Override
@@ -75,7 +70,7 @@ public class JungRichNewickPrinterCompact<V> extends RichNewickPrinterCompact<V>
             }
         };
 
-        this.print(true, root, getLabel, getDestinationNodes, noDetail, noDetail, noDetail, getHybridNodeIndex, getHybridNodeType, writer );
+        this.print(true, root, getLabel, getDestinationNodes, getHybridNodeIndex, getHybridNodeType, writer );
 
 
     }

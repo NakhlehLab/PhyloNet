@@ -14,6 +14,11 @@ import java.io.StringWriter;
  */
 public interface RichNewickPrinter<N>
 {
-    void print(boolean isRooted, N printRoot, Func1<N, String> getLabel, Func1<N, Iterable<N>> getDestinationNodes, Func2<N,N,String> getBranchLength, Func2<N,N,String> getSupport,
-               Func2<N,N,String> getProbability, Func1<N, String> getHybridIndex, Func1<N,HybridNodeType> getHybridNodeType, StringWriter writer);
+    public void setGetBranchLength(Func2<N,N,String> getBranchLength);
+
+    public void setGetSupport(Func2<N,N,String> getSupport);
+
+    public void setGetProbability(Func2<N,N,String> getProbability);
+
+    void print(boolean isRooted, N printRoot, Func1<N, String> getLabel, Func1<N, Iterable<N>> getDestinationNodes, Func1<N, String> getHybridIndex, Func1<N,HybridNodeType> getHybridNodeType, StringWriter writer);
 }

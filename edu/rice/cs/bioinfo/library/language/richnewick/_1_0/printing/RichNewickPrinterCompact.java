@@ -24,8 +24,35 @@ import java.util.LinkedList;
  */
 public class RichNewickPrinterCompact<N> implements RichNewickPrinter<N>
 {
-    public void print(boolean isRooted, N printRoot, Func1<N, String> getLabel, Func1<N, Iterable<N>> getDestinationNodes, Func2<N,N,String> getBranchLength, Func2<N,N,String> getSupport,
-                             Func2<N,N,String> getProbability, Func1<N, String> getHybridIndex, Func1<N,HybridNodeType> getHybridNodeType, StringWriter writer)
+     protected final Func2<N,N,String> _noDetail = new Func2<N, N, String>() {
+            @Override
+            public String execute(N input1, N input2) {
+                return null;
+            }
+        };
+
+    private Func2<N,N,String> getBranchLength = _noDetail;
+
+    public void setGetBranchLength(Func2<N,N,String> getBranchLength)
+    {
+        this.getBranchLength = getBranchLength;
+    }
+
+    private Func2<N,N,String> getSupport = _noDetail;
+
+    public void setGetSupport(Func2<N,N,String> getSupport)
+    {
+        this.getSupport = getSupport;
+    }
+
+    private Func2<N,N,String> getProbability = _noDetail;
+
+    public void setGetProbability(Func2<N,N,String> getProbability)
+    {
+        this.getProbability = getProbability;
+    }
+
+    public void print(boolean isRooted, N printRoot, Func1<N, String> getLabel, Func1<N, Iterable<N>> getDestinationNodes, Func1<N, String> getHybridIndex, Func1<N,HybridNodeType> getHybridNodeType, StringWriter writer)
     {
        StringBuffer buffer = writer.getBuffer();
        buffer.append(";");

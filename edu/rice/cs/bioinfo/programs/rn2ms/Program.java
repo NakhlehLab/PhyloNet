@@ -103,8 +103,10 @@ public class Program
 
         GraphBuilderDirectedOrderedSparse<NetworkNode,NetworkEdge> graphBuilder = new GraphBuilderDirectedOrderedSparse<NetworkNode, NetworkEdge>(_makeNode, _makeEdge);
 
-        RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
-        rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(networkNewick.getBytes()), graphBuilder);
+
+            RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
+            rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(networkNewick.getBytes()), graphBuilder);
+
 
         DirectedGraph<NetworkNode,NetworkEdge> graph = graphBuilder.Graph;
 

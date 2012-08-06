@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing;
 
+import com.sun.org.apache.xml.internal.serialize.Printer;
 import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
@@ -94,7 +95,11 @@ public class RichNewickPrinterCompactTest
         };
 
         StringWriter sw = new StringWriter();
-        new RichNewickPrinterCompact<String>().print(true, "R", getLabel, nodeToDest, getBranchLength, getSupport, getProbability, getHybridNodeIndex, getHybridType, sw);
+        RichNewickPrinterCompact printer =  new RichNewickPrinterCompact<String>();
+        printer.setGetBranchLength(getBranchLength);
+        printer.setGetSupport(getSupport);
+        printer.setGetProbability(getProbability);
+        printer.print(true, "R", getLabel, nodeToDest, getHybridNodeIndex, getHybridType, sw);
         sw.flush();
         sw.close();
         String result = sw.toString();
@@ -175,7 +180,11 @@ public class RichNewickPrinterCompactTest
         };
 
         StringWriter sw = new StringWriter();
-        new RichNewickPrinterCompact<String>().print(false, "R", getLabel, nodeToDest, getBranchLength, getSupport, getProbability, getHybridNodeIndex, getHybridType, sw);
+        RichNewickPrinterCompact printer = new RichNewickPrinterCompact<String>();
+        printer.setGetBranchLength(getBranchLength);
+        printer.setGetProbability(getProbability);
+        printer.setGetSupport(getSupport);
+        printer.print(false, "R", getLabel, nodeToDest, getHybridNodeIndex, getHybridType, sw);
         sw.flush();
         sw.close();
         String result = sw.toString();
@@ -260,7 +269,11 @@ public class RichNewickPrinterCompactTest
         };
 
         StringWriter sw = new StringWriter();
-        new RichNewickPrinterCompact<String>().print(false, "A", getLabel, nodeToDest, getBranchLength, getSupport, getProbability, getHybridNodeIndex, getHybridType, sw);
+        RichNewickPrinterCompact printer = new RichNewickPrinterCompact<String>();
+        printer.setGetBranchLength(getBranchLength);
+        printer.setGetProbability(getProbability);
+        printer.setGetSupport(getSupport);
+        printer.print(false, "A", getLabel, nodeToDest, getHybridNodeIndex, getHybridType, sw);
         sw.flush();
         sw.close();
         String result = sw.toString();

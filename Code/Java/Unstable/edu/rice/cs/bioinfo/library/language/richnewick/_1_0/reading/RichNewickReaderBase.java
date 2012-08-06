@@ -83,7 +83,7 @@ public abstract class RichNewickReaderBase<T> implements RichNewickReader<T> {
         }
         catch(Exception e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 }

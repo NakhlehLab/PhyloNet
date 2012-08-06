@@ -151,7 +151,6 @@ public class Program
 
         for(int algoNum = 0; algoNum<4; algoNum++)
         {
-            algoNum = 3;
             logger.removeAllAppenders();
             if(algoNum == 0)
             {

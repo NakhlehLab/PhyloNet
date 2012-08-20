@@ -76,7 +76,7 @@ public class NearestNeighborInterchangeInPlace<T extends Graph<N,E>, N,E> extend
     private void swapDoubleDegreeThree(T tree, Proc4<T,E,E,E> rearrangementComputed, E internalEdge, N internalEdgeNodeA, N internalEdgeNodeB) {
 
         LinkedList<E> swapEdgesA = new LinkedList<E>();
-        IsDestinationNode<T,N,E> isDestinationNode = new IsDestinationNode();
+        IsDestinationNode isDestinationNode = new IsDestinationNode();
         for(E edge : tree.getIncidentEdges(internalEdgeNodeA))
         {
             if(!edge.equals(internalEdge))

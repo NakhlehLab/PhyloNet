@@ -18,7 +18,7 @@ public class GraphValidator
         HashSet<N> nodes = new HashSet<N>();
 
         N searchRoot = null;
-        IsDestinationNode<GraphReadOnly<N,E>,N,E> isDestinationNode = new IsDestinationNode();
+        IsDestinationNode isDestinationNode = new IsDestinationNode();
         for (N node : graph.getNodes()) // assert no node duplicates
         {
             nodes.add(node);

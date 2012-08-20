@@ -17,7 +17,7 @@ public class FindRoot<N,E> implements Func1<GraphReadOnly<N,E>, N>
         {
             throw new IllegalArgumentException("Passed graph must be rooted.");
         }
-        IsDestinationNode<GraphReadOnly<N,E>,N,E> isDestinationNode = new IsDestinationNode();
+        IsDestinationNode isDestinationNode = new IsDestinationNode();
         for (N node : graph.getNodes()) // assert no node duplicates
         {
             boolean nodeAlwaysSourceNode = true;

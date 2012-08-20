@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.ObservableGenerationalScoringSearcherBase;
 import edu.rice.cs.bioinfo.library.programming.*;
-import org.apache.commons.io.filefilter.FalseFileFilter;
 import sun.font.TrueTypeFont;
 
 import java.util.Comparator;

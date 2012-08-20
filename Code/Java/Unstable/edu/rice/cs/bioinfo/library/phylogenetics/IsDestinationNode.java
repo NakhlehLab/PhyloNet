@@ -9,13 +9,13 @@ import edu.rice.cs.bioinfo.library.programming.*;
  * Time: 11:00 AM
  * To change this template use File | Settings | File Templates.
  */
-public class IsDestinationNode<G extends GraphReadOnly<N,E>,N,E> implements Func3<G,N,E,Boolean>
+public class IsDestinationNode implements Func3<GraphReadOnly,Object,Object,Boolean>
 {
-    public Boolean execute(G graph, N node, E edge) {
+    public Boolean execute(GraphReadOnly graph, Object node, Object edge) {
 
         if(graph.isRooted())
         {
-            Tuple<N,N> nodesOfEdge = graph.getNodesOfEdge(edge);
+            Tuple nodesOfEdge = graph.getNodesOfEdge(edge);
             return node.equals(nodesOfEdge.Item2);
         }
         else

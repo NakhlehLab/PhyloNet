@@ -4,6 +4,8 @@ import com.sun.org.apache.bcel.internal.generic.RETURN;
 import com.sun.org.apache.xpath.internal.NodeSet;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.phylogenetics.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
@@ -38,16 +40,64 @@ public class Program
         public int compareTo(NetworkNode o) {
             return this.BackTime.compareTo(o.BackTime);
         }
+
+        @Override
+        public String toString()
+        {
+            return RNLabel;
+        }
     }
 
     static class NetworkEdge
     {
+        private NetworkNode _source, _dest;
+
+        NetworkEdge(NetworkNode source, NetworkNode dest)
+        {
+            _source = source;
+            _dest = dest;
+        }
+
         public BigDecimal BranchLength;
 
-        public BigDecimal Probability;
+
+        private BigDecimal _probability;
+
+        public void setProbability(BigDecimal prob)
+        {
+            _probability = prob;
+        }
+
+        public BigDecimal getProbability()
+        {
+            return _probability;
+        }
 
         public Integer PopulationNumber;
+
+        public Tuple<NetworkNode,NetworkNode> getNodes()
+        {
+            return new Tuple<NetworkNode, NetworkNode>(_source, _dest);
+        }
     }
+
+    private static Func1<NetworkEdge, Tuple<NetworkNode,NetworkNode>> _edgeToTuple = new Func1<NetworkEdge, Tuple<NetworkNode, NetworkNode>>() {
+        public Tuple<NetworkNode, NetworkNode> execute(NetworkEdge input) {
+            return input.getNodes();
+        }
+    };
+
+    private static Proc3<GraphReadOnly, NetworkEdge, Double> _setProb = new Proc3<GraphReadOnly, NetworkEdge, Double>() {
+        public void execute(GraphReadOnly input1, NetworkEdge edge, Double prob) {
+            edge.setProbability(new BigDecimal(prob));
+        }
+    };
+
+    private static Func2<GraphReadOnly, NetworkEdge, Boolean> _isEdgeProbUnset = new Func2<GraphReadOnly, NetworkEdge, Boolean>() {
+        public Boolean execute(GraphReadOnly input1, NetworkEdge edge) {
+            return edge.getProbability() == null;
+        }
+    };
 
     private static  int _nextPopNumber = 1;
 
@@ -66,10 +116,10 @@ public class Program
             new  Func5<NetworkNode, NetworkNode, BigDecimal, BigDecimal, BigDecimal,NetworkEdge>()
             {
                 @Override
-                public NetworkEdge execute(NetworkNode arg1, NetworkNode arg2, BigDecimal branchLength, BigDecimal arg4, BigDecimal prob) {
-                    NetworkEdge edge = new NetworkEdge();
+                public NetworkEdge execute(NetworkNode source, NetworkNode dest, BigDecimal branchLength, BigDecimal arg4, BigDecimal prob) {
+                    NetworkEdge edge = new NetworkEdge(source, dest);
                     edge.BranchLength = branchLength;
-                    edge.Probability = prob;
+                    edge.setProbability(prob);
                     return edge;
                 }
             };
@@ -91,17 +141,9 @@ public class Program
         run(args, out, error);
     }
 
-    static void run(String[] args, final Proc1<String> out, Proc1<String> error)
+    static Tuple<String,Map<String,Integer>> toMSScript(int numGT, String networkNewick)
     {
-         if(args.length != 2)
-        {
-            error.execute("Usage: java -jar rn2ms.jar num_gt rich_newick_string");
-        }
-
-        int num_gt = Integer.parseInt(args[0]);
-        String networkNewick = args[1];
-
-        GraphBuilderDirectedOrderedSparse<NetworkNode,NetworkEdge> graphBuilder = new GraphBuilderDirectedOrderedSparse<NetworkNode, NetworkEdge>(_makeNode, _makeEdge);
+         GraphBuilderDirectedOrderedSparse<NetworkNode,NetworkEdge> graphBuilder = new GraphBuilderDirectedOrderedSparse<NetworkNode, NetworkEdge>(_makeNode, _makeEdge);
 
 
             RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
@@ -109,6 +151,8 @@ public class Program
 
 
         DirectedGraph<NetworkNode,NetworkEdge> graph = graphBuilder.Graph;
+
+       new AssignEqualProbToUnnotatedHybridEdges().execute(new DirectedGraphToGraphAdapter(graph, _edgeToTuple) , _setProb, _isEdgeProbUnset);
 
         Map<String,Integer> taxonLabelToPopNumber = new HashMap<String,Integer>();
         NetworkNode root = null;
@@ -130,8 +174,7 @@ public class Program
 
         if(!isUltrametric(graph, leaves))
         {
-            error.execute("Given newtwork must be ultrametric.");
-            return;
+            throw new IllegalArgumentException("Given newtwork must be ultrametric.");
         }
 
 
@@ -144,9 +187,7 @@ public class Program
         assignPopulationNumbersToEdges(netNodesByBackTimeAsc, graph, taxonLabelToPopNumber);
         List<PopCommand> commands = generateSplitAndJoinCommands(netNodesByBackTimeAsc, graph, taxonLabelToPopNumber.keySet());
 
-        out.execute("Node to population:\n");
-        out.execute(taxonLabelToPopNumber.toString() + "\n");
-        out.execute("MS command:\n");
+
 
         String ones = " ";
 
@@ -155,22 +196,57 @@ public class Program
             ones+= "1 ";
         }
 
-        out.execute("ms " + taxonLabelToPopNumber.size() + " " + num_gt + " -T -I " + taxonLabelToPopNumber.size() + ones);
+        final StringBuffer msCommand =  new StringBuffer("ms " + taxonLabelToPopNumber.size() + " " + numGT + " -T -I " + taxonLabelToPopNumber.size() + ones);
 
         for(PopCommand command : commands)
         {
             command.execute(new PopCommandAlgo<Object, Object, RuntimeException>() {
                 public Object forSplit(Split split, Object input) throws RuntimeException {
-                    out.execute("-es " + split.BackTime + " " + split.OldPopulationNumber + " " + split.OldPopulationProbability + " ");
+                    msCommand.append("-es " + split.BackTime + " " + split.OldPopulationNumber + " " + split.OldPopulationProbability + " ");
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
 
                 public Object forJoin(Join join, Object input) throws RuntimeException {
-                    out.execute("-ej " + join.BackTime + " " + join.SecondaryPopulationNumber + " " + join.PrimaryPopulationNumber + " ");
+                    msCommand.append("-ej " + join.BackTime + " " + join.SecondaryPopulationNumber + " " + join.PrimaryPopulationNumber + " ");
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
             }, null);
         }
+
+        return new Tuple<String, Map<String, Integer>>(msCommand.toString(), taxonLabelToPopNumber);
+
+    }
+
+    static void run(String[] args, final Proc1<String> out, Proc1<String> error)
+    {
+         if(args.length != 2)
+        {
+            error.execute("Usage: java -jar rn2ms.jar num_gt rich_newick_string");
+        }
+
+        int num_gt = Integer.parseInt(args[0]);
+        String networkNewick = args[1];
+
+
+        try
+        {
+            Tuple<String,Map<String,Integer>> toMSScriptResult = toMSScript(num_gt, networkNewick);
+            Map<String,Integer> taxonLabelToPopNumber = toMSScriptResult.Item2;
+            String msCommand = toMSScriptResult.Item1;
+
+            out.execute("Node to population:\n");
+            out.execute(taxonLabelToPopNumber.toString() + "\n");
+            out.execute("MS command:\n");
+            out.execute(msCommand);
+        }
+        catch(IllegalArgumentException e)
+        {
+            error.execute(e.getMessage());
+            return;
+        }
+
+
+
     }
 
     private static boolean isUltrametric(DirectedGraph<NetworkNode, NetworkEdge> graph, Set<NetworkNode> leafs)
@@ -263,7 +339,7 @@ public class Program
                 NetworkEdge newPopInEdge = (inEdges.get(0).PopulationNumber == oldPopNumber ?
                                 inEdges.get(1) :
                                 inEdges.get(0));
-                commands.add(new Split(node.BackTime, oldPopNumber, newPopInEdge.PopulationNumber, BigDecimal.ONE.subtract(newPopInEdge.Probability)));
+                commands.add(new Split(node.BackTime, oldPopNumber, newPopInEdge.PopulationNumber, BigDecimal.ONE.subtract(newPopInEdge.getProbability())));
             }
 
         }

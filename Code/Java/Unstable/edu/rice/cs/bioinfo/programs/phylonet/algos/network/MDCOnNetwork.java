@@ -143,13 +143,16 @@ public class MDCOnNetwork {
                 if (child.getName().equals(NetNode.NO_NAME)) {
                     child.setName("hnode" + (nameid++));
                 }
-
-                Integer amount = nname2tamount.get(child.getName());
+                String name = child.getName();
+                if(child.isNetworkNode()){
+                    name = child.getName()+"TO"+parent.getName();
+                }
+                Integer amount = nname2tamount.get(name);
                 if(amount==null){
                     amount = 0;
                 }
-                nname2tamount.put(child.getName(), ++amount);
-                String newname = child.getName() + "_" + amount;
+                nname2tamount.put(name, ++amount);
+                String newname = name + "_" + amount;
                 copy = peer.createChild(newname);
 
                 double distance = child.getParentDistance(parent);

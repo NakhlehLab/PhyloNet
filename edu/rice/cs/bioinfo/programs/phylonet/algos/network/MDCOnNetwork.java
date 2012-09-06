@@ -13,7 +13,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
  * To change this template use File | Settings | File Templates.
  */
 public class MDCOnNetwork {
-    boolean _printDetail;
+    boolean _printDetail = false;
 
     public void setPrintDetails(boolean p){
         _printDetail = p;
@@ -33,11 +33,9 @@ public class MDCOnNetwork {
         Map<String,String> tname2nname = new HashMap<String,String>();
 
         for(Map.Entry<String, Integer> entry: nname2tamount.entrySet()){
-            if(net.findNode(entry.getKey()).isTreeNode()){
-                if(entry.getValue()>1){
-                    for(int i=1; i<=entry.getValue(); i++){
-                        tname2nname.put(entry.getKey()+"_"+i, entry.getKey());
-                    }
+            if(entry.getValue()>1){
+                for(int i=1; i<=entry.getValue(); i++){
+                    tname2nname.put(entry.getKey()+"_"+i, entry.getKey());
                 }
             }
         }
@@ -180,7 +178,6 @@ public class MDCOnNetwork {
         Map<String, Integer> nname2xl = new HashMap<String, Integer>();
 
         for (TNode node : st.postTraverse()) {
-
             BitSet bs = new BitSet();
             if (node.isLeaf()) {
                 for (int i = 0; i < stTaxa.length; i++) {

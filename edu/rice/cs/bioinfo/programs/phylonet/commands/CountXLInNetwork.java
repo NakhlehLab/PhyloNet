@@ -23,6 +23,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkN
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -42,14 +43,13 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-public class CalGTProbInNetwork extends CommandBaseFileOut{
+public class CountXLInNetwork extends CommandBaseFileOut{
     private HashMap<String,String> _taxonMap = null;
-    private boolean  _printDetail = false;
     private NetworkNonEmpty _speciesNetwork;
     private List<NetworkNonEmpty> _geneTrees;
 
-    public CalGTProbInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                      Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
+    public CountXLInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
+                              Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 
@@ -60,7 +60,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 5;
+        return 4;
     }
 
     @Override
@@ -90,14 +90,8 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
         }
 
-        ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
-        if(pParam.ContainsSwitch)
-        {
-            _printDetail = true;
-        }
-
-        noError = noError && checkForUnknownSwitches("p", "a");
-        checkAndSetOutFile(aParam, pParam);
+        noError = noError && checkForUnknownSwitches("a");
+        checkAndSetOutFile(aParam);
 
         return  noError;
     }
@@ -105,7 +99,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        
+
         List<Tree> geneTrees = new ArrayList<Tree>();
         List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
@@ -142,20 +136,20 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-        GeneTreeProbability gtp = new GeneTreeProbability();
-        Iterator<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, _printDetail).iterator();
+        MDCOnNetwork mdc = new MDCOnNetwork();
+        Iterator<Integer> xlList = mdc.countExtraCoal(speciesNetwork, geneTrees, _taxonMap).iterator();
         Iterator<Integer> counterIt = counter.iterator();
-        double total = 0;
+        int total = 0;
         for(Tree gt: geneTrees){
             for(TNode node: gt.getNodes()){
                 node.setParentDistance(TNode.NO_DISTANCE);
             }
-            double prob = probList.next();
-            int count = counterIt.next();
-            total += Math.log(prob)*count;
-            result.append("\n[x" + count + "] " + gt.toString() + " : " + prob);
+            int xl = xlList.next();
+            int count = counterIt.next();;
+            total += xl * count;
+            result.append("\n[x" + count + "] " + gt.toString() + ": " + xl);
         }
-        result.append("\n" + "Total log probability: " + total);
+        result.append("\n" + "Total number of extra lineages: " + total);
 
         return result.toString();
 

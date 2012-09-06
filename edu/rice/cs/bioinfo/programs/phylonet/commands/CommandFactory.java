@@ -65,9 +65,13 @@ public class CommandFactory {
         {
             return new RIATAHGT(directive, params, sourceIdentToNetwork, errorDetected);
         }
-        else if(lowerCommandName.equals("deepcoalcount"))
+        else if(lowerCommandName.equals("deepcoalcount_tree"))
         {
             return new DeepCoalCount(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+        else if(lowerCommandName.equals("deepcoalcount_network"))
+        {
+            return new CountXLInNetwork(directive, params, sourceIdentToNetwork, errorDetected);
         }
         else if(lowerCommandName.equals("processgt"))
         {

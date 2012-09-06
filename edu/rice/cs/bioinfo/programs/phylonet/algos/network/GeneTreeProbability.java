@@ -427,12 +427,12 @@ public class GeneTreeProbability {
 
         for(TNode b: _mulTree.postTraverse()){
             String nname = _tname2nname.get(b.getName());
-
             if(nname != null){
                 if(_hname2tnodes.containsKey(nname)){
                    continue;
                 }
             }
+
             int u = calculateU(_mulTree, b, mapping, history);
             if(u==0)continue;
             int c = calculateC(b,history);
@@ -440,7 +440,7 @@ public class GeneTreeProbability {
             long w = calculateW(b,c,history);
             long d = calculateD(u,c);
             double gamma = ((STINode<Double>)b).getData();
-            gtmaphisprob *= gij*w/d*Math.pow(gamma, u-c);
+            gtmaphisprob *= gij*w/d*Math.pow(gamma, u);
             if(countXL && b.getParentDistance()!=0){
                 xl += Math.max(0, u-c-1);
             }
@@ -462,7 +462,7 @@ public class GeneTreeProbability {
                 }
                 if(gamma!=1 && u-c!=0){
                     if(u-c!=1){
-                        System.out.print(prefix+"("+gamma+")^"+(u-c));
+                        System.out.print(prefix+"("+gamma+")^"+u);
                     }
                     else{
                         System.out.print(prefix+"("+gamma+")");
@@ -482,7 +482,7 @@ public class GeneTreeProbability {
                 int c = calculateC(hnode,history);
                 double gamma = ((STINode<Double>)hnode).getData();
                 double w = calculateHW(hnode,c,history);
-                gtmaphisprob *= Math.pow(gamma, u-c);
+                gtmaphisprob *= Math.pow(gamma, u);
                 if(_printDetails){
                     String prefix = "*";
                     if(first){
@@ -490,7 +490,7 @@ public class GeneTreeProbability {
                     }
                     if(gamma!=1 && u-c!=0){
                         if(u-c!=1){
-                            System.out.print(prefix+"("+gamma+")^"+(u-c));
+                            System.out.print(prefix+"("+gamma+")^"+u);
                         }
                         else{
                             System.out.print(prefix+"("+gamma+")");
@@ -574,19 +574,21 @@ public class GeneTreeProbability {
         while(!source.isEmpty()){
             NetNode<Double> parent = source.poll();
             TMutableNode peer = dest.poll();
-            int index = 0;
             for (NetNode<Double> child : parent.getChildren()) {
                 TMutableNode copy;
                 if (child.getName().equals(NetNode.NO_NAME)) {
                     child.setName("hnode" + (nameid++));
                 }
-
-                Integer amount = _nname2tamount.get(child.getName());
+                String name = child.getName();
+                if(child.isNetworkNode()){
+                    name = child.getName()+"TO"+parent.getName();
+                }
+                Integer amount = _nname2tamount.get(name);
                 if(amount==null){
                     amount = 0;
                 }
-                _nname2tamount.put(child.getName(), ++amount);
-                String newname = child.getName() + "_" + amount;
+                _nname2tamount.put(name, ++amount);
+                String newname = name + "_" + amount;
                 copy = peer.createChild(newname);
                 if(child.isLeaf()) {
                     _stTaxa.add(newname);
@@ -608,7 +610,7 @@ public class GeneTreeProbability {
                 // Continue to iterate over the children of nn and tn.
                 source.offer(child);
                 dest.offer(copy);
-                index ++;
+                //index ++;
             }
         }
     }

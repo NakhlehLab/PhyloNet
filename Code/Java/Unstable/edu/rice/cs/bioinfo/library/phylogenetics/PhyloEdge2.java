@@ -3,67 +3,53 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
- * Date: 5/13/12
- * Time: 3:09 PM
+ * Date: 8/28/12
+ * Time: 11:43 AM
  * To change this template use File | Settings | File Templates.
  */
-public class PhyloEdge<T>
-{
-    private double _branchLength = 1.0;
+public class PhyloEdge2<T,D> {
 
-    public double getBranchLength()
+    private D _branchLength;
+
+    public D getBranchLength()
     {
         return _branchLength;
     }
 
-    public void setBranchLength(double newBranchLength)
+    public void setBranchLength(D newBranchLength)
     {
         _branchLength = newBranchLength;
     }
 
-    private double _support = 100;
+    private D _support;
 
-    public double getSupport()
+    public D getSupport()
     {
         return _support;
     }
 
-    public void setSupport(double newSupport)
+    public void setSupport(D newSupport)
     {
-        if(newSupport <= 100 && newSupport >= 0.0)
-        {
-            _support = newSupport;
-        }
-        else
-        {
-            throw new IllegalArgumentException("Support value must be between zero and a hundred inclusive.  Found: " + newSupport);
-        }
+        _support = newSupport;
     }
 
-    private double _probability = 1.0;
+    private D _probability;
 
-    public double getProbabilty()
+    public D getProbabilty()
     {
         return _probability;
     }
 
-    public void setProbability(double newProbability)
+    public void setProbability(D newProbability)
     {
-        if(newProbability <= 1.0 && newProbability >= 0.0)
-        {
-            _support = newProbability;
-        }
-        else
-        {
-            throw new IllegalArgumentException("Probability value must be between zero and one inclusive.  Found: " + newProbability);
-        }
+        _probability = newProbability;
     }
 
     public final T Source;
 
     public final T Destination;
 
-    public PhyloEdge(T source, T destination)
+    public PhyloEdge2(T source, T destination)
     {
         Source = source;
         Destination = destination;
@@ -73,7 +59,7 @@ public class PhyloEdge<T>
     {
         try
         {
-            return equals((PhyloEdge)candidate);
+            return equals((PhyloEdge2)candidate);
         }
         catch (ClassCastException e)
         {
@@ -81,7 +67,7 @@ public class PhyloEdge<T>
         }
     }
 
-    public boolean equals(PhyloEdge candidate)
+    public boolean equals(PhyloEdge2 candidate)
     {
         return candidate.Source.equals(this.Source) &&
                candidate.Destination.equals(this.Destination) &&
@@ -89,10 +75,11 @@ public class PhyloEdge<T>
                candidate.getProbabilty() == this.getProbabilty() &&
                candidate.getSupport() == this.getSupport();
     }
-    
+
     @Override
     public String toString()
     {
         return "(" + Source + "," + Destination + ")";
     }
+
 }

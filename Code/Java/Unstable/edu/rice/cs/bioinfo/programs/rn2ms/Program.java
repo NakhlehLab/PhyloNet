@@ -87,17 +87,6 @@ public class Program
         }
     };
 
-    private static Proc3<GraphReadOnly, NetworkEdge, Double> _setProb = new Proc3<GraphReadOnly, NetworkEdge, Double>() {
-        public void execute(GraphReadOnly input1, NetworkEdge edge, Double prob) {
-            edge.setProbability(new BigDecimal(prob));
-        }
-    };
-
-    private static Func2<GraphReadOnly, NetworkEdge, Boolean> _isEdgeProbUnset = new Func2<GraphReadOnly, NetworkEdge, Boolean>() {
-        public Boolean execute(GraphReadOnly input1, NetworkEdge edge) {
-            return edge.getProbability() == null;
-        }
-    };
 
     private static  int _nextPopNumber = 1;
 
@@ -141,7 +130,7 @@ public class Program
         run(args, out, error);
     }
 
-    static Tuple<String,Map<String,Integer>> toMSScript(int numGT, String networkNewick)
+    public static Tuple<String,Map<String,Integer>> toMSScript(int numGT, String networkNewick, BigDecimal ultrametricThreshold)
     {
          GraphBuilderDirectedOrderedSparse<NetworkNode,NetworkEdge> graphBuilder = new GraphBuilderDirectedOrderedSparse<NetworkNode, NetworkEdge>(_makeNode, _makeEdge);
 
@@ -152,7 +141,7 @@ public class Program
 
         DirectedGraph<NetworkNode,NetworkEdge> graph = graphBuilder.Graph;
 
-       new AssignEqualProbToUnnotatedHybridEdges().execute(new DirectedGraphToGraphAdapter(graph, _edgeToTuple) , _setProb, _isEdgeProbUnset);
+
 
         Map<String,Integer> taxonLabelToPopNumber = new HashMap<String,Integer>();
         NetworkNode root = null;
@@ -172,9 +161,9 @@ public class Program
             }
         }
 
-        if(!isUltrametric(graph, leaves))
+        if(!isUltrametric(graph, leaves, ultrametricThreshold))
         {
-            throw new IllegalArgumentException("Given newtwork must be ultrametric.");
+            throw new IllegalArgumentException("Given newtwork must be ultrametric within threshold.");
         }
 
 
@@ -219,18 +208,19 @@ public class Program
 
     static void run(String[] args, final Proc1<String> out, Proc1<String> error)
     {
-         if(args.length != 2)
+        if(args.length != 3)
         {
-            error.execute("Usage: java -jar rn2ms.jar num_gt rich_newick_string");
+            error.execute("Usage: java -jar rn2ms.jar num_gt rich_newick_string ultrametric_threshold");
         }
 
         int num_gt = Integer.parseInt(args[0]);
         String networkNewick = args[1];
+        BigDecimal ultrametricThreshold = new BigDecimal(args[2]);
 
 
         try
         {
-            Tuple<String,Map<String,Integer>> toMSScriptResult = toMSScript(num_gt, networkNewick);
+            Tuple<String,Map<String,Integer>> toMSScriptResult = toMSScript(num_gt, networkNewick, ultrametricThreshold);
             Map<String,Integer> taxonLabelToPopNumber = toMSScriptResult.Item2;
             String msCommand = toMSScriptResult.Item1;
 
@@ -249,7 +239,7 @@ public class Program
 
     }
 
-    private static boolean isUltrametric(DirectedGraph<NetworkNode, NetworkEdge> graph, Set<NetworkNode> leafs)
+    private static boolean isUltrametric(DirectedGraph<NetworkNode, NetworkEdge> graph, Set<NetworkNode> leafs, BigDecimal ultrametricThreshold)
     {
         Map<NetworkNode, BigDecimal> pathLengthToLeafs = new HashMap<NetworkNode, BigDecimal>();
 
@@ -279,7 +269,7 @@ public class Program
                     pathLengthToLeafs.put(sourceNode, expectedPathLength);
                     workingList.add(sourceNode);
                 }
-                else if(!foundPathLength.equals(expectedPathLength))
+                else if(foundPathLength.subtract(expectedPathLength).abs().compareTo(ultrametricThreshold) == 1)
                 {
                     return false;
                 }

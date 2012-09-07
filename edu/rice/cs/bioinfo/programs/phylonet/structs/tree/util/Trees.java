@@ -29,6 +29,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeBipartition;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
+import sun.java2d.SunGraphicsEnvironment;
 
 import java.util.*;
 
@@ -204,9 +205,7 @@ public class Trees {
 		return;
 	}
 
-	/**
-	 * Helper method for {@link removeBinaryNodes}.
-	 */
+
 	private static final void removeBinaryChildren(TMutableNode node) {
 
 		// copy iterator
@@ -899,6 +898,28 @@ public class Trees {
 		return 0;
 	}
 
+
+    public static boolean haveSameRootedTopology(Tree t1, Tree t2){
+        if(!leafSetsAgree(t1,t2)){
+            return false;
+        }
+        String[] taxa = t1.getLeaves();
+        List<STITreeCluster> clusters1 = t1.getClusters(taxa, false);
+        List<STITreeCluster> clusters2 = t2.getClusters(taxa, false);
+        int fp= 0;
+        for(STITreeCluster cl1: clusters1){
+            if(!clusters2.contains(cl1)){
+                fp++;
+            }
+        }
+        int fn = 0;
+        for(STITreeCluster cl2: clusters2){
+            if(!clusters1.contains(cl2)){
+                fn++;
+            }
+        }
+        return fp==0 && fn==0;
+    }
 
 }
 

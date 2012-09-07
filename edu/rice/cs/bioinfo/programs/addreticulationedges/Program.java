@@ -6,10 +6,7 @@ import com.sun.xml.internal.ws.server.StatefulInstanceResolver;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
-import edu.rice.cs.bioinfo.library.phylogenetics.AddReticulationEdge;
-import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
-import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
+import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
@@ -46,108 +43,127 @@ public class Program {
         }
     };
 
-    private  Func1<Graph<String,PhyloEdge<String>>,String> _makeNodeFromGraph = new Func1<Graph<String,PhyloEdge<String>>,String>()
+    private  Func1<Graph<String,PhyloEdge2<String,BigDecimal>>,String> _makeNodeFromGraph = new Func1<Graph<String,PhyloEdge2<String,BigDecimal>>,String>()
                         {
-                            public String execute(Graph<String, PhyloEdge<String>> input) {
+                            public String execute(Graph<String, PhyloEdge2<String,BigDecimal>> input) {
                                 return makeNodeName();
                             }
                         };
 
-    private  Func3<Graph<String,PhyloEdge<String>>, String, String, PhyloEdge<String>> _makeEdgeFromGraph = new Func3<Graph<String, PhyloEdge<String>>, String, String, PhyloEdge<String>>() {
-        public PhyloEdge<String> execute(Graph<String, PhyloEdge<String>> arg1, String arg2, String arg3) {
-            return new PhyloEdge<String>(arg2, arg3);
+    private  Func3<Graph<String,PhyloEdge2<String,BigDecimal>>, String, String, PhyloEdge2<String,BigDecimal>> _makeEdgeFromGraph = new Func3<Graph<String, PhyloEdge2<String,BigDecimal>>, String, String, PhyloEdge2<String,BigDecimal>>() {
+        public PhyloEdge2<String,BigDecimal> execute(Graph<String, PhyloEdge2<String,BigDecimal>> arg1, String arg2, String arg3) {
+            return new PhyloEdge2<String,BigDecimal>(arg2, arg3);
         }
     };
 
-    private Func5<String, String, BigDecimal, BigDecimal, BigDecimal, PhyloEdge<String>> _makeEdge =
-            new  Func5<String, String, BigDecimal, BigDecimal, BigDecimal,PhyloEdge<String>>()
+    private Func5<String, String, BigDecimal, BigDecimal, BigDecimal, PhyloEdge2<String,BigDecimal>> _makeEdge =
+            new  Func5<String, String, BigDecimal, BigDecimal, BigDecimal,PhyloEdge2<String,BigDecimal>>()
             {
                 @Override
-                public PhyloEdge<String> execute(String source, String dest, BigDecimal branchLength, BigDecimal arg4, BigDecimal prob) {
-                    PhyloEdge<String> edge = new  PhyloEdge<String>(source, dest);
-                    edge.setBranchLength(branchLength.doubleValue());
+                public PhyloEdge2<String,BigDecimal> execute(String source, String dest, BigDecimal branchLength, BigDecimal arg4, BigDecimal prob) {
+                    PhyloEdge2<String,BigDecimal> edge = new  PhyloEdge2<String,BigDecimal>(source, dest);
+                    edge.setBranchLength(branchLength);
                     return edge;
                 }
             };
 
-    private Func2<GraphReadOnly<String,PhyloEdge<String>>, PhyloEdge<String>, Double> _getBranchLength = new Func2<GraphReadOnly<String, PhyloEdge<String>>, PhyloEdge<String>, Double>() {
-        public Double execute(GraphReadOnly<String, PhyloEdge<String>> input1, PhyloEdge<String> edge) {
+    private Func2<GraphReadOnly<String,PhyloEdge2<String,BigDecimal>>, PhyloEdge2<String,BigDecimal>, BigDecimal> _getBranchLength = new Func2<GraphReadOnly<String, PhyloEdge2<String,BigDecimal>>, PhyloEdge2<String,BigDecimal>, BigDecimal>() {
+        public BigDecimal execute(GraphReadOnly<String, PhyloEdge2<String,BigDecimal>> input1, PhyloEdge2<String,BigDecimal> edge) {
             return edge.getBranchLength();
         }
     };
 
-    private Proc3<GraphReadOnly<String,PhyloEdge<String>>, PhyloEdge<String>, Double> _setBranchLength = new Proc3<GraphReadOnly<String, PhyloEdge<String>>, PhyloEdge<String>, Double>() {
-        public void execute(GraphReadOnly<String, PhyloEdge<String>> input1, PhyloEdge<String> edge, Double branchLength) {
+    private Proc3<GraphReadOnly<String,PhyloEdge2<String,BigDecimal>>, PhyloEdge2<String,BigDecimal>, BigDecimal> _setBranchLength = new Proc3<GraphReadOnly<String, PhyloEdge2<String,BigDecimal>>, PhyloEdge2<String,BigDecimal>, BigDecimal>() {
+        public void execute(GraphReadOnly<String, PhyloEdge2<String,BigDecimal>> input1, PhyloEdge2<String,BigDecimal> edge, BigDecimal branchLength) {
             edge.setBranchLength(branchLength);
         }
     };
 
-    private Func<Double> _makeZero = new Func<Double>() {
-        public Double execute() {
-            return new Double(0);
+    private Func<BigDecimal> _makeZero = new Func<BigDecimal>() {
+        public BigDecimal execute() {
+            return BigDecimal.ZERO;
         }
     };
 
-    private Func2<Double,Double,Double> _add = new Func2<Double, Double, Double>() {
-        public Double execute(Double input1, Double input2) {
-            return new Double(input1.doubleValue() + input2.doubleValue());
+    private Func2<BigDecimal,BigDecimal,BigDecimal> _add = new Func2<BigDecimal, BigDecimal, BigDecimal>() {
+        public BigDecimal execute(BigDecimal input1, BigDecimal input2) {
+            return input1.add(input2);
         }
     };
 
-    private Func2<Double,Double,Double> _subtract = new Func2<Double, Double, Double>() {
-        public Double execute(Double input1, Double input2) {
-            return new Double(input1.doubleValue() - input2.doubleValue());
+    private Func2<BigDecimal,BigDecimal,BigDecimal> _subtract = new Func2<BigDecimal, BigDecimal, BigDecimal>() {
+        public BigDecimal execute(BigDecimal input1, BigDecimal input2) {
+            return input1.subtract(input2);
         }
     };
 
-    private Func1<Double,Double> _half = new Func1<Double, Double>() {
-        public Double execute(Double input) {
-            return input.doubleValue() / 2.0;
+    private Func1<BigDecimal,BigDecimal> _half = new Func1<BigDecimal, BigDecimal>() {
+        public BigDecimal execute(BigDecimal input) {
+            return input.divide(new BigDecimal(2));
         }
     };
 
-    private  AddReticulationEdge<String,PhyloEdge<String>, Double> _addReticulationEdge =
-                new AddReticulationEdge<String,PhyloEdge<String>,Double>(_makeNodeFromGraph, _makeEdgeFromGraph, _getBranchLength, _setBranchLength, _makeZero, _add, _subtract, _half);
+    private static Proc3<GraphReadOnly, PhyloEdge2<String,BigDecimal>, BigDecimal> _setProb = new Proc3<GraphReadOnly, PhyloEdge2<String,BigDecimal>, BigDecimal>() {
+          public void execute(GraphReadOnly input1, PhyloEdge2<String,BigDecimal> edge, BigDecimal prob) {
+              edge.setProbability(prob);
+          }
+      };
+
+     private static Func2<GraphReadOnly, PhyloEdge2<String,BigDecimal>, Boolean> _isEdgeProbUnset = new Func2<GraphReadOnly, PhyloEdge2<String,BigDecimal>, Boolean>() {
+        public Boolean execute(GraphReadOnly input1, PhyloEdge2<String,BigDecimal> edge) {
+            return edge.getProbabilty() == null;
+        }
+    };
+
+
+    private  AddReticulationEdge<String,PhyloEdge2<String,BigDecimal>, BigDecimal> _addReticulationEdge =
+                new AddReticulationEdge<String,PhyloEdge2<String,BigDecimal>,BigDecimal>(_makeNodeFromGraph, _makeEdgeFromGraph, _getBranchLength, _setBranchLength, _makeZero, _add, _subtract, _half);
 
 
 
-    String addEdges(String networkNewick, int numReticulationEdges, double scaleFactor, Random rand)
+    String addEdges(String networkNewick, int numEdgesToAdd, double scaleFactor, Random rand)
     {
-        GraphBuilderDirectedOrderedSparse<String,PhyloEdge<String>> graphBuilder = new GraphBuilderDirectedOrderedSparse<String, PhyloEdge<String>>(_makeNode, _makeEdge);
+        GraphBuilderDirectedOrderedSparse<String,PhyloEdge2<String,BigDecimal>> graphBuilder = new GraphBuilderDirectedOrderedSparse<String, PhyloEdge2<String,BigDecimal>>(_makeNode, _makeEdge);
 
         RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
         rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(networkNewick.getBytes()), graphBuilder);
 
-        final DirectedGraphToGraphAdapter<String,PhyloEdge<String>> graph = new DirectedGraphToGraphAdapter(graphBuilder.Graph, new Func1<PhyloEdge<String>, Tuple<String,String>>()
+        final DirectedGraphToGraphAdapter<String,PhyloEdge2<String,BigDecimal>> graph = new DirectedGraphToGraphAdapter(graphBuilder.Graph, new Func1<PhyloEdge2<String,BigDecimal>, Tuple<String,String>>()
         {
 
-            public Tuple<String, String> execute(PhyloEdge<String> input) {
+            public Tuple<String, String> execute(PhyloEdge2<String,BigDecimal> input) {
                 return new Tuple<String, String>(input.Source, input.Destination);
             }
         });
 
-        int numReticulationEdgesInNetwork = 0;
 
 
-        while(numReticulationEdgesInNetwork < numReticulationEdges)
+        int numEdgesAdded = 0;
+
+
+        while(numEdgesAdded < numEdgesToAdd)
         {
-            List<PhyloEdge<String>> edges = IterableHelp.toList(graph.getEdges());
+            List<PhyloEdge2<String,BigDecimal>> edges = IterableHelp.toList(graph.getEdges());
             Collections.shuffle(edges, rand);
 
-            final PhyloEdge<String> e1 = edges.remove(0);
-            final PhyloEdge<String> e2 = edges.remove(0);
+            final PhyloEdge2<String,BigDecimal> e1 = edges.remove(0);
+            final PhyloEdge2<String,BigDecimal> e2 = edges.remove(0);
 
 
             try
             {
                 _addReticulationEdge.execute(graph, e1, e2, true);
-                numReticulationEdgesInNetwork++;
+                numEdgesAdded++;
             }
             catch(IllegalArgumentException e)
             {
             }
 
         }
+
+
+       AssignProbToUnnotatedHybridEdges.setRandom(rand);
+       new AssignProbToUnnotatedHybridEdges().execute(graph , AssignProbToUnnotatedHybridEdges.UNIFORM_RANDOM, _setProb, _isEdgeProbUnset);
 
         Func1<String,String> getLabel = new Func1<String, String>() {
             public String execute(String input) {
@@ -158,9 +174,10 @@ public class Program {
         // scale edges if requested
         if(scaleFactor != 1.0)
         {
-            for(PhyloEdge<String> edge : graph.getEdges())
+            BigDecimal scaleFactorBD = new BigDecimal(scaleFactor);
+            for(PhyloEdge2<String,BigDecimal> edge : graph.getEdges())
             {
-                edge.setBranchLength(edge.getBranchLength() * scaleFactor);
+                edge.setBranchLength(edge.getBranchLength().multiply(scaleFactorBD));
             }
         }
 
@@ -171,11 +188,30 @@ public class Program {
         {
 
             public String execute(String source, String dest) {
-                for(PhyloEdge<String> edge : graph.Graph.getOutEdges(source))
+                for(PhyloEdge2<String,BigDecimal> edge : graph.Graph.getOutEdges(source))
                 {
                     if(edge.Destination.equals(dest))
                     {
                         return edge.getBranchLength() + "";
+                    }
+                }
+                throw new RuntimeException("Unknown edge " + source + " " + dest);
+            }
+        });
+        printer.setGetProbability(new Func2<String,String,String>()
+        {
+            public String execute(String source, String dest) {
+
+                if(new GetInDegree().execute(graph, dest) < 2)
+                {
+                    return null;
+                }
+
+                for(PhyloEdge2<String,BigDecimal> edge : graph.Graph.getOutEdges(source))
+                {
+                    if(edge.Destination.equals(dest))
+                    {
+                        return edge.getProbabilty() + "";
                     }
                 }
                 throw new RuntimeException("Unknown edge " + source + " " + dest);

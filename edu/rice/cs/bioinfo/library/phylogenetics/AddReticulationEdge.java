@@ -42,7 +42,7 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
         _half = half;
     }
 
-    public void execute(Graph<N,E> graph, E edge1, E edge2, Boolean performValidation)
+    public void execute(Graph<N,E> graph, E edge1, E edge2, Boolean allowZeroBranchLength)
     {
 
         N edge1Source = graph.getNodesOfEdge(edge1).Item1;
@@ -59,56 +59,61 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
         T pathLengthToEdge1Source = findPathLength.execute(graph, root, edge1Source , _getBranchLength, _makeZero, _add);
         T pathLengthToEdge2Source = findPathLength.execute(graph, root, edge2Source, _getBranchLength, _makeZero, _add);
 
-        T pathLengthToEdge1Dest = _add.execute(pathLengthToEdge1Source, edge1BranchLength);
-        T pathLengthToEdge2Dest = _add.execute(pathLengthToEdge2Source, edge2BranchLength);
+        T edge1NewNodeBLOffset = _half.execute(edge1BranchLength);
+        T edge2NewNodeBLOffset = _half.execute(edge2BranchLength);
 
-        boolean edge1StartsFirst = pathLengthToEdge1Source.compareTo(pathLengthToEdge2Source) < 0;
+        T pathLengthToEdge1NewNode = _add.execute(pathLengthToEdge1Source, edge1NewNodeBLOffset);
+        T pathLengthToEdge2NewNode = _add.execute(pathLengthToEdge2Source, edge2NewNodeBLOffset);
 
-        boolean overlap;
+        if(pathLengthToEdge1NewNode.compareTo(pathLengthToEdge2NewNode) == 1)
+        {
+            throw new IllegalArgumentException("Adding edge from edge1 to edge2 would cause backwards time flow.");
+        }
+
+        while(!allowZeroBranchLength && pathLengthToEdge1NewNode.compareTo(pathLengthToEdge2NewNode) == 0) // this should only be needed once, but while is defensive over if
+        {
+            T delta = _subtract.execute(edge2BranchLength, edge2NewNodeBLOffset);
+            delta = _half.execute(delta);
+            edge2NewNodeBLOffset = _add.execute(edge2NewNodeBLOffset, delta);
+            pathLengthToEdge2NewNode = _add.execute(pathLengthToEdge2Source, edge2NewNodeBLOffset);
+        }
+         /*
         T reticulationTime;
         if(edge1StartsFirst)
         {
-            overlap = pathLengthToEdge1Dest.compareTo(pathLengthToEdge2Source) > 0;
             reticulationTime = computeReticulationTime(pathLengthToEdge2Source, pathLengthToEdge2Dest, pathLengthToEdge1Dest);
         }
         else
         {
-            overlap = pathLengthToEdge2Dest.compareTo(pathLengthToEdge1Source) > 0;
             reticulationTime = computeReticulationTime(pathLengthToEdge1Source, pathLengthToEdge1Dest, pathLengthToEdge2Dest);
-        }
-
-        if(!overlap)
-        {
-            throw new IllegalArgumentException("No overlap in time between edge1 and edge2.");
-        }
-
+        } */
 
         N node1 = _makeNode.execute(graph);
         graph.addNode(node1);
         NodeInjector.NodeInjectorUndoAction<Graph<N,E>,N,E> undo1 = NodeInjector.injectNodeIntoEdge(graph, edge1, node1, _makeEdge, false);
         E newEdge1To = graph.getEdge(edge1Source, node1);
         E newEdge1From = graph.getEdge(node1, edge1Dest);
-        T toNewNode1BranchLength = _subtract.execute(reticulationTime, pathLengthToEdge1Source);
-        T fromNewNode1BranchLength = _subtract.execute(pathLengthToEdge1Dest, reticulationTime);
-        _setBranchLength.execute(graph, newEdge1To, toNewNode1BranchLength);
-        _setBranchLength.execute(graph, newEdge1From, fromNewNode1BranchLength);
+     //   T toNewNode1BranchLength = _subtract.execute(reticulationTime, pathLengthToEdge1Source);
+      //  T fromNewNode1BranchLength = _subtract.execute(pathLengthToEdge1Dest, reticulationTime);
+        _setBranchLength.execute(graph, newEdge1To, edge1NewNodeBLOffset);
+        _setBranchLength.execute(graph, newEdge1From, _subtract.execute(edge1BranchLength, edge1NewNodeBLOffset));
 
         N node2 = _makeNode.execute(graph);
         graph.addNode(node2);
         NodeInjector.NodeInjectorUndoAction<Graph<N,E>,N,E> undo2 = NodeInjector.injectNodeIntoEdge(graph, edge2, node2, _makeEdge, false);
         E newEdge2To = graph.getEdge(edge2Source, node2);
         E newEdge2From = graph.getEdge(node2, edge2Dest);
-        T toNewNode2BranchLength = _subtract.execute(reticulationTime, pathLengthToEdge2Source);
-        T fromNewNode2BranchLength = _subtract.execute(pathLengthToEdge2Dest, reticulationTime);
-        _setBranchLength.execute(graph, newEdge2To, toNewNode2BranchLength);
-        _setBranchLength.execute(graph, newEdge2From, fromNewNode2BranchLength);
+  //      T toNewNode2BranchLength = _subtract.execute(reticulationTime, pathLengthToEdge2Source);
+   //     T fromNewNode2BranchLength = _subtract.execute(pathLengthToEdge2Dest, reticulationTime);
+        _setBranchLength.execute(graph, newEdge2To, edge2NewNodeBLOffset);
+        _setBranchLength.execute(graph, newEdge2From, _subtract.execute(edge2BranchLength, edge2NewNodeBLOffset));
 
         E reticulateEdge = _makeEdge.execute(graph, node1, node2);
         graph.addEdge(reticulateEdge);
-        _setBranchLength.execute(graph, reticulateEdge, _makeZero.execute());
+        _setBranchLength.execute(graph, reticulateEdge, _subtract.execute(pathLengthToEdge2NewNode, pathLengthToEdge1NewNode));
 
 
-
+          /*
         if(performValidation)
         {
             try
@@ -124,10 +129,11 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
                 graph.removeNode(node1);
                 throw e;
             }
-        }
+        }  */
 
     }
 
+    /*
     private T computeReticulationTime(T start, T end1, T end2)
     {
         T minEnd = min(end1, end2);
@@ -139,5 +145,5 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
     private T min(T a, T b)
     {
         return a.compareTo(b) < 0 ? a : b;
-    }
+    } */
 }

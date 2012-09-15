@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.rn2ms;
 
 import com.sun.org.apache.bcel.internal.generic.RETURN;
 import com.sun.org.apache.xpath.internal.NodeSet;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
@@ -13,6 +14,7 @@ import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.util.Pair;
 import org.apache.commons.collections15.Transformer;
 
+import javax.media.j3d.IndexedGeometryArray;
 import javax.swing.text.html.HTMLDocument;
 import java.io.ByteArrayInputStream;
 import java.io.Console;
@@ -169,12 +171,13 @@ public class Program
 
         assignBackTimes(graph, root);
 
-        List<NetworkNode> netNodesByBackTimeAsc = new LinkedList<NetworkNode>(graph.getVertices());
+        List<NetworkNode> netNodesByBackTimeAsc = new ArrayList<NetworkNode>(graph.getVertices());
         Collections.sort(netNodesByBackTimeAsc);
-
 
         assignPopulationNumbersToEdges(netNodesByBackTimeAsc, graph, taxonLabelToPopNumber);
         List<PopCommand> commands = generateSplitAndJoinCommands(netNodesByBackTimeAsc, graph, taxonLabelToPopNumber.keySet());
+        Collections.sort(commands);  // already sorted by backtime, but need to tie break the split commands by new pop number
+
 
 
 
@@ -191,12 +194,14 @@ public class Program
         {
             command.execute(new PopCommandAlgo<Object, Object, RuntimeException>() {
                 public Object forSplit(Split split, Object input) throws RuntimeException {
-                    msCommand.append("-es " + split.BackTime + " " + split.OldPopulationNumber + " " + split.OldPopulationProbability + " ");
+                    BigDecimal backTimeMSUnits = split.BackTime.divide(new BigDecimal("2"));
+                    msCommand.append("-es " + backTimeMSUnits + " " + split.OldPopulationNumber + " " + split.OldPopulationProbability + " ");
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
 
                 public Object forJoin(Join join, Object input) throws RuntimeException {
-                    msCommand.append("-ej " + join.BackTime + " " + join.SecondaryPopulationNumber + " " + join.PrimaryPopulationNumber + " ");
+                    BigDecimal backTimeMSUnits = join.BackTime.divide(new BigDecimal("2"));
+                    msCommand.append("-ej " + backTimeMSUnits + " " + join.SecondaryPopulationNumber + " " + join.PrimaryPopulationNumber + " ");
                     return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
             }, null);
@@ -339,12 +344,36 @@ public class Program
 
     private static void assignPopulationNumbersToEdges(List<NetworkNode> netNodesByBackTimeAsc, DirectedGraph<NetworkNode,NetworkEdge> graph, Map<String, Integer> taxonLabelToPopNumber) {
 
-        netNodesByBackTimeAsc = new LinkedList<NetworkNode>(netNodesByBackTimeAsc);
+       int edgesAssigned = 0;
 
-        while(netNodesByBackTimeAsc.size() > 1)
+        // assign all leaf in edges their taxon pop number
+        for(NetworkNode node : netNodesByBackTimeAsc)
         {
-            BigDecimal headBackTime = netNodesByBackTimeAsc.get(0).BackTime;
-            nodes: for(int i = 0; i<netNodesByBackTimeAsc.size() && netNodesByBackTimeAsc.get(i).BackTime.equals(headBackTime); i++)
+            if(taxonLabelToPopNumber.containsKey(node.RNLabel))
+            {
+                Collection<NetworkEdge> inEdges = graph.getInEdges(node);
+                inEdges.iterator().next().PopulationNumber = taxonLabelToPopNumber.get(node.RNLabel);
+                edgesAssigned++;
+            }
+        }
+
+        // assign new population number to each split event in chronological order
+        for(NetworkNode node : netNodesByBackTimeAsc)
+        {
+            Collection<NetworkEdge> inEdges = graph.getInEdges(node);
+            if(inEdges.size() == 2)
+            {
+                Iterator<NetworkEdge> inEdgesIterator = inEdges.iterator();
+                NetworkEdge inEdge = inEdgesIterator.next();
+                inEdge.PopulationNumber =  _nextPopNumber;
+                _nextPopNumber++;
+                edgesAssigned++;
+            }
+        }
+
+        while(edgesAssigned < graph.getEdgeCount())
+        {
+            nodes: for(int i = 0; i<netNodesByBackTimeAsc.size(); i++)
             {
                 NetworkNode iNode = netNodesByBackTimeAsc.get(i);
 
@@ -357,35 +386,24 @@ public class Program
                 }
 
                 Collection<NetworkEdge> inEdges = graph.getInEdges(iNode);
-                if(inEdges.size() == 1)
+                Collection outEdges = graph.getOutEdges(iNode);
+                if(inEdges.size() == 1 && outEdges.size() == 2) // join event
                 {
-                    if(taxonLabelToPopNumber.containsKey(iNode.RNLabel))
-                    {
-                        inEdges.iterator().next().PopulationNumber = taxonLabelToPopNumber.get(iNode.RNLabel);
-                    }
-                    else
-                    {
-                        inEdges.iterator().next().PopulationNumber = graph.getOutEdges(iNode).iterator().next().PopulationNumber;
-                    }
-                    netNodesByBackTimeAsc.remove(iNode);
+                   inEdges.iterator().next().PopulationNumber = graph.getOutEdges(iNode).iterator().next().PopulationNumber;
+                   edgesAssigned++;
                 }
-                else if(inEdges.size() > 1)
+                else if(inEdges.size() == 2 && outEdges.size() == 1)  // split event
                 {
                     Iterator<NetworkEdge> inEdgesIterator = inEdges.iterator();
-                    NetworkEdge inEdge1 = inEdgesIterator.next();
+                    NetworkEdge inEdge = inEdgesIterator.next();
 
-                    inEdge1.PopulationNumber = graph.getOutEdges(iNode).iterator().next().PopulationNumber;
-
-                    while(inEdgesIterator.hasNext())
+                    while(inEdge.PopulationNumber != null)
                     {
-                        inEdgesIterator.next().PopulationNumber = _nextPopNumber;
-                        _nextPopNumber++;
+                        inEdge = inEdgesIterator.next();
                     }
-                    netNodesByBackTimeAsc.remove(iNode);
-                }
-                else
-                {
-                    throw new RuntimeException("Non root nodes must have 1 or 2 in edges.  Violation: " + iNode.RNLabel);
+
+                    inEdge.PopulationNumber = graph.getOutEdges(iNode).iterator().next().PopulationNumber;
+                    edgesAssigned++;
                 }
             }
 
@@ -394,6 +412,36 @@ public class Program
 
     private static void assignBackTimes(DirectedGraph<NetworkNode, NetworkEdge> graph, NetworkNode root)
     {
+        HashSet<NetworkNode> toAssign = new HashSet<NetworkNode>(graph.getVertices());
+
+        // assign all leafs back time of 0
+        for(NetworkNode node : graph.getVertices())
+        {
+            if(graph.getOutEdges(node).size() == 0)
+            {
+                node.BackTime = BigDecimal.ZERO;
+                toAssign.remove(node);
+            }
+        }
+
+        while(toAssign.size() > 0)
+        {
+            for(NetworkNode node : new LinkedList<NetworkNode>(toAssign))
+            {
+                for(NetworkEdge outEdge  : graph.getOutEdges(node))
+                {
+                    NetworkNode directDesc = outEdge.getNodes().Item2;
+
+                    if(directDesc.BackTime != null)
+                    {
+                        node.BackTime = directDesc.BackTime.add(outEdge.BranchLength);
+                        toAssign.remove(node);
+                    }
+                }
+            }
+        }
+
+        /*
         Transformer<NetworkEdge, BigDecimal> edgeToBranchLength = new Transformer<NetworkEdge, BigDecimal>() {
             @Override
             public BigDecimal transform(NetworkEdge edge) {
@@ -404,7 +452,7 @@ public class Program
 
         Map<NetworkNode,BigDecimal> nodeToForwardTimeValue = new HashMap<NetworkNode, BigDecimal>();
 
-        BigDecimal rootToLeafForwardTime = null;
+        BigDecimal longestRootToLeafForwardTime = null;
         for(NetworkNode node : graph.getVertices())
         {
             BigDecimal forwardTime = new BigDecimal(dd.getDistance(root, node).doubleValue());
@@ -412,15 +460,18 @@ public class Program
 
             if(graph.getOutEdges(node).size() == 0)
             {
-                rootToLeafForwardTime = forwardTime;
+                if(longestRootToLeafForwardTime == null || longestRootToLeafForwardTime.compareTo(forwardTime) == -1)
+                {
+                    longestRootToLeafForwardTime = forwardTime;
+                }
             }
 
         }
 
         for(NetworkNode node : graph.getVertices())
         {
-            node.BackTime =  rootToLeafForwardTime.subtract(nodeToForwardTimeValue.get(node));
-        }
+            node.BackTime =  longestRootToLeafForwardTime.subtract(nodeToForwardTimeValue.get(node));
+        }     */
 
     }
 }

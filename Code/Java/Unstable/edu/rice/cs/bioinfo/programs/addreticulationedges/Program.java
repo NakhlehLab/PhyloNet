@@ -152,7 +152,7 @@ public class Program {
 
             try
             {
-                _addReticulationEdge.execute(graph, e1, e2, true);
+                _addReticulationEdge.execute(graph, e1, e2, false);
                 numEdgesAdded++;
             }
             catch(IllegalArgumentException e)

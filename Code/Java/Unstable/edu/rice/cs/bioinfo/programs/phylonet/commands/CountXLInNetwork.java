@@ -73,25 +73,32 @@ public class CountXLInNetwork extends CommandBaseFileOut{
         ParameterIdentList geneTreeParam = this.assertParameterIdentList(1);
         noError = noError && geneTreeParam != null;
         _geneTrees = new LinkedList<NetworkNonEmpty>();
-        for(String ident : geneTreeParam.Elements)
+
+        if(noError)
         {
-            noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
-            if(noError)
+
+            for(String ident : geneTreeParam.Elements)
             {
-                _geneTrees.add(this.sourceIdentToNetwork.get(ident));
+                noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                if(noError)
+                {
+                    _geneTrees.add(this.sourceIdentToNetwork.get(ident));
+                }
             }
+
+            ParamExtractorAllelMap aParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+            if(aParam.ContainsSwitch){
+                noError = noError && aParam.IsValidMap;
+                if(aParam.IsValidMap){
+                    _taxonMap = aParam.ValueMap;
+                }
+            }
+
+             noError = noError && checkForUnknownSwitches("a");
+             checkAndSetOutFile(aParam);
         }
 
-        ParamExtractorAllelMap aParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
-        if(aParam.ContainsSwitch){
-            noError = noError && aParam.IsValidMap;
-            if(aParam.IsValidMap){
-                _taxonMap = aParam.ValueMap;
-            }
-        }
 
-        noError = noError && checkForUnknownSwitches("a");
-        checkAndSetOutFile(aParam);
 
         return  noError;
     }

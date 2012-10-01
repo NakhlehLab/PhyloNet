@@ -49,8 +49,8 @@ public abstract class NearestNeighborInterchangeTest<T extends Graph<String, Tup
                 Assert.assertTrue(!isLeaf.execute(tree, "T"));
                 Assert.assertTrue(!isLeaf.execute(tree, "J"));
                 Assert.assertTrue(containsEdge(tree, "T", "J", false));
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("T")) == 3);
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("J")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("T")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("J")) == 3);
 
                 if(tree.getIncidentEdges("A").iterator().next().other("A").equals(tree.getIncidentEdges("D").iterator().next().other("D")))
                 {
@@ -99,8 +99,8 @@ public abstract class NearestNeighborInterchangeTest<T extends Graph<String, Tup
                 Assert.assertTrue(!isLeaf.execute(tree, "T"));
                 Assert.assertTrue(!isLeaf.execute(tree, "J"));
                 Assert.assertTrue(containsEdge(tree, "T", "J", true));
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("T")) == 3);
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("J")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("T")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("J")) == 3);
 
                 if(tree.getIncidentEdges("A").iterator().next().other("A").equals(tree.getIncidentEdges("D").iterator().next().other("D")))
                 {
@@ -155,9 +155,9 @@ public abstract class NearestNeighborInterchangeTest<T extends Graph<String, Tup
                 Assert.assertTrue(!isLeaf.execute(tree, "T"));
                 Assert.assertTrue(!isLeaf.execute(tree, "J"));
                 Assert.assertTrue(containsEdge(tree, "A", "T", true));
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("A")) == 3);
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("T")) == 3);
-                Assert.assertTrue(IterableHelp.count(tree.getIncidentEdges("J")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("A")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("T")) == 3);
+                Assert.assertTrue(IterableHelp.countInt(tree.getIncidentEdges("J")) == 3);
 
                 if(tree.getIncidentEdges("A").iterator().next().other("A").equals(tree.getIncidentEdges("D").iterator().next().other("D")))
                 {

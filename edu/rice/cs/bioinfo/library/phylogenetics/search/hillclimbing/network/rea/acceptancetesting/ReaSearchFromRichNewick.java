@@ -27,7 +27,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
         private int counter = 0;
 
         public String execute(G input1) {
-            return IterableHelp.count(input1.getNodes()) + "";
+            return IterableHelp.countInt(input1.getNodes()) + "";
         }
     };
 
@@ -181,7 +181,7 @@ public abstract class ReaSearchFromRichNewick<G extends Graph<String,PhyloEdge<S
                 @Override
                 public Double execute(G input) {
 
-                     GraphValidator.assertValidGraph(input);
+                     new GraphValidator().assertValidGraph(input);
 
                     return Double.MAX_VALUE;
                 }

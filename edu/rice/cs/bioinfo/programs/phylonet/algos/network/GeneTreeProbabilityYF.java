@@ -1,8 +1,29 @@
+/*
+ * Copyright (c) 2012 Rice University.
+ *
+ * This file is part of PhyloNet.
+ *
+ * PhyloNet is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PhyloNet is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PhyloNet.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
@@ -17,7 +38,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
  */
 public class GeneTreeProbabilityYF{
     Set<Integer> _totalCoverNodes;
-    String[] _netTaxa;
+  //  String[] _netTaxa;
     boolean[][] _R;
     boolean _printDetails = false;
     int _netNodeNum;
@@ -761,7 +782,7 @@ public class GeneTreeProbabilityYF{
                 _netNodeNum++;
             }
         }
-        _netTaxa = taxa.toArray(new String[0]);
+ //       _netTaxa = taxa.toArray(new String[0]);
         computeNodeCoverage(net);
     }
 

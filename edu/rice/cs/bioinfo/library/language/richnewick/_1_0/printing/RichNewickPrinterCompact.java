@@ -58,7 +58,7 @@ public class RichNewickPrinterCompact<N> implements RichNewickPrinter<N>
        buffer.append(";");
 
         HashSet<String> seenHybridIndexes = new HashSet<String>();
-       if(!isRooted && IterableHelp.count(getDestinationNodes.execute(printRoot)) == 1)
+       if(!isRooted && IterableHelp.countInt(getDestinationNodes.execute(printRoot)) == 1)
        {
            buffer.insert(0, ")");
            N neighbor = getDestinationNodes.execute(printRoot).iterator().next();

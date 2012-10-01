@@ -47,16 +47,18 @@ public class PhyloEdge<T>
         return _probability;
     }
 
-    public void setProbability(double newProbability)
+    public PhyloEdge<T> setProbability(double newProbability)
     {
         if(newProbability <= 1.0 && newProbability >= 0.0)
         {
-            _support = newProbability;
+            _probability = newProbability;
         }
         else
         {
             throw new IllegalArgumentException("Probability value must be between zero and one inclusive.  Found: " + newProbability);
         }
+
+        return this;
     }
 
     public final T Source;
@@ -67,6 +69,12 @@ public class PhyloEdge<T>
     {
         Source = source;
         Destination = destination;
+    }
+
+    public PhyloEdge(T source, T destination, double branchLength)
+    {
+        this(source,destination);
+        setBranchLength(branchLength);
     }
 
     public boolean equals(Object candidate)

@@ -54,7 +54,7 @@ public class IterableHelp {
         return result;
     }
 
-    public static int count(Iterable elements)
+    public static int countInt(Iterable elements)
     {
         int i = 0;
         for(Object element : elements)

@@ -9,7 +9,7 @@ import java.util.BitSet;
  * Time: 11:11 AM
  * To change this template use File | Settings | File Templates.
  */
-class STITreeCluster {
+public class STITreeCluster {
 	protected String _taxa[];		// Set of taxa of a tree.
 	protected BitSet _cluster;	// The cluster.
 

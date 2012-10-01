@@ -14,6 +14,6 @@ public class NetworkValidatorBase<N,E> implements NetworkValidator<N,E>
 {
     public void assertValidNetwork(GraphReadOnly<N, E> network)
     {
-        GraphValidator.assertValidGraph(network);
+        new GraphValidator().assertValidGraph(network);
     }
 }

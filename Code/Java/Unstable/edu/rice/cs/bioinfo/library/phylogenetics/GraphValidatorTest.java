@@ -108,7 +108,7 @@ public class GraphValidatorTest
 
         try
         {
-            GraphValidator.assertValidGraph(new GraphMap(diGraph, true));
+            new GraphValidator().assertValidGraph(new GraphMap(diGraph, true));
             Assert.fail("Expected exception.");
         }
         catch(IllegalArgumentException e)

@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import javax.print.attribute.standard.MediaSize;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -25,19 +26,22 @@ public class GetNodesPostOrder<N,E> implements Func1<GraphReadOnly<N,E>, Iterabl
 
         LinkedList<N> nodesPostOrder = new LinkedList<N>();
 
-        processGraph(graph, new FindRoot<N,E>().execute(graph), nodesPostOrder);
+        processGraph(graph, new FindRoot<N,E>().execute(graph), nodesPostOrder, new HashSet<N>());
 
         return nodesPostOrder;
     }
 
-    private void processGraph(GraphReadOnly<N, E> graph, N node, LinkedList<N> nodesPostOrder) {
+    private void processGraph(GraphReadOnly<N, E> graph, N node, LinkedList<N> nodesPostOrder, HashSet<N> storedNodes) {
 
 
-        for(N sucessor : _getDirectSuccessors.execute(graph, node))
+        for(N successor : _getDirectSuccessors.execute(graph, node))
         {
-            processGraph(graph, sucessor, nodesPostOrder);
+            processGraph(graph, successor, nodesPostOrder, storedNodes);
         }
 
-        nodesPostOrder.addLast(node);
+        if(!storedNodes.contains(node))
+        {
+            nodesPostOrder.addLast(node);
+        }
     }
 }

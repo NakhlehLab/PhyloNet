@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import org.junit.internal.matchers.Each;
 
 import java.util.*;
@@ -11,9 +12,20 @@ import java.util.*;
  * Time: 4:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class GraphValidator
+public class GraphValidator<N,E>
 {
-    public static <N,E> void assertValidGraph(GraphReadOnly<N,E> graph)
+    private boolean _allowInlineNodes = false; // num in edges = num out edges = 1
+
+    public void setAllowInlineNodes(boolean allowInlineNodes)
+    {
+        _allowInlineNodes = allowInlineNodes;
+    }
+
+    private final Func2<GraphReadOnly<N,E>,N,Integer> _getOutDegreeStrategy = new GetOutDegree<N, E>();
+
+    private final Func2<GraphReadOnly<N,E>,N,Integer> _getInDegreeStrategy  = new GetInDegree<N, E>();
+
+    public void assertValidGraph(GraphReadOnly<N,E> graph)
     {
         HashSet<N> nodes = new HashSet<N>();
 
@@ -52,6 +64,28 @@ public class GraphValidator
             }
         }
 
+        if(!_allowInlineNodes)
+        {
+            boolean isRooted = graph.isRooted();
+            for(N node : graph.getNodes())
+            {
+                if(isRooted)
+                {
+                    if(_getInDegreeStrategy.execute(graph, node) == 1 && _getOutDegreeStrategy.execute(graph, node) == 1 )
+                    {
+                        throw new IllegalArgumentException("Given graph contains a node with indegree 1 and outdegree 1. (" + node.toString() + ")");
+                    }
+                }
+                else
+                {
+                    if(IterableHelp.countInt(graph.getIncidentEdges(node)) == 2)
+                    {
+                        throw new IllegalArgumentException("Given graph contains an inline node. (" + node.toString() + ")");
+                    }
+                }
+            }
+        }
+
         if(nodes.size() > 0)
         {
             if(graph.isRooted() && searchRoot == null)
@@ -68,7 +102,7 @@ public class GraphValidator
         }
     }
 
-    private static <N,E> HashSet<N> assertNoCycle(GraphReadOnly<N,E> graph, N searchRoot)
+    private <N,E> HashSet<N> assertNoCycle(GraphReadOnly<N,E> graph, N searchRoot)
     {
         HashSet<N> unfinishedNodes = new HashSet<N>();
         HashSet<N> finishedNodes = new HashSet<N>();
@@ -92,7 +126,7 @@ public class GraphValidator
         return finishedNodes;
     }
 
-    private static <N,E> void dfsVisit(GraphReadOnly<N,E> graph, boolean isGraphRooted, N node, N searchParent,  HashSet<N> unfinishedNodes, HashSet<N> finishedNodes)
+    private <N,E> void dfsVisit(GraphReadOnly<N,E> graph, boolean isGraphRooted, N node, N searchParent,  HashSet<N> unfinishedNodes, HashSet<N> finishedNodes)
     {
         unfinishedNodes.add(node);
 
@@ -127,6 +161,8 @@ public class GraphValidator
         finishedNodes.add(node);
 
     }
+
+
 
 
 }

@@ -33,7 +33,7 @@ public abstract class MDCOnNetworkYFFromRichNewick<G extends Graph<String,PhyloE
         private int counter = 0;
 
         public String execute(G input1) {
-            return IterableHelp.count(input1.getNodes()) + "";
+            return IterableHelp.countInt(input1.getNodes()) + "";
         }
     };
 

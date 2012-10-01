@@ -32,8 +32,8 @@ public class NearestNeighborInterchangeInPlace<T extends Graph<N,E>, N,E> extend
         for (E edge : edges)
         {
             Tuple<N,N> nodesOfEdge = tree.getNodesOfEdge(edge);
-            int node1Degree = IterableHelp.count(tree.getIncidentEdges(nodesOfEdge.Item1));
-            int node2Degree = IterableHelp.count(tree.getIncidentEdges(nodesOfEdge.Item2));
+            int node1Degree = IterableHelp.countInt(tree.getIncidentEdges(nodesOfEdge.Item1));
+            int node2Degree = IterableHelp.countInt(tree.getIncidentEdges(nodesOfEdge.Item2));
             if (node1Degree > 1 && node2Degree > 1) // is internal edge
             {
                 if (node1Degree == 3 && node2Degree == 3)

@@ -18,7 +18,7 @@ public class TreeValidatorBase<N,E> implements TreeValidator<N,E>
 
     public static <N,E> void assertValidTreeHelp(GraphReadOnly<N,E> tree)
     {
-        GraphValidator.assertValidGraph(tree);
+        new GraphValidator().assertValidGraph(tree);
 
         if(tree.isRooted())
         {

@@ -48,7 +48,7 @@ public class GeneTreeProbability {
         _printDetails = toPrint;
         networkToTree(net);
         if(_printDetails){
-            System.out.println("MUL tree: " + _mulTree.toNewickWD());
+            System.out.println("MUL tree: " + _mulTree.toNewick());
             System.out.println();
         }
 

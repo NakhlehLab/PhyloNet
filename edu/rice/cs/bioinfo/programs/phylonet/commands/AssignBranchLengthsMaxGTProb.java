@@ -35,6 +35,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.optimization.GoalType;
 import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
@@ -58,6 +59,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
     private List<NetworkNonEmpty> _geneTrees;
     private ParameterIdentList _geneTreeParam;
     private double _maxBranchLength;
+    private int _maxAssigmentAttemptsPerBranchParam;
 
     public AssignBranchLengthsMaxGTProb(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                                         Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
@@ -89,7 +91,15 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             _maxBranchLength = Double.parseDouble(maxBranchLengthParam.Content);
         }
 
-        _geneTreeParam = this.assertParameterIdentList(2);
+        ParameterIdent maxAssigmentAttemptsPerBranchParam = this.assertParameterIdent(2);
+        noError = noError && maxAssigmentAttemptsPerBranchParam != null;
+
+        if(maxAssigmentAttemptsPerBranchParam != null)
+        {
+            _maxAssigmentAttemptsPerBranchParam = Integer.parseInt(maxAssigmentAttemptsPerBranchParam.Content);
+        }
+
+        _geneTreeParam = this.assertParameterIdentList(3);
         noError = noError && _geneTreeParam != null;
         _geneTrees = new LinkedList<NetworkNonEmpty>();
         for(String ident : _geneTreeParam.Elements)
@@ -169,7 +179,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 for(NetNode<Double> child : parent.getChildren())
                 {
                     double initialBL = child.getParentDistance(parent);
-                    if(initialBL == NetNode.NO_DISTANCE)
+                    if(initialBL == NetNode.NO_DISTANCE || Double.isNaN(initialBL))
                         initialBL = 1.0;
                     child.setParentDistance(parent, initialBL);
                 }
@@ -179,19 +189,39 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             {
                 for(final NetNode<Double> child : parent.getChildren())
                 {
+                    final Container<Double> bestFoundBranchLength = new Container<Double>(null);
+                    final Container<Double> correspondingGTProb = new Container<Double>(null);
                     UnivariateFunction functionToOptimize = new UnivariateFunction() {
                         public double value(double suggestedBranchLength) {
 
+                            if(Double.isNaN(suggestedBranchLength))
+                            {
+                                throw new RuntimeException();
+                            }
+
                             child.setParentDistance(parent, suggestedBranchLength);
-                            return computeGTProb(speciesNetwork, geneTrees, counter);
+
+                            double prob = computeGTProb(speciesNetwork, geneTrees, counter);
+
+                            if(correspondingGTProb.getContents() == null || correspondingGTProb.getContents() < prob)
+                            {
+                                bestFoundBranchLength.setContents(suggestedBranchLength);
+                                correspondingGTProb.setContents(prob);
+                            }
+                            return prob;
                         }
                     };
                     BrentOptimizer optimizer = new BrentOptimizer(.000000000001,.0000000000000001);
                     double initialBL = child.getParentDistance(parent);
-                    UnivariatePointValuePair maxFoundValue = optimizer.optimize(Integer.MAX_VALUE, functionToOptimize, GoalType.MAXIMIZE, 0, _maxBranchLength, initialBL);
-                    double bestFoundBranchLength = maxFoundValue.getPoint();
-                    double correspondingGTProb = maxFoundValue.getValue();
-                    child.setParentDistance(parent, bestFoundBranchLength);
+
+                    try
+                    {
+                        UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_NORMAL, _maxBranchLength, initialBL);
+                    }
+                    catch(TooManyEvaluationsException e)
+                    {
+                    }
+                    child.setParentDistance(parent, bestFoundBranchLength.getContents());
 
                 }
             }
@@ -221,6 +251,12 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             int count = counterIt.next();
             total += Math.log(prob)*count;
         }
+
+        if(Double.isNaN(total))
+        {
+            throw new RuntimeException();
+        }
+
         return total;
     }
 }

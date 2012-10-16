@@ -44,7 +44,7 @@ public abstract class SubtreePruningAndRegraftingSearcherBase<T, N, E, S> extend
     {
         super.assertValidTree(tree, isRooted, getNodes, getEdges, getIncidentEdges, getNodesOfEdge);
 
-        if (IterableHelp.count(getEdges.execute(tree)) < 4)
+        if (IterableHelp.countInt(getEdges.execute(tree)) < 4)
         {
             throw new IllegalArgumentException("Given tree does not contain at least four edges.");
         }

@@ -46,7 +46,7 @@ public abstract class TreeBisectionAndReconnectionSearcherBase<T, N, E, S> exten
 
             isLeaf = new Func2<T, N, Boolean>() {
                 public Boolean execute(T tree, N node) {
-                    return  IterableHelp.count(getIncidentEdges.execute(tree, node)) == 1;
+                    return  IterableHelp.countInt(getIncidentEdges.execute(tree, node)) == 1;
                 }
             };
 

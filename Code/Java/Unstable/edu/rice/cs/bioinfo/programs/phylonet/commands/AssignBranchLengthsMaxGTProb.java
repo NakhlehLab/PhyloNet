@@ -171,8 +171,8 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         final Network<Double> speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-        int gtIndex = 0;
-        for(Tree gt: geneTrees){
+       // int gtIndex = 0;
+
 
             for(NetNode<Double> parent : speciesNetwork.dfs())  // make the branch length of every edge initially  1
             {
@@ -185,23 +185,28 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 }
             }
 
-            for(final NetNode<Double> parent : speciesNetwork.dfs())  // for each edge, find best branch length
+            for(final NetNode<Double> parent : speciesNetwork.bfs())  // for each edge, find best branch length
             {
+
                 for(final NetNode<Double> child : parent.getChildren())
                 {
+
+
                     final Container<Double> bestFoundBranchLength = new Container<Double>(null);
                     final Container<Double> correspondingGTProb = new Container<Double>(null);
                     UnivariateFunction functionToOptimize = new UnivariateFunction() {
                         public double value(double suggestedBranchLength) {
 
+                        //   System.out.println(suggestedBranchLength);
                             if(Double.isNaN(suggestedBranchLength))
                             {
                                 throw new RuntimeException();
                             }
 
-                            child.setParentDistance(parent, suggestedBranchLength);
 
-                            double prob = computeGTProb(speciesNetwork, geneTrees, counter);
+                                child.setParentDistance(parent, suggestedBranchLength);
+
+                                double prob = computeGTProb(speciesNetwork, geneTrees, counter);
 
                             if(correspondingGTProb.getContents() == null || correspondingGTProb.getContents() < prob)
                             {
@@ -225,8 +230,6 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
 
                 }
             }
-
-        }
 
          RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
          StringWriter sw = new StringWriter();

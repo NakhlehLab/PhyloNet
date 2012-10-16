@@ -56,8 +56,8 @@ public class NNISearcherNeighborsExpansiveInPlace<T, N, E, S> extends NearestNei
             for (E edge : edges)
             {
                 Tuple<N,N> nodesOfEdge = getNodesOfEdge.execute(tree, edge);
-                int node1Degree = IterableHelp.count(getIncidentEdges.execute(tree, nodesOfEdge.Item1));
-                int node2Degree = IterableHelp.count(getIncidentEdges.execute(tree, nodesOfEdge.Item2));
+                int node1Degree = IterableHelp.countInt(getIncidentEdges.execute(tree, nodesOfEdge.Item1));
+                int node2Degree = IterableHelp.countInt(getIncidentEdges.execute(tree, nodesOfEdge.Item2));
                 if (node1Degree > 1 && node2Degree > 1) // is internal edge
                 {
                     if (node1Degree == 3 && node2Degree == 3)

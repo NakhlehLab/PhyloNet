@@ -19,9 +19,11 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast;
 
+import EDU.oswego.cs.dl.util.concurrent.FJTask;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilderNoAction;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -58,9 +60,16 @@ public abstract class RichNewickReaderAST_Test {
                     GraphBuilderNoAction.Singleton);
 
 
-        reader.read(
-                    new ByteArrayInputStream("A,B;".getBytes()),
-                    GraphBuilderNoAction.Singleton);
+
+        RichNewickReadResult<Networks> result = reader.read(
+            new ByteArrayInputStream("((X#H1::0.5)A,(X#H1::0.5)B)R;".getBytes()),
+            GraphBuilderNoAction.Singleton);
+        NetworkNonEmpty rNode = result.getNetworks().Networks.iterator().next();
+        Subtree sTree = rNode.PrincipleDescendants.Subtrees.iterator().next();
+        Subtree xTree = sTree.Descendants.Subtrees.iterator().next();
+        Assert.assertEquals("X", ((NodeLabelNonEmpty)xTree.NetworkInfo.NodeLabel).Label.Content);
+        Assert.assertEquals("0.5", ((ProbabilityNonEmpty)xTree.NetworkInfo.Probability).ProbabilityValue.Content);
+
 
 
     }

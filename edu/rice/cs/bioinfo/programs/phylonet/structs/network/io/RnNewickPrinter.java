@@ -47,13 +47,13 @@ public class RnNewickPrinter<T> extends RichNewickPrinterCompact<NetNode<T>>
             }
         };
 
-    private Func1<NetNode<T>, Iterable<NetNode<T>>> _getDestinationNodes = new Func1<NetNode<T>, Iterable<NetNode<T>>>() {
+    private final Func1<NetNode<T>, Iterable<NetNode<T>>> _getDestinationNodes = new Func1<NetNode<T>, Iterable<NetNode<T>>>() {
             public Iterable<NetNode<T>> execute(NetNode<T> input) {
                 return input.getChildren();
             }
         };
 
-    private Func1<NetNode<T>,HybridNodeType> getHybridNodeType = new Func1<NetNode<T>, HybridNodeType>() {
+    private final Func1<NetNode<T>,HybridNodeType> _getHybridNodeType = new Func1<NetNode<T>, HybridNodeType>() {
         public HybridNodeType execute(NetNode<T> input) {
             return HybridNodeType.Hybridization;
         }
@@ -120,7 +120,7 @@ public class RnNewickPrinter<T> extends RichNewickPrinterCompact<NetNode<T>>
         };
 
 
-        print(true, network.getRoot(), _getLabel, _getDestinationNodes, getHybridIndex, getHybridNodeType, writer);
+        print(true, network.getRoot(), _getLabel, _getDestinationNodes, getHybridIndex, _getHybridNodeType, writer);
 
 
 

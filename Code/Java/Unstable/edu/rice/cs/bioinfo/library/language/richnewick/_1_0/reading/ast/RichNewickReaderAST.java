@@ -26,6 +26,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.ASTContextAnalyser;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
+import edu.rice.cs.bioinfo.library.programming.Func;
 
 
 import java.io.IOException;
@@ -40,15 +41,22 @@ import java.util.List;
  * Time: 10:20 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
+public class RichNewickReaderAST extends RichNewickReaderBase<Networks>
 {
+    private final Func<RichNewickParser<Networks>> _makeParser;
+
+    public RichNewickReaderAST(Func<RichNewickParser<Networks>> makeParser)
+    {
+        _makeParser = makeParser;
+    }
+
     public RichNewickReadResult<Networks> read(InputStream instream) throws IOException, CoordinateParseErrorsException {
       return read(instream, null);
     }
 
     public <N> RichNewickReadResult<Networks> read(InputStream instream, GraphBuilder<N> graphBuilder) throws IOException, CoordinateParseErrorsException {
 
-        final Networks networks = parse(instream);
+        final Networks networks = _makeParser.execute().parse(instream);
 
         final List<CSAError> errors = new LinkedList<CSAError>();
 
@@ -87,6 +95,4 @@ public abstract class RichNewickReaderAST extends RichNewickReaderBase<Networks>
             }
         };
     }
-
-    protected abstract Networks parse(InputStream instream) throws CoordinateParseErrorsException, IOException;
 }

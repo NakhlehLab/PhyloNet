@@ -33,6 +33,6 @@ public class RichNewickReaderAST_ANTLR_Test extends RichNewickReaderAST_Test
 
     @Override
     protected RichNewickReaderAST makeReader() {
-        return new RichNewickReaderAST_ANTLR();
+        return new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
     }
 }

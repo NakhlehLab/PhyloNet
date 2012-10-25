@@ -5,7 +5,8 @@ import java.io.*;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
@@ -84,7 +85,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
 
     public Simulation201205()
     {
-        super(new RichNewickReaderAST_ANTLR());
+        super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
     private void test(){
@@ -433,7 +434,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                                     }
                                     if(line.startsWith("Inferred network:")){
                                         String netExp = line.substring(line.indexOf(":")+1).trim();
-                                        RichNewickReaderAST_ANTLR reader = new RichNewickReaderAST_ANTLR();
+                                        RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
                                         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
 
                                         RichNewickReadResult<Networks> readResult = reader.read(new ByteArrayInputStream(netExp.replaceAll(":1.0","").getBytes()));
@@ -590,7 +591,12 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
     private String networkToString(){
         try{
             StringWriter sw = new StringWriter();
-            new RichNewickPrinterCompact<String>().print(true, "R", _getNetworkNodeLabel, _getDestinationNodes, _getNetworkDistanceForPrint, _getSupportForPrint, _getProbabilityForPrint, _getHybridNodeIndexForPrint, _getHybridTypeForPrint, sw);
+         //   new RichNewickPrinterCompact<String>().print(true, "R", _getNetworkNodeLabel, _getDestinationNodes, _getNetworkDistanceForPrint, _getSupportForPrint, _getProbabilityForPrint, _getHybridNodeIndexForPrint, _getHybridTypeForPrint, sw);
+            RichNewickPrinterCompact<String> printer = new RichNewickPrinterCompact<String>();
+            printer.setGetBranchLength(_getNetworkDistanceForPrint);
+            printer.setGetProbability(_getProbabilityForPrint);
+            printer.setGetSupport(_getSupportForPrint);
+            printer.print(true, "R", _getNetworkNodeLabel, _getDestinationNodes, _getHybridNodeIndexForPrint, _getHybridTypeForPrint, sw);
             sw.flush();
             sw.close();
             return sw.toString();
@@ -689,7 +695,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
                 Network ofNetwork = null;
                 System.out.println(networkToString());
                 try{
-                    RichNewickReaderAST_ANTLR reader = new RichNewickReaderAST_ANTLR();
+                    RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
                     NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
                     RichNewickReadResult<Networks> readResult = reader.read(new ByteArrayInputStream(networkToString().replace(":1.0:100.0:1.0","").getBytes()));
                     ofNetwork = transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());
@@ -727,7 +733,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
             public Integer execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
                 Network ofNetwork = null;
                 try{
-                    RichNewickReaderAST_ANTLR reader = new RichNewickReaderAST_ANTLR();
+                    RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
                     NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
                     RichNewickReadResult<Networks> readResult = reader.read(new ByteArrayInputStream(networkToString().replace(":1.0:100.0:1.0","").getBytes()));
                     ofNetwork = transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());

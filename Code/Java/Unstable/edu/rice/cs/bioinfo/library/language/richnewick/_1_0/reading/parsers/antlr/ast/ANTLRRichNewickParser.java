@@ -22,9 +22,11 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.ant
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorDefault;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickParser;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ExtendedNewickLexer;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ExtendedNewickParser;
+import edu.rice.cs.bioinfo.library.programming.Func;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -40,19 +42,29 @@ import java.util.List;
  * Time: 4:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RichNewickParser
+public class ANTLRRichNewickParser implements RichNewickParser<Networks>
 {
-    private RichNewickParser()
-    {}
+    public static final Func<RichNewickParser<Networks>> MAKE_DEFAULT_PARSER = new Func<RichNewickParser<Networks>>() {
+        public ANTLRRichNewickParser execute() {
+            return new ANTLRRichNewickParser();
+        }
+    };
 
-    public static Networks parse(InputStream stream) throws IOException, CoordinateParseErrorsException {
-        ANTLRInputStream antlrStream = new ANTLRInputStream(stream);
-        ExtendedNewickLexer lexer = new ExtendedNewickLexer(antlrStream);
-        ExtendedNewickParser antlrParser = new ExtendedNewickParser(new CommonTokenStream(lexer));
-        return parse(antlrParser);
+    public Networks parse(InputStream stream) throws CoordinateParseErrorsException {
+        try
+        {
+            ANTLRInputStream antlrStream = new ANTLRInputStream(stream);
+            ExtendedNewickLexer lexer = new ExtendedNewickLexer(antlrStream);
+            ExtendedNewickParser antlrParser = new ExtendedNewickParser(new CommonTokenStream(lexer));
+            return parse(antlrParser);
+        }
+        catch(IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
-    static Networks parse(ExtendedNewickParser parser) throws IOException, CoordinateParseErrorsException {
+    Networks parse(ExtendedNewickParser parser) throws IOException, CoordinateParseErrorsException {
 
         LinkedList<CoordinateParseError> errors = new LinkedList<CoordinateParseError>();
         try

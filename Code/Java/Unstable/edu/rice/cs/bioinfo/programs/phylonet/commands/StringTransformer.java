@@ -23,8 +23,9 @@ import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsExcepti
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.SingleLinePrinter;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,7 +42,7 @@ class StringTransformer
 {
     static String toRNewickTree(String eNewickTree) throws CoordinateParseErrorsException
     {
-        RichNewickReaderAST_ANTLR reader = new RichNewickReaderAST_ANTLR();
+        RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
 
         try
         {

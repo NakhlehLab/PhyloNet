@@ -19,7 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast;
 
-import EDU.oswego.cs.dl.util.concurrent.FJTask;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;

@@ -1,8 +1,9 @@
 package edu.rice.cs.bioinfo.programs.networksearchgen;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge2;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
@@ -107,7 +108,7 @@ public class Program
                         }
                     });
 
-                    RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
+                    RichNewickReaderAST rnReader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
                     rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(line.getBytes()), graphBuilder);
 
                     for(PhyloEdge2<String,BigDecimal> edge : graphBuilder.Graph.getEdges())

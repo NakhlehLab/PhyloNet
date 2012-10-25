@@ -3,8 +3,9 @@ import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsExcepti
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedSparse;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
@@ -402,19 +403,19 @@ public class Program
 
     private static DirectedSparseGraph<String,PhyloEdge<String>> readSingleNetwork(String richNewickString) throws IOException, CoordinateParseErrorsException
     {
-        RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
+        RichNewickReaderAST rnReader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
 
         GraphBuilderDirectedSparse<String, PhyloEdge<String>> graphBuilder =
                 new GraphBuilderDirectedSparse<String, PhyloEdge<String>>(_makeNode,_makeEdgeFromBD);
 
         RichNewickReadResult<Networks> result = rnReader.read(new ByteArrayInputStream(richNewickString.getBytes()), graphBuilder);
 
-        if(IterableHelp.count(result.getContextErrors()) > 0)
+        if(IterableHelp.countInt(result.getContextErrors()) > 0)
         {
             throw new RuntimeException(result.getContextErrors().iterator().next().Message);
         }
 
-        if(IterableHelp.count(result.getNetworks().Networks) != 1)
+        if(IterableHelp.countInt(result.getNetworks().Networks) != 1)
         {
             throw new RuntimeException("More than one network generated.");
         }

@@ -4,8 +4,9 @@ package edu.rice.cs.bioinfo.programs.addreticulationedges;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.sun.xml.internal.ws.server.StatefulInstanceResolver;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.RichNewickReaderAST_ANTLR;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.programming.*;
@@ -30,7 +31,7 @@ public class Program {
 
     private String makeNodeName()
     {
-        return "_" + (_nextNodeNumber++);
+        return "i" + (_nextNodeNumber++);
     }
 
      private Func1<String,String> _makeNode = new Func1<String, String>()
@@ -125,7 +126,7 @@ public class Program {
     {
         GraphBuilderDirectedOrderedSparse<String,PhyloEdge2<String,BigDecimal>> graphBuilder = new GraphBuilderDirectedOrderedSparse<String, PhyloEdge2<String,BigDecimal>>(_makeNode, _makeEdge);
 
-        RichNewickReaderAST_ANTLR rnReader = new RichNewickReaderAST_ANTLR();
+       RichNewickReaderAST rnReader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
         rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(networkNewick.getBytes()), graphBuilder);
 
         final DirectedGraphToGraphAdapter<String,PhyloEdge2<String,BigDecimal>> graph = new DirectedGraphToGraphAdapter(graphBuilder.Graph, new Func1<PhyloEdge2<String,BigDecimal>, Tuple<String,String>>()

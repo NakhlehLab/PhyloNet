@@ -16,11 +16,11 @@ END;
 
 BEGIN PHYLONET;
 
-AssignBranchLengthsMaxGTProb net 10 100 (g1, g2);
+AssignBranchLengthsMaxGTProb net 10 100 100 (g1, g2);
 
 END;
 ===
 
-AssignBranchLengthsMaxGTProb net 10 100 (g1, g2)
-Total log probability: -5.7001239725162804: ((X#H1:0.0::0.7,D:2.0)M:0.0819525536912926,(((C:1.0,B:1.0)K:1.427004080188295E-16)X#H1:0.0::0.3,A:2.0)J:0.39895259138771416);
+AssignBranchLengthsMaxGTProb net 10 100 100 (g1, g2)
+Total log probability: -5.700119102862396: ((X#H1:0.0::0.7,D:2.0)M:0.0821564824623853,(((C:1.0,B:1.0)K:1.427004080188295E-16)X#H1:0.0::0.3,A:2.0)J:0.4035164465536049);
 ===

@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: edu.rice.cs.bioinfo.programs.richnewick2hybridsimnewick.Pr
+ ogram
+

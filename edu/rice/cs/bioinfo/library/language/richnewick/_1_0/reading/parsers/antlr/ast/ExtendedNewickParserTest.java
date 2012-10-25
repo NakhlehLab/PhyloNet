@@ -44,12 +44,12 @@ public class ExtendedNewickParserTest {
 
 
         // test the string "R;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R;")));
         AssertNodeLabelOnly("R", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "R;G;"
-        Networks networks = RichNewickParser.parse(testNetworkHelp("R;G;"));
+        Networks networks = new ANTLRRichNewickParser().parse(testNetworkHelp("R;G;"));
         Iterator<NetworkNonEmpty> networkElements = networks.Networks.iterator();
         AssertNodeLabelOnly("R", 1, 0, (networkElements.next()).PrincipleInfo);
         AssertNodeLabelOnly("G", 1, 2, (networkElements.next()).PrincipleInfo);
@@ -58,28 +58,28 @@ public class ExtendedNewickParserTest {
 
         // test the string "R_A;"
         // underscores in unquoted labels are replaced with space by specification
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R_A;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R_A;")));
         AssertNodeLabelOnly("R A", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "'R_A';"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("'R_A';")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("'R_A';")));
         AssertNodeLabelOnly("R_A", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "9A9;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("9A9;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("9A9;")));
         AssertNodeLabelOnly("9A9", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "'Dogs'' tails wag';"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("'Dogs'' tails wag';")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("'Dogs'' tails wag';")));
         AssertNodeLabelOnly("Dogs' tails wag", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
 
         // test the string "(A,B)R;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("(A,B)R;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("(A,B)R;")));
         AssertNodeLabelOnly("R", 1, 5, network.PrincipleInfo);
         Iterator<Subtree> subTrees = network.PrincipleDescendants.Subtrees.iterator();
 
@@ -92,7 +92,7 @@ public class ExtendedNewickParserTest {
         Assert.assertEquals(false, secondChild.Descendants.Subtrees.iterator().hasNext());
 
           // test the string "(A,(B1,B2)B)R;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("(A,(B1,B2)B)R;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("(A,(B1,B2)B)R;")));
         AssertNodeLabelOnly("R", 1, 12, network.PrincipleInfo);
         Iterator<Subtree> rSubTrees = network.PrincipleDescendants.Subtrees.iterator();
 
@@ -115,55 +115,55 @@ public class ExtendedNewickParserTest {
 
 
          // test the string "R:1;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R:1;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R:1;")));
         AssertNodeDetails("R", "1", null, null, null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
           // test the string "R::2;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R::2;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R::2;")));
         AssertNodeDetails("R", null, "2", null, null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
            // test the string "R:::3"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R:::3;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R:::3;")));
         AssertNodeDetails("R", null, null, "3", null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "R:1:2;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R:1:2;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R:1:2;")));
         AssertNodeDetails("R", "1", "2", null, null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
          // test the string "R::2:3;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R::2:3;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R::2:3;")));
         AssertNodeDetails("R", null, "2", "3", null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "R:1::3;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R:1::3;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R:1::3;")));
         AssertNodeDetails("R", "1", null, "3", null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
          // test the string "R:1:2:3;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R:1:2:3;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R:1:2:3;")));
         AssertNodeDetails("R", "1", "2", "3", null, null, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
 
         // test the string "R#0;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R#0;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R#0;")));
         Assert.assertEquals("0", ((HybridNodeQualifierNonEmpty)network.PrincipleInfo.HybridNodeQualifier).HybridNodeIndex.Content);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "R#H0;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R#H0;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R#H0;")));
         Assert.assertEquals("R", ((NodeLabelNonEmpty)network.PrincipleInfo.NodeLabel).Label.Content);
         Assert.assertEquals("0", ((HybridNodeQualifierWithType)network.PrincipleInfo.HybridNodeQualifier).HybridNodeIndex.Content);
         Assert.assertEquals("H", ((HybridNodeQualifierWithType)network.PrincipleInfo.HybridNodeQualifier).HybridNodeType.Content);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "R#H0:1:2:3;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R#H0:1:2:3;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R#H0:1:2:3;")));
         Assert.assertEquals("R", ((NodeLabelNonEmpty)network.PrincipleInfo.NodeLabel).Label.Content);
         Assert.assertEquals("0", ((HybridNodeQualifierWithType)network.PrincipleInfo.HybridNodeQualifier).HybridNodeIndex.Content);
         Assert.assertEquals("H", ((HybridNodeQualifierWithType)network.PrincipleInfo.HybridNodeQualifier).HybridNodeType.Content);
@@ -174,27 +174,27 @@ public class ExtendedNewickParserTest {
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "[&R]R;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("[&R]R;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("[&R]R;")));
         AssertNodeLabelOnly("R", 1, 4, network.PrincipleInfo);
         Assert.assertEquals("[&R]", ((RootageQualifierNonEmpty)network.RootageQualifier).Qualifier);
 
          // test the string "R;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("R;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("R;")));
         AssertNodeLabelOnly("R", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(RootageQualifierEmpty.Singleton, network.RootageQualifier);
 
         // test the string "'This is the only node.';"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("'This is the only node.';")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("'This is the only node.';")));
         AssertNodeLabelOnly("This is the only node.", 1, 0, network.PrincipleInfo);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string ";"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp(";")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp(";")));
         Assert.assertEquals(NodeLabelEmpty.Singleton, network.PrincipleInfo.NodeLabel);
         Assert.assertEquals(false, network.PrincipleDescendants.Subtrees.iterator().hasNext());
 
         // test the string "(,);"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("(,);")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("(,);")));
         Assert.assertEquals(NodeLabelEmpty.Singleton, network.PrincipleInfo.NodeLabel);
 
         subTrees = network.PrincipleDescendants.Subtrees.iterator();
@@ -208,7 +208,7 @@ public class ExtendedNewickParserTest {
         Assert.assertEquals(false, secondChild.Descendants.Subtrees.iterator().hasNext());
 
         // test the string  "((1, ((2, (3, (4)Y#H1)g)e, (((Y#H1, 5)h, 6)f)X#H2)c)a, ((X#H2, 7)d, 8)b)r;"
-        network = SingleNetwork(RichNewickParser.parse(testNetworkHelp("((1, ((2, (3, (4)Y#H1)g)e, (((Y#H1, 5)h, 6)f)X#H2)c)a, ((X#H2, 7)d, 8)b)r;")));
+        network = SingleNetwork(new ANTLRRichNewickParser().parse(testNetworkHelp("((1, ((2, (3, (4)Y#H1)g)e, (((Y#H1, 5)h, 6)f)X#H2)c)a, ((X#H2, 7)d, 8)b)r;")));
 
         AssertNodeLabelOnly("r", 1, 72, network.PrincipleInfo);
         subTrees = network.PrincipleDescendants.Subtrees.iterator();

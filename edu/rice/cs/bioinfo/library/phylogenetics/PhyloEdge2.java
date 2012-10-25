@@ -16,9 +16,10 @@ public class PhyloEdge2<T,D> {
         return _branchLength;
     }
 
-    public void setBranchLength(D newBranchLength)
+    public PhyloEdge2<T,D> setBranchLength(D newBranchLength)
     {
         _branchLength = newBranchLength;
+        return this;
     }
 
     private D _support;
@@ -28,9 +29,10 @@ public class PhyloEdge2<T,D> {
         return _support;
     }
 
-    public void setSupport(D newSupport)
+    public PhyloEdge2<T,D> setSupport(D newSupport)
     {
         _support = newSupport;
+        return this;
     }
 
     private D _probability;
@@ -40,9 +42,10 @@ public class PhyloEdge2<T,D> {
         return _probability;
     }
 
-    public void setProbability(D newProbability)
+    public PhyloEdge2<T,D> setProbability(D newProbability)
     {
         _probability = newProbability;
+        return this;
     }
 
     public final T Source;
@@ -53,6 +56,13 @@ public class PhyloEdge2<T,D> {
     {
         Source = source;
         Destination = destination;
+    }
+
+     public PhyloEdge2(T source, T destination, D branchLength)
+    {
+        Source = source;
+        Destination = destination;
+        setBranchLength(branchLength);
     }
 
     public boolean equals(Object candidate)

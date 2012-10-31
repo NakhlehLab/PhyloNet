@@ -140,6 +140,10 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         return  noError;
     }
 
+    // kliu - what about restriction that reticulation edge probabilities must be in [0,1]?
+    // per Matt - not supported in current development
+
+
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
@@ -183,6 +187,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
        // int gtIndex = 0;
 
 
+	// kliu - this code has a bug - just test it and see
             for(NetNode<Double> parent : speciesNetwork.dfs())  // make the branch length of every edge initially  1
             {
                 for(NetNode<Double> child : parent.getChildren())
@@ -200,11 +205,11 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             {
                 for(final NetNode<Double> child : parent.getChildren())
                 {
+		    // kliu - so much for strict typing
                     final Container<Double> bestFoundBranchLength = new Container<Double>(null);
                     final Container<Double> bestFoundBranchLengthCorrespondingGTProb = new Container<Double>(null);
                     UnivariateFunction functionToOptimize = new UnivariateFunction() {
                         public double value(double suggestedBranchLength) {
-
 
                             child.setParentDistance(parent, suggestedBranchLength);
 
@@ -223,6 +228,16 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
 
                     try
                     {
+			// kliu - this totally is not how to run Brent's method
+			// need to satisfy four constraints:
+			// 0. min <= max and other constrains on min/max as appropriate (e.g. only [0,1] interval allowed for probabilities)
+			// 1. x \in [u, l]
+			// 2. x \in [min, max] and similarly for u and l
+			// 3. f(x) is better than both f(u) and f(l)
+			//
+			// Constraint #3 totally unmet by this code, and
+			// u == min, l == max doesn't use search bounds to constrain search.
+
                         UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, _maxBranchLength, initialBL);
                     }
                     catch(TooManyEvaluationsException e)

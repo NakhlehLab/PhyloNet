@@ -80,7 +80,7 @@ public abstract class HeuristicTreeSearchBase extends CommandBaseFileOut
 
         Network<Double> network = toNetwork(tree);
 
-
+	// kliu - example on how to call GeneTreeProbability
 
         GeneTreeProbability gtp = new GeneTreeProbability();
         Iterator<Double> probList = gtp.calculateGTDistribution(network, _geneTrees, _taxonMap, false).iterator();
@@ -88,6 +88,8 @@ public abstract class HeuristicTreeSearchBase extends CommandBaseFileOut
         double total = 0;
         for(Tree gt: _geneTrees){
             double prob = probList.next();
+	    // kliu - why no log calculations in GeneTreeProbability?
+	    // base 10 unnecessary
             total += Math.log10(prob);
         }
 

@@ -1,4 +1,4 @@
-package edu.rice.cs.bioinfo.library.phylogenetics.optimization.branchlength.brent;
+package edu.rice.cs.bioinfo.library.phylogenetics.optimization.branchlength.Brent;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.optimization.branchlength.BranchLengthOptimizer;
 

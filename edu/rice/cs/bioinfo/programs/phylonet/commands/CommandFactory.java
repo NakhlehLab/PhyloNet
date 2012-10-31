@@ -153,6 +153,10 @@ public class CommandFactory {
         {
             return new CalGTProbInNetwork(directive, params, sourceIdentToNetwork, errorDetected);
         }
+        else if(lowerCommandName.equals("optimizecontinuousnetworkmodelparameters"))
+        {
+            return new OptimizeContinuousNetworkModelParameters(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else if(lowerCommandName.equals("assignbranchlengthsmaxgtprob"))
         {
             return new AssignBranchLengthsMaxGTProb(directive, params, sourceIdentToNetwork, errorDetected);

@@ -33,6 +33,8 @@ import java.util.Map;
  */
 public class NetworkFactoryFromRNNetwork
 {
+    // kliu - same as below, except using interface implemented by
+    // Matt's network representation class 
     public <T> BniNetwork<T> makeNetwork(Network astNetwork)
     {
         return astNetwork.execute(new NetworkAlgo<BniNetwork<T>, Object, RuntimeException>() {
@@ -49,6 +51,8 @@ public class NetworkFactoryFromRNNetwork
         }, null);
     }
 
+    // kliu - the code to change Matt's network representation
+    // into Cuong's network representation
     public <T> BniNetwork<T> makeNetwork(NetworkNonEmpty astNetwork)
     {
         BniNetwork<T> result = new BniNetwork<T>();
@@ -73,6 +77,10 @@ public class NetworkFactoryFromRNNetwork
         }
     }
 
+    // kliu - for all the cruft, I think the two network
+    // representations are the same??
+    // in-memory node representation with list of references to child only??
+    // not interested enough to look at code to confirm
     private <T> BniNetNode createOrGetNetNode(final NetworkInfo principleInfo, final Map<Integer, BniNetNode<T>> hybridNodeIndexToNetNode, final BniNetNode parent)
     {
         BniNetNode<T> result = principleInfo.HybridNodeQualifier.execute(new HybridNodeQualifierAlgo<BniNetNode, Object, RuntimeException>() {

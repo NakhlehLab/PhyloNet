@@ -38,6 +38,21 @@ public class GeneTreeProbability {
     }
 
     /**
+     * kliu - paranoid.
+     * Empty out state of this object. Just in case
+     * calculateGTDistribution doesn't do a clean set of variables
+     * over successive calls.
+     */
+    public void emptyState () {
+	_netTaxa.clear();
+	_stTaxa.clear();
+	_nname2tamount.clear();
+	_hname2tnodes.clear();
+	_tname2nname.clear();
+	_printDetails = false;
+    }
+
+    /**
      * The public function for calculating the probabilities.
      * @param	net 	the given network
      * @param 	gts		the given set of gene trees

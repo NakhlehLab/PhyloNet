@@ -38,7 +38,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
  */
 public class GeneTreeProbabilityYF{
     Set<Integer> _totalCoverNodes;
-  //  String[] _netTaxa;
     boolean[][] _R;
     boolean _printDetails = false;
     int _netNodeNum;
@@ -55,9 +54,7 @@ public class GeneTreeProbabilityYF{
     public List<Double> calculateGTDistribution(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
         List<Double> probList = new ArrayList<Double>();
         processNetwork(network);
-        //System.out.println(gts.size());
-        //System.exit(0);
-        int tempCount = 0;
+
         for(Tree gt: gts){
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
@@ -69,22 +66,16 @@ public class GeneTreeProbabilityYF{
             for(String taxon: gtTaxa){
                 gtTaxaSet.add(taxon);
             }
-
             HashMap<BitSet, List<Configuration>> edge2ACminus = new HashMap<BitSet, List<Configuration>>();
             int netNodeIndex = 0;
-            //int nodeID = 0;
-            for(NetNode<Integer> node: walkNetwork(network)){
 
-                //TODO
-                //System.out.println();
-                //System.out.println("On node #" + node.getData() + " " + node.getName());
+            for(NetNode<Integer> node: walkNetwork(network)){
                 if(_printDetails){
                     System.out.println();
                     System.out.println("On node #" + node.getData() + " " + node.getName());
                 }
                 List<Map<Set<Integer>,List<Configuration>>> CACs = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
 
-                //long start = System.currentTimeMillis();
                 //set AC for a node
                 if(node.isLeaf()){
                     Map<Set<Integer>,List<Configuration>> sizeOneConfigs = new HashMap<Set<Integer>, List<Configuration>>();
@@ -213,28 +204,19 @@ public class GeneTreeProbabilityYF{
                                         else{
                                             sameLineageConfigs.get(0).addProbability(mergedConfig._prob);
                                         }
-
                                     }
                                     else{
                                         sameLineageConfigs.add(mergedConfig);
-
                                     }
+
                                 }
+
                             }
                         }
-                        //System.out.println("Pooling time: " + (System.currentTimeMillis()-start)/1000.0);
+
                     }
                 }
 
-                /*
-                int total = 0;
-                for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
-                    for(List<Configuration> configList: lineages2configs.values()){
-                        total += configList.size();
-                    }
-                }
-                System.out.println("CAC size: " + total);
-                */
 
                 if(_printDetails){
                     System.out.print("AC: {");
@@ -477,7 +459,6 @@ public class GeneTreeProbabilityYF{
                         System.out.println("}");
                     }
                     netNodeIndex ++;
-
                 }
 
 
@@ -486,6 +467,7 @@ public class GeneTreeProbabilityYF{
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
         }
+
         return probList;
     }
 
@@ -624,7 +606,7 @@ public class GeneTreeProbabilityYF{
                 List<Configuration> sameLineageConfigs1 = configIt1.next();
                 List<Configuration> sameLineageConfigs2 = configIt2.next();
                 Configuration origConfig1 = sameLineageConfigs1.get(0);
-                Configuration origConfig2 = sameLineageConfigs2.get(0);
+                //Configuration origConfig2 = sameLineageConfigs2.get(0);
                 if(origConfig1._prob<=0){
                     throw new RuntimeException("Wrong probability!");
                 }
@@ -929,6 +911,7 @@ public class GeneTreeProbabilityYF{
         BitSet visited = new BitSet();
         BitSet seen = new BitSet();
         for(NetNode<Integer> node: net.bfs()){
+            if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
             visited.set(node.getData(), true);
             for(NetNode<Integer> parent: node.getParents()){
                 seen.set(parent.getData(), true);
@@ -1227,7 +1210,6 @@ public class GeneTreeProbabilityYF{
 
         public boolean isCompatible(Configuration config){
             boolean compatible = true;
-            //TODO needed?
             for(int i=0; i< _netNodeNum; i++){
                 if(_netNodeIndex[i] != config._netNodeIndex[i] && _netNodeIndex[i]!=0 && config._netNodeIndex[i]!=0){
                     compatible = false;

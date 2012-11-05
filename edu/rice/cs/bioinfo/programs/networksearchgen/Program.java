@@ -100,13 +100,14 @@ public class Program
                 {
                     final GraphBuilderDirectedOrderedSparse<String,PhyloEdge2<String,BigDecimal>> graphBuilder = new GraphBuilderDirectedOrderedSparse<String, PhyloEdge2<String,BigDecimal>>(_makeNode, _makeEdge);
 
-                    final DirectedGraphToGraphAdapter<String,PhyloEdge2<String,BigDecimal>> graph = new DirectedGraphToGraphAdapter(graphBuilder.Graph, new Func1<PhyloEdge2<String,BigDecimal>, Tuple<String,String>>()
-                    {
+                    final DirectedGraphToGraphAdapter<String,PhyloEdge2<String,BigDecimal>> graph =
+                            new DirectedGraphToGraphAdapter(graphBuilder.Graph, new Func1<PhyloEdge2<String,BigDecimal>, Tuple<String,String>>()
+                            {
 
-                        public Tuple<String, String> execute(PhyloEdge2<String,BigDecimal> input) {
-                            return new Tuple<String, String>(input.Source, input.Destination);
-                        }
-                    });
+                                public Tuple<String, String> execute(PhyloEdge2<String, BigDecimal> edge) {
+                                    return edge.NodesOfEdge;
+                                }
+                            });
 
                     RichNewickReaderAST rnReader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
                     rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(line.getBytes()), graphBuilder);
@@ -145,7 +146,7 @@ public class Program
                             {
                                 if(edge.Destination.equals(dest))
                                 {
-                                    return edge.getProbabilty() + "";
+                                    return edge.getProbability() + "";
                                 }
                             }
                             throw new RuntimeException("Unknown edge " + source + " " + dest);

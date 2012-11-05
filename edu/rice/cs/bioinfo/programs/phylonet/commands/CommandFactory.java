@@ -161,6 +161,14 @@ public class CommandFactory {
         {
             return new AssignBranchLengthsMaxGTProb(directive, params, sourceIdentToNetwork, errorDetected);
         }
+        else if(lowerCommandName.equals("assertreticulationnodecount"))
+        {
+            return new AssertReticulationNodeCount(directive, params, sourceIdentToNetwork, errorDetected);
+        }
+         else if(lowerCommandName.equals("asserttaxacount"))
+        {
+            return new AssertTaxaCount(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

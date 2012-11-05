@@ -40,7 +40,9 @@ import org.apache.commons.math3.optimization.GoalType;
 import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
 
+import javax.management.openmbean.InvalidOpenTypeException;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
 
@@ -59,8 +61,9 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
     private List<NetworkNonEmpty> _geneTrees;
     private ParameterIdentList _geneTreeParam;
     private double _maxBranchLength;
-    private int _maxAssigmentAttemptsPerBranchParam;
-    private int _assigmentRounds = -1;
+    private int _maxAssigmentAttemptsPerBranchParam = -1;
+    private int _assigmentRounds = Integer.MAX_VALUE;
+    private BigDecimal _improvementThreshold;
 
     public AssignBranchLengthsMaxGTProb(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                                         Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
@@ -92,7 +95,16 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             _maxBranchLength = Double.parseDouble(maxBranchLengthParam.Content);
         }
 
-        ParameterIdent maxAssigmentAttemptsPerBranchParam = this.assertParameterIdent(2);
+        ParameterIdent improvementThresholdParam = this.assertParameterIdent(2);
+        noError = noError && improvementThresholdParam != null;
+
+        if(improvementThresholdParam != null)
+        {
+            _improvementThreshold = new BigDecimal(Double.parseDouble(improvementThresholdParam.Content));
+        }
+
+
+        ParameterIdent maxAssigmentAttemptsPerBranchParam = this.assertParameterIdent(3);
         noError = noError && maxAssigmentAttemptsPerBranchParam != null;
 
         if(maxAssigmentAttemptsPerBranchParam != null)
@@ -100,13 +112,14 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             _maxAssigmentAttemptsPerBranchParam = Integer.parseInt(maxAssigmentAttemptsPerBranchParam.Content);
         }
 
+        /*
         ParameterIdent assignmentRoundsParam = this.assertParameterIdent(3);
         noError = noError && assignmentRoundsParam  != null;
 
         if(assignmentRoundsParam != null)
         {
             _assigmentRounds = Integer.parseInt(assignmentRoundsParam.Content);
-        }
+        } */
 
         _geneTreeParam = this.assertParameterIdentList(4);
         noError = noError && _geneTreeParam != null;
@@ -140,14 +153,10 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         return  noError;
     }
 
-    // kliu - what about restriction that reticulation edge probabilities must be in [0,1]?
-    // per Matt - not supported in current development
-
-
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        
+
         final List<Tree> geneTrees = new ArrayList<Tree>();
         final List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
@@ -184,77 +193,179 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         final Network<Double> speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-       // int gtIndex = 0;
-
-
-	// kliu - this code has a bug - just test it and see
-            for(NetNode<Double> parent : speciesNetwork.dfs())  // make the branch length of every edge initially  1
-            {
-                for(NetNode<Double> child : parent.getChildren())
-                {
-                    double initialBL = child.getParentDistance(parent);
-                    if(initialBL == NetNode.NO_DISTANCE || Double.isNaN(initialBL))
-                        initialBL = 1.0;
-                    child.setParentDistance(parent, initialBL);
-                }
-            }
-
-        for(int assigmentRound = 0; assigmentRound <_assigmentRounds; assigmentRound++)
+        for(NetNode<Double> parent : speciesNetwork.dfs())  // make the branch length of every edge initially  1
         {
-            for(final NetNode<Double> parent : speciesNetwork.bfs())  // for each edge, find best branch length
+            for(NetNode<Double> child : parent.getChildren())
             {
-                for(final NetNode<Double> child : parent.getChildren())
+                double initialBL = child.getParentDistance(parent);
+                if(initialBL == NetNode.NO_DISTANCE || Double.isNaN(initialBL))
+                    initialBL = 1.0;
+                child.setParentDistance(parent, initialBL);
+
+                if(child.getParentNumber() == 2)
                 {
-		    // kliu - so much for strict typing
-                    final Container<Double> bestFoundBranchLength = new Container<Double>(null);
-                    final Container<Double> bestFoundBranchLengthCorrespondingGTProb = new Container<Double>(null);
-                    UnivariateFunction functionToOptimize = new UnivariateFunction() {
-                        public double value(double suggestedBranchLength) {
-
-                            child.setParentDistance(parent, suggestedBranchLength);
-
-                            double prob = computeGTProb(speciesNetwork, geneTrees, counter);
-
-                            if(bestFoundBranchLengthCorrespondingGTProb.getContents() == null || bestFoundBranchLengthCorrespondingGTProb.getContents() < prob)
-                            {
-                                bestFoundBranchLength.setContents(suggestedBranchLength);
-                                bestFoundBranchLengthCorrespondingGTProb.setContents(prob);
-                            }
-                            return prob;
+                    for(NetNode<Double> hybridParent : child.getParents())
+                    {
+                        if(child.getParentProbability(hybridParent) == 1.0) // prob was unspecified
+                        {
+                            child.setParentProbability(parent, 0.5);
                         }
-                    };
-                    BrentOptimizer optimizer = new BrentOptimizer(.000000000001,.0000000000000001);
-                    double initialBL = child.getParentDistance(parent);
-
-                    try
-                    {
-			// kliu - this totally is not how to run Brent's method
-			// need to satisfy four constraints:
-			// 0. min <= max and other constrains on min/max as appropriate (e.g. only [0,1] interval allowed for probabilities)
-			// 1. x \in [u, l]
-			// 2. x \in [min, max] and similarly for u and l
-			// 3. f(x) is better than both f(u) and f(l)
-			//
-			// Constraint #3 totally unmet by this code, and
-			// u == min, l == max doesn't use search bounds to constrain search.
-
-                        UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, _maxBranchLength, initialBL);
                     }
-                    catch(TooManyEvaluationsException e)
-                    {
-                    }
-                    child.setParentDistance(parent, bestFoundBranchLength.getContents());
-
                 }
             }
         }
 
-         RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
-         StringWriter sw = new StringWriter();
-         rnNewickPrinter.print(speciesNetwork, sw);
+        boolean continueRounds = true;
+        Double gtProbLastRound = null;
+        Double gtProbThisRound = null;
+        BigDecimal bigE = new BigDecimal(Math.E);
 
-        double gtProb = computeGTProb(speciesNetwork, geneTrees, counter);
-        result.append("\nTotal log probability: " + gtProb + ": " + sw.toString());
+        for(int assigmentRound = 0; assigmentRound <_assigmentRounds && continueRounds; assigmentRound++)
+        {
+            gtProbThisRound = null;
+            List<Proc> assigmentActions = new ArrayList<Proc>();
+
+            for(final NetNode<Double> parent : speciesNetwork.bfs())  // for each edge, find best branch length
+            {
+                for(final NetNode<Double> child : parent.getChildren())
+                {
+                    assigmentActions.add(new Proc()
+                    {
+                        public void execute()
+                        {
+                            final Container<Double> bestFoundBranchLength = new Container<Double>(null);
+                            final Container<Double> bestFoundBranchLengthCorrespondingGTProb = new Container<Double>(null);
+                            UnivariateFunction functionToOptimize = new UnivariateFunction() {
+                                public double value(double suggestedBranchLength) {
+
+
+                                    child.setParentDistance(parent, suggestedBranchLength);
+
+                                    double prob = computeGTProb(speciesNetwork, geneTrees, counter);
+
+                                    if(bestFoundBranchLengthCorrespondingGTProb.getContents() == null || bestFoundBranchLengthCorrespondingGTProb.getContents() < prob)
+                                    {
+                                        bestFoundBranchLength.setContents(suggestedBranchLength);
+                                        bestFoundBranchLengthCorrespondingGTProb.setContents(prob);
+                                    }
+                                    return prob;
+                                }
+                            };
+                            BrentOptimizer optimizer = new BrentOptimizer(.000000000001,.0000000000000001);
+                            double initialBL = child.getParentDistance(parent);
+
+                            try
+                            {
+                                UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, _maxBranchLength, initialBL);
+                            }
+                            catch(TooManyEvaluationsException e)
+                            {
+                            }
+                            child.setParentDistance(parent, bestFoundBranchLength.getContents());
+                        }
+                    });
+                }
+            }
+
+            for(final NetNode<Double> child : speciesNetwork.bfs())
+            {
+                if(child.isRoot())
+                    continue;
+
+                if(child.getParentNumber() == 2)  // hybrid node
+                {
+                    Iterator<NetNode<Double>> hybridParents = child.getParents().iterator();
+                    final NetNode<Double> hybridParent1 = hybridParents.next();
+                    final NetNode<Double> hybridParent2 = hybridParents.next();
+
+                    assigmentActions.add(new Proc()
+                    {
+                        public void execute()
+                        {
+                            final Container<Double> bestFoundHybridProb = new Container<Double>(null);
+                            final Container<Double> bestFoundHybridProbCorrespondingGTProb = new Container<Double>(null);
+                            UnivariateFunction functionToOptimize = new UnivariateFunction() {
+                                public double value(double suggestedProb) {
+
+
+                                    child.setParentProbability(hybridParent1, suggestedProb);
+                                    child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
+
+                                    double prob = computeGTProb(speciesNetwork, geneTrees, counter);
+
+                                    if(bestFoundHybridProbCorrespondingGTProb.getContents() == null || bestFoundHybridProbCorrespondingGTProb.getContents() < prob)
+                                    {
+                                        bestFoundHybridProb.setContents(suggestedProb);
+                                        bestFoundHybridProbCorrespondingGTProb.setContents(prob);
+                                    }
+                                    return prob;
+                                }
+                            };
+                            BrentOptimizer optimizer = new BrentOptimizer(.000000000001,.0000000000000001);
+                            double initialProb = child.getParentProbability(hybridParent1);
+
+                            try
+                            {
+                                UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0, initialProb);
+                            }
+                            catch(TooManyEvaluationsException e)
+                            {
+                            }
+                            child.setParentDistance(hybridParent1, bestFoundHybridProb.getContents());
+                            child.setParentDistance(hybridParent2, 1.0 - bestFoundHybridProb.getContents());
+                        }
+                    });
+
+                }
+            }
+
+            Collections.shuffle(assigmentActions);
+
+            for(Proc assigment : assigmentActions)
+            {
+                assigment.execute();
+            }
+
+            gtProbThisRound = computeGTProb(speciesNetwork, geneTrees, counter);
+
+            if(gtProbLastRound != null)  // if this is not the first assignment round
+            {
+                if(gtProbThisRound < gtProbLastRound)  // if no improvement was made
+                {
+                    continueRounds = false;
+                }
+                else // improvement was made, ensure it is enough to continue
+                {
+                    int improvePow = (int)Math.ceil( ((-1.0)*gtProbLastRound)-((-1.0)*gtProbThisRound));
+                    try
+                    {
+                        BigDecimal improvementPercentage = bigE.pow(improvePow).subtract(BigDecimal.ONE);
+                        if(improvementPercentage.compareTo(_improvementThreshold) != 1)
+                        {
+                            continueRounds = false;
+                        }
+                    }
+                    catch (ArithmeticException e)
+                    {
+                        int d = 0;
+                    }
+                }
+
+
+
+            }
+
+
+            gtProbLastRound = gtProbThisRound;
+        }
+
+
+
+        RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
+        StringWriter sw = new StringWriter();
+        rnNewickPrinter.print(speciesNetwork, sw);
+
+        result.append("\nTotal log probability: " + gtProbThisRound.toString() + ": " + sw.toString());
 
         return result.toString();
 

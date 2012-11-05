@@ -24,12 +24,7 @@ public class ReticulateEdgeAdditionTestJung extends ReticulateEdgeAdditionTest<J
             g.addVertex(node);
         }
 
-        return new DirectedGraphToGraphAdapter<String, Tuple<String, String>>(g, new Func1<Tuple<String, String>,Tuple<String, String>>()
-        {
-            public Tuple<String, String> execute(Tuple<String, String> edge) {
-                return edge;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        });
+        return new DirectedGraphToGraphAdapter<String, Tuple<String, String>>(g, new Func1Identity<Tuple<String, String>>());
     }
 
     @Override

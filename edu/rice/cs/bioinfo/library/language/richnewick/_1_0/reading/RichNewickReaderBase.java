@@ -24,6 +24,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilderNoAction;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -41,7 +42,15 @@ public abstract class RichNewickReaderBase<T> implements RichNewickReader<T> {
         return read(instream, GraphBuilderNoAction.Singleton);
     }
 
+    public RichNewickReadResult<T> read(String richNewick) throws CoordinateParseErrorsException, IOException {
+        return read(new ByteArrayInputStream(richNewick.getBytes()));
+    }
+
     public abstract <N> RichNewickReadResult<T> read(InputStream instream, GraphBuilder<N> graphBuilder) throws CoordinateParseErrorsException, IOException;
+
+     public <N> RichNewickReadResult<T> read(String richNewick, GraphBuilder<N> graphBuilder) throws CoordinateParseErrorsException, IOException {
+        return read(new ByteArrayInputStream(richNewick.getBytes()), graphBuilder);
+    }
 
     public T readAnyErrorToRuntimeException(InputStream instream)
     {
@@ -65,6 +74,11 @@ public abstract class RichNewickReaderBase<T> implements RichNewickReader<T> {
         }
     }
 
+     public T readAnyErrorToRuntimeException(String richNewick)
+     {
+        return readAnyErrorToRuntimeException(new ByteArrayInputStream(richNewick.getBytes()));
+     }
+
     public <N> T readAnyErrorToRuntimeException(InputStream instream, GraphBuilder<N> graphBuilder)
     {
        try
@@ -85,5 +99,10 @@ public abstract class RichNewickReaderBase<T> implements RichNewickReader<T> {
         {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public <N> T readAnyErrorToRuntimeException(String richNewick, GraphBuilder<N> graphBuilder)
+    {
+         return readAnyErrorToRuntimeException(new ByteArrayInputStream(richNewick.getBytes()), graphBuilder);
     }
 }

@@ -630,7 +630,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
 
     private Func2<GraphReadOnly<String,PhyloEdge<String>>, PhyloEdge<String>, Double> _getProbability = new Func2<GraphReadOnly<String, PhyloEdge<String>>, PhyloEdge<String>, Double>() {
         public Double execute(GraphReadOnly<String, PhyloEdge<String>> network, PhyloEdge<String> edge) {
-            return edge.getProbabilty();
+            return edge.getProbability();
         }
     };
 
@@ -642,7 +642,7 @@ public class Simulation201205 extends MDCOnNetworkYFFromRichNewickJung {
 
     private Func2<String, String, String> _getProbabilityForPrint = new Func2<String, String, String>() {
         public String execute(String parent, String child) {
-            return _network.getEdge(parent, child).getProbabilty()+"";
+            return _network.getEdge(parent, child).getProbability()+"";
         }
     };
 

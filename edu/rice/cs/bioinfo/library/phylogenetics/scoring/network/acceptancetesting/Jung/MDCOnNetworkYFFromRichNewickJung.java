@@ -52,18 +52,16 @@ public class MDCOnNetworkYFFromRichNewickJung extends MDCOnNetworkYFFromRichNewi
     };
 
 
-    private Func1<PhyloEdge<String>, Tuple<String,String>> _edgeToTuple = new Func1<PhyloEdge<String>, Tuple<String, String>>() {
-        public Tuple<String, String> execute(PhyloEdge<String> edge) {
-
-            return new Tuple<String, String>(edge.Source, edge.Destination);
-        }
-    };
 
     @Override
     protected DirectedGraphToGraphAdapter<String, PhyloEdge<String>> makeNetwork(String richNewick) {
 
           GraphBuilderDirectedSparse<String, PhyloEdge<String>> graphBuilder = new GraphBuilderDirectedSparse(_makeNode, _makeEdge );
           _reader.readAnyErrorToRuntimeException(new ByteArrayInputStream(richNewick.getBytes()), graphBuilder);
-          return new DirectedGraphToGraphAdapter<String, PhyloEdge<String>>(graphBuilder.Graph, _edgeToTuple);
+          return new DirectedGraphToGraphAdapter<String, PhyloEdge<String>>(graphBuilder.Graph, new Func1<PhyloEdge<String>, Tuple<String, String>>() {
+              public Tuple<String, String> execute(PhyloEdge<String> edge) {
+                  return edge.NodesOfEdge;
+              }
+          });
     }
 }

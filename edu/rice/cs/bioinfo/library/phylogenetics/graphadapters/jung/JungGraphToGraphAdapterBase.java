@@ -5,6 +5,7 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.Pair;
+import org.apache.commons.math3.exception.NullArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,6 +23,9 @@ public abstract class JungGraphToGraphAdapterBase<N,E> implements edu.rice.cs.bi
 
     public JungGraphToGraphAdapterBase(Graph<N,E> graph, Func1<E, Tuple<N, N>> edgeToTuple)
     {
+        if(graph == null)
+            throw new IllegalArgumentException ("graph cannot be null.");
+
         Graph = graph;
         this.edgeToTuple = edgeToTuple;
     }

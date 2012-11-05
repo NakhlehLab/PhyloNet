@@ -87,7 +87,7 @@ public class Program
 
     private static final Func2<GraphReadOnly<String,PhyloEdge<String>>, PhyloEdge<String>, Double> _getProbability = new Func2<GraphReadOnly<String, PhyloEdge<String>>, PhyloEdge<String>, Double>() {
         public Double execute(GraphReadOnly<String, PhyloEdge<String>> input1, PhyloEdge<String> input2) {
-            return input2.getProbabilty();
+            return input2.getProbability();
         }
     };
 
@@ -125,7 +125,7 @@ public class Program
             {
                 PhyloEdge<String> cloneEdge = new PhyloEdge<String>(edge.Source, edge.Destination);
                 cloneEdge.setBranchLength(edge.getBranchLength());
-                cloneEdge.setProbability(edge.getProbabilty());
+                cloneEdge.setProbability(edge.getProbability());
                 cloneEdge.setSupport(edge.getSupport());
 
                 cloneGraph.addEdge(cloneEdge, cloneEdge.Source, cloneEdge.Destination);

@@ -1,9 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.genetreeprobability;
 
 import com.sun.org.apache.bcel.internal.generic.NEW;
+import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloGraph;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloGraphDefault;
+import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault;
 import edu.rice.cs.bioinfo.library.programming.*;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ public class GeneTreeProbabilityYFTest
     @Test
     public void test()
     {
-        PhyloGraph<String> network = new PhyloGraphDefault<String>();
+        PhyloGraph<String> network = new DirectedPhyloGraphDefault<String>();
         network.addNode("R");
         network.addNode("J");
         network.addNode("K");
@@ -45,7 +46,7 @@ public class GeneTreeProbabilityYFTest
 
 
 
-        PhyloGraph<String> gt = new PhyloGraphDefault<String>();
+        PhyloGraph<String> gt = new DirectedPhyloGraphDefault<String>();
         gt.addNode("R");
         gt.addNode("K");
         gt.addNode("J");
@@ -69,7 +70,7 @@ public class GeneTreeProbabilityYFTest
 
         Func2<PhyloEdge<String>, PhyloGraph<String>, Double> getProbability = new Func2<PhyloEdge<String>, PhyloGraph<String>, Double>() {
             public Double execute(PhyloEdge<String> edge, PhyloGraph<String> input2) {
-                return edge.getProbabilty();
+                return edge.getProbability();
             }
         };
 

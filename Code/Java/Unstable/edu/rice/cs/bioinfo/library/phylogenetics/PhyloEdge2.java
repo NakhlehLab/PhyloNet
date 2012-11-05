@@ -1,5 +1,9 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
+import com.sun.org.apache.xalan.internal.xsltc.runtime.Node;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
@@ -37,7 +41,7 @@ public class PhyloEdge2<T,D> {
 
     private D _probability;
 
-    public D getProbabilty()
+    public D getProbability()
     {
         return _probability;
     }
@@ -52,16 +56,18 @@ public class PhyloEdge2<T,D> {
 
     public final T Destination;
 
+    public final Tuple<T,T> NodesOfEdge;
+
     public PhyloEdge2(T source, T destination)
     {
         Source = source;
         Destination = destination;
+        NodesOfEdge = new Tuple<T, T>(source,destination);
     }
 
-     public PhyloEdge2(T source, T destination, D branchLength)
+    public PhyloEdge2(T source, T destination, D branchLength)
     {
-        Source = source;
-        Destination = destination;
+        this(source,destination);
         setBranchLength(branchLength);
     }
 
@@ -82,9 +88,10 @@ public class PhyloEdge2<T,D> {
         return candidate.Source.equals(this.Source) &&
                candidate.Destination.equals(this.Destination) &&
                candidate.getBranchLength() == this.getBranchLength() &&
-               candidate.getProbabilty() == this.getProbabilty() &&
+               candidate.getProbability() == this.getProbability() &&
                candidate.getSupport() == this.getSupport();
     }
+
 
     @Override
     public String toString()

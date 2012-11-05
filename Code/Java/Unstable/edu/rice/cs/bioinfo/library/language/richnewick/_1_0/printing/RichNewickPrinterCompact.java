@@ -83,52 +83,60 @@ public class RichNewickPrinterCompact<N> implements RichNewickPrinter<N>
                              Func2<N,N,String> getProbability, Func1<N, String> getHybridIndex, Func1<N,HybridNodeType> getHybridNodeType, StringBuffer buffer, N node, N printParent,
                              HashSet<String> seenHybridIndexes)
     {
-        Ref<Boolean> seenHybridNode = new Ref<Boolean>(false);
-        String nodeInfo = makeNodeInfoString(node, printParent, getLabel, getBranchLength, getSupport, getProbability, getHybridIndex, getHybridNodeType, seenHybridIndexes,
-                seenHybridNode);
+        String hybridIndex = getHybridIndex.execute(node);
+        boolean isFirstVisitToHybrid =  !seenHybridIndexes.contains(hybridIndex);
+        if(hybridIndex != null && isFirstVisitToHybrid)
+            seenHybridIndexes.add(hybridIndex);
+
+
+        String nodeInfo = makeNodeInfoString(node, printParent, getLabel, getBranchLength, getSupport, getProbability, hybridIndex, getHybridNodeType, seenHybridIndexes);
         buffer.insert(0, nodeInfo);
 
-        if(!seenHybridNode.get())
+        if(hybridIndex != null && isFirstVisitToHybrid)
+            return;
+
+
+        LinkedList<N> nonParentDest = new LinkedList<N>();
+
+        for(N dest : getDestinationNodes.execute(node))
         {
-            LinkedList<N> nonParentDest = new LinkedList<N>();
-
-            for(N dest : getDestinationNodes.execute(node))
+            if(printParent == null || !printParent.equals(dest))
             {
-                if(printParent == null || !printParent.equals(dest))
-                {
-                    nonParentDest.add(dest);
-                }
-            }
-
-            if(nonParentDest.size() > 0)
-            {
-                buffer.insert(0, ")");
-
-                for(int i = 0; i<nonParentDest.size(); i++)
-                {
-                    prependNode(getLabel, getDestinationNodes, getBranchLength, getSupport, getProbability, getHybridIndex, getHybridNodeType, buffer, nonParentDest.get(i), node,
-                                seenHybridIndexes);
-
-                     if(i<nonParentDest.size() - 1)
-                    {
-                        buffer.insert(0, ",");
-                    }
-
-                }
-
-
-                buffer.insert(0, "(");
+                nonParentDest.add(dest);
             }
         }
+
+        if(nonParentDest.size() > 0)
+        {
+            buffer.insert(0, ")");
+
+            for(int i = 0; i<nonParentDest.size(); i++)
+            {
+                prependNode(getLabel, getDestinationNodes, getBranchLength, getSupport, getProbability, getHybridIndex, getHybridNodeType, buffer, nonParentDest.get(i), node,
+                        seenHybridIndexes);
+
+                if(i<nonParentDest.size() - 1)
+                {
+                    buffer.insert(0, ",");
+                }
+
+            }
+
+
+            buffer.insert(0, "(");
+        }
+
+
+
 
 
     }
 
     private String makeNodeInfoString(N node, N printParent, Func1<N, String> getLabel, Func2<N,N,String> getBranchLength, Func2<N,N,String> getSupport, Func2<N,N,String> getProbability,
-                                      Func1<N, String> getHybridIndex, Func1<N, HybridNodeType> getHybridNodeType, HashSet<String> seenHybridIndexes, Ref<Boolean> seenHybridNode) {
+                                      String hybridIndex, Func1<N, HybridNodeType> getHybridNodeType, HashSet<String> seenHybridIndexes) {
         String result = getLabel.execute(node);
 
-        String hybridIndex = getHybridIndex.execute(node);
+
 
         if(hybridIndex != null)
         {
@@ -149,16 +157,6 @@ public class RichNewickPrinterCompact<N> implements RichNewickPrinter<N>
                 result+="LGT";
             }
             result+= hybridIndex;
-
-            if(seenHybridIndexes.contains(hybridIndex))
-            {
-                seenHybridNode.set(true);
-            }
-            else
-            {
-                seenHybridNode.set(false);
-                seenHybridIndexes.add(hybridIndex);
-            }
         }
 
         if(printParent != null)

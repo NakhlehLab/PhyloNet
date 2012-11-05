@@ -51,7 +51,7 @@ public class Program
     static String convertString(String richNewickInput, String rootBranchLength)
     {
         GraphBuilderPhyloGraph2<String,BigDecimal> graphBuilder = new GraphBuilderPhyloGraph2<String, BigDecimal>(new Func1Identity<String>(), new Func1Identity<BigDecimal>());
-        RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+        RichNewickReader reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
         reader.readAnyErrorToRuntimeException(new ByteArrayInputStream(richNewickInput.getBytes()), graphBuilder);
         final PhyloGraph2<String,BigDecimal> graph = graphBuilder.Graph;
 
@@ -80,7 +80,7 @@ public class Program
 
         Func2<String,String,String> getProbability = new Func2<String, String, String>() {
             public String execute(String tail, String tip) {
-                return graph.getEdge(tail, tip).getProbabilty().toString();
+                return graph.getEdge(tail, tip).getProbability().toString();
             }
         };
 

@@ -25,7 +25,7 @@ public class MULTreeFactoryTest
     {
 
 
-        PhyloGraph<String> network = new PhyloGraphDefault<String>();
+        PhyloGraph<String> network = new DirectedPhyloGraphDefault<String>();
         network.addNode("A");
         network.addNode("B");
         network.addNode("C");
@@ -44,7 +44,7 @@ public class MULTreeFactoryTest
         Func<Graph<MULTreeFactory.MULTreeNode<String>,PhyloEdge<MULTreeFactory.MULTreeNode<String>>>> makeEmptyGraph = new Func<Graph<MULTreeFactory.MULTreeNode<String>, PhyloEdge<MULTreeFactory.MULTreeNode<String>>>>() {
             public Graph<MULTreeFactory.MULTreeNode<String>, PhyloEdge<MULTreeFactory.MULTreeNode<String>>> execute() {
 
-                return new PhyloGraphDefault<MULTreeFactory.MULTreeNode<String>>();
+                return new DirectedPhyloGraphDefault<MULTreeFactory.MULTreeNode<String>>();
             }
         };
         Func5<GraphReadOnly<String,PhyloEdge<String>>, PhyloEdge<String>, Graph<MULTreeFactory.MULTreeNode<String>, PhyloEdge<MULTreeFactory.MULTreeNode<String>>>,

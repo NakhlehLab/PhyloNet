@@ -81,7 +81,11 @@ public abstract class ReaSearchFromRichNewickJung extends ReaSearchFromRichNewic
             {
                 NetworkNonEmpty network = networks.next();
 
-                return new DirectedGraphToGraphAdapter<String, PhyloEdge<String>>(graphBuilder.Graph, _edgeToTuple);
+                return new DirectedGraphToGraphAdapter<String, PhyloEdge<String>>(graphBuilder.Graph, new Func1<PhyloEdge<String>, Tuple<String, String>>() {
+                    public Tuple<String, String> execute(PhyloEdge<String> edge) {
+                        return edge.NodesOfEdge;
+                    }
+                });
             }
 
         }

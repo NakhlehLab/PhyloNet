@@ -4,7 +4,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge2;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloGraph2;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloGraphDefault2;
+import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault2;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.math.BigDecimal;
@@ -19,7 +19,7 @@ import java.math.BigInteger;
  */
 public class GraphBuilderPhyloGraph2<N,D> implements GraphBuilder<N>
 {
-    public final PhyloGraph2<N,D> Graph = new PhyloGraphDefault2<N,D>();
+    public final PhyloGraph2<N,D> Graph = new DirectedPhyloGraphDefault2<N,D>();
 
     private final Func1<String,N> _makeNode;
 

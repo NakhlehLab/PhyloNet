@@ -12,14 +12,13 @@ import edu.uci.ics.jung.graph.DirectedSparseGraph;
  * Time: 2:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PhyloGraphDefault<N>  extends DirectedGraphToGraphAdapter<N,PhyloEdge<N>> implements PhyloGraph<N>
+public class DirectedPhyloGraphDefault<N>  extends DirectedGraphToGraphAdapter<N,PhyloEdge<N>> implements PhyloGraph<N>
 {
-    public PhyloGraphDefault()
+    public DirectedPhyloGraphDefault()
     {
-        super( new DirectedSparseGraph<N, PhyloEdge<N>>(), new Func1<PhyloEdge<N>, Tuple<N, N>>()
-        {
+        super( new DirectedSparseGraph<N, PhyloEdge<N>>(), new Func1<PhyloEdge<N>, Tuple<N, N>>() {
             public Tuple<N, N> execute(PhyloEdge<N> edge) {
-                return new Tuple<N, N>(edge.Source, edge.Destination);
+                return edge.NodesOfEdge;
             }
         });
     }

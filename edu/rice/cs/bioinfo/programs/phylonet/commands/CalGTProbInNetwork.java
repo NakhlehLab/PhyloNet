@@ -20,7 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
@@ -43,8 +43,8 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class CalGTProbInNetwork extends CommandBaseFileOut{
-    private HashMap<String,String> _taxonMap = null;
-    private boolean  _printDetail = false;
+    private HashMap _taxonMap = null;
+    private boolean  _multree = false;
     private NetworkNonEmpty _speciesNetwork;
     private List<NetworkNonEmpty> _geneTrees;
 
@@ -60,7 +60,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 5;
+        return 8;
     }
 
     @Override
@@ -82,22 +82,42 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
         }
 
-        ParamExtractorAllelMap aParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+        ParamExtractor mParam = new ParamExtractor("m", this.params, this.errorDetected);
+        if(mParam.ContainsSwitch)
+        {
+            String method = mParam.PostSwitchValue.toLowerCase();
+            boolean methodCorrect = method.equals("ac") || method.equals("mul");
+            if(!methodCorrect){
+                this.errorDetected.execute("-m must be ac or mul", mParam.PostSwitchParam.getLine(), mParam.PostSwitchParam.getColumn());
+            }
+            else{
+                if(method.equals("mul")){
+                    _multree = true;
+                }
+            }
+            noError = noError && methodCorrect;
+        }
+
+        ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
         if(aParam.ContainsSwitch){
-            noError = noError && aParam.IsValidMap;
-            if(aParam.IsValidMap){
-                _taxonMap = aParam.ValueMap;
+            if(_multree){
+                ParamExtractorAllelMap aaParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+                noError = noError && aaParam.IsValidMap;
+                if(aaParam.IsValidMap){
+                    _taxonMap = aaParam.ValueMap;
+                }
+            }
+            else{
+                ParamExtractorAllelListMap aaParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
+                noError = noError && aaParam.IsValidMap;
+                if(aaParam.IsValidMap){
+                    _taxonMap = aaParam.ValueMap;
+                }
             }
         }
 
-        ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
-        if(pParam.ContainsSwitch)
-        {
-            _printDetail = true;
-        }
-
-        noError = noError && checkForUnknownSwitches("p", "a");
-        checkAndSetOutFile(aParam, pParam);
+        noError = noError && checkForUnknownSwitches("m", "a");
+        checkAndSetOutFile(aParam, mParam);
 
         return  noError;
     }
@@ -142,8 +162,16 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-        GeneTreeProbability gtp = new GeneTreeProbability();
-        Iterator<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, _printDetail).iterator();
+
+        Iterator<Double> probList;
+        if(_multree){
+            GeneTreeProbability gtp = new GeneTreeProbability();
+            probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, false).iterator();
+        }
+        else{
+            GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
+            probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap).iterator();
+        }
         Iterator<Integer> counterIt = counter.iterator();
         double total = 0;
         for(Tree gt: geneTrees){

@@ -23,6 +23,8 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
+import java.math.BigDecimal;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
@@ -32,7 +34,7 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
  */
 public class ASTContextAnalyser {
 
-    public static Iterable<CSAError> analyse(Network network)
+    public static Iterable<CSAError> analyse(Network network, BigDecimal hybridSumTollerance)
     {
          final ASTNetworkInspector inspector = new ASTNetworkInspector(network);
          Func1<Object,NetworkInfo> networkNodeToPrimarySyntaxNode = new Func1<Object, NetworkInfo>() {
@@ -63,7 +65,7 @@ public class ASTContextAnalyser {
             }
         }, null);
 
-        return ContextAnalyser.analyse(inspector.getSyntaxNodes(), inspector, inspector.getNetworkNodes(),
+        return new ContextAnalyser(hybridSumTollerance).analyse(inspector.getSyntaxNodes(), inspector, inspector.getNetworkNodes(),
                                        inspector, networkNodeToPrimarySyntaxNode, isRooted);
     }
 }

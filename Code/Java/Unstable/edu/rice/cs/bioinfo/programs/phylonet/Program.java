@@ -35,6 +35,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.NexusOut;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -52,7 +53,7 @@ public class Program {
     {
         System.out.print("");
 
-        if(args.length !=1 && args.length != 2) // we only expect one or two parameters, the input nexus file and a random seed
+        if(args.length !=1 && args.length != 2 && args.length != 3) // we only expect one or two parameters, the input nexus file and a random seed
         {
             showUsage();
             return;
@@ -60,17 +61,33 @@ public class Program {
 
         File nexusFile = new File(args[0]);
 
-        Random rand;
-        if(args.length == 2)
+        BigDecimal hybridSumTolerance = BigDecimal.ZERO;
+        if(args.length >=2 )
         {
             try
             {
-                long seed = Long.parseLong(args[1]);
+                hybridSumTolerance = new BigDecimal(args[1]);
+            }
+            catch (NumberFormatException e)
+            {
+                System.err.println("Invalid hybrid sum tolerance: " +args[1]);
+                showUsage();
+                return;
+            }
+        }
+
+
+        Random rand;
+        if(args.length == 3)
+        {
+            try
+            {
+                long seed = Long.parseLong(args[2]);
                 rand = new Random(seed);
             }
             catch(NumberFormatException e)
             {
-                System.err.println("Unknown random seed: " +args[1]);
+                System.err.println("Unknown random seed: " +args[2]);
                 showUsage();
                 return;
             }
@@ -81,13 +98,14 @@ public class Program {
         }
 
 
+
         if(!nexusFile.isFile()) // assert the file the user gave us actually exists
         {
             showFileDoesNotExist(nexusFile);
         }
         else
         {
-            run(new FileInputStream(nexusFile), System.err, System.out, rand);
+            run(new FileInputStream(nexusFile), System.err, System.out, rand, hybridSumTolerance);
         }
 
         System.out.print("\n");
@@ -95,26 +113,26 @@ public class Program {
     }
 
     static void run(InputStream nexusStream, final PrintStream errorStream,
-                                             final PrintStream displaySteam, Random rand) throws IOException
+                    final PrintStream displaySteam, Random rand, BigDecimal hybridSumTolerance) throws IOException
     {
-             Proc1<String> display = new Proc1<String>()
-             {
-                public void execute(String s) {
+        Proc1<String> display = new Proc1<String>()
+        {
+            public void execute(String s) {
 
-                     displaySteam.print(s);
-                }
-             };
+                displaySteam.print(s);
+            }
+        };
 
-             final Container<Boolean> allowCommandExecution = new Container<Boolean>(true);
-             final Proc3<String, Integer, Integer> errorDetected = new Proc3<String, Integer, Integer>()
-             {
-                public void execute(String message, Integer line, Integer col) {
+        final Container<Boolean> allowCommandExecution = new Container<Boolean>(true);
+        final Proc3<String, Integer, Integer> errorDetected = new Proc3<String, Integer, Integer>()
+        {
+            public void execute(String message, Integer line, Integer col) {
 
-                    int oneBasedColumn = col + 1;
-                    errorStream.print(String.format("\n\nError at [%s,%s]: %s", line, oneBasedColumn, message));
-                    allowCommandExecution.setContents(false);
-                }
-             };
+                int oneBasedColumn = col + 1;
+                errorStream.print(String.format("\n\nError at [%s,%s]: %s", line, oneBasedColumn, message));
+                allowCommandExecution.setContents(false);
+            }
+        };
 
         /*
          * Parse input nexus file to AST. Report and terminate on syntax errors.
@@ -149,8 +167,8 @@ public class Program {
         BlockContents blockContents = BlockContentsFactoryFromAST.make(blocks); // covert AST to our IR
 
 
-        Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, errorDetected); // make a Network representation of each defined Rich Newick string
-                                                                                        // map is keyed by source code identifier of the string
+        Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, hybridSumTolerance, errorDetected); // make a Network representation of each defined Rich Newick string
+        // map is keyed by source code identifier of the string
 
         // if we already have errors, don't continue.  Else we will get confusing cascades.
         if(!allowCommandExecution.getContents())
@@ -159,7 +177,7 @@ public class Program {
         }
 
         ContextSensitiveAnalyser.checkforHybridNodesInTrees(sourceIdentToNetwork, blockContents, errorDetected);
-        ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, blockContents, errorDetected); // check the Networks for any context errors
+        ContextSensitiveAnalyser.analyseNetworks(sourceIdentToNetwork, blockContents, hybridSumTolerance, errorDetected); // check the Networks for any context errors
 
         LinkedList<Command> commands = new LinkedList<Command>();
 
@@ -185,21 +203,21 @@ public class Program {
          */
 
         boolean first = true;
-         BufferedWriter nexusOut = null;
+        BufferedWriter nexusOut = null;
         if(allowCommandExecution.getContents())
         {
-           int commandNumber = 1;
-           for(final Command command : commands)
-           {
-               final int commandNumberCapture = commandNumber;
-               final BufferedWriter nexusOutCapture = nexusOut;
-               if(commandNumber != 1)
-               {
-                  display.execute("\n");
+            int commandNumber = 1;
+            for(final Command command : commands)
+            {
+                final int commandNumberCapture = commandNumber;
+                final BufferedWriter nexusOutCapture = nexusOut;
+                if(commandNumber != 1)
+                {
+                    display.execute("\n");
 
-               }
-               try
-               {
+                }
+                try
+                {
                     command.addSTTreeGeneratedListener(new Proc1<String>()
                     {
                         private int _treeNumber = 1;
@@ -212,15 +230,15 @@ public class Program {
                                 {
                                     if(commandNumberCapture == 2)
                                     {
-                                       nexusOutCapture.write("\n");
+                                        nexusOutCapture.write("\n");
                                     }
                                     nexusOutCapture.write("\n" + commandNumberCapture + "_" + command.getDefiningSyntaxCommand().getName() + "_" + _treeNumber + " = " + newickTree);
                                     _treeNumber++;
                                 }
                                 catch(IOException e)
                                 {
-                                   SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
-                                   errorDetected.execute("Error writing to nexus out file. (" + e.getMessage() + ")", motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
+                                    SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
+                                    errorDetected.execute("Error writing to nexus out file. (" + e.getMessage() + ")", motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
                                 }
                             }
                         }
@@ -228,37 +246,37 @@ public class Program {
                     showCommand(command.getDefiningSyntaxCommand(), display);
                     command.executeCommand(display);
 
-                   if(command instanceof NexusOut)
-                   {
-                      if(nexusOut != null)
-                      {
-                           nexusOut.write("\n\nEND;");
-                           nexusOut.flush();
-                           nexusOut.close();
-                      }
+                    if(command instanceof NexusOut)
+                    {
+                        if(nexusOut != null)
+                        {
+                            nexusOut.write("\n\nEND;");
+                            nexusOut.flush();
+                            nexusOut.close();
+                        }
 
-                      nexusOut = new BufferedWriter(new FileWriter((((NexusOut)command).getNexusOutFile())));
-                      nexusOut.write("#NEXUS");
-                      nexusOut.write("\n\nBEGIN TREES;");
-                   }
-               }
-               catch(IOException e)
-               {
-                   SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
-                   errorDetected.execute(String.format("Error executing command '%s' (%s).", motivatingSyntaxCommand.getName(), e.getMessage()),
-                                          motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
-               }
+                        nexusOut = new BufferedWriter(new FileWriter((((NexusOut)command).getNexusOutFile())));
+                        nexusOut.write("#NEXUS");
+                        nexusOut.write("\n\nBEGIN TREES;");
+                    }
+                }
+                catch(IOException e)
+                {
+                    SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
+                    errorDetected.execute(String.format("Error executing command '%s' (%s).", motivatingSyntaxCommand.getName(), e.getMessage()),
+                            motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
+                }
 
 
-               commandNumber++;
-           }
+                commandNumber++;
+            }
         }
 
         if(nexusOut != null)
         {
-           nexusOut.write("\n\nEND;");
-           nexusOut.flush();
-           nexusOut.close();
+            nexusOut.write("\n\nEND;");
+            nexusOut.flush();
+            nexusOut.close();
         }
     }
 
@@ -270,15 +288,15 @@ public class Program {
 
         for(edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter p : definingSyntaxCommand.getParameters())
         {
-              String paramValue = p.execute(new ParameterAlgo<String, Object, RuntimeException>() {
+            String paramValue = p.execute(new ParameterAlgo<String, Object, RuntimeException>() {
 
-                  public String forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
-                      return parameterIdent.Content;
-                  }
+                public String forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
+                    return parameterIdent.Content;
+                }
 
-                  public String forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
-                     StringBuilder b = new StringBuilder();
-                     b.append("(");
+                public String forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
+                    StringBuilder b = new StringBuilder();
+                    b.append("(");
 
                     Iterator<String> elements = parameterIdentList.Elements.iterator();
 
@@ -292,68 +310,68 @@ public class Program {
                         b.append(", " + elements.next());
                     }
 
-                     b.append(")");
+                    b.append(")");
 
-                      return b.toString();
-                  }
+                    return b.toString();
+                }
 
-                  public String forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
-                      return "\"" + parameterQuote.UnquotedText + "\"";
-                  }
+                public String forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
+                    return "\"" + parameterQuote.UnquotedText + "\"";
+                }
 
-                  public String forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
-                      return parameterTaxonSetList.OriginalSource;
-                  }
+                public String forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
+                    return parameterTaxonSetList.OriginalSource;
+                }
 
-                  public String forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
-                      return parameterIdentSet.OriginalSource;
-                  }
+                public String forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
+                    return parameterIdentSet.OriginalSource;
+                }
 
-                  public String forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
+                public String forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
 
-                      StringBuilder b = new StringBuilder();
-                      b.append("<");
+                    StringBuilder b = new StringBuilder();
+                    b.append("<");
 
-                      boolean firstKey = true;
-                      for(Map.Entry<String,List<String>> entry : parameterTaxaMap._mappings)
-                      {
-                          if(!firstKey)
-                          {
-                              b.append("; ");
+                    boolean firstKey = true;
+                    for(Map.Entry<String,List<String>> entry : parameterTaxaMap._mappings)
+                    {
+                        if(!firstKey)
+                        {
+                            b.append("; ");
 
-                          }
+                        }
 
-                           b.append(entry.getKey() + ":");
-                           firstKey = false;
+                        b.append(entry.getKey() + ":");
+                        firstKey = false;
 
 
-                          boolean firstValueEntry = true;
-                          for(String mapEntry : entry.getValue())
-                          {
-                             if(!firstValueEntry)
-                             {
-                               b.append(",");
-                             }
+                        boolean firstValueEntry = true;
+                        for(String mapEntry : entry.getValue())
+                        {
+                            if(!firstValueEntry)
+                            {
+                                b.append(",");
+                            }
 
-                             b.append(mapEntry);
-                             firstValueEntry = false;
-                          }
-                      }
+                            b.append(mapEntry);
+                            firstValueEntry = false;
+                        }
+                    }
 
-                      b.append(">");
+                    b.append(">");
 
-                      return b.toString();
+                    return b.toString();
 
-                  }
-              }, null);
-              accum.append(" " + paramValue);
+                }
+            }, null);
+            accum.append(" " + paramValue);
         }
 
         displayResult.execute(accum.toString());
     }
 
 
-    private static Map<String, NetworkNonEmpty> makeNetworks(BlockContents blockContents, Proc3<String, Integer, Integer> errorDetected) throws IOException {
+    private static Map<String, NetworkNonEmpty> makeNetworks(BlockContents blockContents, BigDecimal hybridSumTolerance, Proc3<String, Integer, Integer> errorDetected) throws IOException {
 
         HashMap<String,NetworkNonEmpty> tbr = new HashMap<String, NetworkNonEmpty>();
         for(String richNewickSourceIdent : blockContents.getRickNewickAssignmentIdentifiers())
@@ -364,10 +382,11 @@ public class Program {
             RichNewickReadResult<Networks> readResult = null;
             try
             {
-               RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
-               readResult = reader.read(new ByteArrayInputStream(assignment.getRichNewickString().getBytes()));
-             /*  Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
-                        new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();  */
+                RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+                reader.setHybridSumTolerance(hybridSumTolerance);
+                readResult = reader.read(new ByteArrayInputStream(assignment.getRichNewickString().getBytes()));
+                /*  Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
+             new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();  */
             }
             catch(CoordinateParseErrorsException e)
             {
@@ -427,12 +446,12 @@ public class Program {
     }
 
     private static void showFileDoesNotExist(File inFile) {
-        System.err.println(String.format("\nNo such file '%s'", inFile.getName())); 
+        System.err.println(String.format("\nNo such file '%s'", inFile.getName()));
     }
 
     private static void showUsage() {
 
-        System.out.println("\nUsage: java -jar phylonet.jar nexus_file [random seed integer]");
+        System.out.println("\nUsage: java -jar phylonet.jar nexus_file [hybrid sum tolerance] [random seed integer] ");
 
     }
 }

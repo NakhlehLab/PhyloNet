@@ -40,6 +40,7 @@ public class Program
                 public PhyloEdge2<String,BigDecimal> execute(String source, String dest, BigDecimal branchLength, BigDecimal arg4, BigDecimal prob) {
                     PhyloEdge2<String,BigDecimal> edge = new  PhyloEdge2<String,BigDecimal>(source, dest);
                     edge.setBranchLength(branchLength);
+                    edge.setProbability(prob);
                     return edge;
                 }
             };
@@ -51,6 +52,7 @@ public class Program
         GraphBuilderDirectedOrderedSparse<String,PhyloEdge2<String,BigDecimal>> graphBuilder = new GraphBuilderDirectedOrderedSparse<String, PhyloEdge2<String,BigDecimal>>(_makeNode, _makeEdge);
 
         RichNewickReaderAST rnReader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+        rnReader.setHybridSumTolerance(new BigDecimal(".000001"));
         rnReader.readAnyErrorToRuntimeException(new ByteArrayInputStream(networkNewick.getBytes()), graphBuilder);
 
         Map<String,Integer> nodeLabelToDOTName = new HashMap<String,Integer>();
@@ -69,7 +71,7 @@ public class Program
          {
               String tailNodeDotName =  nodeLabelToDOTName.get(edge.Source).toString();
               String tipNodeDotName = nodeLabelToDOTName.get(edge.Destination).toString();
-              System.out.println( tailNodeDotName + "->" + tipNodeDotName + "[label=\"" + edge.getBranchLength() + "\"];");
+              System.out.println( tailNodeDotName + "->" + tipNodeDotName + "[label=\"" + edge.getBranchLength() +"::" + edge.getProbability() + "\"];");
          }
 
         System.out.println("}");

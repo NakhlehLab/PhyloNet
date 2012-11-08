@@ -27,6 +27,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -38,13 +39,13 @@ import java.util.*;
  */
 class ContextSensitiveAnalyser {
 
-    public static void analyseNetworks(Map<String,NetworkNonEmpty> sourceIdentToNetwork, BlockContents blockContents, final Proc3<String,Integer,Integer> errorDetected)
+    public static void analyseNetworks(Map<String,NetworkNonEmpty> sourceIdentToNetwork, BlockContents blockContents, BigDecimal hybridSumTolerance, final Proc3<String,Integer,Integer> errorDetected)
     {
        for(String rNewickStringIdent : sourceIdentToNetwork.keySet())
        {
            final NetworkNonEmpty network = sourceIdentToNetwork.get(rNewickStringIdent);
 
-           for(CSAError error : ASTContextAnalyser.analyse(network))
+           for(CSAError error : ASTContextAnalyser.analyse(network, hybridSumTolerance))
            {
                errorDetected.execute(error.Message, -1, -1);
            }

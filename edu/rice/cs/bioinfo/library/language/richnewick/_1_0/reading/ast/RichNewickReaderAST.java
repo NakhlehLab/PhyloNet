@@ -31,6 +31,7 @@ import edu.rice.cs.bioinfo.library.programming.Func;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,6 +45,13 @@ import java.util.List;
 public class RichNewickReaderAST extends RichNewickReaderBase<Networks>
 {
     private final Func<RichNewickParser<Networks>> _makeParser;
+
+    private BigDecimal _hybridSumTolerance = BigDecimal.ZERO;
+
+    public void setHybridSumTolerance(BigDecimal tolerance)
+    {
+        _hybridSumTolerance = tolerance;
+    }
 
     public RichNewickReaderAST(Func<RichNewickParser<Networks>> makeParser)
     {
@@ -63,7 +71,7 @@ public class RichNewickReaderAST extends RichNewickReaderBase<Networks>
         for(Network network : networks.Networks)
         {
 
-            for(CSAError error : ASTContextAnalyser.analyse(network))
+            for(CSAError error : ASTContextAnalyser.analyse(network,_hybridSumTolerance))
             {
                 errors.add(error);
             }

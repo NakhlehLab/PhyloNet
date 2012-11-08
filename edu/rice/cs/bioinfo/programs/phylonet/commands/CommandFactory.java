@@ -169,6 +169,10 @@ public class CommandFactory {
         {
             return new AssertTaxaCount(directive, params, sourceIdentToNetwork, errorDetected);
         }
+        else if(lowerCommandName.equals("comparecommontopologies"))
+        {
+            return new CompareCommonTopologies(directive, params, sourceIdentToNetwork, errorDetected);
+        }
         else
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));

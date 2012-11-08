@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.phylogenetics.IsLeaf;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
@@ -63,7 +64,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
     private double _maxBranchLength;
     private int _maxAssigmentAttemptsPerBranchParam = -1;
     private int _assigmentRounds = Integer.MAX_VALUE;
-    private BigDecimal _improvementThreshold;
+    private double _improvementThreshold;
 
     public AssignBranchLengthsMaxGTProb(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                                         Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
@@ -100,7 +101,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
 
         if(improvementThresholdParam != null)
         {
-            _improvementThreshold = new BigDecimal(Double.parseDouble(improvementThresholdParam.Content));
+            _improvementThreshold = Double.parseDouble(improvementThresholdParam.Content);
         }
 
 
@@ -193,12 +194,17 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         final Network<Double> speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-        for(NetNode<Double> parent : speciesNetwork.dfs())  // make the branch length of every edge initially  1
+        /*
+         * Make the branch length of every edge initially  1 if no initial user value is specified.
+         * Make the hybrid prob of every hybrid edge initially .5 if no initial user value is specified.
+         */
+        for(NetNode<Double> parent : speciesNetwork.bfs())
         {
             for(NetNode<Double> child : parent.getChildren())
             {
+
                 double initialBL = child.getParentDistance(parent);
-                if(initialBL == NetNode.NO_DISTANCE || Double.isNaN(initialBL))
+                if(initialBL == NetNode.NO_DISTANCE || Double.isNaN(initialBL)) // no specification from user  on branch length
                     initialBL = 1.0;
                 child.setParentDistance(parent, initialBL);
 
@@ -206,7 +212,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 {
                     for(NetNode<Double> hybridParent : child.getParents())
                     {
-                        if(child.getParentProbability(hybridParent) == 1.0) // prob was unspecified
+                        if(child.getParentProbability(hybridParent) == 1.0) // no specification from user  on hybrid prob
                         {
                             child.setParentProbability(parent, 0.5);
                         }
@@ -216,52 +222,54 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         }
 
         boolean continueRounds = true;
-        Double gtProbLastRound = null;
-        Double gtProbThisRound = null;
+        final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(computeGTProb(speciesNetwork, geneTrees, counter));
         BigDecimal bigE = new BigDecimal(Math.E);
 
         for(int assigmentRound = 0; assigmentRound <_assigmentRounds && continueRounds; assigmentRound++)
         {
-            gtProbThisRound = null;
+            double lnGtProbLastRound = lnGtProbOfSpeciesNetwork.getContents();
             List<Proc> assigmentActions = new ArrayList<Proc>();
 
-            for(final NetNode<Double> parent : speciesNetwork.bfs())  // for each edge, find best branch length
+            for(final NetNode<Double> parent : speciesNetwork.bfs())
             {
                 for(final NetNode<Double> child : parent.getChildren())
                 {
+                    if(child.isLeaf())
+                        continue;
+
                     assigmentActions.add(new Proc()
                     {
                         public void execute()
                         {
-                            final Container<Double> bestFoundBranchLength = new Container<Double>(null);
-                            final Container<Double> bestFoundBranchLengthCorrespondingGTProb = new Container<Double>(null);
                             UnivariateFunction functionToOptimize = new UnivariateFunction() {
                                 public double value(double suggestedBranchLength) {
 
+                                    double incumbentBranchLength = child.getParentDistance(parent);
 
                                     child.setParentDistance(parent, suggestedBranchLength);
 
-                                    double prob = computeGTProb(speciesNetwork, geneTrees, counter);
+                                    double lnProb = computeGTProb(speciesNetwork, geneTrees, counter);
 
-                                    if(bestFoundBranchLengthCorrespondingGTProb.getContents() == null || bestFoundBranchLengthCorrespondingGTProb.getContents() < prob)
+                                    if(lnProb > lnGtProbOfSpeciesNetwork.getContents())
                                     {
-                                        bestFoundBranchLength.setContents(suggestedBranchLength);
-                                        bestFoundBranchLengthCorrespondingGTProb.setContents(prob);
+                                        lnGtProbOfSpeciesNetwork.setContents(lnProb);
                                     }
-                                    return prob;
+                                    else
+                                    {
+                                        child.setParentDistance(parent, incumbentBranchLength);
+                                    }
+                                    return lnProb;
                                 }
                             };
                             BrentOptimizer optimizer = new BrentOptimizer(.000000000001,.0000000000000001);
-                            double initialBL = child.getParentDistance(parent);
 
                             try
                             {
-                                UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, _maxBranchLength, initialBL);
+                                UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, _maxBranchLength);
                             }
                             catch(TooManyEvaluationsException e)
                             {
                             }
-                            child.setParentDistance(parent, bestFoundBranchLength.getContents());
                         }
                     });
                 }
@@ -282,37 +290,37 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                     {
                         public void execute()
                         {
-                            final Container<Double> bestFoundHybridProb = new Container<Double>(null);
-                            final Container<Double> bestFoundHybridProbCorrespondingGTProb = new Container<Double>(null);
                             UnivariateFunction functionToOptimize = new UnivariateFunction() {
                                 public double value(double suggestedProb) {
 
+                                    double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
 
                                     child.setParentProbability(hybridParent1, suggestedProb);
                                     child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                                    double prob = computeGTProb(speciesNetwork, geneTrees, counter);
+                                    double lnProb = computeGTProb(speciesNetwork, geneTrees, counter);
 
-                                    if(bestFoundHybridProbCorrespondingGTProb.getContents() == null || bestFoundHybridProbCorrespondingGTProb.getContents() < prob)
+                                    if(lnProb > lnGtProbOfSpeciesNetwork.getContents())
                                     {
-                                        bestFoundHybridProb.setContents(suggestedProb);
-                                        bestFoundHybridProbCorrespondingGTProb.setContents(prob);
+                                        lnGtProbOfSpeciesNetwork.setContents(lnProb);
                                     }
-                                    return prob;
+                                    else
+                                    {
+                                        child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
+                                        child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
+                                    }
+                                    return lnProb;
                                 }
                             };
                             BrentOptimizer optimizer = new BrentOptimizer(.000000000001,.0000000000000001);
-                            double initialProb = child.getParentProbability(hybridParent1);
 
                             try
                             {
-                                UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0, initialProb);
+                                UnivariatePointValuePair maxFoundValue = optimizer.optimize(_maxAssigmentAttemptsPerBranchParam, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
                             }
                             catch(TooManyEvaluationsException e)
                             {
                             }
-                            child.setParentDistance(hybridParent1, bestFoundHybridProb.getContents());
-                            child.setParentDistance(hybridParent2, 1.0 - bestFoundHybridProb.getContents());
                         }
                     });
 
@@ -326,21 +334,17 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 assigment.execute();
             }
 
-            gtProbThisRound = computeGTProb(speciesNetwork, geneTrees, counter);
 
-            if(gtProbLastRound != null)  // if this is not the first assignment round
-            {
-                if(gtProbThisRound < gtProbLastRound)  // if no improvement was made
+                if(lnGtProbOfSpeciesNetwork.getContents() == lnGtProbLastRound)  // if no improvement was made
                 {
                     continueRounds = false;
                 }
-                else // improvement was made, ensure it is enough to continue
+                else if (lnGtProbOfSpeciesNetwork.getContents() > lnGtProbLastRound) // improvement was made, ensure it is enough to continue
                 {
-                    int improvePow = (int)Math.ceil( ((-1.0)*gtProbLastRound)-((-1.0)*gtProbThisRound));
                     try
                     {
-                        BigDecimal improvementPercentage = bigE.pow(improvePow).subtract(BigDecimal.ONE);
-                        if(improvementPercentage.compareTo(_improvementThreshold) != 1)
+                        double improvementPercentage = Math.pow(Math.E, (lnGtProbOfSpeciesNetwork.getContents() - lnGtProbLastRound)) - 1.0;
+                        if(improvementPercentage < _improvementThreshold)
                         {
                             continueRounds = false;
                         }
@@ -350,13 +354,10 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                         int d = 0;
                     }
                 }
-
-
-
-            }
-
-
-            gtProbLastRound = gtProbThisRound;
+                else
+                {
+                    throw new IllegalStateException("Should never have decreased prob.");
+                }
         }
 
 
@@ -365,7 +366,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         StringWriter sw = new StringWriter();
         rnNewickPrinter.print(speciesNetwork, sw);
 
-        result.append("\nTotal log probability: " + gtProbThisRound.toString() + ": " + sw.toString());
+        result.append("\nTotal log probability: " + lnGtProbOfSpeciesNetwork.getContents() + ": " + sw.toString());
 
         return result.toString();
 

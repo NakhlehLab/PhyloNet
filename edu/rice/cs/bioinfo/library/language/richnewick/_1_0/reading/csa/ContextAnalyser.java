@@ -29,7 +29,19 @@ import java.util.List;
 
 class ContextAnalyser
 {
-    public static <SN,NN,E> List<CSAError> analyse(Iterable<SN> syntaxNodes, final SyntaxNetworkInspector<SN> syntaxInspector,
+    private final BigDecimal _hybridSumTolerance;
+
+    public ContextAnalyser(BigDecimal hybridSumTolerance)
+    {
+        _hybridSumTolerance = hybridSumTolerance;
+    }
+
+    public ContextAnalyser()
+    {
+        this(BigDecimal.ZERO);
+    }
+
+    public <SN,NN,E> List<CSAError> analyse(Iterable<SN> syntaxNodes, final SyntaxNetworkInspector<SN> syntaxInspector,
                                                    Iterable<NN> networkNodes, final NetworkInspector<NN, E> networkInspector,
                                                    final Func1<NN, SN> getPrimarySyntaxContributor, boolean isRooted)
     {
@@ -201,7 +213,7 @@ class ContextAnalyser
         for(NN node : networkNodes)
         {
             /*
-            * Check to ensure that, for all the in edges to a node, the probabilities sum to one.
+            * Check to ensure that, for all the in edges to a node, the probabilities sum to one within tolerance.
             */
 
             BigDecimal probSum = new BigDecimal("0", MathContext.UNLIMITED);
@@ -225,23 +237,7 @@ class ContextAnalyser
 
             if(numParentsWithProb == 0)
             {
-                // probability assumed to be equal distirbution among all parents
-                continue;
-            }
-
-            if(numParents == 1 && numParentsWithProb == 1 && probSum.compareTo(new BigDecimal("1", MathContext.UNLIMITED)) != 0)
-            {
-                if(nodeLabel == null)
-                {
-                    errors.add(new CSAError("Unnamed node with single parent must have probability 1.  Found  "  + probSum.toPlainString(), -1, -1));
-                }
-                else
-                {
-                    errors.add(new CSAError(String.format("Node %s with single parent must have probability 1.  Found "  + probSum.toPlainString(), nodeLabel),
-                            syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
-                            syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
-                }
-
+                // probability assumed to be equal distribution among all parents
                 continue;
             }
 
@@ -262,15 +258,15 @@ class ContextAnalyser
                 continue;
             }
 
-            if(probSum.compareTo(new BigDecimal("1", MathContext.UNLIMITED)) != 0)
+            if(probSum.subtract(BigDecimal.ONE).abs().compareTo(_hybridSumTolerance) == 1)
             {
                 if(nodeLabel == null)
                 {
-                    errors.add(new CSAError("Unnamed node's parents' probabilities do not all sum to 1. Found "  + probSum.toPlainString(), -1, -1));
+                    errors.add(new CSAError("Unnamed node's parents' probabilities do not all sum to 1 within a tolerance of " + _hybridSumTolerance + ". Found "  + probSum.toPlainString(), -1, -1));
                 }
                 else
                 {
-                    errors.add(new CSAError(String.format("Node %s's parents' probabilities do not all sum to 1.  Found "  + probSum.toPlainString(), nodeLabel),
+                    errors.add(new CSAError(String.format("Node %s's parents' probabilities do not all sum to 1 within a tolerance of " + _hybridSumTolerance + ". Found " + probSum.toPlainString(), nodeLabel),
                             syntaxInspector.getNodeLabelTextLineNumber(syntaxNode),
                             syntaxInspector.getNodeLabelTextColumnNumber(syntaxNode)));
                 }

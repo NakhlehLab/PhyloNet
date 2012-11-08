@@ -25,6 +25,7 @@ import sun.net.idn.StringPrep;
 
 import java.awt.geom.Path2D;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Random;
 
 /**
@@ -86,7 +87,7 @@ public class PhyloNetAAT {
         String faultMessage = testFile + " failed.";
         ByteArrayOutputStream display = new ByteArrayOutputStream();
         ByteArrayOutputStream error = new ByteArrayOutputStream();
-        Program.run(new ByteArrayInputStream(nexus.getBytes()), new PrintStream(error), new PrintStream(display), _rand);
+        Program.run(new ByteArrayInputStream(nexus.getBytes()), new PrintStream(error), new PrintStream(display), _rand, BigDecimal.ZERO);
         Assert.assertEquals(faultMessage, expectedStdError, error.toString().replace("\r", ""));
         Assert.assertEquals(faultMessage,  expectedStdOut, display.toString().replace("\r", ""));
     }

@@ -230,9 +230,10 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
         boolean continueRounds = true; // keep trying to improve network
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(computeGTProb(speciesNetwork, geneTrees, counter));  // records the GTProb of the network at all times
 
-        for(int assigmentRound = 0; assigmentRound <_assigmentRounds && continueRounds; assigmentRound++)
+        int assigmentRound = 0;
+        for(; assigmentRound <_assigmentRounds && continueRounds; assigmentRound++)
         {
-
+            System.out.println("\nround " + assigmentRound);
             /*
              * Prepare a random ordering of network edge examinations each of which attempts to change a branch length or hybrid prob to improve the GTProb score.
              */
@@ -255,18 +256,23 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                             UnivariateFunction functionToOptimize = new UnivariateFunction() {
                                 public double value(double suggestedBranchLength) {  // brent suggests a new branch length
 
+
                                     double incumbentBranchLength = child.getParentDistance(parent);
 
                                     // mutate and see if it yields an improved network
                                     child.setParentDistance(parent, suggestedBranchLength);
                                     double lnProb = computeGTProb(speciesNetwork, geneTrees, counter);
 
+                                    System.out.print("(" + parent.getName() + ", " + child.getName() + ")" + " to bl " + suggestedBranchLength + " yields " + lnProb + " vs " + lnGtProbOfSpeciesNetwork.getContents() );
+
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
+                                        System.out.println(" (improved)");
                                         lnGtProbOfSpeciesNetwork.setContents(lnProb);
                                     }
                                     else  // didn't improve, roll back change
                                     {
+                                        System.out.println("");
                                         child.setParentDistance(parent, incumbentBranchLength);
                                     }
                                     return lnProb;
@@ -311,14 +317,21 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                                     child.setParentProbability(hybridParent1, suggestedProb);
                                     child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
+
                                     double lnProb = computeGTProb(speciesNetwork, geneTrees, counter);
+
+
+                                    System.out.print("(" + hybridParent1.getName() + ", " + child.getName() + ")" + " to hp " + suggestedProb + " yields " + lnProb + " vs " + lnGtProbOfSpeciesNetwork.getContents() );
+
 
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                     {
+                                        System.out.println(" (improved)");
                                         lnGtProbOfSpeciesNetwork.setContents(lnProb);
                                     }
                                     else // change did not improve, roll back
                                     {
+                                        System.out.println("");
                                         child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
                                         child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
                                     }
@@ -348,14 +361,14 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
             }
 
 
-            if(lnGtProbOfSpeciesNetwork.getContents() == lnGtProbLastRound)  // if no improvement was made wrt to last around, stop trying to find a better assignment
+            if( ((double)lnGtProbOfSpeciesNetwork.getContents()) == lnGtProbLastRound)  // if no improvement was made wrt to last around, stop trying to find a better assignment
             {
                 continueRounds = false;
             }
             else if (lnGtProbOfSpeciesNetwork.getContents() > lnGtProbLastRound) // improvement was made, ensure it is large enough wrt to improvement threshold to continue searching
             {
                 double improvementPercentage = Math.pow(Math.E, (lnGtProbOfSpeciesNetwork.getContents() - lnGtProbLastRound)) - 1.0;  // how much did we improve over last round
-                if(improvementPercentage < _improvementThreshold)  // improved, but not enough to keep searching
+                if(improvementPercentage < _improvementThreshold  )  // improved, but not enough to keep searching
                 {
                     continueRounds = false;
                 }
@@ -365,6 +378,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
+
 
 
         RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();

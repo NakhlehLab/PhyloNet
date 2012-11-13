@@ -37,12 +37,13 @@ import java.util.Map;
  * Time: 1:46 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("infer_st_mc")
 public class InferST_MC extends InferSTBase
 {
     private boolean _treesRooted = true;
     private Map<String,String> _taxonMap;
 
-    InferST_MC(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public InferST_MC(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

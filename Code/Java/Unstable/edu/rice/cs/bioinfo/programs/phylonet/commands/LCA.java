@@ -42,13 +42,14 @@ import java.util.*;
  * Time: 3:16 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("LCA")
 public class LCA extends CommandBaseFileOut {
 
     private NetworkNonEmpty _tree;
 
     private ArrayList<Set<String>> _setFamilyList = new ArrayList<Set<String>>();
 
-    LCA(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public LCA(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

@@ -50,6 +50,7 @@ import org.apache.commons.math3.optimization.GoalType;
 import java.io.*;
 import java.util.*;
 
+@CommandName("optimizecontinuousnetworkmodelparameters")
 public class OptimizeContinuousNetworkModelParameters extends CommandBaseFileOut {
     protected static final double RELATIVE_ACCURACY = 1e-12;
     protected static final double ABSOLUTE_ACCURACY = 1e-8;

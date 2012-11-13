@@ -40,6 +40,7 @@ import java.util.Map;
  * Time: 1:16 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("infer_st_mdc_ilp")
 public class InferST_MDC_ILP extends InferSTBase
 {
 

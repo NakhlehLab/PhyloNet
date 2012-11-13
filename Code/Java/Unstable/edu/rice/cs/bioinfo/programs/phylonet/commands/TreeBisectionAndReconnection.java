@@ -36,6 +36,7 @@ import java.util.*;
  * Time: 4:54 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("tbreconnection")
 public class TreeBisectionAndReconnection extends HeuristicTreeSearchBase
 {
 

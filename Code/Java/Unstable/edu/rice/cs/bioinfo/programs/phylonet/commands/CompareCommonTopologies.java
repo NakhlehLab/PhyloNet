@@ -24,6 +24,7 @@ import java.util.Map;
  * Time: 3:57 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("comparecommontopologies")
 public class CompareCommonTopologies extends CommandBaseFileOut {
 
      private GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>> _topology1;

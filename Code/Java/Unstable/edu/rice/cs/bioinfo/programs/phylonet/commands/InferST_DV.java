@@ -37,9 +37,10 @@ import java.util.Map;
  * Time: 4:59 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("infer_st_dv")
 public class InferST_DV extends InferSTBase
 {
-    InferST_DV(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public InferST_DV(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

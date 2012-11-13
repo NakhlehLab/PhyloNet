@@ -36,6 +36,7 @@ import java.util.Map;
  * Time: 5:26 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("SymmetricDifference")
 public class SymmetricDifference extends CommandBaseFileOut {
 
     private static final String _unnamedTaxonText = "[unnamed]";
@@ -44,7 +45,7 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     private NetworkNonEmpty _experimentalNetwork;
 
-    SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

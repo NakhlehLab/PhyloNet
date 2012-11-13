@@ -42,6 +42,7 @@ import java.util.Map;
  * Time: 2:25 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("AssertReticulationNodeCount")
 public class AssertReticulationNodeCount extends CommandBase
 {
 

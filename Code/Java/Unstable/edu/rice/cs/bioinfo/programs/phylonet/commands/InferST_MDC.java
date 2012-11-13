@@ -38,6 +38,7 @@ import java.util.Map;
  * Time: 2:42 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("infer_st_mdc")
 public class InferST_MDC extends InferSTBase
 {
 
@@ -50,7 +51,7 @@ public class InferST_MDC extends InferSTBase
 	private double _time = -1;
 	private boolean _unresolved = false;
 
-    InferST_MDC(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public InferST_MDC(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

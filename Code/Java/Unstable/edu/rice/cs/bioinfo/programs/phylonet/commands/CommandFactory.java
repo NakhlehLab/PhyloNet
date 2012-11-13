@@ -24,9 +24,15 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCo
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.MappedByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -41,7 +47,7 @@ public class CommandFactory {
 
     public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, Random rand)
     {
-        String lowerCommandName = directive.getName().toLowerCase();
+        final String lowerCommandName = directive.getName().toLowerCase();
 
         ArrayList<Parameter> params = new ArrayList<Parameter>();
         for(Parameter p : directive.getParameters())
@@ -49,133 +55,62 @@ public class CommandFactory {
             params.add(p);
         }
 
-        if(lowerCommandName.equals("symmetricdifference") || lowerCommandName.equals("rf"))
+        org.reflections.Reflections reflections = new org.reflections.Reflections("edu.rice.cs.bioinfo.programs.phylonet.commands");
+
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(CommandName.class);
+
+        Class matchingCommand = null;
+        for(Class c : annotated)
         {
-            return new SymmetricDifference(directive, params, sourceIdentToNetwork, errorDetected);
+           for(Annotation a : c.getAnnotations())
+           {
+              if(((CommandName)a).value().toLowerCase().equals(lowerCommandName))
+              {
+                    if(matchingCommand == null)
+                    {
+                        matchingCommand = c;
+                    }
+                    else
+                    {
+                        throw new IllegalStateException("More than one class in classpath is marked with the command name " + directive.getName());
+                    }
+              }
+           }
         }
-        else if(lowerCommandName.equals("lca"))
-        {
-            return new LCA(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("mast"))
-        {
-            return new MAST(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("riatahgt"))
-        {
-            return new RIATAHGT(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("deepcoalcount_tree"))
-        {
-            return new DeepCoalCount(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("deepcoalcount_network"))
-        {
-            return new CountXLInNetwork(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("processgt"))
-        {
-            return new ProcessGT(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("charnet"))
-        {
-            return new CharNet(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-         else if(lowerCommandName.equals("cmpnets"))
-        {
-            return new CmpNets(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("simgtinnetwork"))
-        {
-            return new SimGTinNetwork(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("countcoal"))
-        {
-           return new CountCoal(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("genst"))
-        {
-            return new GenST(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("gencplex"))
-        {
-            return new GenCPLEX(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_mdc"))
-        {
-            return new InferST_MDC(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_mdc_time"))
-        {
-            return new InferST_MDC_Time(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_mdc_ur"))
-        {
-            return new InferST_MDC_UR(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_glass"))
-        {
-            return new InfterST_MDC_GLASS(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_dv"))
-        {
-            return new InferST_DV(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_mc"))
-        {
-            return new InferST_MC(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("infer_st_bootstrap"))
-        {
-            return new InferST_Bootstrap(directive, params, sourceIdentToNetwork, errorDetected, rand);
-        }
-        else if(lowerCommandName.equals("infer_st_mdc_ilp"))
-        {
-            return new InferST_MDC_ILP(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("nninterchange"))
-        {
-            return new NearestNeighborInterchange(directive, params, sourceIdentToNetwork, errorDetected, rand);
-        }
-        else if(lowerCommandName.equals("spregraft"))
-        {
-            return new SubtreePruneAndRegraft(directive, params, sourceIdentToNetwork, errorDetected, rand);
-        }
-        else if(lowerCommandName.equals("tbreconnection"))
-        {
-            return new TreeBisectionAndReconnection(directive, params, sourceIdentToNetwork, errorDetected, rand);
-        }
-        else if(lowerCommandName.equals("nexus_out"))
-        {
-            return new NexusOut(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("calgtprob"))
-        {
-            return new CalGTProbInNetwork(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("optimizecontinuousnetworkmodelparameters"))
-        {
-            return new OptimizeContinuousNetworkModelParameters(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("assignbranchlengthsmaxgtprob"))
-        {
-            return new AssignBranchLengthsMaxGTProb(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("assertreticulationnodecount"))
-        {
-            return new AssertReticulationNodeCount(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-         else if(lowerCommandName.equals("asserttaxacount"))
-        {
-            return new AssertTaxaCount(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else if(lowerCommandName.equals("comparecommontopologies"))
-        {
-            return new CompareCommonTopologies(directive, params, sourceIdentToNetwork, errorDetected);
-        }
-        else
+
+        if(matchingCommand == null)
         {
              throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));
+        }
+
+        try
+        {
+            try
+            {
+                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class);
+                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected);
+            }
+            catch(NoSuchMethodException e)
+            {
+                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class, Random.class);
+                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected, rand);
+            }
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (InvocationTargetException e)
+        {
+           throw new RuntimeException(e);
+        }
+        catch (InstantiationException e)
+        {
+           throw new RuntimeException(e);
+        }
+        catch (IllegalAccessException e)
+        {
+           throw new RuntimeException(e);
         }
 
     }

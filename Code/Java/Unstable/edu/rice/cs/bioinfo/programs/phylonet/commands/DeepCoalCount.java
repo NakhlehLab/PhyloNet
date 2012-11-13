@@ -39,6 +39,7 @@ import java.util.*;
  * Time: 4:45 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("deepcoalcount_tree")
 public class DeepCoalCount extends CommandBaseFileOut {
 
     private HashMap<String,String> _taxonMap = null;
@@ -51,7 +52,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
     private List<NetworkNonEmpty> _geneTrees;
 
-    DeepCoalCount(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public DeepCoalCount(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

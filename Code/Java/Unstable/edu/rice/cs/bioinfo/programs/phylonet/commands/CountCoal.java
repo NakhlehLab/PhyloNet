@@ -36,11 +36,12 @@ import java.util.Map;
  * Time: 2:11 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("countcoal")
 public class CountCoal extends CommandBaseFileOut {
 
     private NetworkNonEmpty _tree1, _tree2;
 
-    CountCoal(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public CountCoal(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

@@ -38,6 +38,7 @@ import java.util.*;
  * Time: 11:08 AM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("infer_st_bootstrap")
 public class InferST_Bootstrap extends CommandBaseFileOut {
 
     private int _numRepititions;
@@ -48,7 +49,7 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
 
     private  SyntaxCommand _exampleCommand;
 
-    InferST_Bootstrap(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, Random rand) {
+    public InferST_Bootstrap(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, Random rand) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
         _rand = rand;
     }

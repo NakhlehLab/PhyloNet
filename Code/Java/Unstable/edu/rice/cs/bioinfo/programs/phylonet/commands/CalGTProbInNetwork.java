@@ -42,6 +42,7 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("calgtprob")
 public class CalGTProbInNetwork extends CommandBaseFileOut{
     private HashMap _taxonMap = null;
     private boolean  _multree = false;

@@ -46,6 +46,7 @@ import java.util.Map;
  * Time: 1:28 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("riatahgt")
 public class RIATAHGT extends CommandBaseFileOut
 {
     NetworkNonEmpty _speciesTree;
@@ -60,7 +61,7 @@ public class RIATAHGT extends CommandBaseFileOut
 
     private boolean _collapsed = true;
 
-    RIATAHGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public RIATAHGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

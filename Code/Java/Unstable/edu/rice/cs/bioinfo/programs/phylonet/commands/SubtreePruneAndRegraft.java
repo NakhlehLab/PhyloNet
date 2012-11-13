@@ -36,9 +36,10 @@ import java.util.*;
  * Time: 4:54 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("spregraft")
 public class SubtreePruneAndRegraft extends HeuristicTreeSearchBase
 {
-     SubtreePruneAndRegraft(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+     public SubtreePruneAndRegraft(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
                             Proc3<String, Integer, Integer> errorDetected, Random rand) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rand);
     }

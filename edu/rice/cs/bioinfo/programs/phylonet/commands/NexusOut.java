@@ -37,6 +37,7 @@ import java.util.Map;
  * Time: 10:12 AM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("nexus_out")
 public class NexusOut extends CommandBase {
 
     private File _nexusOutFile;
@@ -46,7 +47,7 @@ public class NexusOut extends CommandBase {
         return _nexusOutFile;
     }
 
-    NexusOut(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public NexusOut(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

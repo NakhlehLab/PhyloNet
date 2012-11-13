@@ -39,6 +39,7 @@ import java.util.*;
  * Time: 3:10 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("processgt")
 public class ProcessGT extends CommandBaseFileOut
 {
     LinkedList<NetworkNonEmpty> _speciesTrees = new LinkedList<NetworkNonEmpty>();
@@ -51,7 +52,7 @@ public class ProcessGT extends CommandBaseFileOut
 
     private boolean _geneTreesRooted = true;
 
-    ProcessGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+    public ProcessGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
               Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }

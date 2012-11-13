@@ -55,7 +55,8 @@ import java.util.zip.DeflaterOutputStream;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
+@CommandName("SearchBranchLengthsMaxGTProb")
+public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
     private HashMap<String,String> _taxonMap = null;
     private boolean  _printDetail = false;
     private NetworkNonEmpty _speciesNetwork;
@@ -66,7 +67,7 @@ public class AssignBranchLengthsMaxGTProb extends CommandBaseFileOut{
     private int _assigmentRounds = Integer.MAX_VALUE;
     private double _improvementThreshold;
 
-    public AssignBranchLengthsMaxGTProb(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
+    public SearchBranchLengthsMaxGTProb(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                                         Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }

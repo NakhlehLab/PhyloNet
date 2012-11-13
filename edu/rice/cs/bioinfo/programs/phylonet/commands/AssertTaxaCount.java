@@ -43,6 +43,7 @@ import java.util.Map;
  * Time: 2:25 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("AssertTaxaCount")
 public class AssertTaxaCount extends CommandBase
 {
 

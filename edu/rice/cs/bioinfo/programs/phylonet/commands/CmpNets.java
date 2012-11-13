@@ -45,6 +45,7 @@ import java.util.Map;
  * Time: 4:04 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("cmpnets")
 public class CmpNets extends CommandBaseFileOut {
 
     enum Method
@@ -59,7 +60,7 @@ public class CmpNets extends CommandBaseFileOut {
     private NetworkNonEmpty _inputNetwork2;
 
 
-    CmpNets(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public CmpNets(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

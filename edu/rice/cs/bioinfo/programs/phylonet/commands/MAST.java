@@ -37,6 +37,7 @@ import java.util.*;
  * Time: 2:00 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("Mast")
 class MAST extends CommandBaseFileOut
 {
     private boolean _computeAll = false;
@@ -49,7 +50,7 @@ class MAST extends CommandBaseFileOut
 
     boolean _allUnrooted = true;
 
-    MAST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public MAST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

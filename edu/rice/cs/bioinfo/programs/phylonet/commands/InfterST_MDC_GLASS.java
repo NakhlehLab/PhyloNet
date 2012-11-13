@@ -42,13 +42,14 @@ import java.util.Map;
  * Time: 1:08 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("infer_st_glass")
 public class InfterST_MDC_GLASS extends InferSTBase
 {
     private Map<String,String> _taxonMap;
 
     private TaxaDistanceMatrix _distanceMatrix;
 
-    InfterST_MDC_GLASS(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public InfterST_MDC_GLASS(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

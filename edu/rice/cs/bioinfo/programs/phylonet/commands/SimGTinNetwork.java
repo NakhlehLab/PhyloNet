@@ -36,6 +36,7 @@ import java.util.Map;
  * Time: 5:05 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("simgtinnetwork")
 public class SimGTinNetwork extends CommandBaseFileOut
 {
     private Double _t1;
@@ -46,7 +47,7 @@ public class SimGTinNetwork extends CommandBaseFileOut
 
     private Integer _n;
 
-    SimGTinNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public SimGTinNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

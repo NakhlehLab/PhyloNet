@@ -43,13 +43,14 @@ import java.util.Map;
  * Time: 6:35 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("genst")
 public class GenST extends CommandBase
 {
     private LinkedList<NetworkNonEmpty> _geneTrees;
 
     private File _outFileFile;
 
-    GenST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public GenST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

@@ -43,6 +43,7 @@ import java.util.Map;
  * Time: 4:04 PM
  * To change this template use File | Settings | File Templates.
  */
+@CommandName("charnet")
 public class CharNet extends CommandBaseFileOut {
 
     enum Method
@@ -54,7 +55,7 @@ public class CharNet extends CommandBaseFileOut {
 
     private NetworkNonEmpty _inputNetwork;
 
-    CharNet(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
+    public CharNet(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
     }
 

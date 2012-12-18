@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.phylogenetics.IsLeaf;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
@@ -68,8 +70,9 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
     private double _improvementThreshold;
 
     public SearchBranchLengthsMaxGTProb(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                                        Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+                                        Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                                        Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader){
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     @Override
@@ -143,13 +146,24 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
             }
         }
 
+        ParamExtractor amParam = new ParamExtractor("am", this.params, this.errorDetected);
+        if(amParam.ContainsSwitch)
+        {
+            _computeGTProbStrategy = this._computeGTProbStrategyBox;
+        }
+        else
+        {
+            _computeGTProbStrategy = this._computeGTProbStrategyCalGTProb;
+        }
+
+
         ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
         if(pParam.ContainsSwitch)
         {
             _printDetail = true;
         }
 
-        noError = noError && checkForUnknownSwitches("p", "a");
+        noError = noError && checkForUnknownSwitches("p", "a", "am");
         checkAndSetOutFile(aParam, pParam);
 
         return  noError;
@@ -229,12 +243,12 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
 
         // def: a round is an attempt to tweak each branch length and each hybrid prob.
         boolean continueRounds = true; // keep trying to improve network
-        final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(computeGTProb(speciesNetwork, geneTrees, counter));  // records the GTProb of the network at all times
+        final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(_computeGTProbStrategy.execute(speciesNetwork, geneTrees, counter));  // records the GTProb of the network at all times
 
         int assigmentRound = 0;
         for(; assigmentRound <_assigmentRounds && continueRounds; assigmentRound++)
         {
-            System.out.println("\nround " + assigmentRound);
+
             /*
              * Prepare a random ordering of network edge examinations each of which attempts to change a branch length or hybrid prob to improve the GTProb score.
              */
@@ -247,6 +261,9 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
             {
                 for(final NetNode<Double> child : parent.getChildren())
                 {
+                    if(!parent.isRoot())  // jd tmp
+                        continue;
+
                     if(child.isLeaf()) // leaf edge, skip
                         continue;
 
@@ -257,23 +274,25 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                             UnivariateFunction functionToOptimize = new UnivariateFunction() {
                                 public double value(double suggestedBranchLength) {  // brent suggests a new branch length
 
-
                                     double incumbentBranchLength = child.getParentDistance(parent);
 
                                     // mutate and see if it yields an improved network
                                     child.setParentDistance(parent, suggestedBranchLength);
-                                    double lnProb = computeGTProb(speciesNetwork, geneTrees, counter);
+                                    double lnProb = _computeGTProbStrategy.execute(speciesNetwork, geneTrees, counter);
 
-                                    System.out.print("(" + parent.getName() + ", " + child.getName() + ")" + " to bl " + suggestedBranchLength + " yields " + lnProb + " vs " + lnGtProbOfSpeciesNetwork.getContents() );
+
+                            RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
+                            StringWriter sw = new StringWriter();
+                            rnNewickPrinter.print(speciesNetwork, sw);
+                            String inferredNetwork = sw.toString();
+                        //    System.out.println(inferredNetwork + "\t" + lnProb);
 
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
-                                        System.out.println(" (improved)");
-                                        lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                                        lnGtProbOfSpeciesNetwork.setContents(lnProb); // System.out.println("(improved)");
                                     }
                                     else  // didn't improve, roll back change
                                     {
-                                        System.out.println("");
                                         child.setParentDistance(parent, incumbentBranchLength);
                                     }
                                     return lnProb;
@@ -288,6 +307,10 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                             catch(TooManyEvaluationsException e) // _maxAssigmentAttemptsPerBranchParam exceeded
                             {
                             }
+
+                         //   System.out.println("-----------------------------------------------------------------------");
+
+
                         }
                     });
                 }
@@ -319,20 +342,19 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                                     child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
 
-                                    double lnProb = computeGTProb(speciesNetwork, geneTrees, counter);
+                                    double lnProb = _computeGTProbStrategy.execute(speciesNetwork, geneTrees, counter);
 
 
-                                    System.out.print("(" + hybridParent1.getName() + ", " + child.getName() + ")" + " to hp " + suggestedProb + " yields " + lnProb + " vs " + lnGtProbOfSpeciesNetwork.getContents() );
 
 
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                     {
-                                        System.out.println(" (improved)");
+
                                         lnGtProbOfSpeciesNetwork.setContents(lnProb);
                                     }
                                     else // change did not improve, roll back
                                     {
-                                        System.out.println("");
+
                                         child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
                                         child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
                                     }
@@ -354,7 +376,7 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 }
             }
 
-            Collections.shuffle(assigmentActions); // randomize the order we will try to ajust network edge properties
+       //     Collections.shuffle(assigmentActions); // randomize the order we will try to adjust network edge properties
 
             for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
             {
@@ -385,31 +407,171 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
         RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
         StringWriter sw = new StringWriter();
         rnNewickPrinter.print(speciesNetwork, sw);
+        String inferredNetwork = sw.toString();
 
-        result.append("\nTotal log probability: " + lnGtProbOfSpeciesNetwork.getContents() + ": " + sw.toString());
+        this.richNewickGenerated(inferredNetwork);
+
+        result.append("\nTotal log probability: " + lnGtProbOfSpeciesNetwork.getContents() + ": " + inferredNetwork);
 
         return result.toString();
 
     }
 
-    private double computeGTProb(Network<Double> speciesNetwork, List<Tree> geneTrees, List<Integer> counter)
-    {
-        GeneTreeProbability gtp = new GeneTreeProbability();
-        Iterator<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, _printDetail).iterator();
-        Iterator<Integer> counterIt = counter.iterator();
-        double total = 0;
+    private Func3<Network<Double>, List<Tree>, List<Integer>, Double> _computeGTProbStrategyCalGTProb = new Func3<Network<Double>, List<Tree>, List<Integer>, Double>() {
+        public Double execute(Network<Double> speciesNetwork, List<Tree> geneTrees, List<Integer> counter) {
 
-        for(Tree gt: geneTrees){
-            double prob = probList.next();
-            int count = counterIt.next();
-            total += Math.log(prob)*count;
+            GeneTreeProbability gtp = new GeneTreeProbability();
+            Iterator<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, _printDetail).iterator();
+            Iterator<Integer> counterIt = counter.iterator();
+            double total = 0;
+
+            for(Tree gt: geneTrees){
+                double prob = probList.next();
+                int count = counterIt.next();
+                total += Math.log(prob)*count;
+            }
+
+            if(Double.isNaN(total))
+            {
+                throw new RuntimeException();
+            }
+
+            return total;
         }
+    };
 
-        if(Double.isNaN(total))
-        {
-            throw new RuntimeException();
+     private Func3<Network<Double>, List<Tree>, List<Integer>, Double> _computeGTProbStrategyBox = new Func3<Network<Double>, List<Tree>, List<Integer>, Double>() {
+        public Double execute(Network<Double> speciesNetwork, List<Tree> geneTrees, List<Integer> counter) {
+
+            double t0True = 1.1;
+            double t1True = 1.1;
+            double gammaTrue = .5;
+            double t0Star = speciesNetwork.findNode("D").getParentDistance(speciesNetwork.getRoot());
+            double t1Star = speciesNetwork.findNode("F").getParentDistance(speciesNetwork.getRoot());
+            double gammaStar = speciesNetwork.findNode("E").getParentProbability(speciesNetwork.findNode("D"));
+
+            return new Box(t0True, t1True, gammaTrue, t0Star, t1Star, gammaStar, _geneTrees.size()).callnLikelihood();
         }
+    };
 
-        return total;
-    }
+    public class Box {
+	public double t0,t1,gamma;
+	public double P1,P2,P3;
+	public double t0star, t1star, gammastar;
+	public double P1star,P2star,P3star;
+	public double lnLikelihood;
+	public double MaxlnLikelihood, finalt0star, finalt1star, finalgammastar;
+	public int n;
+
+	public Box(double t0, double t1, double gamma, double t0star, double t1star, double gammastar, int n){
+		this.t0 = t0;
+		this.t1 = t1;
+		this.gamma = gamma;
+		this.t0star = t0star;
+		this.t1star = t1star;
+		this.gammastar = gammastar;
+		this.n = n;
+		P1 = (1-gamma)*(1-2.0/3.0*Math.exp(-t1))+gamma * Math.exp(-t0)/3.0;
+		P2 = gamma*(1-2.0/3.0*Math.exp(-t0))+(1-gamma)*Math.exp(-t1)/3.0;
+		P3 = (1-gamma)*Math.exp(-t1)/3.0+gamma*Math.exp(-t0)/3.0;
+		callnLikelihood(); // initialize
+	}
+
+	// compute log likelihood function
+	public double callnLikelihood(){
+		P1star = (1-gammastar)*(1-2.0/3*Math.exp(-t1star))+gammastar*Math.exp(-t0star)/3.0;;
+		P2star = gammastar*(1-2.0/3.0*Math.exp(-t0star))+(1-gammastar)*Math.exp(-t1star)/3.0;
+		P3star = (1-gammastar)*Math.exp(-t1star)/3.0+gammastar*Math.exp(-t0star)/3.0;
+		lnLikelihood = n*(P1*Math.log(P1star)+P2*Math.log(P2star)+P3*Math.log(P3star));
+        return lnLikelihood;
+	}
+                        /*
+		// A simple method to find the max log likelihood function for one branch
+	public void findRestrictedMax(int whichone){
+		double first = Double.MIN_VALUE;
+		double second = Double.MIN_VALUE;
+		double third = Double.MIN_VALUE;
+		if (whichone == 0) { // t0star
+			for (int i=1; i<=1000; i++) {
+				t0star = 0.01*i;
+				callnLikelihood();
+				third = lnLikelihood;
+
+				if (second>first && second> third) { // we found the max
+					lnLikelihood = second;
+					t0star = 0.01*(i-1);
+					break;
+				}
+				else {
+					first = second;	second = third;
+				}
+			}
+		} // t0 case
+
+		else if (whichone == 1) { //t1star
+			for (int i=1;i<=1000;i++) {
+				t1star = 0.01*i;
+				callnLikelihood();
+				third = lnLikelihood;
+				if (second>first && second> third) { // we found the max
+					lnLikelihood = second;
+					t1star = 0.01*(i-1);
+					break;
+				}
+				else {
+					first = second;	second = third;
+				}
+			}
+		} // t1star case
+
+		else if (whichone == 2) {  // gammastar
+			for (int i=1;i<=1000;i++) {
+				gammastar = 0.001*i;
+				callnLikelihood();
+				third = lnLikelihood;
+				if (second>first && second> third) { // we found the max
+					lnLikelihood = second;
+					gammastar = 0.001*(i-1);
+					break;
+				}
+				else {
+					first = second;	second = third;
+				}
+			}
+		}  // gammastar case
+	}
+
+	public void OptEdgeLen() {
+		double lnLikelihoodCurBest = lnLikelihood; // get the initial lnLikelihood value
+		double improveratio;
+		while (true) {
+			findRestrictedMax(0);
+			assert lnLikelihood >= lnLikelihoodCurBest;
+			improveratio = Math.exp(lnLikelihood - lnLikelihoodCurBest);
+			if (improveratio < 1.001) {
+				break;
+			}
+			else
+				lnLikelihoodCurBest = lnLikelihood;
+
+			findRestrictedMax(1);
+			assert lnLikelihood >= lnLikelihoodCurBest;
+			improveratio = Math.exp(lnLikelihood - lnLikelihoodCurBest);
+			if (improveratio < 1.001) {
+				break;
+			}
+			else
+				lnLikelihoodCurBest = lnLikelihood;
+
+		}
+		MaxlnLikelihood = lnLikelihood;
+		finalt0star = t0star;
+		finalt1star = t1star;
+		finalgammastar = gammastar;
+	}        */
+}
+
+    private Func3<Network<Double>, List<Tree>, List<Integer>, Double> _computeGTProbStrategy = _computeGTProbStrategyCalGTProb;
+
+
 }

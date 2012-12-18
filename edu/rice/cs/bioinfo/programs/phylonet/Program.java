@@ -24,6 +24,7 @@ import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsExcepti
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Blocks;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
@@ -33,6 +34,7 @@ import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.NexusOut;
+import edu.rice.cs.bioinfo.programs.phylonet.commands.RuntimeDefinedNetwork;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -166,8 +168,9 @@ public class Program {
 
         BlockContents blockContents = BlockContentsFactoryFromAST.make(blocks); // covert AST to our IR
 
-
-        Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, hybridSumTolerance, errorDetected); // make a Network representation of each defined Rich Newick string
+        RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+        reader.setHybridSumTolerance(hybridSumTolerance);
+        Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, reader, errorDetected); // make a Network representation of each defined Rich Newick string
         // map is keyed by source code identifier of the string
 
         // if we already have errors, don't continue.  Else we will get confusing cascades.
@@ -181,11 +184,12 @@ public class Program {
 
         LinkedList<Command> commands = new LinkedList<Command>();
 
+
         for(SyntaxCommand sCommand : blockContents.getCommands())
         {
             try
             {
-                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, errorDetected, rand));
+                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, errorDetected, reader, rand));
             }
             catch(IllegalArgumentException e)
             {
@@ -196,6 +200,13 @@ public class Program {
         for(Command command : commands)
         {
             command.checkParams();
+
+            if(command.getDefiningSyntaxCommand().getAssigment() != null) // this command stores a rich newick result
+            {
+                // put ident key in map so future commands can detect referenced ident is valid.
+                // value associated with key will be updated by command execution
+                sourceIdentToNetwork.put(command.getDefiningSyntaxCommand().getAssigment().Identifier, RuntimeDefinedNetwork.Singleton);
+            }
         }
 
         /*
@@ -218,25 +229,19 @@ public class Program {
                 }
                 try
                 {
-                    command.addSTTreeGeneratedListener(new Proc1<String>()
-                    {
+                    command.addRichNewickGeneratedListener(new Proc1<String>() {
                         private int _treeNumber = 1;
 
                         public void execute(String newickTree) {
 
-                            if(nexusOutCapture != null)
-                            {
-                                try
-                                {
-                                    if(commandNumberCapture == 2)
-                                    {
+                            if (nexusOutCapture != null) {
+                                try {
+                                    if (commandNumberCapture == 2) {
                                         nexusOutCapture.write("\n");
                                     }
                                     nexusOutCapture.write("\n" + commandNumberCapture + "_" + command.getDefiningSyntaxCommand().getName() + "_" + _treeNumber + " = " + newickTree);
                                     _treeNumber++;
-                                }
-                                catch(IOException e)
-                                {
+                                } catch (IOException e) {
                                     SyntaxCommand motivatingSyntaxCommand = command.getDefiningSyntaxCommand();
                                     errorDetected.execute("Error writing to nexus out file. (" + e.getMessage() + ")", motivatingSyntaxCommand.getLine(), motivatingSyntaxCommand.getColumn());
                                 }
@@ -371,7 +376,7 @@ public class Program {
     }
 
 
-    private static Map<String, NetworkNonEmpty> makeNetworks(BlockContents blockContents, BigDecimal hybridSumTolerance, Proc3<String, Integer, Integer> errorDetected) throws IOException {
+    private static Map<String, NetworkNonEmpty> makeNetworks(BlockContents blockContents, RichNewickReader<Networks> rnReader, Proc3<String, Integer, Integer> errorDetected) throws IOException {
 
         HashMap<String,NetworkNonEmpty> tbr = new HashMap<String, NetworkNonEmpty>();
         for(String richNewickSourceIdent : blockContents.getRickNewickAssignmentIdentifiers())
@@ -382,9 +387,7 @@ public class Program {
             RichNewickReadResult<Networks> readResult = null;
             try
             {
-                RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
-                reader.setHybridSumTolerance(hybridSumTolerance);
-                readResult = reader.read(new ByteArrayInputStream(assignment.getRichNewickString().getBytes()));
+                readResult = rnReader.read(new ByteArrayInputStream(assignment.getRichNewickString().getBytes()));
                 /*  Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
              new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();  */
             }

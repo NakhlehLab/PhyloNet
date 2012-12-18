@@ -23,7 +23,9 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterTaxaMap;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.GLASSInference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.TaxaDistanceMatrix;
@@ -49,8 +51,9 @@ public class InfterST_MDC_GLASS extends InferSTBase
 
     private TaxaDistanceMatrix _distanceMatrix;
 
-    public InfterST_MDC_GLASS(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public InfterST_MDC_GLASS(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                              Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     @Override
@@ -201,7 +204,7 @@ public class InfterST_MDC_GLASS extends InferSTBase
 		}
 
         String tree = inferredTree.toString();
-        this.treeGenerated(tree);
+        this.richNewickGenerated(tree);
         result.append("\n" + tree);
 
         return result.toString();

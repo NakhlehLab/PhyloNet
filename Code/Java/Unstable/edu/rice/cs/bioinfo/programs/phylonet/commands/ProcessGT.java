@@ -22,7 +22,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.GeneTreeRefinement;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -53,8 +55,8 @@ public class ProcessGT extends CommandBaseFileOut
     private boolean _geneTreesRooted = true;
 
     public ProcessGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
-              Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+              Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     protected int getMinNumParams()
@@ -174,13 +176,13 @@ public class ProcessGT extends CommandBaseFileOut
 		for(Tree st: speciesTrees){
 			GeneTreeRefinement.processGeneTrees(geneTrees, st, taxonMap, _geneTreesRooted, _bootstrap, null);
             String stString = st.toStringWD();
-            this.treeGenerated(stString);
+            this.richNewickGenerated(stString);
 			result.append("\nSpecies_Tree#" + (index++ ) + " = " + stString + "\n");
 			result.append("Resulting gene trees:");
 			for(Tree gt: geneTrees){
                 String geneTreeString = gt.toString();
 				result.append("\n" + geneTreeString);
-                this.treeGenerated(geneTreeString);
+                this.richNewickGenerated(geneTreeString);
 			}
 		}
 

@@ -22,7 +22,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterQuote;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCURInference_ILP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
@@ -48,8 +50,9 @@ public class InferST_MDC_ILP extends InferSTBase
 
     private String _gurobiPath;
 
-    InferST_MDC_ILP(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    InferST_MDC_ILP(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                    Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     @Override
@@ -114,7 +117,7 @@ public class InferST_MDC_ILP extends InferSTBase
 		}
 
         String tree = sol._st.toStringWD();
-        this.treeGenerated(tree);
+        this.richNewickGenerated(tree);
 
         result.append("\n" + tree +" "+sol._totalCoals+" extra lineages in total");
 

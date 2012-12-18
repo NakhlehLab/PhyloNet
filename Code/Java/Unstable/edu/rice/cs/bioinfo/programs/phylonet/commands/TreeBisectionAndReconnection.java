@@ -21,7 +21,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.tbr.TBRSearchNeighborsExpansiveInPlace;
 import edu.uci.ics.jung.algorithms.filters.KNeighborhoodFilter;
@@ -41,8 +43,8 @@ public class TreeBisectionAndReconnection extends HeuristicTreeSearchBase
 {
 
      TreeBisectionAndReconnection(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
-                                  Proc3<String, Integer, Integer> errorDetected, Random rand) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rand);
+                                  Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader, rand);
     }
 
 
@@ -157,7 +159,7 @@ public class TreeBisectionAndReconnection extends HeuristicTreeSearchBase
 
 
         String treeNewick = JUNGToRN.toRichNewick(inputTree, isTreeRooted.execute(inputTree));
-        this.treeGenerated(treeNewick);
+        this.richNewickGenerated(treeNewick);
         return ("\n" + treeNewick);
     }
 }

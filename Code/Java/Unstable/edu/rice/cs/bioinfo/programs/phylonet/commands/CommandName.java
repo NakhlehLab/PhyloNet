@@ -19,26 +19,18 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.programming.Proc1;
-
-import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
- * Date: 9/6/11
- * Time: 5:26 PM
+ * Date: 11/12/12
+ * Time: 4:52 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface Command {
-
-    public SyntaxCommand getDefiningSyntaxCommand();
-
-    public boolean checkParams();
-
-    public void executeCommand(Proc1<String> displayResult) throws IOException;
-
-    public void addRichNewickGeneratedListener(Proc1<String> listener);
-
+@Retention(RetentionPolicy.RUNTIME)
+public @interface CommandName
+{
+    String value();
 }

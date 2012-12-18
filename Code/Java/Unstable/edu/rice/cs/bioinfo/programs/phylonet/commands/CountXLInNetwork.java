@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.programming.*;
@@ -51,8 +53,9 @@ public class CountXLInNetwork extends CommandBaseFileOut{
     private List<NetworkNonEmpty> _geneTrees;
 
     public CountXLInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                              Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected){
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+                              Map<String,NetworkNonEmpty>  sourceIdentToNetwork,
+                              Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader){
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     @Override

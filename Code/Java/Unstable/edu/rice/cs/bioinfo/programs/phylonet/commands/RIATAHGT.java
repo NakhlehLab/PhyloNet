@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.EventBootstrap;
@@ -61,8 +62,9 @@ public class RIATAHGT extends CommandBaseFileOut
 
     private boolean _collapsed = true;
 
-    public RIATAHGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public RIATAHGT(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                    Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork,  errorDetected, rnReader);
     }
 
     protected int getMinNumParams()
@@ -270,7 +272,7 @@ public class RIATAHGT extends CommandBaseFileOut
 				result.append("\nspecies tree: " + copy.toString()+ "\n");
                 String geneTreeString = gt.toString();
 				result.append("gene tree: " + geneTreeString+ "\n");
-                this.treeGenerated(geneTreeString);
+                this.richNewickGenerated(geneTreeString);
 
 				// Add bootstrap values to events.
 
@@ -302,7 +304,7 @@ public class RIATAHGT extends CommandBaseFileOut
 				result.append("\nspecies tree: " + copy.toString()+ "\n");
 				String geneTreeString = gt.toString();
 				result.append("gene tree: " + geneTreeString+ "\n");
-                this.treeGenerated(geneTreeString);
+                this.richNewickGenerated(geneTreeString);
 
 				List<HgtScenario> scenarios = hgt.enumerateSolutions();
 				int count = 1;
@@ -331,7 +333,7 @@ public class RIATAHGT extends CommandBaseFileOut
                             public Object forNetworkNonEmpty(NetworkNonEmpty networkNonEmpty, Object o) throws RuntimeException {
                                 String networkString = new SingleLinePrinter().toString(networkNonEmpty);
                                 result.append(networkString);
-                                treeGenerated(networkString);
+                                richNewickGenerated(networkString);
                                 return null;
                             }
                         }, null);

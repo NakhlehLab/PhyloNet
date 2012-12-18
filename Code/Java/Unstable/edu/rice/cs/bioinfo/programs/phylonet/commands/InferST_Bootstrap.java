@@ -20,7 +20,9 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
@@ -49,8 +51,9 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
 
     private  SyntaxCommand _exampleCommand;
 
-    public InferST_Bootstrap(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, Random rand) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public InferST_Bootstrap(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
+                             RichNewickReader<Networks> rnReader, Random rand) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
         _rand = rand;
     }
 
@@ -127,12 +130,16 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
                     return stCommand.Content;  //To change body of implemented methods use File | Settings | File Templates.
                 }
 
+                public AssignmentIdent getAssigment() {
+                    return getDefiningSyntaxCommand().getAssigment();  //To change body of implemented methods use File | Settings | File Templates.
+                }
+
                 public Iterable<Parameter> getParameters() {
                     return InferST_Bootstrap.this.params.subList(stCommandIndex + 1, InferST_Bootstrap.this.params.size());
                 }
             };
 
-        InferSTBase inferCommand = (InferSTBase) CommandFactory.make(_exampleCommand, this.sourceIdentToNetwork, this.errorDetected, _rand);
+        InferSTBase inferCommand = (InferSTBase) CommandFactory.make(_exampleCommand, this.sourceIdentToNetwork, this.errorDetected, rnReader, _rand);
         noError = noError && inferCommand.checkParams();
         }
 
@@ -163,6 +170,10 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
                    return _exampleCommand.getName();
                 }
 
+                public AssignmentIdent getAssigment() {
+                    return _exampleCommand.getAssigment();
+                }
+
                 public Iterable<Parameter> getParameters() {
 
                     Object[] params = IterableHelp.toArray(_exampleCommand.getParameters());
@@ -179,19 +190,16 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
                 }
             };
 
-            InferSTBase inferCommand = (InferSTBase) CommandFactory.make(executionCommand, this.sourceIdentToNetwork, this.errorDetected, _rand);
+            InferSTBase inferCommand = (InferSTBase) CommandFactory.make(executionCommand, this.sourceIdentToNetwork, this.errorDetected, this.rnReader, _rand);
 
             final Set<Tree> sts = new LinkedHashSet<Tree>();
-            inferCommand.addSTTreeGeneratedListener(new Proc1<String>() {
+            inferCommand.addRichNewickGeneratedListener(new Proc1<String>() {
                 public void execute(String tree) {
                     NewickReader nr = new NewickReader(new StringReader(tree));
 
-                    try
-                    {
+                    try {
                         sts.add(nr.readTree());
-                    }
-                    catch(Exception e)
-                    {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
 
@@ -217,7 +225,7 @@ public class InferST_Bootstrap extends CommandBaseFileOut {
 
         String stString = st.toNewick();
 
-        this.treeGenerated(stString);
+        this.richNewickGenerated(stString);
         return "\n" + stString;
       }
 

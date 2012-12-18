@@ -22,6 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 
 import edu.rice.cs.bioinfo.library.programming.Proc3;
@@ -55,8 +56,9 @@ public class CharNet extends CommandBaseFileOut {
 
     private NetworkNonEmpty _inputNetwork;
 
-    public CharNet(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public CharNet(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                   Proc3<String, Integer, Integer> errorDetected, RichNewickReader<edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     @Override
@@ -162,7 +164,7 @@ public class CharNet extends CommandBaseFileOut {
                 {
                     String rTree = StringTransformer.toRNewickTree(tree);
 				    result.append("\n" + rTree.toString());
-                    this.treeGenerated(rTree);
+                    this.richNewickGenerated(rTree);
                 }
                 catch(CoordinateParseErrorsException e)
                 {

@@ -20,9 +20,9 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.ContainsHybridNode;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Network;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
@@ -51,28 +51,38 @@ public abstract class CommandBase implements Command {
 
     private boolean _checkParamsCalled = false;
 
-    private ArrayList<Proc1<String>> _stGeneratedObservers = new ArrayList<Proc1<String>>();
+    protected final RichNewickReader<Networks> rnReader;
 
-    public void addSTTreeGeneratedListener(Proc1<String> listener)
+    private ArrayList<Proc1<String>> _rnGeneratedObservers = new ArrayList<Proc1<String>>();
+
+    public void addRichNewickGeneratedListener(Proc1<String> listener)
     {
-        _stGeneratedObservers.add(listener);
+        _rnGeneratedObservers.add(listener);
     }
 
-     protected void treeGenerated(String treeNewick)
+    protected void richNewickGenerated(String richNewick)
     {
-        for(Proc1<String> observer : _stGeneratedObservers)
+        if(_motivatingCommand.getAssigment() != null)
         {
-            observer.execute(treeNewick);
+            Networks networks = rnReader.readAnyErrorToRuntimeException(richNewick);
+            NetworkNonEmpty networkNonEmpty = networks.Networks.iterator().next();
+            sourceIdentToNetwork.put(_motivatingCommand.getAssigment().Identifier, networkNonEmpty);
+        }
+
+        for(Proc1<String> observer : _rnGeneratedObservers)
+        {
+            observer.execute(richNewick);
         }
     }
 
     public CommandBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String,NetworkNonEmpty> sourceIdentToNetwork,
-                Proc3<String, Integer, Integer> errorDetected)
+                Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader)
     {
         _motivatingCommand = motivatingCommand;
         this.params = params;
         this.sourceIdentToNetwork = sourceIdentToNetwork;
         this.errorDetected = errorDetected;
+        this.rnReader = rnReader;
     }
 
     private boolean assertParamsCount(int minParamCount, int maxParamCount)
@@ -103,22 +113,20 @@ public abstract class CommandBase implements Command {
     {
         ParameterIdent ident = this.assertParameterIdent(paramIndex);
 
-        if(ident != null)
+        if(ident == null)
+            return null;
+
+        if(!sourceIdentToNetwork.containsKey(ident.Content))
         {
-            if(!sourceIdentToNetwork.containsKey(ident.Content))
-            {
-                errorDetected.execute(String.format("Unknown identifier '%s'.", ident.Content), ident.getLine(), ident.getColumn());
-                return null;
-            }
-            else
-            {
-                return sourceIdentToNetwork.get(ident.Content);
-            }
+            errorDetected.execute(String.format("Unknown identifier '%s'.", ident.Content), ident.getLine(), ident.getColumn());
+            return null;
         }
         else
         {
-            return null;
+            return sourceIdentToNetwork.get(ident.Content);
         }
+
+
     }
 
     protected NetworkNonEmpty assertAndGetTree(int paramIndex)
@@ -414,6 +422,7 @@ public abstract class CommandBase implements Command {
             }
         }, null);
     }
+
 
     protected ParameterIdentList assertParameterIdentList(int paramIndex)
     {

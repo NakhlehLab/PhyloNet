@@ -21,6 +21,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -45,8 +46,9 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     private NetworkNonEmpty _experimentalNetwork;
 
-    public SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                               Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     protected int getMinNumParams()

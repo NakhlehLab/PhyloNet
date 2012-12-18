@@ -21,7 +21,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.lang.annotation.Annotation;
@@ -45,7 +47,7 @@ public class CommandFactory {
 
 
 
-    public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, Random rand)
+    public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand)
     {
         final String lowerCommandName = directive.getName().toLowerCase();
 
@@ -87,13 +89,13 @@ public class CommandFactory {
         {
             try
             {
-                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class);
-                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected);
+                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class, RichNewickReader.class);
+                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected, rnReader);
             }
             catch(NoSuchMethodException e)
             {
-                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class, Random.class);
-                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected, rand);
+                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class, RichNewickReader.class, Random.class);
+                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected, rnReader, rand);
             }
         }
         catch (NoSuchMethodException e)

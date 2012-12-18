@@ -20,8 +20,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.ContainsHybridNode;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.SingleLinePrinter;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.mast.SteelWarnowMAST;
@@ -50,8 +52,9 @@ class MAST extends CommandBaseFileOut
 
     boolean _allUnrooted = true;
 
-    public MAST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public MAST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
+                RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     protected int getMinNumParams()
@@ -169,7 +172,7 @@ class MAST extends CommandBaseFileOut
             for (Tree mast : mastSet) {
                 NetworkNonEmpty netMast = (NetworkNonEmpty) TreeTransformer.toNetwork(mast);
                 String netMastString = new SingleLinePrinter().toString(netMast);
-                this.treeGenerated(netMastString);
+                this.richNewickGenerated(netMastString);
 				result.append("\n" + netMastString);
 			}
         }
@@ -189,7 +192,7 @@ class MAST extends CommandBaseFileOut
 
             NetworkNonEmpty netMast = (NetworkNonEmpty) TreeTransformer.toNetwork(outTree);
             String netMastString = new SingleLinePrinter().toString(netMast);
-            this.treeGenerated(netMastString);
+            this.richNewickGenerated(netMastString);
             result.append("\n" + netMastString);
         }
 

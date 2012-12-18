@@ -22,7 +22,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.DeepCoalescencesCounter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -52,8 +54,9 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
     private List<NetworkNonEmpty> _geneTrees;
 
-    public DeepCoalCount(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public DeepCoalCount(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                         Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     public int getMinNumParams()
@@ -211,7 +214,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
                     String speciesTreeString = speciesTree.toStringWD();
                     result.append("\nSpecies_Tree#" + (index++ ) + " = " + speciesTreeString + "\n");
 			        result.append("Total number of extra lineages: " + coalNum);
-                    this.treeGenerated(speciesTreeString);
+                    this.richNewickGenerated(speciesTreeString);
                }
                catch(Exception e)
                {

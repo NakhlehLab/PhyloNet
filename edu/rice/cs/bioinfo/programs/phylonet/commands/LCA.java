@@ -21,8 +21,10 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.DAGFactory;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.SingleLinePrinter;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
@@ -49,8 +51,8 @@ public class LCA extends CommandBaseFileOut {
 
     private ArrayList<Set<String>> _setFamilyList = new ArrayList<Set<String>>();
 
-    public LCA(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public LCA(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
     protected int getMinNumParams()
@@ -197,7 +199,7 @@ public class LCA extends CommandBaseFileOut {
         String richNewickString = new SingleLinePrinter().toString(autoLabeledNetwork);
 
         result.append("\n" + richNewickString);
-        this.treeGenerated(richNewickString);
+        this.richNewickGenerated(richNewickString);
 
 
         SchieberVishkinLCA solver = new SchieberVishkinLCA(tree);

@@ -20,8 +20,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.IsRooted;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
@@ -137,8 +139,8 @@ public abstract class HeuristicTreeSearchBase extends CommandBaseFileOut
     }
 
      public HeuristicTreeSearchBase(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
-                                Proc3<String, Integer, Integer> errorDetected, Random rand) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+                                Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
         _rand = rand;
     }
 

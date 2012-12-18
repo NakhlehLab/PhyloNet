@@ -3,8 +3,10 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge2;
@@ -12,10 +14,11 @@ import edu.rice.cs.bioinfo.library.phylogenetics.phylograph2factories.richnewick
 import edu.rice.cs.bioinfo.library.phylogenetics.phylograph2factories.richnewick._1_0.ast.RNNode;
 import edu.rice.cs.bioinfo.library.programming.Func1Identity;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
+import org.apache.commons.math3.util.MultidimensionalCounter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Map;
+import java.math.MathContext;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,15 +27,21 @@ import java.util.Map;
  * Time: 3:57 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("comparecommontopologies")
+@CommandName("CompareCommonTopologies")
 public class CompareCommonTopologies extends CommandBaseFileOut {
 
-     private GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>> _topology1;
+    private List<Integer> _unvalidatedNetworksParamPositions = new LinkedList<Integer>();
 
-    private GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>> _topology2;
+    private ArrayList<GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>>> _validatedInputNetworks = new ArrayList<GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>>>(2);
 
-    CompareCommonTopologies(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected) {
-        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected);
+    public CompareCommonTopologies(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                                   Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
+        super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
+        _unvalidatedNetworksParamPositions.add(0);
+        _unvalidatedNetworksParamPositions.add(1);
+        _validatedInputNetworks.add(null);
+        _validatedInputNetworks.add(null);
+
     }
 
     @Override
@@ -48,25 +57,32 @@ public class CompareCommonTopologies extends CommandBaseFileOut {
     @Override
     protected boolean checkParamsForCommand() {
 
-        boolean  noError = true;
+       return checkUnvalidatedNetworkParameters();
+    }
 
-        Network topology1 =  this.assertAndGetNetwork(0);
-        noError = topology1 != null && noError;
+    private boolean checkUnvalidatedNetworkParameters()
+    {
+        boolean noError = true;
 
-        Network topology2 = this.assertAndGetNetwork(1);
-        noError = topology2 != null && noError;
-
-        if(topology1 != null && topology2 != null)
+        NetworkToPhyloGraph2FactoryDefault graphFactory = new NetworkToPhyloGraph2FactoryDefault(new Func1Identity<BigDecimal>());
+        Iterator<Integer> unvalidatedNetworksParamPositions = _unvalidatedNetworksParamPositions.iterator();
+        while(unvalidatedNetworksParamPositions.hasNext())
         {
-            NetworkToPhyloGraph2FactoryDefault graphFactory = new NetworkToPhyloGraph2FactoryDefault(new Func1Identity<BigDecimal>());
-           _topology1 = graphFactory.make(topology1);
-           _topology2 = graphFactory.make(topology2);
+            int paramPosition = unvalidatedNetworksParamPositions.next();
+            Network topology =  this.assertAndGetNetwork(paramPosition);
+            noError = topology != null && noError;
+
+            if(noError && topology != RuntimeDefinedNetwork.Singleton)
+            {
+                GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>> top = graphFactory.make(topology);
+                _validatedInputNetworks.set(paramPosition, top);
+                noError = noError && assertAllNodesLabeled(top, (ParameterIdent) this.params.get(paramPosition));
+                unvalidatedNetworksParamPositions.remove();
+            }
         }
 
-        noError = noError && assertAllNodesLabeled(_topology1, (ParameterIdent) this.params.get(0));
-        noError = noError && assertAllNodesLabeled(_topology2, (ParameterIdent) this.params.get(1));
-
         return noError;
+
     }
 
     private boolean assertAllNodesLabeled(GraphReadOnly<RNNode, PhyloEdge2<RNNode, BigDecimal>> graph, ParameterIdent parameter) {
@@ -86,24 +102,38 @@ public class CompareCommonTopologies extends CommandBaseFileOut {
     @Override
     protected String produceResult()
     {
+        boolean noError = checkUnvalidatedNetworkParameters();
+
+        if(!noError)
+            return "";
+
         BigDecimal largestBLDelta = null;
+        BigDecimal largestBLDeltaPercent = null;
         String largestBLDeltaEdge = null;
 
         BigDecimal largestHybridDelta = null;
+        BigDecimal largestHybridDeltaPercent = null;
         String largestHybridDeltaEdge = null;
 
         StringBuffer result = new StringBuffer();
 
-        for(PhyloEdge2<RNNode,BigDecimal> edge1 : _topology1.getEdges())
+        GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>> topology1 = _validatedInputNetworks.get(0);
+         GraphReadOnly<RNNode,PhyloEdge2<RNNode,BigDecimal>> topology2 = _validatedInputNetworks.get(1);
+
+        for(PhyloEdge2<RNNode,BigDecimal> edge1 : topology1.getEdges())
         {
 
-            PhyloEdge2<RNNode,BigDecimal> edge2 = _topology2.getEdge(edge1.Source, edge1.Destination);
+            if(edge1.getProbability() != null)  // skip hybrid edges for jr
+                continue;
+
+            PhyloEdge2<RNNode,BigDecimal> edge2 = topology2.getEdge(edge1.Source, edge1.Destination);
 
             BigDecimal blDelta = edge2.getBranchLength().subtract(edge1.getBranchLength()).abs();
 
             if(largestBLDelta == null || blDelta.compareTo(largestBLDelta) == 1)
             {
                 largestBLDelta = blDelta;
+                largestBLDeltaPercent = blDelta.divide(edge1.getBranchLength(), MathContext.DECIMAL128);
                 largestBLDeltaEdge = "(" + edge1.Source.Label + ", " + edge1.Destination.Label + ")";
             }
 
@@ -116,6 +146,7 @@ public class CompareCommonTopologies extends CommandBaseFileOut {
                 if(largestHybridDelta == null || hybridDelta.compareTo(largestHybridDelta) == 1)
                 {
                     largestHybridDelta = hybridDelta;
+                    largestHybridDeltaPercent = hybridDelta.divide(edge1.getProbability(), MathContext.DECIMAL128);
                     largestHybridDeltaEdge = "(" + edge1.Source.Label + ", " + edge1.Destination.Label + ")";
                 }
             }
@@ -124,8 +155,8 @@ public class CompareCommonTopologies extends CommandBaseFileOut {
                            "\t" + blDelta + "\t" + edge1.getProbability() + "\t" + edge2.getProbability() + "\t" + hybridDelta);
         }
 
-        result.append("\nLargest branch length delta: " + largestBLDelta + ": " + largestBLDeltaEdge + "\n" +
-               "Largest hybrid prob   delta: " + largestHybridDelta + ": " + largestHybridDeltaEdge + "\n");
+        result.append("\nLargest branch length delta: " + largestBLDelta + ": " + largestBLDeltaEdge + ":" + largestBLDeltaPercent + "\n" +
+               "Largest hybrid prob   delta: " + largestHybridDelta + ": " + largestHybridDeltaEdge + ":" + largestHybridDeltaPercent +"\n");
         return result.toString();
     }
 }

@@ -63,11 +63,24 @@ public class ParserTest {
          blocks = Parser.parse(new ByteArrayInputStream(("#NEXUS\n" +
             "BEGIN PHYLONET;\n" +
             "\n" +
-            "<z:a1,a2,a; y:b1,b2:b; c:c; d:d; e:e;>;" +
+            "<z:a1,a2,a; y:b1,b2,b; c:c; d:d; e:e>;" +
             "\n" +
             "END;").getBytes()));
 
 
+    }
+
+    @Test
+    public void testCommandAssigment() throws  Exception
+    {
+        Parser.parse(new ByteArrayInputStream(("#NEXUS\n" +
+            "\n" +
+            "BEGIN PHYLONET;\n" +
+            "\n" +
+            "\t a = SymmetricDifference network1 tree2 \"C:\\output\\symDiffResult1.txt\";\n" +
+            "\tSymmetricDifference network2 tree3 \"C:\\output\\symDiffResult2.txt\";\n" +
+            "\n" +
+            "END;").getBytes()));
     }
 
     private PySONParser testBlocksHelp(String network) throws Exception

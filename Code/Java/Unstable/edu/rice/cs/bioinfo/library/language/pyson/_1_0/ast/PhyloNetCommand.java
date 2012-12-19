@@ -28,11 +28,19 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
  */
 public class PhyloNetCommand implements PySONNode {
 
-    public Iterable<PhyloNetCommandPart> Parts;
+    public final Identifier AssignmentIdent;
 
-    public PhyloNetCommand(Iterable<PhyloNetCommandPart> parts)
+    public final Iterable<PhyloNetCommandPart> Parts;
+
+    public PhyloNetCommand(Iterable<PhyloNetCommandPart> parts, Identifier assignmentIdent)
     {
         Parts = parts;
+        AssignmentIdent = assignmentIdent;
     }
+
+     public PhyloNetCommand(Iterable<PhyloNetCommandPart> parts)
+     {
+        this(parts, null);
+     }
 
 }

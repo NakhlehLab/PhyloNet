@@ -71,7 +71,7 @@ public interface ParseStack {
 
     public void pushTaxaMapEntry(int numValues);
 
-    public void pushPhylonetCommand();
+    public void pushPhylonetCommand(boolean includeAssigment);
 
     public void pushFASTAEntry(int numIdentsInDesc);
 

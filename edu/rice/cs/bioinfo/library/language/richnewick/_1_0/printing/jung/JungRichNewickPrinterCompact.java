@@ -41,6 +41,11 @@ public class JungRichNewickPrinterCompact<V> extends RichNewickPrinterCompact<V>
             }
         }
 
+        if(root == null)
+        {
+            throw new IllegalArgumentException("Given digraph does not have a node of indegree 0.");
+        }
+
         Func1<V,String> getHybridNodeIndex = new Func1<V, String>() {
             @Override
             public String execute(V input) {

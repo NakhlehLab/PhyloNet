@@ -296,20 +296,30 @@ class ParseStackAction implements ParseStack {
         }
     }
 
-    public void pushPhylonetCommand()
+    public void pushPhylonetCommand(boolean includeAssigment)
     {
         try
         {
-        LinkedList<PhyloNetCommandPart> parts = new LinkedList<PhyloNetCommandPart>();
+            LinkedList<PhyloNetCommandPart> parts = new LinkedList<PhyloNetCommandPart>();
 
-        while(!_parseStack.empty() && _parseStack.peek() instanceof PhyloNetCommandPart)
-        {
-            parts.addFirst((PhyloNetCommandPart)_parseStack.pop());
+            while(!_parseStack.empty() && _parseStack.peek() instanceof PhyloNetCommandPart)
+            {
+                parts.addFirst((PhyloNetCommandPart)_parseStack.pop());
+            }
+
+            if(includeAssigment)
+            {
+                Identifier assignmentIdent = (Identifier) _parseStack.pop();
+                _parseStack.push(new PhyloNetCommand(parts, assignmentIdent));
+            }
+            else
+            {
+                _parseStack.push(new PhyloNetCommand(parts));
+            }
+
+
         }
-
-        _parseStack.push(new PhyloNetCommand(parts));
-          }
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }

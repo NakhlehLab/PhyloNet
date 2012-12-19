@@ -116,7 +116,7 @@ public class BlockContentsFactoryFromAST {
 
                 public Object forPhylonetBlockBody(PhyloNetBlockBody phyloBlock, Object input) throws RuntimeException {
 
-                    for(PhyloNetCommand command : phyloBlock.Commands)
+                    for(final PhyloNetCommand command : phyloBlock.Commands)
                     {
                         PhyloNetCommandPart commandName = command.Parts.iterator().next();
                         final String nameFinal = commandName.execute(new PhyloNetCommandPartAlgo<String, Object, RuntimeException>() {
@@ -156,7 +156,13 @@ public class BlockContentsFactoryFromAST {
                                 return nameFinal;
                             }
 
-                             public int getLine()
+                            public AssignmentIdent getAssigment() {
+                                return command.AssignmentIdent == null ?
+                                        null :
+                                        new AssignmentIdent(command.AssignmentIdent.Line, command.AssignmentIdent.Col, command.AssignmentIdent.Content);
+                            }
+
+                            public int getLine()
                              {
                                  return lineFinal;
                              }

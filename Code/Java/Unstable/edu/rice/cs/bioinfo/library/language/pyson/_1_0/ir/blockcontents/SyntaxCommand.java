@@ -34,6 +34,8 @@ public interface SyntaxCommand {
 
     public String getName();
 
+    public AssignmentIdent getAssigment();
+
     public Iterable<Parameter> getParameters();
 
 

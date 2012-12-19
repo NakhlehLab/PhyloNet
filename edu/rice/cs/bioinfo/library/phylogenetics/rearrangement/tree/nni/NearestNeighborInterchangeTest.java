@@ -37,7 +37,7 @@ public abstract class NearestNeighborInterchangeTest<T extends Graph<String, Tup
         final Ref<Boolean> case1Covered = new Ref<Boolean>(false);
         final Ref<Boolean> case2Covered = new Ref<Boolean>(false);
         final Ref<Integer> numCases = new Ref<Integer>(0);
-        final IsLeaf<String,Tuple<String,String>> isLeaf = new IsLeaf<String, Tuple<String, String>>();
+        final IsLeaf isLeaf = new IsLeaf();
         new NearestNeighborInterchangeInPlace(_makeEdge).computeRearrangementsWithoutValidation(tree, new Proc4<T,Tuple<String,String>,Tuple<String,String>,Tuple<String,String>>()
         {
             public void execute(T tree, Tuple<String,String> internalEdge, Tuple<String,String> swapEdgeA, Tuple<String,String> swapEdgeB)
@@ -87,7 +87,7 @@ public abstract class NearestNeighborInterchangeTest<T extends Graph<String, Tup
         final Ref<Boolean> case1Covered = new Ref<Boolean>(false);
         final Ref<Boolean> case2Covered = new Ref<Boolean>(false);
         final Ref<Integer> numCases = new Ref<Integer>(0);
-        final IsLeaf<String,Tuple<String,String>> isLeaf = new IsLeaf<String, Tuple<String, String>>();
+        final IsLeaf isLeaf = new IsLeaf();
         new NearestNeighborInterchangeInPlace(_makeEdge).computeRearrangementsWithoutValidation(tree, new Proc4<T,Tuple<String,String>,Tuple<String,String>,Tuple<String,String>>()
         {
             public void execute(T tree, Tuple<String,String> internalEdge, Tuple<String,String> swapEdgeA, Tuple<String,String> swapEdgeB)
@@ -141,7 +141,7 @@ public abstract class NearestNeighborInterchangeTest<T extends Graph<String, Tup
         final Ref<Boolean> case3Covered = new Ref<Boolean>(false);
         final Ref<Boolean> case4Covered = new Ref<Boolean>(false);
         final Ref<Integer> numCases = new Ref<Integer>(0);
-        final IsLeaf<String,Tuple<String,String>> isLeaf = new IsLeaf<String, Tuple<String, String>>();
+        final IsLeaf isLeaf = new IsLeaf();
         new NearestNeighborInterchangeInPlace(_makeEdge).computeRearrangementsWithoutValidation(tree, new Proc4<T,Tuple<String,String>,Tuple<String,String>,Tuple<String,String>>()
         {
             public void execute(T tree, Tuple<String,String> internalEdge, Tuple<String,String> swapEdgeA, Tuple<String,String> swapEdgeB)

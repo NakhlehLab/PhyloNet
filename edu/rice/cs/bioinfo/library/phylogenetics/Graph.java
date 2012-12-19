@@ -11,9 +11,13 @@ public interface Graph<N,E> extends GraphReadOnly<N,E>
 {
     void addNode(N node);
 
+    void addNodes(N... nodes);
+
     void removeNode(N node);
 
     void addEdge(E edge);
+
+    void addEdges(E... edges);
 
     void removeEdge(E edge);
 }

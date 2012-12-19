@@ -26,7 +26,7 @@ public class GetNodesPostOrder<N,E> implements Func1<GraphReadOnly<N,E>, Iterabl
 
         LinkedList<N> nodesPostOrder = new LinkedList<N>();
 
-        processGraph(graph, new FindRoot<N,E>().execute(graph), nodesPostOrder, new HashSet<N>());
+        processGraph(graph, new FindRoot<N>().execute(graph), nodesPostOrder, new HashSet<N>());
 
         return nodesPostOrder;
     }

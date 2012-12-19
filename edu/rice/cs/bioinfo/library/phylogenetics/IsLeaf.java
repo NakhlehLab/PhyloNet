@@ -11,16 +11,16 @@ import java.util.Iterator;
  * Time: 4:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IsLeaf<N,E> implements Predicate2<GraphReadOnly<N,E>, N>
+public class IsLeaf implements Predicate2<GraphReadOnly, Object>
 {
 
-    public boolean execute(GraphReadOnly<N, E> tree, N node)
+    public boolean execute(GraphReadOnly tree, Object node)
     {
-        Iterator<E> incidentEdges = tree.getIncidentEdges(node).iterator();
+        Iterator incidentEdges = tree.getIncidentEdges(node).iterator();
 
         if(incidentEdges.hasNext())
         {
-            E edge = incidentEdges.next();
+            Object edge = incidentEdges.next();
 
             if(!incidentEdges.hasNext())
             {

@@ -59,11 +59,11 @@ public class MDCOnNetworkYF {
         processNetwork(network, getNetworkNodeLabel, netNode2id, getNetworkDistance, getNetworkProbability, makeNetworkEdge);
         //System.out.println(gts.size());
         //System.exit(0);
-        IsLeaf<N1, E1> isLeaf = new IsLeaf<N1, E1>();
+        IsLeaf isLeaf = new IsLeaf();
         for(Graph<N2,E2> gt: gts){
             int xl = Integer.MAX_VALUE;
             ArrayList<String> gtTaxa = new ArrayList<String>();
-            for(N2 node :  new GetLeafs<N2,E2>().execute(gt))
+            for(N2 node :  new GetLeafs<N2>().execute(gt))
             {
                 gtTaxa.add(getGTNodeLabel.execute(node));
             }
@@ -393,7 +393,7 @@ public class MDCOnNetworkYF {
         _netNodeNum = 0;
         _totalNodeNum = 0;
         List<String> taxa = new ArrayList<String>();
-        IsLeaf<N,E> isLeaf = new IsLeaf<N, E>();
+        IsLeaf isLeaf = new IsLeaf();
         GetInDegree<N,E> inDegree = new GetInDegree<N, E>();
         for(N node: net.getNodes()){
             netNode2id.put(node, _totalNodeNum++);
@@ -414,7 +414,7 @@ public class MDCOnNetworkYF {
                                  Func4<N,N,Double,Double,E> makeEdge){
         removeBinaryNodes(gt, getDistance, getProbability, makeEdge);
         Map<N, STITreeCluster> map = new HashMap<N, STITreeCluster>();
-        IsLeaf<N,E> isLeaf = new IsLeaf<N, E>();
+        IsLeaf isLeaf = new IsLeaf();
         GetDirectSuccessors<N,E> getDirectSuccessors = new GetDirectSuccessors<N, E>();
         for (N node : new GetNodesPostOrder<N,E>().execute(gt)) {
             STITreeCluster cl = new STITreeCluster(gtTaxa.toArray(new String[0]));
@@ -500,7 +500,7 @@ public class MDCOnNetworkYF {
         Stack<N> stack = new Stack<N>();
         List<N> searchedNodes = new ArrayList<N>();
         if(root == null){
-            root = new FindRoot<N,E>().execute(net);
+            root = new FindRoot<N>().execute(net);
         }
         stack.push(root);
         Map<N, Integer> node2index = new HashMap<N, Integer>();
@@ -538,9 +538,9 @@ public class MDCOnNetworkYF {
     private <N,E> void computeNodeCoverage(Graph<N,E> net, Func2<GraphReadOnly<N,E>, E, Double> getDistance, Map<N, Integer> netNode2id){
         _totalCoverNode = new BitSet(_totalNodeNum);
         GetInDegree<N,E> getInDegree = new GetInDegree<N, E>();
-        IsLeaf<N,E> isLeaf = new IsLeaf<N, E>();
+        IsLeaf isLeaf = new IsLeaf();
         GetDirectPredecessors<N,E> getParents = new GetDirectPredecessors<N, E>();
-        N root = new FindRoot<N,E>().execute(net);
+        N root = new FindRoot<N>().execute(net);
         for(N trNode: net.getNodes()){
             int inDegree = getInDegree.execute(net, trNode);
             if(inDegree > 1){

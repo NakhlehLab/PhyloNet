@@ -36,13 +36,13 @@ public class GeneTreeProbabilityYF<NN,NE,TN,TE>
 
     private Func2<GraphReadOnly<NN,NE>, Counter<Integer>, Integer> _getNetworkNodeCountStrategy = new GetNetworkNodeCount<NN, NE, Integer>();
 
-    private Func1<GraphReadOnly<TN,TE>, Iterable<TN>> _getLeafsStrategy = new GetLeafs<TN, TE>();
+    private Func1<GraphReadOnly<TN,?>, Iterable<TN>> _getLeafsStrategy = new GetLeafs<TN>();
 
     private Func1<GraphReadOnly<TN,TE>, Iterable<TN>> _getGeneTreeNodesPostOrderStrategy = new GetNodesPostOrder<TN, TE>();
 
     private Func2<GraphReadOnly<TN,TE>,TN,Iterable<TN>> _getGeneTreeDirectSuccessorsStrategy = new GetDirectSuccessors<TN, TE>();
 
-    private Func1<GraphReadOnly<NN,NE>, NN> _getNetworkRootStrategy = new FindRoot<NN, NE>();
+    private Func1<GraphReadOnly<NN,?>, NN> _getNetworkRootStrategy = new FindRoot<NN>();
 
     private Func2<GraphReadOnly<NN,NE>,NN,Integer> _getNetworkNodeOutDegreeStrategy = new GetOutDegree<NN, NE>();
 
@@ -50,13 +50,13 @@ public class GeneTreeProbabilityYF<NN,NE,TN,TE>
 
      private Func2<GraphReadOnly<NN,NE>,NN,Iterable<NN>> _getNetworkNodeDirectPredecessorsStrategy = new GetDirectPredecessors<NN, NE>();
 
-    private Predicate2<GraphReadOnly<NN,NE>, NN> _isNetworkLeafStrategy = new IsLeaf<NN, NE>();
+    private Predicate2<GraphReadOnly, Object> _isNetworkLeafStrategy = new IsLeaf();
 
     private Func2<NN, GraphReadOnly<NN,NE>,Boolean> _isNetworkTreeNodeStrategy = new IsTreeNode<NN, NE>();
 
     private Func1<GraphReadOnly<NN,NE>, Iterable<NN>> _getNetworkNodesDFSOrderStrategy = new GetNodesDFSOrder<NN,NE>();
 
-    private Predicate2<GraphReadOnly<TN,TE>, TN> _isGeneTreeLeafStrategy = new IsLeaf<TN, TE>();
+    private Predicate2<GraphReadOnly, Object> _isGeneTreeLeafStrategy = new IsLeaf();
 
     private Predicate1<GraphReadOnly> _isNetworkWeeklyConnectedStrategy = new IsConnected();
 

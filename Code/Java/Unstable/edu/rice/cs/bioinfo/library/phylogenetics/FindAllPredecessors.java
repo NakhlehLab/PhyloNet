@@ -26,7 +26,7 @@ public class FindAllPredecessors<G extends GraphReadOnly<N,E>, N,E> implements F
 
          HashMap<N, Set<N>> nodeToAncestors = new HashMap<N, Set<N>>();
 
-        N root = new FindRoot<N,E>().execute(network);
+        N root = new FindRoot<N>().execute(network);
         nodeToAncestors.put(root, new HashSet<N>());
 
         Queue<Tuple<N,N>> toExpand = new LinkedList<Tuple<N,N>>();

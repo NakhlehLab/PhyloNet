@@ -3,6 +3,8 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 import com.sun.org.apache.bcel.internal.generic.RETURN;
 import edu.rice.cs.bioinfo.library.programming.*;
 
+import java.math.BigDecimal;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
@@ -18,6 +20,8 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
 
     private Func2<GraphReadOnly<N,E>,E,T> _getBranchLength;
 
+    private Func2<GraphReadOnly<N,E>,E,T> _getHybridProb;
+
     private Func<T> _makeZero;
 
     private Func2<T,T,T> _add;
@@ -28,14 +32,19 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
 
     private Proc3<GraphReadOnly<N,E>, E, T> _setBranchLength;
 
+    private Proc3<GraphReadOnly<N,E>, E, T> _setHybridProb;
+
+
     public AddReticulationEdge(Func1<Graph<N,E>,N> makeNode, Func3<Graph<N,E>,N,N,E> makeEdge, Func2<GraphReadOnly<N,E>,E,T> getBranchLength,
-                               Proc3<GraphReadOnly<N,E>, E, T> setBranchLength,
+                               Proc3<GraphReadOnly<N,E>, E, T> setBranchLength, Func2<GraphReadOnly<N,E>,E,T> getHybridProb, Proc3<GraphReadOnly<N,E>, E, T> setHybridProb,
                                Func<T> makeZero, Func2<T,T,T> add,  Func2<T,T,T> subtract, Func1<T,T> half)
     {
         _makeNode = makeNode;
         _makeEdge = makeEdge;
         _getBranchLength = getBranchLength;
         _setBranchLength = setBranchLength;
+        _setHybridProb = setHybridProb;
+        _getHybridProb = getHybridProb;
         _makeZero = makeZero;
         _add = add;
         _subtract = subtract;
@@ -50,10 +59,12 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
         N edge1Dest = graph.getNodesOfEdge(edge1).Item2;
         N edge2Dest = graph.getNodesOfEdge(edge2).Item2;
 
-        N root = new FindRoot<N,E>().execute(graph);
+        N root = new FindRoot<N>().execute(graph);
 
         T edge1BranchLength = _getBranchLength.execute(graph, edge1);
+        T edge1HybridProb = _getHybridProb.execute(graph, edge1);
         T edge2BranchLength = _getBranchLength.execute(graph, edge2);
+        T edge2HybridProb = _getHybridProb.execute(graph, edge2);
 
         FindPathLength<N,E,T> findPathLength = new FindPathLength<N, E, T>();
         T pathLengthToEdge1Source = findPathLength.execute(graph, root, edge1Source , _getBranchLength, _makeZero, _add);
@@ -88,15 +99,20 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
             reticulationTime = computeReticulationTime(pathLengthToEdge1Source, pathLengthToEdge1Dest, pathLengthToEdge2Dest);
         } */
 
+
+
         N node1 = _makeNode.execute(graph);
         graph.addNode(node1);
         NodeInjector.NodeInjectorUndoAction<Graph<N,E>,N,E> undo1 = NodeInjector.injectNodeIntoEdge(graph, edge1, node1, _makeEdge, false);
         E newEdge1To = graph.getEdge(edge1Source, node1);
         E newEdge1From = graph.getEdge(node1, edge1Dest);
-     //   T toNewNode1BranchLength = _subtract.execute(reticulationTime, pathLengthToEdge1Source);
-      //  T fromNewNode1BranchLength = _subtract.execute(pathLengthToEdge1Dest, reticulationTime);
+
+
+
         _setBranchLength.execute(graph, newEdge1To, edge1NewNodeBLOffset);
         _setBranchLength.execute(graph, newEdge1From, _subtract.execute(edge1BranchLength, edge1NewNodeBLOffset));
+        _setHybridProb.execute(graph, newEdge1From, edge1HybridProb);
+
 
         N node2 = _makeNode.execute(graph);
         graph.addNode(node2);
@@ -107,6 +123,9 @@ public class AddReticulationEdge<N,E,T extends Comparable<T>> implements Proc4<G
    //     T fromNewNode2BranchLength = _subtract.execute(pathLengthToEdge2Dest, reticulationTime);
         _setBranchLength.execute(graph, newEdge2To, edge2NewNodeBLOffset);
         _setBranchLength.execute(graph, newEdge2From, _subtract.execute(edge2BranchLength, edge2NewNodeBLOffset));
+        _setHybridProb.execute(graph, newEdge2From, edge2HybridProb);
+
+
 
         E reticulateEdge = _makeEdge.execute(graph, node1, node2);
         graph.addEdge(reticulateEdge);

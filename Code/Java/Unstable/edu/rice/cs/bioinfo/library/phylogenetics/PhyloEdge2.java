@@ -13,6 +13,15 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
  */
 public class PhyloEdge2<T,D> {
 
+    public static <T,D> Func1<PhyloEdge2<T,D>, D> GetBranchLength()
+    {
+        return new Func1<PhyloEdge2<T, D>, D>() {
+            public D execute(PhyloEdge2<T, D> edge) {
+                return  edge.getBranchLength();
+            }
+        };
+    }
+
     private D _branchLength;
 
     public D getBranchLength()

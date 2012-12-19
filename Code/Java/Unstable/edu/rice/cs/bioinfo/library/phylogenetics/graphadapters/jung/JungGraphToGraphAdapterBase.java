@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphBase;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.uci.ics.jung.graph.Graph;
@@ -13,7 +13,7 @@ import edu.uci.ics.jung.graph.util.Pair;
  * Time: 6:15 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class JungGraphToGraphAdapterBase<N,E> implements edu.rice.cs.bioinfo.library.phylogenetics.Graph<N,E>
+public abstract class JungGraphToGraphAdapterBase<N,E> extends GraphBase<N,E>
 {
 
     public final Graph<N,E> Graph;

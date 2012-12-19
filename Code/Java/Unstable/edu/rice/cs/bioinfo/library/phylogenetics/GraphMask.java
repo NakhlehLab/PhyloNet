@@ -119,4 +119,8 @@ public class GraphMask<N,E,G extends GraphReadOnly<N,E>> implements GraphReadOnl
     public boolean isRooted() {
        return Graph.isRooted();
     }
+
+    public boolean containsEdge(N source, N destination) {
+        return getEdge(source,destination) != null;
+    }
 }

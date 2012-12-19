@@ -12,11 +12,11 @@ import java.util.LinkedList;
  * Time: 7:52 PM
  * To change this template use File | Settings | File Templates.
  */
-public class GetLeafs<N,E> implements Func1<GraphReadOnly<N,E>, Iterable<N>>
+public class GetLeafs<N> implements Func1<GraphReadOnly<N,?>, Iterable<N>>
 {
-    public Iterable<N> execute(GraphReadOnly<N, E> graph) {
+    public Iterable<N> execute(GraphReadOnly<N, ?> graph) {
 
-        IsLeaf<N,E> isLeaf = new IsLeaf<N, E>();
+        IsLeaf isLeaf = new IsLeaf();
 
         LinkedList<N>  leafs = new LinkedList<N>();
 

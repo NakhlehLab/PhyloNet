@@ -32,7 +32,7 @@ public class MULTreeFactory<N,NE,TE>
 
     private final Func2<GraphReadOnly<N,NE>,N,Integer> _getOutDegreeStrategy = new GetOutDegree<N, NE>();
 
-    private final Func1<GraphReadOnly<N,NE>, N> _getRootStrategy = new FindRoot<N,NE>();
+    private final Func1<GraphReadOnly<N,?>, N> _getRootStrategy = new FindRoot<N>();
 
     private final Func2<GraphReadOnly<N,NE>,N,Iterable<N>> _getDirectSuccessorsStrategy = new GetDirectSuccessors<N, NE>();
 

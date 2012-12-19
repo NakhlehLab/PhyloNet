@@ -25,7 +25,7 @@ public class GetNodesDFSOrder<N,E> implements Func1<GraphReadOnly<N,E>, Iterable
 
         LinkedList<N> nodesDFSOrder = new LinkedList<N>();
 
-        processGraph(graph, new FindRoot<N,E>().execute(graph), nodesDFSOrder, new HashSet<N>());
+        processGraph(graph, new FindRoot<N>().execute(graph), nodesDFSOrder, new HashSet<N>());
 
         return nodesDFSOrder;
     }

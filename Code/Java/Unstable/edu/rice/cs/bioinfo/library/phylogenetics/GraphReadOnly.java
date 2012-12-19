@@ -22,4 +22,6 @@ public interface GraphReadOnly<N,E>
     E getEdge(N source, N destination);
 
     boolean isRooted();
+
+    boolean containsEdge(N source, N destination);
 }

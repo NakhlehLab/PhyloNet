@@ -17,11 +17,18 @@ import java.util.Set;
  */
 public class AllBranchingsGeneratorBruteForceTest
 {
+
     @Test
     public void testGenerate()
     {
-        final Container<Integer> numBranchingsGeneratedAccum = new Container<Integer>(0);
+       // final Container<Integer> numBranchingsGeneratedAccum = new Container<Integer>(0);
         final Set<Set<String>> expectedBranchings = new HashSet<Set<String>>();
+        expectedBranchings.add(new HashSet<String>());
+        expectedBranchings.add(new HashSet<String>(Arrays.asList("ED")));
+        expectedBranchings.add(new HashSet<String>(Arrays.asList("FD")));
+        expectedBranchings.add(new HashSet<String>(Arrays.asList("CD")));
+        expectedBranchings.add(new HashSet<String>(Arrays.asList("AC")));
+        expectedBranchings.add(new HashSet<String>(Arrays.asList("BC")));
         expectedBranchings.add(new HashSet<String>(Arrays.asList("AC", "CD")));
         expectedBranchings.add(new HashSet<String>(Arrays.asList("AC", "ED")));
         expectedBranchings.add(new HashSet<String>(Arrays.asList("AC", "FD")));
@@ -29,33 +36,33 @@ public class AllBranchingsGeneratorBruteForceTest
         expectedBranchings.add(new HashSet<String>(Arrays.asList("BC", "ED")));
         expectedBranchings.add(new HashSet<String>(Arrays.asList("BC", "FD")));
 
-        new AllBranchingsGeneratorBruteForce<String>(new HashSet<String>(Arrays.asList("AC", "BC", "CD", "ED", "FD")))
+        AllBranchingsGeneratorBruteForce<String> allBranchings = new AllBranchingsGeneratorBruteForce<String>(new HashSet<String>(Arrays.asList("AC", "BC", "CD", "ED", "FD")))
         {
             @Override
-            protected void branchingGenerated(Set<String> edges) {
-                if(expectedBranchings.contains(edges))
-                {
-                    expectedBranchings.remove(edges);
-                }
-                else
-                {
-                    throw new RuntimeException("Unexpected branching");
-                }
-                numBranchingsGeneratedAccum.setContents(numBranchingsGeneratedAccum.getContents() + 1);
+            protected Object getSource(String edge) {
+                return edge.charAt(0);  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             @Override
             protected Object getDestination(String edge) {
                 return edge.charAt(1);
             }
+        };
 
-            @Override
-            protected Object getSource(String edge) {
-                return edge.charAt(0);  //To change body of implemented methods use File | Settings | File Templates.
+
+        for(Set<String> branching : allBranchings)
+        {
+            if(expectedBranchings.contains(branching))
+            {
+                expectedBranchings.remove(branching);
             }
-        }.generate();
+            else
+            {
+                throw new RuntimeException("Unexpected branching");
+            }
+        }
 
-        Assert.assertEquals(new Integer(6), numBranchingsGeneratedAccum.getContents());
+        Assert.assertEquals(0, expectedBranchings.size());
     }
 
 }

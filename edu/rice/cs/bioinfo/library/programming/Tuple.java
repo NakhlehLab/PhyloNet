@@ -36,6 +36,9 @@ public class Tuple<T1,T2>
 
     public boolean equals(Tuple<T1,T2> candidate)
     {
+        if(candidate == null)
+            return false;
+
         return candidate.Item1.equals(Item1) && candidate.Item2.equals(Item2);
     }
 

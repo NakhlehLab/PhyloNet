@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
 import javax.swing.text.Element;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -63,5 +64,61 @@ public class IterableHelp {
         }
 
         return i;
+    }
+
+    public static <T extends Comparable<T>> Collection<T> maxes(Iterable<T> elements)
+    {
+        LinkedList<T> maxes = new LinkedList<T>();
+
+        for(T element : elements)
+        {
+            if(maxes.size() == 0)
+            {
+                maxes.add(element);
+            }
+            else
+            {
+                int comparison = maxes.getFirst().compareTo(element);
+                if(comparison == 0)
+                {
+                    maxes.add(element);
+                }
+                else if(comparison < 0)
+                {
+                    maxes.clear();
+                    maxes.add(element);
+                }
+            }
+        }
+
+        return maxes;
+    }
+
+    public static <T extends Comparable<T>> Collection<T> mins(Iterable<T> elements)
+    {
+        LinkedList<T> mins = new LinkedList<T>();
+
+        for(T element : elements)
+        {
+            if(mins.size() == 0)
+            {
+                mins.add(element);
+            }
+            else
+            {
+                int comparison = mins.getFirst().compareTo(element);
+                if(comparison == 0)
+                {
+                    mins.add(element);
+                }
+                else if(comparison > 0)
+                {
+                    mins.clear();
+                    mins.add(element);
+                }
+            }
+        }
+
+        return mins;
     }
 }

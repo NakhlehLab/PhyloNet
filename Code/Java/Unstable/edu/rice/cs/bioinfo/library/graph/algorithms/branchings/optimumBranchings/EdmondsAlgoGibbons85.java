@@ -1,5 +1,7 @@
-package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.edmondsAlgo;
+package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings;
 
+import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.BranchingResult;
+import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.MaxBranchingSolver;
 import edu.rice.cs.bioinfo.library.programming.Container;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import org.hamcrest.*;
@@ -17,17 +19,24 @@ import java.util.*;
  * Time: 6:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
+public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>> implements MaxBranchingSolver<V,E,W>
 {
-    public class BranchingResult
+    private class DirectedEdge implements Comparable<DirectedEdge>
     {
-        public final Set<E> Branching;
+        public final V Source;
 
-        public final W BranchWeight;
+        public final V Destination;
 
-        public BranchingResult(Set<E> branching, W branchWeight) {
-            Branching = branching;
-            BranchWeight = branchWeight;
+        public final W Weight;
+
+        private DirectedEdge(V source, V destination, W weight) {
+            Source = source;
+            Destination = destination;
+            Weight = weight;
+        }
+
+        public int compareTo(DirectedEdge o) {
+            return this.Weight.compareTo(o.Weight);
         }
     }
 
@@ -36,8 +45,6 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         public final Set<DirectedEdge> Cycle;
 
         public final DirectedEdge MinWeightEdgeInCycle;
-
-  //      public final Set<E> ETildeEdgesOfCycle;
 
         public final V CycleVertex;
 
@@ -55,105 +62,15 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         }
     }
 
-    private class DirectedEdge
-    {
-        public final V Source;
-
-        public final V Destination;
-
-        public final W Weight;
-
-        private DirectedEdge(V source, V destination, W weight) {
-            Source = source;
-            Destination = destination;
-            Weight = weight;
-        }
-    }
-
     private final W _zero;
 
-    private final W _one;
 
-    public EdmondsAlgoGibbons85(W zero, W one)
+    public EdmondsAlgoGibbons85(W zero)
     {
         _zero = zero;
-        _one = one;
     }
 
-    public BranchingResult findAMinimumSpanningTreeOfCompleteGraph(Set<E> directedEdges)
-    {
-        // todo: ensure complete
-        HashSet<V> vertices = new HashSet<V>();
-        for(E edge : directedEdges)
-        {
-            vertices.add(getSource(edge));
-            vertices.add(getDestination(edge));
-        }
-
-        W perBranchQuota = _zero;
-        boolean sawNonZeroEdgeWeight = false;
-
-        for(E edge : directedEdges)
-        {
-            if(getWeightOfEdge(edge).compareTo(_zero) != 0)
-            {
-                sawNonZeroEdgeWeight = true;
-                break;
-            }
-        }
-
-        if(directedEdges.size() > 0)
-        {
-            W maxEdgeWeight = findMaxWeight(directedEdges);
-            if(maxEdgeWeight.compareTo(_zero) > 0)
-            {
-                perBranchQuota = addWeight(perBranchQuota, maxEdgeWeight);
-                perBranchQuota = addWeight(perBranchQuota, maxEdgeWeight);
-            }
-        }
-
-        HashMap<DirectedEdge,E> directedEdgeToInputEdge = new HashMap<DirectedEdge,E>();
-        for(E edge : directedEdges)
-        {
-            if(sawNonZeroEdgeWeight)
-            {
-                directedEdgeToInputEdge.put(new DirectedEdge(getSource(edge), getDestination(edge), subtractWeight(perBranchQuota, getWeightOfEdge(edge))), edge);
-            }
-            else
-            {
-                directedEdgeToInputEdge.put(new DirectedEdge(getSource(edge), getDestination(edge), _one), edge);
-            }
-        }
-
-        BranchingResult maxResult = findAMaximumBranchingHelp(vertices, directedEdgeToInputEdge.keySet(), directedEdgeToInputEdge);
-
-        W branchingWeightAccum = _zero;
-        for(E edge : maxResult.Branching)
-        {
-            W edgeWeight = getWeightOfEdge(edge);
-            branchingWeightAccum = addWeight(branchingWeightAccum, edgeWeight);
-
-        }
-
-        return new BranchingResult(maxResult.Branching, branchingWeightAccum);
-    }
-
-    private W findMaxWeight(Set<E> directedEdges)
-    {
-        W maxSeenWeight = getWeightOfEdge(directedEdges.iterator().next());
-
-        for(E edge : directedEdges)
-        {
-            W weightOfEdge = getWeightOfEdge(edge);
-            if(weightOfEdge.compareTo(maxSeenWeight) > 0)
-                maxSeenWeight = weightOfEdge;
-
-        }
-
-        return maxSeenWeight;
-    }
-
-    public BranchingResult findAMaximumBranching(Set<V> vertices, Set<E> directedEdges)
+    public BranchingResult<E,W> findAMaximumBranching(Set<V> vertices, Set<E> directedEdges)
     {
         HashMap<DirectedEdge,E> directedEdgeToInputEdge = new HashMap<DirectedEdge,E>();
         for(E edge : directedEdges)
@@ -164,7 +81,7 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         return findAMaximumBranchingHelp(vertices, directedEdgeToInputEdge.keySet(), directedEdgeToInputEdge);
     }
 
-    private BranchingResult findAMaximumBranchingHelp(Set<V> vertices, Set<DirectedEdge> directedEdges, Map<DirectedEdge,E> directedEdgeToInputEdge)
+    private BranchingResult<E,W> findAMaximumBranchingHelp(Set<V> vertices, Set<DirectedEdge> directedEdges, Map<DirectedEdge,E> directedEdgeToInputEdge)
     {
         Map<DirectedEdge,DirectedEdge> createdEdgeToPrevGenerationAnalogAccum = new HashMap<DirectedEdge, DirectedEdge>();
 
@@ -227,9 +144,7 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
             CycleRecord ithCycle = generationNumberToCycle.get(i);
             Set<DirectedEdge> ci = ithCycle.Cycle;
             V ui = ithCycle.CycleVertex;
-            boolean isUiEnteredFromBeMoreThanOnce = isNodeDestinationMoreThanOnce(ui, be);
 
-           // boolean isRootOfOutTree = isRootOfOutTreeIn(ui, be);
             DirectedEdge edgeToUi = tryFindInEdge(ui, be);
 
             for(DirectedEdge edge : new LinkedList<DirectedEdge>(be)) // avoid concurrent modification problems
@@ -242,7 +157,6 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
                 }
             }
 
-          //  if(isCycleVertexADestNodeInBe)
             if(edgeToUi == null)
             {
                 for(DirectedEdge cycleEdge : ci )
@@ -257,8 +171,6 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
                 V eTildeDestNode = inEdgeToCycleNode.Destination;
                 for(DirectedEdge cycleEdge : ci )
                 {
-                    //if(!ithCycle.ETildeEdgesOfCycle.contains(cycleEdge))
-                      //  be.add(cycleEdge);
                     if(!cycleEdge.Destination.equals(eTildeDestNode))
                         be.add(cycleEdge);
                 }
@@ -278,23 +190,6 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         return new BranchingResult(beOutsideContainer, branchingWeightAccum);
     }
 
-    private boolean isNodeDestinationMoreThanOnce(V node, HashSet<DirectedEdge> edges)
-    {
-        int numSeenEntrances = 0;
-        for(DirectedEdge edge : edges)
-        {
-            if(edge.Destination.equals(node))
-            {
-                numSeenEntrances++;
-                if(numSeenEntrances == 2)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private DirectedEdge tryFindInEdge(V node, HashSet<DirectedEdge> edges)
     {
         for(DirectedEdge edge : edges)
@@ -306,40 +201,6 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         }
 
         return null;
-    }
-
-    private boolean isRootOfOutTreeIn(V considredRoot, HashSet<E> edges)
-    {
-        return isRootOfOutTreeInHelp(considredRoot, new HashSet<E>(edges));
-    }
-
-    private boolean isRootOfOutTreeInHelp(V considredRoot, HashSet<E> edges)
-    {
-        LinkedList<V> childAccum = new LinkedList<V>();
-        Iterator<E> edgeElements = edges.iterator();
-        while(edgeElements.hasNext())
-        {
-            E edge = edgeElements.next();
-            V source = getSource(edge);
-            V destination = getDestination(edge);
-
-            if(considredRoot.equals(destination))
-                return false;
-
-            if(considredRoot.equals(source))
-            {
-                childAccum.add(destination);
-                edgeElements.remove();
-            }
-        }
-
-        for(V child : childAccum)
-        {
-            if(!isRootOfOutTreeIn(child, edges))
-                return false;
-        }
-
-        return true;
     }
 
 
@@ -388,7 +249,7 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         }
 
         //Set<E> eTildeEdgesOfCycle = new HashSet<E>();
-        DirectedEdge minWeightEdgeOfCycle = findMinWeightEdge(cycle);
+        DirectedEdge minWeightEdgeOfCycle = IterableHelp.mins(cycle).iterator().next();
         for(DirectedEdge lastGenEdge : edgesLastGeneration) // update eiToBe with transformed edges that used to be leading to or away from cycle nodes, but not both
         {
             DirectedEdge createdEdge; // if edge from last generation is to/from cycle replace with a new edge to/from ui. store new edge here.
@@ -444,7 +305,7 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
 
         return new TransformResult(viToBe, eiToBe, minWeightEdgeOfCycle, ui);
     }
-
+       /*
     private DirectedEdge findMinWeightEdge(Iterable<DirectedEdge> edges)
     {
         DirectedEdge minSeen = edges.iterator().next();
@@ -458,7 +319,7 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
         }
 
         return minSeen;
-    }
+    }    */
 
 
 
@@ -587,7 +448,7 @@ public abstract class EdmondsAlgoGibbons85<V,E,W extends Comparable<W>>
 
     protected abstract W subtractWeight(W w1, W w2);
 
-    protected abstract E makeEdge(V source, V destination);
+ //   protected abstract E makeEdge(V source, V destination);
 
     protected abstract V makeVertex();
 

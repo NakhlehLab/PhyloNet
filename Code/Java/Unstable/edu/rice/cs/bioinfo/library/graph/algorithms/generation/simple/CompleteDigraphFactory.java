@@ -13,22 +13,24 @@ import java.util.Set;
  * Time: 7:21 PM
  * To change this template use File | Settings | File Templates.
  */
-public class CompleteDigraphFactory<N>
+public abstract class CompleteDigraphFactory<N,E>
 {
-    public Set<Tuple<N,N>> makeCompleteDigraph(Set<N> nodes)
+    public Set<E> makeCompleteDigraph(Set<N> nodes)
     {
-        final HashSet<Tuple<N,N>> graphEdges = new HashSet<Tuple<N, N>>();
+        final HashSet<E> graphEdges = new HashSet<E>();
         for(N source : nodes)
         {
             for(N destination : nodes)
             {
                 if(source != destination)
                 {
-                    graphEdges.add(new Tuple<N,N>(source, destination));
+                    graphEdges.add(makeEdge(source,destination));
                 }
             }
         }
 
         return graphEdges;
     }
+
+    public abstract E makeEdge(N source, N destination);
 }

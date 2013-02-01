@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.library.bioinformatics.taxonomy.inference;
 import com.sun.xml.internal.xsom.impl.scd.Axis;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> implements NeighborJoiner<N,G>
@@ -11,8 +12,22 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
     public G performJoin(Set<N> taxa)
     {
         G resultTree = makeEmptyGraph();
-        Set<N> Node = new HashSet<N>();
+        /* create a linked hash set to store the nodes */
+        LinkedHashSet<N> Node = new LinkedHashSet<N>();
         Node.addAll(taxa);
+        /**
+         *  create a distance matrix to store the weights between nodes
+        D[][] weights = new D[Node.size()][Node.size()];
+        int i = 0;
+        int j = 0;
+        for(N a: Node){
+            for(N b: Node){
+                D[i][j] = getDistance(a, b);
+                j++;
+            }
+            i++;
+        }
+        */
 
         while(Node.size() > 1 ) {
             /* find the minimum distance and the corresponding nodes */
@@ -33,6 +48,8 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
             /* delete node1 and node2 from Set */
             Node.remove(node1);
             Node.remove(node2);
+            /* reset the weight in the distance matrix weights */
+
             /* calculate the distances from node3 to other node in the Set except node1 and node2 */
             N node3 = makeNewNodeInGraph(resultTree);
             for(N a: Node){

@@ -1,9 +1,7 @@
 package edu.rice.cs.bioinfo.library.bioinformatics.taxonomy.inference;
 import com.sun.xml.internal.xsom.impl.scd.Axis;
-
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import java.util.*;
 
 public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> implements NeighborJoiner<N,G>
 {
@@ -13,49 +11,57 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
     {
         G resultTree = makeEmptyGraph();
         /* create a linked hash set to store the nodes */
-        LinkedHashSet<N> Node = new LinkedHashSet<N>();
+        Set<N> Node = new HashSet<N>();
         Node.addAll(taxa);
-        /**
-         *  create a distance matrix to store the weights between nodes
-        D[][] weights = new D[Node.size()][Node.size()];
-        int i = 0;
-        int j = 0;
-        for(N a: Node){
-            for(N b: Node){
-                D[i][j] = getDistance(a, b);
-                j++;
+        /* create a edge-distance map to store the weights between nodes */
+        Map<N,Map<N,D>> nodeToNodeDistances = new HashMap<N, Map<N, D>>();
+        for(N taxon1 : taxa)
+        {
+            Map<N,D> taxon1NodeDistances = new HashMap<N, D>();
+            nodeToNodeDistances.put(taxon1, taxon1NodeDistances);
+            for(N taxon2 : taxa)
+            {
+                D distanceFromTaxon1ToTaxon2 = getDistance(taxon1, taxon2);
+                taxon1NodeDistances.put(taxon2, distanceFromTaxon1ToTaxon2);
             }
-            i++;
         }
-        */
 
         while(Node.size() > 1 ) {
-            /* find the minimum distance and the corresponding nodes */
+            /* find the minimum distance and the corresponding nodes from the edge-node map */
             D temp = MAX;
             N node1 = makeNewNodeInGraph(resultTree);
             N node2 = makeNewNodeInGraph(resultTree);
+
             for(N a: Node){
                 for(N b: Node){
-                    if(!a.equals(b)){
-                        if(temp.compareTo(getDistance(a, b)) > 0){
-                            temp = getDistance(a, b);
-                            node1 = a;
-                            node2 = b;
-                        }
+                    D distab = nodeToNodeDistances.get(a).get(b);
+                    if(temp.compareTo(distab) > 0){
+                        temp = distab;
+                        node1 = a;
+                        node2 = b;
                     }
                 }
             }
             /* delete node1 and node2 from Set */
             Node.remove(node1);
             Node.remove(node2);
-            /* reset the weight in the distance matrix weights */
-
-            /* calculate the distances from node3 to other node in the Set except node1 and node2 */
+           /* calculate and reset the distances from node3 to other node in the Set except node1 and node2 */
             N node3 = makeNewNodeInGraph(resultTree);
             for(N a: Node){
-                D ave = divide(add(getDistance(a, node1), getDistance(a, node2)), makeD(2));
-                setDistance(a, node3, ave);
-                setDistance(node3, a, ave);
+                D ave = divide(add(nodeToNodeDistances.get(node1).get(a), nodeToNodeDistances.get(node2).get(a)), makeD(2));
+                Map<N, D> node3NodeDistance = new HashMap<N, D>();
+                nodeToNodeDistances.put(node3, node3NodeDistance);
+                node3NodeDistance.put(a, ave);
+                Map<N, D> aNodeDistance = new HashMap<N, D>();
+                nodeToNodeDistances.put(a, aNodeDistance);
+                aNodeDistance.put(node3, ave);
+            }
+            /* delete the distances related to node1 and node2 from map */
+            nodeToNodeDistances.remove(node1);
+            nodeToNodeDistances.remove(node2);
+            for(N a: Node){
+                nodeToNodeDistances.get(a).remove(node1);
+                nodeToNodeDistances.get(a).remove(node2);
             }
             /* add new node to Set node */
             Node.add(node3);

@@ -50,6 +50,7 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
             N node3 = makeNewNodeInGraph(resultTree);
             Map<N,D> node3NodeDistances = new HashMap<N, D>();
             nodeToNodeDistances.put(node3, node3NodeDistances);
+
             for(N a: node){
                 D ave = divide(add(nodeToNodeDistances.get(node1).get(a), nodeToNodeDistances.get(node2).get(a)), makeD(2));
                 nodeToNodeDistances.get(node3).put(a, ave);

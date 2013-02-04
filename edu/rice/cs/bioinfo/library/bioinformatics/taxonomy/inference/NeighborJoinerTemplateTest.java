@@ -20,13 +20,16 @@ public class NeighborJoinerTemplateTest
         public Set<String> Nodes = new HashSet<String>();
 
         public Set<Tuple<String,String>> Edges = new HashSet<Tuple<String,String>>();
+
     }
 
     abstract class NeighborJoinerTestTemplateImp extends NeighborJoinerTemplateDoubleDistance<String,Tuple<String,String>,Graph>
     {
         @Override
-        protected Graph makeEmptyGraph() {
-            return new Graph();
+        protected Graph makeEdgelessGraph(Set<String> nodes) {
+            Graph g = new Graph();
+            g.Nodes.addAll(nodes);
+            return g;
         }
 
         @Override

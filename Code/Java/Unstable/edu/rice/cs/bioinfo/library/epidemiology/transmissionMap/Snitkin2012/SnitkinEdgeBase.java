@@ -11,10 +11,10 @@ public abstract class SnitkinEdgeBase<P,D> implements SnitkinEdge<P,D> {
 
     private final P _source;
     private final P _destination;
-    private final D _geneticDistance;
-    private final D _epidemiologicalDistance;
+    private final int _geneticDistance;
+    private final int _epidemiologicalDistance;
 
-    public SnitkinEdgeBase(P source, P destination, D geneticDistance, D epidemiologicalDistance) {
+    public SnitkinEdgeBase(P source, P destination, int geneticDistance, int epidemiologicalDistance) {
         _source = source;
         _destination = destination;
         _geneticDistance = geneticDistance;
@@ -30,11 +30,17 @@ public abstract class SnitkinEdgeBase<P,D> implements SnitkinEdge<P,D> {
         return _destination;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public D getGeneticDistance() {
+    public int getGeneticDistance() {
         return _geneticDistance;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public D getEpidemiologicalDistance() {
+    public int getEpidemiologicalDistance() {
         return _epidemiologicalDistance;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public String toString()
+    {
+        return getSource().toString() + "->" + getDestination().toString();
     }
 }

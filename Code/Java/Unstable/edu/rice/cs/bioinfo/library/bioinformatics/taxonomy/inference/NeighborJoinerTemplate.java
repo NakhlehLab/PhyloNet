@@ -117,6 +117,7 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
      */
     protected abstract N makeNewNodeInGraph(G graph);
 
+
     /**
      * Creates a edge and adds it to the given graph.
      *

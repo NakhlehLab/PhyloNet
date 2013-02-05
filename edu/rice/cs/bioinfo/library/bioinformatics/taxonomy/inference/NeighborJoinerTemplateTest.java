@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.library.bioinformatics.taxonomy.inference;
 
+import edu.rice.cs.bioinfo.library.language.dot_2013_1.printing.DigraphDotPrinter;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -20,6 +21,29 @@ public class NeighborJoinerTemplateTest
         public Set<String> Nodes = new HashSet<String>();
 
         public Set<Tuple<String,String>> Edges = new HashSet<Tuple<String,String>>();
+
+        public String toDot()
+        {
+            return new DigraphDotPrinter<String, Tuple<String,String>>()
+            {
+                protected String getNodeLabel(String node)
+                {
+                    return node;
+                }
+
+                @Override
+                protected String getSource(Tuple<String, String> edge) {
+                    return edge.Item1;  //To change body of implemented methods use File | Settings | File Templates.
+                }
+
+                @Override
+                protected String getDestination(Tuple<String, String> edge) {
+                    return edge.Item2;  //To change body of implemented methods use File | Settings | File Templates.
+                }
+
+
+            }.toDot(Nodes, Edges);
+        }
 
     }
 
@@ -70,6 +94,8 @@ public class NeighborJoinerTemplateTest
     {
         NeighborJoinerTestTemplateImp joiner = new NeighborJoinerTestTemplateImp()
         {
+
+
             @Override
             protected Double getDistance(String taxon1, String taxon2) {
                 List<String> edge = Arrays.asList(taxon1,taxon2);
@@ -105,12 +131,13 @@ public class NeighborJoinerTemplateTest
 
         Graph joinTree = joiner.performJoin(new HashSet<String>(Arrays.asList("A", "B", "C", "D")));
         assertLeafs(Arrays.asList("A", "B", "C", "D"), joinTree);
+        String dot = joinTree.toDot();
         String u = assertAndGetParent("A", "B", joinTree);
         String x = assertAndGetParent("D", "C", joinTree);
         Assert.assertEquals(u, assertAndGetParent("B", x, joinTree));
         Assert.assertEquals(u, assertAndGetParent("A", x, joinTree));
-        Assert.assertEquals(u, assertAndGetParent("C", u, joinTree));
-        Assert.assertEquals(u, assertAndGetParent("D", u, joinTree));
+        Assert.assertEquals(x, assertAndGetParent("C", u, joinTree));
+        Assert.assertEquals(x, assertAndGetParent("D", u, joinTree));
     }
 
     private String assertAndGetParent(String node1, String node2, Graph joinTree) {

@@ -16,15 +16,28 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
         {
             Map<N,D> taxon1NodeDistances = new HashMap<N, D>();
             nodeToNodeDistances.put(taxon1, taxon1NodeDistances);
+            D sumDist1 = makeD(0);
+            for(N ta: taxa) {
+                if(ta != taxon1){
+                    sumDist1 = add(sumDist1, getDistance(taxon1, ta));
+                }
+            }
             for(N taxon2 : taxa)
             {
                 if(taxon1 != taxon2){
-                    D distanceFromTaxon1ToTaxon2 = getDistance(taxon1, taxon2);
+                    D sumDist2 = makeD(0);
+                    for(N tax: taxa) {
+                        if(tax != taxon2){
+                            sumDist2 = add(sumDist2, getDistance(taxon2, tax));
+                        }
+                    }
+                    D sumDist = add(sumDist1, sumDist2);
+                    D distanceFromTaxon1ToTaxon2 = subtract(multiply(makeD(node.size() - 2), getDistance(taxon1, taxon2)), sumDist);
                     taxon1NodeDistances.put(taxon2, distanceFromTaxon1ToTaxon2);
                 }
             }
         }
-        while(node.size() > 1 ) {
+        while(node.size() > 2 ) {
             /* find the minimum distance and the corresponding nodes from the edge-node map */
             Iterator<N> it = node.iterator();
             N node1 = it.next();
@@ -52,7 +65,7 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
             nodeToNodeDistances.put(node3, node3NodeDistances);
 
             for(N a: node){
-                D ave = divide(add(nodeToNodeDistances.get(node1).get(a), nodeToNodeDistances.get(node2).get(a)), makeD(2));
+                D ave = divide(subtract(add(nodeToNodeDistances.get(node1).get(a), nodeToNodeDistances.get(node2).get(a)),nodeToNodeDistances.get(node1).get(node2)), makeD(2));
                 nodeToNodeDistances.get(node3).put(a, ave);
                 nodeToNodeDistances.get(a).put(node3, ave);
             }
@@ -69,6 +82,10 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
             addEdgeToGraph(node1, node3, resultTree);
             addEdgeToGraph(node2, node3, resultTree);
         }
+        Iterator<N> ite = node.iterator();
+        N n1 = ite.next();
+        N n2 = ite.next();
+        addEdgeToGraph(n1, n2, resultTree);
 
        return resultTree;
     }

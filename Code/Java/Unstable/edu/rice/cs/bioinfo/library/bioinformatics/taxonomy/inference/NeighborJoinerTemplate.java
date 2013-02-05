@@ -12,42 +12,55 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
         node.addAll(taxa);
         /* create a edge-distance map to store the weights between nodes */
         Map<N,Map<N,D>> nodeToNodeDistances = new HashMap<N, Map<N, D>>();
-        for(N taxon1 : taxa)
+        for(N taxon1 : node)
         {
             Map<N,D> taxon1NodeDistances = new HashMap<N, D>();
             nodeToNodeDistances.put(taxon1, taxon1NodeDistances);
-            D sumDist1 = makeD(0);
-            for(N ta: taxa) {
-                if(ta != taxon1){
-                    sumDist1 = add(sumDist1, getDistance(taxon1, ta));
-                }
-            }
-            for(N taxon2 : taxa)
+            for(N taxon2 : node)
             {
                 if(taxon1 != taxon2){
-                    D sumDist2 = makeD(0);
-                    for(N tax: taxa) {
-                        if(tax != taxon2){
-                            sumDist2 = add(sumDist2, getDistance(taxon2, tax));
-                        }
-                    }
-                    D sumDist = add(sumDist1, sumDist2);
-                    D distanceFromTaxon1ToTaxon2 = subtract(multiply(makeD(node.size() - 2), getDistance(taxon1, taxon2)), sumDist);
-                    taxon1NodeDistances.put(taxon2, distanceFromTaxon1ToTaxon2);
+                    taxon1NodeDistances.put(taxon2, getDistance(taxon1, taxon2));
                 }
             }
         }
         while(node.size() > 2 ) {
-            /* find the minimum distance and the corresponding nodes from the edge-node map */
+            /* calculate the Q-matrix */
+            Map<N,Map<N,D>> qmatrix = new HashMap<N, Map<N, D>>();
+            for(N n1 : node)
+            {
+                Map<N,D> n1matrix = new HashMap<N, D>();
+                qmatrix.put(n1, n1matrix);
+                D sumDist1 = makeD(0);
+                for(N ta: node) {
+                    if(ta != n1){
+                        sumDist1 = add(sumDist1, nodeToNodeDistances.get(n1).get(ta));
+                    }
+                }
+                for(N n2 : node)
+                {
+                    if(n1 != n2){
+                        D sumDist2 = makeD(0);
+                        for(N ta: node) {
+                            if(ta != n2){
+                                sumDist2 = add(sumDist2, nodeToNodeDistances.get(n2).get(ta));
+                            }
+                        }
+                        D sumDist = add(sumDist1, sumDist2);
+                        D n1Ton2 = subtract(multiply(makeD(node.size() - 2), nodeToNodeDistances.get(n1).get(n2)), sumDist);
+                        n1matrix.put(n2, n1Ton2);
+                    }
+                }
+            }
+            /* find the minimum distance and the corresponding nodes from q-matrix */
             Iterator<N> it = node.iterator();
             N node1 = it.next();
             N node2 = it.next();
-            D temp = nodeToNodeDistances.get(node1).get(node2);
+            D temp = qmatrix.get(node1).get(node2);
 
             for(N a: node){
                 for(N b: node){
                     if(a != b){
-                        D distab = nodeToNodeDistances.get(a).get(b);
+                        D distab = qmatrix.get(a).get(b);
                         if(temp.compareTo(distab) > 0){
                             temp = distab;
                             node1 = a;
@@ -64,11 +77,19 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
             Map<N,D> node3NodeDistances = new HashMap<N, D>();
             nodeToNodeDistances.put(node3, node3NodeDistances);
 
+            D sumNode1 = makeD(0);
+            D sumNode2 = makeD(0);
+
             for(N a: node){
+                sumNode1 = add(sumNode1, nodeToNodeDistances.get(node1).get(a));
+                sumNode2 = add(sumNode2, nodeToNodeDistances.get(node2).get(a));
                 D ave = divide(subtract(add(nodeToNodeDistances.get(node1).get(a), nodeToNodeDistances.get(node2).get(a)),nodeToNodeDistances.get(node1).get(node2)), makeD(2));
                 nodeToNodeDistances.get(node3).put(a, ave);
                 nodeToNodeDistances.get(a).put(node3, ave);
             }
+            D node1ToNode3 = divide(add(nodeToNodeDistances.get(node1).get(node2), divide(subtract(sumNode1, sumNode2), makeD(node.size()))), makeD(2));
+            D node2ToNode3 = subtract(nodeToNodeDistances.get(node1).get(node2), node1ToNode3);
+
             /* delete the distances related to node1 and node2 from map */
             nodeToNodeDistances.remove(node1);
             nodeToNodeDistances.remove(node2);
@@ -79,13 +100,13 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
             /* add new node to Set node */
             node.add(node3);
             /* add new edge to Graph */
-            addEdgeToGraph(node1, node3, resultTree);
-            addEdgeToGraph(node2, node3, resultTree);
+            addEdgeToGraph(node1, node3, node1ToNode3, resultTree);
+            addEdgeToGraph(node2, node3, node2ToNode3, resultTree);
         }
-        Iterator<N> ite = node.iterator();
-        N n1 = ite.next();
-        N n2 = ite.next();
-        addEdgeToGraph(n1, n2, resultTree);
+        Iterator<N> iter = node.iterator();
+        N n1 = iter.next();
+        N n2 = iter.next();
+        addEdgeToGraph(n1, n2, nodeToNodeDistances.get(n1).get(n2), resultTree);
 
        return resultTree;
     }
@@ -126,7 +147,7 @@ public abstract class NeighborJoinerTemplate<N,E,G,D extends Comparable<D>> impl
      * @param graph the graph into which to add the new edge
      * @return the created edge
      */
-    protected abstract E addEdgeToGraph(N node1, N node2, G graph);
+    protected abstract E addEdgeToGraph(N node1, N node2, D dist, G graph);
 
     /**
      * Removes a given edge from the given graph.

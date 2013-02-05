@@ -1,5 +1,8 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Matt
@@ -11,10 +14,12 @@ public class SnitkinEdgeDouble<P> extends SnitkinEdgeBase<P,Double> {
 
     private final Double _distance;
 
-    public SnitkinEdgeDouble(P source, P destination, Double geneticDistance, Double epidemiologicalDistance) {
+    public SnitkinEdgeDouble(P source, P destination, int geneticDistance, int epidemiologicalDistance, int eMax) {
         super(source, destination, geneticDistance, epidemiologicalDistance);
 
-        _distance = geneticDistance + (( 999.0 * ( this.getEpidemiologicalDistance() / Double.MAX_VALUE ))  / 100000.0 );
+
+        int epiDistance = this.getEpidemiologicalDistance();
+        _distance = geneticDistance + (( 999.0 * ( ((double)epiDistance) / ((double)eMax))) / 100000.0);
     }
 
     public Double getDistance() {

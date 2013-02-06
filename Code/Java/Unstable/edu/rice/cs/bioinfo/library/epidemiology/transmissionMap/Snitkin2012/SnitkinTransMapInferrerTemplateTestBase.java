@@ -36,7 +36,7 @@ public abstract class SnitkinTransMapInferrerTemplateTestBase<D extends Comparab
 
 
         Set<SnitkinEdge<Integer,D>> patientGraph = transMapInferrer.makeCompletePatientGraph(1);
-        Set<SnitkinEdge<Integer,D>> transMapEdges = transMapInferrer.inferMaps(1).iterator().next();
+        Set<SnitkinEdge<Integer,D>> transMapEdges = transMapInferrer.inferMaps(1).getSolutions().iterator().next();
         Collection<SnitkinEdge<Integer,D>> paperEdges = IterableHelp.filter(patientGraph, new Predicate1<SnitkinEdge<Integer, D>>() {
             public boolean execute(SnitkinEdge<Integer, D> someEdge) {
 

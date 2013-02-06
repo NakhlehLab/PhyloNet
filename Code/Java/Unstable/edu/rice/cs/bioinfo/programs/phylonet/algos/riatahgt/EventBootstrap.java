@@ -19,6 +19,9 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt;
 
+import edu.rice.cs.bioinfo.library.graph.algorithms.cycleDetection.DirectedCycleDetectionDFS;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.lca.SchieberVishkinLCA;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -58,6 +61,8 @@ public class EventBootstrap {
 	 */
 	public void computeBootstrap() {
 		List<HgtScenario> scenarios = generateScenarios();
+
+
 
 		try {
 			for (HgtScenario hs : scenarios) {
@@ -163,14 +168,24 @@ public class EventBootstrap {
 	private void computeBootstrapHelper(HgtScenario scenario) throws Exception {
 		List<TNode> newLeaves = createTempTrees(scenario);
 
+
+
 		for (HgtEvent event : scenario.getEvents()) {
 			if (event.isBad()) {
 				continue;
 			}
 
-			// Compute bootstrap by using GT. First, compute the set P.
-			STINode<Double> gtDest = _gt_prime.getNode(event.getDestEdge().getName());
-			Set<STINode<Double>> setP = getSubleaves(gtDest.getParent());
+
+
+            // Compute bootstrap by using GT. First, compute the set P.
+
+            STINode<Double> gtDest = _gt_prime.getNode(event.getDestEdge().getName());;
+            STINode<Double> gtDestParent =  gtDestParent = gtDest.getParent();
+            Set<STINode<Double>> setP = getSubleaves(gtDestParent);
+
+
+
+
 
 			for (TNode node : newLeaves) {
 				if (setP.contains(node)) {
@@ -292,6 +307,9 @@ public class EventBootstrap {
 	private void computeBootstrapHelper2(HgtScenario scenario) {
 		List<TNode> newLeaves = createTempTrees(scenario);
 
+
+
+
 		for (HgtEvent event : scenario.getEvents()) {
 			if (event.isBad()) {
 				continue;
@@ -386,31 +404,42 @@ public class EventBootstrap {
 	private List<TNode> createTempTrees(HgtScenario scenario) {
 		_st_prime = new STITree<Double>(_st);
 		_gt_prime = new STITree<Double>(_st);
+
+
+
+
 		List<TNode> newLeaves = new LinkedList<TNode>();
 
 		int i = 0;
 		for (HgtEvent event : scenario.getEvents()) {
 			if (!event.isBad()) {
+
+
+
 				// Add source and destination nodes to _st_prime.
 				TNode source = _st_prime.getNode(event.getSourceEdge().getName());
 				TNode dest = _st_prime.getNode(event.getDestEdge().getName());
 				TMutableNode temp;
 
 				if (!source.isRoot()) {
-					temp = ((TMutableNode) source.getParent()).createChild("IS_" + i);
+                    temp = ((TMutableNode) source.getParent()).createChildWithUniqueName();
+					//temp = ((TMutableNode) source.getParent()).createChild("IS_" + i);
 					temp.adoptChild((TMutableNode) source);
 				}
 				else {
-					temp = ((TMutableNode) source).createChild("IS_" + i);
+                    temp = ((TMutableNode) source).createChildWithUniqueName();
+					//temp = ((TMutableNode) source).createChild("IS_" + i);
 					temp.makeRoot();
 				}
 
-				temp = ((TMutableNode) dest.getParent()).createChild("ID_" + i);
+				//temp = ((TMutableNode) dest.getParent()).createChild("ID_" + i);
+                temp = ((TMutableNode) dest.getParent()).createChildWithUniqueName();
 				temp.adoptChild((TMutableNode) dest);
 
 				// Add source and destination nodes to _gt_prime.
 				source = _gt_prime.getNode(event.getSourceEdge().getName());
 				dest = _gt_prime.getNode(event.getDestEdge().getName());
+
 
 				if (!source.isRoot()) {
 					temp = ((TMutableNode) source.getParent()).createChild("IS_" + i);
@@ -420,6 +449,7 @@ public class EventBootstrap {
 					temp = ((TMutableNode) source).createChild("IS_" + i);
 					temp.makeRoot();
 				}
+
 
 				TMutableNode temp2 = ((TMutableNode) dest.getParent()).createChild("ID_" + i);
 				temp2.adoptChild((TMutableNode) dest);
@@ -429,12 +459,18 @@ public class EventBootstrap {
 					newLeaves.add(parent);
 				}
 
+
+
 				temp.adoptChild(temp2);
 
 				// Next event.
 				i++;
+
+
 			}
 		}
+
+
 
 		return newLeaves;
 	}
@@ -445,18 +481,29 @@ public class EventBootstrap {
 	 * @param node: node to find the set of leaves under it.
 	 */
 	private Set<STINode<Double>> getSubleaves(STINode<Double> node) {
-		Set<STINode<Double>> leaves = new HashSet<STINode<Double>>();
 
-		if (node.isLeaf()) {
-			leaves.add(node);
-			return leaves;
-		}
-		else {
-			for (STINode<Double> child : node.getChildren()) {
-				leaves.addAll(getSubleaves(child));
-			}
-			return leaves;
-		}
+        LinkedList<STINode<Double>> toExplore = new LinkedList<STINode<Double>>();
+        toExplore.add(node);
+
+        HashSet<STINode<Double>> subLeafsAccum = new HashSet<STINode<Double>>();
+
+        while(!toExplore.isEmpty())
+        {
+            STINode<Double> someNode = toExplore.removeFirst();
+            if(someNode.isLeaf())
+            {
+                subLeafsAccum.add(someNode);
+            }
+            else
+            {
+                for (STINode<Double> child : someNode.getChildren()) {
+
+                    toExplore.add(child);
+                }
+            }
+        }
+
+        return subLeafsAccum;
 	}
 
 	/**

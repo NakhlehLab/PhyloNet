@@ -56,7 +56,14 @@ public interface TMutableNode extends TNode {
 	 * @return the child created.
 	 */
 	public TMutableNode createChild(String name);
-	
+
+    /**
+     * Create a new child with an unspecified unique name beneath this node.
+     *
+     * @return the child created.
+     */
+    public TMutableNode createChildWithUniqueName();
+
 	/**
 	 * Create a new child and any subchildren as a child of this node based on
 	 * a pre-existing node either in this tree or in some other tree.  A copy of

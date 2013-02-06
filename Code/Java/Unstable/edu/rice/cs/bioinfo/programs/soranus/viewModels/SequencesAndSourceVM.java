@@ -9,7 +9,7 @@ import java.util.LinkedList;
  * Time: 6:29 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SequencesAndSourceVM implements DocumentVM
+public class SequencesAndSourceVM
 {
     private class Record
     {

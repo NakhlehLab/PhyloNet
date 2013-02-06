@@ -1,31 +1,41 @@
 package edu.rice.cs.bioinfo.programs.soranus;
 
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.NIHOutbreakDataTestBase;
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinEdge;
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinTransMapInferrerTemplateDoubleDistance;
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.TransMapResult;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
-import edu.rice.cs.bioinfo.library.programming.Proc2;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.soranus.models.analysis.NeighborJoining;
 import edu.rice.cs.bioinfo.programs.soranus.models.analysis.Sequencing;
+import edu.rice.cs.bioinfo.programs.soranus.models.analysis.SnitkinTransMapInferrer;
 import edu.rice.cs.bioinfo.programs.soranus.models.factories.FirstPositiveMapFactory;
 import edu.rice.cs.bioinfo.programs.soranus.models.factories.PatientTraceMapFactory;
 import edu.rice.cs.bioinfo.programs.soranus.models.factories.SequencingsMapFactory;
 import edu.rice.cs.bioinfo.programs.soranus.models.fileRecogniser.DatafileRecogniser;
 import edu.rice.cs.bioinfo.programs.soranus.models.fileRecogniser.KnownDatafileFormat;
 import edu.rice.cs.bioinfo.programs.soranus.models.fileRecogniser.KnownDatafileFormatAlgo;
+import edu.rice.cs.bioinfo.programs.soranus.viewModels.NeighborJoiningVM;
+import edu.rice.cs.bioinfo.programs.soranus.viewModels.TransMapVM;
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.WorkspaceVM;
-import edu.rice.cs.bioinfo.programs.soranus.views.swing.Workspace;
-import org.apache.commons.io.FileUtils;
+import edu.rice.cs.bioinfo.programs.soranus.views.swing.NeighborJoiningView;
+import edu.rice.cs.bioinfo.programs.soranus.views.swing.WorkspaceView;
 import org.joda.time.LocalDate;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 class DefaultController
 {
     private WorkspaceVM _workspaceViewModel;
 
-    private Workspace _workspaceView;
+    private WorkspaceView _workspaceView;
 
     private Map<String,File> _explorerTitleToDataFile = new HashMap<String, File>();
 
@@ -37,7 +47,7 @@ class DefaultController
             {
 
                 _workspaceViewModel = new WorkspaceVM();
-                _workspaceView = new Workspace(_workspaceViewModel);
+                _workspaceView = new WorkspaceView(_workspaceViewModel);
                 _workspaceView.addAddDataListener(new Proc1<File>() {
                     public void execute(File dataFile)
                     {
@@ -53,10 +63,14 @@ class DefaultController
                     }
                 });
                 _workspaceView.addSnitkinTransMapAnalysisRequestedListener(new Proc3<String, String, String>() {
-                    public void execute(String sequencingsTitle, String traceTitle, String firstPositiveTitle)
-                    {
-                        doSnitkinTransMapAnalysisRequested(sequencingsTitle, traceTitle, firstPositiveTitle);
+                    public void execute(String sequencingsTitle, String traceTitle, String firstPositiveTitle) {
+                        performSnitkinTransMapAnalysis(sequencingsTitle, traceTitle, firstPositiveTitle);
 
+                    }
+                });
+                _workspaceView.addNeighborJoiningAnalysisRequestedListener(new Proc1<String>() {
+                    public void execute(String sequencingsTitle) {
+                        performNeighborJoiningAnalysis(sequencingsTitle);
                     }
                 });
 
@@ -64,15 +78,13 @@ class DefaultController
         });
     }
 
-    private void doSnitkinTransMapAnalysisRequested(String sequencingsTitle, String traceTitle, String firstPositiveTitle)
-    {
+    private void performNeighborJoiningAnalysis(String sequencingsTitle) {
+
         try
         {
             File sequencingsFile = _explorerTitleToDataFile.get(sequencingsTitle);
-            File traceFile = _explorerTitleToDataFile.get(traceTitle);
-            File firstPositiveFile = _explorerTitleToDataFile.get(firstPositiveTitle);
 
-            Map<Sequencing,Integer> sequeincingToPatient = new SequencingsMapFactory<Integer>()
+            final Map<Sequencing,Integer> sequeincingToPatient = new SequencingsMapFactory<Integer>()
             {
 
                 @Override
@@ -81,7 +93,54 @@ class DefaultController
                 }
             }.makeMapFromXMLFile(sequencingsFile);
 
-            Map<Integer,LocalDate> patientToFirstPositiveDate = new FirstPositiveMapFactory<Integer,LocalDate>()
+            NeighborJoining nj = new NeighborJoining();
+            NeighborJoining.Graph joinTree = nj.performJoin(sequeincingToPatient.keySet());
+            NeighborJoiningVM<Sequencing,NeighborJoining.Edge> joinVM = new NeighborJoiningVM<Sequencing,NeighborJoining.Edge>(joinTree.Edges)
+            {
+                @Override
+                public Tuple<Sequencing, Sequencing> getNodesOfEdge(NeighborJoining.Edge edge) {
+                    return new Tuple<Sequencing, Sequencing>(edge.Node1, edge.Node2);
+                }
+
+                @Override
+                public String getNodeLabel(Sequencing node) {
+                    if(sequeincingToPatient.containsKey(node))
+                    {
+                        return sequeincingToPatient.get(node).toString();
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                }
+            };
+            joinVM.setRoot(nj.getLastNodeCreated());
+            _workspaceViewModel.setFocusDocument(joinVM);
+        }
+        catch(Exception e)
+        {
+            reportException(e);
+        }
+    }
+
+    private void performSnitkinTransMapAnalysis(String sequencingsTitle, String traceTitle, String firstPositiveTitle)
+    {
+        try
+        {
+            File sequencingsFile = _explorerTitleToDataFile.get(sequencingsTitle);
+            File traceFile = _explorerTitleToDataFile.get(traceTitle);
+            File firstPositiveFile = _explorerTitleToDataFile.get(firstPositiveTitle);
+
+            final Map<Sequencing,Integer> sequeincingToPatientOuter = new SequencingsMapFactory<Integer>()
+            {
+
+                @Override
+                protected Integer makeId(String sourceIdText) {
+                    return new Integer(sourceIdText);
+                }
+            }.makeMapFromXMLFile(sequencingsFile);
+
+            final Map<Integer,LocalDate> patientToFirstPositiveDateOuter = new FirstPositiveMapFactory<Integer,LocalDate>()
             {
                 @Override
                 protected LocalDate makeDate(String dateText) {
@@ -95,11 +154,11 @@ class DefaultController
 
             }.makeMapFromXMLFile(firstPositiveFile);
 
-            Map<Integer, Map<LocalDate, Integer>> patientTraces = new PatientTraceMapFactory<Integer,LocalDate,Integer>()
+            final Map<Integer, Map<LocalDate, Object>> patientTracesOuter = new PatientTraceMapFactory<Integer,LocalDate,Object>()
             {
                 @Override
-                protected Integer makeLocation(String locationText) {
-                    return new Integer(locationText);  //To change body of implemented methods use File | Settings | File Templates.
+                protected Object makeLocation(String locationText) {
+                    return locationText;  //To change body of implemented methods use File | Settings | File Templates.
                 }
 
                 @Override
@@ -113,7 +172,27 @@ class DefaultController
                 }
             }.makeMapFromXMLFile(traceFile);
 
-            int j = 0;
+            final TransMapResult<SnitkinEdge<Integer,Double>> transResult = new SnitkinTransMapInferrer(patientTracesOuter, patientToFirstPositiveDateOuter, sequeincingToPatientOuter).inferMaps(1);
+            final Set<SnitkinEdge<Integer,Double>> transMap = transResult.getSolutions().iterator().next();
+
+            TransMapVM<Integer, SnitkinEdge<Integer,Double>> transMapViewModel = new TransMapVM<Integer, SnitkinEdge<Integer, Double>>(transMap) {
+                @Override
+                public Integer getSource(SnitkinEdge<Integer, Double> edge) {
+                    return edge.getSource();
+                }
+
+                @Override
+                public Integer getDestination(SnitkinEdge<Integer, Double> edge) {
+                    return edge.getDestination();
+                }
+
+                @Override
+                public String getNodeLabel(Integer integer) {
+                    return integer.toString();
+                }
+            };
+
+            _workspaceViewModel.setFocusDocument(transMapViewModel);
         }
         catch (Exception e)
         {

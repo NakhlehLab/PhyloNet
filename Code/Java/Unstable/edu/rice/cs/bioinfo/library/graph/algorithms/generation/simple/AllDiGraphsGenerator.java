@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class AllDiGraphsGenerator<N> implements Iterable<Set<Tuple<N,N>>>
 {
-    Iterable<N> _nodes;
+    private Iterable<N> _nodes;
 
     private class EdgeRecord
     {

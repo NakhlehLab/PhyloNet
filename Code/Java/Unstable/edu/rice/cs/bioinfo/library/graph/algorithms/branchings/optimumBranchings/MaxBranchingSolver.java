@@ -3,13 +3,25 @@ package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranching
 import java.util.Set;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Matt
- * Date: 1/14/13
- * Time: 12:45 PM
- * To change this template use File | Settings | File Templates.
+ *  A strategy for finding a maximum branching of a weighted digraph.
+ *
+ *  A branching is defined to be a acyclic set of edges such that each node referenced by any edge is of indegree <=1.
+ *  Equivalently, a branching is a forrest of zero or more arborescences (out-trees).
+ *
+ * @param <E> Type of directed edges in input graphs.
+ * @param <W> Type of weights of edges in input graphs.
+ * @see "Gibbons, Alan. "Algorithmic Graph Theory." New York: Press Syndicate of the University of Cambridge, 1985. Print."
  */
-public interface MaxBranchingSolver<V,E,W>
+public interface MaxBranchingSolver<E,W>
 {
-    public BranchingResult<E,W> findAMaximumBranching(Set<V> vertices, Set<E> directedEdges);
+    /**
+     * Finds a maximum branching of a weighted digraph.
+     *
+     * That is to say a branching such that the sum of the weights of the branching edges is maximized.
+     * Note that there is always a maximum branching of any digraph, even if that branching is the empty set.
+     *
+ //    * @param vertices the nodes of the digraph to be examined
+     * @param directedEdges the directed edges of the graph to be examined
+     */
+    public BranchingResult<E,W> findAMaximumBranching(Set<E> directedEdges);
 }

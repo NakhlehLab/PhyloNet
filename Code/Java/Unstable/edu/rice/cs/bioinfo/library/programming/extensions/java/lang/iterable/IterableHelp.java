@@ -19,10 +19,12 @@
 
 package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
+
+import edu.rice.cs.bioinfo.library.programming.Predicate1;
+import org.joda.time.LocalDate;
+
 import javax.swing.text.Element;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -120,5 +122,52 @@ public class IterableHelp {
         }
 
         return mins;
+    }
+
+    public static <T extends Comparable<T>> T max(Iterable<T> elements)
+    {
+        return maxes(elements).iterator().next();
+    }
+
+    public static <T extends Comparable<T>> T min(Iterable<T> elements)
+    {
+        return mins(elements).iterator().next();
+    }
+
+    public static <T> Collection<T> filter(Iterable<T> elements, Predicate1<T> condition)
+    {
+        LinkedList<T> filtered = new LinkedList<T>();
+
+        for(T element : elements)
+        {
+            if(condition.execute(element))
+            {
+                filtered.add(element);
+            }
+        }
+
+        return filtered;
+    }
+
+    public static Collection<Object> filterUnknown(Iterable<?> elements, Predicate1<Object> condition)
+    {
+        LinkedList<Object> filtered = new LinkedList<Object>();
+
+        for(Object element : elements)
+        {
+            if(condition.execute(element))
+            {
+                filtered.add(element);
+            }
+        }
+
+        return filtered;
+    }
+
+    public static <T extends Comparable> Iterable<T> sortAscending(Iterable<T> elements)
+    {
+        List<T> elementsList = toList(elements);
+        Collections.sort(elementsList);
+        return elementsList;
     }
 }

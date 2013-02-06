@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranching
 
 import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.generation.AllBranchingsGeneratorBruteForce;
 import edu.rice.cs.bioinfo.library.graph.algorithms.generation.simple.AllDiGraphsGenerator;
+import edu.rice.cs.bioinfo.library.graph.algorithms.generation.simple.CompleteDigraphFactory;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -17,9 +18,9 @@ import java.util.*;
  */
 public abstract class MaxBranchingSolverTest
 {
-    protected abstract MaxBranchingSolver<Character,String,Integer> makeSolverCharacter(Map<String,Integer> edgeToWeight);
+    protected abstract MaxBranchingSolver<String,Integer> makeSolverString(Map<String, Integer> edgeToWeight);
 
-    protected abstract MaxBranchingSolver<Integer,Tuple<Integer,Integer>,Integer> makeSolverInteger(Map<Tuple<Integer,Integer>,Integer> edgeToWeight);
+    protected abstract MaxBranchingSolver<Tuple<Integer,Integer>,Integer> makeSolverTuple(Map<Tuple<Integer, Integer>, Integer> edgeToWeight);
 
     @Test
     public void testFindAMaximumBranching1()
@@ -29,7 +30,7 @@ public abstract class MaxBranchingSolverTest
         edgeToWeight.put("AB", 2);
         edgeToWeight.put("BA", 1);
 
-        BranchingResult<String,Integer> br = makeSolverCharacter(edgeToWeight).findAMaximumBranching(nodes, edgeToWeight.keySet());
+        BranchingResult<String,Integer> br = makeSolverString(edgeToWeight).findAMaximumBranching(edgeToWeight.keySet());
         Assert.assertEquals(new Integer(2), br.BranchingWeight);
         Assert.assertEquals(1, br.Branching.size());
         Assert.assertEquals(true, br.Branching.contains("AB"));
@@ -43,7 +44,7 @@ public abstract class MaxBranchingSolverTest
         edgeToWeight.put("AB", 1);
         edgeToWeight.put("BA", 2);
 
-        BranchingResult<String,Integer> br = makeSolverCharacter(edgeToWeight).findAMaximumBranching(nodes, edgeToWeight.keySet());
+        BranchingResult<String,Integer> br = makeSolverString(edgeToWeight).findAMaximumBranching(edgeToWeight.keySet());
         Assert.assertEquals(new Integer(2), br.BranchingWeight);
         Assert.assertEquals(1, br.Branching.size());
         Assert.assertEquals(true, br.Branching.contains("BA"));
@@ -59,7 +60,7 @@ public abstract class MaxBranchingSolverTest
         edgeToWeight.put("BC", 69);
         edgeToWeight.put("CB", 44);
 
-        BranchingResult<String,Integer> br = makeSolverCharacter(edgeToWeight).findAMaximumBranching(nodes, edgeToWeight.keySet());
+        BranchingResult<String,Integer> br = makeSolverString(edgeToWeight).findAMaximumBranching(edgeToWeight.keySet());
         Assert.assertEquals(new Integer(131), br.BranchingWeight);
         Assert.assertEquals(2, br.Branching.size());
         Assert.assertEquals(true, br.Branching.contains("BC"));
@@ -83,7 +84,7 @@ public abstract class MaxBranchingSolverTest
         edgeToWeight.put("FD", 2);
 
 
-        BranchingResult<String,Integer> br = makeSolverCharacter(edgeToWeight).findAMaximumBranching(nodes, edgeToWeight.keySet());
+        BranchingResult<String,Integer> br = makeSolverString(edgeToWeight).findAMaximumBranching(edgeToWeight.keySet());
         Assert.assertEquals(new Integer(17), br.BranchingWeight);
         Assert.assertEquals(5, br.Branching.size());
         Assert.assertEquals(true, br.Branching.contains("CE"));
@@ -91,6 +92,30 @@ public abstract class MaxBranchingSolverTest
         Assert.assertEquals(true, br.Branching.contains("FD"));
         Assert.assertEquals(true, br.Branching.contains("CA"));
         Assert.assertEquals(true, br.Branching.contains("BC"));
+    }
+
+    @Test
+    public void testFindAMaximumBranching5()
+    {
+        Set<Integer> completeGraphNodes = new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18));
+
+        final Map<Tuple<Integer,Integer>, Integer> edgeToWeight = new HashMap<Tuple<Integer, Integer>, Integer>();
+
+        Set<Tuple<Integer,Integer>> completeGraphEdges = new CompleteDigraphFactory<Integer, Tuple<Integer,Integer>>()
+        {
+            @Override
+            public Tuple<Integer, Integer> makeEdge(Integer source, Integer destination) {
+                Tuple<Integer,Integer> edge = new Tuple<Integer, Integer>(source,destination);
+                edgeToWeight.put(edge, 1);
+                return edge;
+            }
+        }.makeCompleteDigraph(completeGraphNodes);
+
+
+
+        BranchingResult<Tuple<Integer,Integer>,Integer> br = makeSolverTuple(edgeToWeight).findAMaximumBranching(edgeToWeight.keySet());
+        Assert.assertEquals(new Integer(17), br.BranchingWeight);
+        Assert.assertEquals(17, br.Branching.size());
     }
 
     @Test
@@ -112,7 +137,7 @@ public abstract class MaxBranchingSolverTest
 
             for(Set<Tuple<Integer,Integer>> diGraphEdges : digraphs)
             {
-                testBranchingDynamicHelp(true, digraphNodes, diGraphEdges, rand);
+                testFindAMaximumBranchingDynamicHelp(digraphNodes, diGraphEdges, rand);
                 numTrialsPerformed++;
 
                 if(numTrialsPerformed == trialsBudget)
@@ -121,7 +146,7 @@ public abstract class MaxBranchingSolverTest
         }
     }
 
-    private void testBranchingDynamicHelp(boolean maximize, Set<Integer> digraphNodes, Set<Tuple<Integer,Integer>> digraphEdges, Random rand)
+    private void testFindAMaximumBranchingDynamicHelp(Set<Integer> digraphNodes, Set<Tuple<Integer,Integer>> digraphEdges, Random rand)
     {
         final Map<Tuple<Integer,Integer>,Integer> edgeToWeight = new HashMap<Tuple<Integer, Integer>, Integer>();
         for(Tuple<Integer,Integer> edge : digraphEdges)
@@ -143,7 +168,6 @@ public abstract class MaxBranchingSolverTest
 
         Set<Set<Tuple<Integer,Integer>>> maxSeenBranchings = new HashSet<Set<Tuple<Integer,Integer>>>();
         int maxSeenBranchingWeight = Integer.MIN_VALUE;
-        int minSeenSpanningBranchingWeight = Integer.MAX_VALUE;
         for(Set<Tuple<Integer,Integer>> branching : allBranchings)
         {
             int branchWeight = 0;
@@ -161,40 +185,17 @@ public abstract class MaxBranchingSolverTest
             {
                 maxSeenBranchings.add(branching);
             }
-         /*   if(branchWeight < minSeenSpanningBranchingWeight && isSpanningTree(branching, digraphNodes))
-            {
-                minSeenSpanningBranchingWeight = branchWeight;
-            }    */
         }
 
-        MaxBranchingSolver<Integer,Tuple<Integer,Integer>,Integer> solver = makeSolverInteger(edgeToWeight);
+        MaxBranchingSolver<Tuple<Integer,Integer>,Integer> solver = makeSolverTuple(edgeToWeight);
 
 
-        if(maximize)
-        {
-            BranchingResult<Tuple<Integer,Integer>,Integer> result = solver.findAMaximumBranching(digraphNodes, digraphEdges);
-            if(maxSeenBranchingWeight != result.BranchingWeight.intValue())
-            {
-                BranchingResult<Tuple<Integer,Integer>,Integer> result2 = solver.findAMaximumBranching(digraphNodes, digraphEdges);
-                int i = 0;
-            }
-            Assert.assertEquals(new Integer(maxSeenBranchingWeight), result.BranchingWeight);
-            Assert.assertTrue(maxSeenBranchings.contains(result.Branching));
-        }
-        else
-        {     /*
-            BranchingResult<Tuple<Integer,Integer>,Integer> edmondsResult = edmondsSolver.findAMinimumSpanningTreeOfCompleteGraph(digraphEdges);
-            if(minSeenSpanningBranchingWeight != edmondsResult.BranchingWeight.intValue())
-            {
-                edmondsSolver.findAMinimumSpanningTreeOfCompleteGraph(digraphEdges);
-            }
-            if(!isSpanningTree(edmondsResult.Branching, digraphNodes))
-            {
-                edmondsSolver.findAMinimumSpanningTreeOfCompleteGraph(digraphEdges);
-            }
-            Assert.assertEquals(new Integer(minSeenSpanningBranchingWeight), edmondsResult.BranchingWeight);
-            Assert.assertTrue(isSpanningTree(edmondsResult.Branching, digraphNodes));  */
-        }
+
+        BranchingResult<Tuple<Integer,Integer>,Integer> result = solver.findAMaximumBranching(digraphEdges);
+
+        Assert.assertEquals(new Integer(maxSeenBranchingWeight), result.BranchingWeight);
+        Assert.assertTrue(maxSeenBranchings.contains(result.Branching));
+
     }
 
 }

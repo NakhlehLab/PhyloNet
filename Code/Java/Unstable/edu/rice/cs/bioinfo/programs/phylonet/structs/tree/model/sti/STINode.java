@@ -141,6 +141,21 @@ public class STINode<D extends Object> implements TMutableNode {
 		return createChild(STITree.NO_NAME);
 	}
 
+    public STINode<D> createChildWithUniqueName()
+    {
+        String prefix = "n";
+
+        for(int i = 0; true; i++)
+        {
+            String name = prefix + i;
+
+            if(! this._tree._name2node.keySet().contains(name))
+            {
+                return createChild(name);
+            }
+        }
+    }
+
 	public STINode<D> createChild(String name) {
 		
 		STINode<D> child = new STINode<D>(_tree, _tree._next_node_id++, name, this, null);

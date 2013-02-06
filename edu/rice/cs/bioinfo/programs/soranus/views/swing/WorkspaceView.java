@@ -1,9 +1,9 @@
 package edu.rice.cs.bioinfo.programs.soranus.views.swing;
 
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinEdge;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
-import edu.rice.cs.bioinfo.library.programming.Proc2;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.soranus.viewModels.WorkspaceVM;
+import edu.rice.cs.bioinfo.programs.soranus.viewModels.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -25,11 +25,13 @@ import java.util.Set;
  * Time: 6:09 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Workspace extends JFrame
+public class WorkspaceView extends JFrame
 {
     private WorkspaceVM _viewModel;
 
     private JTree _projectTree;
+
+    private JPanel _documentPanel = new JPanel();
 
     private DefaultTreeModel _projectTreeModel;
 
@@ -53,14 +55,26 @@ public class Workspace extends JFrame
         _snitkinTransMapAnalysisRequestedListeners.add(listener);
     }
 
+    private Set<Proc1<String>> _neighborJoiningAnalysisRequestedListeners = new HashSet<Proc1<String>>();
 
-    public Workspace(WorkspaceVM viewModel)
+    public void addNeighborJoiningAnalysisRequestedListener(Proc1<String> listener)
+    {
+        _neighborJoiningAnalysisRequestedListeners.add(listener);
+    }
+
+
+    public WorkspaceView(WorkspaceVM viewModel)
     {
         _viewModel= viewModel;
 
         _viewModel.addDataRecordAddedListener(new Proc1<String>() {
             public void execute(String title) {
                 onDataRecordAdded(title);
+            }
+        });
+        _viewModel.addFocusDocumentChangedListener(new Proc1<DocumentVM>() {
+            public void execute(DocumentVM documentVM) {
+                onFocusDocumentChanged(documentVM);
             }
         });
 
@@ -76,13 +90,31 @@ public class Workspace extends JFrame
         _projectTree = makeProjectTree(_projectTreeModel, analysis);
      //   _projectTreeModel.reload();
 
+        _documentPanel.setLayout(new BorderLayout());
 
-        JPanel documentPane = new JPanel();
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(_projectTree), documentPane);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(_projectTree), _documentPanel);
         this.getContentPane().add(splitPane);
 
     }
+
+    private void onFocusDocumentChanged(DocumentVM documentVM)
+    {
+        JPanel newFocusView = documentVM.execute(new DocumentVMAlgo<JPanel, RuntimeException>()
+        {
+            public <N, E> JPanel forTransMapVM(TransMapVM<N,E> vm) throws RuntimeException {
+                return new TransMapView<N,E>(vm);
+            }
+
+            public <N, E> JPanel forNeighborJoiningVM(NeighborJoiningVM<N,E> vm) throws RuntimeException {
+                return new NeighborJoiningView<N,E>(vm);
+            }
+        });
+        _documentPanel.removeAll();
+        _documentPanel.add(newFocusView, BorderLayout.CENTER);
+        _documentPanel.validate();
+
+    }
+
 
     private JTree makeProjectTree(TreeModel treeModel, final TreeNode analysis)
     {
@@ -149,7 +181,37 @@ public class Workspace extends JFrame
     private void onDataRecordRightClick(MouseEvent e)
     {
         TreePath[] selections = _projectTree.getSelectionModel().getSelectionPaths();
-        if(selections.length == 3)
+
+        JPopupMenu analysisOptions = null;
+
+        if(selections.length == 1)
+        {
+            final String firstEntryTitle =  (String) ((DefaultMutableTreeNode)selections[0].getLastPathComponent()).getUserObject();
+            final boolean firstEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(firstEntryTitle);
+
+            if(firstEntryTitleIsSequencingsData)
+            {
+                final String sequencingsTitleFinal = firstEntryTitle;
+                analysisOptions = new JPopupMenu ();
+                final JMenuItem doNeighborJoin = new JMenuItem ( "Infer Neighbor Join Tree" );
+                doNeighborJoin.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if(e.getSource() == doNeighborJoin)
+                        {
+
+                            for(Proc1<String> listener : _neighborJoiningAnalysisRequestedListeners)
+                            {
+                                listener.execute(sequencingsTitleFinal);
+                            }
+                        }
+                    }
+                });
+                analysisOptions.add (doNeighborJoin);
+
+            }
+
+        }
+        else if(selections.length == 3)
         {
             final String firstEntryTitle =  (String) ((DefaultMutableTreeNode)selections[0].getLastPathComponent()).getUserObject();
             final boolean firstEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(firstEntryTitle);
@@ -187,7 +249,7 @@ public class Workspace extends JFrame
            if(showSnitkinAnalysisOption)
            {
                final String sequencingsTitleFinal = sequencingsTitle, traceTitleFinal = traceTitle, firstPositiveTitleFinal = firstPositiveTitle;
-               JPopupMenu menu = new JPopupMenu ();
+               analysisOptions = new JPopupMenu ();
                final JMenuItem doSnitkin = new JMenuItem ( "Infer Snitkin Trans Map" );
                doSnitkin.addActionListener(new ActionListener() {
                    public void actionPerformed(ActionEvent e) {
@@ -201,10 +263,14 @@ public class Workspace extends JFrame
                        }
                    }
                });
-               menu.add (doSnitkin);
-               menu.show (_projectTree, e.getX(), e.getY() );
+               analysisOptions.add (doSnitkin);
            }
 
+        }
+
+        if(analysisOptions != null)
+        {
+            analysisOptions.show (_projectTree, e.getX(), e.getY() );
         }
     }
 

@@ -20,7 +20,7 @@ public class SnitkinTransMapInferrer extends SnitkinTransMapInferrerTemplateDoub
 
     @Override
     protected Double getMaxDistance() {
-        return Double.MAX_VALUE;
+        return 10000.0;
     }
 
     @Override

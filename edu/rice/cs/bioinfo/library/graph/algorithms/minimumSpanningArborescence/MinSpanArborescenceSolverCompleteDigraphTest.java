@@ -17,10 +17,8 @@ import java.util.*;
  */
 public class MinSpanArborescenceSolverCompleteDigraphTest
 {
-    class MinSpanArborescenceSolverCompleteDigraphImp extends MinSpanArborescenceSolverCompleteDigraph<Integer,WeightedEdge,Integer>
+    class MinSpanArborescenceSolverCompleteDigraphImp extends MinSpanArborescenceSolverCompleteDigraph<WeightedEdge,Integer>
     {
-        private Integer _nextVertex = -1;
-
         public MinSpanArborescenceSolverCompleteDigraphImp() {
             super(0, 1);
         }
@@ -35,10 +33,6 @@ public class MinSpanArborescenceSolverCompleteDigraphTest
             return w1 - w2;
         }
 
-        @Override
-        protected Integer makeVertex() {
-            return _nextVertex--;  //To change body of implemented methods use File | Settings | File Templates.
-        }
 
         @Override
         protected Integer getWeightOfEdge(WeightedEdge edge) {
@@ -74,16 +68,13 @@ public class MinSpanArborescenceSolverCompleteDigraphTest
     @Test
     public void testTryFindMinSpanArborescence1()
     {
-        Set<Integer> vertices = new HashSet<Integer>();
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(2);
+
 
         List<WeightedEdge> edges = Arrays.asList(new WeightedEdge(0, 1, 1), new WeightedEdge(1, 0, 2), new WeightedEdge(1, 2, 4), new WeightedEdge(2, 1, 3), new WeightedEdge(0, 2, 5),
                 new WeightedEdge(2, 0, 6));
 
 
-        MinSpanArborescence<WeightedEdge,Integer> minSpanTree = new MinSpanArborescenceSolverCompleteDigraphImp().tryFindMinSpanArborescence(vertices, new HashSet<WeightedEdge>(edges));
+        MinSpanArborescence<WeightedEdge,Integer> minSpanTree = new MinSpanArborescenceSolverCompleteDigraphImp().tryFindMinSpanArborescence(new HashSet<WeightedEdge>(edges));
         Assert.assertEquals(5, minSpanTree.SpanWeight.intValue());
         Assert.assertTrue((minSpanTree.Edges.contains(edges.get(0)) && minSpanTree.Edges.contains(edges.get(2)) ||
                 (minSpanTree.Edges.contains(edges.get(3)) && minSpanTree.Edges.contains(edges.get(1)))));
@@ -92,16 +83,12 @@ public class MinSpanArborescenceSolverCompleteDigraphTest
     @Test
     public void testTryFindMinSpanArborescence2()
     {
-        Set<Integer> vertices = new HashSet<Integer>();
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(2);
 
         List<WeightedEdge> edges = Arrays.asList(new WeightedEdge(0, 1, -55), new WeightedEdge(1, 0, 129), new WeightedEdge(1, 2, 13), new WeightedEdge(2, 1, -214), new WeightedEdge(0, 2, -147),
                 new WeightedEdge(2, 0, 6));
 
 
-        MinSpanArborescence<WeightedEdge,Integer> minSpanTree = new MinSpanArborescenceSolverCompleteDigraphImp().tryFindMinSpanArborescence(vertices, new HashSet<WeightedEdge>(edges));
+        MinSpanArborescence<WeightedEdge,Integer> minSpanTree = new MinSpanArborescenceSolverCompleteDigraphImp().tryFindMinSpanArborescence(new HashSet<WeightedEdge>(edges));
         Assert.assertEquals(-361, minSpanTree.SpanWeight.intValue());
         Assert.assertTrue(minSpanTree.Edges.contains(edges.get(3)) && minSpanTree.Edges.contains(edges.get(4)));
     }
@@ -170,7 +157,7 @@ public class MinSpanArborescenceSolverCompleteDigraphTest
                 }
 
                 MinSpanArborescence<WeightedEdge,Integer> minSpanTree =
-                        new MinSpanArborescenceSolverCompleteDigraphImp().tryFindMinSpanArborescence(completeDigraphNodes, new HashSet<WeightedEdge>(completeDigraphEdges));
+                        new MinSpanArborescenceSolverCompleteDigraphImp().tryFindMinSpanArborescence(new HashSet<WeightedEdge>(completeDigraphEdges));
                 Assert.assertEquals(minSeenSpanningBranchingWeight, minSpanTree.SpanWeight.intValue());
                 Assert.assertTrue(minSeenSpanTrees.contains(minSpanTree.Edges));
 

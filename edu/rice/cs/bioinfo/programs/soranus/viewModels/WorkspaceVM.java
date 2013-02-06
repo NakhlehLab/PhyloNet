@@ -1,10 +1,9 @@
 package edu.rice.cs.bioinfo.programs.soranus.viewModels;
 
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinEdge;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 
-import java.io.File;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 /**
@@ -16,8 +15,6 @@ import java.util.Set;
  */
 public class WorkspaceVM
 {
-
-
     class DataRecord
     {
         public final String Title;
@@ -37,12 +34,31 @@ public class WorkspaceVM
 
     private Set<Proc1<String>> _dataRecordAddedListeners = new HashSet<Proc1<String>>();
 
-    private DocumentVM _workspaceViewModel = null;
-
     public void addDataRecordAddedListener(Proc1<String> listener)
     {
         _dataRecordAddedListeners.add(listener);
     }
+
+    private DocumentVM _focusDocument = null;
+
+    public void setFocusDocument(DocumentVM focusDocument)
+    {
+        _focusDocument = focusDocument;
+
+        for(Proc1<DocumentVM> listener : _focusDocumentChangedListeners)
+        {
+            listener.execute(_focusDocument);
+        }
+    }
+
+
+    private Set<Proc1<DocumentVM>> _focusDocumentChangedListeners = new HashSet<Proc1<DocumentVM>>();
+
+    public void addFocusDocumentChangedListener(Proc1<DocumentVM> listener)
+    {
+        _focusDocumentChangedListeners.add(listener);
+    }
+
 
     public void addSequencingsData(String explorerTitle)
     {

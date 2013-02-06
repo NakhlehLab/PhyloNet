@@ -107,7 +107,7 @@ public class Program
 
         HybridSimNewickPrinterCompact<String> printer = new HybridSimNewickPrinterCompact<String>(new Func1Identity<String>(), getBranchLength, getProbability, getHybridIndex);
 
-        String rootNode = new FindRoot<String, PhyloEdge2<String, BigDecimal>>().execute(graph);
+        String rootNode = new FindRoot<String>().execute(graph);
 
         StringWriter stringAccum = new StringWriter();
         printer.print(rootNode, getDestinationNodes, getHybridParents, rootBranchLength, stringAccum);

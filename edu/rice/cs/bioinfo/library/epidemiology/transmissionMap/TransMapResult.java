@@ -1,18 +1,15 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap;
 
-
-import edu.uci.ics.jung.graph.DirectedGraph;
-
 import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
  * User: Matt
- * Date: 12/19/12
- * Time: 12:42 PM
+ * Date: 2/5/13
+ * Time: 2:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface TransMapInferrer<V,E>
+public interface TransMapResult<E>
 {
-    TransMapResult<E> inferMaps();
+    public Set<Set<E>> getSolutions();
 }

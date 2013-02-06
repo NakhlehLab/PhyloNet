@@ -15,7 +15,7 @@ import java.util.Set;
  * Time: 6:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class MinSpanArborescenceSolverCompleteDigraph<V,E,W extends Comparable<W>> implements MinSpanArborescenceSolver<V,E,W>
+public abstract class MinSpanArborescenceSolverCompleteDigraph<E,W extends Comparable<W>> implements MinSpanArborescenceSolver<E,W>
 {
     private final W _one;
 
@@ -43,7 +43,7 @@ public abstract class MinSpanArborescenceSolverCompleteDigraph<V,E,W extends Com
         }
     }
 
-    public MinSpanArborescence<E,W> tryFindMinSpanArborescence(Set<V> vertices, Set<E> directedEdges)
+    public MinSpanArborescence<E,W> tryFindMinSpanArborescence(Set<E> directedEdges)
     {
         LinkedList<EdgeAndWeight> weightedEdges = new LinkedList<EdgeAndWeight>();
 
@@ -57,7 +57,7 @@ public abstract class MinSpanArborescenceSolverCompleteDigraph<V,E,W extends Com
 
         final W perBranchQuota = addWeight(maxEdgeWeight, _one);
 
-        MaxBranchingSolver<V,E,W> maxBranchSolver = new EdmondsAlgoGibbons85<V,E,W>(_zero)
+        MaxBranchingSolver<E,W> maxBranchSolver = new EdmondsAlgoGibbons85<E,W>(_zero)
         {
 
             @Override
@@ -71,11 +71,6 @@ public abstract class MinSpanArborescenceSolverCompleteDigraph<V,E,W extends Com
             }
 
             @Override
-            protected V makeVertex() {
-                return MinSpanArborescenceSolverCompleteDigraph.this.makeVertex();  //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
             protected W getWeightOfEdge(E edge) {
                 W originalEdgeWeight = MinSpanArborescenceSolverCompleteDigraph.this.getWeightOfEdge(edge);
                 W penality = subtractWeight(perBranchQuota, originalEdgeWeight);
@@ -83,17 +78,17 @@ public abstract class MinSpanArborescenceSolverCompleteDigraph<V,E,W extends Com
             }
 
             @Override
-            protected V getSource(E edge) {
+            protected Object getSource(E edge) {
                 return MinSpanArborescenceSolverCompleteDigraph.this.getSource(edge);  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             @Override
-            protected V getDestination(E edge) {
+            protected Object getDestination(E edge) {
                 return MinSpanArborescenceSolverCompleteDigraph.this.getDestination(edge);  //To change body of implemented methods use File | Settings | File Templates.
             }
         };
 
-        BranchingResult<E, W> br = maxBranchSolver.findAMaximumBranching(vertices, directedEdges);
+        BranchingResult<E, W> br = maxBranchSolver.findAMaximumBranching(directedEdges);
         W spanWeightAccum = _zero;
         for(E spanEdge : br.Branching)
         {
@@ -108,12 +103,10 @@ public abstract class MinSpanArborescenceSolverCompleteDigraph<V,E,W extends Com
 
     protected abstract W subtractWeight(W w1, W w2);
 
-    protected abstract V makeVertex();
-
     protected abstract W getWeightOfEdge(E edge);
 
-    protected abstract V getSource(E edge);
+    protected abstract Object getSource(E edge);
 
-    protected abstract V getDestination(E edge);
+    protected abstract Object getDestination(E edge);
 
 }

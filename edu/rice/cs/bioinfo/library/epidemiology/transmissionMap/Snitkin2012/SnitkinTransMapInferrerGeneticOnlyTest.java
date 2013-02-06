@@ -55,7 +55,7 @@ public class SnitkinTransMapInferrerGeneticOnlyTest extends NIHOutbreakDataTestB
                             }
                         });
         Set<SnitkinEdge<Integer,Integer>> patientGraph = transMapInferrer.makeCompletePatientGraph(1);
-        Set<SnitkinEdge<Integer,Integer>> transMapEdges = transMapInferrer.inferMaps(1).iterator().next();
+        Set<SnitkinEdge<Integer,Integer>> transMapEdges = transMapInferrer.inferMaps(1).getSolutions().iterator().next();
         Collection<SnitkinEdge<Integer,Integer>> paperEdges = IterableHelp.filter(patientGraph, new Predicate1<SnitkinEdge<Integer, Integer>>() {
             public boolean execute(SnitkinEdge<Integer, Integer> someEdge) {
 

@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
 import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.TransMapInferrer;
+import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.TransMapResult;
 import edu.rice.cs.bioinfo.library.graph.algorithms.generation.simple.CompleteDigraphFactory;
 import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.MinSpanArborescence;
 import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.MinSpanArborescenceSolver;
@@ -71,12 +72,12 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
     }
 
-    public Set<Set<SnitkinEdge<P,D>>> inferMaps()
+    public SnitkinTransMapInferrerResult<SnitkinEdge<P, D>> inferMaps()
     {
         return inferMaps(null);
     }
 
-    public Set<Set<SnitkinEdge<P,D>>> inferMaps(P assumedRoot)
+    public  SnitkinTransMapInferrerResult<SnitkinEdge<P, D>> inferMaps(P assumedRoot)
     {
         Set<SnitkinEdge<P,D>> completePatientGraphEdges = makeCompletePatientGraph(assumedRoot);
 
@@ -84,7 +85,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
     }
 
-    Set<Set<SnitkinEdge<P, D>>> inferMapsFromEdges(Set<SnitkinEdge<P, D>> completePatientGraphEdges)
+    SnitkinTransMapInferrerResult inferMapsFromEdges(Set<SnitkinEdge<P, D>> completePatientGraphEdges)
     {
         MinSpanArborescenceSolver<SnitkinEdge<P,D>,D> minSpanSolver = new MinSpanArborescenceSolverCompleteDigraph<SnitkinEdge<P,D>,D>(makeDistance(0), makeDistance(1))
         {
@@ -115,10 +116,20 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
         };
 
         MinSpanArborescence<SnitkinEdge<P,D>,D> minSpanTree = minSpanSolver.tryFindMinSpanArborescence(completePatientGraphEdges);
+
+        int geneticDistanceAccum = 0;
+        int silentColonizationAccum = 0;
+        for(SnitkinEdge<P,D> edge : minSpanTree.Edges)
+        {
+            geneticDistanceAccum += edge.getGeneticDistance();
+            silentColonizationAccum += edge.getEpidemiologicalDistance();
+        }
+
         Set<Set<SnitkinEdge<P, D>>> minimumSpans = new HashSet<Set<SnitkinEdge<P, D>>>();
         minimumSpans.add(minSpanTree.Edges);
 
-        return minimumSpans;
+        return new SnitkinTransMapInferrerResult(minimumSpans, geneticDistanceAccum, silentColonizationAccum);
+
     }
 
     Set<SnitkinEdge<P,D>> makeCompletePatientGraph(final P assumedRoot)

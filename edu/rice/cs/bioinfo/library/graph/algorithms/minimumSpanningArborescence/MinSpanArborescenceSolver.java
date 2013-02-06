@@ -9,7 +9,7 @@ import java.util.Set;
  * Time: 6:39 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface MinSpanArborescenceSolver<V,E,W>
+public interface MinSpanArborescenceSolver<E,W>
 {
-    public MinSpanArborescence<E,W> tryFindMinSpanArborescence(Set<V> vertices, Set<E> edges);
+    public MinSpanArborescence<E,W> tryFindMinSpanArborescence(Set<E> edges);
 }

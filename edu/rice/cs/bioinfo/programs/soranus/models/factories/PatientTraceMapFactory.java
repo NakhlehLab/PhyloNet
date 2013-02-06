@@ -45,9 +45,9 @@ public abstract class PatientTraceMapFactory<I,D,L>
              {
                  Node element = tracePointElements.item(i);
                  String dateText = element.getAttributes().getNamedItem("date").getNodeValue();
-                 String sourceIdText = element.getAttributes().getNamedItem("sourceId").getNodeValue();
+                 String entityIdText = element.getAttributes().getNamedItem("entityId").getNodeValue();
                  String locationText = element.getAttributes().getNamedItem("location").getNodeValue();
-                 I id = makeId(sourceIdText);
+                 I id = makeId(entityIdText);
                  D date = makeDate(dateText);
                  L location = makeLocation(locationText);
 

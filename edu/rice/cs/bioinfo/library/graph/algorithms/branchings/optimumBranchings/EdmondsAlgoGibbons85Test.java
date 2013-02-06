@@ -20,11 +20,9 @@ public class EdmondsAlgoGibbons85Test extends MaxBranchingSolverTest
 
 
     @Override
-    protected MaxBranchingSolver<Character, String, Integer> makeSolverCharacter(final Map<String, Integer> edgeToWeight) {
-       return new EdmondsAlgoGibbons85<Character,String,Integer>(0)
+    protected MaxBranchingSolver<String, Integer> makeSolverString(final Map<String, Integer> edgeToWeight) {
+       return new EdmondsAlgoGibbons85<String,Integer>(0)
            {
-               int nextVertex = 0;
-
                @Override
                protected Integer addWeight(Integer w1, Integer w2) {
                    return w1 + w2;
@@ -35,10 +33,6 @@ public class EdmondsAlgoGibbons85Test extends MaxBranchingSolverTest
                    return w1 - w2;
                }
 
-               @Override
-               protected Character makeVertex() {
-                   return ((nextVertex++) + "").charAt(0);
-               }
 
                @Override
                protected Integer getWeightOfEdge(String edge) {
@@ -60,11 +54,9 @@ public class EdmondsAlgoGibbons85Test extends MaxBranchingSolverTest
     }
 
     @Override
-    protected MaxBranchingSolver<Integer, Tuple<Integer, Integer>, Integer> makeSolverInteger(final Map<Tuple<Integer, Integer>, Integer> edgeToWeight) {
-        return new EdmondsAlgoGibbons85<Integer,Tuple<Integer, Integer>,Integer>(0)
+    protected MaxBranchingSolver<Tuple<Integer, Integer>, Integer> makeSolverTuple(final Map<Tuple<Integer, Integer>, Integer> edgeToWeight) {
+        return new EdmondsAlgoGibbons85<Tuple<Integer, Integer>,Integer>(0)
         {
-            private int _nextVertex = -1;
-
             @Override
             protected Integer addWeight(Integer w1, Integer w2) {
                 return w1 + w2;
@@ -73,11 +65,6 @@ public class EdmondsAlgoGibbons85Test extends MaxBranchingSolverTest
             @Override
             protected Integer subtractWeight(Integer w1, Integer w2) {
                 return w1 - w2;
-            }
-
-            @Override
-            protected Integer makeVertex() {
-                return _nextVertex--;
             }
 
             @Override

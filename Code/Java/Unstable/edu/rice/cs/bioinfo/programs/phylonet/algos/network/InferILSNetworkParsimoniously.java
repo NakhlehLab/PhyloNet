@@ -66,7 +66,7 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
         Comparator<Integer> comparator = getIntegerScoreComparator();
         HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Integer> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, diameterLimit); // search starts here
         //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> resultNetwork = result.BestExaminedNetwork;
-        System.out.println("\n #Networks " + result.ExaminationsCount);
+        //System.out.println("\n #Networks " + result.ExaminationsCount);
         List<Tuple<String, Integer>> resultTuples= postProcessResult(gts, species2alleles);
         return resultTuples;
     }
@@ -101,7 +101,11 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
             else{
                 sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, 100, true, -1).get(0);
             }
-            startingNetwork = string2Network(sol._st.toNewick());
+            Tree startingTree= sol._st;
+            if(!Trees.isBinary(startingTree)){
+                startingTree = Trees.getAllBinaryResolution(startingTree).get(0);
+            }
+            startingNetwork = string2Network(startingTree.toString());
         }
 
 

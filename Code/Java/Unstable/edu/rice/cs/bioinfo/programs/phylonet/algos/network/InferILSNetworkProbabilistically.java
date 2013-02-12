@@ -86,7 +86,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         for(int i=0; i<numSol; i++){
             resultList.add(new Tuple<String, Double>(network2String(_optimalNetworks[i]), _optimalScores[i]));
         }
-        System.out.println("\n #Networks " + result.ExaminationsCount);
+        //System.out.println("\n #Networks " + result.ExaminationsCount);
         return resultList;
     }
 
@@ -111,7 +111,11 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
             else{
                 sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, 100, true, -1).get(0);
             }
-            startingNetwork = string2Network(sol._st.toString());
+            Tree startingTree= sol._st;
+            if(!Trees.isBinary(startingTree)){
+                startingTree = Trees.getAllBinaryResolution(startingTree).get(0);
+            }
+            startingNetwork = string2Network(startingTree.toString());
         }
 
 

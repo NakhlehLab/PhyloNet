@@ -401,11 +401,11 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
-        inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _Brent1, _Brent2, _maxBranchLength);
+        inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2);
         List<Tuple<String, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
-        System.out.print(System.currentTimeMillis()-start);
+        //System.out.print(System.currentTimeMillis()-start);
 
         for(Tuple<String, Double> tuple: resultTuples){
             result.append("\n" + tuple.Item1);

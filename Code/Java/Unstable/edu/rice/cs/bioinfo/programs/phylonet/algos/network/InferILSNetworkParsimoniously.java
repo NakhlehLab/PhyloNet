@@ -324,6 +324,7 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
     private Network string2Network(String networkString){
         try{
             RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+            reader.setHybridSumTolerance(BigDecimal.valueOf(0.00001));
             NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
             RichNewickReadResult<Networks> readResult = reader.read(new ByteArrayInputStream(networkString.getBytes()));
             return transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());

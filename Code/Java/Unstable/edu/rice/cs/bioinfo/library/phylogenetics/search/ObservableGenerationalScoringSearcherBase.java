@@ -27,6 +27,11 @@ public class ObservableGenerationalScoringSearcherBase<T,S> implements Observabl
         _generationNumber++;
     }
 
+    protected void decrementGenerationNumber()
+    {
+        _generationNumber--;
+    }
+
     private long _examinationsCount = 0;
 
     protected void incrementExaminations()

@@ -148,6 +148,9 @@ public class NewickWriter {
 		
 		// write this node's info	
 		_writer.print(node.getName());
+        if(node.getParentDistance() != TNode.NO_DISTANCE) {
+            _writer.print(":" + node.getParentDistance());
+        }
 		if(((STINode)node).getData() != null) {
 			_writer.print(":" + ((STINode)node).getData().toString());
 		}

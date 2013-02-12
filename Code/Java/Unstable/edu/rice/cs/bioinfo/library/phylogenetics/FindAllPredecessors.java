@@ -24,7 +24,7 @@ public class FindAllPredecessors<G extends GraphReadOnly<N,E>, N,E> implements F
             throw new IllegalArgumentException("Given graph must be rooted");
         }
 
-         HashMap<N, Set<N>> nodeToAncestors = new HashMap<N, Set<N>>();
+        HashMap<N, Set<N>> nodeToAncestors = new HashMap<N, Set<N>>();
 
         N root = new FindRoot<N>().execute(network);
         nodeToAncestors.put(root, new HashSet<N>());

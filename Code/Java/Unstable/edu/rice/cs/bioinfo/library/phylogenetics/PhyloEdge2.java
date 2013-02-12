@@ -95,10 +95,10 @@ public class PhyloEdge2<T,D> {
     public boolean equals(PhyloEdge2 candidate)
     {
         return candidate.Source.equals(this.Source) &&
-               candidate.Destination.equals(this.Destination) &&
-               candidate.getBranchLength() == this.getBranchLength() &&
-               candidate.getProbability() == this.getProbability() &&
-               candidate.getSupport() == this.getSupport();
+               candidate.Destination.equals(this.Destination);
+               //candidate.getBranchLength() == this.getBranchLength() &&
+               //candidate.getProbability() == this.getProbability() &&
+               //candidate.getSupport() == this.getSupport();
     }
 
 

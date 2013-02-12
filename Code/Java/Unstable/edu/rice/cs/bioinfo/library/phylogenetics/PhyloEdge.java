@@ -26,6 +26,11 @@ public class PhyloEdge<T> extends PhyloEdge2<T,Double>
         super.setBranchLength(newBranchLength);
         return this;
     }
+    
+    public int hashCode(){
+        return this.Source.hashCode() + this.Destination.hashCode();
+    }
+
 
     public PhyloEdge<T> setSupport(double newSupport)
     {

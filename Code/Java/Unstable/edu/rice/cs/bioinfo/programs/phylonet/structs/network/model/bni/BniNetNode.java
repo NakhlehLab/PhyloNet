@@ -286,7 +286,7 @@ public class BniNetNode<T> implements NetNode<T> {
 			ref._parents.add(this);
 			ref._parent_distances.add(new Double(distance));
             ref._parent_support.add(Double.NaN);
-            ref._parent_probabiliites.add(1.0);
+            ref._parent_probabiliites.add(Double.NaN);
 
 			return true;
 		}

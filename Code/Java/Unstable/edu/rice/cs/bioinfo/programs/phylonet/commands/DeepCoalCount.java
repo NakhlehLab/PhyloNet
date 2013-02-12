@@ -21,6 +21,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
@@ -76,7 +77,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
         ParameterIdentSet speciesTreeParam = this.assertParameterIdentSet(0);
         noError = noError && speciesTreeParam != null;
 
-        ParameterIdentSet geneTreeParam    = this.assertParameterIdentSet(1);
+        ParameterIdentList geneTreeParam    = this.assertParameterIdentList(1);
         noError = noError && geneTreeParam != null;
 
         ParamExtractor uParam = new ParamExtractor("u", this.params, this.errorDetected);
@@ -132,7 +133,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
     }
 
-    private boolean checkContext(ParameterIdentSet speciesTreeParam, ParameterIdentSet geneTreeParam ) {
+    private boolean checkContext(ParameterIdentSet speciesTreeParam, ParameterIdentList geneTreeParam ) {
 
         boolean noError = true;
 

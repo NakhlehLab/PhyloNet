@@ -50,6 +50,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     private boolean  _multree = false;
     private NetworkNonEmpty _speciesNetwork;
     private List<NetworkNonEmpty> _geneTrees;
+    private double _bootstrap = 100;
 
     public CalGTProbInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                       Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
@@ -64,7 +65,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 8;
+        return 10;
     }
 
     @Override
@@ -120,8 +121,28 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
         }
 
-        noError = noError && checkForUnknownSwitches("m", "a");
-        checkAndSetOutFile(aParam, mParam);
+        ParamExtractor bParam = new ParamExtractor("b", this.params, this.errorDetected);
+        if(bParam.ContainsSwitch)
+        {
+            if(bParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _bootstrap = Double.parseDouble(bParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized bootstrap value " + bParam.PostSwitchValue, bParam.PostSwitchParam.getLine(), bParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -b.", bParam.SwitchParam.getLine(), bParam.SwitchParam.getColumn());
+            }
+        }
+
+        noError = noError && checkForUnknownSwitches("m", "a", "b");
+        checkAndSetOutFile(aParam, mParam, bParam);
 
         return  noError;
     }
@@ -130,12 +151,18 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
         
-        List<Tree> geneTrees = new ArrayList<Tree>();
-        List<Integer> counter = new ArrayList<Integer>();
+        List<Tree> nbGeneTrees = new ArrayList<Tree>();
+        List<Integer> nbCounter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
             String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
             NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
             STITree<Double> newtr = new STITree<Double>(true);
+            if(_bootstrap<100){
+                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
+                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
+                }
+
+            }
             try
             {
                 nr.readTree(newtr);
@@ -147,7 +174,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
             boolean found = false;
             int index = 0;
-            for(Tree tr: geneTrees){
+            for(Tree tr: nbGeneTrees){
                 if(Trees.haveSameRootedTopology(tr, newtr)){
                     found = true;
                     break;
@@ -155,37 +182,60 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                 index++;
             }
             if(found){
-                counter.set(index, counter.get(index)+1);
+                nbCounter.set(index, nbCounter.get(index)+1);
             }
             else{
-                geneTrees.add(newtr);
-                counter.add(1);
+                nbGeneTrees.add(newtr);
+                nbCounter.add(1);
             }
         }
 
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
+        List<Tree> bGeneTrees = new ArrayList<Tree>();
+        List<List<Integer>> nbTree2bTrees = new ArrayList<List<Integer>>();
+        for(Tree nbgt: nbGeneTrees){
+            List<Integer> bTrees = new ArrayList<Integer>();
+            for(Tree bgt: Trees.getAllBinaryResolution(nbgt)){
+                int index = 0;
+                for(Tree exBgt: bGeneTrees){
+                    if(Trees.haveSameRootedTopology(bgt,exBgt)){
+                        break;
+                    }
+                    index++;
+                }
+                if(index==bGeneTrees.size()){
+                    bGeneTrees.add(bgt);
+                }
+                bTrees.add(index);
+            }
+            nbTree2bTrees.add(bTrees);
+        }
 
-        Iterator<Double> probList;
+        List<Double> probList;
         if(_multree){
             GeneTreeProbability gtp = new GeneTreeProbability();
-            probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap, false).iterator();
+            probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap, false);
         }
         else{
             GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-            probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, _taxonMap).iterator();
+            probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap);
         }
-        Iterator<Integer> counterIt = counter.iterator();
+        Iterator<Integer> nbCounterIt = nbCounter.iterator();
+        Iterator<List<Integer>> bGTIDs = nbTree2bTrees.iterator();
         double total = 0;
-        for(Tree gt: geneTrees){
-            for(TNode node: gt.getNodes()){
+        for(Tree nbgt: nbGeneTrees){
+            for(TNode node: nbgt.getNodes()){
                 node.setParentDistance(TNode.NO_DISTANCE);
             }
-            double prob = probList.next();
-            int count = counterIt.next();
-            total += Math.log(prob)*count;
-            result.append("\n[x" + count + "] " + gt.toString() + " : " + prob);
+            double maxProb = 0;
+            for(int id: bGTIDs.next()){
+                maxProb = Math.max(maxProb, probList.get(id));
+            }
+            int count = nbCounterIt.next();
+            total += Math.log(maxProb)*count;
+            result.append("\n[x" + count + "] " + nbgt.toString() + " : " + maxProb);
         }
         result.append("\n" + "Total log probability: " + total);
 

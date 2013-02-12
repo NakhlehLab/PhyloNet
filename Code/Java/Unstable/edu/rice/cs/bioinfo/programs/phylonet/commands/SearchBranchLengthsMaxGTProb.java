@@ -281,11 +281,11 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                                     double lnProb = _computeGTProbStrategy.execute(speciesNetwork, geneTrees, counter);
 
 
-                            RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
-                            StringWriter sw = new StringWriter();
-                            rnNewickPrinter.print(speciesNetwork, sw);
-                            String inferredNetwork = sw.toString();
-                        //    System.out.println(inferredNetwork + "\t" + lnProb);
+                                    RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
+                                    StringWriter sw = new StringWriter();
+                                    rnNewickPrinter.print(speciesNetwork, sw);
+                                    //   String inferredNetwork = sw.toString();
+                                    //    System.out.println(inferredNetwork + "\t" + lnProb);
 
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
@@ -308,7 +308,7 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                             {
                             }
 
-                         //   System.out.println("-----------------------------------------------------------------------");
+                            //   System.out.println("-----------------------------------------------------------------------");
 
 
                         }
@@ -345,8 +345,6 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                                     double lnProb = _computeGTProbStrategy.execute(speciesNetwork, geneTrees, counter);
 
 
-
-
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                     {
 
@@ -376,7 +374,7 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 }
             }
 
-       //     Collections.shuffle(assigmentActions); // randomize the order we will try to adjust network edge properties
+            //     Collections.shuffle(assigmentActions); // randomize the order we will try to adjust network edge properties
 
             for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
             {
@@ -440,7 +438,7 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
         }
     };
 
-     private Func3<Network<Double>, List<Tree>, List<Integer>, Double> _computeGTProbStrategyBox = new Func3<Network<Double>, List<Tree>, List<Integer>, Double>() {
+    private Func3<Network<Double>, List<Tree>, List<Integer>, Double> _computeGTProbStrategyBox = new Func3<Network<Double>, List<Tree>, List<Integer>, Double>() {
         public Double execute(Network<Double> speciesNetwork, List<Tree> geneTrees, List<Integer> counter) {
 
             double t0True = 1.1;
@@ -455,121 +453,121 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
     };
 
     public class Box {
-	public double t0,t1,gamma;
-	public double P1,P2,P3;
-	public double t0star, t1star, gammastar;
-	public double P1star,P2star,P3star;
-	public double lnLikelihood;
-	public double MaxlnLikelihood, finalt0star, finalt1star, finalgammastar;
-	public int n;
+        public double t0,t1,gamma;
+        public double P1,P2,P3;
+        public double t0star, t1star, gammastar;
+        public double P1star,P2star,P3star;
+        public double lnLikelihood;
+        public double MaxlnLikelihood, finalt0star, finalt1star, finalgammastar;
+        public int n;
 
-	public Box(double t0, double t1, double gamma, double t0star, double t1star, double gammastar, int n){
-		this.t0 = t0;
-		this.t1 = t1;
-		this.gamma = gamma;
-		this.t0star = t0star;
-		this.t1star = t1star;
-		this.gammastar = gammastar;
-		this.n = n;
-		P1 = (1-gamma)*(1-2.0/3.0*Math.exp(-t1))+gamma * Math.exp(-t0)/3.0;
-		P2 = gamma*(1-2.0/3.0*Math.exp(-t0))+(1-gamma)*Math.exp(-t1)/3.0;
-		P3 = (1-gamma)*Math.exp(-t1)/3.0+gamma*Math.exp(-t0)/3.0;
-		callnLikelihood(); // initialize
-	}
+        public Box(double t0, double t1, double gamma, double t0star, double t1star, double gammastar, int n){
+            this.t0 = t0;
+            this.t1 = t1;
+            this.gamma = gamma;
+            this.t0star = t0star;
+            this.t1star = t1star;
+            this.gammastar = gammastar;
+            this.n = n;
+            P1 = (1-gamma)*(1-2.0/3.0*Math.exp(-t1))+gamma * Math.exp(-t0)/3.0;
+            P2 = gamma*(1-2.0/3.0*Math.exp(-t0))+(1-gamma)*Math.exp(-t1)/3.0;
+            P3 = (1-gamma)*Math.exp(-t1)/3.0+gamma*Math.exp(-t0)/3.0;
+            callnLikelihood(); // initialize
+        }
 
-	// compute log likelihood function
-	public double callnLikelihood(){
-		P1star = (1-gammastar)*(1-2.0/3*Math.exp(-t1star))+gammastar*Math.exp(-t0star)/3.0;;
-		P2star = gammastar*(1-2.0/3.0*Math.exp(-t0star))+(1-gammastar)*Math.exp(-t1star)/3.0;
-		P3star = (1-gammastar)*Math.exp(-t1star)/3.0+gammastar*Math.exp(-t0star)/3.0;
-		lnLikelihood = n*(P1*Math.log(P1star)+P2*Math.log(P2star)+P3*Math.log(P3star));
-        return lnLikelihood;
-	}
-                        /*
-		// A simple method to find the max log likelihood function for one branch
-	public void findRestrictedMax(int whichone){
-		double first = Double.MIN_VALUE;
-		double second = Double.MIN_VALUE;
-		double third = Double.MIN_VALUE;
-		if (whichone == 0) { // t0star
-			for (int i=1; i<=1000; i++) {
-				t0star = 0.01*i;
-				callnLikelihood();
-				third = lnLikelihood;
+        // compute log likelihood function
+        public double callnLikelihood(){
+            P1star = (1-gammastar)*(1-2.0/3*Math.exp(-t1star))+gammastar*Math.exp(-t0star)/3.0;;
+            P2star = gammastar*(1-2.0/3.0*Math.exp(-t0star))+(1-gammastar)*Math.exp(-t1star)/3.0;
+            P3star = (1-gammastar)*Math.exp(-t1star)/3.0+gammastar*Math.exp(-t0star)/3.0;
+            lnLikelihood = n*(P1*Math.log(P1star)+P2*Math.log(P2star)+P3*Math.log(P3star));
+            return lnLikelihood;
+        }
+        /*
+          // A simple method to find the max log likelihood function for one branch
+      public void findRestrictedMax(int whichone){
+          double first = Double.MIN_VALUE;
+          double second = Double.MIN_VALUE;
+          double third = Double.MIN_VALUE;
+          if (whichone == 0) { // t0star
+              for (int i=1; i<=1000; i++) {
+                  t0star = 0.01*i;
+                  callnLikelihood();
+                  third = lnLikelihood;
 
-				if (second>first && second> third) { // we found the max
-					lnLikelihood = second;
-					t0star = 0.01*(i-1);
-					break;
-				}
-				else {
-					first = second;	second = third;
-				}
-			}
-		} // t0 case
+                  if (second>first && second> third) { // we found the max
+                      lnLikelihood = second;
+                      t0star = 0.01*(i-1);
+                      break;
+                  }
+                  else {
+                      first = second;	second = third;
+                  }
+              }
+          } // t0 case
 
-		else if (whichone == 1) { //t1star
-			for (int i=1;i<=1000;i++) {
-				t1star = 0.01*i;
-				callnLikelihood();
-				third = lnLikelihood;
-				if (second>first && second> third) { // we found the max
-					lnLikelihood = second;
-					t1star = 0.01*(i-1);
-					break;
-				}
-				else {
-					first = second;	second = third;
-				}
-			}
-		} // t1star case
+          else if (whichone == 1) { //t1star
+              for (int i=1;i<=1000;i++) {
+                  t1star = 0.01*i;
+                  callnLikelihood();
+                  third = lnLikelihood;
+                  if (second>first && second> third) { // we found the max
+                      lnLikelihood = second;
+                      t1star = 0.01*(i-1);
+                      break;
+                  }
+                  else {
+                      first = second;	second = third;
+                  }
+              }
+          } // t1star case
 
-		else if (whichone == 2) {  // gammastar
-			for (int i=1;i<=1000;i++) {
-				gammastar = 0.001*i;
-				callnLikelihood();
-				third = lnLikelihood;
-				if (second>first && second> third) { // we found the max
-					lnLikelihood = second;
-					gammastar = 0.001*(i-1);
-					break;
-				}
-				else {
-					first = second;	second = third;
-				}
-			}
-		}  // gammastar case
-	}
+          else if (whichone == 2) {  // gammastar
+              for (int i=1;i<=1000;i++) {
+                  gammastar = 0.001*i;
+                  callnLikelihood();
+                  third = lnLikelihood;
+                  if (second>first && second> third) { // we found the max
+                      lnLikelihood = second;
+                      gammastar = 0.001*(i-1);
+                      break;
+                  }
+                  else {
+                      first = second;	second = third;
+                  }
+              }
+          }  // gammastar case
+      }
 
-	public void OptEdgeLen() {
-		double lnLikelihoodCurBest = lnLikelihood; // get the initial lnLikelihood value
-		double improveratio;
-		while (true) {
-			findRestrictedMax(0);
-			assert lnLikelihood >= lnLikelihoodCurBest;
-			improveratio = Math.exp(lnLikelihood - lnLikelihoodCurBest);
-			if (improveratio < 1.001) {
-				break;
-			}
-			else
-				lnLikelihoodCurBest = lnLikelihood;
+      public void OptEdgeLen() {
+          double lnLikelihoodCurBest = lnLikelihood; // get the initial lnLikelihood value
+          double improveratio;
+          while (true) {
+              findRestrictedMax(0);
+              assert lnLikelihood >= lnLikelihoodCurBest;
+              improveratio = Math.exp(lnLikelihood - lnLikelihoodCurBest);
+              if (improveratio < 1.001) {
+                  break;
+              }
+              else
+                  lnLikelihoodCurBest = lnLikelihood;
 
-			findRestrictedMax(1);
-			assert lnLikelihood >= lnLikelihoodCurBest;
-			improveratio = Math.exp(lnLikelihood - lnLikelihoodCurBest);
-			if (improveratio < 1.001) {
-				break;
-			}
-			else
-				lnLikelihoodCurBest = lnLikelihood;
+              findRestrictedMax(1);
+              assert lnLikelihood >= lnLikelihoodCurBest;
+              improveratio = Math.exp(lnLikelihood - lnLikelihoodCurBest);
+              if (improveratio < 1.001) {
+                  break;
+              }
+              else
+                  lnLikelihoodCurBest = lnLikelihood;
 
-		}
-		MaxlnLikelihood = lnLikelihood;
-		finalt0star = t0star;
-		finalt1star = t1star;
-		finalgammastar = gammastar;
-	}        */
-}
+          }
+          MaxlnLikelihood = lnLikelihood;
+          finalt0star = t0star;
+          finalt1star = t1star;
+          finalgammastar = gammastar;
+      }        */
+    }
 
     private Func3<Network<Double>, List<Tree>, List<Integer>, Double> _computeGTProbStrategy = _computeGTProbStrategyCalGTProb;
 

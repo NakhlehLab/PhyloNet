@@ -34,7 +34,7 @@ public class MDCOnNetworkYF {
         int index = 0;
         for(int[] lineageNum: _totalNetNodeLinNum){
             double total = lineageNum[0]+lineageNum[1];
-            System.out.println(lineageNum[0]+"/"+total);
+            //System.out.println(lineageNum[0]+"/"+total);
             if(total == 0){
                 probabilities[index] = 0;
             }
@@ -46,6 +46,20 @@ public class MDCOnNetworkYF {
         return probabilities;
     }
 
+    public void computeInheritanceProb(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
+        countExtraCoal(network,gts,species2alleles);
+        double[] probs = getHybridProbabilities();
+        int index = 0;
+        for(NetNode<Integer> node: walkNetwork(network)){
+            if(node.isNetworkNode()){
+                for(NetNode parent: node.getParents()){
+                    node.setParentProbability(parent,probs[index]);
+                    probs[index] = 1 - probs[index];
+                }
+                index++;
+            }
+        }
+    }
     /*
     public void setWeights(List<Double> weights){
         _weights = new ArrayList<Double>();
@@ -59,7 +73,9 @@ public class MDCOnNetworkYF {
 
 
         for(Tree gt: gts){
-            Trees.removeBinaryNodes((MutableTree) gt);
+            //System.out.println(gt);
+
+            //Trees.removeBinaryNodes((MutableTree) gt);
             String[] gtTaxa = gt.getLeaves();
             Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
             Map<Integer,Integer> node2outdegree = new HashMap<Integer, Integer>();
@@ -161,7 +177,6 @@ public class MDCOnNetworkYF {
 
                         Configuration optimalOne = null;
 
-                        long start = System.currentTimeMillis();
                         for(Configuration config1: AC1){
                             for(Configuration config2: AC2){
                                 if(config1.isCompatible(config2)){

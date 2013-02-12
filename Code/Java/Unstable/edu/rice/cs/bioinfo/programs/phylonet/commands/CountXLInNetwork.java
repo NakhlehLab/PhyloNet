@@ -51,6 +51,7 @@ public class CountXLInNetwork extends CommandBaseFileOut{
     private boolean _multree = false;
     private NetworkNonEmpty _speciesNetwork;
     private List<NetworkNonEmpty> _geneTrees;
+    private double _bootstrap = 100;
 
     public CountXLInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                               Map<String,NetworkNonEmpty>  sourceIdentToNetwork,
@@ -65,7 +66,7 @@ public class CountXLInNetwork extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 8;
+        return 10;
     }
 
     @Override
@@ -125,7 +126,27 @@ public class CountXLInNetwork extends CommandBaseFileOut{
                 }
             }
 
-             noError = noError && checkForUnknownSwitches("a","m");
+            ParamExtractor bParam = new ParamExtractor("b", this.params, this.errorDetected);
+            if(bParam.ContainsSwitch)
+            {
+                if(bParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _bootstrap = Double.parseDouble(bParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized bootstrap value " + bParam.PostSwitchValue, bParam.PostSwitchParam.getLine(), bParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -b.", bParam.SwitchParam.getLine(), bParam.SwitchParam.getColumn());
+                }
+            }
+
+             noError = noError && checkForUnknownSwitches("a","m","b");
              checkAndSetOutFile(aParam,mParam);
         }
 
@@ -153,6 +174,14 @@ public class CountXLInNetwork extends CommandBaseFileOut{
                 errorDetected.execute(e.getMessage(),
                         this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
             }
+            Trees.removeBinaryNodes(newtr);
+            if(_bootstrap<100){
+                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
+                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
+                }
+
+            }
+
             boolean found = false;
             int index = 0;
             for(Tree tr: geneTrees){

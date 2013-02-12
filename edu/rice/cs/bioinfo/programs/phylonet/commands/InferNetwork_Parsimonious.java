@@ -260,10 +260,10 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         InferILSNetworkParsimoniously inference = new InferILSNetworkParsimoniously();
         List<Tuple<String, Integer>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter,speciesNetwork, _returnNetworks);
-        System.out.print(System.currentTimeMillis()-start);
+        //System.out.print(System.currentTimeMillis()-start);
         for(Tuple<String, Integer> tuple: resultTuples){
             result.append("\n" + tuple.Item1);
             result.append("\n" + "Total number of extra lineages: " + tuple.Item2 + "\n");

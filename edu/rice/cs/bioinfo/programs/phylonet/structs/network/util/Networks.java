@@ -404,7 +404,7 @@ public class Networks
 				fn = (ncount == 0) ? 0.0 : fn / ncount;
 				fp = (pcount == 0) ? 0.0 : fp / pcount;
 				avg = (fn + fp) / 2.0;
-
+                
 				fnBG.addEdge(l, r, fn);
 				fpBG.addEdge(l, r, avg);
 				avgBG.addEdge(l, r, avg);

@@ -336,7 +336,9 @@ public class STITreeCluster {
 		for (String s : getClusterLeaves()) {
 			out.append(s + ", ");
 		}
-		out.delete(out.length() - 2, out.length());
+		if(getClusterSize()!=0){
+            out.delete(out.length() - 2, out.length());
+        }
 		out.append("}");
 
 		return out.toString();

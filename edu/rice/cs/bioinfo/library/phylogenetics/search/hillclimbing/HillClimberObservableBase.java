@@ -15,9 +15,9 @@ import java.util.LinkedList;
  */
 public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerationalScoringSearcherBase<T1,S> implements HillClimberObservable<T1, S>
 {
-    private boolean _continueSearch = true;
+    protected boolean _continueSearch = true;
 
-    private void concludeSearch()
+    protected void concludeSearch()
     {
         _continueSearch = false;
     }
@@ -27,7 +27,9 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
         return _continueSearch;
     }
 
-    private Long _maxExaminations;
+    protected Long _maxExaminations;
+    protected Long _maxGenerations;
+
 
     @Override
     public HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator)
@@ -38,17 +40,27 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
         return search(solution, getScore, scoreComparator, score);
     }
 
-    @Override
-    public HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, long maxExaminations)
+    //@Override
+    public HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, Long maxGenerations)
     {
         _maxExaminations = maxExaminations;
+        _maxGenerations = maxGenerations;
         S score = getScore.execute(solution);
        this.fireInitialSolutionScoreComputedEvent(solution, score);
         return search(solution, getScore, scoreComparator, score);
     }
 
+    @Override
+    public HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, long maxExaminations)
+    {
+        _maxExaminations = maxExaminations;
+        S score = getScore.execute(solution);
+        this.fireInitialSolutionScoreComputedEvent(solution, score);
+        return search(solution, getScore, scoreComparator, score);
+    }
 
-    private HillClimbResult<T1,S> search(T1 bestSeenSolution, Func1<T1,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore)
+
+    protected HillClimbResult<T1,S> search(T1 bestSeenSolution, Func1<T1,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore)
     {
         while(_continueSearch)
         {
@@ -61,11 +73,13 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
                 bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
                 bestSeenSolutionScore = newBestScore.get();
             }
-
             if(!sawBetterSolution)
             {
                 concludeSearch();
             }
+            //System.out.println(sawBetterSolution + ": " + bestSeenSolutionScore);
+            if(_maxGenerations!=null && _maxGenerations==getGenerationNumber())break;
+            //System.out.println(sawBetterSolution + ": " + bestSeenSolutionScore);
         }
 
         return new HillClimbResult<T1,S>(bestSeenSolution, bestSeenSolutionScore, getExaminationsCount(), getGenerationNumber());

@@ -19,11 +19,12 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+
 import java.util.*;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
@@ -37,12 +38,14 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
  * To change this template use File | Settings | File Templates.
  */
 public class GeneTreeProbabilityYF{
-    Set<Integer> _totalCoverNodes;
+    Set<NetNode> _totalCoverNodes;
     boolean[][] _R;
     boolean _printDetails = false;
     int _netNodeNum;
-    int _totalNodeNum;
     List<STITreeCluster> _gtClusters;
+    boolean[][] _M;
+    Map<NetNode, Integer> _node2ID;
+    //double t1, t2, t3, t4, t5, t6;
 
 
 
@@ -51,10 +54,12 @@ public class GeneTreeProbabilityYF{
     }
 
 
-    public List<Double> calculateGTDistribution(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
-        List<Double> probList = new ArrayList<Double>();
-        processNetwork(network);
 
+    public List<Double> calculateGTDistribution(Network network, List<Tree> gts, Map<String, List<String>> species2alleles){
+        List<Double> probList = new ArrayList<Double>();
+        processNetwork(network, true);
+
+        int gtIndex = 0;
         for(Tree gt: gts){
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
@@ -66,13 +71,17 @@ public class GeneTreeProbabilityYF{
             for(String taxon: gtTaxa){
                 gtTaxaSet.add(taxon);
             }
-            HashMap<BitSet, List<Configuration>> edge2ACminus = new HashMap<BitSet, List<Configuration>>();
+
             int netNodeIndex = 0;
 
-            for(NetNode<Integer> node: walkNetwork(network)){
+            for(NetNode<List<CoalescePattern>> node: walkNetwork(network)){
+                //long start = System.currentTimeMillis();
+                CoalescePattern cp = new CoalescePattern();
+                node.getData().add(cp);
+                //t6 += (System.currentTimeMillis()-start)/1000.0;
                 if(_printDetails){
                     System.out.println();
-                    System.out.println("On node #" + node.getData() + " " + node.getName());
+                    System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
                 }
                 List<Map<Set<Integer>,List<Configuration>>> CACs = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
 
@@ -96,21 +105,23 @@ public class GeneTreeProbabilityYF{
                             }
                         }
                     }
-                    config.setProbability(1);
+                    config.setTotalProbability(1);
                     List<Configuration> tempList = new ArrayList<Configuration>();
                     tempList.add(config);
                     sizeOneConfigs.put(config._lineages, tempList);
                     CACs.add(sizeOneConfigs);
+                    //start = System.currentTimeMillis();
+                    cp.addACs(node.getParents().iterator().next(), tempList);
+                    //t5 += (System.currentTimeMillis()-start)/1000.0;
                 }
                 else{
-                    if(node.getOutdeg() == 1){
-                        Iterator<NetNode<Integer>> childNode = node.getChildren().iterator();
-                        BitSet edge = new BitSet();
-                        edge.set(node.getData());
-                        edge.set(childNode.next().getData());
+                    if(node.isNetworkNode()){
+                        CoalescePattern childCP = ((NetNode<List<CoalescePattern>>)(node.getChildren().iterator().next())).getData().get(gtIndex);
                         Map<Set<Integer>,List<Configuration>> temp = new HashMap<Set<Integer>, List<Configuration>>();
-                        temp.put(null,edge2ACminus.remove(edge));
+                        List<Configuration> ACMinus = childCP._ACMinuss.get(node);
+                        temp.put(null,ACMinus);
                         CACs.add(temp);
+                        //cp.addACs(null, ACMinus);
                         /*
                         List<Integer> configSizeList = new ArrayList<Integer>();
                         for(Configuration config: edge2ACminus.remove(edge)){
@@ -146,30 +157,28 @@ public class GeneTreeProbabilityYF{
 
                     }
                     else{
-                        Iterator<NetNode<Integer>> childNode = node.getChildren().iterator();
-                        BitSet edge1 = new BitSet();
-                        edge1.set(node.getData());
-                        edge1.set(childNode.next().getData());
-                        List<Configuration> AC1 = edge2ACminus.remove(edge1);
-                        BitSet edge2 = new BitSet();
-                        edge2.set(node.getData());
-                        edge2.set(childNode.next().getData());
-                        List<Configuration> AC2 = edge2ACminus.remove(edge2);
+                        Iterator<NetNode<List<CoalescePattern>>> childNode = node.getChildren().iterator();
+                        List<Configuration> AC1 = childNode.next().getData().get(gtIndex).getACMinuss(node);
+                        List<Configuration> AC2 = childNode.next().getData().get(gtIndex).getACMinuss(node);
                         //TODO
                         //System.out.println("AC1: " + AC1.size() + " & AC2:" + AC2.size());
                         //System.out.println("total");
 
                         //TODO see if needed to add more
                         List<Integer> configSizeList = new ArrayList<Integer>();
-                        boolean total = _totalCoverNodes.contains(node.getData());
-
+                        boolean total = _totalCoverNodes.contains(node);
+                        List<Configuration> mergedConfigList = new ArrayList<Configuration>();
                         for(Configuration config1: AC1){
                             for(Configuration config2: AC2){
                                 if(config1.isCompatible(config2)){
                                     Configuration mergedConfig = new Configuration(config1, config2);
-                                    if(mergedConfig._prob <=0 ){
+                                    //mergedConfigs.add(mergedConfig);
+
+                                    /*
+                                    if(mergedConfig._totalProb <=0 ){
                                         continue;
                                     }
+                                    */
                                     int numLin = mergedConfig._lineages.size();
                                     List<Configuration> sameLineageConfigs;
                                     int sizeIndex = configSizeList.indexOf(numLin);
@@ -200,20 +209,34 @@ public class GeneTreeProbabilityYF{
                                         mergedConfig.clearNetNodeChoice();
                                         if(sameLineageConfigs.size()==0){
                                             sameLineageConfigs.add(mergedConfig);
+                                            mergedConfigList.add(mergedConfig);
                                         }
                                         else{
-                                            sameLineageConfigs.get(0).addProbability(mergedConfig._prob);
+                                            sameLineageConfigs.get(0).addTotalProbability(mergedConfig._totalProb);
+                                            //start = System.currentTimeMillis();
+                                            sameLineageConfigs.get(0).addChildPair(mergedConfig._childPairList.get(0));
+                                            //t2 += (System.currentTimeMillis()-start)/1000.0;
                                         }
                                     }
                                     else{
                                         sameLineageConfigs.add(mergedConfig);
+                                        mergedConfigList.add(mergedConfig);
                                     }
 
                                 }
 
                             }
                         }
-
+                        if(node.isRoot()){
+                            //start = System.currentTimeMillis();
+                            cp.addACs(null, mergedConfigList);
+                            //t5 += (System.currentTimeMillis()-start)/1000.0;
+                        }
+                        else{
+                            //start = System.currentTimeMillis();
+                            cp.addACs(node.getParents().iterator().next(), mergedConfigList);
+                            //t5 += (System.currentTimeMillis()-start)/1000.0;
+                        }
                     }
                 }
 
@@ -239,23 +262,27 @@ public class GeneTreeProbabilityYF{
                         for(List<Configuration> configList: lineages2configs.values()){
                             for(Configuration preConfig: configList){
                                 if(preConfig.getLineageCount()==1){
-                                    gtProb += preConfig._prob;
+                                    gtProb += preConfig._totalProb;
+                                    //start = System.currentTimeMillis();
+                                    rootConfig.addUncoalescedConfiguration(preConfig, 1, 1);
+                                    //t1 += (System.currentTimeMillis()-start)/1000.0;
                                 }else{
                                     Set<Integer> events = new HashSet<Integer>();
                                     events.add(_gtClusters.size()-1);
                                     for (int i: preConfig._lineages) {
                                         int p = child2parent.get(i);
+
                                         while(!events.contains(p)){
                                             events.add(p);
                                             p = child2parent.get(p);
                                         }
                                     }
-                                    rootConfig.clearCoalEvents();
-                                    rootConfig.addCoalEvents(events);
-                                    double prob = computeProbability(preConfig, rootConfig, -1, 1);
-                                    if(prob!=0){
-                                        gtProb += prob*preConfig._prob;
-                                    }
+                                    double weight = calculateW(events);
+                                    double prob = Math.max(0, computeProbability(preConfig, rootConfig, weight, -1, 1));
+                                    gtProb += Math.max(0, prob*preConfig._totalProb);
+                                    //start = System.currentTimeMillis();
+                                    rootConfig.addUncoalescedConfiguration(preConfig, weight, prob);
+                                    //t1 += (System.currentTimeMillis()-start)/1000.0;
                                 }
 
                             }
@@ -263,25 +290,19 @@ public class GeneTreeProbabilityYF{
 
                     }
                     probList.add(gtProb);
+                    List<Configuration> temp = new ArrayList<Configuration>();
+                    temp.add(rootConfig);
+                    //start = System.currentTimeMillis();
+                    cp.addACMinuss(null, temp);
+                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                 }
                 else if(node.isTreeNode()){
                     double distance = node.getParentDistance(node.getParents().iterator().next());
                     List<Configuration> ACminus = new ArrayList<Configuration>();
-
-                    if(distance==0){
-                        for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
-                            for(List configs: lineages2configs.values()){
-                                ACminus.addAll(configs);
-                            }
-                        }
-                    }
-                    else{
-                        computeACMinus(CACs, distance, 1, child2parent, ACminus);
-                    }
-                    BitSet newEdge = new BitSet();
-                    newEdge.set(node.getData());
-                    newEdge.set(node.getParents().iterator().next().getData());
-                    edge2ACminus.put(newEdge, ACminus);
+                    computeACMinus(CACs, distance, 1, child2parent, ACminus);
+                    //start = System.currentTimeMillis();
+                    cp.addACMinuss(node.getParents().iterator().next(),ACminus);
+                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                     //TODO
                     //System.out.println("ACminus: " + ACminus.size());
                     if(_printDetails){
@@ -296,11 +317,13 @@ public class GeneTreeProbabilityYF{
                     List<Integer> configSizeList = new ArrayList<Integer>();
                     List<Map<Set<Integer>,List<Configuration>>> newCACs1 = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
                     List<Map<Set<Integer>,List<Configuration>>> newCACs2 = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
-
+                    Map<Configuration, List<Configuration>> config2splitedConfigs = new HashMap<Configuration, List<Configuration>>();
                     int configIndex = 1;
                     for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
                         for(List<Configuration> configList: lineages2configs.values()){
                             for(Configuration config: configList){
+                                List<Configuration> splitedConfigs = new ArrayList<Configuration>();
+                                config2splitedConfigs.put(config, splitedConfigs);
                                 int[] lineageArray = new int[config.getLineageCount()];
                                 int index = 0;
                                 for(int lineage: config._lineages){
@@ -338,7 +361,7 @@ public class GeneTreeProbabilityYF{
 
                                             newConfig.setNetNodeChoice(config._netNodeIndex);
                                             newConfig.addNetNodeChoice(netNodeIndex, configIndex);
-                                            newConfig.setProbability(Math.sqrt(config._prob));
+                                            newConfig.setTotalProbability(Math.sqrt(config._totalProb));
 
                                             int numLin = k==0?i : config.getLineageCount()-i;
                                             List<Configuration> sameLineageConfigs1;
@@ -396,6 +419,8 @@ public class GeneTreeProbabilityYF{
                                                 sameLineageConfigs1.add(copy);
 
                                             }
+                                            splitedConfigs.add(newConfig);
+                                            splitedConfigs.add(copy);
                                         }
                                         if(config.getLineageCount()==0){
                                             configIndex++;
@@ -406,6 +431,9 @@ public class GeneTreeProbabilityYF{
                             }
                         }
                     }
+                    //start = System.currentTimeMillis();
+                    cp.setConfig2splitedConfigs(config2splitedConfigs);
+                    //t3 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("CAC after: {");
                         for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
@@ -426,20 +454,39 @@ public class GeneTreeProbabilityYF{
                         }
                         System.out.println("}");
                     }
-                    Iterator<NetNode<Integer>> it = node.getParents().iterator();
-                    NetNode<Integer> parentNode1 = it.next();
+                    Iterator<NetNode<List<CoalescePattern>>> it = node.getParents().iterator();
+                    NetNode<List<CoalescePattern>> parentNode1 = it.next();
                     double distance1 = node.getParentDistance(parentNode1);
                     double hybridProb1 = node.getParentProbability(parentNode1);
-                    NetNode<Integer> parentNode2 = it.next();
+                    hybridProb1 = Double.isNaN(hybridProb1)?1:hybridProb1;
+                    List<Configuration> temp = new ArrayList<Configuration>();
+                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
+                        for(List<Configuration> configs: lineages2configs.values()){
+                            temp.addAll(configs);
+                        }
+                    }
+                    //start = System.currentTimeMillis();
+                    cp.addACs(parentNode1, temp);
+                    //t5 += (System.currentTimeMillis()-start)/1000.0;
+                    NetNode<List<CoalescePattern>> parentNode2 = it.next();
                     double distance2 = node.getParentDistance(parentNode2);
                     double hybridProb2 = node.getParentProbability(parentNode2);
+                    hybridProb2 = Double.isNaN(hybridProb2)?1:hybridProb2;
+                    temp = new ArrayList<Configuration>();
+                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs2){
+                        for(List<Configuration> configs: lineages2configs.values()){
+                            temp.addAll(configs);
+                        }
+                    }
+                    //start = System.currentTimeMillis();
+                    cp.addACs(parentNode2, temp);
+                    //t5 += (System.currentTimeMillis()-start)/1000.0;
                     List<Configuration> ACminus1 = new ArrayList<Configuration>();
                     List<Configuration> ACminus2 = new ArrayList<Configuration>();
                     computeTwoACMinus(newCACs1, distance1, hybridProb1, newCACs2, distance2, hybridProb2,child2parent, ACminus1, ACminus2);
-                    BitSet newEdge1 = new BitSet();
-                    newEdge1.set(node.getData());
-                    newEdge1.set(parentNode1.getData());
-                    edge2ACminus.put(newEdge1, ACminus1);
+                    //start = System.currentTimeMillis();
+                    cp.addACMinuss(parentNode1, ACminus1);
+                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("ACminus to " + parentNode1.getName()+ ":  {");
                         for(Configuration config: ACminus1){
@@ -447,10 +494,9 @@ public class GeneTreeProbabilityYF{
                         }
                         System.out.println("}");
                     }
-                    BitSet newEdge2 = new BitSet();
-                    newEdge2.set(node.getData());
-                    newEdge2.set(parentNode2.getData());
-                    edge2ACminus.put(newEdge2, ACminus2);
+                    //start = System.currentTimeMillis();
+                    cp.addACMinuss(parentNode2, ACminus2);
+                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("ACminus to " + parentNode2.getName()+ ":  {");
                         for(Configuration config: ACminus2){
@@ -466,6 +512,180 @@ public class GeneTreeProbabilityYF{
             if(_printDetails){
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
+            gtIndex++;
+        }
+        //System.out.println(t1 + " " + t2 + " " + t3+ " " + t4+ " " + t5+ " " + t6);
+        return probList;
+    }
+
+
+    public List<Double> calculateGTDistribution(Network network, List<Tree> gts, NetNode editedChild, NetNode editedParent){
+        List<Double> probList = new ArrayList<Double>();
+        processNetwork(network, false);
+
+        int childID = _node2ID.get(editedChild);
+        int parentID = editedParent==null ? childID : _node2ID.get(editedParent);
+
+        int gtIndex = 0;
+
+        for(Tree gt: gts){
+            double gtProb = 0;
+            /*
+
+            String[] gtTaxa = gt.getLeaves();
+            Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
+            processGT(gt, gtTaxa, child2parent);
+            computeR();
+            */
+
+            for(NetNode<List<CoalescePattern>> node: walkNetwork(network)){
+                CoalescePattern cp = node.getData().get(gtIndex);
+                if(_printDetails){
+                    System.out.println();
+                    System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
+                }
+                int nodeID = _node2ID.get(node);
+                if(!_M[nodeID][parentID] && nodeID!=childID){
+                    if(_printDetails){
+                        System.out.println("Unchange ");
+
+                        System.out.println("AC:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
+                            System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                        System.out.println();
+
+                        System.out.println("AC Minus:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
+                            System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+
+                    }
+                    continue;
+                }
+
+                if(nodeID==childID){
+                    if(_printDetails){
+                        System.out.println("AC:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
+                            System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                        System.out.println();
+                    }
+                    for(NetNode parent: node.getParents()){
+                        if(editedParent!=null && parent!=editedParent)continue;
+                        for(Configuration coalescedConfig: cp.getACMinuss(parent)){
+                            coalescedConfig._totalProb = 0;
+                            Iterator<CoalescingInfo> coalescedInfos = coalescedConfig._coalesingInfo.iterator();
+                            while(coalescedInfos.hasNext()){
+                                CoalescingInfo info = coalescedInfos.next();
+                                double inheritanceProb = node.getParentProbability(parent);
+                                inheritanceProb = Double.isNaN(inheritanceProb)?1:inheritanceProb;
+                                double prob = Math.max(0,computeProbability(info._uncoalescedConfig, coalescedConfig, info._coalWeight, node.getParentDistance(parent), inheritanceProb));
+                                info._coalProb = prob;
+                                coalescedConfig.addTotalProbability(Math.max(0, prob*info._uncoalescedConfig._totalProb));
+                            }
+                        }
+                    }
+                    if(_printDetails){
+                        System.out.println("AC Minus:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
+                            System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                    }
+                }
+                else{
+                    if(node.isNetworkNode()){
+                        for(Map.Entry<Configuration, List<Configuration>> entry: cp._config2splitedConfigs.entrySet()){
+                            double prob = Math.sqrt(entry.getKey()._totalProb);
+                            for(Configuration config: entry.getValue()){
+                                config.setTotalProbability(prob);
+                            }
+                        }
+                    }else if(node.isTreeNode()){
+                        NetNode parent;
+                        if(node.isRoot()){
+                            parent = null;
+                        }
+                        else{
+                            parent = node.getParents().iterator().next();
+                        }
+                        for(Configuration config: cp.getACs(parent)){
+                            config.setTotalProbability(config.getChildrenProbProduction());
+                        }
+                    }
+
+                    if(_printDetails){
+                        System.out.println("AC:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
+                            if(node2configList.getKey()!=null)
+                                System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                        System.out.println();
+                    }
+
+                    if(!node.isRoot()){
+                        for(NetNode<List<CoalescePattern>> parent: node.getParents()){
+                            for(Configuration coalescedConfig: cp.getACMinuss(parent)){
+                                coalescedConfig._totalProb = 0;
+                                Iterator<CoalescingInfo> coalescedInfos = coalescedConfig._coalesingInfo.iterator();
+                                while(coalescedInfos.hasNext()){
+                                    CoalescingInfo info = coalescedInfos.next();
+                                    coalescedConfig.addTotalProbability(Math.max(0,info._uncoalescedConfig._totalProb*info._coalProb));
+                                }
+                            }
+                        }
+                    }
+
+                    if(_printDetails){
+                        System.out.println("AC Minus:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
+                            if(node2configList.getKey()!=null)
+                                System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                    }
+
+                }
+
+                if(node.isRoot()){
+                    Configuration rootConfig = cp.getACMinuss(null).get(0);
+                    Iterator<CoalescingInfo> coalescedInfos = rootConfig._coalesingInfo.iterator();
+                    while(coalescedInfos.hasNext()){
+                        CoalescingInfo info = coalescedInfos.next();
+                        gtProb += Math.max(0, info._uncoalescedConfig._totalProb*info._coalProb);
+                    }
+                    probList.add(gtProb);
+                }
+            }
+            if(_printDetails){
+                System.out.println("The probability of this gene tree is:" + gtProb);
+            }
+
+            gtIndex++;
         }
 
         return probList;
@@ -478,9 +698,7 @@ public class GeneTreeProbabilityYF{
             for (List<Configuration> sameLineageConfigs : lineages2configs.values()) {
 
                 Configuration origConfig = sameLineageConfigs.get(0);
-                if (origConfig._prob <= 0) {
-                    throw new RuntimeException("Wrong probability!");
-                }
+
                 Stack<Configuration> configStack = new Stack<Configuration>();
                 Configuration configCopy = new Configuration(origConfig);
                 configCopy.clearCoalEvents();
@@ -489,8 +707,9 @@ public class GeneTreeProbabilityYF{
 
                 while (!configStack.empty()) {
                     Configuration cconfig = configStack.pop();
-                    boolean allNegative = true;
-                    double prob = computeProbability(origConfig, cconfig, distance, hybridProb);
+                    //boolean allNegative = true;
+                    double weight = calculateW(cconfig._coalEvents);
+                    double prob = Math.max(0, computeProbability(origConfig, cconfig, weight, distance, hybridProb));
                     /*
                     cconfig._prob = prob * origConfig._prob;
                     if (cconfig._prob > 0) {
@@ -506,11 +725,13 @@ public class GeneTreeProbabilityYF{
 
                     boolean ffirst = true;
                     for(Configuration config: sameLineageConfigs){
-                        double newProb = prob*config._prob;
+                        double newProb = Math.max(0,prob*config._totalProb);
+                        /*
                         if(newProb<=0){
                             continue;
                         }
                         allNegative = false;
+                        */
                         Configuration cconfigCopy;
                         if(ffirst){
                             cconfigCopy = cconfig;
@@ -519,25 +740,35 @@ public class GeneTreeProbabilityYF{
                         else{
                             cconfigCopy = new Configuration(cconfig);
                             cconfigCopy.setNetNodeChoice(config._netNodeIndex);
+                            cconfigCopy.addCoalEvents(cconfig._coalEvents);
+
                         }
-                        cconfigCopy.setProbability(newProb);
+                        cconfigCopy.setTotalProbability(newProb);
                         Map<Configuration, Configuration> cc = shape2ACminus.get(code);
                         if (cc != null) {
-                            if (cc.containsKey(cconfigCopy)) {
-                                cc.get(cconfigCopy).addProbability(cconfigCopy._prob);
+                            Configuration ccExisting = cc.get(cconfigCopy);
+                            if (ccExisting != null) {
+                                ccExisting.addTotalProbability(cconfigCopy._totalProb);
+                                //long start = System.currentTimeMillis();
+                                ccExisting.addUncoalescedConfiguration(config, weight, prob);
+                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             } else {
                                 cc.put(cconfigCopy, cconfigCopy);
+                                //long start = System.currentTimeMillis();
+                                cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
+                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             }
                         } else {
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus.put(code, cc);
+                            long start = System.currentTimeMillis();
+                            cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
+                            //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
 
-                    if(allNegative){
-                        continue;
-                    }
+
                     if(cconfig.getLineageCount()==1)continue;
                     Map<Integer, List<Integer>> parent2children = new HashMap<Integer, List<Integer>>();
                     for (int i : cconfig._lineages) {
@@ -607,9 +838,7 @@ public class GeneTreeProbabilityYF{
                 List<Configuration> sameLineageConfigs2 = configIt2.next();
                 Configuration origConfig1 = sameLineageConfigs1.get(0);
                 //Configuration origConfig2 = sameLineageConfigs2.get(0);
-                if(origConfig1._prob<=0){
-                    throw new RuntimeException("Wrong probability!");
-                }
+
                 Stack<Configuration> configStack = new Stack<Configuration>();
                 Configuration configCopy = new Configuration(origConfig1);
                 configCopy.clearCoalEvents();
@@ -624,19 +853,22 @@ public class GeneTreeProbabilityYF{
                             code *= lin;
                         }
                     }
-                    boolean allNegative = true;
+                    //boolean allNegative = true;
                     //double prob = computeProbability(origConfig1, cconfig, distance1, hybridProb1);
                     String[] forPrint = new String[2];
-                    double probCommon = computeProbabilityPart1(origConfig1, cconfig, forPrint);
-                    double prob = computeProbabilityPart2(probCommon, origConfig1.getLineageCount(), cconfig.getLineageCount(), distance1, hybridProb1, forPrint);
+                    double weight = calculateW(cconfig._coalEvents);
+                    double probCommon = computeProbabilityPart1(origConfig1, cconfig, weight, forPrint);
+                    double prob = Math.max(0, computeProbabilityPart2(probCommon, origConfig1.getLineageCount(), cconfig.getLineageCount(), distance1, hybridProb1, forPrint));
 
                     boolean ffirst = true;
                     for(Configuration config: sameLineageConfigs1){
-                        double newProb = prob*config._prob;
+                        double newProb = Math.max(0,prob*config._totalProb);
+                        /*
                         if(newProb<=0){
                             continue;
                         }
                         allNegative = false;
+                        */
                         Configuration cconfigCopy;
                         if(ffirst){
                             cconfigCopy = cconfig;
@@ -646,51 +878,74 @@ public class GeneTreeProbabilityYF{
                             cconfigCopy = new Configuration(cconfig);
                             cconfigCopy.setNetNodeChoice(config._netNodeIndex);
                         }
-                        cconfigCopy.setProbability(newProb);
+                        cconfigCopy.setTotalProbability(newProb);
                         Map<Configuration, Configuration> cc = shape2ACminus1.get(code);
                         if (cc != null) {
-                            if (cc.containsKey(cconfigCopy)) {
-                                cc.get(cconfigCopy).addProbability(cconfigCopy._prob);
+                            Configuration existing = cc.get(cconfigCopy);
+                            if (existing != null) {
+                                existing.addTotalProbability(cconfigCopy._totalProb);
+                                //long start = System.currentTimeMillis();
+                                existing.addUncoalescedConfiguration(config, weight, prob);
+                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             } else {
                                 cc.put(cconfigCopy, cconfigCopy);
+                                //long start = System.currentTimeMillis();
+                                cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
+                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             }
                         } else {
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus1.put(code, cc);
+                            //long start = System.currentTimeMillis();
+                            cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
+                            //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
 
-                    prob = computeProbabilityPart2(probCommon, origConfig1.getLineageCount(), cconfig.getLineageCount(), distance2, hybridProb2, forPrint);
+                    prob = Math.max(0, computeProbabilityPart2(probCommon, origConfig1.getLineageCount(), cconfig.getLineageCount(), distance2, hybridProb2, forPrint));
 
                     //prob = computeProbability(origConfig2, cconfig, distance2, hybridProb2);
                     for(Configuration config: sameLineageConfigs2){
-                        double newProb = prob*config._prob;
+                        double newProb = Math.max(0,prob*config._totalProb);
+                        /*
                         if(newProb<=0){
                             continue;
                         }
                         allNegative = false;
+                        */
                         Configuration cconfigCopy = new Configuration(cconfig);
                         cconfigCopy.setNetNodeChoice(config._netNodeIndex);
-                        cconfigCopy.setProbability(newProb);
+                        cconfigCopy.setTotalProbability(newProb);
                         Map<Configuration, Configuration> cc = shape2ACminus2.get(code);
+
                         if (cc != null) {
-                            if (cc.containsKey(cconfigCopy)) {
-                                cc.get(cconfigCopy).addProbability(cconfigCopy._prob);
+                            Configuration existing = cc.get(cconfigCopy);
+                            if (existing != null) {
+                                cc.get(cconfigCopy).addTotalProbability(cconfigCopy._totalProb);
+                                //long start = System.currentTimeMillis();
+                                existing.addUncoalescedConfiguration(config, weight, prob);
+                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             } else {
                                 cc.put(cconfigCopy, cconfigCopy);
+                                //long start = System.currentTimeMillis();
+                                cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
+                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             }
                         } else {
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus2.put(code, cc);
+                            //long start = System.currentTimeMillis();
+                            cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
+                            //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
-
+                    /*
                     if(allNegative){
                         continue;
                     }
-
+*                   */
 
                     Map<Integer, List<Integer>> parent2children = new HashMap<Integer, List<Integer>>();
                     for(int i: cconfig._lineages)
@@ -748,24 +1003,50 @@ public class GeneTreeProbabilityYF{
             ACminus2.addAll(cc.values());
         }
 
-
     }
 
-    private void processNetwork(Network<Integer> net){
+    private void processNetwork(Network<List<CoalescePattern>> net, boolean fromScratch){
         removeBinaryNodes(net);
         _netNodeNum = 0;
-        _totalNodeNum = 0;
+        int totalNode = 0;
+        _node2ID = new HashMap<NetNode, Integer>();
         List<String> taxa = new ArrayList<String>();
-        for(NetNode<Integer> node: net.dfs()){
-            node.setData(_totalNodeNum++);
+        for(NetNode node: walkNetwork(net)){
+            _node2ID.put(node, totalNode++);
             if(node.isLeaf()){
                 taxa.add(node.getName());
             }else if(node.isNetworkNode()){
                 _netNodeNum++;
             }
         }
- //       _netTaxa = taxa.toArray(new String[0]);
-        computeNodeCoverage(net);
+        if(fromScratch){
+            computeNodeCoverage(net);
+            for(NetNode<List<CoalescePattern>> node: walkNetwork(net)){
+                node.setData(new ArrayList<CoalescePattern>());
+            }
+        }
+        else{
+            computeM(net, totalNode);
+        }
+
+    }
+
+
+    private void computeM(Network<List<CoalescePattern>> net, int numEdge){
+        _M = new boolean[numEdge][numEdge];
+        for(NetNode<List<CoalescePattern>> node: walkNetwork(net)){
+            int pID = _node2ID.get(node);
+            _M[pID][pID] = true;
+            for(NetNode child: node.getChildren()){
+                int cID = _node2ID.get(child);
+                _M[pID][cID] = true;
+                for(int i=0; i<numEdge; i++){
+                    if(_M[cID][i]){
+                        _M[pID][i] = true;
+                    }
+                }
+            }
+        }
     }
 
 
@@ -798,29 +1079,51 @@ public class GeneTreeProbabilityYF{
         }
     }
 
-    private void removeBinaryNodes(Network<Integer> net)
+    private void removeBinaryNodes(Network<List<CoalescePattern>> net)
     {
         // Find all binary nodes.
-        List<NetNode<Integer>> binary_nodes = new LinkedList<NetNode<Integer>>();
+        List<NetNode<List<CoalescePattern>>> binaryNodes = new ArrayList<NetNode<List<CoalescePattern>>>();
+        List<NetNode<List<CoalescePattern>>> degreeTwoNodes = new ArrayList<NetNode<List<CoalescePattern>>>();
+
         for (NetNode node : net.bfs()) {
             if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
-                binary_nodes.add(node);
+                binaryNodes.add(node);
+            }
+
+            if (node.getIndeg() == 2 && node.getOutdeg() == 2) {
+                degreeTwoNodes.add(node);
             }
         }
 
         // Remove them.
-        for (NetNode<Integer> node : binary_nodes) {
-            NetNode<Integer> child = node.getChildren().iterator().next();	// Node's only child.
-            if(child.getIndeg() != 1){
-                continue;
-            }
-            NetNode<Integer> parent = node.getParents().iterator().next();	// Node's only parent.
+        for (NetNode<List<CoalescePattern>> node : binaryNodes) {
+            NetNode<List<CoalescePattern>> child = node.getChildren().iterator().next();	// Node's only child.
+            NetNode<List<CoalescePattern>> parent = node.getParents().iterator().next();	// Node's only parent.
             double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-            double gamma = node.getParentProbability(parent) * child.getParentProbability(node);
+            double inheritanceProb1 = node.getParentProbability(parent);
+            inheritanceProb1 = Double.isNaN(inheritanceProb1)?1:inheritanceProb1;
+            double inheritanceProb2 = child.getParentProbability(node);
+            inheritanceProb2 = Double.isNaN(inheritanceProb2)?1:inheritanceProb2;
+            double gamma = inheritanceProb1 * inheritanceProb2;
             parent.removeChild(node);
             node.removeChild(child);
             parent.adoptChild(child, distance);
             child.setParentProbability(parent, gamma);
+        }
+
+        for (NetNode<List<CoalescePattern>> node : degreeTwoNodes) {
+            NetNode<List<CoalescePattern>> newNode = new BniNetNode<List<CoalescePattern>>();
+            List<NetNode> removedChildren = new ArrayList<NetNode>();
+            for(NetNode child: node.getChildren()){
+                newNode.adoptChild(child, child.getParentDistance(node));
+                child.setParentProbability(node, 1);
+                removedChildren.add(child);
+            }
+            for(NetNode child: removedChildren){
+                node.removeChild(child);
+            }
+            node.adoptChild(newNode, 0);
+
         }
     }
 
@@ -857,40 +1160,39 @@ public class GeneTreeProbabilityYF{
     }
 
 
-    private void computeNodeCoverage(Network<Integer> net){
+    private void computeNodeCoverage(Network<List<CoalescePattern>> net){
         //List<Integer> leaves = new ArrayList<Integer>();
-        List<Integer> allTotalNodes = new ArrayList<Integer>();
-        _totalCoverNodes = new HashSet<Integer>();
-        for(NetNode<Integer> node: walkNetwork(net)){
-            int id = node.getData();
+        List<NetNode> allTotalNodes = new ArrayList<NetNode>();
+        _totalCoverNodes = new HashSet<NetNode>();
+        for(NetNode<List<CoalescePattern>> node: walkNetwork(net)){
             if(node.isLeaf()){
                 //leaves.add(id);
-                allTotalNodes.add(id);
+                allTotalNodes.add(node);
             }
 
             else if(node.isRoot()){
                 boolean ftotal = true;
-                for(NetNode<Integer> child: node.getChildren()){
+                for(NetNode<List<CoalescePattern>> child: node.getChildren()){
                     if(!allTotalNodes.contains(child.getData())){
                         ftotal = false;
                         break;
                     }
                 }
                 if(!ftotal){
-                    _totalCoverNodes.add(id);
+                    _totalCoverNodes.add(node);
                 }
 
             }
             else if(node.isTreeNode()){
                 boolean ftotal = true;
-                for(NetNode<Integer> child: node.getChildren()){
+                for(NetNode<List<CoalescePattern>> child: node.getChildren()){
                     if(!allTotalNodes.contains(child.getData())){
                         ftotal = false;
                         break;
                     }
                 }
                 if(ftotal){
-                    allTotalNodes.add(id);
+                    allTotalNodes.add(node);
                 }else{
                     NetNode parent = node.getParents().iterator().next();
                     double distance = node.getParentDistance(parent);
@@ -898,8 +1200,8 @@ public class GeneTreeProbabilityYF{
                     boolean disconnect = isValidNetwork(net);
                     parent.adoptChild(node, distance);
                     if (disconnect) {
-                        _totalCoverNodes.add(id);
-                        allTotalNodes.add(id);
+                        _totalCoverNodes.add(node);
+                        allTotalNodes.add(node);
                     }
                 }
 
@@ -907,20 +1209,20 @@ public class GeneTreeProbabilityYF{
         }
     }
 
-    private boolean isValidNetwork(Network<Integer> net){
-        BitSet visited = new BitSet();
-        BitSet seen = new BitSet();
-        for(NetNode<Integer> node: net.bfs()){
+    private boolean isValidNetwork(Network<List<CoalescePattern>> net){
+        List<NetNode> visited = new ArrayList<NetNode>();
+        List<NetNode> seen = new ArrayList<NetNode>();
+        for(NetNode<List<CoalescePattern>> node: net.bfs()){
             if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
-            visited.set(node.getData(), true);
-            for(NetNode<Integer> parent: node.getParents()){
-                seen.set(parent.getData(), true);
+            visited.add(node);
+            for(NetNode<List<CoalescePattern>> parent: node.getParents()){
+                seen.add(parent);
             }
-            for(NetNode<Integer> child: node.getChildren()){
-                seen.set(child.getData(), true);
+            for(NetNode<List<CoalescePattern>> child: node.getChildren()){
+                seen.add(child);
             }
         }
-        return visited.cardinality()==seen.cardinality();
+        return visited.size()==seen.size();
     }
 
 
@@ -948,7 +1250,7 @@ public class GeneTreeProbabilityYF{
 
 
 
-    private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double distance, double portion){
+    private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion){
         double prob;
         int u = preConfig.getLineageCount();
         int v = coalescedConfig.getLineageCount();
@@ -971,11 +1273,10 @@ public class GeneTreeProbabilityYF{
             return prob;
         }
         double gij = gij(distance, u, v);
-        if(gij<=0){
+        if(gij<0){
             return -1;
         }
         double d = calculateD(u,u-v);
-        double w = calculateW(coalescedConfig._coalEvents);
 
         if(_printDetails){
             if(portion!=1){
@@ -990,7 +1291,7 @@ public class GeneTreeProbabilityYF{
     }
 
 
-    private double computeProbabilityPart1(Configuration preConfig, Configuration coalescedConfig, String[] forPrint){
+    private double computeProbabilityPart1(Configuration preConfig, Configuration coalescedConfig, double w, String[] forPrint){
         double prob;
         forPrint[0] = preConfig.toString()+"->"+coalescedConfig.toString()+ ": ";
         int u = preConfig.getLineageCount();
@@ -999,7 +1300,6 @@ public class GeneTreeProbabilityYF{
             return 1;
         }
         double d = calculateD(u,u-v);
-        double w = calculateW(coalescedConfig._coalEvents);
         prob = w/d;
         forPrint[1] = "*"+w+"/"+d;
         return prob;
@@ -1093,6 +1393,7 @@ public class GeneTreeProbabilityYF{
 
 
     private double calculateW(Set<Integer> coalEvents){
+        //System.out.println(coalEvents);
         double w = 1.0;
         w = w*fact(1, coalEvents.size());
         //System.out.print(fact(1, coalEvents.cardinality()));
@@ -1173,30 +1474,92 @@ public class GeneTreeProbabilityYF{
     }
 
 
+    private class CoalescePattern{
+        private Map<NetNode, List<Configuration>> _ACMinuss;
+        private Map<NetNode, List<Configuration>> _ACs; //for network node
+        private Map<Configuration, List<Configuration>> _config2splitedConfigs;
+
+
+        public CoalescePattern(){
+            _ACMinuss = new HashMap<NetNode, List<Configuration>>();
+            _ACs = new HashMap<NetNode, List<Configuration>>();
+        }
+
+
+        public void setConfig2splitedConfigs(Map<Configuration, List<Configuration>> map){
+            _config2splitedConfigs = map;
+        }
+
+        public void addACMinuss(NetNode parent, List<Configuration> ACMinuss){
+            _ACMinuss.put(parent, ACMinuss);
+        }
+
+        public void addACs(NetNode parent, List<Configuration> ACs){
+            /*
+            List<Configuration> existings = _ACs.get(parent);
+            if(existings == null){
+                List<Configuration> copy = new ArrayList<Configuration>();
+                copy.addAll(ACs);
+                _ACs.put(parent, copy);
+            }
+            else{
+                existings.addAll(ACs);
+            }
+            */
+            _ACs.put(parent, ACs);
+        }
+
+        public List<Configuration> getACMinuss(NetNode parent){
+            return _ACMinuss.get(parent);
+        }
+
+        public List<Configuration> getACs(NetNode parent){
+            return _ACs.get(parent);
+        }
+    }
+
+
+    private class CoalescingInfo{
+        Configuration _uncoalescedConfig;
+        double _coalWeight;
+        double _coalProb;
+
+        public CoalescingInfo(Configuration c, double w, double p){
+            _uncoalescedConfig = c;
+            _coalWeight = w;
+            _coalProb = p;
+        }
+    }
+
+
 
 
     private class Configuration{
         private HashSet<Integer> _lineages;
-        private double _prob;
+        private double _totalProb;
         int[] _netNodeIndex;
         private Set<Integer> _coalEvents;
+        private List<CoalescingInfo> _coalesingInfo;  //uncoalescedConfigs, coalWeights, probsToUncoalescedConfig
+        private List<Configuration[]> _childPairList;
 
         public Configuration(){
             _lineages = new HashSet<Integer>();
             _netNodeIndex = new int[_netNodeNum];
             Arrays.fill(_netNodeIndex, 0);
+            _coalesingInfo = new ArrayList<CoalescingInfo>();
         }
 
         public Configuration(Configuration config){
             _lineages = (HashSet)config._lineages.clone();
-            _prob = config._prob;
+            _totalProb = config._totalProb;
             _netNodeIndex = config._netNodeIndex.clone();
+            _coalesingInfo = new ArrayList<CoalescingInfo>();
         }
 
         public Configuration(Configuration config1, Configuration config2){
             _lineages = (HashSet)config1._lineages.clone();
             _lineages.addAll(config2._lineages);
-            _prob = config1._prob*config2._prob;
+            _totalProb = Math.max(0,config1._totalProb*config2._totalProb);
             _netNodeIndex = new int[_netNodeNum];
             for(int i=0; i< _netNodeNum; i++){
                 if(config1._netNodeIndex[i] == config2._netNodeIndex[i]){
@@ -1206,6 +1569,12 @@ public class GeneTreeProbabilityYF{
                     _netNodeIndex[i] = Math.max(config1._netNodeIndex[i], config2._netNodeIndex[i]);
                 }
             }
+            _childPairList = new ArrayList<Configuration[]>();
+            Configuration[] configPair = new Configuration[2];
+            configPair[0] = config1;
+            configPair[1] = config2;
+            _childPairList.add(configPair);
+            _coalesingInfo = new ArrayList<CoalescingInfo>();
         }
 
         public boolean isCompatible(Configuration config){
@@ -1231,16 +1600,17 @@ public class GeneTreeProbabilityYF{
             _lineages.add(parent);
         }
 
-        public void setProbability(double prob){
-            _prob = prob;
+        public void setTotalProbability(double prob){
+            _totalProb = prob;
         }
+
 
         public int getLineageCount(){
             return _lineages.size();
         }
 
-        public void addProbability(double adds){
-            _prob += adds;
+        public void addTotalProbability(double adds){
+            _totalProb += adds;
         }
 
         public String toString(){
@@ -1255,7 +1625,7 @@ public class GeneTreeProbabilityYF{
                     exp = exp + ",";
                 }
             }
-            exp = exp + "]:" + _prob;
+            exp = exp + "]:" + _totalProb;
             return exp;
         }
 
@@ -1294,6 +1664,35 @@ public class GeneTreeProbabilityYF{
             _coalEvents.addAll(events);
         }
 
+        public void addUncoalescedConfiguration(Configuration config, double weight, double prob){
+            _coalesingInfo.add(new CoalescingInfo(config, weight, prob));
+        }
+
+
+        public void addChildPair(Configuration[] pair){
+            _childPairList.add(pair);
+        }
+
+        public double getChildrenProbProduction(){
+            double sum = 0;
+            for(Configuration[] configPair: _childPairList){
+                sum += Math.max(0,configPair[0]._totalProb*configPair[1]._totalProb);
+            }
+            return sum;
+        }
+
+        /*
+        public void addChildConfigs(Configuration config1, Configuration config2){
+            if(_childConfigs==null){
+                _childConfigs = new ArrayList<Configuration[]>();
+            }
+            Configuration[] configPair = new Configuration[2];
+            configPair[0] = config1;
+            configPair[1] = config2;
+            _childConfigs.add(configPair);
+        }
+        */
+
         public boolean equals(Object o) {
             if(!(o instanceof Configuration)){
                 return false;
@@ -1308,5 +1707,4 @@ public class GeneTreeProbabilityYF{
         }
 
     }
-
 }

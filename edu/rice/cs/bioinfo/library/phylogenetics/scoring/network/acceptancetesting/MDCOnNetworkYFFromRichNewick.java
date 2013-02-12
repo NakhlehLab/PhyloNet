@@ -12,10 +12,7 @@ import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.Ite
 import junit.framework.Assert;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,10 +27,23 @@ public abstract class MDCOnNetworkYFFromRichNewick<G extends Graph<String,PhyloE
 
      protected Func1<G, String> makeNode = new Func1<G, String>()
     {
-        private int counter = 0;
+        //private int counter = 0;
 
         public String execute(G input1) {
-            return IterableHelp.countInt(input1.getNodes()) + "";
+            //return IterableHelp.countInt(input1.getNodes()) + "";
+            String newNode;
+            boolean exist;
+            do{
+                newNode = (int)(Math.random()*1000000)+"";
+                exist = false;
+                for(String node: input1.getNodes()){
+                    if(node.equals(newNode)){
+                        exist = true;
+                        break;
+                    }
+                }
+            }while(exist);
+            return newNode;
         }
     };
 

@@ -64,7 +64,7 @@ public class RnNewickPrinter<T> extends RichNewickPrinterCompact<NetNode<T>>
         this.setGetBranchLength(new Func2<NetNode<T>, NetNode<T>, String>() {
             public String execute(NetNode<T> parent, NetNode<T> child) {
                 double parentDistance = child.getParentDistance(parent);
-                if(NetNode.NO_DISTANCE == parentDistance)
+                if(NetNode.NO_DISTANCE == parentDistance || Double.isNaN(parentDistance))
                 {
                     return null;
                 }
@@ -78,16 +78,15 @@ public class RnNewickPrinter<T> extends RichNewickPrinterCompact<NetNode<T>>
                 if(child.getIndeg() < 2)
                     return null;
 
-                return child.getParentProbability(parent) + "";
+                double probability = child.getParentProbability(parent);
+                return Double.isNaN(probability) ? null : probability + "";
+
             }
         });
 
         this.setGetSupport(new Func2<NetNode<T>, NetNode<T>, String>() {
             public String execute(NetNode<T> parent, NetNode<T> child) {
                 double support = child.getParentSupport(parent);
-
-
-
                 return Double.isNaN(support) ? null : support + "";
             }
         });

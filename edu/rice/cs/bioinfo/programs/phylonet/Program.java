@@ -63,7 +63,7 @@ public class Program {
 
         File nexusFile = new File(args[0]);
 
-        BigDecimal hybridSumTolerance = BigDecimal.ZERO;
+        BigDecimal hybridSumTolerance = BigDecimal.valueOf(0.001);
         if(args.length >=2 )
         {
             try

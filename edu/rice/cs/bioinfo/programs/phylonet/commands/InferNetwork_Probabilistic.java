@@ -59,6 +59,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
     private int _maxRounds = 100;
     private int _maxTryPerBranch = 100;
+    private double _maxBranchLength = 6;
     private double _improvementThreshold = 0.001;
     private double _Brent1 = 0.01;
     private double _Brent2 = 0.001;
@@ -212,7 +213,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value " + iParam.PostSwitchValue, iParam.PostSwitchParam.getLine(), iParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value after -i " + iParam.PostSwitchValue, iParam.PostSwitchParam.getLine(), iParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
@@ -232,7 +233,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value " + rParam.PostSwitchValue, rParam.PostSwitchParam.getLine(), rParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value after -r " + rParam.PostSwitchValue, rParam.PostSwitchParam.getLine(), rParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
@@ -248,11 +249,11 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _maxTryPerBranch = Integer.parseInt(lParam.PostSwitchValue);
+                        _maxBranchLength = Double.parseDouble(lParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value " + lParam.PostSwitchValue, lParam.PostSwitchParam.getLine(), lParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value of maximum branch length " + lParam.PostSwitchValue, lParam.PostSwitchParam.getLine(), lParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
@@ -336,8 +337,28 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam);
+            ParamExtractor tParam = new ParamExtractor("t", this.params, this.errorDetected);
+            if(tParam.ContainsSwitch)
+            {
+                if(tParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _maxTryPerBranch = Integer.parseInt(tParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after -t " + tParam.PostSwitchValue, tParam.PostSwitchParam.getLine(), tParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -t.", tParam.SwitchParam.getLine(), tParam.SwitchParam.getColumn());
+                }
+            }
+
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam);
         }
 
 
@@ -382,7 +403,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
         long start = System.currentTimeMillis();
         InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
-        inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _Brent1, _Brent2);
+        inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _Brent1, _Brent2, _maxBranchLength);
         List<Tuple<String, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
         System.out.print(System.currentTimeMillis()-start);
 

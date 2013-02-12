@@ -40,7 +40,7 @@ import java.util.*;
  * Time: 11:08 AM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infer_st_bootstrap")
+@CommandName("inferst_bootstrap")
 public class InferST_Bootstrap extends CommandBaseFileOut {
 
     private int _numRepititions;

@@ -40,7 +40,7 @@ import java.util.Map;
  * Time: 2:42 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infer_st_mdc")
+@CommandName("inferst_mdc")
 public class InferST_MDC extends InferSTBase
 {
 
@@ -174,7 +174,8 @@ public class InferST_MDC extends InferSTBase
         for(Solution s: solutions){
                 String tree = s._st.toStringWD();
                 this.richNewickGenerated(tree);
-				result.append("\n" + s._st.toStringWD()+" "+s._totalCoals+" extra lineages in total");
+				result.append("\n" + s._st.toStringWD());
+                result.append("\n Total number of extra lineages:" + s._totalCoals);
 			}
 
         return result.toString();

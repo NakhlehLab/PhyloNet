@@ -44,7 +44,7 @@ import java.util.Map;
  * Time: 1:08 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infer_st_glass")
+@CommandName("inferst_glass")
 public class InfterST_MDC_GLASS extends InferSTBase
 {
     private Map<String,String> _taxonMap;

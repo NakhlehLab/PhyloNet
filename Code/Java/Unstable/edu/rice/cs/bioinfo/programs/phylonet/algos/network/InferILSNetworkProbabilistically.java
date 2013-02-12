@@ -50,6 +50,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     int _maxRounds;
     int _maxTryPerBranch;
     double _improvementThreshold;
+    double _maxBranchLength;
     double _Brent1;
     double _Brent2;
 
@@ -58,10 +59,11 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setBrentParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double Brent1, double Brent2){
+    public void setBrentParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
+        _maxBranchLength = maxBranchLength;
         _Brent1 = Brent1;
         _Brent2 = Brent2;
     }
@@ -312,7 +314,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
                             try
                             {
-                                optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, 6);
+                                optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, Double.MIN_VALUE, _maxBranchLength);
                             }
                             catch(TooManyEvaluationsException e) // _maxAssigmentAttemptsPerBranchParam exceeded
                             {

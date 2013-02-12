@@ -45,7 +45,7 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infernetwork_probabilistic")
+@CommandName("infernetwork_ML")
 public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private HashMap<String, List<String>> _taxonMap = null;
     private List<NetworkNonEmpty> _geneTrees;

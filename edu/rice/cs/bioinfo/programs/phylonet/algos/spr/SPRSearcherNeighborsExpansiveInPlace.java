@@ -22,12 +22,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.spr;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.EdgeContractor;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.NodeInjector;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.uci.ics.jung.visualization.renderers.Renderer;
-import org.omg.CosNaming._NamingContextExtStub;
 
-import javax.print.attribute.standard.MediaSize;
-import java.util.*;
+import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.

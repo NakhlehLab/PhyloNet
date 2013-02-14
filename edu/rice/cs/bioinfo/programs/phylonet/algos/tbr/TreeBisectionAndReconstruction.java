@@ -20,7 +20,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.tbr;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.nni.NearestNeighborInterchangeResult;
 
 /**
  * Created by IntelliJ IDEA.

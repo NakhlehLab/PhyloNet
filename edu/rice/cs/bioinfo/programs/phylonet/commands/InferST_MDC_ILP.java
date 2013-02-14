@@ -30,7 +30,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCURInference_ILP
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
-import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

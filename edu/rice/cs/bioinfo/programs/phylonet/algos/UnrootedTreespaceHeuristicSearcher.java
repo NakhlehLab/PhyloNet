@@ -19,7 +19,10 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Predicate1;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 
 
 /**

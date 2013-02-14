@@ -18,12 +18,11 @@
  */
 
 package edu.rice.cs.bioinfo.programs.phylonet;
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.junit.Assert;
-import sun.net.idn.StringPrep;
 
-import java.awt.geom.Path2D;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.Random;

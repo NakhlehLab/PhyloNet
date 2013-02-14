@@ -19,31 +19,15 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.lca;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.util.LIDAMath;
+
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
-
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickWriter;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
-import edu.rice.cs.bioinfo.programs.phylonet.util.LIDAMath;
 
 
 /**

@@ -19,13 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.nni;
 
-import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import sun.util.resources.LocaleNames_ga;
-
-import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.

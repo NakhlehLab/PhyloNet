@@ -8,13 +8,11 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Network;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge2;
 import edu.rice.cs.bioinfo.library.phylogenetics.phylograph2factories.richnewick._1_0.ast.NetworkToPhyloGraph2FactoryDefault;
 import edu.rice.cs.bioinfo.library.phylogenetics.phylograph2factories.richnewick._1_0.ast.RNNode;
 import edu.rice.cs.bioinfo.library.programming.Func1Identity;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import org.apache.commons.math3.util.MultidimensionalCounter;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

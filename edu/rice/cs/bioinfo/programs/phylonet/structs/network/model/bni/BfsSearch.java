@@ -19,7 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
 import java.util.Iterator;
 import java.util.LinkedList;

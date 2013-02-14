@@ -19,11 +19,12 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
-import java.util.*;
-
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * This class allows us to visit all nodes under a start node in a network.

@@ -19,13 +19,13 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
 import edu.rice.cs.bioinfo.programs.phylonet.structs.BitVector;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 
 

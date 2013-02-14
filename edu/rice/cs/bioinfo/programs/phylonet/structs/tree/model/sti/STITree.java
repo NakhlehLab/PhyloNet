@@ -19,11 +19,6 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti;
 
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
-
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickWriter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
@@ -32,6 +27,11 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
+
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
 
 
 /**

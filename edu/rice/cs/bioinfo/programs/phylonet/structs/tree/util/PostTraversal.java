@@ -19,10 +19,10 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util;
 
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+
 import java.util.Iterator;
 import java.util.Stack;
-
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 
 /**
  * An iterable class that allows us to visit the tree in the post order. To make the class more 

@@ -19,14 +19,12 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.io;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import org.mockito.internal.matchers.NotNull;
 
 import java.io.StringWriter;
 import java.util.HashMap;

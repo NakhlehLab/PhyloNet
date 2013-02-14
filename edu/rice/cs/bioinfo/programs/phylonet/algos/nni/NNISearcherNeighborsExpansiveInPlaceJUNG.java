@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.nni;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Predicate1;
 import edu.uci.ics.jung.graph.Graph;
 
 import java.util.Collection;

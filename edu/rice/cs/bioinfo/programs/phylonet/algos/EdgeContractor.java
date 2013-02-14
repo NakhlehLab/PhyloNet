@@ -5,8 +5,6 @@ import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.Ite
 
 import java.util.LinkedList;
 
-import java.lang.Iterable;
-
 public class EdgeContractor
 {
     public static <T, N, E> boolean smoothInlineNodeIfNeeded(T tree, boolean isTreeRooted, Func3<T, N, E, Boolean> isDestinationNode, N node, Func2<T, N, Iterable<E>> getIncidentEdges, Func2<T, E, Tuple<N, N>> getNodesOfEdge, Proc2<T, E> removeEdge, Proc2<T, E> addEdge, Func3<T, N, N, E> makeEdge, /*out*/ Ref<E> addedEdge)

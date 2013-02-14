@@ -9,8 +9,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
+import java.math.BigInteger;
 import java.util.*;
-import java.math.*;
 
 
 public class GTDistributionInNetwork {

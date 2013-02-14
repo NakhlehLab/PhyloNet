@@ -17,5 +17,6 @@ END;
 ===
 
 Infer_ST_MDC (g1, g2, g3)
-(e:0,(d:0,(c:0,(a:0,b:0):1):2):4):0; 7 extra lineages in total
+(e:0,(d:0,(c:0,(a:0,b:0):1):2):4):0;
+ Total number of extra lineages:7
 ===

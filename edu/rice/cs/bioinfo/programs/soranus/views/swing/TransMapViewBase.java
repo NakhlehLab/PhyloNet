@@ -1,19 +1,10 @@
 package edu.rice.cs.bioinfo.programs.soranus.views.swing;
 
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.TransMapVM;
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
-import edu.uci.ics.jung.graph.DelegateTree;
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import org.apache.commons.collections15.Transformer;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,25 +13,24 @@ import java.util.*;
  * Time: 7:00 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TransMapView<N,E> extends JPanel
+public class TransMapViewBase<N,E> extends JPanel
 {
     private final TransMapVM<N,E> _transMapVM;
 
-    public TransMapView(TransMapVM<N, E> transMapVM) {
-        _transMapVM = transMapVM;
+    protected TransMapVM<N,E> getTransMapVM()
+    {
+        return _transMapVM;
+    }
 
+    public TransMapViewBase(TransMapVM<N, E> transMapVM) {
+        _transMapVM = transMapVM;
+        /*
         DelegateTree<N,E> transMap = new DelegateTree<N, E>();
 
 
-        Set<N> potentialRoots = new HashSet<N>(_transMapVM.getNodes());
-        for(E edge : _transMapVM.getEdges())
-        {
-        //    N parent = _transMapVM.getSource(edge);
-            N child =  _transMapVM.getDestination(edge);
-            potentialRoots.remove(child);
-        }
 
-        transMap.setRoot(potentialRoots.iterator().next());
+
+        transMap.setRoot(findRoot());
 
         Set<E> edgesToAdd = new HashSet<E>(_transMapVM.getEdges());
 
@@ -71,9 +61,25 @@ public class TransMapView<N,E> extends JPanel
                 return _transMapVM.getNodeLabel(n);
             }
         });
-        this.add(vv);
+        this.add(vv); */
+    }
 
+    protected N findRoot()
+    {
+        Set<N> potentialRoots = new HashSet<N>(_transMapVM.getNodes());
+        for(E edge : _transMapVM.getEdges())
+        {
+            N child =  _transMapVM.getDestination(edge);
+            potentialRoots.remove(child);
+        }
 
-
+        if(potentialRoots.size() == 1)
+        {
+            return potentialRoots.iterator().next();
+        }
+        else
+        {
+            throw new IllegalStateException();
+        }
     }
 }

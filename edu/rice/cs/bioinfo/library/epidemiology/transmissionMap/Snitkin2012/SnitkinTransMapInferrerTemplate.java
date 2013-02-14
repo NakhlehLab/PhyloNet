@@ -7,8 +7,6 @@ import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.
 import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.MinSpanArborescenceSolver;
 import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.MinSpanArborescenceSolverCompleteDigraph;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.ReadablePartial;
@@ -48,12 +46,12 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
     private final Set<ReadablePartial> _datesInTrace;
 
 
-
+     /*
     private DirectedGraph<P,SnitkinEdge<P,D>> makeEmptyGraph()
     {
         return new DirectedSparseGraph<P, SnitkinEdge<P, D>>();
     }
-
+             */
     public SnitkinTransMapInferrerTemplate(Map<P, Map<LocalDate, Object>> patientTraces,
                                            Map<P, LocalDate> patientToFirstPositiveDate,
                                            Map<S, P> sequencingToPatient) {

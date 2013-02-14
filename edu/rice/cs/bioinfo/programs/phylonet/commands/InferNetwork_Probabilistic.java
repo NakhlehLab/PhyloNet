@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Rice University.
+ * Copyright (c) 2013 Rice University.
  *
  * This file is part of PhyloNet.
  *
@@ -26,6 +26,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -66,8 +68,8 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
 
     public InferNetwork_Probabilistic(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                                     Map<String,NetworkNonEmpty>  sourceIdentToNetwork,
-                                     Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader){
+                                      Map<String,NetworkNonEmpty>  sourceIdentToNetwork,
+                                      Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand){
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
@@ -404,12 +406,30 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         //long start = System.currentTimeMillis();
         InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
         inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2);
-        List<Tuple<String, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
+        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
 
-        for(Tuple<String, Double> tuple: resultTuples){
-            result.append("\n" + tuple.Item1);
-            result.append("\n" + "Total log probability: " + tuple.Item2+ "\n");
+        for(Tuple<Network, Double> tuple: resultTuples){
+
+            Network n = tuple.Item1;
+
+            for(Object node : n.bfs())
+            {
+                NetNode netNode = (NetNode)node;
+                if(!netNode.isLeaf())
+                {
+                    netNode.setName(NetNode.NO_NAME);
+                }
+            }
+
+
+            StringWriter writer = new StringWriter();
+            RnNewickPrinter printer = new RnNewickPrinter();
+            printer.print(tuple.Item1, writer);
+            result.append("\n" + writer.toString());
+
+
+            result.append("\n" + "Total log probability: " + tuple.Item2);
         }
         return result.toString();
 

@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2013 Rice University.
+ *
+ * This file is part of PhyloNet.
+ *
+ * PhyloNet is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PhyloNet is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PhyloNet.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import java.io.ByteArrayInputStream;
@@ -68,7 +87,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         _Brent2 = Brent2;
     }
 
-    public List<Tuple<String,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
+    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
         _optimalNetworks = new Network[numSol];
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Double.NEGATIVE_INFINITY);
@@ -82,9 +101,9 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
         Comparator<Double> comparator = getDoubleScoreComparator();
         HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, diameterLimit); // search starts here
-        List<Tuple<String, Double>> resultList = new ArrayList<Tuple<String, Double>>();
+        List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
         for(int i=0; i<numSol; i++){
-            resultList.add(new Tuple<String, Double>(network2String(_optimalNetworks[i]), _optimalScores[i]));
+            resultList.add(new Tuple<Network, Double>(_optimalNetworks[i], _optimalScores[i]));
         }
         //System.out.println("\n #Networks " + result.ExaminationsCount);
         return resultList;

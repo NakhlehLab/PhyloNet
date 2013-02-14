@@ -39,7 +39,7 @@ import java.util.Map;
  * Time: 1:46 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("inferst_mc")
+@CommandName("Infer_ST_MC")
 public class InferST_MC extends InferSTBase
 {
     private boolean _treesRooted = true;

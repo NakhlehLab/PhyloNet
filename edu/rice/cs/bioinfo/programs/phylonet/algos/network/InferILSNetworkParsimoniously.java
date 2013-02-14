@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2013 Rice University.
+ *
+ * This file is part of PhyloNet.
+ *
+ * PhyloNet is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PhyloNet is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PhyloNet.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import java.io.ByteArrayInputStream;
@@ -50,7 +69,7 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public List<Tuple<String,Integer>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
+    public List<Tuple<Network,Integer>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
         _optimalNetworks = new Network[numSol];
         _optimalScores = new int[numSol];
         Arrays.fill(_optimalScores, Integer.MAX_VALUE);
@@ -67,16 +86,16 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
         HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Integer> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, diameterLimit); // search starts here
         //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> resultNetwork = result.BestExaminedNetwork;
         //System.out.println("\n #Networks " + result.ExaminationsCount);
-        List<Tuple<String, Integer>> resultTuples= postProcessResult(gts, species2alleles);
+        List<Tuple<Network, Integer>> resultTuples= postProcessResult(gts, species2alleles);
         return resultTuples;
     }
 
-    private List<Tuple<String, Integer>> postProcessResult(List<Tree> gts, Map<String,List<String>> species2alleles){
-        List<Tuple<String, Integer>> resultList = new ArrayList<Tuple<String, Integer>>();
+    private List<Tuple<Network, Integer>> postProcessResult(List<Tree> gts, Map<String,List<String>> species2alleles){
+        List<Tuple<Network, Integer>> resultList = new ArrayList<Tuple<Network, Integer>>();
         for(int i=0; i<_optimalNetworks.length; i++){
             MDCOnNetworkYF scorer = new MDCOnNetworkYF();
             scorer.computeInheritanceProb(_optimalNetworks[i], gts, species2alleles);
-            resultList.add(new Tuple<String, Integer>(network2String(_optimalNetworks[i]), _optimalScores[i]));
+            resultList.add(new Tuple<Network, Integer>(_optimalNetworks[i], _optimalScores[i]));
         }
         return resultList;
     }

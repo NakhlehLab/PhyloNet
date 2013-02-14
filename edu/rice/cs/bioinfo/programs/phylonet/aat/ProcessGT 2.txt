@@ -15,7 +15,7 @@ END;
 ===
 
 ProcessGT {speceiesTree} {geneTree1}
-Species_Tree#1 = ((((a,b),c),d),e);
+Species_Tree#1 = ((((a:1.0,b:2.0),c:3.0),d:4.0),e:5.0);
 Resulting gene trees:
 (((c:3.0,(a:1.0,b:2.0)),d:4.0),e:5.0);
 ===

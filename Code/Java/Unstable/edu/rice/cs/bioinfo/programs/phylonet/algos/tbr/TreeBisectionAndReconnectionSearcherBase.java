@@ -22,10 +22,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.tbr;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.UnrootedTreespaceHeuristicSearcherBase;
-import org.apache.commons.collections15.Predicate;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.

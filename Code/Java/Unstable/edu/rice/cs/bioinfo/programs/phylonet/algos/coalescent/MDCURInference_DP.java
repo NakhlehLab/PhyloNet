@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MaxClique;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -31,7 +32,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClust
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Collapse;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 
 import java.util.*;
 

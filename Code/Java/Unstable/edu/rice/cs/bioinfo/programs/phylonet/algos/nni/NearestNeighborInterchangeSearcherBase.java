@@ -1,8 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.nni;
-import edu.rice.cs.bioinfo.library.programming.Func;
+
 import edu.rice.cs.bioinfo.library.programming.*;
-import edu.rice.cs.bioinfo.library.programming.Predicate1;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.UnrootedTreespaceHeuristicSearcherBase;
 
 import java.util.Iterator;

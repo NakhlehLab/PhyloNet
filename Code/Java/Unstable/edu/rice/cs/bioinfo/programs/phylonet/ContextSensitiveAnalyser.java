@@ -22,13 +22,14 @@ package edu.rice.cs.bioinfo.programs.phylonet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.BlockContents;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.RichNewickAssignment;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.ASTContextAnalyser;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.

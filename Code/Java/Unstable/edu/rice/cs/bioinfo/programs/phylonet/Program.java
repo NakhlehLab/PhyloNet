@@ -30,7 +30,9 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Container;
+import edu.rice.cs.bioinfo.library.programming.Proc1;
+import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
 import edu.rice.cs.bioinfo.programs.phylonet.commands.NexusOut;

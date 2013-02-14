@@ -19,10 +19,8 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
-import java.sql.Ref;
 import java.util.LinkedList;
 import java.util.List;
 

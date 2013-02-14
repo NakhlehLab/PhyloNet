@@ -19,9 +19,6 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import com.sun.javaws.security.AppContextUtil;
-import com.sun.org.apache.xerces.internal.impl.io.UCSReader;
-import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Graph;
 
 import java.util.HashSet;

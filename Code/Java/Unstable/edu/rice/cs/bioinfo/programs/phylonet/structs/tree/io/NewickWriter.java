@@ -19,14 +19,14 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io;
 
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.Iterator;
-
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Iterator;
 
 
 

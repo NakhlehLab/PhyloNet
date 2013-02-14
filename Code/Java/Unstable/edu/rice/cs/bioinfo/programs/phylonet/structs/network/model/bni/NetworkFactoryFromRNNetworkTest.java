@@ -20,9 +20,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;

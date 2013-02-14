@@ -19,21 +19,16 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.util.*;
-
-
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
-import edu.rice.cs.bioinfo.library.phylogenetics.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
+import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
+import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
+import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkWholeNeighbourhoodGenerator;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
@@ -42,19 +37,21 @@ import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.all
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
-import edu.uci.ics.jung.graph.DirectedGraph;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.optimization.GoalType;
 import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.

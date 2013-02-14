@@ -19,10 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos;
 
-import com.sun.xml.internal.ws.util.Pool;
 import edu.rice.cs.bioinfo.library.programming.*;
-
-import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.

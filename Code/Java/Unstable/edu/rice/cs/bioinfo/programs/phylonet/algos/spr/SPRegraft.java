@@ -19,7 +19,6 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.spr;
 
-import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 /**

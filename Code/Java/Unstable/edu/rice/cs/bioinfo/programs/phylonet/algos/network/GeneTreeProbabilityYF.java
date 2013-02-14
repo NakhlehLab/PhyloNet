@@ -20,14 +20,15 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 
-import java.util.*;
-
-import edu.rice.cs.bioinfo.library.programming.Tuple3;
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
+
+import java.util.*;
 
 
 /**

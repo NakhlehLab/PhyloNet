@@ -19,7 +19,8 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.util;
 
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,8 +29,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
  * Time: 6:13 PM
  * To change this template use File | Settings | File Templates.
  */
-
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 
 /**
  * This method implements utility methods on network nodes.

@@ -1,9 +1,14 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
+
 import java.util.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 
 /**
  * Created by IntelliJ IDEA.

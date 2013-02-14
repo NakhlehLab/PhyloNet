@@ -19,7 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti;
 
-import java.util.*;
+import java.util.BitSet;
 
 /**
  * A class for representing a tree bipartition. The bipartition is represented by two bit sets--left set 

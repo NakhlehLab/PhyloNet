@@ -19,7 +19,6 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 

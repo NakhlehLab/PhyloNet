@@ -19,9 +19,6 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt;
 
-import edu.rice.cs.bioinfo.library.graph.algorithms.cycleDetection.DirectedCycleDetectionDFS;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.lca.SchieberVishkinLCA;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;

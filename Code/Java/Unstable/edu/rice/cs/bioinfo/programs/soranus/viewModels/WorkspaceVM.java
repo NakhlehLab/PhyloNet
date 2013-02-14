@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.soranus.viewModels;
 
-import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinEdge;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 
 import java.util.HashSet;
@@ -15,11 +14,21 @@ import java.util.Set;
  */
 public class WorkspaceVM
 {
-    class DataRecord
+    public class DataRecord
     {
         public final String Title;
 
         DataRecord(String title) {
+            Title = title;
+        }
+    }
+
+    public class AnalysisRecord
+    {
+        public final String Title;
+
+        AnalysisRecord(String title)
+        {
             Title = title;
         }
     }
@@ -32,11 +41,18 @@ public class WorkspaceVM
 
     private Set<DataRecord> _firstPositiveDataRecords = new HashSet<DataRecord>();
 
-    private Set<Proc1<String>> _dataRecordAddedListeners = new HashSet<Proc1<String>>();
+    private Set<Proc1<DataRecord>> _dataRecordAddedListeners = new HashSet<Proc1<DataRecord>>();
 
-    public void addDataRecordAddedListener(Proc1<String> listener)
+    public void addDataRecordAddedListener(Proc1<DataRecord> listener)
     {
         _dataRecordAddedListeners.add(listener);
+    }
+
+    private Set<Proc1<AnalysisRecord>> _anaylisisAddedListeners = new HashSet<Proc1<AnalysisRecord>>();
+
+    public void addAnalysisAddedListener(Proc1<AnalysisRecord> listener)
+    {
+        _anaylisisAddedListeners.add(listener);
     }
 
     private DocumentVM _focusDocument = null;
@@ -60,28 +76,41 @@ public class WorkspaceVM
     }
 
 
-    public void addSequencingsData(String explorerTitle)
+    public DataRecord addSequencingsData(String explorerTitle)
     {
-        addDataHelp(explorerTitle, _sequencingsDataRecords);
+        return addDataHelp(explorerTitle, _sequencingsDataRecords);
     }
 
-    public void addTraceData(String explorerTitle)
+    public DataRecord addTraceData(String explorerTitle)
     {
-        addDataHelp(explorerTitle, _traceDataRecords);
+        return addDataHelp(explorerTitle, _traceDataRecords);
     }
 
-    public void addFirstPositiveData(String explorerTitle) {
-        addDataHelp(explorerTitle, _firstPositiveDataRecords);
+    public DataRecord addFirstPositiveData(String explorerTitle) {
+        return addDataHelp(explorerTitle, _firstPositiveDataRecords);
     }
 
-    private void addDataHelp(String title, Set<DataRecord> toAdd)
+    private DataRecord addDataHelp(String title, Set<DataRecord> toAdd)
     {
         DataRecord dataRecord = new DataRecord(title);
         toAdd.add(dataRecord);
-        for(Proc1<String> dataRecordAddedListener : _dataRecordAddedListeners)
+        for(Proc1<DataRecord> dataRecordAddedListener : _dataRecordAddedListeners)
         {
-            dataRecordAddedListener.execute(title);
+            dataRecordAddedListener.execute(dataRecord);
         }
+
+        return dataRecord;
+    }
+
+    public AnalysisRecord addAnalysis(String title)
+    {
+        AnalysisRecord record = new AnalysisRecord(title);
+        for(Proc1<AnalysisRecord> listener : _anaylisisAddedListeners)
+        {
+            listener.execute(record);
+        }
+
+        return  record;
     }
 
     public boolean isDataRecordTitleRepresentingSequencingsData(String title)

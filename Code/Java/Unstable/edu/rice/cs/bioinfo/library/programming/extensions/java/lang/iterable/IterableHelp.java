@@ -21,7 +21,6 @@ package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
 
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
-import org.joda.time.LocalDate;
 
 import javax.swing.text.Element;
 import java.util.*;

@@ -39,7 +39,7 @@ import java.util.Map;
  * Time: 4:59 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("inferst_dv")
+@CommandName("Infer_ST_DV")
 public class InferST_DV extends InferSTBase
 {
     public InferST_DV(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,

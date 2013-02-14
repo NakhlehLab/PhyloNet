@@ -1,10 +1,5 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap;
 
-
-import edu.uci.ics.jung.graph.DirectedGraph;
-
-import java.util.Set;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Matt

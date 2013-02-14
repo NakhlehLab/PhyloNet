@@ -25,6 +25,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickRe
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
+import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -57,7 +58,9 @@ public class CommandFactory {
             params.add(p);
         }
 
+        Reflections.log = null; // disable logging in reflections.  Else a lot of output to stdout.
         org.reflections.Reflections reflections = new org.reflections.Reflections("edu.rice.cs.bioinfo.programs.phylonet.commands");
+
 
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(CommandName.class);
 

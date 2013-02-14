@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Rice University.
+ * Copyright (c) 2013 Rice University.
  *
  * This file is part of PhyloNet.
  *
@@ -26,6 +26,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -227,7 +229,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
     @Override
     protected String produceResult() {
-        StringBuffer result = new StringBuffer();
+        StringWriter result = new StringWriter();
 
         List<Tree> gts = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
@@ -262,11 +264,27 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
         //long start = System.currentTimeMillis();
         InferILSNetworkParsimoniously inference = new InferILSNetworkParsimoniously();
-        List<Tuple<String, Integer>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter,speciesNetwork, _returnNetworks);
+        List<Tuple<Network, Integer>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter,speciesNetwork, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
-        for(Tuple<String, Integer> tuple: resultTuples){
-            result.append("\n" + tuple.Item1);
-            result.append("\n" + "Total number of extra lineages: " + tuple.Item2 + "\n");
+        for(Tuple<Network, Integer> tuple: resultTuples){
+            Network n = tuple.Item1;
+
+            for(Object node : n.bfs())
+            {
+                NetNode netNode = (NetNode)node;
+                if(!netNode.isLeaf())
+                {
+                    netNode.setName(NetNode.NO_NAME);
+                }
+            }
+
+
+            StringWriter writer = new StringWriter();
+            RnNewickPrinter printer = new RnNewickPrinter();
+            printer.print(tuple.Item1, writer);
+            result.append("\n" + writer.toString());
+
+            result.append("\n" + "Total number of extra lineages: " + tuple.Item2);
         }
         return result.toString();
 

@@ -1,9 +1,9 @@
 package edu.rice.cs.bioinfo.programs.soranus.views.swing;
 
-import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinEdge;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.*;
+import edu.rice.cs.bioinfo.programs.soranus.views.WorkspaceView;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -13,10 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,9 +22,11 @@ import java.util.Set;
  * Time: 6:09 PM
  * To change this template use File | Settings | File Templates.
  */
-public class WorkspaceView extends JFrame
+public class WorkspaceViewSwing extends JFrame implements WorkspaceView
 {
     private WorkspaceVM _viewModel;
+
+    private JSplitPane _splitPane;
 
     private JTree _projectTree;
 
@@ -39,11 +38,17 @@ public class WorkspaceView extends JFrame
 
     private DefaultMutableTreeNode _dataFolder = new DefaultMutableTreeNode("Data");
 
+    private DefaultMutableTreeNode _analysisFolder = new DefaultMutableTreeNode("Analysis");
+
     private Set<TreeNode> _dataRecordTreeNodes = new HashSet<TreeNode>();
 
     private Set<Proc1<File>> _addDataListeners = new HashSet<Proc1<File>>();
 
-    public void addAddDataListener(Proc1<File> listener)
+    private Map<DefaultMutableTreeNode,WorkspaceVM.AnalysisRecord> _analysisTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, WorkspaceVM.AnalysisRecord>();
+
+    private Map<DefaultMutableTreeNode,WorkspaceVM.DataRecord> _dataTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, WorkspaceVM.DataRecord>();
+
+    public void addDataAddRequestListener(Proc1<File> listener)
     {
         _addDataListeners.add(listener);
     }
@@ -62,14 +67,33 @@ public class WorkspaceView extends JFrame
         _neighborJoiningAnalysisRequestedListeners.add(listener);
     }
 
+    private Set<Proc1<WorkspaceVM.AnalysisRecord>> _analysisRecordSelectedListeners = new HashSet<Proc1<WorkspaceVM.AnalysisRecord>>();
 
-    public WorkspaceView(WorkspaceVM viewModel)
+    public void addAnalysisRecordSelectedListener(Proc1<WorkspaceVM.AnalysisRecord> listener)
+    {
+        _analysisRecordSelectedListeners.add(listener);
+    }
+
+    private Set<Proc1<WorkspaceVM.DataRecord>> _dataRecordSelectedListeners = new HashSet<Proc1<WorkspaceVM.DataRecord>>();
+
+    public void addDataRecordSelectedListener(Proc1<WorkspaceVM.DataRecord> listener)
+    {
+        _dataRecordSelectedListeners.add(listener);
+    }
+
+    public void startView() {
+        this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        this.setVisible(true);
+    }
+
+
+    public WorkspaceViewSwing(WorkspaceVM viewModel)
     {
         _viewModel= viewModel;
 
-        _viewModel.addDataRecordAddedListener(new Proc1<String>() {
-            public void execute(String title) {
-                onDataRecordAdded(title);
+        _viewModel.addDataRecordAddedListener(new Proc1<WorkspaceVM.DataRecord>() {
+            public void execute(WorkspaceVM.DataRecord record) {
+                onDataRecordAdded(record);
             }
         });
         _viewModel.addFocusDocumentChangedListener(new Proc1<DocumentVM>() {
@@ -77,36 +101,47 @@ public class WorkspaceView extends JFrame
                 onFocusDocumentChanged(documentVM);
             }
         });
+        _viewModel.addAnalysisAddedListener(new Proc1<WorkspaceVM.AnalysisRecord>() {
+            public void execute(WorkspaceVM.AnalysisRecord record) {
+                onAnalysisAdded(record);
+            }
+        });
 
         this.setTitle(viewModel.Title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         _projectFolder.add(_dataFolder);
-        DefaultMutableTreeNode analysis = new DefaultMutableTreeNode("Analysis");
-        _projectFolder.add(analysis);
+        _projectFolder.add(_analysisFolder);
 
 
         _projectTreeModel = new DefaultTreeModel(_projectFolder);
-        _projectTree = makeProjectTree(_projectTreeModel, analysis);
+        _projectTree = makeProjectTree(_projectTreeModel);
      //   _projectTreeModel.reload();
 
         _documentPanel.setLayout(new BorderLayout());
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(_projectTree), _documentPanel);
-        this.getContentPane().add(splitPane);
+        _splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(_projectTree), _documentPanel);
+        _splitPane.resetToPreferredSizes();
+        this.getContentPane().add(_splitPane);
 
     }
 
+
+
     private void onFocusDocumentChanged(DocumentVM documentVM)
     {
-        JPanel newFocusView = documentVM.execute(new DocumentVMAlgo<JPanel, RuntimeException>()
+        JComponent newFocusView = documentVM.execute(new DocumentVMAlgo<JComponent, RuntimeException>()
         {
             public <N, E> JPanel forTransMapVM(TransMapVM<N,E> vm) throws RuntimeException {
-                return new TransMapView<N,E>(vm);
+                return new TransMapViewJFiles<N,E>(vm);
             }
 
             public <N, E> JPanel forNeighborJoiningVM(NeighborJoiningVM<N,E> vm) throws RuntimeException {
-                return new NeighborJoiningView<N,E>(vm);
+                return new NeighborJoiningViewJFiles<N,E>(vm);
+            }
+
+            public JComponent forXMLDataVM(XMLDataVM xmlDataVM) {
+                return new XMLDataView(xmlDataVM);
             }
         });
         _documentPanel.removeAll();
@@ -115,8 +150,42 @@ public class WorkspaceView extends JFrame
 
     }
 
+    private void onAnalysisAdded(WorkspaceVM.AnalysisRecord record)
+    {
+        DefaultMutableTreeNode newEntryNode = new DefaultMutableTreeNode(record.Title);
+        _analysisTreeNodeToRecord.put(newEntryNode, record);
 
-    private JTree makeProjectTree(TreeModel treeModel, final TreeNode analysis)
+        _analysisFolder.add(newEntryNode);
+        _projectTreeModel.reload(_analysisFolder);
+
+        TreePath pathFromRootToAnalysisFolder = getPathFromRootToFolder(_analysisFolder);
+        _projectTree.expandPath(pathFromRootToAnalysisFolder);
+        _splitPane.resetToPreferredSizes();
+    }
+
+    private TreePath getPathFromRootToFolder(DefaultMutableTreeNode folder)
+    {
+        LinkedList<TreeNode> pathFolderToRootAccum = new LinkedList<TreeNode>();
+        pathFolderToRootAccum.add(folder);
+
+        while(pathFolderToRootAccum.getLast() != _projectFolder)
+        {
+            pathFolderToRootAccum.add(pathFolderToRootAccum.getLast().getParent());
+        }
+
+       TreePath pathFromRootToFolder = new TreePath(pathFolderToRootAccum.removeLast()) ;
+
+        while(!pathFolderToRootAccum.isEmpty())
+        {
+            pathFromRootToFolder = pathFromRootToFolder.pathByAddingChild(pathFolderToRootAccum.removeLast());
+        }
+
+
+        return pathFromRootToFolder;
+    }
+
+
+    private JTree makeProjectTree(TreeModel treeModel)
     {
 
 
@@ -137,7 +206,7 @@ public class WorkspaceView extends JFrame
                         expanded, leaf, row,
                         hasFocus);
 
-                if(value == _dataFolder || value == analysis)
+                if(value == _dataFolder || value == _analysisFolder)
                 {
                     setIcon(this.getDefaultOpenIcon());
                 }
@@ -153,15 +222,19 @@ public class WorkspaceView extends JFrame
             @Override
             public void mousePressed(MouseEvent e) {
 
-                if(e.getSource() == projectTree && SwingUtilities.isRightMouseButton(e))
+                if(e.getSource() != projectTree)
+                    return;
+
+                TreePath path = projectTree.getPathForLocation ( e.getX (), e.getY () );
+                Rectangle pathBounds = projectTree.getUI ().getPathBounds ( projectTree, path );
+
+                if(pathBounds == null)
+                    return;
+
+                Object lastPathComponent = path.getLastPathComponent();
+
+                if(SwingUtilities.isRightMouseButton(e))
                 {
-                    TreePath path = projectTree.getPathForLocation ( e.getX (), e.getY () );
-                    Rectangle pathBounds = projectTree.getUI ().getPathBounds ( projectTree, path );
-
-                    if(pathBounds == null)
-                        return;
-
-                    Object lastPathComponent = path.getLastPathComponent();
                     if(lastPathComponent == _dataFolder)
                     {
                         onDataFolderRightClick(e);
@@ -170,12 +243,40 @@ public class WorkspaceView extends JFrame
                     {
                         onDataRecordRightClick(e);
                     }
-
+                }
+                else if(SwingUtilities.isLeftMouseButton(e))
+                {
+                    if(_analysisTreeNodeToRecord.containsKey(lastPathComponent))
+                    {
+                        WorkspaceVM.AnalysisRecord record = _analysisTreeNodeToRecord.get(lastPathComponent);
+                        onAnalysisRecordLeftClick(record);
+                    }
+                    else if(_dataTreeNodeToRecord.containsKey(lastPathComponent))
+                    {
+                        WorkspaceVM.DataRecord record = _dataTreeNodeToRecord.get(lastPathComponent);
+                        onDataRecordLeftClick(record);
+                    }
                 }
             }
         });
 
         return projectTree;
+    }
+
+    private void onAnalysisRecordLeftClick(WorkspaceVM.AnalysisRecord record) {
+
+        for(Proc1<WorkspaceVM.AnalysisRecord> listener : _analysisRecordSelectedListeners)
+        {
+            listener.execute(record);
+        }
+    }
+
+    private void onDataRecordLeftClick(WorkspaceVM.DataRecord record) {
+
+        for(Proc1<WorkspaceVM.DataRecord> listener : _dataRecordSelectedListeners)
+        {
+            listener.execute(record);
+        }
     }
 
     private void onDataRecordRightClick(MouseEvent e)
@@ -193,7 +294,7 @@ public class WorkspaceView extends JFrame
             {
                 final String sequencingsTitleFinal = firstEntryTitle;
                 analysisOptions = new JPopupMenu ();
-                final JMenuItem doNeighborJoin = new JMenuItem ( "Infer Neighbor Join Tree" );
+                final JMenuItem doNeighborJoin = new JMenuItem ( "Infer Neighbor Joining Tree" );
                 doNeighborJoin.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         if(e.getSource() == doNeighborJoin)
@@ -290,9 +391,10 @@ public class WorkspaceView extends JFrame
         menu.show (_projectTree, e.getX(), e.getY() );
     }
 
-    private void onDataRecordAdded(String title)
+    private void onDataRecordAdded(WorkspaceVM.DataRecord record)
     {
-        DefaultMutableTreeNode newEntryNode = new DefaultMutableTreeNode(title);
+        DefaultMutableTreeNode newEntryNode = new DefaultMutableTreeNode(record.Title);
+        _dataTreeNodeToRecord.put(newEntryNode, record);
         _dataFolder.add(newEntryNode);
         _dataRecordTreeNodes.add(newEntryNode);
 
@@ -313,8 +415,10 @@ public class WorkspaceView extends JFrame
             pathFromRootToNewEntryParent = pathFromRootToNewEntryParent.pathByAddingChild(pathFromNewEntryToRootAccum.removeLast());
         }
 
-       _projectTreeModel.reload();
+       _projectTreeModel.reload(_dataFolder);
        _projectTree.expandPath(pathFromRootToNewEntryParent);
+       _splitPane.resetToPreferredSizes();
+
 
 
     }

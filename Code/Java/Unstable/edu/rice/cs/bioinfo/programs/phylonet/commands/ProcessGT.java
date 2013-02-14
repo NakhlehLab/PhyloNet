@@ -175,7 +175,7 @@ public class ProcessGT extends CommandBaseFileOut
         int index = 1;
 		for(Tree st: speciesTrees){
 			GeneTreeRefinement.processGeneTrees(geneTrees, st, taxonMap, _geneTreesRooted, _bootstrap, null);
-            String stString = st.toStringWD();
+            String stString = st.toString();
             this.richNewickGenerated(stString);
 			result.append("\nSpecies_Tree#" + (index++ ) + " = " + stString + "\n");
 			result.append("Resulting gene trees:");

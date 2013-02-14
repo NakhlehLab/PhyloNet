@@ -12,12 +12,12 @@ END;
 
 BEGIN PHYLONET;
 
-DeepCoalCount_Tree {speceiesTree} {geneTree1, geneTree2, geneTree3} -u;
+DeepCoalCount_Tree {speceiesTree} (geneTree1, geneTree2, geneTree3) -u;
 
 END;
 ===
 
-DeepCoalCount_Tree {speceiesTree} {geneTree1, geneTree2, geneTree3} -u
+DeepCoalCount_Tree {speceiesTree} (geneTree1, geneTree2, geneTree3) -u
 Species_Tree#1 = ((((a:0,b:0):1,c:0):2,d:0):0,e:0):0;
 Total number of extra lineages: 3
 ===

@@ -1,13 +1,10 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
-import static ch.lambdaj.Lambda.*;
-import static org.hamcrest.CoreMatchers.*;
 
 import edu.rice.cs.bioinfo.library.language.dot_2013_1.printing.DigraphDotPrinter;
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 

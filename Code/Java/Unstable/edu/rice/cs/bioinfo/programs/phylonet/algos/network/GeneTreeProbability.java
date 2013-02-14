@@ -34,7 +34,7 @@ public class GeneTreeProbability {
         _nname2tamount = new TreeMap<String,Integer>();
         _hname2tnodes = new TreeMap<String,List<TNode>>();
         _tname2nname = new TreeMap<String,String>();
-        _printDetails = false;
+        _printDetails = true;
     }
 
     /**
@@ -620,6 +620,7 @@ public class GeneTreeProbability {
                 }
 
                 double gamma = child.getParentProbability(parent);
+                gamma = Double.isNaN(gamma)?1.0:gamma;
                 ((STINode<Double>)copy).setData(gamma);
 
                 // Continue to iterate over the children of nn and tn.
@@ -1099,7 +1100,9 @@ public class GeneTreeProbability {
             }
             NetNode<Double> parent = node.getParents().iterator().next();	// Node's only parent.
             double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-            double gamma = node.getParentProbability(parent) * child.getParentProbability(node);
+            double gamma1 = Double.isNaN(node.getParentProbability(parent))?1.0:node.getParentProbability(parent);
+            double gamma2 = Double.isNaN(child.getParentProbability(node))?1.0:child.getParentProbability(node);
+            double gamma =  gamma1 * gamma2;
             parent.removeChild(node);
             node.removeChild(child);
             parent.adoptChild(child, distance);

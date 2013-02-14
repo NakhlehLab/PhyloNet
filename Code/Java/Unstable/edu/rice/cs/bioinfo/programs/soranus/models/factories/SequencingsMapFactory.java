@@ -1,8 +1,6 @@
 package edu.rice.cs.bioinfo.programs.soranus.models.factories;
 
 import edu.rice.cs.bioinfo.programs.soranus.models.analysis.Sequencing;
-import edu.rice.cs.bioinfo.programs.soranus.models.fileRecogniser.KnownDatafileFormat;
-import edu.rice.cs.bioinfo.programs.soranus.models.fileRecogniser.KnownDatafileFormatAlgo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

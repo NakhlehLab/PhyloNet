@@ -43,7 +43,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.ByteArrayInputStream;
@@ -117,10 +120,7 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
             else{
                 sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, 100, true, -1).get(0);
             }
-            Tree startingTree= sol._st;
-            if(!Trees.isBinary(startingTree)){
-                startingTree = Trees.getAllBinaryResolution(startingTree).get(0);
-            }
+            Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = string2Network(startingTree.toString());
         }
 

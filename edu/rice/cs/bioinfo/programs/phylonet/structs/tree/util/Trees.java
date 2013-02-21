@@ -794,6 +794,48 @@ public class Trees {
 		return resolvedTrees;
 	}
 
+    public static Tree generateRandomBinaryResolution(Tree tree){
+        Tree newTree = new STITree(tree);
+        List<TNode> nonBinaryNodes = new ArrayList<TNode>();
+        for(TNode node: newTree.getNodes()){
+            if(node.getChildCount()>2){
+                nonBinaryNodes.add(node);
+            }
+        }
+        if(!nonBinaryNodes.isEmpty()){
+            for(TNode node: nonBinaryNodes){
+                STINode parent = (STINode)node;
+                List<TNode> childNodes = new ArrayList<TNode>();
+                for(TNode child: node.getChildren()){
+                    childNodes.add(child);
+                }
+                //int childCount = node.getChildCount();
+                while(childNodes.size()>2){
+                    int child1ID = (int)(Math.random()*childNodes.size());
+                    int child2ID = child1ID;
+                    while(child1ID==child2ID){
+                        child2ID = (int)(Math.random()*childNodes.size());
+                    }
+                    TNode childNode1 = childNodes.get(child1ID);
+                    TNode childNode2 = childNodes.get(child2ID);
+                    if(child1ID>child2ID){
+                        childNodes.remove(child1ID);
+                        childNodes.remove(child2ID);
+                    }
+                    else{
+                        childNodes.remove(child2ID);
+                        childNodes.remove(child1ID);
+                    }
+                    STINode newChild = parent.createChild();
+                    newChild.adoptChild((TMutableNode)childNode1);
+                    newChild.adoptChild((TMutableNode)childNode2);
+                    childNodes.add(newChild);
+                }
+            }
+        }
+        return newTree;
+    }
+
 
 	/**
 	 * Return all possible binary trees over a given taxa list

@@ -127,10 +127,8 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
             else{
                 sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, 100, true, -1).get(0);
             }
-            Tree startingTree= sol._st;
-            if(!Trees.isBinary(startingTree)){
-                startingTree = Trees.getAllBinaryResolution(startingTree).get(0);
-            }
+
+            Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = string2Network(startingTree.toString());
         }
 

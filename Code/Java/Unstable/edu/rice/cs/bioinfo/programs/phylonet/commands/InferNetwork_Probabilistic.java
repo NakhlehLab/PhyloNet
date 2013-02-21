@@ -60,14 +60,13 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private Long _maxExaminations = null;
     private int _maxDiameter = 0;
     private int _returnNetworks = 1;
-
-
     private int _maxRounds = 100;
     private int _maxTryPerBranch = 100;
     private double _maxBranchLength = 6;
     private double _improvementThreshold = 0.001;
     private double _Brent1 = 0.01;
     private double _Brent2 = 0.001;
+    private boolean  _dentroscropeOutput = false;
 
 
     public InferNetwork_Probabilistic(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
@@ -362,8 +361,14 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam);
+            ParamExtractor diParam = new ParamExtractor("di", this.params, this.errorDetected);
+            if(diParam.ContainsSwitch)
+            {
+                _dentroscropeOutput = true;
+            }
+
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam);
         }
 
 
@@ -412,7 +417,9 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
 
+        int index = 1;
         for(Tuple<Network, Double> tuple: resultTuples){
+            result.append("\nInferred Network #" + index++ + ":");
 
             Network n = tuple.Item1;
 
@@ -425,15 +432,29 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
-
             StringWriter writer = new StringWriter();
             RnNewickPrinter printer = new RnNewickPrinter();
             printer.print(tuple.Item1, writer);
             result.append("\n" + writer.toString());
-
-
             result.append("\n" + "Total log probability: " + tuple.Item2);
+
+            if(_dentroscropeOutput){
+                for(Object node : n.getNetworkNodes())
+                {
+                    NetNode netNode = (NetNode)node;
+                    for(Object parent: netNode.getParents())
+                    {
+                        NetNode parentNode = (NetNode)parent;
+                        netNode.setParentProbability(parentNode, Double.NaN);
+                    }
+                }
+                writer = new StringWriter();
+                printer = new RnNewickPrinter();
+                printer.print(tuple.Item1, writer);
+                result.append("\nVisualize in Dendroscope : " + writer.toString());
+            }
         }
+
         return result.toString();
 
     }

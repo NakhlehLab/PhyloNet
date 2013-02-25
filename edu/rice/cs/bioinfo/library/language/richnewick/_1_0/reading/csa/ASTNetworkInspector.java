@@ -32,7 +32,7 @@ import java.util.Map;
  * Time: 1:22 PM
  * To change this template use File | Settings | File Templates.
  */
-class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, NetworkInspector<Object, ASTNetworkInspector.Edge>
+public class ASTNetworkInspector implements SyntaxNetworkInspector<NetworkInfo>, NetworkInspector<Object, ASTNetworkInspector.Edge>
 {
     public class Edge
     {

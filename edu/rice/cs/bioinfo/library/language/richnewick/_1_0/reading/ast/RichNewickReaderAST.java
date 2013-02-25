@@ -19,21 +19,21 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast;
 
-import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
-import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorDefault;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.ASTContextAnalyser;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickParser;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReaderAndBuilderBase;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.Func;
-
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,16 +42,9 @@ import java.util.List;
  * Time: 10:20 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RichNewickReaderAST extends RichNewickReaderBase<Networks>
+public class RichNewickReaderAST<G> extends RichNewickReaderAndBuilderBase<Networks, Network, GraphBuilder<G>>
 {
     private final Func<RichNewickParser<Networks>> _makeParser;
-
-    private BigDecimal _hybridSumTolerance = BigDecimal.ZERO;
-
-    public void setHybridSumTolerance(BigDecimal tolerance)
-    {
-        _hybridSumTolerance = tolerance;
-    }
 
     public RichNewickReaderAST(Func<RichNewickParser<Networks>> makeParser)
     {
@@ -62,45 +55,30 @@ public class RichNewickReaderAST extends RichNewickReaderBase<Networks>
       return read(instream, null);
     }
 
-    public <N> RichNewickReadResult<Networks> read(InputStream instream, GraphBuilder<N> graphBuilder) throws IOException, CoordinateParseErrorsException {
+    @Override
+    protected void addNetworkToGraph(Network network, GraphBuilder<G> graphBuilder) {
+        DAGFactory.makeDAG(network, graphBuilder);
+    }
 
-        final Networks networks = _makeParser.execute().parse(instream);
+    @Override
+    protected Collection<CSAError> detectCSAErrors(Network network, BigDecimal hybridSumTolerance) {
+       return IterableHelp.toList(ASTContextAnalyser.analyse(network,hybridSumTolerance));
+    }
 
-        final List<CSAError> errors = new LinkedList<CSAError>();
+    @Override
+    protected Iterable<Network> getNetworks(Networks networks) {
+        LinkedList<Network> result = new LinkedList<Network>();
 
-        for(Network network : networks.Networks)
+        for(NetworkNonEmpty ne : networks.Networks)
         {
-
-            for(CSAError error : ASTContextAnalyser.analyse(network,_hybridSumTolerance))
-            {
-                errors.add(error);
-            }
-
-            if(errors.size() > 0)
-            {
-                LinkedList<CoordinateParseError> readErrors = new LinkedList<CoordinateParseError>();
-                for(CSAError csaError : errors)
-                {
-                    readErrors.add(new CoordinateParseErrorDefault(csaError.Message, csaError.LineNumber, csaError.ColumnNumber) {
-                    });
-                }
-                throw new CoordinateParseErrorsException(readErrors);
-            }
-
-            if(graphBuilder != null)
-            {
-                DAGFactory.makeDAG(network, graphBuilder);
-            }
+            result.add(ne);
         }
 
-        return new RichNewickReadResult<Networks>() {
-            public Networks getNetworks() {
-                return networks;
-            }
+        return result;
+    }
 
-            public Iterable<CSAError> getContextErrors() {
-                return errors;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        };
+    @Override
+    protected Networks parse(InputStream instream) throws IOException, CoordinateParseErrorsException{
+        return _makeParser.execute().parse(instream);
     }
 }

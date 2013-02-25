@@ -22,7 +22,7 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.ant
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.AbstractSyntaxNode;
 import org.antlr.runtime.*;
 
-interface ParseStack
+public interface ParseStack
 {
 
 
@@ -61,7 +61,7 @@ interface ParseStack
     void pushNodeLabel();
 
 
-    public AbstractSyntaxNode Pop();
+    public AbstractSyntaxNode pop();
 
     public RuntimeException getException();
 

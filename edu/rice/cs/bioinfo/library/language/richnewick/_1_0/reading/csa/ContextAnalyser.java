@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa;
 
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.math.BigDecimal;
@@ -27,7 +28,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-class ContextAnalyser
+public class ContextAnalyser
 {
     private final BigDecimal _hybridSumTolerance;
 

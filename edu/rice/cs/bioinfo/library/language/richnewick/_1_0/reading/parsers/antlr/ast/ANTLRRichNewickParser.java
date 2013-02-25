@@ -22,16 +22,15 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.ant
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorDefault;
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickParser;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ExtendedNewickLexer;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ExtendedNewickParser;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickParser;
 import edu.rice.cs.bioinfo.library.programming.Func;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -95,6 +94,6 @@ public class ANTLRRichNewickParser implements RichNewickParser<Networks>
             throw possibleException;
         }
 
-        return (Networks) parser.stack.Pop();
+        return (Networks) parser.stack.pop();
     }
 }

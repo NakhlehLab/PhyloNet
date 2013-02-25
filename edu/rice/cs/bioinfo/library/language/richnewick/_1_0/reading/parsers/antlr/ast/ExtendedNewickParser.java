@@ -1,52 +1,31 @@
-/*
- * Copyright (c) 2012 Rice University.
- *
- * This file is part of PhyloNet.
- *
- * PhyloNet is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * PhyloNet is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with PhyloNet.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g 2011-08-23 10:27:56
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g 2013-02-20 16:52:29
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast;
-import java.util.LinkedList;
-
-
-
 import org.antlr.runtime.*;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class ExtendedNewickParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "DECIMAL_NUMBER", "NESTED_ML_COMMENT", "QUOTED_TEXT", "ROOTAGE_QUALIFIER", "UNQUOTED_ALPHA_TEXT", "WS", "'#'", "'('", "')'", "','", "':'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "DECIMAL_NUMBER", "NESTED_ML_COMMENT", "QUOTED_TEXT", "ROOTAGE_QUALIFIER", "TREE_PROB", "UNQUOTED_ALPHA_TEXT", "WS", "'#'", "'('", "')'", "','", "':'", "';'"
     };
 
     public static final int EOF=-1;
-    public static final int T__10=10;
     public static final int T__11=11;
     public static final int T__12=12;
     public static final int T__13=13;
     public static final int T__14=14;
     public static final int T__15=15;
+    public static final int T__16=16;
     public static final int DECIMAL_NUMBER=4;
     public static final int NESTED_ML_COMMENT=5;
     public static final int QUOTED_TEXT=6;
     public static final int ROOTAGE_QUALIFIER=7;
-    public static final int UNQUOTED_ALPHA_TEXT=8;
-    public static final int WS=9;
+    public static final int TREE_PROB=8;
+    public static final int UNQUOTED_ALPHA_TEXT=9;
+    public static final int WS=10;
 
     // delegates
     public Parser[] getDelegates() {
@@ -118,7 +97,7 @@ public class ExtendedNewickParser extends Parser {
                 int alt1=2;
                 int LA1_0 = input.LA(1);
 
-                if ( (LA1_0==DECIMAL_NUMBER||(LA1_0 >= QUOTED_TEXT && LA1_0 <= UNQUOTED_ALPHA_TEXT)||(LA1_0 >= 10 && LA1_0 <= 15)) ) {
+                if ( (LA1_0==DECIMAL_NUMBER||(LA1_0 >= QUOTED_TEXT && LA1_0 <= UNQUOTED_ALPHA_TEXT)||(LA1_0 >= 11 && LA1_0 <= 16)) ) {
                     alt1=1;
                 }
 
@@ -162,28 +141,29 @@ public class ExtendedNewickParser extends Parser {
 
 
     // $ANTLR start "network"
-    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:1: network : (rq= ROOTAGE_QUALIFIER )? (dl= descendant_list )? network_info ';' ;
+    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:1: network : (tp= TREE_PROB )? (rq= ROOTAGE_QUALIFIER )? (dl= descendant_list )? network_info ';' ;
     public final void network() throws RecognitionException {
+        Token tp=null;
         Token rq=null;
         ExtendedNewickParser.descendant_list_return dl =null;
 
 
         try {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:9: ( (rq= ROOTAGE_QUALIFIER )? (dl= descendant_list )? network_info ';' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:11: (rq= ROOTAGE_QUALIFIER )? (dl= descendant_list )? network_info ';'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:9: ( (tp= TREE_PROB )? (rq= ROOTAGE_QUALIFIER )? (dl= descendant_list )? network_info ';' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:11: (tp= TREE_PROB )? (rq= ROOTAGE_QUALIFIER )? (dl= descendant_list )? network_info ';'
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:13: (rq= ROOTAGE_QUALIFIER )?
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:13: (tp= TREE_PROB )?
             int alt2=2;
             int LA2_0 = input.LA(1);
 
-            if ( (LA2_0==ROOTAGE_QUALIFIER) ) {
+            if ( (LA2_0==TREE_PROB) ) {
                 alt2=1;
             }
             switch (alt2) {
                 case 1 :
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:13: rq= ROOTAGE_QUALIFIER
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:13: tp= TREE_PROB
                     {
-                    rq=(Token)match(input,ROOTAGE_QUALIFIER,FOLLOW_ROOTAGE_QUALIFIER_in_network46); 
+                    tp=(Token)match(input,TREE_PROB,FOLLOW_TREE_PROB_in_network46); 
 
                     }
                     break;
@@ -191,18 +171,37 @@ public class ExtendedNewickParser extends Parser {
             }
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:35: (dl= descendant_list )?
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:27: (rq= ROOTAGE_QUALIFIER )?
             int alt3=2;
             int LA3_0 = input.LA(1);
 
-            if ( (LA3_0==11) ) {
+            if ( (LA3_0==ROOTAGE_QUALIFIER) ) {
                 alt3=1;
             }
             switch (alt3) {
                 case 1 :
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:35: dl= descendant_list
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:27: rq= ROOTAGE_QUALIFIER
                     {
-                    pushFollow(FOLLOW_descendant_list_in_network51);
+                    rq=(Token)match(input,ROOTAGE_QUALIFIER,FOLLOW_ROOTAGE_QUALIFIER_in_network51); 
+
+                    }
+                    break;
+
+            }
+
+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:49: (dl= descendant_list )?
+            int alt4=2;
+            int LA4_0 = input.LA(1);
+
+            if ( (LA4_0==12) ) {
+                alt4=1;
+            }
+            switch (alt4) {
+                case 1 :
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:55:49: dl= descendant_list
+                    {
+                    pushFollow(FOLLOW_descendant_list_in_network56);
                     dl=descendant_list();
 
                     state._fsp--;
@@ -214,15 +213,15 @@ public class ExtendedNewickParser extends Parser {
             }
 
 
-            pushFollow(FOLLOW_network_info_in_network54);
+            pushFollow(FOLLOW_network_info_in_network59);
             network_info();
 
             state._fsp--;
 
 
-            match(input,15,FOLLOW_15_in_network56); 
+            match(input,16,FOLLOW_16_in_network61); 
 
-             stack.pushNetwork(rq, (dl!=null?((Token)dl.start):null) != null); 
+             stack.pushNetwork(rq, (dl!=null?((Token)dl.start):null) != null);
 
             }
 
@@ -256,32 +255,32 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:57:48: ( '(' subtree ( ',' subtree )* ')' )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:57:50: '(' subtree ( ',' subtree )* ')'
             {
-            match(input,11,FOLLOW_11_in_descendant_list72); 
+            match(input,12,FOLLOW_12_in_descendant_list77); 
 
-            pushFollow(FOLLOW_subtree_in_descendant_list74);
+            pushFollow(FOLLOW_subtree_in_descendant_list79);
             subtree();
 
             state._fsp--;
 
 
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:57:62: ( ',' subtree )*
-            loop4:
+            loop5:
             do {
-                int alt4=2;
-                int LA4_0 = input.LA(1);
+                int alt5=2;
+                int LA5_0 = input.LA(1);
 
-                if ( (LA4_0==13) ) {
-                    alt4=1;
+                if ( (LA5_0==14) ) {
+                    alt5=1;
                 }
 
 
-                switch (alt4) {
+                switch (alt5) {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:57:63: ',' subtree
             	    {
-            	    match(input,13,FOLLOW_13_in_descendant_list77); 
+            	    match(input,14,FOLLOW_14_in_descendant_list82); 
 
-            	    pushFollow(FOLLOW_subtree_in_descendant_list79);
+            	    pushFollow(FOLLOW_subtree_in_descendant_list84);
             	    subtree();
 
             	    state._fsp--;
@@ -293,12 +292,12 @@ public class ExtendedNewickParser extends Parser {
             	    break;
 
             	default :
-            	    break loop4;
+            	    break loop5;
                 }
             } while (true);
 
 
-            match(input,12,FOLLOW_12_in_descendant_list86); 
+            match(input,13,FOLLOW_13_in_descendant_list91); 
 
              stack.pushDescendantList(subTreeCount); 
 
@@ -327,33 +326,33 @@ public class ExtendedNewickParser extends Parser {
     public final void subtree() throws RecognitionException {
         try {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:59:9: ( descendant_list network_info | network_info )
-            int alt5=2;
-            int LA5_0 = input.LA(1);
+            int alt6=2;
+            int LA6_0 = input.LA(1);
 
-            if ( (LA5_0==11) ) {
-                alt5=1;
+            if ( (LA6_0==12) ) {
+                alt6=1;
             }
-            else if ( (LA5_0==DECIMAL_NUMBER||LA5_0==QUOTED_TEXT||LA5_0==UNQUOTED_ALPHA_TEXT||LA5_0==10||(LA5_0 >= 12 && LA5_0 <= 15)) ) {
-                alt5=2;
+            else if ( (LA6_0==DECIMAL_NUMBER||LA6_0==QUOTED_TEXT||LA6_0==UNQUOTED_ALPHA_TEXT||LA6_0==11||(LA6_0 >= 13 && LA6_0 <= 16)) ) {
+                alt6=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 5, 0, input);
+                    new NoViableAltException("", 6, 0, input);
 
                 throw nvae;
 
             }
-            switch (alt5) {
+            switch (alt6) {
                 case 1 :
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:59:11: descendant_list network_info
                     {
-                    pushFollow(FOLLOW_descendant_list_in_subtree96);
+                    pushFollow(FOLLOW_descendant_list_in_subtree101);
                     descendant_list();
 
                     state._fsp--;
 
 
-                    pushFollow(FOLLOW_network_info_in_subtree98);
+                    pushFollow(FOLLOW_network_info_in_subtree103);
                     network_info();
 
                     state._fsp--;
@@ -366,7 +365,7 @@ public class ExtendedNewickParser extends Parser {
                 case 2 :
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:60:11: network_info
                     {
-                    pushFollow(FOLLOW_network_info_in_subtree112);
+                    pushFollow(FOLLOW_network_info_in_subtree117);
                     network_info();
 
                     state._fsp--;
@@ -407,24 +406,24 @@ public class ExtendedNewickParser extends Parser {
 
         try {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:2: ( (nl= node_label )? (hn= hybrid_node_qualifier )? (bl= branch_length )? | (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length support | (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length support probability | (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length ':' probability | (nl= node_label )? (hn= hybrid_node_qualifier )? ':' support (pb= probability )? | (nl= node_label )? (hn= hybrid_node_qualifier )? ':' ':' probability )
-            int alt20=6;
-            alt20 = dfa20.predict(input);
-            switch (alt20) {
+            int alt21=6;
+            alt21 = dfa21.predict(input);
+            switch (alt21) {
                 case 1 :
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:4: (nl= node_label )? (hn= hybrid_node_qualifier )? (bl= branch_length )?
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:6: (nl= node_label )?
-                    int alt6=2;
-                    int LA6_0 = input.LA(1);
+                    int alt7=2;
+                    int LA7_0 = input.LA(1);
 
-                    if ( (LA6_0==DECIMAL_NUMBER||LA6_0==QUOTED_TEXT||LA6_0==UNQUOTED_ALPHA_TEXT) ) {
-                        alt6=1;
+                    if ( (LA7_0==DECIMAL_NUMBER||LA7_0==QUOTED_TEXT||LA7_0==UNQUOTED_ALPHA_TEXT) ) {
+                        alt7=1;
                     }
-                    switch (alt6) {
+                    switch (alt7) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:6: nl= node_label
                             {
-                            pushFollow(FOLLOW_node_label_in_network_info141);
+                            pushFollow(FOLLOW_node_label_in_network_info146);
                             nl=node_label();
 
                             state._fsp--;
@@ -437,17 +436,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:21: (hn= hybrid_node_qualifier )?
-                    int alt7=2;
-                    int LA7_0 = input.LA(1);
+                    int alt8=2;
+                    int LA8_0 = input.LA(1);
 
-                    if ( (LA7_0==10) ) {
-                        alt7=1;
+                    if ( (LA8_0==11) ) {
+                        alt8=1;
                     }
-                    switch (alt7) {
+                    switch (alt8) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:21: hn= hybrid_node_qualifier
                             {
-                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info146);
+                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info151);
                             hn=hybrid_node_qualifier();
 
                             state._fsp--;
@@ -460,17 +459,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:47: (bl= branch_length )?
-                    int alt8=2;
-                    int LA8_0 = input.LA(1);
+                    int alt9=2;
+                    int LA9_0 = input.LA(1);
 
-                    if ( (LA8_0==14) ) {
-                        alt8=1;
+                    if ( (LA9_0==15) ) {
+                        alt9=1;
                     }
-                    switch (alt8) {
+                    switch (alt9) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:63:47: bl= branch_length
                             {
-                            pushFollow(FOLLOW_branch_length_in_network_info151);
+                            pushFollow(FOLLOW_branch_length_in_network_info156);
                             bl=branch_length();
 
                             state._fsp--;
@@ -490,17 +489,17 @@ public class ExtendedNewickParser extends Parser {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:64:4: (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length support
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:64:6: (nl= node_label )?
-                    int alt9=2;
-                    int LA9_0 = input.LA(1);
+                    int alt10=2;
+                    int LA10_0 = input.LA(1);
 
-                    if ( (LA9_0==DECIMAL_NUMBER||LA9_0==QUOTED_TEXT||LA9_0==UNQUOTED_ALPHA_TEXT) ) {
-                        alt9=1;
+                    if ( (LA10_0==DECIMAL_NUMBER||LA10_0==QUOTED_TEXT||LA10_0==UNQUOTED_ALPHA_TEXT) ) {
+                        alt10=1;
                     }
-                    switch (alt9) {
+                    switch (alt10) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:64:6: nl= node_label
                             {
-                            pushFollow(FOLLOW_node_label_in_network_info180);
+                            pushFollow(FOLLOW_node_label_in_network_info185);
                             nl=node_label();
 
                             state._fsp--;
@@ -513,17 +512,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:64:21: (hn= hybrid_node_qualifier )?
-                    int alt10=2;
-                    int LA10_0 = input.LA(1);
+                    int alt11=2;
+                    int LA11_0 = input.LA(1);
 
-                    if ( (LA10_0==10) ) {
-                        alt10=1;
+                    if ( (LA11_0==11) ) {
+                        alt11=1;
                     }
-                    switch (alt10) {
+                    switch (alt11) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:64:21: hn= hybrid_node_qualifier
                             {
-                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info185);
+                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info190);
                             hn=hybrid_node_qualifier();
 
                             state._fsp--;
@@ -535,13 +534,13 @@ public class ExtendedNewickParser extends Parser {
                     }
 
 
-                    pushFollow(FOLLOW_branch_length_in_network_info191);
+                    pushFollow(FOLLOW_branch_length_in_network_info196);
                     branch_length();
 
                     state._fsp--;
 
 
-                    pushFollow(FOLLOW_support_in_network_info194);
+                    pushFollow(FOLLOW_support_in_network_info199);
                     support();
 
                     state._fsp--;
@@ -555,17 +554,17 @@ public class ExtendedNewickParser extends Parser {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:65:4: (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length support probability
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:65:6: (nl= node_label )?
-                    int alt11=2;
-                    int LA11_0 = input.LA(1);
+                    int alt12=2;
+                    int LA12_0 = input.LA(1);
 
-                    if ( (LA11_0==DECIMAL_NUMBER||LA11_0==QUOTED_TEXT||LA11_0==UNQUOTED_ALPHA_TEXT) ) {
-                        alt11=1;
+                    if ( (LA12_0==DECIMAL_NUMBER||LA12_0==QUOTED_TEXT||LA12_0==UNQUOTED_ALPHA_TEXT) ) {
+                        alt12=1;
                     }
-                    switch (alt11) {
+                    switch (alt12) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:65:6: nl= node_label
                             {
-                            pushFollow(FOLLOW_node_label_in_network_info212);
+                            pushFollow(FOLLOW_node_label_in_network_info219);
                             nl=node_label();
 
                             state._fsp--;
@@ -578,17 +577,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:65:21: (hn= hybrid_node_qualifier )?
-                    int alt12=2;
-                    int LA12_0 = input.LA(1);
+                    int alt13=2;
+                    int LA13_0 = input.LA(1);
 
-                    if ( (LA12_0==10) ) {
-                        alt12=1;
+                    if ( (LA13_0==11) ) {
+                        alt13=1;
                     }
-                    switch (alt12) {
+                    switch (alt13) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:65:21: hn= hybrid_node_qualifier
                             {
-                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info217);
+                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info224);
                             hn=hybrid_node_qualifier();
 
                             state._fsp--;
@@ -600,19 +599,19 @@ public class ExtendedNewickParser extends Parser {
                     }
 
 
-                    pushFollow(FOLLOW_branch_length_in_network_info220);
+                    pushFollow(FOLLOW_branch_length_in_network_info227);
                     branch_length();
 
                     state._fsp--;
 
 
-                    pushFollow(FOLLOW_support_in_network_info223);
+                    pushFollow(FOLLOW_support_in_network_info230);
                     support();
 
                     state._fsp--;
 
 
-                    pushFollow(FOLLOW_probability_in_network_info225);
+                    pushFollow(FOLLOW_probability_in_network_info232);
                     probability();
 
                     state._fsp--;
@@ -626,17 +625,17 @@ public class ExtendedNewickParser extends Parser {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:66:4: (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length ':' probability
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:66:6: (nl= node_label )?
-                    int alt13=2;
-                    int LA13_0 = input.LA(1);
+                    int alt14=2;
+                    int LA14_0 = input.LA(1);
 
-                    if ( (LA13_0==DECIMAL_NUMBER||LA13_0==QUOTED_TEXT||LA13_0==UNQUOTED_ALPHA_TEXT) ) {
-                        alt13=1;
+                    if ( (LA14_0==DECIMAL_NUMBER||LA14_0==QUOTED_TEXT||LA14_0==UNQUOTED_ALPHA_TEXT) ) {
+                        alt14=1;
                     }
-                    switch (alt13) {
+                    switch (alt14) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:66:6: nl= node_label
                             {
-                            pushFollow(FOLLOW_node_label_in_network_info234);
+                            pushFollow(FOLLOW_node_label_in_network_info243);
                             nl=node_label();
 
                             state._fsp--;
@@ -649,17 +648,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:66:21: (hn= hybrid_node_qualifier )?
-                    int alt14=2;
-                    int LA14_0 = input.LA(1);
+                    int alt15=2;
+                    int LA15_0 = input.LA(1);
 
-                    if ( (LA14_0==10) ) {
-                        alt14=1;
+                    if ( (LA15_0==11) ) {
+                        alt15=1;
                     }
-                    switch (alt14) {
+                    switch (alt15) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:66:21: hn= hybrid_node_qualifier
                             {
-                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info239);
+                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info248);
                             hn=hybrid_node_qualifier();
 
                             state._fsp--;
@@ -671,15 +670,15 @@ public class ExtendedNewickParser extends Parser {
                     }
 
 
-                    pushFollow(FOLLOW_branch_length_in_network_info242);
+                    pushFollow(FOLLOW_branch_length_in_network_info251);
                     branch_length();
 
                     state._fsp--;
 
 
-                    match(input,14,FOLLOW_14_in_network_info245); 
+                    match(input,15,FOLLOW_15_in_network_info254); 
 
-                    pushFollow(FOLLOW_probability_in_network_info247);
+                    pushFollow(FOLLOW_probability_in_network_info256);
                     probability();
 
                     state._fsp--;
@@ -693,17 +692,17 @@ public class ExtendedNewickParser extends Parser {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:4: (nl= node_label )? (hn= hybrid_node_qualifier )? ':' support (pb= probability )?
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:6: (nl= node_label )?
-                    int alt15=2;
-                    int LA15_0 = input.LA(1);
+                    int alt16=2;
+                    int LA16_0 = input.LA(1);
 
-                    if ( (LA15_0==DECIMAL_NUMBER||LA15_0==QUOTED_TEXT||LA15_0==UNQUOTED_ALPHA_TEXT) ) {
-                        alt15=1;
+                    if ( (LA16_0==DECIMAL_NUMBER||LA16_0==QUOTED_TEXT||LA16_0==UNQUOTED_ALPHA_TEXT) ) {
+                        alt16=1;
                     }
-                    switch (alt15) {
+                    switch (alt16) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:6: nl= node_label
                             {
-                            pushFollow(FOLLOW_node_label_in_network_info262);
+                            pushFollow(FOLLOW_node_label_in_network_info271);
                             nl=node_label();
 
                             state._fsp--;
@@ -716,17 +715,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:21: (hn= hybrid_node_qualifier )?
-                    int alt16=2;
-                    int LA16_0 = input.LA(1);
+                    int alt17=2;
+                    int LA17_0 = input.LA(1);
 
-                    if ( (LA16_0==10) ) {
-                        alt16=1;
+                    if ( (LA17_0==11) ) {
+                        alt17=1;
                     }
-                    switch (alt16) {
+                    switch (alt17) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:21: hn= hybrid_node_qualifier
                             {
-                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info267);
+                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info276);
                             hn=hybrid_node_qualifier();
 
                             state._fsp--;
@@ -738,26 +737,26 @@ public class ExtendedNewickParser extends Parser {
                     }
 
 
-                    match(input,14,FOLLOW_14_in_network_info270); 
+                    match(input,15,FOLLOW_15_in_network_info279); 
 
-                    pushFollow(FOLLOW_support_in_network_info273);
+                    pushFollow(FOLLOW_support_in_network_info282);
                     support();
 
                     state._fsp--;
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:60: (pb= probability )?
-                    int alt17=2;
-                    int LA17_0 = input.LA(1);
+                    int alt18=2;
+                    int LA18_0 = input.LA(1);
 
-                    if ( (LA17_0==14) ) {
-                        alt17=1;
+                    if ( (LA18_0==15) ) {
+                        alt18=1;
                     }
-                    switch (alt17) {
+                    switch (alt18) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:67:60: pb= probability
                             {
-                            pushFollow(FOLLOW_probability_in_network_info277);
+                            pushFollow(FOLLOW_probability_in_network_info286);
                             pb=probability();
 
                             state._fsp--;
@@ -777,17 +776,17 @@ public class ExtendedNewickParser extends Parser {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:68:5: (nl= node_label )? (hn= hybrid_node_qualifier )? ':' ':' probability
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:68:7: (nl= node_label )?
-                    int alt18=2;
-                    int LA18_0 = input.LA(1);
+                    int alt19=2;
+                    int LA19_0 = input.LA(1);
 
-                    if ( (LA18_0==DECIMAL_NUMBER||LA18_0==QUOTED_TEXT||LA18_0==UNQUOTED_ALPHA_TEXT) ) {
-                        alt18=1;
+                    if ( (LA19_0==DECIMAL_NUMBER||LA19_0==QUOTED_TEXT||LA19_0==UNQUOTED_ALPHA_TEXT) ) {
+                        alt19=1;
                     }
-                    switch (alt18) {
+                    switch (alt19) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:68:7: nl= node_label
                             {
-                            pushFollow(FOLLOW_node_label_in_network_info294);
+                            pushFollow(FOLLOW_node_label_in_network_info303);
                             nl=node_label();
 
                             state._fsp--;
@@ -800,17 +799,17 @@ public class ExtendedNewickParser extends Parser {
 
 
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:68:22: (hn= hybrid_node_qualifier )?
-                    int alt19=2;
-                    int LA19_0 = input.LA(1);
+                    int alt20=2;
+                    int LA20_0 = input.LA(1);
 
-                    if ( (LA19_0==10) ) {
-                        alt19=1;
+                    if ( (LA20_0==11) ) {
+                        alt20=1;
                     }
-                    switch (alt19) {
+                    switch (alt20) {
                         case 1 :
                             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:68:22: hn= hybrid_node_qualifier
                             {
-                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info299);
+                            pushFollow(FOLLOW_hybrid_node_qualifier_in_network_info308);
                             hn=hybrid_node_qualifier();
 
                             state._fsp--;
@@ -822,11 +821,11 @@ public class ExtendedNewickParser extends Parser {
                     }
 
 
-                    match(input,14,FOLLOW_14_in_network_info302); 
+                    match(input,15,FOLLOW_15_in_network_info311); 
 
-                    match(input,14,FOLLOW_14_in_network_info305); 
+                    match(input,15,FOLLOW_15_in_network_info314); 
 
-                    pushFollow(FOLLOW_probability_in_network_info307);
+                    pushFollow(FOLLOW_probability_in_network_info316);
                     probability();
 
                     state._fsp--;
@@ -867,7 +866,7 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:71:2: ( edge_label )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:71:4: edge_label
             {
-            pushFollow(FOLLOW_edge_label_in_branch_length328);
+            pushFollow(FOLLOW_edge_label_in_branch_length337);
             edge_label();
 
             state._fsp--;
@@ -902,7 +901,7 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:74:2: ( edge_label )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:74:4: edge_label
             {
-            pushFollow(FOLLOW_edge_label_in_support340);
+            pushFollow(FOLLOW_edge_label_in_support349);
             edge_label();
 
             state._fsp--;
@@ -941,7 +940,7 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:77:2: ( edge_label )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:77:4: edge_label
             {
-            pushFollow(FOLLOW_edge_label_in_probability352);
+            pushFollow(FOLLOW_edge_label_in_probability361);
             edge_label();
 
             state._fsp--;
@@ -983,7 +982,7 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:80:2: ( text )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:80:4: text
             {
-            pushFollow(FOLLOW_text_in_node_label363);
+            pushFollow(FOLLOW_text_in_node_label372);
             text();
 
             state._fsp--;
@@ -1028,20 +1027,20 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:83:2: ( '#' (type= UNQUOTED_ALPHA_TEXT )? hybridNodeIndex= DECIMAL_NUMBER )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:83:4: '#' (type= UNQUOTED_ALPHA_TEXT )? hybridNodeIndex= DECIMAL_NUMBER
             {
-            match(input,10,FOLLOW_10_in_hybrid_node_qualifier376); 
+            match(input,11,FOLLOW_11_in_hybrid_node_qualifier385); 
 
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:83:12: (type= UNQUOTED_ALPHA_TEXT )?
-            int alt21=2;
-            int LA21_0 = input.LA(1);
+            int alt22=2;
+            int LA22_0 = input.LA(1);
 
-            if ( (LA21_0==UNQUOTED_ALPHA_TEXT) ) {
-                alt21=1;
+            if ( (LA22_0==UNQUOTED_ALPHA_TEXT) ) {
+                alt22=1;
             }
-            switch (alt21) {
+            switch (alt22) {
                 case 1 :
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:83:12: type= UNQUOTED_ALPHA_TEXT
                     {
-                    type=(Token)match(input,UNQUOTED_ALPHA_TEXT,FOLLOW_UNQUOTED_ALPHA_TEXT_in_hybrid_node_qualifier380); 
+                    type=(Token)match(input,UNQUOTED_ALPHA_TEXT,FOLLOW_UNQUOTED_ALPHA_TEXT_in_hybrid_node_qualifier389); 
 
                     }
                     break;
@@ -1049,7 +1048,7 @@ public class ExtendedNewickParser extends Parser {
             }
 
 
-            hybridNodeIndex=(Token)match(input,DECIMAL_NUMBER,FOLLOW_DECIMAL_NUMBER_in_hybrid_node_qualifier385); 
+            hybridNodeIndex=(Token)match(input,DECIMAL_NUMBER,FOLLOW_DECIMAL_NUMBER_in_hybrid_node_qualifier394); 
 
              stack.pushUnquotedText((hybridNodeIndex!=null?hybridNodeIndex.getText():null), (hybridNodeIndex!=null?hybridNodeIndex.getLine():0), (hybridNodeIndex!=null?hybridNodeIndex.getCharPositionInLine():0)); 
             		  if(type!=null)stack.pushUnquotedText((type!=null?type.getText():null), (type!=null?type.getLine():0), (type!=null?type.getCharPositionInLine():0)); stack.pushHybridNodeQualifier(type, hybridNodeIndex); 
@@ -1081,9 +1080,9 @@ public class ExtendedNewickParser extends Parser {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:88:2: ( ':' text )
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:88:4: ':' text
             {
-            match(input,14,FOLLOW_14_in_edge_label399); 
+            match(input,15,FOLLOW_15_in_edge_label408); 
 
-            pushFollow(FOLLOW_text_in_edge_label401);
+            pushFollow(FOLLOW_text_in_edge_label410);
             text();
 
             state._fsp--;
@@ -1115,27 +1114,27 @@ public class ExtendedNewickParser extends Parser {
          String str = ""; int ln = -1; int cn = -1; 
         try {
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:91:58: (q= QUOTED_TEXT | (t= ( UNQUOTED_ALPHA_TEXT | DECIMAL_NUMBER ) )+ )
-            int alt23=2;
-            int LA23_0 = input.LA(1);
+            int alt24=2;
+            int LA24_0 = input.LA(1);
 
-            if ( (LA23_0==QUOTED_TEXT) ) {
-                alt23=1;
+            if ( (LA24_0==QUOTED_TEXT) ) {
+                alt24=1;
             }
-            else if ( (LA23_0==DECIMAL_NUMBER||LA23_0==UNQUOTED_ALPHA_TEXT) ) {
-                alt23=2;
+            else if ( (LA24_0==DECIMAL_NUMBER||LA24_0==UNQUOTED_ALPHA_TEXT) ) {
+                alt24=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 23, 0, input);
+                    new NoViableAltException("", 24, 0, input);
 
                 throw nvae;
 
             }
-            switch (alt23) {
+            switch (alt24) {
                 case 1 :
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:92:14: q= QUOTED_TEXT
                     {
-                    q=(Token)match(input,QUOTED_TEXT,FOLLOW_QUOTED_TEXT_in_text431); 
+                    q=(Token)match(input,QUOTED_TEXT,FOLLOW_QUOTED_TEXT_in_text440); 
 
                      stack.pushQuotedText(q); 
 
@@ -1145,18 +1144,18 @@ public class ExtendedNewickParser extends Parser {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:93:7: (t= ( UNQUOTED_ALPHA_TEXT | DECIMAL_NUMBER ) )+
                     {
                     // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:93:7: (t= ( UNQUOTED_ALPHA_TEXT | DECIMAL_NUMBER ) )+
-                    int cnt22=0;
-                    loop22:
+                    int cnt23=0;
+                    loop23:
                     do {
-                        int alt22=2;
-                        int LA22_0 = input.LA(1);
+                        int alt23=2;
+                        int LA23_0 = input.LA(1);
 
-                        if ( (LA22_0==DECIMAL_NUMBER||LA22_0==UNQUOTED_ALPHA_TEXT) ) {
-                            alt22=1;
+                        if ( (LA23_0==DECIMAL_NUMBER||LA23_0==UNQUOTED_ALPHA_TEXT) ) {
+                            alt23=1;
                         }
 
 
-                        switch (alt22) {
+                        switch (alt23) {
                     	case 1 :
                     	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\ExtendedNewick.g:93:8: t= ( UNQUOTED_ALPHA_TEXT | DECIMAL_NUMBER )
                     	    {
@@ -1178,12 +1177,12 @@ public class ExtendedNewickParser extends Parser {
                     	    break;
 
                     	default :
-                    	    if ( cnt22 >= 1 ) break loop22;
+                    	    if ( cnt23 >= 1 ) break loop23;
                                 EarlyExitException eee =
-                                    new EarlyExitException(22, input);
+                                    new EarlyExitException(23, input);
                                 throw eee;
                         }
-                        cnt22++;
+                        cnt23++;
                     } while (true);
 
 
@@ -1220,70 +1219,70 @@ public class ExtendedNewickParser extends Parser {
     // Delegated rules
 
 
-    protected DFA20 dfa20 = new DFA20(this);
-    static final String DFA20_eotS =
+    protected DFA21 dfa21 = new DFA21(this);
+    static final String DFA21_eotS =
         "\23\uffff";
-    static final String DFA20_eofS =
+    static final String DFA21_eofS =
         "\23\uffff";
-    static final String DFA20_minS =
-        "\1\4\1\12\3\4\1\uffff\1\4\1\14\1\4\1\14\1\4\2\uffff\1\4\1\14\1\4"+
+    static final String DFA21_minS =
+        "\1\4\1\13\3\4\1\uffff\1\4\1\15\1\4\1\15\1\4\2\uffff\1\4\1\15\1\4"+
         "\3\uffff";
-    static final String DFA20_maxS =
-        "\3\17\1\10\1\16\1\uffff\1\4\1\17\1\16\2\17\2\uffff\1\16\2\17\3\uffff";
-    static final String DFA20_acceptS =
+    static final String DFA21_maxS =
+        "\3\20\1\11\1\17\1\uffff\1\4\1\20\1\17\2\20\2\uffff\1\17\2\20\3\uffff";
+    static final String DFA21_acceptS =
         "\5\uffff\1\1\5\uffff\1\6\1\5\3\uffff\1\4\1\2\1\3";
-    static final String DFA20_specialS =
+    static final String DFA21_specialS =
         "\23\uffff}>";
-    static final String[] DFA20_transitionS = {
-            "\1\2\1\uffff\1\1\1\uffff\1\2\1\uffff\1\3\1\uffff\2\5\1\4\1\5",
+    static final String[] DFA21_transitionS = {
+            "\1\2\1\uffff\1\1\2\uffff\1\2\1\uffff\1\3\1\uffff\2\5\1\4\1\5",
             "\1\3\1\uffff\2\5\1\4\1\5",
-            "\1\2\3\uffff\1\2\1\uffff\1\3\1\uffff\2\5\1\4\1\5",
-            "\1\7\3\uffff\1\6",
-            "\1\12\1\uffff\1\11\1\uffff\1\12\5\uffff\1\10",
+            "\1\2\4\uffff\1\2\1\uffff\1\3\1\uffff\2\5\1\4\1\5",
+            "\1\7\4\uffff\1\6",
+            "\1\12\1\uffff\1\11\2\uffff\1\12\5\uffff\1\10",
             "",
             "\1\7",
             "\2\5\1\4\1\5",
-            "\1\14\1\uffff\1\14\1\uffff\1\14\5\uffff\1\13",
+            "\1\14\1\uffff\1\14\2\uffff\1\14\5\uffff\1\13",
             "\2\5\1\15\1\5",
-            "\1\12\3\uffff\1\12\3\uffff\2\5\1\15\1\5",
+            "\1\12\4\uffff\1\12\3\uffff\2\5\1\15\1\5",
             "",
             "",
-            "\1\17\1\uffff\1\16\1\uffff\1\17\5\uffff\1\20",
+            "\1\17\1\uffff\1\16\2\uffff\1\17\5\uffff\1\20",
             "\2\21\1\22\1\21",
-            "\1\17\3\uffff\1\17\3\uffff\2\21\1\22\1\21",
+            "\1\17\4\uffff\1\17\3\uffff\2\21\1\22\1\21",
             "",
             "",
             ""
     };
 
-    static final short[] DFA20_eot = DFA.unpackEncodedString(DFA20_eotS);
-    static final short[] DFA20_eof = DFA.unpackEncodedString(DFA20_eofS);
-    static final char[] DFA20_min = DFA.unpackEncodedStringToUnsignedChars(DFA20_minS);
-    static final char[] DFA20_max = DFA.unpackEncodedStringToUnsignedChars(DFA20_maxS);
-    static final short[] DFA20_accept = DFA.unpackEncodedString(DFA20_acceptS);
-    static final short[] DFA20_special = DFA.unpackEncodedString(DFA20_specialS);
-    static final short[][] DFA20_transition;
+    static final short[] DFA21_eot = DFA.unpackEncodedString(DFA21_eotS);
+    static final short[] DFA21_eof = DFA.unpackEncodedString(DFA21_eofS);
+    static final char[] DFA21_min = DFA.unpackEncodedStringToUnsignedChars(DFA21_minS);
+    static final char[] DFA21_max = DFA.unpackEncodedStringToUnsignedChars(DFA21_maxS);
+    static final short[] DFA21_accept = DFA.unpackEncodedString(DFA21_acceptS);
+    static final short[] DFA21_special = DFA.unpackEncodedString(DFA21_specialS);
+    static final short[][] DFA21_transition;
 
     static {
-        int numStates = DFA20_transitionS.length;
-        DFA20_transition = new short[numStates][];
+        int numStates = DFA21_transitionS.length;
+        DFA21_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA20_transition[i] = DFA.unpackEncodedString(DFA20_transitionS[i]);
+            DFA21_transition[i] = DFA.unpackEncodedString(DFA21_transitionS[i]);
         }
     }
 
-    class DFA20 extends DFA {
+    class DFA21 extends DFA {
 
-        public DFA20(BaseRecognizer recognizer) {
+        public DFA21(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 20;
-            this.eot = DFA20_eot;
-            this.eof = DFA20_eof;
-            this.min = DFA20_min;
-            this.max = DFA20_max;
-            this.accept = DFA20_accept;
-            this.special = DFA20_special;
-            this.transition = DFA20_transition;
+            this.decisionNumber = 21;
+            this.eot = DFA21_eot;
+            this.eof = DFA21_eof;
+            this.min = DFA21_min;
+            this.max = DFA21_max;
+            this.accept = DFA21_accept;
+            this.special = DFA21_special;
+            this.transition = DFA21_transition;
         }
         public String getDescription() {
             return "62:1: network_info : ( (nl= node_label )? (hn= hybrid_node_qualifier )? (bl= branch_length )? | (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length support | (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length support probability | (nl= node_label )? (hn= hybrid_node_qualifier )? branch_length ':' probability | (nl= node_label )? (hn= hybrid_node_qualifier )? ':' support (pb= probability )? | (nl= node_label )? (hn= hybrid_node_qualifier )? ':' ':' probability );";
@@ -1291,56 +1290,57 @@ public class ExtendedNewickParser extends Parser {
     }
  
 
-    public static final BitSet FOLLOW_network_in_networks33 = new BitSet(new long[]{0x000000000000CDD2L});
-    public static final BitSet FOLLOW_ROOTAGE_QUALIFIER_in_network46 = new BitSet(new long[]{0x000000000000CD50L});
-    public static final BitSet FOLLOW_descendant_list_in_network51 = new BitSet(new long[]{0x000000000000C550L});
-    public static final BitSet FOLLOW_network_info_in_network54 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_15_in_network56 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_11_in_descendant_list72 = new BitSet(new long[]{0x0000000000004D50L});
-    public static final BitSet FOLLOW_subtree_in_descendant_list74 = new BitSet(new long[]{0x0000000000003000L});
-    public static final BitSet FOLLOW_13_in_descendant_list77 = new BitSet(new long[]{0x0000000000004D50L});
-    public static final BitSet FOLLOW_subtree_in_descendant_list79 = new BitSet(new long[]{0x0000000000003000L});
-    public static final BitSet FOLLOW_12_in_descendant_list86 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_descendant_list_in_subtree96 = new BitSet(new long[]{0x0000000000004550L});
-    public static final BitSet FOLLOW_network_info_in_subtree98 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_network_info_in_subtree112 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_node_label_in_network_info141 = new BitSet(new long[]{0x0000000000004402L});
-    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info146 = new BitSet(new long[]{0x0000000000004002L});
-    public static final BitSet FOLLOW_branch_length_in_network_info151 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_node_label_in_network_info180 = new BitSet(new long[]{0x0000000000004400L});
-    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info185 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_branch_length_in_network_info191 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_support_in_network_info194 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_node_label_in_network_info212 = new BitSet(new long[]{0x0000000000004400L});
-    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info217 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_branch_length_in_network_info220 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_support_in_network_info223 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_probability_in_network_info225 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_node_label_in_network_info234 = new BitSet(new long[]{0x0000000000004400L});
-    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info239 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_branch_length_in_network_info242 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_14_in_network_info245 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_probability_in_network_info247 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_node_label_in_network_info262 = new BitSet(new long[]{0x0000000000004400L});
-    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info267 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_14_in_network_info270 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_support_in_network_info273 = new BitSet(new long[]{0x0000000000004002L});
-    public static final BitSet FOLLOW_probability_in_network_info277 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_node_label_in_network_info294 = new BitSet(new long[]{0x0000000000004400L});
-    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info299 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_14_in_network_info302 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_14_in_network_info305 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_probability_in_network_info307 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_edge_label_in_branch_length328 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_edge_label_in_support340 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_edge_label_in_probability352 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_text_in_node_label363 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_10_in_hybrid_node_qualifier376 = new BitSet(new long[]{0x0000000000000110L});
-    public static final BitSet FOLLOW_UNQUOTED_ALPHA_TEXT_in_hybrid_node_qualifier380 = new BitSet(new long[]{0x0000000000000010L});
-    public static final BitSet FOLLOW_DECIMAL_NUMBER_in_hybrid_node_qualifier385 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_14_in_edge_label399 = new BitSet(new long[]{0x0000000000000150L});
-    public static final BitSet FOLLOW_text_in_edge_label401 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUOTED_TEXT_in_text431 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_text447 = new BitSet(new long[]{0x0000000000000112L});
+    public static final BitSet FOLLOW_network_in_networks33 = new BitSet(new long[]{0x0000000000019BD2L});
+    public static final BitSet FOLLOW_TREE_PROB_in_network46 = new BitSet(new long[]{0x0000000000019AD0L});
+    public static final BitSet FOLLOW_ROOTAGE_QUALIFIER_in_network51 = new BitSet(new long[]{0x0000000000019A50L});
+    public static final BitSet FOLLOW_descendant_list_in_network56 = new BitSet(new long[]{0x0000000000018A50L});
+    public static final BitSet FOLLOW_network_info_in_network59 = new BitSet(new long[]{0x0000000000010000L});
+    public static final BitSet FOLLOW_16_in_network61 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_12_in_descendant_list77 = new BitSet(new long[]{0x0000000000009A50L});
+    public static final BitSet FOLLOW_subtree_in_descendant_list79 = new BitSet(new long[]{0x0000000000006000L});
+    public static final BitSet FOLLOW_14_in_descendant_list82 = new BitSet(new long[]{0x0000000000009A50L});
+    public static final BitSet FOLLOW_subtree_in_descendant_list84 = new BitSet(new long[]{0x0000000000006000L});
+    public static final BitSet FOLLOW_13_in_descendant_list91 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_descendant_list_in_subtree101 = new BitSet(new long[]{0x0000000000008A50L});
+    public static final BitSet FOLLOW_network_info_in_subtree103 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_network_info_in_subtree117 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_node_label_in_network_info146 = new BitSet(new long[]{0x0000000000008802L});
+    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info151 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_branch_length_in_network_info156 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_node_label_in_network_info185 = new BitSet(new long[]{0x0000000000008800L});
+    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info190 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_branch_length_in_network_info196 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_support_in_network_info199 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_node_label_in_network_info219 = new BitSet(new long[]{0x0000000000008800L});
+    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info224 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_branch_length_in_network_info227 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_support_in_network_info230 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_probability_in_network_info232 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_node_label_in_network_info243 = new BitSet(new long[]{0x0000000000008800L});
+    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info248 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_branch_length_in_network_info251 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_15_in_network_info254 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_probability_in_network_info256 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_node_label_in_network_info271 = new BitSet(new long[]{0x0000000000008800L});
+    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info276 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_15_in_network_info279 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_support_in_network_info282 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_probability_in_network_info286 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_node_label_in_network_info303 = new BitSet(new long[]{0x0000000000008800L});
+    public static final BitSet FOLLOW_hybrid_node_qualifier_in_network_info308 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_15_in_network_info311 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_15_in_network_info314 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_probability_in_network_info316 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_edge_label_in_branch_length337 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_edge_label_in_support349 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_edge_label_in_probability361 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_text_in_node_label372 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_11_in_hybrid_node_qualifier385 = new BitSet(new long[]{0x0000000000000210L});
+    public static final BitSet FOLLOW_UNQUOTED_ALPHA_TEXT_in_hybrid_node_qualifier389 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_DECIMAL_NUMBER_in_hybrid_node_qualifier394 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_15_in_edge_label408 = new BitSet(new long[]{0x0000000000000250L});
+    public static final BitSet FOLLOW_text_in_edge_label410 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTED_TEXT_in_text440 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_text456 = new BitSet(new long[]{0x0000000000000212L});
 
 }

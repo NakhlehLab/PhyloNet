@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
 import junit.framework.Assert;
 import org.junit.Test;
 

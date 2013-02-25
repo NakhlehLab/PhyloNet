@@ -18,6 +18,7 @@
  */
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.Func1Null;
 import org.junit.Assert;
 import org.junit.Test;

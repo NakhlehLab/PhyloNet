@@ -22,8 +22,10 @@ package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
 
-import javax.swing.text.Element;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,11 +47,11 @@ public class IterableHelp {
         return accum.toArray();
     }
 
-    public static <E> List<E> toList(Iterable<E> elements)
+    public static <T2,T1 extends T2> List<T2> toList(Iterable<T1> elements)
     {
-        List<E> result = new LinkedList<E>();
+        List<T2> result = new LinkedList<T2>();
 
-        for(E element : elements)
+        for(T1 element : elements)
         {
             result.add(element);
         }

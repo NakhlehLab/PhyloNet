@@ -1,0 +1,23 @@
+#NEXUS
+ 
+BEGIN TREES;
+ 
+Tree geneTree1 = ((C,((B,D),A)),E);
+Tree geneTree2 = (B,(D,(C,(A,E))));
+Tree geneTree3 = (D,(B,((C,E),A)));
+Tree geneTree4 = (D,((B,E),(C,A)));
+ 
+END;
+ 
+ 
+BEGIN PHYLONET;
+ 
+InferNetwork_ML (geneTree1,geneTree2,geneTree3,geneTree4) 1;
+ 
+END;
+===
+
+InferNetwork_ML (geneTree1, geneTree2, geneTree3, geneTree4) 1
+(((D:1.0,B:1.0):0.0011774181844964955)#H1:0.0011774181844964955::0.5741176440370144,(C:1.0,(E:1.0,(#H1:5.907574924274863::0.4258823559629856,A:1.0):0.2883378944840338):0.0843667120529764):5.907059774550457);
+Total log probability: -13.773355601388348
+===

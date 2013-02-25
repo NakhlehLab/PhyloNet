@@ -1,11 +1,9 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Node;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class GraphMask<N,E,G extends GraphReadOnly<N,E>> implements GraphReadOnl
     {
         Graph = graph;
 
-        HashSet<E> excludedEdgesBacking = new HashSet<E>(IterableHelp.toList(excludedEdges));
+        HashSet<E> excludedEdgesBacking = new HashSet<E>(IterableHelp.<E,E>toList(excludedEdges));
 
         for(N node : excludedNodes)
         {
@@ -80,7 +78,7 @@ public class GraphMask<N,E,G extends GraphReadOnly<N,E>> implements GraphReadOnl
                 throw new IllegalArgumentException("Given node is a member of the excluded nodes.");
             }
         }
-        List<E> tbr = new LinkedList<E>(IterableHelp.toList(Graph.getIncidentEdges(node)));
+        List<E> tbr = new LinkedList<E>(IterableHelp.<E,E>toList(Graph.getIncidentEdges(node)));
         tbr.removeAll(IterableHelp.toList(ExcludedEdges));
         return tbr;
     }

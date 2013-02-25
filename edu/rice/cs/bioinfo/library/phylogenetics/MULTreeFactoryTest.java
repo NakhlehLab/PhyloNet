@@ -1,13 +1,11 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
 
-import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func;
+import edu.rice.cs.bioinfo.library.programming.Func5;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import junit.framework.Assert;
 import org.junit.Test;
-import org.mockito.internal.matchers.Null;
 
 import java.util.HashSet;
 
@@ -60,7 +58,8 @@ public class MULTreeFactoryTest
 
         Assert.assertEquals(9, IterableHelp.countInt(mulTree.getNodes()));
         Assert.assertEquals(8, IterableHelp.countInt(mulTree.getEdges()));
-        HashSet<MULTreeFactory.MULTreeNode<String>> foundNodes = new HashSet<MULTreeFactory.MULTreeNode<String>>(IterableHelp.toList(mulTree.getNodes()));
+        HashSet<MULTreeFactory.MULTreeNode<String>> foundNodes = new HashSet<MULTreeFactory.MULTreeNode<String>>(
+                IterableHelp.<MULTreeFactory.MULTreeNode<String>,MULTreeFactory.MULTreeNode<String>>toList(mulTree.getNodes()));
 
         Assert.assertEquals(1, countNodeOccurences(mulTree.getNodes(), "A"));
         Assert.assertEquals(1, countNodeOccurences(mulTree.getNodes(), "B"));

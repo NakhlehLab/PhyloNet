@@ -22,8 +22,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.SingleLinePrinter;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.EventBootstrap;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.HgtEvent;
@@ -326,19 +327,19 @@ public class RIATAHGT extends CommandBaseFileOut
 						edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network <Object> net = hr.readHgt();
                         Network newNet = NetworkTransformer.fromClassicNetwork(net);
 
-                        newNet.execute(new NetworkAlgo<Object, Object, RuntimeException>() {
-                            public Object forNetworkEmpty(NetworkEmpty networkEmpty, Object o) throws RuntimeException {
+                        newNet.execute(new NetworkAlgo<Void, RuntimeException>() {
+                            public Void forNetworkEmpty(NetworkEmpty networkEmpty) throws RuntimeException {
 
                                 return null;
                             }
 
-                            public Object forNetworkNonEmpty(NetworkNonEmpty networkNonEmpty, Object o) throws RuntimeException {
+                            public Void forNetworkNonEmpty(NetworkNonEmpty networkNonEmpty) throws RuntimeException {
                                 String networkString = new SingleLinePrinter().toString(networkNonEmpty);
                                 result.append(networkString);
                                 richNewickGenerated(networkString);
                                 return null;
                             }
-                        }, null);
+                        });
                         result.append("\n");
 
 

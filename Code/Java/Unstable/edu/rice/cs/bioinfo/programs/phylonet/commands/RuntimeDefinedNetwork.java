@@ -19,7 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,6 +33,7 @@ public final class RuntimeDefinedNetwork extends NetworkNonEmpty
     public static final RuntimeDefinedNetwork Singleton = new RuntimeDefinedNetwork();
 
     private RuntimeDefinedNetwork() {
-        super(null, null, null);
+        super(null, null, null, null);
+
     }
 }

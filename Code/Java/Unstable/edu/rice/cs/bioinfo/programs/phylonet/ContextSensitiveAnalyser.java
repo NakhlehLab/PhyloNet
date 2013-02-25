@@ -22,9 +22,13 @@ package edu.rice.cs.bioinfo.programs.phylonet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.BlockContents;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.RichNewickAssignment;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.ASTContextAnalyser;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.CSAError;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.ContainsHybridNode;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RootageQualifierAlgo;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RootageQualifierEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RootageQualifierNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.csa.ASTContextAnalyser;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 
 import java.math.BigDecimal;
@@ -46,7 +50,7 @@ class ContextSensitiveAnalyser {
        {
            final NetworkNonEmpty network = sourceIdentToNetwork.get(rNewickStringIdent);
 
-           for(CSAError error : ASTContextAnalyser.analyse(network, hybridSumTolerance))
+           for(CSAError error : new ASTContextAnalyser().analyse(network, hybridSumTolerance))
            {
                errorDetected.execute(error.Message, -1, -1);
            }

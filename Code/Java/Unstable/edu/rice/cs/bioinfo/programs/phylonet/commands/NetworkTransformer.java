@@ -20,6 +20,11 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Network;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkAlgo;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
@@ -50,9 +55,8 @@ public class NetworkTransformer {
             NetworkInfo rootInfo = makeInfo(root, null, nodeToHybridIndex);
             Iterable<Subtree> subtrees = makeSubtrees(root, nodeToHybridIndex);
 
-            return new NetworkNonEmpty(new RootageQualifierNonEmpty(RootageQualifier.ROOTED),
-                                       new DescendantList(subtrees),
-                                       rootInfo);
+            return new NetworkNonEmpty(new RootageQualifierNonEmpty(RootageQualifier.ROOTED), new DescendantList(subtrees), rootInfo, TreeProbabilityEmpty.Singleton
+            );
         }
     }
 
@@ -124,15 +128,15 @@ public class NetworkTransformer {
 
     static <T> STITree<T> toTree(Network network, final Func1<NetworkInfo, T> getData)
     {
-        return network.execute(new NetworkAlgo<STITree<T>, Object, RuntimeException>() {
+        return network.execute(new NetworkAlgo<STITree<T>, RuntimeException>() {
 
-            public STITree<T> forNetworkEmpty(NetworkEmpty networkEmpty, Object o) throws RuntimeException {
+            public STITree<T> forNetworkEmpty(NetworkEmpty networkEmpty) throws RuntimeException {
 
                 return new STITree<T>();
 
             }
 
-            public STITree<T> forNetworkNonEmpty(NetworkNonEmpty network, Object o) throws RuntimeException {
+            public STITree<T> forNetworkNonEmpty(NetworkNonEmpty network) throws RuntimeException {
 
                 if(network.PrincipleInfo == null)
                 {
@@ -162,13 +166,7 @@ public class NetworkTransformer {
 
                 return tbr;
             }
-        }, null);
-
-
-
-
-
-
+        });
 
     }
 

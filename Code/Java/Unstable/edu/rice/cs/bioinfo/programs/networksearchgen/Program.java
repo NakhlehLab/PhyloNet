@@ -9,13 +9,11 @@ import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge2;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.programming.*;
 
-import javax.media.j3d.LineStripArray;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Scanner;
 

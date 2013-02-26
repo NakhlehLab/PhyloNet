@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.DescendantList;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkInfo;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RootageQualifier;
 
 
 /**

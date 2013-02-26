@@ -1,8 +1,9 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func5;
 import edu.uci.ics.jung.graph.Graph;
 
 import java.math.BigDecimal;

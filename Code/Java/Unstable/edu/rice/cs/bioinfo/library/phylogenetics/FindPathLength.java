@@ -1,6 +1,8 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Func6;
 
 /**
  * Created by IntelliJ IDEA.

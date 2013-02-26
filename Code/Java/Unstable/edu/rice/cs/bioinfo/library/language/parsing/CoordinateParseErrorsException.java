@@ -19,8 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.parsing;
 
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt

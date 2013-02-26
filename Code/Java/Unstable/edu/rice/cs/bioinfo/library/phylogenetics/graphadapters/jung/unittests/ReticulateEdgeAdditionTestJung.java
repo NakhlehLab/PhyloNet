@@ -2,9 +2,11 @@ package edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.unittests;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.JungGraphToGraphAdapterBase;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
-import edu.rice.cs.bioinfo.library.programming.*;
-import edu.uci.ics.jung.graph.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAdditionTest;
+import edu.rice.cs.bioinfo.library.programming.Func1Identity;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
 
 /**
  * Created by IntelliJ IDEA.

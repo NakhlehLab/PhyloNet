@@ -3,7 +3,6 @@ package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.generation;
 import edu.rice.cs.bioinfo.library.graph.algorithms.cycleDetection.DirectedCycleDetectionDFS;
 import edu.rice.cs.bioinfo.library.math.discrete.Configurations;
 
-
 import java.util.*;
 
 /**

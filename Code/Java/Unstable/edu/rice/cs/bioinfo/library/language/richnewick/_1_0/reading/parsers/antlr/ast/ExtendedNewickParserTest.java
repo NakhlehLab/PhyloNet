@@ -25,7 +25,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 
 /**

@@ -1,20 +1,20 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting.jung;
 
-import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedSparse;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
-import edu.rice.cs.bioinfo.library.phylogenetics.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedSparse;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting.ReaSearchFromRichNewick;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func5;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.

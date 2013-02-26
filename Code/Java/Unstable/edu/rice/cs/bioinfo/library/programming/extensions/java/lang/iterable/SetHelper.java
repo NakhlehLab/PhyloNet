@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
-import sun.nio.cs.ext.TIS_620;
-
 import java.util.HashSet;
 import java.util.Set;
 

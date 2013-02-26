@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.generation;
 
-import edu.rice.cs.bioinfo.library.programming.Container;
 import junit.framework.Assert;
 import org.junit.Test;
 

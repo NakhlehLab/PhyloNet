@@ -1,8 +1,9 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.scoring.network;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
-import edu.rice.cs.bioinfo.library.programming.*;
-import junit.framework.Assert;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Func4;
 
 import java.util.*;
 

@@ -2,7 +2,10 @@ package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.phylogenetics.IsLeaf;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Proc4;
+import edu.rice.cs.bioinfo.library.programming.Ref;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import org.junit.Assert;
 import org.junit.Test;

@@ -4,8 +4,13 @@ import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGrap
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.JungGraphToGraphAdapterBase;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.UndirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni.NearestNeighborInterchangeTest;
-import edu.rice.cs.bioinfo.library.programming.*;
-import edu.uci.ics.jung.graph.*;
+import edu.rice.cs.bioinfo.library.programming.Func1Identity;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 
 /**
  * Created by IntelliJ IDEA.

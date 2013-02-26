@@ -1,11 +1,17 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func3;
+import edu.rice.cs.bioinfo.library.programming.Func4;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.

@@ -19,7 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
-import javax.swing.text.Element;
 import java.util.LinkedList;
 
 /**

@@ -1,18 +1,16 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.genetreeprobability;
 
-import com.sun.xml.internal.stream.events.NamedEvent;
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni.NearestNeighborInterchange;
-import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.*;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.STITreeCluster;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Predicate1;
+import edu.rice.cs.bioinfo.library.programming.Predicate2;
 import edu.rice.cs.bioinfo.library.programming.counters.Counter;
 import edu.rice.cs.bioinfo.library.programming.counters.CounterInt;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
-import sun.plugin.dom.core.NamedNodeMap;
 
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.zip.DeflaterOutputStream;
 
 /**
  * Created by IntelliJ IDEA.

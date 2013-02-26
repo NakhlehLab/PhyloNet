@@ -1,9 +1,11 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.optimization.branchlength.Brent;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func3;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.optimization.GoalType;
-import org.apache.commons.math3.optimization.univariate.*;
-import org.apache.commons.math3.analysis.*;
+import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
+import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
 
 /**
  * Created by IntelliJ IDEA.

@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+
 import java.util.Comparator;
 
 /**

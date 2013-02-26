@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import org.junit.internal.matchers.Each;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt

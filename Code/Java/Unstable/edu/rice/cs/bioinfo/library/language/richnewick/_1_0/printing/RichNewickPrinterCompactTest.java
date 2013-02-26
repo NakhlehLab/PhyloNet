@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing;
 
-import com.sun.org.apache.xml.internal.serialize.Printer;
-import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import junit.framework.Assert;

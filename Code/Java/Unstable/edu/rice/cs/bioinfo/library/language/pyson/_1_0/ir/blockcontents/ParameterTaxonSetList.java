@@ -19,9 +19,7 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.

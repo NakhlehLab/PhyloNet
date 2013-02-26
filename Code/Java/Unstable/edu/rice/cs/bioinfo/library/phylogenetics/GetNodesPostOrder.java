@@ -2,7 +2,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
-import javax.print.attribute.standard.MediaSize;
 import java.util.HashSet;
 import java.util.LinkedList;
 

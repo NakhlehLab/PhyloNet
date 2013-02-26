@@ -19,7 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 
 /**

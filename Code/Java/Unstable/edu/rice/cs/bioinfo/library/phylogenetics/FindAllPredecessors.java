@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 

@@ -20,7 +20,6 @@
 package edu.rice.cs.bioinfo.library.language.hybridsimnewick._2012_6_22.printing;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 
 import java.io.StringWriter;

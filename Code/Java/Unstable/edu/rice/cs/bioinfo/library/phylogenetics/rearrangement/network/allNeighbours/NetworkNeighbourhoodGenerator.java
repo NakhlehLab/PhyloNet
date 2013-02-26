@@ -2,10 +2,9 @@ package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeigh
 
 
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
-import edu.rice.cs.bioinfo.library.programming.*;
-import java.io.*;
-        
-import java.util.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func3;
+import edu.rice.cs.bioinfo.library.programming.Func4;
 
 /**
  * Created by IntelliJ IDEA.

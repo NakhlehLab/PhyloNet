@@ -1,8 +1,8 @@
 package edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence;
 
 import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.BranchingResult;
-import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.MaxBranchingSolver;
 import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.EdmondsAlgoGibbons85;
+import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.MaxBranchingSolver;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
 import java.util.LinkedList;

@@ -23,7 +23,10 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Identifier;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.TaxaMap;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.TaxaMapEntry;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.

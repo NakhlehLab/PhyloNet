@@ -1,12 +1,13 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea;
 
 //import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.FASTAEntry;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
-import edu.rice.cs.bioinfo.library.programming.*;
+
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func4;
+import edu.rice.cs.bioinfo.library.programming.Ref;
 
 import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.

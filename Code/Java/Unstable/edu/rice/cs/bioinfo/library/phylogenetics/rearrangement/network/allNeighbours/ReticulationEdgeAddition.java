@@ -1,15 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours;
 
 import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
-import edu.rice.cs.bioinfo.library.phylogenetics.FindSuccessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.

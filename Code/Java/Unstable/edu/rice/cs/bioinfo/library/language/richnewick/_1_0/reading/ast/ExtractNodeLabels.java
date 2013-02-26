@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.

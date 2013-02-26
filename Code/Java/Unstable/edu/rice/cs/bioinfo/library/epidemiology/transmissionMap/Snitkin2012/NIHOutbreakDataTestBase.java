@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import org.joda.time.LocalDate;
 
 import java.util.Arrays;

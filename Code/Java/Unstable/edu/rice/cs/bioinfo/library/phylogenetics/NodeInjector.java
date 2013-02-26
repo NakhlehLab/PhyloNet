@@ -1,8 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
-import edu.rice.cs.bioinfo.library.phylogenetics.IsDestinationNode;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func3;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 
 public class NodeInjector
 {

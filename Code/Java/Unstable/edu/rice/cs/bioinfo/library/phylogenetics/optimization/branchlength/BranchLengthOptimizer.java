@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.optimization.branchlength;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func3;
 
 /**
  * Created by IntelliJ IDEA.

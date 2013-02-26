@@ -20,9 +20,9 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast;
 
 import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
-import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilderNoAction;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
 import org.junit.Assert;
 import org.junit.Test;
 

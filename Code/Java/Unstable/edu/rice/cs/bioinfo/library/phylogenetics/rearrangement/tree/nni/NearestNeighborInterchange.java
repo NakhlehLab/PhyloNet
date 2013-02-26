@@ -1,7 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.nni;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.*;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.tree.TreeValidator;
+import edu.rice.cs.bioinfo.library.programming.Proc4;
 
 /**
  * Created by IntelliJ IDEA.

@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search;
 
 import edu.rice.cs.bioinfo.library.programming.Proc2;
-import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Proc4;
 
 import java.util.LinkedList;

@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.math.discrete;
 
-import edu.rice.cs.bioinfo.library.programming.Container;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;

@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 

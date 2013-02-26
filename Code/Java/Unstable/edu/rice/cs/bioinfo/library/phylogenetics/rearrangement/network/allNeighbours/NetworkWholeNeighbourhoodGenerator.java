@@ -1,13 +1,18 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.*;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
+import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
+import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
+import edu.rice.cs.bioinfo.library.phylogenetics.GetNodesPostOrder;
+import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func3;
 import edu.rice.cs.bioinfo.library.programming.Func4;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

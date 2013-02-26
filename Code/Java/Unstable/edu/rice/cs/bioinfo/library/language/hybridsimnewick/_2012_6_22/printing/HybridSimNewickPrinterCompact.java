@@ -21,12 +21,12 @@ package edu.rice.cs.bioinfo.library.language.hybridsimnewick._2012_6_22.printing
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
-import edu.rice.cs.bioinfo.library.programming.Ref;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
 import java.io.StringWriter;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.

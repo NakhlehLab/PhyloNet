@@ -1,11 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimberObservable;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.KSteepestAscentBase;
-import edu.rice.cs.bioinfo.library.programming.*;
 
-import java.util.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.KSteepestAscentBase;
+import edu.rice.cs.bioinfo.library.programming.DeepCopyable;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Func4;
 
 /**
  * Created by IntelliJ IDEA.

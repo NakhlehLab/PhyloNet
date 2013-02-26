@@ -1,8 +1,6 @@
 package edu.rice.cs.bioinfo.programs.addreticulationedges;
 
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import com.sun.xml.internal.ws.server.StatefulInstanceResolver;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung.JungRichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung.GraphBuilderDirectedOrderedSparse;
@@ -13,11 +11,11 @@ import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.uci.ics.jung.graph.DirectedGraph;
 
-import javax.print.attribute.standard.MediaSize;
-import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.

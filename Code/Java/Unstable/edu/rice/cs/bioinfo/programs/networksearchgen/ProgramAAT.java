@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.programs.networksearchgen;
 
 import edu.rice.cs.bioinfo.library.programming.Proc1;
-import edu.rice.cs.bioinfo.programs.rn2ms.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

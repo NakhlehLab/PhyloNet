@@ -1,9 +1,8 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc;
-import edu.rice.cs.bioinfo.library.programming.Func;
+
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 
-import java.util.Comparator;
 import java.util.Random;
 
 /**

@@ -20,7 +20,7 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.*;
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
 /**
  * Created by IntelliJ IDEA.

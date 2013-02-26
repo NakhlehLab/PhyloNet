@@ -20,7 +20,7 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.AbstractSyntaxNode;
-import org.antlr.runtime.*;
+import org.antlr.runtime.Token;
 
 public interface ParseStack
 {

@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PseudoMetropolisHastingsResult;
 import edu.rice.cs.bioinfo.library.programming.DeepCopyable;
 import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;

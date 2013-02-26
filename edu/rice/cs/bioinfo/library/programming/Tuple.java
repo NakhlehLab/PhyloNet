@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.programming;
 
-import java.nio.ReadOnlyBufferException;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt

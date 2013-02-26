@@ -1,13 +1,11 @@
 // $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2013-02-25 17:44:26
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
-import java.util.LinkedList;
-
 
 import org.antlr.runtime.*;
-import java.util.Stack;
+
+import java.util.LinkedList;
 import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class PySONLexer extends Lexer {

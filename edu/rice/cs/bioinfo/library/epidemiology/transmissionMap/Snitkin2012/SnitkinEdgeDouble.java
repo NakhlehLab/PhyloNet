@@ -1,8 +1,5 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Matt

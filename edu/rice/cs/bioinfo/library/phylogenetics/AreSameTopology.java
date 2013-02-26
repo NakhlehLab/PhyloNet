@@ -4,7 +4,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
-import java.awt.geom.Ellipse2D;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;

@@ -3,9 +3,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeigh
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func3;
 
-import java.util.HashSet;
-import java.util.*;
-
 /**
  * Created by IntelliJ IDEA.
  * User: yy9

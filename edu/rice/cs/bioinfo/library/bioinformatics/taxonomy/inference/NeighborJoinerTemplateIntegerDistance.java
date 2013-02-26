@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.bioinformatics.taxonomy.inference;
 
-import java.util.Set;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Matt

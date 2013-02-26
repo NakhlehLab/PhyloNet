@@ -19,9 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.FASTAEntry;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.PySONNode;
-
 import java.util.LinkedList;
 
 /**

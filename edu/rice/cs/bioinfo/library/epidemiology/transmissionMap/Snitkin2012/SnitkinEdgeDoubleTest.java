@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
-import org.junit.*;
+
+import org.junit.Test;
 
 /**
  * Created with IntelliJ IDEA.

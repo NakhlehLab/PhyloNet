@@ -19,7 +19,9 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 
-import edu.rice.cs.bioinfo.library.language.parsing.*;
+import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseError;
+import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorDefault;
+import edu.rice.cs.bioinfo.library.language.parsing.CoordinateParseErrorsException;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Blocks;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;

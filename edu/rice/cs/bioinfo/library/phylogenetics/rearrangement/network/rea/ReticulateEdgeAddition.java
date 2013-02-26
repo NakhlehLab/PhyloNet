@@ -1,8 +1,8 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.*;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.*;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidator;
+import edu.rice.cs.bioinfo.library.programming.Func;
+import edu.rice.cs.bioinfo.library.programming.Func4;
 
 import java.util.Map;
 import java.util.Set;

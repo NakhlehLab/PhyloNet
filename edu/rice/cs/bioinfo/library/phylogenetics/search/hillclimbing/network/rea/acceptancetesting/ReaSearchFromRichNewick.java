@@ -1,15 +1,22 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.acceptancetesting;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.*;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
+import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphValidator;
+import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAdditionInPlace;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimberSteepestAscent;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func3;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import junit.framework.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by IntelliJ IDEA.

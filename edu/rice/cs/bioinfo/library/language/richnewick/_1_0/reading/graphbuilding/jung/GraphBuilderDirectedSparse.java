@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.jung;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func5;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 
 import java.math.BigDecimal;

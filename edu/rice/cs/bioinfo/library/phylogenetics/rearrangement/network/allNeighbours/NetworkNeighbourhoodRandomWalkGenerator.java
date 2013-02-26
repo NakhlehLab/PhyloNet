@@ -3,14 +3,11 @@ package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeigh
 import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
 import edu.rice.cs.bioinfo.library.phylogenetics.Graph;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.NetworkValidatorBase;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func3;
 import edu.rice.cs.bioinfo.library.programming.Func4;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;

@@ -2,7 +2,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.uci.ics.jung.graph.util.Pair;
 
 import java.math.BigDecimal;
 import java.util.HashMap;

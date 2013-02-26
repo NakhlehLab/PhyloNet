@@ -1,10 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing;
+
 import edu.rice.cs.bioinfo.library.phylogenetics.search.ObservableGenerationalScoringSearcherBase;
-import edu.rice.cs.bioinfo.library.programming.*;
-import sun.java2d.SunGraphicsEnvironment;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Ref;
 
 import java.util.Comparator;
-import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.

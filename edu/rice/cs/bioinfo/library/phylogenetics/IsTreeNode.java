@@ -2,8 +2,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.Func2;
 
-import java.util.Map;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt

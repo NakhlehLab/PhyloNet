@@ -1,13 +1,11 @@
 // $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g 2013-02-25 13:36:56
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.parsers.antlr.ast;
-import java.util.LinkedList;
-
 
 import org.antlr.runtime.*;
-import java.util.Stack;
+
+import java.util.LinkedList;
 import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class RichNewick_1_1Parser extends Parser {

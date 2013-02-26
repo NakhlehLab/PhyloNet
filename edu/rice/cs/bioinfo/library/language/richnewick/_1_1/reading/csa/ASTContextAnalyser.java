@@ -21,7 +21,7 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.csa;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.IsRooted;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkInfo;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.csa.ASTNetworkInspector;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.Func1;

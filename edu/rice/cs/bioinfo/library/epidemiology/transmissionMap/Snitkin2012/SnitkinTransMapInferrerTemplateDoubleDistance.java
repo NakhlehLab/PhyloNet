@@ -2,7 +2,6 @@ package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
 import org.joda.time.LocalDate;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 /**

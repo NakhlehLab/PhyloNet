@@ -1,6 +1,9 @@
 package edu.rice.cs.bioinfo.programs.rn2ms;
+
 import edu.rice.cs.bioinfo.library.programming.Proc1;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Created by IntelliJ IDEA.

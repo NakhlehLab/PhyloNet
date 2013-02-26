@@ -3,7 +3,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics.genetreegeneration.analyticalm
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
 
 import java.math.BigInteger;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

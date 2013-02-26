@@ -1,14 +1,11 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.genetreeprobability;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloGraph;
-import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Func2;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 

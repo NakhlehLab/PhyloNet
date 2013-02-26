@@ -1,12 +1,8 @@
 package edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings;
 
-import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.BranchingResult;
-import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.EdmondsAlgoGibbons85;
-import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.MaxBranchingSolver;
-import edu.rice.cs.bioinfo.library.graph.algorithms.branchings.optimumBranchings.MaxBranchingSolverTest;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 
-import java.util.*;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

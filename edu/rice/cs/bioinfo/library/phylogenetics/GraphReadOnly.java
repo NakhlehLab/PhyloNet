@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 
 /**
  * Created by IntelliJ IDEA.

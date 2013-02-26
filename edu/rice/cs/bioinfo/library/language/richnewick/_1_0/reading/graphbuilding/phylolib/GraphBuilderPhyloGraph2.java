@@ -2,9 +2,9 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuildi
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.HybridNodeType;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.GraphBuilder;
+import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault2;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge2;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloGraph2;
-import edu.rice.cs.bioinfo.library.phylogenetics.DirectedPhyloGraphDefault2;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.math.BigDecimal;

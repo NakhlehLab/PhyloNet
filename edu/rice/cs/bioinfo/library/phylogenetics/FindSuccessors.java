@@ -1,10 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 
-import javax.xml.soap.Node;
 import java.util.LinkedList;
 
 /**

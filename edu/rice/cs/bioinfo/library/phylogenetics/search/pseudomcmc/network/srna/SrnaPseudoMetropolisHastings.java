@@ -1,9 +1,11 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.network.srna;
 
-import com.sun.org.apache.regexp.internal.RE;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc.PseudoMetropolisHastingsBase;
-import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.library.programming.DeepCopyable;
+import edu.rice.cs.bioinfo.library.programming.Func;
+import edu.rice.cs.bioinfo.library.programming.Func4;
+import edu.rice.cs.bioinfo.library.programming.Ref;
 
 import java.util.HashSet;
 import java.util.Map;

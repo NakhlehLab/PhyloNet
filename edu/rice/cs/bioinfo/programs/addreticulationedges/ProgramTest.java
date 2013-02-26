@@ -1,5 +1,7 @@
 package edu.rice.cs.bioinfo.programs.addreticulationedges;
-import org.junit.*;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Random;

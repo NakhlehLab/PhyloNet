@@ -19,8 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.IdentList;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt

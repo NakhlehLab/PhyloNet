@@ -1,13 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
 import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 
 /**

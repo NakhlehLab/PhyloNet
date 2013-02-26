@@ -1,9 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.search.pseudomcmc;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.ObservableGenerationalScoringSearcherBase;
-import edu.rice.cs.bioinfo.library.programming.*;
-import sun.font.TrueTypeFont;
 
-import java.util.Comparator;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.ObservableGenerationalScoringSearcherBase;
+import edu.rice.cs.bioinfo.library.programming.DeepCopyable;
+import edu.rice.cs.bioinfo.library.programming.Func1;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+
 import java.util.Random;
 
 /**

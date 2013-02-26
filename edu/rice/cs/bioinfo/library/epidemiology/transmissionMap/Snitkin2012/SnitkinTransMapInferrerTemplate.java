@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012;
 
 import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.TransMapInferrer;
-import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.TransMapResult;
 import edu.rice.cs.bioinfo.library.graph.algorithms.generation.simple.CompleteDigraphFactory;
 import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.MinSpanArborescence;
 import edu.rice.cs.bioinfo.library.graph.algorithms.minimumSpanningArborescence.MinSpanArborescenceSolver;

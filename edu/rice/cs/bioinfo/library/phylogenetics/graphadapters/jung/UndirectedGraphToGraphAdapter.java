@@ -3,8 +3,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Pair;
-import sun.org.mozilla.javascript.internal.Function;
 
 /**
  * Created by IntelliJ IDEA.

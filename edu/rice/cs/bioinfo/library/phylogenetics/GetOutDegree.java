@@ -2,8 +2,6 @@ package edu.rice.cs.bioinfo.library.phylogenetics;
 
 import edu.rice.cs.bioinfo.library.programming.Func2;
 
-import javax.swing.text.Element;
-
 
 /**
  * Created by IntelliJ IDEA.

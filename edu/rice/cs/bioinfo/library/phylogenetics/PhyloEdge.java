@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import java.util.prefs.BackingStoreException;
-
 /**
 * Created by IntelliJ IDEA.
 * User: Matt

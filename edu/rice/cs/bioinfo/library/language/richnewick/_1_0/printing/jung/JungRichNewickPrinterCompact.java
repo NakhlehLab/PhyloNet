@@ -3,12 +3,9 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.jung;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.Graph;
 
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;

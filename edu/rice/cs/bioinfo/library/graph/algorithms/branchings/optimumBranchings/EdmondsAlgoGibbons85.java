@@ -4,7 +4,6 @@ import edu.rice.cs.bioinfo.library.graph.algorithms.cycleDetection.DirectedCycle
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
-
 import java.util.*;
 
 /**

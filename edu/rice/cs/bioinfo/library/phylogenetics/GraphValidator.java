@@ -1,9 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
-import edu.rice.cs.bioinfo.library.programming.*;
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
-import org.junit.internal.matchers.Each;
 
-import java.util.*;
+import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
+
+import java.util.HashSet;
 
 /**
  * Created by IntelliJ IDEA.

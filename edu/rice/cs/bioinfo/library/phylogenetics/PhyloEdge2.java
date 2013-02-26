@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Node;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 

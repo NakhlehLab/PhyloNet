@@ -1,7 +1,7 @@
 package edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.GraphValidator;
 import edu.rice.cs.bioinfo.library.phylogenetics.GraphReadOnly;
+import edu.rice.cs.bioinfo.library.phylogenetics.GraphValidator;
 
 /**
  * Created by IntelliJ IDEA.

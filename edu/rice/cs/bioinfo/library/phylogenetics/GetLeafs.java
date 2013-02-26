@@ -1,9 +1,10 @@
 package edu.rice.cs.bioinfo.library.phylogenetics;
 
-import edu.rice.cs.bioinfo.library.programming.*;
-//import sun.plugin.javascript.navig4.Link;
+import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.util.LinkedList;
+
+//import sun.plugin.javascript.navig4.Link;
 
 /**
  * Created by IntelliJ IDEA.

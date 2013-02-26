@@ -4,9 +4,6 @@ package edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.parsers.ant
 
 
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class RichNewick_1_1Lexer extends Lexer {

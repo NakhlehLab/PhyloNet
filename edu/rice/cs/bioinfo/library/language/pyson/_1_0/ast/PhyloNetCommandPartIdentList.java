@@ -19,8 +19,6 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ast;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.PySONNode;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt

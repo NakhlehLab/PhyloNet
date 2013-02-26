@@ -1,32 +1,32 @@
 package edu.rice.cs.bioinfo.manuscriptsupport.yununnamed2012;
 
-import java.util.*;
-import java.io.*;
-
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReadResult;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimberSteepestAscent;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.*;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.*;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetworkYF;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.*;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.*;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
-
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAddition;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.ReticulateEdgeAdditionInPlace;
+import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.rea.ReaHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Func4;
-import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.rea.*;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetworkYF;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
+
+import java.io.*;
+import java.util.*;
 
 
 //import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;

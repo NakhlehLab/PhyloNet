@@ -1,9 +1,6 @@
 package edu.rice.cs.bioinfo.programs.richnewick2hybridsimnewick;
 
-import edu.rice.cs.bioinfo.library.language.hybridsimnewick._2012_6_22.printing.HybridSimNewickPrinter;
 import edu.rice.cs.bioinfo.library.language.hybridsimnewick._2012_6_22.printing.HybridSimNewickPrinterCompact;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.RichNewickReader;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.graphbuilding.phylolib.GraphBuilderPhyloGraph2;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
@@ -12,10 +9,8 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func1Identity;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 
 import java.io.ByteArrayInputStream;
-import java.io.Console;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -51,7 +46,7 @@ public class Program
     static String convertString(String richNewickInput, String rootBranchLength)
     {
         GraphBuilderPhyloGraph2<String,BigDecimal> graphBuilder = new GraphBuilderPhyloGraph2<String, BigDecimal>(new Func1Identity<String>(), new Func1Identity<BigDecimal>());
-        RichNewickReader reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+        RichNewickReaderAST reader =  new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
         reader.readAnyErrorToRuntimeException(new ByteArrayInputStream(richNewickInput.getBytes()), graphBuilder);
         final PhyloGraph2<String,BigDecimal> graph = graphBuilder.Graph;
 

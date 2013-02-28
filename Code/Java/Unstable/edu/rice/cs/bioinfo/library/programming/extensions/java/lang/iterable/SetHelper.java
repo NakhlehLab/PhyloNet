@@ -31,17 +31,17 @@ public class SetHelper
 
         for(T1 element : a)
         {
-            if(!b.contains(a))
+            if(!b.contains(element))
             {
-                result.InAButNotB.add(a);
+                result.InAButNotB.add(element);
             }
         }
 
         for(T2 element : b)
         {
-            if(!a.contains(b))
+            if(!a.contains(element))
             {
-                result.InBButNotA.add(a);
+                result.InBButNotA.add(element);
             }
         }
 

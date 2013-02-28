@@ -27,7 +27,7 @@ public class SetHelper
 
     public static  <T1,T2> RelativeComplimentResult<T1,T2> relativeCompliment(Set<T1> a, Set<T2> b)
     {
-        RelativeComplimentResult result = new RelativeComplimentResult(new HashSet<T1>(), new HashSet<T2>());
+        RelativeComplimentResult<T1,T2> result = new RelativeComplimentResult<T1,T2>(new HashSet<T1>(), new HashSet<T2>());
 
         for(T1 element : a)
         {

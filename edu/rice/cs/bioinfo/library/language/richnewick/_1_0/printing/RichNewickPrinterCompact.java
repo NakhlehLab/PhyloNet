@@ -19,28 +19,28 @@ import java.util.LinkedList;
  */
 public class RichNewickPrinterCompact<N> implements RichNewickPrinter<N>
 {
-     protected final Func2<N,N,String> _noDetail = new Func2<N, N, String>() {
-            @Override
+     public final Func2<N,N,String> NO_DETAIL = new Func2<N, N, String>() {
+
             public String execute(N input1, N input2) {
                 return null;
             }
         };
 
-    private Func2<N,N,String> getBranchLength = _noDetail;
+    private Func2<N,N,String> getBranchLength = NO_DETAIL;
 
     public void setGetBranchLength(Func2<N,N,String> getBranchLength)
     {
         this.getBranchLength = getBranchLength;
     }
 
-    private Func2<N,N,String> getSupport = _noDetail;
+    private Func2<N,N,String> getSupport = NO_DETAIL;
 
     public void setGetSupport(Func2<N,N,String> getSupport)
     {
         this.getSupport = getSupport;
     }
 
-    private Func2<N,N,String> getProbability = _noDetail;
+    private Func2<N,N,String> getProbability = NO_DETAIL;
 
     public void setGetProbability(Func2<N,N,String> getProbability)
     {

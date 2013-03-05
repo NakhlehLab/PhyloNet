@@ -1,11 +1,13 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2013-02-25 17:44:26
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2013-03-05 15:54:00
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
+import java.util.LinkedList;
+
 
 import org.antlr.runtime.*;
-
-import java.util.LinkedList;
+import java.util.Stack;
 import java.util.List;
+import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class PySONLexer extends Lexer {
@@ -38,7 +40,7 @@ public class PySONLexer extends Lexer {
     public static final int NTAX=21;
     public static final int PHYLONET=22;
     public static final int QUOTE=23;
-    public static final int ROOTAGE_QUALIFIER=24;
+    public static final int RN_LS_NONCOMMENT=24;
     public static final int START=25;
     public static final int SYMBOLS=26;
     public static final int TAXON_SET_LIST=27;
@@ -2299,26 +2301,50 @@ public class PySONLexer extends Lexer {
     }
     // $ANTLR end "TAXON_SET_LIST"
 
-    // $ANTLR start "ROOTAGE_QUALIFIER"
-    public final void mROOTAGE_QUALIFIER() throws RecognitionException {
+    // $ANTLR start "RN_LS_NONCOMMENT"
+    public final void mRN_LS_NONCOMMENT() throws RecognitionException {
         try {
-            int _type = ROOTAGE_QUALIFIER;
+            int _type = RN_LS_NONCOMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:2: ( '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:4: '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:2: ( '[' '&' (~ ( ']' ) )* ']' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:4: '[' '&' (~ ( ']' ) )* ']'
             {
             match('['); 
 
             match('&'); 
 
-            if ( input.LA(1)=='R'||input.LA(1)=='U'||input.LA(1)=='r'||input.LA(1)=='u' ) {
-                input.consume();
-            }
-            else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                recover(mse);
-                throw mse;
-            }
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:12: (~ ( ']' ) )*
+            loop14:
+            do {
+                int alt14=2;
+                int LA14_0 = input.LA(1);
+
+                if ( ((LA14_0 >= '\u0000' && LA14_0 <= '\\')||(LA14_0 >= '^' && LA14_0 <= '\uFFFF')) ) {
+                    alt14=1;
+                }
+
+
+                switch (alt14) {
+            	case 1 :
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
+            	    {
+            	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\\')||(input.LA(1) >= '^' && input.LA(1) <= '\uFFFF') ) {
+            	        input.consume();
+            	    }
+            	    else {
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;
+            	    }
+
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop14;
+                }
+            } while (true);
 
 
             match(']'); 
@@ -2332,7 +2358,7 @@ public class PySONLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "ROOTAGE_QUALIFIER"
+    // $ANTLR end "RN_LS_NONCOMMENT"
 
     // $ANTLR start "NESTED_ML_COMMENT"
     public final void mNESTED_ML_COMMENT() throws RecognitionException {
@@ -2345,17 +2371,17 @@ public class PySONLexer extends Lexer {
             match('['); 
 
             // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:10: (~ ( '[' | ']' ) )*
-            loop14:
+            loop15:
             do {
-                int alt14=2;
-                int LA14_0 = input.LA(1);
+                int alt15=2;
+                int LA15_0 = input.LA(1);
 
-                if ( ((LA14_0 >= '\u0000' && LA14_0 <= 'Z')||LA14_0=='\\'||(LA14_0 >= '^' && LA14_0 <= '\uFFFF')) ) {
-                    alt14=1;
+                if ( ((LA15_0 >= '\u0000' && LA15_0 <= 'Z')||LA15_0=='\\'||(LA15_0 >= '^' && LA15_0 <= '\uFFFF')) ) {
+                    alt15=1;
                 }
 
 
-                switch (alt14) {
+                switch (alt15) {
             	case 1 :
             	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
@@ -2373,7 +2399,7 @@ public class PySONLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop14;
+            	    break loop15;
                 }
             } while (true);
 
@@ -2446,10 +2472,10 @@ public class PySONLexer extends Lexer {
     // $ANTLR end "ELSE"
 
     public void mTokens() throws RecognitionException {
-        // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:8: ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | ROOTAGE_QUALIFIER | NESTED_ML_COMMENT | WS | ELSE )
-        int alt15=37;
-        alt15 = dfa15.predict(input);
-        switch (alt15) {
+        // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:8: ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | RN_LS_NONCOMMENT | NESTED_ML_COMMENT | WS | ELSE )
+        int alt16=37;
+        alt16 = dfa16.predict(input);
+        switch (alt16) {
             case 1 :
                 // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:10: T__33
                 {
@@ -2715,15 +2741,15 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 34 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:246: ROOTAGE_QUALIFIER
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:246: RN_LS_NONCOMMENT
                 {
-                mROOTAGE_QUALIFIER(); 
+                mRN_LS_NONCOMMENT(); 
 
 
                 }
                 break;
             case 35 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:264: NESTED_ML_COMMENT
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:263: NESTED_ML_COMMENT
                 {
                 mNESTED_ML_COMMENT(); 
 
@@ -2731,7 +2757,7 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 36 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:282: WS
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:281: WS
                 {
                 mWS(); 
 
@@ -2739,7 +2765,7 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 37 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:285: ELSE
+                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:284: ELSE
                 {
                 mELSE(); 
 
@@ -2755,7 +2781,7 @@ public class PySONLexer extends Lexer {
     protected DFA5 dfa5 = new DFA5(this);
     protected DFA11 dfa11 = new DFA11(this);
     protected DFA10 dfa10 = new DFA10(this);
-    protected DFA15 dfa15 = new DFA15(this);
+    protected DFA16 dfa16 = new DFA16(this);
     static final String DFA5_eotS =
         "\6\uffff";
     static final String DFA5_eofS =
@@ -2932,54 +2958,53 @@ public class PySONLexer extends Lexer {
             return "221:20: ( ( WS )* ',' )?";
         }
     }
-    static final String DFA15_eotS =
+    static final String DFA16_eotS =
         "\1\uffff\1\34\10\uffff\11\47\1\33\2\47\1\uffff\3\33\14\uffff\1\47"+
-        "\1\uffff\14\47\1\uffff\2\47\5\uffff\13\47\1\130\3\47\1\134\1\uffff"+
-        "\1\47\1\140\1\47\1\143\3\47\1\147\3\47\1\uffff\3\47\2\uffff\2\47"+
+        "\1\uffff\14\47\1\uffff\2\47\5\uffff\13\47\1\132\3\47\1\136\3\uffff"+
+        "\1\47\1\141\1\47\1\144\3\47\1\150\3\47\1\uffff\3\47\1\uffff\2\47"+
         "\1\uffff\1\47\1\162\1\uffff\1\47\1\164\1\47\1\uffff\1\166\4\47\1"+
-        "\173\1\uffff\3\47\1\uffff\1\47\1\uffff\1\47\1\uffff\1\u0081\1\47"+
-        "\1\u0083\1\47\1\uffff\4\47\1\u008a\1\uffff\1\u008b\1\uffff\1\u008c"+
-        "\1\u008d\1\u008e\2\47\1\u0091\5\uffff\1\47\1\u0093\1\uffff\1\u0094"+
-        "\2\uffff";
-    static final String DFA15_eofS =
+        "\173\3\47\1\uffff\1\47\1\uffff\1\47\1\uffff\1\u0081\1\47\1\u0083"+
+        "\1\47\1\uffff\4\47\1\u008a\1\uffff\1\u008b\1\uffff\1\u008c\1\u008d"+
+        "\1\u008e\2\47\1\u0091\5\uffff\1\47\1\u0093\1\uffff\1\u0094\2\uffff";
+    static final String DFA16_eofS =
         "\u0095\uffff";
-    static final String DFA15_minS =
+    static final String DFA16_minS =
         "\1\0\1\11\10\uffff\1\110\1\101\1\122\1\124\1\103\1\117\1\131\2\101"+
         "\1\116\1\105\1\116\1\uffff\1\0\1\11\1\0\14\uffff\1\131\1\uffff\1"+
         "\124\1\115\1\101\1\122\1\124\1\101\1\110\1\122\1\115\1\120\1\124"+
         "\1\123\1\uffff\1\107\1\104\2\uffff\1\0\2\uffff\1\114\1\101\2\105"+
         "\1\116\1\105\1\127\1\130\1\101\1\115\1\102\1\55\1\122\1\123\1\111"+
-        "\1\55\1\0\1\117\1\55\1\116\1\55\1\123\1\105\1\117\1\55\1\122\1\101"+
-        "\1\117\1\uffff\2\111\1\116\2\uffff\1\116\1\131\1\uffff\1\123\1\55"+
-        "\1\uffff\1\114\1\55\1\122\1\uffff\1\55\1\124\1\114\1\130\1\116\1"+
-        "\55\1\uffff\1\105\1\120\1\111\1\uffff\1\101\1\uffff\1\113\1\uffff"+
-        "\1\55\1\123\1\55\1\107\1\uffff\1\124\1\105\1\117\1\124\1\55\1\uffff"+
-        "\1\55\1\uffff\3\55\1\116\1\105\1\55\5\uffff\1\123\1\55\1\uffff\1"+
-        "\55\2\uffff";
-    static final String DFA15_maxS =
+        "\1\55\1\0\2\uffff\1\117\1\55\1\116\1\55\1\123\1\105\1\117\1\55\1"+
+        "\122\1\101\1\117\1\uffff\2\111\1\116\1\uffff\1\116\1\131\1\uffff"+
+        "\1\123\1\55\1\uffff\1\114\1\55\1\122\1\uffff\1\55\1\124\1\114\1"+
+        "\130\1\116\1\55\1\105\1\120\1\111\1\uffff\1\101\1\uffff\1\113\1"+
+        "\uffff\1\55\1\123\1\55\1\107\1\uffff\1\124\1\105\1\117\1\124\1\55"+
+        "\1\uffff\1\55\1\uffff\3\55\1\116\1\105\1\55\5\uffff\1\123\1\55\1"+
+        "\uffff\1\55\2\uffff";
+    static final String DFA16_maxS =
         "\1\uffff\1\173\10\uffff\1\150\1\151\1\162\2\164\1\157\1\171\1\141"+
         "\1\151\1\156\1\145\1\156\1\uffff\1\uffff\1\172\1\uffff\14\uffff"+
         "\1\171\1\uffff\1\164\1\155\1\145\1\162\1\164\1\141\1\150\1\162\1"+
         "\155\1\160\1\164\1\163\1\uffff\1\147\1\144\2\uffff\1\uffff\2\uffff"+
         "\1\154\1\141\2\145\1\156\1\145\1\167\1\170\1\141\1\155\1\142\1\172"+
-        "\1\162\1\163\1\151\1\172\1\uffff\1\157\1\172\1\156\1\172\1\163\1"+
-        "\145\1\157\1\172\1\162\1\141\1\157\1\uffff\2\151\1\156\2\uffff\1"+
-        "\156\1\171\1\uffff\1\163\1\172\1\uffff\1\154\1\172\1\162\1\uffff"+
-        "\1\172\1\164\1\154\1\170\1\156\1\172\1\uffff\1\145\1\160\1\151\1"+
+        "\1\162\1\163\1\151\1\172\1\uffff\2\uffff\1\157\1\172\1\156\1\172"+
+        "\1\163\1\145\1\157\1\172\1\162\1\141\1\157\1\uffff\2\151\1\156\1"+
+        "\uffff\1\156\1\171\1\uffff\1\163\1\172\1\uffff\1\154\1\172\1\162"+
+        "\1\uffff\1\172\1\164\1\154\1\170\1\156\1\172\1\145\1\160\1\151\1"+
         "\uffff\1\141\1\uffff\1\153\1\uffff\1\172\1\163\1\172\1\147\1\uffff"+
         "\1\164\1\145\1\157\1\164\1\172\1\uffff\1\172\1\uffff\3\172\1\156"+
         "\1\145\1\172\5\uffff\1\163\1\172\1\uffff\1\172\2\uffff";
-    static final String DFA15_acceptS =
+    static final String DFA16_acceptS =
         "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\14\uffff\1\36\3\uffff"+
         "\1\44\1\45\1\1\1\41\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1"+
-        "\36\14\uffff\1\30\2\uffff\1\37\1\40\1\uffff\1\43\1\44\34\uffff\1"+
-        "\25\3\uffff\1\35\1\42\2\uffff\1\13\2\uffff\1\15\3\uffff\1\20\6\uffff"+
-        "\1\42\3\uffff\1\34\1\uffff\1\16\1\uffff\1\21\4\uffff\1\31\5\uffff"+
+        "\36\14\uffff\1\30\2\uffff\1\37\1\40\1\uffff\1\43\1\44\21\uffff\2"+
+        "\42\13\uffff\1\25\3\uffff\1\35\2\uffff\1\13\2\uffff\1\15\3\uffff"+
+        "\1\20\11\uffff\1\34\1\uffff\1\16\1\uffff\1\21\4\uffff\1\31\5\uffff"+
         "\1\22\1\uffff\1\26\6\uffff\1\17\1\24\1\27\1\12\1\23\2\uffff\1\33"+
         "\1\uffff\1\32\1\14";
-    static final String DFA15_specialS =
-        "\1\4\26\uffff\1\0\1\uffff\1\1\37\uffff\1\3\22\uffff\1\2\110\uffff}>";
-    static final String[] DFA15_transitionS = {
+    static final String DFA16_specialS =
+        "\1\4\26\uffff\1\1\1\uffff\1\3\37\uffff\1\0\22\uffff\1\2\110\uffff}>";
+    static final String[] DFA16_transitionS = {
             "\11\33\2\32\2\33\1\32\22\33\1\32\1\33\1\27\1\23\4\33\1\1\1\2"+
             "\1\11\1\33\1\3\15\26\1\4\1\5\1\6\1\7\1\10\1\26\1\33\1\26\1\24"+
             "\1\26\1\13\1\25\1\17\1\21\5\26\1\22\1\16\1\26\1\12\2\26\1\20"+
@@ -3044,12 +3069,9 @@ public class PySONLexer extends Lexer {
             "\1\113\37\uffff\1\113",
             "",
             "",
-            "\122\72\1\114\2\72\1\114\5\72\1\uffff\26\72\1\114\2\72\1\114"+
-            "\uff8a\72",
+            "\133\114\1\116\1\114\1\115\uffa2\114",
             "",
             "",
-            "\1\115\37\uffff\1\115",
-            "\1\116\37\uffff\1\116",
             "\1\117\37\uffff\1\117",
             "\1\120\37\uffff\1\120",
             "\1\121\37\uffff\1\121",
@@ -3059,33 +3081,36 @@ public class PySONLexer extends Lexer {
             "\1\125\37\uffff\1\125",
             "\1\126\37\uffff\1\126",
             "\1\127\37\uffff\1\127",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
+            "\1\130\37\uffff\1\130",
             "\1\131\37\uffff\1\131",
-            "\1\132\37\uffff\1\132",
-            "\1\133\37\uffff\1\133",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
-            "\133\72\1\uffff\1\72\1\135\uffa2\72",
-            "\1\136\37\uffff\1\136",
-            "\15\47\5\uffff\1\47\1\uffff\23\47\1\137\6\47\1\uffff\1\47\2"+
-            "\uffff\1\47\1\uffff\23\47\1\137\6\47",
-            "\1\141\37\uffff\1\141",
-            "\15\47\5\uffff\1\47\1\uffff\22\47\1\142\7\47\1\uffff\1\47\2"+
-            "\uffff\1\47\1\uffff\22\47\1\142\7\47",
-            "\1\144\37\uffff\1\144",
+            "\1\133\37\uffff\1\133",
+            "\1\134\37\uffff\1\134",
+            "\1\135\37\uffff\1\135",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\133\114\1\116\1\114\1\115\uffa2\114",
+            "",
+            "",
+            "\1\137\37\uffff\1\137",
+            "\15\47\5\uffff\1\47\1\uffff\23\47\1\140\6\47\1\uffff\1\47\2"+
+            "\uffff\1\47\1\uffff\23\47\1\140\6\47",
+            "\1\142\37\uffff\1\142",
+            "\15\47\5\uffff\1\47\1\uffff\22\47\1\143\7\47\1\uffff\1\47\2"+
+            "\uffff\1\47\1\uffff\22\47\1\143\7\47",
             "\1\145\37\uffff\1\145",
             "\1\146\37\uffff\1\146",
+            "\1\147\37\uffff\1\147",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
-            "\1\150\37\uffff\1\150",
             "\1\151\37\uffff\1\151",
             "\1\152\37\uffff\1\152",
-            "",
             "\1\153\37\uffff\1\153",
+            "",
             "\1\154\37\uffff\1\154",
             "\1\155\37\uffff\1\155",
-            "",
+            "\1\156\37\uffff\1\156",
             "",
             "\1\157\37\uffff\1\157",
             "\1\160\37\uffff\1\160",
@@ -3107,7 +3132,6 @@ public class PySONLexer extends Lexer {
             "\1\172\37\uffff\1\172",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
-            "",
             "\1\174\37\uffff\1\174",
             "\1\175\37\uffff\1\175",
             "\1\176\37\uffff\1\176",
@@ -3158,60 +3182,60 @@ public class PySONLexer extends Lexer {
             ""
     };
 
-    static final short[] DFA15_eot = DFA.unpackEncodedString(DFA15_eotS);
-    static final short[] DFA15_eof = DFA.unpackEncodedString(DFA15_eofS);
-    static final char[] DFA15_min = DFA.unpackEncodedStringToUnsignedChars(DFA15_minS);
-    static final char[] DFA15_max = DFA.unpackEncodedStringToUnsignedChars(DFA15_maxS);
-    static final short[] DFA15_accept = DFA.unpackEncodedString(DFA15_acceptS);
-    static final short[] DFA15_special = DFA.unpackEncodedString(DFA15_specialS);
-    static final short[][] DFA15_transition;
+    static final short[] DFA16_eot = DFA.unpackEncodedString(DFA16_eotS);
+    static final short[] DFA16_eof = DFA.unpackEncodedString(DFA16_eofS);
+    static final char[] DFA16_min = DFA.unpackEncodedStringToUnsignedChars(DFA16_minS);
+    static final char[] DFA16_max = DFA.unpackEncodedStringToUnsignedChars(DFA16_maxS);
+    static final short[] DFA16_accept = DFA.unpackEncodedString(DFA16_acceptS);
+    static final short[] DFA16_special = DFA.unpackEncodedString(DFA16_specialS);
+    static final short[][] DFA16_transition;
 
     static {
-        int numStates = DFA15_transitionS.length;
-        DFA15_transition = new short[numStates][];
+        int numStates = DFA16_transitionS.length;
+        DFA16_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA15_transition[i] = DFA.unpackEncodedString(DFA15_transitionS[i]);
+            DFA16_transition[i] = DFA.unpackEncodedString(DFA16_transitionS[i]);
         }
     }
 
-    class DFA15 extends DFA {
+    class DFA16 extends DFA {
 
-        public DFA15(BaseRecognizer recognizer) {
+        public DFA16(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 15;
-            this.eot = DFA15_eot;
-            this.eof = DFA15_eof;
-            this.min = DFA15_min;
-            this.max = DFA15_max;
-            this.accept = DFA15_accept;
-            this.special = DFA15_special;
-            this.transition = DFA15_transition;
+            this.decisionNumber = 16;
+            this.eot = DFA16_eot;
+            this.eof = DFA16_eof;
+            this.min = DFA16_min;
+            this.max = DFA16_max;
+            this.accept = DFA16_accept;
+            this.special = DFA16_special;
+            this.transition = DFA16_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | ROOTAGE_QUALIFIER | NESTED_ML_COMMENT | WS | ELSE );";
+            return "1:1: Tokens : ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | RN_LS_NONCOMMENT | NESTED_ML_COMMENT | WS | ELSE );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA15_23 = input.LA(1);
+                        int LA16_57 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA15_23 >= '\u0000' && LA15_23 <= '\uFFFF')) ) {s = 55;}
+                        if ( ((LA16_57 >= '\u0000' && LA16_57 <= 'Z')||LA16_57=='\\'||(LA16_57 >= '^' && LA16_57 <= '\uFFFF')) ) {s = 76;}
 
-                        else s = 27;
+                        else if ( (LA16_57==']') ) {s = 77;}
+
+                        else if ( (LA16_57=='[') ) {s = 78;}
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 1 : 
-                        int LA15_25 = input.LA(1);
+                        int LA16_23 = input.LA(1);
 
                         s = -1;
-                        if ( (LA15_25=='&') ) {s = 57;}
-
-                        else if ( ((LA15_25 >= '\u0000' && LA15_25 <= '%')||(LA15_25 >= '\'' && LA15_25 <= 'Z')||(LA15_25 >= '\\' && LA15_25 <= '\uFFFF')) ) {s = 58;}
+                        if ( ((LA16_23 >= '\u0000' && LA16_23 <= '\uFFFF')) ) {s = 55;}
 
                         else s = 27;
 
@@ -3219,90 +3243,94 @@ public class PySONLexer extends Lexer {
                         break;
 
                     case 2 : 
-                        int LA15_76 = input.LA(1);
+                        int LA16_76 = input.LA(1);
 
                         s = -1;
-                        if ( (LA15_76==']') ) {s = 93;}
+                        if ( (LA16_76==']') ) {s = 77;}
 
-                        else if ( ((LA15_76 >= '\u0000' && LA15_76 <= 'Z')||LA15_76=='\\'||(LA15_76 >= '^' && LA15_76 <= '\uFFFF')) ) {s = 58;}
+                        else if ( ((LA16_76 >= '\u0000' && LA16_76 <= 'Z')||LA16_76=='\\'||(LA16_76 >= '^' && LA16_76 <= '\uFFFF')) ) {s = 76;}
+
+                        else if ( (LA16_76=='[') ) {s = 78;}
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 3 : 
-                        int LA15_57 = input.LA(1);
+                        int LA16_25 = input.LA(1);
 
                         s = -1;
-                        if ( (LA15_57=='R'||LA15_57=='U'||LA15_57=='r'||LA15_57=='u') ) {s = 76;}
+                        if ( (LA16_25=='&') ) {s = 57;}
 
-                        else if ( ((LA15_57 >= '\u0000' && LA15_57 <= 'Q')||(LA15_57 >= 'S' && LA15_57 <= 'T')||(LA15_57 >= 'V' && LA15_57 <= 'Z')||(LA15_57 >= '\\' && LA15_57 <= 'q')||(LA15_57 >= 's' && LA15_57 <= 't')||(LA15_57 >= 'v' && LA15_57 <= '\uFFFF')) ) {s = 58;}
+                        else if ( ((LA16_25 >= '\u0000' && LA16_25 <= '%')||(LA16_25 >= '\'' && LA16_25 <= 'Z')||(LA16_25 >= '\\' && LA16_25 <= '\uFFFF')) ) {s = 58;}
+
+                        else s = 27;
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 4 : 
-                        int LA15_0 = input.LA(1);
+                        int LA16_0 = input.LA(1);
 
                         s = -1;
-                        if ( (LA15_0=='(') ) {s = 1;}
+                        if ( (LA16_0=='(') ) {s = 1;}
 
-                        else if ( (LA15_0==')') ) {s = 2;}
+                        else if ( (LA16_0==')') ) {s = 2;}
 
-                        else if ( (LA15_0==',') ) {s = 3;}
+                        else if ( (LA16_0==',') ) {s = 3;}
 
-                        else if ( (LA15_0==':') ) {s = 4;}
+                        else if ( (LA16_0==':') ) {s = 4;}
 
-                        else if ( (LA15_0==';') ) {s = 5;}
+                        else if ( (LA16_0==';') ) {s = 5;}
 
-                        else if ( (LA15_0=='<') ) {s = 6;}
+                        else if ( (LA16_0=='<') ) {s = 6;}
 
-                        else if ( (LA15_0=='=') ) {s = 7;}
+                        else if ( (LA16_0=='=') ) {s = 7;}
 
-                        else if ( (LA15_0=='>') ) {s = 8;}
+                        else if ( (LA16_0=='>') ) {s = 8;}
 
-                        else if ( (LA15_0=='*') ) {s = 9;}
+                        else if ( (LA16_0=='*') ) {s = 9;}
 
-                        else if ( (LA15_0=='P'||LA15_0=='p') ) {s = 10;}
+                        else if ( (LA16_0=='P'||LA16_0=='p') ) {s = 10;}
 
-                        else if ( (LA15_0=='D'||LA15_0=='d') ) {s = 11;}
+                        else if ( (LA16_0=='D'||LA16_0=='d') ) {s = 11;}
 
-                        else if ( (LA15_0=='T'||LA15_0=='t') ) {s = 12;}
+                        else if ( (LA16_0=='T'||LA16_0=='t') ) {s = 12;}
 
-                        else if ( (LA15_0=='U'||LA15_0=='u') ) {s = 13;}
+                        else if ( (LA16_0=='U'||LA16_0=='u') ) {s = 13;}
 
-                        else if ( (LA15_0=='N'||LA15_0=='n') ) {s = 14;}
+                        else if ( (LA16_0=='N'||LA16_0=='n') ) {s = 14;}
 
-                        else if ( (LA15_0=='F'||LA15_0=='f') ) {s = 15;}
+                        else if ( (LA16_0=='F'||LA16_0=='f') ) {s = 15;}
 
-                        else if ( (LA15_0=='S'||LA15_0=='s') ) {s = 16;}
+                        else if ( (LA16_0=='S'||LA16_0=='s') ) {s = 16;}
 
-                        else if ( (LA15_0=='G'||LA15_0=='g') ) {s = 17;}
+                        else if ( (LA16_0=='G'||LA16_0=='g') ) {s = 17;}
 
-                        else if ( (LA15_0=='M'||LA15_0=='m') ) {s = 18;}
+                        else if ( (LA16_0=='M'||LA16_0=='m') ) {s = 18;}
 
-                        else if ( (LA15_0=='#') ) {s = 19;}
+                        else if ( (LA16_0=='#') ) {s = 19;}
 
-                        else if ( (LA15_0=='B'||LA15_0=='b') ) {s = 20;}
+                        else if ( (LA16_0=='B'||LA16_0=='b') ) {s = 20;}
 
-                        else if ( (LA15_0=='E'||LA15_0=='e') ) {s = 21;}
+                        else if ( (LA16_0=='E'||LA16_0=='e') ) {s = 21;}
 
-                        else if ( ((LA15_0 >= '-' && LA15_0 <= '9')||LA15_0=='?'||LA15_0=='A'||LA15_0=='C'||(LA15_0 >= 'H' && LA15_0 <= 'L')||LA15_0=='O'||(LA15_0 >= 'Q' && LA15_0 <= 'R')||(LA15_0 >= 'V' && LA15_0 <= 'Z')||LA15_0=='\\'||LA15_0=='_'||LA15_0=='a'||LA15_0=='c'||(LA15_0 >= 'h' && LA15_0 <= 'l')||LA15_0=='o'||(LA15_0 >= 'q' && LA15_0 <= 'r')||(LA15_0 >= 'v' && LA15_0 <= 'z')) ) {s = 22;}
+                        else if ( ((LA16_0 >= '-' && LA16_0 <= '9')||LA16_0=='?'||LA16_0=='A'||LA16_0=='C'||(LA16_0 >= 'H' && LA16_0 <= 'L')||LA16_0=='O'||(LA16_0 >= 'Q' && LA16_0 <= 'R')||(LA16_0 >= 'V' && LA16_0 <= 'Z')||LA16_0=='\\'||LA16_0=='_'||LA16_0=='a'||LA16_0=='c'||(LA16_0 >= 'h' && LA16_0 <= 'l')||LA16_0=='o'||(LA16_0 >= 'q' && LA16_0 <= 'r')||(LA16_0 >= 'v' && LA16_0 <= 'z')) ) {s = 22;}
 
-                        else if ( (LA15_0=='\"') ) {s = 23;}
+                        else if ( (LA16_0=='\"') ) {s = 23;}
 
-                        else if ( (LA15_0=='{') ) {s = 24;}
+                        else if ( (LA16_0=='{') ) {s = 24;}
 
-                        else if ( (LA15_0=='[') ) {s = 25;}
+                        else if ( (LA16_0=='[') ) {s = 25;}
 
-                        else if ( ((LA15_0 >= '\t' && LA15_0 <= '\n')||LA15_0=='\r'||LA15_0==' ') ) {s = 26;}
+                        else if ( ((LA16_0 >= '\t' && LA16_0 <= '\n')||LA16_0=='\r'||LA16_0==' ') ) {s = 26;}
 
-                        else if ( ((LA15_0 >= '\u0000' && LA15_0 <= '\b')||(LA15_0 >= '\u000B' && LA15_0 <= '\f')||(LA15_0 >= '\u000E' && LA15_0 <= '\u001F')||LA15_0=='!'||(LA15_0 >= '$' && LA15_0 <= '\'')||LA15_0=='+'||LA15_0=='@'||(LA15_0 >= ']' && LA15_0 <= '^')||LA15_0=='`'||(LA15_0 >= '|' && LA15_0 <= '\uFFFF')) ) {s = 27;}
+                        else if ( ((LA16_0 >= '\u0000' && LA16_0 <= '\b')||(LA16_0 >= '\u000B' && LA16_0 <= '\f')||(LA16_0 >= '\u000E' && LA16_0 <= '\u001F')||LA16_0=='!'||(LA16_0 >= '$' && LA16_0 <= '\'')||LA16_0=='+'||LA16_0=='@'||(LA16_0 >= ']' && LA16_0 <= '^')||LA16_0=='`'||(LA16_0 >= '|' && LA16_0 <= '\uFFFF')) ) {s = 27;}
 
                         if ( s>=0 ) return s;
                         break;
             }
             NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 15, _s, input);
+                new NoViableAltException(getDescription(), 16, _s, input);
             error(nvae);
             throw nvae;
         }

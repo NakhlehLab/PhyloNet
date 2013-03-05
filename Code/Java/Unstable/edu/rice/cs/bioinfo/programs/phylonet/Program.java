@@ -389,7 +389,8 @@ public class Program {
             RichNewickReadResult<Networks> readResult = null;
             try
             {
-                readResult = rnReader.read(new ByteArrayInputStream(assignment.getRichNewickString().getBytes()));
+                String richNewichString = assignment.getRichNewickString();
+                readResult = rnReader.read(new ByteArrayInputStream(richNewichString.getBytes()));
                 /*  Iterator<NetworkNonEmpty> oneNetwork = RichNewickParser.parse(
              new ByteArrayInputStream(assignment.getRichNewickString().getBytes())).Networks.iterator();  */
             }

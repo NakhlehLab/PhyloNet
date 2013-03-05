@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2013-02-25 17:44:26
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2013-03-05 15:54:00
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import org.antlr.runtime.*;
@@ -9,7 +9,7 @@ import java.util.List;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class PySONParser extends org.antlr.runtime.Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "BEGIN", "DATA", "DATATYPE", "DEFAULT_INDICATOR", "DIMENSIONS", "ELSE", "END", "FORMAT", "GAP", "ID", "ID_SET", "MATRIX", "MISSING", "NCHAR", "NESTED_ML_COMMENT", "NETWORK", "NETWORKS", "NTAX", "PHYLONET", "QUOTE", "ROOTAGE_QUALIFIER", "START", "SYMBOLS", "TAXON_SET_LIST", "TRANSLATE", "TREE", "TREES", "UTREE", "WS", "'('", "')'", "','", "':'", "';'", "'<'", "'='", "'>'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "BEGIN", "DATA", "DATATYPE", "DEFAULT_INDICATOR", "DIMENSIONS", "ELSE", "END", "FORMAT", "GAP", "ID", "ID_SET", "MATRIX", "MISSING", "NCHAR", "NESTED_ML_COMMENT", "NETWORK", "NETWORKS", "NTAX", "PHYLONET", "QUOTE", "RN_LS_NONCOMMENT", "START", "SYMBOLS", "TAXON_SET_LIST", "TRANSLATE", "TREE", "TREES", "UTREE", "WS", "'('", "')'", "','", "':'", "';'", "'<'", "'='", "'>'"
     };
 
     public static final int EOF=-1;
@@ -41,7 +41,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
     public static final int NTAX=21;
     public static final int PHYLONET=22;
     public static final int QUOTE=23;
-    public static final int ROOTAGE_QUALIFIER=24;
+    public static final int RN_LS_NONCOMMENT=24;
     public static final int START=25;
     public static final int SYMBOLS=26;
     public static final int TAXON_SET_LIST=27;
@@ -215,7 +215,7 @@ public class PySONParser extends org.antlr.runtime.Parser {
                 case NETWORK:
                 case NTAX:
                 case QUOTE:
-                case ROOTAGE_QUALIFIER:
+                case RN_LS_NONCOMMENT:
                 case START:
                 case SYMBOLS:
                 case TAXON_SET_LIST:

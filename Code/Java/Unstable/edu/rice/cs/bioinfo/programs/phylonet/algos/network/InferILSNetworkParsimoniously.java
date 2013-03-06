@@ -44,6 +44,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.ByteArrayInputStream;
@@ -60,39 +61,40 @@ import java.util.*;
  */
 public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJung {
     private Network[] _optimalNetworks;
-    private int[] _optimalScores;
+    private double[] _optimalScores;
 
     public InferILSNetworkParsimoniously(){
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public List<Tuple<Network,Integer>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
+    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
         _optimalNetworks = new Network[numSol];
-        _optimalScores = new int[numSol];
+        _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Integer.MAX_VALUE);
 
-        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
         List<Tree> distinctGTs = new ArrayList<Tree>();
-        List<Integer> gtCounter = new ArrayList<Integer>();
+        List<Double> gtCounter = new ArrayList<Double>();
         summarizeGeneTrees(gts, distinctGTs, gtCounter);
-        NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Integer> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Integer>(allNeighboursStrategy);
 
-        Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> scorer = getScoreFunction(distinctGTs, gtCounter, species2alleles);
-        Comparator<Integer> comparator = getIntegerScoreComparator();
-        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Integer> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, diameterLimit); // search starts here
+        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
+        NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
+        AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+
+        Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(distinctGTs, gtCounter, species2alleles);
+        Comparator<Double> comparator = getDoubleScoreComparator();
+        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, diameterLimit); // search starts here
         //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> resultNetwork = result.BestExaminedNetwork;
         //System.out.println("\n #Networks " + result.ExaminationsCount);
-        List<Tuple<Network, Integer>> resultTuples= postProcessResult(gts, species2alleles);
+        List<Tuple<Network, Double>> resultTuples= postProcessResult(gts, species2alleles);
         return resultTuples;
     }
 
-    private List<Tuple<Network, Integer>> postProcessResult(List<Tree> gts, Map<String,List<String>> species2alleles){
-        List<Tuple<Network, Integer>> resultList = new ArrayList<Tuple<Network, Integer>>();
+    private List<Tuple<Network, Double>> postProcessResult(List<Tree> gts, Map<String,List<String>> species2alleles){
+        List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
         for(int i=0; i<_optimalNetworks.length; i++){
             MDCOnNetworkYF scorer = new MDCOnNetworkYF();
             scorer.computeInheritanceProb(_optimalNetworks[i], gts, species2alleles);
-            resultList.add(new Tuple<Network, Integer>(_optimalNetworks[i], _optimalScores[i]));
+            resultList.add(new Tuple<Network, Double>(_optimalNetworks[i], _optimalScores[i]));
         }
         return resultList;
     }
@@ -140,8 +142,9 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
 
     }
 
-    private void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Integer> counter){
+    private void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Double> counter){
         for(Tree tr: originalGTs){
+            double weight = ((STINode<Double>)tr.getRoot()).getData();
             int index = 0;
             boolean exist = false;
             for(Tree exTr: distinctGTs){
@@ -152,18 +155,18 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
                 index++;
             }
             if(exist){
-                counter.set(index, counter.get(index)+1);
+                counter.set(index, counter.get(index)+weight);
             }
             else{
                 distinctGTs.add(tr);
-                counter.add(1);
+                counter.add(weight);
             }
         }
     }
 
-    private Comparator<Integer> getIntegerScoreComparator(){
-        return new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2)
+    private Comparator<Double> getDoubleScoreComparator(){
+        return new Comparator<Double>() {
+            public int compare(Double o1, Double o2)
             {
                 return Double.compare(o2, o1);
             }
@@ -171,16 +174,16 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
     }
 
 
-    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer> getScoreFunction(final List<Tree> gts, final List<Integer> counters, final Map<String, List<String>> species2alleles){
-        return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Integer>() {
-            public Integer execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
+    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> gts, final List<Double> counters, final Map<String, List<String>> species2alleles){
+        return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
+            public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
                 Network bniNetwork = networkNew2Old(network);
 
                 MDCOnNetworkYF scorer = new MDCOnNetworkYF();
                 List<Integer> scores = scorer.countExtraCoal(bniNetwork, gts, species2alleles);
 
-                int total = 0;
-                Iterator<Integer> counter = counters.iterator();
+                double total = 0;
+                Iterator<Double> counter = counters.iterator();
                 for(int score: scores){
                     total += score*counter.next();
                     //total += score;

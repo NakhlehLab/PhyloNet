@@ -22,8 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
@@ -155,8 +154,20 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
         StringBuffer result = new StringBuffer();
         
         List<Tree> nbGeneTrees = new ArrayList<Tree>();
-        List<Integer> nbCounter = new ArrayList<Integer>();
+        List<Double> nbCounter = new ArrayList<Double>();
         for(NetworkNonEmpty geneTree : _geneTrees){
+            double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                @Override
+                public Double forEmpty(TreeProbabilityEmpty empty) {
+                    return 1.0;
+                }
+
+                @Override
+                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                    return Double.parseDouble(nonEmpty.ProbString);
+                }
+            });
+
             String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
             NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
             STITree<Double> newtr = new STITree<Double>(true);
@@ -185,11 +196,11 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                 index++;
             }
             if(found){
-                nbCounter.set(index, nbCounter.get(index)+1);
+                nbCounter.set(index, nbCounter.get(index)+prob);
             }
             else{
                 nbGeneTrees.add(newtr);
-                nbCounter.add(1);
+                nbCounter.add(prob);
             }
         }
 
@@ -225,7 +236,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
             probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap);
         }
-        Iterator<Integer> nbCounterIt = nbCounter.iterator();
+        Iterator<Double> nbCounterIt = nbCounter.iterator();
         Iterator<List<Integer>> bGTIDs = nbTree2bTrees.iterator();
         double total = 0;
         for(Tree nbgt: nbGeneTrees){
@@ -236,9 +247,9 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             for(int id: bGTIDs.next()){
                 maxProb = Math.max(maxProb, probList.get(id));
             }
-            int count = nbCounterIt.next();
-            total += Math.log(maxProb)*count;
-            result.append("\n[x" + count + "] " + nbgt.toString() + " : " + maxProb);
+            double weight = nbCounterIt.next();
+            total += Math.log(maxProb)*weight;
+            result.append("\n[x" + weight + "] " + nbgt.toString() + " : " + maxProb);
         }
         result.append("\n" + "Total log probability: " + total);
 

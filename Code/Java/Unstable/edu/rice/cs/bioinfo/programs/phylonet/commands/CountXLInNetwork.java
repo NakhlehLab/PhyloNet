@@ -22,8 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetwork;
@@ -162,8 +161,20 @@ public class CountXLInNetwork extends CommandBaseFileOut{
         StringBuffer result = new StringBuffer();
 
         List<Tree> geneTrees = new ArrayList<Tree>();
-        List<Integer> counter = new ArrayList<Integer>();
+        List<Double> counter = new ArrayList<Double>();
         for(NetworkNonEmpty geneTree : _geneTrees){
+            double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                @Override
+                public Double forEmpty(TreeProbabilityEmpty empty) {
+                    return 1.0;
+                }
+
+                @Override
+                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                    return Double.parseDouble(nonEmpty.ProbString);
+                }
+            });
+
             String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
             NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
             STITree<Double> newtr = new STITree<Double>(true);
@@ -194,11 +205,11 @@ public class CountXLInNetwork extends CommandBaseFileOut{
                 index++;
             }
             if(found){
-                counter.set(index, counter.get(index)+1);
+                counter.set(index, counter.get(index)+prob);
             }
             else{
                 geneTrees.add(newtr);
-                counter.add(1);
+                counter.add(prob);
             }
         }
 
@@ -214,16 +225,16 @@ public class CountXLInNetwork extends CommandBaseFileOut{
             MDCOnNetworkYF mdc = new MDCOnNetworkYF();
             xlList = mdc.countExtraCoal(speciesNetwork, geneTrees, _taxonMap).iterator();
         }
-        Iterator<Integer> counterIt = counter.iterator();
-        int total = 0;
+        Iterator<Double> counterIt = counter.iterator();
+        double total = 0;
         for(Tree gt: geneTrees){
             for(TNode node: gt.getNodes()){
                 node.setParentDistance(TNode.NO_DISTANCE);
             }
             int xl = xlList.next();
-            int count = counterIt.next();;
-            total += xl * count;
-            result.append("\n[x" + count + "] " + gt.toString() + ": " + xl);
+            double weight = counterIt.next();;
+            total += xl * weight;
+            result.append("\n[x" + weight + "] " + gt.toString() + ": " + xl);
         }
         result.append("\n" + "Total number of extra lineages: " + total);
 

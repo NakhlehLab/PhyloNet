@@ -1,0 +1,24 @@
+#NEXUS
+ 
+BEGIN TREES;
+ 
+Tree geneTree1 = [&W 0.4] ((C,((B,D),A)),E);
+Tree geneTree2 = [&W 0.2] (B,(D,(C,(A,E))));
+Tree geneTree3 = [&W 0.3] (D,(B,((C,E),A)));
+Tree geneTree4 = [&W 0.5] (D,((B,E),(C,A)));
+ 
+END;
+ 
+ 
+BEGIN PHYLONET;
+ 
+InferNetwork_parsimony (geneTree1,geneTree2,geneTree3,geneTree4) 1;
+ 
+END;
+===
+
+InferNetwork_parsimony (geneTree1, geneTree2, geneTree3, geneTree4) 1
+Inferred Network #1:
+((((B)#H1:::0.33333333333333337,E),(C,A)),(#H1:::0.6666666666666666,D));
+Total number of extra lineages: 2.2
+===

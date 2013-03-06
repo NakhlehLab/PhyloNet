@@ -23,8 +23,7 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdent;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
@@ -244,6 +243,18 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
         List<Tree> gts = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
+            double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                @Override
+                public Double forEmpty(TreeProbabilityEmpty empty) {
+                    return 1.0;
+                }
+
+                @Override
+                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                    return Double.parseDouble(nonEmpty.ProbString);
+                }
+            });
+
             String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
             NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
             STITree<Double> newtr = new STITree<Double>(true);
@@ -263,6 +274,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 }
 
             }
+            newtr.getRoot().setData(prob);
             gts.add(newtr);
         }
 
@@ -274,10 +286,10 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
         //long start = System.currentTimeMillis();
         InferILSNetworkParsimoniously inference = new InferILSNetworkParsimoniously();
-        List<Tuple<Network, Integer>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter,speciesNetwork, _returnNetworks);
+        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter,speciesNetwork, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
         int index = 1;
-        for(Tuple<Network, Integer> tuple: resultTuples){
+        for(Tuple<Network, Double> tuple: resultTuples){
             result.append("\nInferred Network #" + index++ + ":");
 
             Network n = tuple.Item1;

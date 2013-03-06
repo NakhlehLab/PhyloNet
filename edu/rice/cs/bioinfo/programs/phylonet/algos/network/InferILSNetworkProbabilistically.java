@@ -42,6 +42,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
@@ -88,10 +89,12 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         _optimalNetworks = new Network[numSol];
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Double.NEGATIVE_INFINITY);
-        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
+
         List<Tree> distinctTrees = new ArrayList<Tree>();
-        List<Tuple3<Tree, Integer, List<Integer>>> nbTreeAndCountAndBinaryIDList = new ArrayList<Tuple3<Tree, Integer, List<Integer>>>();
+        List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList = new ArrayList<Tuple3<Tree, Double, List<Integer>>>();
         summarizeGeneTrees(gts, distinctTrees, nbTreeAndCountAndBinaryIDList);
+
+        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
         NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
         AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
 
@@ -151,13 +154,14 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
     }
 
-    private void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Tuple3<Tree, Integer, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    private void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         for(Tree tr: originalGTs){
+            double weight = ((STINode<Double>)tr.getRoot()).getData();
             int index = 0;
-            Tuple3<Tree, Integer, List<Integer>> newTuple = null;
-            for(Tuple3<Tree, Integer, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+            Tuple3<Tree, Double, List<Integer>> newTuple = null;
+            for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
                 if(Trees.haveSameRootedTopology(tr, triple.Item1)){
-                    newTuple = new Tuple3<Tree, Integer, List<Integer>>(tr, triple.Item2+1, triple.Item3);
+                    newTuple = new Tuple3<Tree, Double, List<Integer>>(tr, triple.Item2 + weight, triple.Item3);
                     break;
                 }
                 index++;
@@ -183,7 +187,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         binaryIDs.add(index);
                     }
                 }
-                newTuple = new Tuple3<Tree, Integer, List<Integer>>(tr, 1, binaryIDs);
+                newTuple = new Tuple3<Tree, Double, List<Integer>>(tr, weight, binaryIDs);
                 nbTreeAndCountAndBinaryIDList.add(newTuple);
             }
         }
@@ -199,7 +203,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     }
 
 
-    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Integer, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
             public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
                 Network<Object> speciesNetwork = networkNew2Old(network);
@@ -239,7 +243,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     }
 
 
-    private double findOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Integer, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    private double findOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         boolean continueRounds = true; // keep trying to improve network
 
         //boolean isNetwork = false;
@@ -448,11 +452,11 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
-    private double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Integer, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
+    private double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
         GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles);
         double total = 0;
-        for(Tuple3<Tree, Integer, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+        for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
             double maxProb = 0;
             for(int id: triple.Item3){
                 maxProb = Math.max(maxProb, probList.get(id));
@@ -465,11 +469,11 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
 
 
-    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Integer, List<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode child, NetNode parent) {
+    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode child, NetNode parent) {
         GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, child, parent);
         double total = 0;
-        for(Tuple3<Tree, Integer, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+        for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
             double maxProb = 0;
             for(int id: triple.Item3){
                 maxProb = Math.max(maxProb, probList.get(id));

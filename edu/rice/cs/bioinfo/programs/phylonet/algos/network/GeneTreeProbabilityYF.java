@@ -951,6 +951,9 @@ public class GeneTreeProbabilityYF{
                     Map<Integer, List<Integer>> parent2children = new HashMap<Integer, List<Integer>>();
                     for(int i: cconfig._lineages)
                     {
+                        if(child2parent.get(i)==null){
+                            continue;
+                        }
                         int pid = child2parent.get(i);
                         List<Integer> children = parent2children.get(pid);
                         if(children == null){

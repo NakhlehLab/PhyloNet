@@ -57,7 +57,7 @@ public class CommandFactory {
             params.add(p);
         }
 
-        //Reflections.log = null; // disable logging in reflections.  Else a lot of output to stdout.
+        Reflections.log = null; // disable logging in reflections.  Else a lot of output to stdout.
         org.reflections.Reflections reflections = new org.reflections.Reflections("edu.rice.cs.bioinfo.programs.phylonet.commands");
 
 

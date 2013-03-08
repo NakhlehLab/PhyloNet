@@ -19,9 +19,11 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -34,27 +36,26 @@ import java.util.Random;
  * Time: 2:31 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PhyloNetAAT {
 
+public class PhyloNetAAT  {
 
-    private static String delim = "\n===\n";
-
-    private static Random _rand = new Random(23);
-
-
-    @Test
-    public void testAATScripts() throws IOException
+    static class AATTestCase extends TestCase
     {
-        File currentDir = new File(".");
+        private final File _file;
 
-        for(File file : currentDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".txt");
-            }
-            }))
+        public AATTestCase(File file)
         {
-            System.out.println("Testing " + file.getAbsolutePath());
-            String fileContents = FileUtils.readFileToString(file);
+            _file = file;
+            this.setName(_file.getName());
+        }
+
+        @Override
+        protected void runTest() throws Throwable
+        {
+
+
+            System.out.println("Testing " + _file.getAbsolutePath());
+            String fileContents = FileUtils.readFileToString(_file);
             fileContents = fileContents.replace("\r", "");
             String[] parts = fileContents.split(delim);
 
@@ -63,25 +64,52 @@ public class PhyloNetAAT {
                 String nexus = parts[0];
                 String display = parts[1];
                 String error = parts[2];
-                checkTest(nexus, display, error, file.getName());
+                checkTest(nexus, display, error, _file.getName());
             }
             else if(parts.length == 2)
             {
                 String nexus = parts[0];
                 String display = parts[1];
                 String error = "";
-                checkTest(nexus, display, error, file.getName());
+                checkTest(nexus, display, error, _file.getName());
             }
             else
             {
-                throw new RuntimeException("Bad AAT script " + file.toString());
+                throw new RuntimeException("Bad AAT script " + _file.toString());
             }
-
-
         }
     }
 
-    private void checkTest(String nexus, String expectedStdOut, String expectedStdError, String testFile) throws IOException
+
+    private static String delim = "\n===\n";
+
+    private static Random _rand = new Random(23);
+
+
+
+    public static Test suite() throws IOException
+    {
+        TestSuite aatSuite = new TestSuite();
+
+        File currentDir = new File(".");
+
+        for(final File file : currentDir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".txt");
+            }
+        }))
+        {
+
+            aatSuite.addTest(new AATTestCase(file));
+
+        }
+
+
+        return aatSuite;
+    }
+
+
+    private static void checkTest(String nexus, String expectedStdOut, String expectedStdError, String testFile) throws IOException
     {
         String faultMessage = testFile + " failed.";
         ByteArrayOutputStream display = new ByteArrayOutputStream();

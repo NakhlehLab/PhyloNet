@@ -480,8 +480,8 @@ public class GeneTreeProbability {
                     prefix = "*";
                     first = false;
                 }
-                if(gamma!=1 && u-c!=0){
-                    if(u-c!=1){
+                if(gamma!=1 && u!=0){
+                    if(u!=1){
                         System.out.print(prefix+"("+gamma+")^"+u);
                     }
                     else{

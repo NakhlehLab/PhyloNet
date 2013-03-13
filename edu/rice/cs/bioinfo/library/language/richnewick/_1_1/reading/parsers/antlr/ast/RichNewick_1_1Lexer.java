@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g 2013-02-25 13:36:56
+// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g 2013-03-13 17:29:58
 
 package edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.parsers.antlr.ast;
 
@@ -22,6 +22,13 @@ public class RichNewick_1_1Lexer extends Lexer {
     public static final int UNQUOTED_ALPHA_TEXT=9;
     public static final int WS=10;
 
+    @Override
+    public void emitErrorMessage(String msg)
+    {
+    // never want to dispaly errors to console, they may be recoverable
+    }
+
+
     // delegates
     // delegators
     public Lexer[] getDelegates() {
@@ -42,8 +49,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:6:7: ( '#' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:6:9: '#'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:13:7: ( '#' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:13:9: '#'
             {
             match('#'); 
 
@@ -63,8 +70,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:7:7: ( '(' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:7:9: '('
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:14:7: ( '(' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:14:9: '('
             {
             match('('); 
 
@@ -84,8 +91,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:8:7: ( ')' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:8:9: ')'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:15:7: ( ')' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:15:9: ')'
             {
             match(')'); 
 
@@ -105,8 +112,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:9:7: ( ',' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:9:9: ','
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:16:7: ( ',' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:16:9: ','
             {
             match(','); 
 
@@ -126,8 +133,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:10:7: ( ':' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:10:9: ':'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:17:7: ( ':' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:17:9: ':'
             {
             match(':'); 
 
@@ -147,8 +154,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = T__16;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:11:7: ( ';' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:11:9: ';'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:18:7: ( ';' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:18:9: ';'
             {
             match(';'); 
 
@@ -168,8 +175,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = ROOTAGE_QUALIFIER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:108:2: ( '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:108:4: '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:117:2: ( '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:117:4: '[' '&' ( 'r' | 'R' | 'u' | 'U' ) ']'
             {
             match('['); 
 
@@ -203,8 +210,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = TREE_PROB;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:2: ( '[' '&' ( 'W' | 'w' ) ( ' ' )+ ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ ) ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:4: '[' '&' ( 'W' | 'w' ) ( ' ' )+ ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ ) ']'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:2: ( '[' '&' ( 'W' | 'w' ) ( ' ' )+ ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ ) ']' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:4: '[' '&' ( 'W' | 'w' ) ( ' ' )+ ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ ) ']'
             {
             match('['); 
 
@@ -220,7 +227,7 @@ public class RichNewick_1_1Lexer extends Lexer {
             }
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:22: ( ' ' )+
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:22: ( ' ' )+
             int cnt1=0;
             loop1:
             do {
@@ -234,7 +241,7 @@ public class RichNewick_1_1Lexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:22: ' '
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:22: ' '
             	    {
             	    match(' '); 
 
@@ -251,17 +258,17 @@ public class RichNewick_1_1Lexer extends Lexer {
             } while (true);
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:27: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:27: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )
             int alt5=2;
             alt5 = dfa5.predict(input);
             switch (alt5) {
                 case 1 :
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:28: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:28: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
                     {
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:28: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:29: ( '0' .. '9' )* '.' ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:28: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:29: ( '0' .. '9' )* '.' ( '0' .. '9' )+
                     {
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:29: ( '0' .. '9' )*
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:29: ( '0' .. '9' )*
                     loop2:
                     do {
                         int alt2=2;
@@ -297,7 +304,7 @@ public class RichNewick_1_1Lexer extends Lexer {
 
                     match('.'); 
 
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:45: ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:45: ( '0' .. '9' )+
                     int cnt3=0;
                     loop3:
                     do {
@@ -342,9 +349,9 @@ public class RichNewick_1_1Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:58: ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:58: ( '0' .. '9' )+
                     {
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:112:58: ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:121:58: ( '0' .. '9' )+
                     int cnt4=0;
                     loop4:
                     do {
@@ -407,20 +414,20 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = DECIMAL_NUMBER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:16: ( ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:18: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:16: ( ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:18: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:18: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:18: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )
             int alt9=2;
             alt9 = dfa9.predict(input);
             switch (alt9) {
                 case 1 :
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:19: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:19: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
                     {
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:19: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:20: ( '0' .. '9' )* '.' ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:19: ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ )
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:20: ( '0' .. '9' )* '.' ( '0' .. '9' )+
                     {
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:20: ( '0' .. '9' )*
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:20: ( '0' .. '9' )*
                     loop6:
                     do {
                         int alt6=2;
@@ -456,7 +463,7 @@ public class RichNewick_1_1Lexer extends Lexer {
 
                     match('.'); 
 
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:36: ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:36: ( '0' .. '9' )+
                     int cnt7=0;
                     loop7:
                     do {
@@ -501,9 +508,9 @@ public class RichNewick_1_1Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:49: ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:49: ( '0' .. '9' )+
                     {
-                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:115:49: ( '0' .. '9' )+
+                    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:124:49: ( '0' .. '9' )+
                     int cnt8=0;
                     loop8:
                     do {
@@ -564,8 +571,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = UNQUOTED_ALPHA_TEXT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:118:2: (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | ' ' | '.' | ( '0' .. '9' ) | '\\t' | '\\r' | '\\n' ) (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | '.' | ( '0' .. '9' ) ) )* )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:118:4: ~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | ' ' | '.' | ( '0' .. '9' ) | '\\t' | '\\r' | '\\n' ) (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | '.' | ( '0' .. '9' ) ) )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:127:2: (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | ' ' | '.' | ( '0' .. '9' ) | '\\t' | '\\r' | '\\n' ) (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | '.' | ( '0' .. '9' ) ) )* )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:127:4: ~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | ' ' | '.' | ( '0' .. '9' ) | '\\t' | '\\r' | '\\n' ) (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | '.' | ( '0' .. '9' ) ) )*
             {
             if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\b')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '\u001F')||(input.LA(1) >= '!' && input.LA(1) <= '\"')||(input.LA(1) >= '$' && input.LA(1) <= '&')||(input.LA(1) >= '*' && input.LA(1) <= '+')||input.LA(1)=='-'||input.LA(1)=='/'||(input.LA(1) >= '<' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||(input.LA(1) >= '^' && input.LA(1) <= '\uFFFF') ) {
                 input.consume();
@@ -577,7 +584,7 @@ public class RichNewick_1_1Lexer extends Lexer {
             }
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:119:32: (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | '.' | ( '0' .. '9' ) ) )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:128:32: (~ ( '(' | ')' | '[' | ']' | ':' | ';' | '#' | '\\'' | ',' | '.' | ( '0' .. '9' ) ) )*
             loop10:
             do {
                 int alt10=2;
@@ -627,12 +634,12 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = QUOTED_TEXT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:2: ( '\\'' (~ ( '\\n' | '\\r' | '\\'' ) | ( '\\'\\'' ) )* '\\'' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:4: '\\'' (~ ( '\\n' | '\\r' | '\\'' ) | ( '\\'\\'' ) )* '\\''
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:2: ( '\\'' (~ ( '\\n' | '\\r' | '\\'' ) | ( '\\'\\'' ) )* '\\'' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:4: '\\'' (~ ( '\\n' | '\\r' | '\\'' ) | ( '\\'\\'' ) )* '\\''
             {
             match('\''); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:9: (~ ( '\\n' | '\\r' | '\\'' ) | ( '\\'\\'' ) )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:9: (~ ( '\\n' | '\\r' | '\\'' ) | ( '\\'\\'' ) )*
             loop11:
             do {
                 int alt11=3;
@@ -654,7 +661,7 @@ public class RichNewick_1_1Lexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:10: ~ ( '\\n' | '\\r' | '\\'' )
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:10: ~ ( '\\n' | '\\r' | '\\'' )
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '&')||(input.LA(1) >= '(' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -669,10 +676,10 @@ public class RichNewick_1_1Lexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:34: ( '\\'\\'' )
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:34: ( '\\'\\'' )
             	    {
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:34: ( '\\'\\'' )
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:122:35: '\\'\\''
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:34: ( '\\'\\'' )
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:131:35: '\\'\\''
             	    {
             	    match("''"); 
 
@@ -708,12 +715,12 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = NESTED_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:125:3: ( '[' (~ ( '[' | ']' ) | NESTED_ML_COMMENT )* ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:125:6: '[' (~ ( '[' | ']' ) | NESTED_ML_COMMENT )* ']'
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:134:3: ( '[' (~ ( '[' | ']' ) | NESTED_ML_COMMENT )* ']' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:134:6: '[' (~ ( '[' | ']' ) | NESTED_ML_COMMENT )* ']'
             {
             match('['); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:125:10: (~ ( '[' | ']' ) | NESTED_ML_COMMENT )*
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:134:10: (~ ( '[' | ']' ) | NESTED_ML_COMMENT )*
             loop12:
             do {
                 int alt12=3;
@@ -729,7 +736,7 @@ public class RichNewick_1_1Lexer extends Lexer {
 
                 switch (alt12) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:125:11: ~ ( '[' | ']' )
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:134:11: ~ ( '[' | ']' )
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||(input.LA(1) >= '^' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -744,7 +751,7 @@ public class RichNewick_1_1Lexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:125:26: NESTED_ML_COMMENT
+            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:134:26: NESTED_ML_COMMENT
             	    {
             	    mNESTED_ML_COMMENT(); 
 
@@ -778,8 +785,8 @@ public class RichNewick_1_1Lexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:127:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:127:9: ( ' ' | '\\t' | '\\r' | '\\n' )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:136:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
+            // D:\\WorkDev\\Code\\Antlr\\Unstable\\RichNewick\\RichNewick_1_1.g:136:9: ( ' ' | '\\t' | '\\r' | '\\n' )
             {
             if ( (input.LA(1) >= '\t' && input.LA(1) <= '\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -971,7 +978,7 @@ public class RichNewick_1_1Lexer extends Lexer {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "112:27: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )";
+            return "121:27: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )";
         }
     }
     static final String DFA9_eotS =
@@ -1023,7 +1030,7 @@ public class RichNewick_1_1Lexer extends Lexer {
             this.transition = DFA9_transition;
         }
         public String getDescription() {
-            return "115:18: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )";
+            return "124:18: ( ( ( '0' .. '9' )* '.' ( '0' .. '9' )+ ) | ( '0' .. '9' )+ )";
         }
     }
     static final String DFA13_eotS =

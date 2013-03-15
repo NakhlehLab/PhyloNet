@@ -285,11 +285,11 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
                 for(final NetNode<Object> child : parent.getChildren())
                 {
-                    if(child.isLeaf()) // leaf edge, skip
-                        continue;
-                    //System.out.println(parent.getName() + " -> " + child.getName());
-                    // records the GTProb of the network at all times
-
+                    if(child.isLeaf()){
+                        if(species2alleles==null || species2alleles.get(child.getName()).size()<2){
+                            continue;
+                        }
+                    }
 
                     assigmentActions.add(new Proc()
                     {

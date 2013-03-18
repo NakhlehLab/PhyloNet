@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
@@ -53,7 +54,7 @@ public class MDCOnNetworkYF {
         countExtraCoal(network,gts,species2alleles);
         double[] probs = getHybridProbabilities();
         int index = 0;
-        for(NetNode<Integer> node: walkNetwork(network)){
+        for(NetNode<Integer> node: Networks.postTraversal(network)){
             if(node.isNetworkNode()){
                 for(NetNode parent: node.getParents()){
                     node.setParentProbability(parent,probs[index]);
@@ -96,7 +97,7 @@ public class MDCOnNetworkYF {
             HashMap<BitSet, List<Configuration>> edge2ACminus = new HashMap<BitSet, List<Configuration>>();
             int netNodeIndex = 0;
             int xl = Integer.MAX_VALUE;
-            for(NetNode<Integer> node: walkNetwork(network)){
+            for(NetNode<Integer> node: Networks.postTraversal(network)){
 
                 if(_printDetail){
                     System.out.println();
@@ -620,38 +621,6 @@ public class MDCOnNetworkYF {
     }
 
 
-    private List<NetNode> walkNetwork(Network<Integer> net){
-        Stack<NetNode> stack = new Stack<NetNode>();
-        List<NetNode> searchedNodes = new ArrayList<NetNode>();
-        stack.push(net.getRoot());
-        Map<NetNode, Integer> node2index = new HashMap<NetNode, Integer>();
-        node2index.put(net.getRoot(), 0);
-
-        while(!stack.isEmpty()){
-            NetNode topNode = stack.peek();
-            int index = node2index.get(topNode);
-            if(index == topNode.getOutdeg()){
-                searchedNodes.add(stack.pop());
-            }
-            else{
-                Iterator<NetNode> it = topNode.getChildren().iterator();
-                for(int i=0; i<index; i++){
-                    it.next();
-                }
-                NetNode child = it.next();
-                if(searchedNodes.contains(child)){
-                    node2index.put(topNode, index + 1);
-                }
-                else{
-                    stack.push(child);
-                    node2index.put(child, 0);
-                }
-            }
-        }
-
-        return searchedNodes;
-    }
-
 
     private void computeNodeCoverage(Network<Integer> net){
         //List<Integer> leaves = new ArrayList<Integer>();
@@ -659,7 +628,7 @@ public class MDCOnNetworkYF {
         _firstIndependentNodes = new HashSet<Integer>();
         //_node2Coverage = new HashMap<Integer, STITreeCluster>();
         HashMap<NetNode<Integer>, STITreeCluster> node2Cluster = new HashMap<NetNode<Integer>, STITreeCluster>();
-        for(NetNode<Integer> node: walkNetwork(net)){
+        for(NetNode<Integer> node: Networks.postTraversal(net)){
             int id = node.getData();
             STITreeCluster cl = new STITreeCluster(_netTaxa);
             //System.out.println(cl);

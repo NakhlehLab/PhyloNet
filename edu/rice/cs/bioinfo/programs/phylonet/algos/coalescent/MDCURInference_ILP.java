@@ -129,7 +129,7 @@ public class MDCURInference_ILP {
 	public Solution inferSpeciesTree(String gurobi_path,List<Tree> trees, Map<String,String> taxonMap){
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
-			throw new RuntimeException("Gene trees have leaf named " + error + "that hasn't been defined in the mapping file");
+			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
 		List<String> temp1 = new LinkedList<String>();

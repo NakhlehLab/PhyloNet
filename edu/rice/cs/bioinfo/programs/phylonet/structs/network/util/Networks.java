@@ -35,10 +35,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceExce
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -199,14 +196,7 @@ public class Networks
 		return computeClusterDistance(clusters1, clusters2);
 	}
 
-	/**
-	 * Compute the cluter-based distance between two networks represented as two lists
-	 * of clusters.
-	 *
-	 * @param Two lists of clusters representing two networks.
-	 *
-	 * @return [fasle-negative, false-positive, average]
-	 */
+
 	public static <T> double[] computeClusterDistance(List<NetworkCluster<T>> clusters1, List<NetworkCluster<T>> clusters2)
 	{
 		double fn = (clusters1.size() == 0) ? 0.0 : (double) computeClusterDiff(clusters1, clusters2) / clusters1.size();
@@ -253,13 +243,7 @@ public class Networks
 		return computeTripartitionDistance(partitions1, partitions2);
 	}
 
-	/**
-	 * This function computes the distance between two networks represented as two lists of tripartitions.
-	 *
-	 * @param Two networks represented as two list of tripartitions.
-	 *
-	 * @return [fasle-negative, false-positive, average]
-	 */
+
 	public static <T> double[] computeTripartitionDistance(List<NetworkTripartition<T>> partitions1, List<NetworkTripartition<T>> partitions2)
 	{
 		// Count the number tripartitions in the models.
@@ -376,7 +360,7 @@ public class Networks
 	 * This function computes the tree-based distance between two networks represented
 	 * as two lists of trees.
 	 *
-	 * @param Two lists of trees induced by two networks.
+	 * @param trees1 tree2 lists of trees induced by two networks.
 	 *
 	 * @return [fasle-negative, false-positive, average]
 	 */
@@ -509,9 +493,44 @@ public class Networks
 
 	}
 
+
+    public static <T> List<NetNode<T>> postTraversal(Network<T> net){
+        Stack<NetNode<T>> stack = new Stack<NetNode<T>>();
+        List<NetNode<T>> searchedNodes = new ArrayList<NetNode<T>>();
+        stack.push(net.getRoot());
+        Map<NetNode<T>, Integer> node2index = new HashMap<NetNode<T>, Integer>();
+        node2index.put(net.getRoot(), 0);
+
+        while(!stack.isEmpty()){
+            NetNode<T> topNode = stack.peek();
+            int index = node2index.get(topNode);
+            if(index == topNode.getOutdeg()){
+                searchedNodes.add(stack.pop());
+            }
+            else{
+                Iterator<NetNode<T>> it = topNode.getChildren().iterator();
+                for(int i=0; i<index; i++){
+                    it.next();
+                }
+                NetNode<T> child = it.next();
+                if(searchedNodes.contains(child)){
+                    node2index.put(topNode, index + 1);
+                }
+                else{
+                    stack.push(child);
+                    node2index.put(child, 0);
+                }
+            }
+        }
+
+        return searchedNodes;
+    }
+
 	// Data members
 	public static final String NAME_PREFIX = "I";	// Name prefix for interior nodes.
 }
+
+
 
 /**
  * This class provides a simple way to represent the bipartite graph. The class Networks
@@ -541,7 +560,7 @@ class BipartiteGraph {
 	 * This function adds an edge to the bipartite graph.
 	 *
 	 * @param l, r: indexes of the left and right endpoints for this edge.
-	 * @param weight: the weight of this edge. We require it to be positive.
+	 * @param w: the weight of this edge. We require it to be positive.
 	 */
 	public void addEdge(int l, int r, double w)
 	{

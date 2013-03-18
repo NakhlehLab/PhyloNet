@@ -23,6 +23,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
@@ -38,7 +39,7 @@ import java.util.*;
  * Time: 2:31 PM
  * To change this template use File | Settings | File Templates.
  */
-public class GeneTreeProbabilityYF{
+public class GeneTreeProbabilityYF {
     Set<NetNode> _totalCoverNodes;
     boolean[][] _R;
     boolean _printDetails = false;
@@ -56,7 +57,7 @@ public class GeneTreeProbabilityYF{
 
 
 
-    public List<Double> calculateGTDistribution(Network network, List<Tree> gts, Map<String, List<String>> species2alleles){
+    public List<Double> calculateGTDistribution(Network<List<CoalescePattern>> network, List<Tree> gts, Map<String, List<String>> species2alleles){
         List<Double> probList = new ArrayList<Double>();
         processNetwork(network, true);
 
@@ -75,7 +76,7 @@ public class GeneTreeProbabilityYF{
 
             int netNodeIndex = 0;
 
-            for(NetNode<List<CoalescePattern>> node: walkNetwork(network)){
+            for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(network)){
                 //long start = System.currentTimeMillis();
                 CoalescePattern cp = new CoalescePattern();
                 node.getData().add(cp);
@@ -520,7 +521,7 @@ public class GeneTreeProbabilityYF{
     }
 
 
-    public List<Double> calculateGTDistribution(Network network, List<Tree> gts, NetNode editedChild, NetNode editedParent){
+    public List<Double> calculateGTDistribution(Network<List<CoalescePattern>> network, List<Tree> gts, NetNode editedChild, NetNode editedParent){
         List<Double> probList = new ArrayList<Double>();
         processNetwork(network, false);
 
@@ -539,7 +540,7 @@ public class GeneTreeProbabilityYF{
             computeR();
             */
 
-            for(NetNode<List<CoalescePattern>> node: walkNetwork(network)){
+            for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(network)){
                 CoalescePattern cp = node.getData().get(gtIndex);
                 if(_printDetails){
                     System.out.println();
@@ -763,7 +764,7 @@ public class GeneTreeProbabilityYF{
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus.put(code, cc);
-                            long start = System.currentTimeMillis();
+                            //long start = System.currentTimeMillis();
                             cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
                             //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
@@ -1015,7 +1016,7 @@ public class GeneTreeProbabilityYF{
         int totalNode = 0;
         _node2ID = new HashMap<NetNode, Integer>();
         List<String> taxa = new ArrayList<String>();
-        for(NetNode node: walkNetwork(net)){
+        for(NetNode node: Networks.postTraversal(net)){
             _node2ID.put(node, totalNode++);
             if(node.isLeaf()){
                 taxa.add(node.getName());
@@ -1025,7 +1026,7 @@ public class GeneTreeProbabilityYF{
         }
         if(fromScratch){
             computeNodeCoverage(net);
-            for(NetNode<List<CoalescePattern>> node: walkNetwork(net)){
+            for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(net)){
                 node.setData(new ArrayList<CoalescePattern>());
             }
         }
@@ -1038,7 +1039,7 @@ public class GeneTreeProbabilityYF{
 
     private void computeM(Network<List<CoalescePattern>> net, int numEdge){
         _M = new boolean[numEdge][numEdge];
-        for(NetNode<List<CoalescePattern>> node: walkNetwork(net)){
+        for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(net)){
             int pID = _node2ID.get(node);
             _M[pID][pID] = true;
             for(NetNode child: node.getChildren()){
@@ -1131,44 +1132,13 @@ public class GeneTreeProbabilityYF{
         }
     }
 
-    private List<NetNode> walkNetwork(Network net){
-        Stack<NetNode> stack = new Stack<NetNode>();
-        List<NetNode> searchedNodes = new ArrayList<NetNode>();
-        stack.push(net.getRoot());
-        Map<NetNode, Integer> node2index = new HashMap<NetNode, Integer>();
-        node2index.put(net.getRoot(), 0);
-
-        while(!stack.isEmpty()){
-            NetNode topNode = stack.peek();
-            int index = node2index.get(topNode);
-            if(index == topNode.getOutdeg()){
-                searchedNodes.add(stack.pop());
-            }
-            else{
-                Iterator<NetNode> it = topNode.getChildren().iterator();
-                for(int i=0; i<index; i++){
-                    it.next();
-                }
-                NetNode child = it.next();
-                if(searchedNodes.contains(child)){
-                    node2index.put(topNode, index + 1);
-                }
-                else{
-                    stack.push(child);
-                    node2index.put(child, 0);
-                }
-            }
-        }
-
-        return searchedNodes;
-    }
 
 
     private void computeNodeCoverage(Network<List<CoalescePattern>> net){
         //List<Integer> leaves = new ArrayList<Integer>();
         List<NetNode> allTotalNodes = new ArrayList<NetNode>();
         _totalCoverNodes = new HashSet<NetNode>();
-        for(NetNode<List<CoalescePattern>> node: walkNetwork(net)){
+        for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(net)){
             if(node.isLeaf()){
                 //leaves.add(id);
                 allTotalNodes.add(node);

@@ -86,7 +86,7 @@ public class MajorityConsensusInference
 	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted, Map<String, String> taxonMap){
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
-			throw new RuntimeException("Gene trees have leaf named " + error + "that hasn't been defined in the mapping file");
+			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
 		if(rooted){

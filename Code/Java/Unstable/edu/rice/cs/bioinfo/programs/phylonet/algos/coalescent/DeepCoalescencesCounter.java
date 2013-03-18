@@ -112,7 +112,7 @@ public class DeepCoalescencesCounter {
 	public static int countExtraCoal(List<Tree> gts,Tree st, Map<String, String> taxonMap, boolean rooted, double bootstrap){
 		String error = Trees.checkMapping(gts, taxonMap);
 		if(error!=null){
-			throw new RuntimeException("Gene trees have leaf named " + error + "that hasn't been defined in the mapping file");
+			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
 		int sum = 0;

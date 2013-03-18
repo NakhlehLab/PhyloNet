@@ -23,7 +23,7 @@ import java.util.Set;
 public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> extends NetworkNeighbourhoodGenerator<G,N,E> {
     private final double[] _operationProbabilities;
     private int _operationID;
-    private ArrayList<Set<Tuple<E,E>>> _previousTried;
+    private ArrayList<Set<Integer>> _previousTried;
     private E _operationEdge1;
     private E _operationEdge2;
 
@@ -40,9 +40,9 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                 _operationProbabilities[i] = _operationProbabilities[i-1] + probabilities[i];
             }
         }
-        _previousTried = new ArrayList<Set<Tuple<E, E>>>();
+        _previousTried = new ArrayList<Set<Integer>>();
         for(int i=0; i<4; i++){
-            _previousTried.add(new HashSet<Tuple<E, E>>());
+            _previousTried.add(new HashSet<Integer>());
         }
         //initializeReticulationNodeSet();
     }
@@ -53,9 +53,9 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
         super(makeNode,makeEdge);
         _operationProbabilities = null;
         //initializeReticulationNodeSet();
-        _previousTried = new ArrayList<Set<Tuple<E, E>>>();
+        _previousTried = new ArrayList<Set<Integer>>();
         for(int i=0; i<4; i++){
-            _previousTried.add(new HashSet<Tuple<E, E>>());
+            _previousTried.add(new HashSet<Integer>());
         }
     }
     
@@ -277,8 +277,8 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             }
 
         }while(!stop);
-        System.out.println();
-        System.out.println("Next Move:" + operationID);
+        //System.out.println();
+        //System.out.println("Next Move :" + operationID);
         return operationID;
     }
     
@@ -314,20 +314,21 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                     break;
             case 2: //setParametersForReticulationEdgeDestinationChange(allRemovableReticulationEdges,allEdges);
 
-                    if(_previousTried.get(_operationID).size()==allRemovableReticulationEdges.size()*allTreeEdges.size()){
+                    if(_previousTried.get(_operationID).size()==allRemovableReticulationEdges.size()*allEdges.size()){
                         return false;
                     }
-                    setParametersForReticulationEdgeDestinationChange(network, allRemovableReticulationEdges,allTreeEdges);
+                    setParametersForReticulationEdgeDestinationChange(network, allRemovableReticulationEdges,allEdges);
                     break;
             case 3: //setParametersForEdgeSourceChange(allEdges, allEdges);
 
-                    int numTreeEdge = allTreeEdges.size();
-                    int upper = allReticulationEdges.size()*numTreeEdge + numTreeEdge*allEdges.size();
+                    //int numTreeEdge = allTreeEdges.size();
+                    int upper = allEdges.size()*(allEdges.size()-1);
                     if(_previousTried.get(_operationID).size()==upper){
-                        System.out.println(_previousTried.get(_operationID));
-                        throw new RuntimeException("tried all EdgeSourceChange");
+                        return false;
+                        //System.out.println(_previousTried.get(_operationID));
+                        //throw new RuntimeException("tried all EdgeSourceChange");
                     }
-                    setParametersForEdgeSourceChange(network, allEdges, allTreeEdges);
+                    setParametersForEdgeSourceChange(network, allEdges, allEdges);
                     break;
         }
         return true;
@@ -367,7 +368,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             */
             
         //}while(!endSampling);
-        System.out.println("Add " + sourceEdge + " to " + destinationEdge);
+        //System.out.println("Add " + sourceEdge + " to " + destinationEdge);
         _networkOperators[0].setParameters(network,null, sourceEdge, destinationEdge);
         _operationEdge1 = sourceEdge;
         _operationEdge2 = destinationEdge;
@@ -375,34 +376,36 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
     }
 
     private void setParametersForReticulationEdgeDeletion(G network, ArrayList<E> allRemovableReticulationEdges){
-        Set<Tuple<E,E>> edgesTried = _previousTried.get(_operationID);
+        Set<Integer> edgesTried = _previousTried.get(_operationID);
         Tuple<E,E> edgeTuple;
+        int randomID;
         do{
-            E targetEdge = allRemovableReticulationEdges.get((int) (Math.random() * allRemovableReticulationEdges.size()));
+            randomID = (int) (Math.random() * allRemovableReticulationEdges.size());
+            E targetEdge = allRemovableReticulationEdges.get(randomID);
             edgeTuple = new Tuple<E, E>(targetEdge, targetEdge);
-        }while(edgesTried.contains(edgeTuple));
-        edgesTried.add(edgeTuple);
+        }while(edgesTried.contains(randomID));
+        edgesTried.add(randomID);
         //PhyloEdge<String> te = new PhyloEdge("22810764","54816791");
         //targetEdge = (E)te;
 
-        System.out.println("Remove " + edgeTuple.Item1);
+        //System.out.println("Remove " + edgeTuple.Item1);
         _networkOperators[1].setParameters(network,edgeTuple.Item1,null,null);
         _operationEdge1 = edgeTuple.Item1;
     }
 
 
-    private void setParametersForReticulationEdgeDestinationChange(G network, ArrayList<E> allRemovableReticulationEdges, ArrayList<E> allTreeEdges){
+    private void setParametersForReticulationEdgeDestinationChange(G network, ArrayList<E> allRemovableReticulationEdges, ArrayList<E> allEdges){
 
-        Set<Tuple<E,E>> edgesTried = _previousTried.get(_operationID);
+        Set<Integer> edgesTried = _previousTried.get(_operationID);
         Tuple<E,E> edgeTuple;
         int reticulationEdgeSize = allRemovableReticulationEdges.size();
-        int treeEdgeSize = allTreeEdges.size();
+        int edgeSize = allEdges.size();
         
         boolean endSampling;
         do{
             endSampling = true;
-            
-            E targetEdge = allRemovableReticulationEdges.get((int) (Math.random() * reticulationEdgeSize));
+            int targetID = (int) (Math.random() * reticulationEdgeSize);
+            E targetEdge = allRemovableReticulationEdges.get(targetID);
 
             /*
             N sourceEdgeItem1=null;            
@@ -429,20 +432,21 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                 throw new RuntimeException(nodesOfTargetEdge.Item1+" should have two children");
             }
             */
-            
-            E destinationEdge = allTreeEdges.get((int)(Math.random()*treeEdgeSize));
+            int destinationID = (int) (Math.random() * edgeSize);
+            E destinationEdge = allEdges.get(destinationID);
             edgeTuple = new Tuple<E, E>(targetEdge, destinationEdge);
-            if(edgesTried.contains(edgeTuple)){
+            int tupleID = (int)(Math.pow(10,new String(allEdges.size()+"").length())*targetID) + destinationID;
+            if(edgesTried.contains(tupleID)){
                 endSampling = false;
                 continue;
             }
-            edgesTried.add(edgeTuple);
+            edgesTried.add(tupleID);
             //System.out.println("trying redirect " + targetEdge + " to " + destinationEdge);
             Tuple<N,N> nodesOfTargetEdge = network.getNodesOfEdge(targetEdge);
             Tuple<N,N> nodesOfDestinationEdge = network.getNodesOfEdge(destinationEdge);
             if(nodesOfDestinationEdge.Item2.equals(nodesOfTargetEdge.Item1) || nodesOfDestinationEdge.Item1.equals(nodesOfTargetEdge.Item1)
                     || nodesOfDestinationEdge.Item2.equals(nodesOfTargetEdge.Item2) || nodesOfDestinationEdge.Item1.equals(nodesOfTargetEdge.Item2)){
-                edgesTried.add(edgeTuple);
+                //edgesTried.add(edgeTuple);
                 endSampling = false;
                 continue;
             }
@@ -467,7 +471,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
        
         }while(!endSampling);
 
-        System.out.println("Redirect " + edgeTuple.Item1 + " to " + edgeTuple.Item2);
+        //System.out.println("Redirect " + edgeTuple.Item1 + " to " + edgeTuple.Item2);
         /*
         Tuple<N,N> nodesofTarget = _network.getNodesOfEdge(targetEdge);
         GetDirectPredecessors<N,E> findParents = new GetDirectPredecessors<N,E>();
@@ -483,10 +487,10 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
 
     }
 
-    private void setParametersForEdgeSourceChange(G network, ArrayList<E> allEdges, ArrayList<E> allTreeEdges){
-        int allEdgeSize = allEdges.size();
-        int treeEdgeSize = allTreeEdges.size();
-        Set<Tuple<E,E>> edgesTried = _previousTried.get(_operationID);
+    private void setParametersForEdgeSourceChange(G network, ArrayList<E> allEdges1, ArrayList<E> allEdges2){
+        int allEdgeSize = allEdges1.size();
+        //int treeEdgeSize = allTreeEdges.size();
+        Set<Integer> edgesTried = _previousTried.get(_operationID);
         Tuple<E,E> edgeTuple;
 
         /*
@@ -500,43 +504,54 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
         do{
             endSampling = true;
             int target = (int)(Math.random()*allEdgeSize);
-            E targetEdge = allEdges.get(target);
+            E targetEdge = allEdges1.get(target);
             Tuple<N,N> nodesOfTargetEdge = network.getNodesOfEdge(targetEdge);
             GetInDegree<N,E> getInDegree = new GetInDegree<N, E>();
-            boolean targetIsReticulation = getInDegree.execute(network,nodesOfTargetEdge.Item2)==2;
-            int size = targetIsReticulation ? treeEdgeSize:allEdgeSize;
+            //boolean targetIsReticulation = getInDegree.execute(network,nodesOfTargetEdge.Item2)==2;
+            //int size = targetIsReticulation ? treeEdgeSize:allEdgeSize;
+            int size = allEdgeSize;
             int destination = target;
             while(target==destination){
                 destination = (int)(Math.random()*size);
             }
-            E destinationEdge = targetIsReticulation? allTreeEdges.get(destination):allEdges.get(destination);
-
+            //E destinationEdge = targetIsReticulation? allTreeEdges.get(destination):allEdges.get(destination);
+            E destinationEdge = allEdges1.get(destination);
             edgeTuple = new Tuple<E, E>(targetEdge, destinationEdge);
-            if(edgesTried.contains(edgeTuple)){
+            //System.out.println(new String(allEdges1.size()+"").length());
+            int tupleID = (int)(Math.pow(10,new String(allEdgeSize+"").length()))*target + destination;
+            if(edgesTried.contains(tupleID)){
                 endSampling = false;
                 continue;
             }
-            edgesTried.add(edgeTuple);
-            System.out.println("add trying1 "+edgeTuple);
+            edgesTried.add(tupleID);
+            //System.out.println("add trying1 "+edgeTuple);
 
             //
             int targetInDegree = getInDegree.execute(network,nodesOfTargetEdge.Item1);
             if(targetInDegree==2){
-                int targetOutDegree = getInDegree.execute(network,nodesOfTargetEdge.Item2);
+                //int targetOutDegree = getInDegree.execute(network,nodesOfTargetEdge.Item2);
+                int index = 0;
+                for(E edge: allEdges2){
+                    if(!edge.equals(targetEdge))
+                        edgesTried.add((int)(Math.pow(10,new String(allEdgeSize+"").length()))*target + index++);
+                    //System.out.println("add trying3 "+new Tuple<E, E>(targetEdge,edge));
+                }
+                /*
                 if(targetOutDegree==1){
-                    for(E edge: allEdges){
+                    for(E edge: allEdges1){
                         if(!edge.equals(targetEdge))
                             edgesTried.add(new Tuple<E, E>(targetEdge,edge));
                             System.out.println("add trying2 "+new Tuple<E, E>(targetEdge,edge));
                     }
                 }
                 else{
-                    for(E edge: allTreeEdges){
+                    for(E edge: allEdges2){
                         if(!edge.equals(targetEdge))
                             edgesTried.add(new Tuple<E, E>(targetEdge,edge));
                         System.out.println("add trying3 "+new Tuple<E, E>(targetEdge,edge));
                     }
                 }
+                */
                 endSampling = false;              
                 continue;
             }
@@ -555,10 +570,11 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                     throw new RuntimeException(nodesOfTargetEdge.Item1+" should have two children!");
                 }
                 if(getInDegree.execute(network,targetEdgeSibling)==2){
-                    for(E edge: allEdges){
+                    int index = 0;
+                    for(E edge: allEdges2){
                         if(!edge.equals(targetEdge))
-                            edgesTried.add(new Tuple<E, E>(targetEdge,edge));
-                        System.out.println("add trying4 "+new Tuple<E, E>(targetEdge,edge));
+                            edgesTried.add((int)(Math.pow(10,new String(allEdgeSize+"").length()))*target + index++);
+                            //System.out.println("add trying4 "+new Tuple<E, E>(targetEdge,edge));
                     }
                     endSampling = false;
                     continue;
@@ -616,7 +632,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             */
         }while(!endSampling);
 
-        System.out.println("Redirect " + edgeTuple.Item1 + " to " + edgeTuple.Item2);
+        //System.out.println("Redirect " + edgeTuple.Item1 + " to " + edgeTuple.Item2);
 
         _networkOperators[3].setParameters(network,edgeTuple.Item1,null,edgeTuple.Item2);
         _operationEdge1 = edgeTuple.Item1;

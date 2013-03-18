@@ -119,7 +119,7 @@ public class MDCInference_DP
 			}
 		}
 
-		restoreCollapse(solutions, cd);
+		restoreCollapse(solutions, trees, cd);
 		return solutions;
 	}
 
@@ -147,7 +147,7 @@ public class MDCInference_DP
 
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
-			throw new RuntimeException("Gene trees have leaf named " + error + "that hasn't been defined in the mapping file");
+			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
 		if(bootstrap<100){
@@ -157,6 +157,17 @@ public class MDCInference_DP
 				}
 			}
 		}
+
+        System.out.println();
+        for(Tree gt: trees){
+            System.out.println(gt);
+            for(TNode node:gt.getNodes()){
+                if(node.getChildCount()>2){
+                    System.out.print(node.getChildCount()+" ");
+                }
+            }
+            System.out.println();
+        }
 
 
 		List<String> temp1 = new LinkedList<String>();
@@ -213,7 +224,7 @@ public class MDCInference_DP
 		return cd;
 	}
 
-	private void restoreCollapse(List<Solution> sols, Collapse.CollapseDescriptor cd){
+	private void restoreCollapse(List<Solution> sols, List<Tree> gts, Collapse.CollapseDescriptor cd){
 		for(Solution sol: sols){
 			Tree tr = sol._st;
 			Collapse.expand(cd, (MutableTree)tr);
@@ -223,6 +234,9 @@ public class MDCInference_DP
 				}
 			}
 		}
+        for(Tree gt: gts){
+            Collapse.expand(cd, (MutableTree)gt);
+        }
 	}
 
 	/**
@@ -914,7 +928,7 @@ public class MDCInference_DP
 			}
 			else {
 				counter.set(i, true);
-
+                System.out.println(counter);
 				STITreeCluster tc = new STITreeCluster(stTaxa);
 				tc.setCluster((BitSet) counter.clone());
 				Vertex v = new Vertex();

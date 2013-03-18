@@ -205,8 +205,9 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
             public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
-                System.out.println("Start scoring ...");
-                System.out.println(network2String(network));
+                //System.out.println("Start scoring ...");
+                //System.out.println(network2String(network));
+                //long start = System.currentTimeMillis();
                 Network<Object> speciesNetwork = networkNew2Old(network);
 
                 double score = findOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles,nbTreeAndCountAndBinaryIDList);
@@ -239,7 +240,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
-                System.out.println("End scoring ...");
+                //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
                 return score;
             }
         };
@@ -357,72 +358,68 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
 
             // add hybrid probs to hybrid edges
-            for(final NetNode<Object> child : speciesNetwork.bfs()) // find every hybrid node
+            for(final NetNode<Object> child : speciesNetwork.getNetworkNodes()) // find every hybrid node
             {
-                if(child.isRoot()) // calling getParentNumber on root causes NPE. Bug workaround.
-                    continue;
 
-                if(child.getParentNumber() == 2)  // hybrid node
+                Iterator<NetNode<Object>> hybridParents = child.getParents().iterator();
+                final NetNode hybridParent1 = hybridParents.next();
+                final NetNode hybridParent2 = hybridParents.next();
+                //child.setParentProbability(hybridParent1,0.5);
+                //child.setParentProbability(hybridParent2,0.5);
+                assigmentActions.add(new Proc()
                 {
-                    Iterator<NetNode<Object>> hybridParents = child.getParents().iterator();
-                    final NetNode hybridParent1 = hybridParents.next();
-                    final NetNode hybridParent2 = hybridParents.next();
-                    //child.setParentProbability(hybridParent1,0.5);
-                    //child.setParentProbability(hybridParent2,0.5);
-                    assigmentActions.add(new Proc()
+                    public void execute()
                     {
-                        public void execute()
-                        {
-                            UnivariateFunction functionToOptimize = new UnivariateFunction() {
-                                public double value(double suggestedProb) {
+                        UnivariateFunction functionToOptimize = new UnivariateFunction() {
+                            public double value(double suggestedProb) {
 
-                                    double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
+                                double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
 
-                                    // try new pair of hybrid probs
-                                    child.setParentProbability(hybridParent1, suggestedProb);
-                                    child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
+                                // try new pair of hybrid probs
+                                child.setParentProbability(hybridParent1, suggestedProb);
+                                child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                                    //long start = System.currentTimeMillis();
-                                    double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, null);
-                                    //System.out.print((System.currentTimeMillis()-start)/1000.0 + " ");
-                                    //double lnProb = computeProbability(speciesNetwork, geneTrees, counter);
-                                    /*
-                                    timeCount.setContents(timeCount.getContents()+1);
-                                    if(timeCount.getContents()%1000==0){
-                                        //timeTotal.setContents(timeTotal.getContents()+(System.currentTimeMillis()/1000.0-timeTotal.getContents()));
-                                        System.out.println(timeCount.getContents() + ": " +(System.currentTimeMillis()/1000.0-timeTotal.getContents())/timeCount.getContents());
-                                    }
-                                    */
-                                    if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
-                                    {
-
-                                        lnGtProbOfSpeciesNetwork.setContents(lnProb);
-                                    }
-                                    else // change did not improve, roll back
-                                    {
-
-                                        child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
-                                        child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
-                                    }
-                                    return lnProb;
+                                //long start = System.currentTimeMillis();
+                                double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, null);
+                                //System.out.print((System.currentTimeMillis()-start)/1000.0 + " ");
+                                //double lnProb = computeProbability(speciesNetwork, geneTrees, counter);
+                                /*
+                                timeCount.setContents(timeCount.getContents()+1);
+                                if(timeCount.getContents()%1000==0){
+                                    //timeTotal.setContents(timeTotal.getContents()+(System.currentTimeMillis()/1000.0-timeTotal.getContents()));
+                                    System.out.println(timeCount.getContents() + ": " +(System.currentTimeMillis()/1000.0-timeTotal.getContents())/timeCount.getContents());
                                 }
-                            };
-                            BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+                                */
+                                if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
+                                {
 
-                            try
-                            {
-                                optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
-                            }
-                            catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
-                            {
-                            }
-                            computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, null);
-                            //System.out.println(computeProbability(speciesNetwork, geneTrees, counter, child, null) + " vs. " + computeProbability(speciesNetwork, geneTrees, counter));
+                                    lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                                }
+                                else // change did not improve, roll back
+                                {
 
+                                    child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
+                                    child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
+                                }
+                                return lnProb;
+                            }
+                        };
+                        BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+
+                        try
+                        {
+                            optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
                         }
-                    });
+                        catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
+                        {
+                        }
+                        computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, null);
+                        //System.out.println(computeProbability(speciesNetwork, geneTrees, counter, child, null) + " vs. " + computeProbability(speciesNetwork, geneTrees, counter));
 
-                }
+                    }
+                });
+
+
             }
 
             //     Collections.shuffle(assigmentActions); // randomize the order we will try to adjust network edge properties

@@ -56,7 +56,7 @@ public class DeepCoalescencesCounter {
 		int sum = 0;
 		String[] taxa = st.getLeaves();
 
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: gts){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");

@@ -186,14 +186,14 @@ public abstract class InferSTBase extends CommandBaseFileOut
         {
             for(NetworkNonEmpty gt : _geneTrees)
             {
-                noError = noError && assignThresholdHelp(gt.PrincipleInfo, gt.PrincipleDescendants);
+                noError = noError && assignThresholdHelp(gt.PrincipleInfo, gt.PrincipleDescendants, true);
             }
         }
 
         return new ThresholdResult(noError, bootstrap, bParam);
     }
 
-    private boolean assignThresholdHelp(NetworkInfo info, DescendantList descendantList)
+    private boolean assignThresholdHelp(final NetworkInfo info, final DescendantList descendantList, final boolean isRoot)
     {
         if(info.Support.execute(new SupportAlgo<Boolean, Object, RuntimeException>()
         {
@@ -202,19 +202,19 @@ public abstract class InferSTBase extends CommandBaseFileOut
             }
 
             public Boolean forSupportEmpty(SupportEmpty supportEmpty, Object o) throws RuntimeException {
-                return true;  //To change body of implemented methods use File | Settings | File Templates.
+                return true && !isRoot && descendantList.Subtrees.iterator().hasNext();  //To change body of implemented methods use File | Settings | File Templates.
             }
         }, null))
         {
             errorDetected.execute(
-                    String.format("If bootstrap switch is specified for '%s', all gene tree nodes must have a support value.", _motivatingCommand.getName()),
+                    String.format("If bootstrap switch is specified for '%s', all internal gene tree nodes must have a support value.", _motivatingCommand.getName()),
                                   _motivatingCommand.getLine(), _motivatingCommand.getColumn());
             return false;
         }
 
         for(Subtree childTree : descendantList.Subtrees)
         {
-            if(!assignThresholdHelp(childTree.NetworkInfo, childTree.Descendants))
+            if(!assignThresholdHelp(childTree.NetworkInfo, childTree.Descendants, false))
             {
                 return false;
             }

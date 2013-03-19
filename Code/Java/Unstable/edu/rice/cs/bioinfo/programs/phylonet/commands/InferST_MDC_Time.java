@@ -77,7 +77,7 @@ public class InferST_MDC_Time extends InferSTBase
         noError = noError && result.NoError;
         _taxonMap = result.TaxonMap;
 
-         noError = noError && checkForUnknownSwitches("a");
+         noError = noError && checkForUnknownSwitches("a","b");
 
         this.checkAndSetOutFile(tr.Extractor, result.Extractor);
 

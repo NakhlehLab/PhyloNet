@@ -26,7 +26,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkN
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.*;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -138,7 +138,7 @@ public class SimGTinNetwork extends CommandBaseFileOut
 
      StringBuffer result = new StringBuffer();
 
-        String[] gts =  new SimGTInNetwork().generateGTs(_t1, _t2, _gamma, _n);
+        String[] gts =  new SimGTInNetwork2010().generateGTs(_t1, _t2, _gamma, _n);
 
           for(String tr: gts){
                 this.richNewickGenerated(tr);

@@ -49,7 +49,7 @@ public class DeepCoalCount extends CommandBaseFileOut {
 
     private boolean  _treatGeneTreesAsRooted = true;
 
-    private double _bootstrap = 1.0;
+    private double _bootstrap = 100;
 
     private List<NetworkNonEmpty> _speciesTrees;
 

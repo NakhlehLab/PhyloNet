@@ -19,8 +19,20 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,309 +43,210 @@ import java.util.List;
  */
 public class SimGTInNetwork
 {
-    private double t1, t2, gamma;
-	private int n;
-	private String output;
+    private Map<NetNode, Map<Integer, double[]>> _node2gij;
+    private boolean _printDetails = false;
 
-	public double g22(double t){
-		return Math.exp((-1)*t);
+    public SimGTInNetwork(){
+        _node2gij = new HashMap<NetNode, Map<Integer, double[]>>();
+    }
+
+
+    public List<Tree> generateGTs(Network network, Map<String, List<String>> species2alleles, int numGTs){
+        List<Tree> gts = new ArrayList<Tree>();
+        if(species2alleles==null){
+            species2alleles = new HashMap<String, List<String>>();
+            for(Object leaf: network.getLeaves()){
+                String species = ((NetNode)leaf).getName();
+                List<String> alleles = new ArrayList<String>();
+                alleles.add(species);
+                species2alleles.put(species, alleles);
+            }
+        }
+		for(int i=0; i<numGTs; i++){
+            //System.out.println("\n\nConstructing gt#" + (i+1) +" ...");
+            if(_printDetails){
+                System.out.println("\n\nConstructing gt#" + (i+1) +" ...");
+            }
+
+            STITree gt = new STITree();
+            STINode root = gt.getRoot();
+
+            Map<Tuple<NetNode,NetNode>, List<TNode>> netEdge2geneLineages = new HashMap<Tuple<NetNode,NetNode>, List<TNode>>();
+            for(Object nodeObject: Networks.postTraversal(network)){
+                NetNode node = (NetNode)nodeObject;
+                if(_printDetails){
+                    System.out.println("\nNetNode " + node.getName());
+                }
+                List<TNode> geneLineages = new ArrayList<TNode>();
+                if(node.isLeaf()){
+                    for(String allele: species2alleles.get(node.getName())){
+                        TNode newNode = root.createChild(allele);
+                        geneLineages.add(newNode);
+                    }
+                    //netNode2geneLineages.put(node, geneLineages);
+                }
+                else{
+                    for(Object childObject: node.getChildren()){
+                        NetNode child = (NetNode)childObject;
+                        geneLineages.addAll(netEdge2geneLineages.get(new Tuple<NetNode, NetNode>(node, child)));
+                    }
+                }
+
+                if(_printDetails){
+                    System.out.println(geneLineages);
+                }
+
+                Map<Integer, double[]> gijMap = _node2gij.get(node);
+                if(gijMap == null){
+                    gijMap = new HashMap<Integer, double[]>();
+                    _node2gij.put(node, gijMap);
+                }
+
+                if(node.isRoot()){
+                    randomlyCoalGeneLineages(geneLineages, geneLineages.size(), 1, root);
+                }
+                else if(node.isTreeNode()){
+                    NetNode parent = (NetNode)node.getParents().iterator().next();
+                    double distance = node.getParentDistance(parent);
+                    randomlyCoalGeneLineages(geneLineages, gijMap, distance, root);
+                    netEdge2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), geneLineages);
+                }
+                else{
+                    NetNode parent1 = (NetNode)node.getParents().iterator().next();
+                    double inheritanceProb = node.getParentProbability(parent1);
+                    if(Double.isNaN(inheritanceProb)){
+                        throw new RuntimeException("The network has network node that doesn't have inheritance probability.");
+
+                    }
+                    List<TNode> geneLineages1 = new ArrayList<TNode>();
+                    List<TNode> geneLineages2 = new ArrayList<TNode>();
+                    for(TNode gl: geneLineages){
+                        double random = Math.random();
+                        if(random < inheritanceProb){
+                            geneLineages1.add(gl);
+                        }
+                        else{
+                            geneLineages2.add(gl);
+                        }
+                    }
+                    if(_printDetails){
+                        System.out.println("Dividing into :" + geneLineages1);
+                        System.out.println("Dividing into :" + geneLineages2);
+                    }
+
+                    int index = 0;
+                    for(Object parentObject: node.getParents()){
+                        NetNode parent = (NetNode)parentObject;
+                        double distance = node.getParentDistance(parent);
+                        if(index == 0){
+                            geneLineages = geneLineages1;
+                        }
+                        else{
+                            geneLineages = geneLineages2;
+                        }
+                        randomlyCoalGeneLineages(geneLineages, gijMap, distance, root);
+                        netEdge2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), geneLineages);
+                        index++;
+                    }
+                }
+
+            }
+            gts.add(gt);
+        }
+
+        return gts;
 	}
 
-	public double g21(double t){
-		return 1-Math.exp((-1)*t);
-	}
+    private void randomlyCoalGeneLineages(List<TNode> geneLineages, Map<Integer, double[]> gijMap, double length, STINode root){
+        if(geneLineages.size()<2) return;
+        int glInNum = geneLineages.size();
+        double[] gijCache = gijMap.get(glInNum);
+        if(gijCache == null){
+            gijCache = new double[glInNum];
+            calculateGij(gijCache, length);
+            gijMap.put(glInNum, gijCache);
+        }
+        int glOutNum = getRandomNumber(gijCache);
+        randomlyCoalGeneLineages(geneLineages, glInNum, glOutNum, root);
+}
 
-	public double g32(double t){
-		return 3.0/2*Math.exp((-1)*t) - 3.0/2*Math.exp((-3)*t);
-	}
+    private void randomlyCoalGeneLineages(List<TNode> geneLineages, int glInNum, int glOutNum, STINode root){
+        for(int k=glInNum; k>glOutNum; k--){
+            int coal1 = (int)(Math.random()*k);
+            int coal2 = coal1;
+            while(coal1==coal2){
+                coal2 = (int)(Math.random()*k);
+            }
+            STINode newNode = root.createChild();
+            if(coal1 > coal2){
+                newNode.adoptChild((TMutableNode)geneLineages.remove(coal1));
+                newNode.adoptChild((TMutableNode)geneLineages.remove(coal2));
+            }
+            else{
+                newNode.adoptChild((TMutableNode)geneLineages.remove(coal2));
+                newNode.adoptChild((TMutableNode)geneLineages.remove(coal1));
+            }
+            geneLineages.add(newNode);
 
-	public double g33(double t){
-		return Math.exp((-3)*t);
-	}
-
-	public double g31(double t){
-		return 1-g32(t)-g33(t);
-	}
+        }
+    }
 
 
+    private int getRandomNumber(double[] cache){
+        double random = Math.random();
+        int coalNum = -1;
+        for(int i=0; i<cache.length; i++){
+            if(random<cache[i]){
+                coalNum = i+1;
+                break;
+            }
+        }
+        return coalNum;
+    }
+
+    private void calculateGij(double[] cache, double length){
+        if(length == NetNode.NO_DISTANCE || Double.isNaN(length)){
+            throw new RuntimeException("The network has branch that doesn't have branch length.");
+        }
+        int i = cache.length;
+        double total = 0;
+        for(int j=1; j<=i; j++){
+            total += gij(length, i, j);
+            cache[j-1] = total;
+        }
+        //cache[i-1] = 1;
+    }
 
 
-	public double exprnd(double mean){
-		 double u = Math.random();
-	     return -(mean * Math.log(u));
-	}
+    private double gij(double length, int i, int j){
+        if(length==0){
+            if(i==j)
+                return 1;
+            else
+                return 0;
+        }
+        if(i==0){
+            return 1;
+        }
+
+        double result = 0;
+        for(int k=j; k<=i; k++){
+            double temp = Math.exp(0.5 * k * (1.0 - k) * length) * (2.0 * k - 1.0) * Math.pow(-1, k - j)*(fact(j, j + k - 2))*(fact(i - k + 1, i));
+            double denom = fact(1, j)*(fact(1, k - j))*(fact(i, i + k - 1));
+            result += temp/denom;
+        }
+        return result;
+    }
 
 
-	public String[] generateGTs(double t1, double t2, double gamma, int n){
-		double x1,x2,x3;
-		String gtexp = "";
-		String[] gtlist = new String[n];
 
-		for(int i=0; i<n; i++){
-		    x1 = exprnd(1);
-		    if(x1 <= t2){  //B and C coalesce more recently than hybridization
-		        double u = Math.random();  //u decides whether (B,C) goes left or right
-		        x2 = exprnd(1);
-		        if(x2 <= t1){  //(B,C) and A(or D) coalesce more recently than root
-		            x3 = exprnd(1);
-		            if(u <= gamma){   //(B,C) goes left
-		                gtexp = "(((B:"+ x1 + ",C:" + x1 + "):" + (t2-x1+x2) + ",A:" +(t2+x2) + "):" + (t1-x2+x3) + ",D:" + (t1+t2+x3) + ");";
-		                //senario = 'B and C coalesce within t2, then go left and coalesce with A within t1';
-		            }
-		            else{
-		            	gtexp = "(((B:"+ x1 + ",C:" + x1 + "):" + (t2-x1+x2) + ",D:" +(t2+x2) + "):" + (t1-x2+x3) + ",A:" + (t1+t2+x3) + ");";
-		                //senario = 'B and C coalesce within t2, then go right and coalesce with D within t1';
-		            }
-		        }else{
-		            double p32 = Math.random();
-		            x2 = exprnd(1.0/3);
-		            x3 = exprnd(1);
-		            if(p32 <= 1.0/3){  //(B,C) and A coalesce first above root
-		                gtexp = "(((B:" + x1 + ",C:" + x1 + "):" + (t2-x1+t1+x2) + ",A:" + (t2+t1+x2) + "):" + x3 + ",D:" + (t2+t1+x2+x3) + ");";
-		                //senario = 'B and C coalesce within t2, then (B,C) coalesce with A above the root, then with D';
-		            }
-		            else if(p32 <= 2.0/3){   //(B,C) and D coalesce first above root
-		            	gtexp = "(((B:" + x1 + ",C:" + x1 + "):" + (t2-x1+t1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + ",A:" + (t2+t1+x2+x3) + ");";
-		                //senario = 'B and C coalesce within t2, then (B,C) coalesce with D above the root, then with A';
-		            }
-		            else{  //A and D coalesce first above root
-		                gtexp = "((B:" + x1 + ",C:" + x1 + "):" + (t2-x1+t1+x2+x3) + ",(A:" + (t2+t1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + ");";
-		                //senario = "B and C coalesce within t2, then coalesce with (A,D) above the root";
-		            }
-		        }
-		    }
-		    else{
-		        double u1 = Math.random();  //u1 decides whether B goes left or right
-		        double u2 = Math.random();  //u2 decides whether C goes left or right
-		        boolean allaboveroot = false;
-		        if((u1 <= gamma) && (u2 <= gamma)){  //both B and C goes left
-		            x1 = exprnd(1.0/3);
-		            if(x1 <= t1){
-		                double p32 = Math.random();
-		                String rest;
-		                if(p32 <= 1.0/3){  //B and C coalesce first
-		                    gtexp = "(B:" + (t2+x1) + ",C:" + (t2+x1) + ")";
-		                    rest = "A:";
-		                }
-		                else if(p32 <= 2.0/3){  //A and C coalesce first
-		                    gtexp = "(A:" + (t2+x1) + ",C:" + (t2+x1) + ")";
-		                    rest = "B:";
-		                }
-		                else{  //A and B coalesce first
-		                    gtexp = "(A:" + (t2+x1) + ",B:" + (t2+x1) + ")";
-		                    rest = "C:";
-		                }
-		                x2 = exprnd(1);
-		                if(x2 <= t1-x1){  //A, B and C all coalesce below the root
-		                    x3 = exprnd(1);
-		                    gtexp = "((" + gtexp + ":" + x2 + "," + rest + (t2+x1+x2) + "):" + (t1-x1-x2+x3) + ",D:"+ (t1+t2+x3) + ");";
-		                    //senario = "both B and C goes left, A, B and C all coalesce below the root";
-		                }
-		                else{
-		                    p32 = Math.random();
-		                    x2 = exprnd(1.0/3);
-		                    x3 = exprnd(1);
-		                    if(p32 <= 1.0/3)  //A, B and C coalesce first above the root
-		                        gtexp = "((" + gtexp + ":" + (t1-x1+x2) + "," + rest + (t2+t1+x2) + "):" + x3 + ",D:" + (t1+t2+x2+x3) + ");";
-		                    else if(p32 <= 2.0/3)  //the coalesced node and D coalesce first above the root
-		                        gtexp = "((" + gtexp + ":" + (t1-x1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + "," + rest + (t1+t2+x2+x3) + ");";
-		                    else
-		                        gtexp = "(" + gtexp + ":" + (t1-x1+x2+x3) + ",(D:" + (t2+t1+x2) + "," + rest + (t2+t1+x2) + "):" + x3 + ");";
-		                }
-		                //senario = "both B and C goes left, two of A, B and C coalesce below the root";
-		            }
-		            else{
-		                allaboveroot = true;
-		            }
-		        }
-		        else if((u1 > gamma) && (u2 > gamma)){  //both B and C goes right
-		            x1 = exprnd(1.0/3);
-		            String rest;
-		            if(x1 <= t1){
-		                double p32 = Math.random();
-		                if(p32 <= 1.0/3){  //B and C coalesce first
-		                    gtexp = "(B:" + (t2+x1) + ",C:" + (t2+x1) + ")";
-		                    rest = "D:";
-		                }
-		                else if(p32 <= 2.0/3){  //D and C coalesce first
-		                    gtexp = "(D:" + (t2+x1) + ",C:" + (t2+x1) + ")";
-		                    rest = "B:";
-		                }
-		                else{  //%D and B coalesce first
-		                    gtexp = "(D:" + (t2+x1) + ",B:" + (t2+x1) + ")";
-		                    rest = "C:";
-		                }
-		                x2 = exprnd(1);
-		                if(x2 <= t1-x1){  //D, B and C all coalesce below the root
-		                    x3 = exprnd(1);
-		                    gtexp = "((" + gtexp + ":" + x2 + "," + rest + (t2+x1+x2) + "):" + (t1-x1-x2+x3) + ",A:" + (t1+t2+x3) + ");";
-		                    //senario = "both B and C goes right, D, B and C all coalesce below the root";
-		                }
-		                else{
-		                    p32 = Math.random();
-		                    x2 = exprnd(1.0/3);
-		                    x3 = exprnd(1);
-		                    if(p32 <= 1.0/3)  //A, B and C coalesce first above the root
-		                        gtexp = "((" + gtexp + ":" + (t1-x1+x2) + "," + rest + (t2+t1+x2) + "):" + x3 + ",A:" + (t1+t2+x2+x3) + ");";
-		                    else if(p32 <= 2.0/3)   // the coalesced node and A coalesce first above the root
-		                        gtexp = "((" + gtexp + ":" + (t1-x1+x2) + ",A:" + (t2+t1+x2) + "):" + x3 + "," + rest + (t1+t2+x2+x3) + ");";
-		                    else
-		                        gtexp = "(" + gtexp + ":" + (t1-x1+x2+x3) + ",(A:" + (t2+t1+x2) + "," + rest + (t2+t1+x2) + "):" + x3 + ");";
-		                    //senario = "both B and C goes right, two of D, B and C coalesce below the root";
-		                }
-		            }
-		            else
-		                allaboveroot = true;
-		        }
-		        else if((u1 <= gamma) && (u2 > gamma)){
-		            int coal = 0;
-		            x1 = exprnd(1);
-		            if(x1<=t1){  //B and A coalesce below the root
-		                coal = 1;
-		            }
-		            x2 = exprnd(1);
-		            if(x2<=t1){  //C and D coalesce below the root
-		                if(coal ==1)
-		                    coal = 3;
-		                else
-		                    coal = 2;
-		            }
-		            if(coal==1){
-		                x2 = exprnd(1.0/3);
-		                x3 = exprnd(1);
-		                double p32 = Math.random();
-		                if(p32<=1.0/3)
-		                    gtexp = "(((A:" + (t2+x1) + ",B:" + (t2+x1) + "):" + (t1-x1+x2) + ",C:" + (t2+t1+x2) + "):" + x3 + ",D:" + (t2+t1+x2+x3) + ");";
-		                else if(p32<=2.0/3)
-		                    gtexp = "(((A:" + (t2+x1) + ",B:" + (t2+x1) + "):" + (t1-x1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + ",C:" + (t2+t1+x2+x3) + ");";
-		                else
-		                    gtexp = "((A:" + (t2+x1) + ",B:" + (t2+x1) + "):" + (t1-x1+x2+x3) + ",(C:" + (t2+t1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + ");";
-		            }
-		                //senario = "B goes left and C goes right; B and A coalesce below the root";
-		            else if(coal==2){
-		                x1 = x2;
-		                x2 = exprnd(1.0/3);
-		                x3 = exprnd(1);
-		                double p32 = Math.random();
-		                if(p32<=1.0/3)
-		                    gtexp = "(((C:" + (t2+x1) + ",D:" + (t2+x1) + "):" + (t1-x1+x2) + ",A:" + (t2+t1+x2) + "):" + x3 + ",B:" + (t2+t1+x2+x3) + ");";
-		                else if(p32<=2.0/3)
-		                    gtexp = "(((C:" + (t2+x1) + ",D:" + (t2+x1) + "):" + (t1-x1+x2) + ",B:" + (t2+t1+x2) + "):" + x3 + ",A:" + (t2+t1+x2+x3) + ");";
-		                else
-		                    gtexp = "((C:" + (t2+x1) + ",D:" + (t2+x1) + "):" + (t1-x1+x2+x3) + ",(A:" + (t2+t1+x2) + ",B:" + (t2+t1+x2) + "):" + x3 + ");";
-		            }
-		                //senario = "B goes left and C goes right; C and D coalesce below the root";
-		            else if(coal==3){
-		                x3 = exprnd(1);
-		                gtexp = "((A:" + (t2+x1) + ",B:" + (t2+x1) + "):" + (t1-x1+x3) + ",(C:" + (t2+x2) + ",D:" + (t2+x2) + "):" + (t1-x2+x3) + ");";
-		                //senario = "B goes left and C goes right; B and A coalesce below the root; C and D coalesce below the root";
-		            }
-		            else
-		                allaboveroot = true;
-		        }
-		        else{
-		            int coal = 0;
-		            x1 = exprnd(1);
-		            if(x1<=t1){  //C and A coalesce below the root
-		                coal = 1;
-		            }
-		            x2 = exprnd(1);
-		            if(x2<=t1){ //B and D coalesce below the root
-		                if(coal ==1)
-		                    coal = 3;
-		                else
-		                    coal = 2;
-		            }
-		            if(coal==1){
-		                x2 = exprnd(1.0/3);
-		                x3 = exprnd(1);
-		                double p32 = Math.random();
-		                if(p32<=1.0/3)
-		                    gtexp = "(((A:" + (t2+x1) + ",C:" + (t2+x1) + "):" + (t1-x1+x2) + ",B:" + (t2+t1+x2) + "):" + x3 + ",D:" + (t2+t1+x2+x3) + ");";
-		                else if(p32<=2.0/3)
-		                    gtexp = "(((A:" + (t2+x1) + ",C:" + (t2+x1) + "):" + (t1-x1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + ",B:" + (t2+t1+x2+x3) + ");";
-		                else
-		                    gtexp = "((A:" + (t2+x1) + ",C:" + (t2+x1) + "):" + (t1-x1+x2+x3) + ",(B:" + (t2+t1+x2) + ",D:" + (t2+t1+x2) + "):" + x3 + ");";
-		                //senario = "B goes right and C goes left; B and D coalesce below the root";
-		            }
-		            else if(coal==2){
-		                x1 = x2;
-		                x2 = exprnd(1.0/3);
-		                x3 = exprnd(1);
-		                double p32 = Math.random();
-		                if(p32<=1.0/3)
-		                    gtexp = "(((B:" + (t2+x1) + ",D:" + (t2+x1) + "):" + (t1-x1+x2) + ",A:" + (t2+t1+x2) + "):" + (x3) + ",C:" + (t2+t1+x2+x3) + ");";
-		                else if(p32<=2.0/3)
-		                    gtexp = "(((B:" + (t2+x1) + ",D:" + (t2+x1) + "):" + (t1-x1+x2) + ",C:" + (t2+t1+x2) + "):" + (x3) + ",A:" + (t2+t1+x2+x3) + ");";
-		                else
-		                    gtexp = "((B:" + (t2+x1) + ",D:" + (t2+x1) + "):" + (t1-x1+x2+x3) + ",(A:" + (t2+t1+x2) + ",C:" + (t2+t1+x2) + "):" + (x3) + ");";
-		                //senario = "B goes right and C goes left; B and D coalesce below the root";
-		            }
-		            else if(coal==3){
-		                x3 =exprnd(1);
-		                gtexp = "((A:" + (t2+x1) + ",C:" + (t2+x1) + "):" + (t1-x1+x3) + ",(B:" + (t2+x2) + ",D:" + (t2+x2) + "):" + (t1-x2+x3) + ");";
-		                //senario = "B goes right and C goes left; C and A coalesce below the root; B and D coalesce below the root";
-		            }
-		            else
-		                allaboveroot = true;
-		        }
+    private double fact(int start, int end){
+        double result = 1;
+        for(int i=start; i<=end; i++){
+            result = result*i;
+        }
 
-		        if(allaboveroot){
-		            //senario = "all lineages coalesce above the root";
-		            x1 = exprnd(1.0/6);
-		            x2 = exprnd(1.0/3);
-		            x3 = exprnd(1);
-		            List<String> nodes = new ArrayList<String>();
-		            nodes.add("A:");
-		            nodes.add("B:");
-		            nodes.add("C:");
-		            nodes.add("D:");
-		            double p41 = Math.random();
-		            String node1;
-		            if(p41<=1.0/4){
-		            	node1 = nodes.get(0);
-		            	nodes.remove(0);
-		            }
-		            else if(p41<=2.0/4){
-		            	node1 = nodes.get(1);
-		            	nodes.remove(1);
-		            }
-		            else if(p41<=3.0/4){
-		            	node1 = nodes.get(2);
-		            	nodes.remove(2);
-		            }
-		            else{
-		            	node1 = nodes.get(3);
-		            	nodes.remove(3);
-		            }
-		            double p31 = Math.random();
-		            String node2;
-		            if(p31<=1.0/3){
-		            	node2 = nodes.get(0);
-		            	nodes.remove(0);
-		            }
-		            else if(p31<=2.0/3){
-		            	node2 = nodes.get(1);
-		            	nodes.remove(1);
-		            }
-		            else{
-		            	node2 = nodes.get(2);
-		            	nodes.remove(2);
-		            }
-		            String newnode = "(" + node1 + (t1+t2+x1) + "," + node2 + (t1+t2+x1) + "):";
-		            nodes.add(newnode);
-		            double p32 = Math.random();
-		            if(p32<=1.0/3)
-		                gtexp = "((" + nodes.get(0) + x2 + "," + nodes.get(1) + (t1+t2+x1+x2) + "):" + x3 + "," + nodes.get(2) + (t1+t2+x1+x2+x3) + ")";
-		            else if(p32<=2.0/3)
-		                gtexp = "((" + nodes.get(0) + x2 + "," + nodes.get(2) + (t1+t2+x1+x2) + "):" + x3 + "," + nodes.get(1) + (t1+t2+x1+x2+x3) + ")";
-		            else
-		            	gtexp = "((" + nodes.get(1) + x2 + "," + nodes.get(2) + (t1+t2+x1+x2) + "):" + x3 + "," + nodes.get(0) + (t1+t2+x1+x2+x3) + ")";
-		        }
-		    }
+        return result;
+    }
 
-		    gtlist[i] = gtexp;
-		}
-		return gtlist;
-	}
 }

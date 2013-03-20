@@ -19,4 +19,4 @@ END;
 ===
 
 
-Error at [14,1]: If bootstrap switch is specified for 'Infer_ST_MDC', all gene tree nodes must have a support value.
+Error at [14,1]: If bootstrap switch is specified for 'Infer_ST_MDC', all internal gene tree nodes must have a support value.

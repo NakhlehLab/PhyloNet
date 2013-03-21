@@ -26,9 +26,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Matt
@@ -70,7 +67,7 @@ public class GeneTreeProbabilityYFTest
 
         Tree gt = new STITree<Object>("(C,((B,D),A)J)K)R;");
 
-        List<Double> result = new GeneTreeProbabilityYF().calculateGTDistribution(network, Arrays.asList(gt), null);
+      //  List<Double> result = new GeneTreeProbabilityYF().calculateGTDistribution(network, Arrays.asList(gt), null);
 
 
 

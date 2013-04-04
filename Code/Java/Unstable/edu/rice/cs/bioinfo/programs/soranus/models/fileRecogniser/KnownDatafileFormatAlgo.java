@@ -14,4 +14,6 @@ public interface KnownDatafileFormatAlgo<R, T, E extends Exception>
     public R forTraces(KnownDatafileFormat format, T input) throws  E;
 
     public R forFirstPositive(KnownDatafileFormat format, T input) throws E;
+
+    public R forVAALOut(KnownDatafileFormat knownDatafileFormat, T input) throws E;
 }

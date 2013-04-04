@@ -1,4 +1,4 @@
-package edu.rice.cs.bioinfo.programs.soranus.models.analysis;
+package edu.rice.cs.bioinfo.programs.soranus.models.data;
 
 /**
  * Created with IntelliJ IDEA.

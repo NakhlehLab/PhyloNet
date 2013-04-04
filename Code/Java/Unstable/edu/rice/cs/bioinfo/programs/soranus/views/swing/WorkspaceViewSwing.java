@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.soranus.views.swing;
 
+import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.*;
@@ -22,8 +23,20 @@ import java.util.*;
  * Time: 6:09 PM
  * To change this template use File | Settings | File Templates.
  */
-public class WorkspaceViewSwing extends JFrame implements WorkspaceView
+public class WorkspaceViewSwing<DR extends DataRecord,
+                                AR extends AnalysisRecord> extends JFrame implements WorkspaceView<DR,AR>
 {
+    class RecordTreeNode<R> extends DefaultMutableTreeNode
+    {
+        public final R Record;
+
+        public RecordTreeNode(String title, R record)
+        {
+            super(title);
+            Record = record;
+        }
+    }
+
     private WorkspaceVM _viewModel;
 
     private JSplitPane _splitPane;
@@ -44,39 +57,39 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
 
     private Set<Proc1<File>> _addDataListeners = new HashSet<Proc1<File>>();
 
-    private Map<DefaultMutableTreeNode,WorkspaceVM.AnalysisRecord> _analysisTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, WorkspaceVM.AnalysisRecord>();
+    private Map<DefaultMutableTreeNode,AR> _analysisTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, AR>();
 
-    private Map<DefaultMutableTreeNode,WorkspaceVM.DataRecord> _dataTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, WorkspaceVM.DataRecord>();
+    private Map<DefaultMutableTreeNode,DR> _dataTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, DR>();
 
     public void addDataAddRequestListener(Proc1<File> listener)
     {
         _addDataListeners.add(listener);
     }
 
-    private Set<Proc3<String,String,String>> _snitkinTransMapAnalysisRequestedListeners = new HashSet<Proc3<String,String,String>>();
+    private Set<Proc3<DR,DR,DR>> _snitkinTransMapAnalysisRequestedListeners = new HashSet<Proc3<DR,DR,DR>>();
 
-    public void addSnitkinTransMapAnalysisRequestedListener(Proc3<String,String,String> listener)
+    public void addSnitkinTransMapAnalysisRequestedListener(Proc3<DR,DR,DR> listener)
     {
         _snitkinTransMapAnalysisRequestedListeners.add(listener);
     }
 
-    private Set<Proc1<String>> _neighborJoiningAnalysisRequestedListeners = new HashSet<Proc1<String>>();
+    private Set<Proc1<DR>> _neighborJoiningAnalysisRequestedListeners = new HashSet<Proc1<DR>>();
 
-    public void addNeighborJoiningAnalysisRequestedListener(Proc1<String> listener)
+    public void addNeighborJoiningAnalysisRequestedListener(Proc1<DR> listener)
     {
         _neighborJoiningAnalysisRequestedListeners.add(listener);
     }
 
-    private Set<Proc1<WorkspaceVM.AnalysisRecord>> _analysisRecordSelectedListeners = new HashSet<Proc1<WorkspaceVM.AnalysisRecord>>();
+    private Set<Proc1<AR>> _analysisRecordSelectedListeners = new HashSet<Proc1<AR>>();
 
-    public void addAnalysisRecordSelectedListener(Proc1<WorkspaceVM.AnalysisRecord> listener)
+    public void addAnalysisRecordSelectedListener(Proc1<AR> listener)
     {
         _analysisRecordSelectedListeners.add(listener);
     }
 
-    private Set<Proc1<WorkspaceVM.DataRecord>> _dataRecordSelectedListeners = new HashSet<Proc1<WorkspaceVM.DataRecord>>();
+    private Set<Proc1<DR>> _dataRecordSelectedListeners = new HashSet<Proc1<DR>>();
 
-    public void addDataRecordSelectedListener(Proc1<WorkspaceVM.DataRecord> listener)
+    public void addDataRecordSelectedListener(Proc1<DR> listener)
     {
         _dataRecordSelectedListeners.add(listener);
     }
@@ -87,12 +100,14 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
     }
 
 
+    private JButton _createSequencingsData = new JButton("Create Sequencings from VAAL");
+
     public WorkspaceViewSwing(WorkspaceVM viewModel)
     {
         _viewModel= viewModel;
 
-        _viewModel.addDataRecordAddedListener(new Proc1<WorkspaceVM.DataRecord>() {
-            public void execute(WorkspaceVM.DataRecord record) {
+        _viewModel.addDataRecordAddedListener(new Proc1<DR>() {
+            public void execute(DR record) {
                 onDataRecordAdded(record);
             }
         });
@@ -101,8 +116,8 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
                 onFocusDocumentChanged(documentVM);
             }
         });
-        _viewModel.addAnalysisAddedListener(new Proc1<WorkspaceVM.AnalysisRecord>() {
-            public void execute(WorkspaceVM.AnalysisRecord record) {
+        _viewModel.addAnalysisAddedListener(new Proc1<AR>() {
+            public void execute(AR record) {
                 onAnalysisAdded(record);
             }
         });
@@ -124,6 +139,21 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
         _splitPane.resetToPreferredSizes();
         this.getContentPane().add(_splitPane);
 
+        JToolBar menuBar = new JToolBar();
+
+        menuBar.add(_createSequencingsData);
+        this.getContentPane().add(menuBar, BorderLayout.NORTH);
+
+
+    }
+
+    public void addCreateSequencingsDataRequestListener(final Proc listener)
+    {
+        _createSequencingsData.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                listener.execute();;
+            }
+        });
     }
 
 
@@ -133,15 +163,19 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
         JComponent newFocusView = documentVM.execute(new DocumentVMAlgo<JComponent, RuntimeException>()
         {
             public <N, E> JPanel forTransMapVM(TransMapVM<N,E> vm) throws RuntimeException {
-                return new TransMapViewJFiles<N,E>(vm);
+                return new TransMapViewDot<N,E>(vm);
             }
 
             public <N, E> JPanel forNeighborJoiningVM(NeighborJoiningVM<N,E> vm) throws RuntimeException {
-                return new NeighborJoiningViewJFiles<N,E>(vm);
+                return new NeighborJoiningViewDot<N,E>(vm);
             }
 
             public JComponent forXMLDataVM(XMLDataVM xmlDataVM) {
                 return new XMLDataView(xmlDataVM);
+            }
+
+            public JComponent forVAALOutDataVM(VAALOutDataVM vaalOutDataVM) {
+                return new VAALOutDataView(vaalOutDataVM);
             }
         });
         _documentPanel.removeAll();
@@ -150,7 +184,7 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
 
     }
 
-    private void onAnalysisAdded(WorkspaceVM.AnalysisRecord record)
+    private void onAnalysisAdded(AR record)
     {
         DefaultMutableTreeNode newEntryNode = new DefaultMutableTreeNode(record.Title);
         _analysisTreeNodeToRecord.put(newEntryNode, record);
@@ -248,12 +282,12 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
                 {
                     if(_analysisTreeNodeToRecord.containsKey(lastPathComponent))
                     {
-                        WorkspaceVM.AnalysisRecord record = _analysisTreeNodeToRecord.get(lastPathComponent);
+                        AR record = _analysisTreeNodeToRecord.get(lastPathComponent);
                         onAnalysisRecordLeftClick(record);
                     }
                     else if(_dataTreeNodeToRecord.containsKey(lastPathComponent))
                     {
-                        WorkspaceVM.DataRecord record = _dataTreeNodeToRecord.get(lastPathComponent);
+                        DR record = _dataTreeNodeToRecord.get(lastPathComponent);
                         onDataRecordLeftClick(record);
                     }
                 }
@@ -263,17 +297,17 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
         return projectTree;
     }
 
-    private void onAnalysisRecordLeftClick(WorkspaceVM.AnalysisRecord record) {
+    private void onAnalysisRecordLeftClick(AR record) {
 
-        for(Proc1<WorkspaceVM.AnalysisRecord> listener : _analysisRecordSelectedListeners)
+        for(Proc1<AR> listener : _analysisRecordSelectedListeners)
         {
             listener.execute(record);
         }
     }
 
-    private void onDataRecordLeftClick(WorkspaceVM.DataRecord record) {
+    private void onDataRecordLeftClick(DR record) {
 
-        for(Proc1<WorkspaceVM.DataRecord> listener : _dataRecordSelectedListeners)
+        for(Proc1<DR> listener : _dataRecordSelectedListeners)
         {
             listener.execute(record);
         }
@@ -287,12 +321,11 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
 
         if(selections.length == 1)
         {
-            final String firstEntryTitle =  (String) ((DefaultMutableTreeNode)selections[0].getLastPathComponent()).getUserObject();
-            final boolean firstEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(firstEntryTitle);
+            final DR firstEntry =  (DR) ((RecordTreeNode<DR>)selections[0].getLastPathComponent()).Record;
+            final boolean firstEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(firstEntry);
 
             if(firstEntryTitleIsSequencingsData)
             {
-                final String sequencingsTitleFinal = firstEntryTitle;
                 analysisOptions = new JPopupMenu ();
                 final JMenuItem doNeighborJoin = new JMenuItem ( "Infer Neighbor Joining Tree" );
                 doNeighborJoin.addActionListener(new ActionListener() {
@@ -300,9 +333,9 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
                         if(e.getSource() == doNeighborJoin)
                         {
 
-                            for(Proc1<String> listener : _neighborJoiningAnalysisRequestedListeners)
+                            for(Proc1<DR> listener : _neighborJoiningAnalysisRequestedListeners)
                             {
-                                listener.execute(sequencingsTitleFinal);
+                                listener.execute(firstEntry);
                             }
                         }
                     }
@@ -314,42 +347,44 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
         }
         else if(selections.length == 3)
         {
-            final String firstEntryTitle =  (String) ((DefaultMutableTreeNode)selections[0].getLastPathComponent()).getUserObject();
-            final boolean firstEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(firstEntryTitle);
-            boolean firstEntryTitleIsTraceData = _viewModel.isDataRecordTitleRepresentingTraceData(firstEntryTitle);
+            final DR firstEntry =  (DR) ((RecordTreeNode<DR>)selections[0].getLastPathComponent()).Record;
+            final boolean firstEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(firstEntry);
+            boolean firstEntryTitleIsTraceData = _viewModel.isDataRecordTitleRepresentingTraceData(firstEntry);
 
-            final String secondEntryTitle = (String) ((DefaultMutableTreeNode)selections[1].getLastPathComponent()).getUserObject();
-            boolean secondEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(secondEntryTitle);
-            boolean secondEntryTitleIsTraceData = _viewModel.isDataRecordTitleRepresentingTraceData(secondEntryTitle);
+            final DR secondEntry = (DR) ((RecordTreeNode<DR>)selections[1].getLastPathComponent()).Record;
+            boolean secondEntryTitleIsSequencingsData = _viewModel.isDataRecordTitleRepresentingSequencingsData(secondEntry);
+            boolean secondEntryTitleIsTraceData = _viewModel.isDataRecordTitleRepresentingTraceData(secondEntry);
 
-            final String thirdEntryTitle = (String) ((DefaultMutableTreeNode)selections[2].getLastPathComponent()).getUserObject();
+            final DR thirdEntry = (DR) ((RecordTreeNode<DR>)selections[2].getLastPathComponent()).Record;
 
-            String sequencingsTitle = null, traceTitle = null, firstPositiveTitle = null;
-            for(String title : Arrays.asList(firstEntryTitle, secondEntryTitle, thirdEntryTitle))
+            DR sequencingsEntry = null, traceEntry = null, firstPositiveEntry = null;
+            for(DR entry : Arrays.asList(firstEntry, secondEntry, thirdEntry))
             {
-                if(_viewModel.isDataRecordTitleRepresentingSequencingsData(title))
+                if(_viewModel.isDataRecordTitleRepresentingSequencingsData(entry))
                 {
-                    sequencingsTitle = title;
+                    sequencingsEntry = entry;
                 }
-                else if(_viewModel.isDataRecordTitleRepresentingTraceData(title))
+                else if(_viewModel.isDataRecordTitleRepresentingTraceData(entry))
                 {
-                    traceTitle = title;
+                    traceEntry = entry;
                 }
-                else if(_viewModel.isDataRecordTitleRepresentingFirstPositiveData(title))
+                else if(_viewModel.isDataRecordTitleRepresentingFirstPositiveData(entry))
                 {
-                    firstPositiveTitle = title;
+                    firstPositiveEntry = entry;
                 }
             }
 
 
-            boolean showSnitkinAnalysisOption = sequencingsTitle != null && traceTitle != null && firstPositiveTitle != null;
+            boolean showSnitkinAnalysisOption = sequencingsEntry != null && traceEntry != null &&
+                                                firstPositiveEntry != null;
 
 
 
 
            if(showSnitkinAnalysisOption)
            {
-               final String sequencingsTitleFinal = sequencingsTitle, traceTitleFinal = traceTitle, firstPositiveTitleFinal = firstPositiveTitle;
+               final DR sequencingsEntryFinal = sequencingsEntry, traceEntryFinal = traceEntry,
+                        firstPositiveEntryFinal = firstPositiveEntry;
                analysisOptions = new JPopupMenu ();
                final JMenuItem doSnitkin = new JMenuItem ( "Infer Snitkin Trans Map" );
                doSnitkin.addActionListener(new ActionListener() {
@@ -357,9 +392,9 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
                        if(e.getSource() == doSnitkin)
                        {
 
-                           for(Proc3<String,String,String> listener : _snitkinTransMapAnalysisRequestedListeners)
+                           for(Proc3<DR,DR,DR> listener : _snitkinTransMapAnalysisRequestedListeners)
                            {
-                               listener.execute(sequencingsTitleFinal, traceTitleFinal, firstPositiveTitleFinal);
+                               listener.execute(sequencingsEntryFinal, traceEntryFinal, firstPositiveEntryFinal);
                            }
                        }
                    }
@@ -391,9 +426,9 @@ public class WorkspaceViewSwing extends JFrame implements WorkspaceView
         menu.show (_projectTree, e.getX(), e.getY() );
     }
 
-    private void onDataRecordAdded(WorkspaceVM.DataRecord record)
+    private void onDataRecordAdded(DR record)
     {
-        DefaultMutableTreeNode newEntryNode = new DefaultMutableTreeNode(record.Title);
+        RecordTreeNode<DR> newEntryNode = new RecordTreeNode<DR>(record.Title, record);
         _dataTreeNodeToRecord.put(newEntryNode, record);
         _dataFolder.add(newEntryNode);
         _dataRecordTreeNodes.add(newEntryNode);

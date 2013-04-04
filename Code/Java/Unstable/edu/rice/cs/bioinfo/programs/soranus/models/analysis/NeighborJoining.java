@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.soranus.models.analysis;
 
 import edu.rice.cs.bioinfo.library.bioinformatics.taxonomy.inference.NeighborJoinerTemplateIntegerDistance;
+import edu.rice.cs.bioinfo.programs.soranus.models.data.Sequencing;
 
 import java.util.HashSet;
 import java.util.Set;

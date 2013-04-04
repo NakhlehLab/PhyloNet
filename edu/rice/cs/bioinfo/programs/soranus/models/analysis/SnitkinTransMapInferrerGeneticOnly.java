@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.soranus.models.analysis;
 import edu.rice.cs.bioinfo.library.programming.Func;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.programs.soranus.models.data.Sequencing;
 
 import java.util.Map;
 

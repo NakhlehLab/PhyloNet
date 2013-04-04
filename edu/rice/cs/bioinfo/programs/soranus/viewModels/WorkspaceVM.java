@@ -12,45 +12,30 @@ import java.util.Set;
  * Time: 6:11 PM
  * To change this template use File | Settings | File Templates.
  */
-public class WorkspaceVM
+public class WorkspaceVM<DR extends DataRecord,
+                         AR extends AnalysisRecord>
 {
-    public class DataRecord
-    {
-        public final String Title;
-
-        DataRecord(String title) {
-            Title = title;
-        }
-    }
-
-    public class AnalysisRecord
-    {
-        public final String Title;
-
-        AnalysisRecord(String title)
-        {
-            Title = title;
-        }
-    }
 
     public final String Title = "Soranus";
 
-    private Set<DataRecord> _sequencingsDataRecords = new HashSet<DataRecord>();
+    private Set<DR> _sequencingsDataRecords = new HashSet<DR>();
 
-    private Set<DataRecord> _traceDataRecords = new HashSet<DataRecord>();
+    private Set<DR> _traceDataRecords = new HashSet<DR>();
 
-    private Set<DataRecord> _firstPositiveDataRecords = new HashSet<DataRecord>();
+    private Set<DR> _firstPositiveDataRecords = new HashSet<DR>();
 
-    private Set<Proc1<DataRecord>> _dataRecordAddedListeners = new HashSet<Proc1<DataRecord>>();
+    private Set<DR> _vaalOutDataRecords = new HashSet<DR>();
 
-    public void addDataRecordAddedListener(Proc1<DataRecord> listener)
+    private Set<Proc1<DR>> _dataRecordAddedListeners = new HashSet<Proc1<DR>>();
+
+    public void addDataRecordAddedListener(Proc1<DR> listener)
     {
         _dataRecordAddedListeners.add(listener);
     }
 
-    private Set<Proc1<AnalysisRecord>> _anaylisisAddedListeners = new HashSet<Proc1<AnalysisRecord>>();
+    private Set<Proc1<AR>> _anaylisisAddedListeners = new HashSet<Proc1<AR>>();
 
-    public void addAnalysisAddedListener(Proc1<AnalysisRecord> listener)
+    public void addAnalysisAddedListener(Proc1<AR> listener)
     {
         _anaylisisAddedListeners.add(listener);
     }
@@ -76,80 +61,57 @@ public class WorkspaceVM
     }
 
 
-    public DataRecord addSequencingsData(String explorerTitle)
+    public void addSequencingsData(DR data)
     {
-        return addDataHelp(explorerTitle, _sequencingsDataRecords);
+         addDataHelp(data, _sequencingsDataRecords);
     }
 
-    public DataRecord addTraceData(String explorerTitle)
+    public void addTraceData(DR data)
     {
-        return addDataHelp(explorerTitle, _traceDataRecords);
+         addDataHelp(data, _traceDataRecords);
     }
 
-    public DataRecord addFirstPositiveData(String explorerTitle) {
-        return addDataHelp(explorerTitle, _firstPositiveDataRecords);
+    public void addFirstPositiveData(DR data) {
+         addDataHelp(data, _firstPositiveDataRecords);
     }
 
-    private DataRecord addDataHelp(String title, Set<DataRecord> toAdd)
+    public void addVAALOutData(DR data)
     {
-        DataRecord dataRecord = new DataRecord(title);
-        toAdd.add(dataRecord);
-        for(Proc1<DataRecord> dataRecordAddedListener : _dataRecordAddedListeners)
+         addDataHelp(data, _vaalOutDataRecords);
+    }
+
+
+    private void addDataHelp(DR data, Set<DR> toAdd)
+    {
+        toAdd.add(data);
+        for(Proc1<DR> dataRecordAddedListener : _dataRecordAddedListeners)
         {
-            dataRecordAddedListener.execute(dataRecord);
+            dataRecordAddedListener.execute(data);
+        }
+    }
+
+    public void addAnalysis(AR analysisRecord)
+    {
+        for(Proc1<AR> listener : _anaylisisAddedListeners)
+        {
+            listener.execute(analysisRecord);
         }
 
-        return dataRecord;
     }
 
-    public AnalysisRecord addAnalysis(String title)
+    public boolean isDataRecordTitleRepresentingSequencingsData(DR dataRecord)
     {
-        AnalysisRecord record = new AnalysisRecord(title);
-        for(Proc1<AnalysisRecord> listener : _anaylisisAddedListeners)
-        {
-            listener.execute(record);
-        }
-
-        return  record;
+       return _sequencingsDataRecords.contains(dataRecord);
     }
 
-    public boolean isDataRecordTitleRepresentingSequencingsData(String title)
+    public boolean isDataRecordTitleRepresentingTraceData(DR dataRecord)
     {
-        for(DataRecord dr : _sequencingsDataRecords)
-        {
-            if(dr.Title.equals(title))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return _traceDataRecords.contains(dataRecord);
     }
 
-    public boolean isDataRecordTitleRepresentingTraceData(String title)
+    public boolean isDataRecordTitleRepresentingFirstPositiveData(DR dataRecord)
     {
-        for(DataRecord dr : _traceDataRecords)
-        {
-            if(dr.Title.equals(title))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean isDataRecordTitleRepresentingFirstPositiveData(String title)
-    {
-        for(DataRecord dr : _firstPositiveDataRecords)
-        {
-            if(dr.Title.equals(title))
-            {
-                return true;
-            }
-        }
-
-        return false;
+       return _firstPositiveDataRecords.contains(dataRecord);
     }
 
 }

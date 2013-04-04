@@ -4,7 +4,7 @@ public class Program
 {
     public static void main(String[] args)
     {
-        new SwingController().startView();
+        new SwingApplication().start();
 
     }
 }

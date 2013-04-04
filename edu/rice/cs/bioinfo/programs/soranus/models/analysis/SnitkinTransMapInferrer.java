@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.soranus.models.analysis;
 
 import edu.rice.cs.bioinfo.library.epidemiology.transmissionMap.Snitkin2012.SnitkinTransMapInferrerTemplateDoubleDistance;
+import edu.rice.cs.bioinfo.programs.soranus.models.data.Sequencing;
 import org.joda.time.LocalDate;
 
 import java.util.Map;
@@ -12,10 +13,11 @@ import java.util.Map;
  * Time: 5:15 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SnitkinTransMapInferrer extends SnitkinTransMapInferrerTemplateDoubleDistance<Integer,Sequencing>
+public class SnitkinTransMapInferrer<E> extends SnitkinTransMapInferrerTemplateDoubleDistance<E,Sequencing>
 {
-    public SnitkinTransMapInferrer(Map<Integer, Map<LocalDate, Object>> patientTraces, Map<Integer, LocalDate> patientToFirstPositiveDate, Map<Sequencing, Integer> sequencingToPatient) {
-        super(patientTraces, patientToFirstPositiveDate, sequencingToPatient);
+    public SnitkinTransMapInferrer(Map<E, Map<LocalDate, Object>> patientTraces,
+                                   Map<E, LocalDate> firstPositiveDate, Map<Sequencing, E> sequencings) {
+        super(patientTraces, firstPositiveDate, sequencings);
     }
 
     @Override

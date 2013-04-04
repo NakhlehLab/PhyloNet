@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.soranus.models.fileRecogniser;
 
+import edu.rice.cs.bioinfo.library.language.vaal._1_1.out.reading.parsers.VAALOutStringSplitParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -8,7 +9,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -58,16 +62,33 @@ public class DatafileRecogniser
                 };
             }
 
-
-
-
-
         } catch (ParserConfigurationException pce) {
             int i = 0;
         } catch (SAXException se) {
             int i = 0;
         } catch (IOException ioe) {
             int i = 0;
+        }
+
+        try
+        {
+            new VAALOutStringSplitParser().parse(new FileInputStream(file));
+            // if no exceptions
+            return new KnownDatafileFormat()
+            {
+                public <R, T, E extends Exception> R execute(KnownDatafileFormatAlgo<R, T, E> algo, T input) throws E {
+                    return algo.forVAALOut(this, input);
+                }
+            };
+        }
+        catch(FileNotFoundException e)
+        {
+        }
+        catch(IOException e)
+        {
+        }
+        catch(ParseException e)
+        {
         }
 
         throw new IllegalArgumentException();

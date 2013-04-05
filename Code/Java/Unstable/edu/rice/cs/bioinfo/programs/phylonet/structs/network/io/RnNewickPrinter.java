@@ -41,7 +41,7 @@ public class RnNewickPrinter<T> extends RichNewickPrinterCompact<NetNode<T>>
 {
     private final Func1<NetNode<T>, String> _getLabel = new Func1<NetNode<T>, String>() {
             public String execute(NetNode<T> input) {
-                return input.getName();
+                return input.getName().replace(' ', '_');
             }
         };
 

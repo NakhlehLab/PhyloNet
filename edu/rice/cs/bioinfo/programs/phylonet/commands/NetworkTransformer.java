@@ -233,7 +233,7 @@ public class NetworkTransformer {
 
         SingleLinePrinter printer = new SingleLinePrinter();
         printer.setExcludeProbability(true);
-        printer.setSupportTransformer(new TransformSupportToBase100());
+        //printer.setSupportTransformer(new TransformSupportToBase100());
         return printer.toString(network);
 
     }
@@ -252,7 +252,7 @@ public class NetworkTransformer {
         NetworkNonEmpty relabeledNetwork = makeRelabeledNetwork(network, hybridIndexToHybridNodeLabel);
 
         SingleLinePrinter printer = new SingleLinePrinter();
-        printer.setSupportTransformer(new TransformSupportToBase100());
+        //printer.setSupportTransformer(new TransformSupportToBase100());
 
         StringBuilder b = new StringBuilder();
         b.append("N = " + printer.toString(relabeledNetwork));

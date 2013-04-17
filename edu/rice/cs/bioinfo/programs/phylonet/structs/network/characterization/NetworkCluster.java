@@ -160,6 +160,14 @@ public class NetworkCluster<T>
 		return identical;
 	}
 
+    public int hashCode(){
+        int code = 0;
+        for(String name: getNames()){
+            code += name.hashCode();
+        }
+        return code;
+    }
+
 	/**
 	 * This function tests if this cluster is empty, i.e. there're no leaves in it.
 	 */

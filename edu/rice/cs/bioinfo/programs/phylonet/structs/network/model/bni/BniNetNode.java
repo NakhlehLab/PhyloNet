@@ -44,6 +44,8 @@ public class BniNetNode<T> implements NetNode<T> {
 		_children = null;
 		_parents = null;
 		_parent_distances = null;
+        _parent_probabiliites = null;
+        _parent_support = null;
 	}
 
 	/**
@@ -323,8 +325,57 @@ public class BniNetNode<T> implements NetNode<T> {
 
 		ref._parents.remove(i);
 		ref._parent_distances.remove(i);
+        ref._parent_probabiliites.remove(i);
+        ref._parent_support.remove(i);
 		return true;
 	}
+
+    public boolean removeParent(NetNode<T> parent){
+        assert(parent instanceof BniNetNode);
+
+        // Delete link from this node to child.
+        if (_parents == null){
+            return false;
+        }
+        int index = _parents.indexOf(parent);
+        if(index == -1){
+            return false;	// child is not in the list _children; exit.
+        }
+
+
+        _parents.remove(index);
+        _parent_distances.remove(index);
+        _parent_probabiliites.remove(index);
+        _parent_support.remove(index);
+
+        if(_parents.size() == 0){
+            _parents = null;
+            _parent_distances = null;
+            _parent_probabiliites = null;
+            _parent_support = null;
+        }
+        else if(_parents.size()==1 && _children.size()==1){
+            NetNode<T> anotherParent = _parents.get(0);
+            NetNode<T> child = _children.get(0);
+            anotherParent.adoptChild(child, child.getParentDistance(this)+this.getParentDistance(anotherParent));
+            child.setParentProbability(anotherParent, this.getParentProbability(anotherParent) * child.getParentProbability(this));
+            child.setParentSupport(anotherParent, this.getParentSupport(anotherParent) * child.getParentSupport(this));
+            anotherParent.removeChild(this);
+            this.removeChild(child);
+        }
+
+
+        return true;
+    }
+
+    //For InferNetworkUsingGLASS only and the node does not have parent
+    public boolean removeItself()
+    {
+        for(NetNode<T> child: _children){
+            ((BniNetNode)child).removeParent(this);
+        }
+        return true;
+    }
 
 	public void setParentProbability(NetNode<T> parent, double probability)
 	{
@@ -361,9 +412,9 @@ public class BniNetNode<T> implements NetNode<T> {
 
     public void setParentSupport(NetNode<T> parent, double support)
 	{
-        if(support < 0 || support > 1)
+        if(support < 0 || support > 100)
         {
-            throw new IllegalArgumentException("Support values must be between zer and one.  Found: " + support);
+            throw new IllegalArgumentException("Support values must be between zero and one hundred.  Found: " + support);
         }
 
 		int i = _parents.indexOf(parent);

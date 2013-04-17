@@ -96,7 +96,7 @@ public class ContextAnalyser
             }
 
             /*
-             * Check to ensure support is a number between 0 and 1 inclusive.
+             * Check to ensure support is a number between 0 and 100 inclusive.
              */
             String supportStr = syntaxInspector.getSupportText(node);
             if(supportStr != null)

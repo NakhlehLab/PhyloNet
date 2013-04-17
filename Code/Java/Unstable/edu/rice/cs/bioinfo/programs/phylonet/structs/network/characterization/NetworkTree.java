@@ -173,6 +173,18 @@ public class NetworkTree<T> {
 		return _clusters;
 	}
 
+
+    public Map<NetNode<T>, NetworkCluster<T>> generateNodeClusters()
+    {
+        Map<NetNode<T>, NetworkCluster<T>> map = new Hashtable<NetNode<T>, NetworkCluster<T>>();
+
+        for (NetNode<T> node : _net.bfs()) {
+            getNodeCluster(node, map);
+        }
+
+        return map;
+    }
+
 	/**
 	 * This function generates all clusters for this tree. Trivial clusters, i.e. clusters for single-leaves
 	 * are not included.

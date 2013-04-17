@@ -19,14 +19,14 @@ import java.util.Comparator;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AllNeighboursHillClimberBase<G extends Graph<N,E>,N,E,S> extends HillClimberObservableBase<G, S> {
-    protected Long _maxGenerations;
+    protected int _maxGenerations;
     protected int _diameterLimit;
 
 
     protected boolean considerNeighborhood(G solution, final Func1<G, S> getScore, final Comparator<S> scoreComparator, final S bestSeenSolutionScore,final Ref<Func1<G, G>> getBetterSolution, final Ref<S> newBestScore) {return true;}
 
 
-    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, Long maxGenerations, int diameterLimit)
+    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations, int diameterLimit)
     {
         _maxExaminations = maxExaminations;
         _maxGenerations = maxGenerations;
@@ -37,7 +37,7 @@ public abstract class AllNeighboursHillClimberBase<G extends Graph<N,E>,N,E,S> e
     }
 
 
-    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, Long maxGenerations)
+    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations)
     {
         return search(solution, getScore, scoreComparator, maxExaminations, maxGenerations, 0);
     }

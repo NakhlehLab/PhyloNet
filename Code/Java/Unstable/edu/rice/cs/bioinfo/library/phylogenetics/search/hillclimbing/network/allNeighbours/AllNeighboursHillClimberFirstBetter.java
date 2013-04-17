@@ -36,7 +36,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
         return sawBetterSolution.get();
     }
 
-    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, Long maxGenerations, Long maxFailure){
+    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations, Long maxFailure){
         _maxFailure = maxFailure;
         return super.search(solution, getScore, scoreComparator, maxExaminations, maxGenerations);
     }

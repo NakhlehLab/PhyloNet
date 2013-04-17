@@ -180,7 +180,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             try
             {
                 nr.readTree(newtr);
-            }
+                    }
             catch(Exception e)
             {
                 errorDetected.execute(e.getMessage(),

@@ -1,0 +1,741 @@
+package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
+
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
+
+import java.util.*;
+
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: yy9
+ * Date: 5/10/12
+ * Time: 10:57 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public class GeneTreeWithBranchLengthProbabilityYF {
+    Map<Integer, Double> _netNode2time;
+    //String[] _netTaxa;
+    boolean[][] _R;
+    Set<NetNode> _totalCoverNodes;
+    boolean _printDetail = false;
+    int _netNodeNum;
+    int _totalNodeNum;
+    List<STITreeClusterWD<Double>> _gtClusters;
+
+    public void setPrintDetails(boolean p){
+        _printDetail = p;
+    }
+
+    public List<Double> calculateGTDistribution(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
+        List<Double> probList = new ArrayList<Double>();
+        processNetwork(network);
+        //System.out.println(gts.size());
+        //System.exit(0);
+
+        for(Tree gt: gts){
+            double gtProb = 0;
+            String[] gtTaxa = gt.getLeaves();
+            processGT(gt, gtTaxa);
+            //computeR();
+            //HashMap<NetNode, BitSet> node2events = computeLowestEvents(gt, network, species2alleles);
+
+            HashSet<String> gtTaxaSet = new HashSet<String>();
+            Collections.addAll(gtTaxaSet, gt.getLeaves());
+
+            HashMap<Tuple<Integer,Integer>, List<Configuration>> edge2ACminus = new HashMap<Tuple<Integer,Integer>, List<Configuration>>();
+            HashSet<IntArray> invalidConfigs = new HashSet<IntArray>();
+            int netNodeIndex = 0;
+            for(NetNode<Integer> node: Networks.postTraversal(network)){
+                if(_printDetail){
+                    System.out.println();
+                    System.out.println("On node #" + node.getData() + " " + node.getName());
+                }
+
+                List<Configuration> CACs =  new ArrayList<Configuration>();
+
+                //set AC for a node
+                if(node.isLeaf()){
+                    Configuration config = new Configuration();
+                    if(species2alleles == null){
+                        if(gtTaxaSet.contains(node.getName())){
+                            STITreeCluster cl = new STITreeCluster(gtTaxa);
+                            cl.addLeaf(node.getName());
+                            config.addLineage(_gtClusters.indexOf(cl));
+                        }
+                    }
+                    else{
+                        for(String allele: species2alleles.get(node.getName())){
+                            if(gtTaxaSet.contains(allele)){
+                                STITreeCluster cl = new STITreeCluster(gtTaxa);
+                                cl.addLeaf(allele);
+                                config.addLineage(_gtClusters.indexOf(cl));
+                            }
+                        }
+                    }
+                    config.setTotalProbability(1.0);
+                    CACs.add(config);
+                }
+                else{
+                    if(node.getOutdeg() == 1){
+                        Iterator<NetNode<Integer>> childNode = node.getChildren().iterator();
+                        Tuple<Integer,Integer> edge = new Tuple<Integer, Integer>(node.getData(),childNode.next().getData());
+                        CACs.addAll(edge2ACminus.remove(edge));
+                    }
+                    else{
+                        boolean totalCover = _totalCoverNodes.contains(node.getData());
+                        Iterator<NetNode<Integer>> childNode = node.getChildren().iterator();
+                        Tuple<Integer, Integer> edge1 = new Tuple<Integer, Integer>(node.getData(),childNode.next().getData());
+                        List<Configuration> AC1 = edge2ACminus.remove(edge1);
+                        Tuple<Integer, Integer> edge2 = new Tuple<Integer, Integer>(node.getData(),childNode.next().getData());
+                        List<Configuration> AC2 = edge2ACminus.remove(edge2);
+                        for(Configuration config1: AC1){
+                            if(invalidConfigs.contains(new IntArray(config1._netNodeIndex))){
+                                continue;
+                            }
+                            for(Configuration config2: AC2){
+                                if(invalidConfigs.contains(new IntArray(config2._netNodeIndex))){
+                                    continue;
+                                }
+                                if(config1.isCompatible(config2)){
+                                    Configuration mergedConfig = new Configuration(config1, config2);
+                                    if(mergedConfig._totalProb == 0){
+                                        continue;
+                                    }
+                                    if(totalCover){
+                                        mergedConfig.clearNetNodeChoice();
+                                        int index = CACs.indexOf(mergedConfig);
+                                        if(index == -1){
+                                            CACs.add(mergedConfig);
+                                        }
+                                        else{
+                                            //System.out.println(mergedConfig);
+                                            Configuration exist = CACs.get(index);
+                                            exist.addTotalProbability(mergedConfig._totalProb);
+                                        }
+                                    }
+                                    else{
+                                        CACs.add(mergedConfig);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if(_printDetail){
+                    System.out.println("AC:" + CACs.toString());
+                }
+                //set AC- for a node
+                double lowTau = _netNode2time.get(node.getData());
+
+                if(node.isRoot()){
+                    Configuration rootConfig = new Configuration();
+                    rootConfig.addLineage(_gtClusters.size()-1);
+                    for(Configuration preConfig: CACs){
+                        Configuration postConfig = new Configuration(preConfig);
+                        calculateProbability(lowTau, Double.MAX_VALUE, postConfig, 1);
+                        if(_printDetail){
+                            System.out.println(preConfig + " --> " + postConfig);
+                        }
+                        gtProb += postConfig._totalProb;
+                    }
+                    probList.add(gtProb);
+                }
+                else if(node.isTreeNode()){
+                    double highTau = _netNode2time.get(node.getParents().iterator().next().getData());
+                    List<Configuration> ACminus = new ArrayList<Configuration>();
+                    Iterator<Configuration> it = CACs.iterator();
+                    while(it.hasNext()){
+                        Configuration preConfig = it.next();
+                        Configuration postConfig = new Configuration(preConfig);
+                        calculateProbability(lowTau, highTau, postConfig, 1);
+                        if(_printDetail){
+                            System.out.println(preConfig + " --> " + postConfig);
+                        }
+                        if(postConfig._totalProb == 0){
+                            it.remove();
+                            invalidConfigs.add(new IntArray(postConfig._netNodeIndex));
+                        }
+                        else{
+                            ACminus.add(postConfig);
+                        }
+                    }
+
+                    if(_printDetail){
+                        System.out.println("ACminus: " + ACminus);
+                    }
+                    if(ACminus.size() == 0 && CACs.size()!=0){
+                        return probList;
+                        //break;
+                    }
+                    Tuple<Integer, Integer> newEdge = new Tuple<Integer, Integer>(node.getParents().iterator().next().getData(), node.getData());
+                    edge2ACminus.put(newEdge, ACminus);
+
+                }
+                else {
+                    List<Configuration> newCACs1 = new ArrayList<Configuration>();
+                    List<Configuration> newCACs2 = new ArrayList<Configuration>();
+                    int configIndex = 1;
+                    for(Configuration config: CACs){
+                        int[] lineageArray = new int[config.getLineageCount()];
+                        int index = 0;
+                        for(int lineage: config._lineages){
+                            lineageArray[index++] = lineage;
+                        }
+                        for(int i=0; i<=config.getLineageCount(); i++){
+                            for(boolean[] selectedLineages: getSelected(config.getLineageCount(),i)){
+                                Configuration newConfig1 = new Configuration();
+                                Configuration newConfig2 = new Configuration();
+                                index = 0;
+                                for(int lin: lineageArray) {
+                                    if(selectedLineages[index]){
+                                        newConfig1.addLineage(lin);
+                                    }
+                                    else{
+                                        newConfig2.addLineage(lin);
+                                    }
+                                    index ++;
+                                }
+
+                                newConfig1.setNetNodeChoice(config._netNodeIndex);
+                                newConfig1.setTotalProbability(config._totalProb);
+                                newConfig1.addNetNodeChoice(netNodeIndex, configIndex);
+                                newCACs1.add(newConfig1);
+
+                                newConfig2.setNetNodeChoice(config._netNodeIndex);
+                                newConfig2.setTotalProbability(1);
+                                newConfig2.addNetNodeChoice(netNodeIndex, configIndex);
+                                newCACs2.add(newConfig2);
+                                configIndex ++;
+                            }
+                        }
+                    }
+                    Iterator<NetNode<Integer>> parentIt = node.getParents().iterator();
+                    for(int i=0; i<2; i++){
+                        List<Configuration> ACminus = new ArrayList<Configuration>();
+                        List<Configuration> newCACs;
+                        if(i==0){
+                            newCACs = newCACs1;
+                        }
+                        else{
+                            newCACs = newCACs2;
+                        }
+
+                        NetNode<Integer> parentNode = parentIt.next();
+                        double highTau = _netNode2time.get(parentNode.getData());
+                        double gamma = node.getParentProbability(parentNode);
+                        Iterator<Configuration> it = newCACs.iterator();
+                        while(it.hasNext()){
+                            Configuration preConfig = it.next();
+                            Configuration postConfig = new Configuration(preConfig);
+                            calculateProbability(lowTau, highTau, postConfig, gamma);
+                            if(_printDetail){
+                                System.out.println(preConfig + " --> " + postConfig);
+                            }
+                            if(postConfig._totalProb == 0){
+                                it.remove();
+                                invalidConfigs.add(new IntArray(postConfig._netNodeIndex));
+                            }
+                            else{
+                                ACminus.add(postConfig);
+                            }
+                        }
+
+                        if(_printDetail){
+                            System.out.println("ACminus to " + parentNode.getName()+ ": " + ACminus);
+                        }
+
+                        if(ACminus.size()==0 && newCACs.size()!=0 && gamma!=0){
+                            return probList;
+                            //break;
+                        }
+
+                        Tuple<Integer, Integer> newEdge = new Tuple<Integer, Integer>(parentNode.getData(), node.getData());
+                        edge2ACminus.put(newEdge, ACminus);
+
+                    }
+                    netNodeIndex ++;
+                }
+
+            }
+            if(_printDetail){
+                System.out.println();
+                System.out.println(gt + ": " + gtProb);
+            }
+
+        }
+        return probList;
+    }
+
+    private void calculateProbability(double lowTau, double highTau, Configuration config, double gamma){
+        boolean hasPrint = false;
+        int u = config.getLineageCount();
+        config._totalProb = config._totalProb * Math.pow(gamma, u);
+        if(_printDetail){
+            if(gamma != 1){
+                System.out.print("*("+gamma+")");
+                if(u != 1){
+                    System.out.print("^"+u);
+                }
+                hasPrint = true;
+            }
+
+        }
+        if(lowTau == highTau || u == 0){
+            if(_printDetail){
+                if(hasPrint)
+                    System.out.print("	:");
+                else
+                    System.out.print("1	:");
+            }
+            return;
+        }
+        double prob = 1;
+        int index = 0;
+        for(STITreeClusterWD<Double> gtCl: _gtClusters){
+            double coalTime = gtCl.getData();
+            if(coalTime>=highTau){
+                break;
+            }
+            if(coalTime>=lowTau && coalTime<highTau){
+                BitSet temp = (BitSet) config._coverage.clone();
+                temp.and(gtCl.getCluster());
+
+                if(temp.cardinality() != 0){ // not disjoint
+                    temp = (BitSet) config._coverage.clone();
+                    temp.and(gtCl.getCluster());
+                    if(temp.equals(gtCl.getCluster())){  //contains
+                        config.mergeCluster(index);
+                        //TODO /2
+                        prob *= Math.exp((-1)*(coalTime-lowTau)*u*(u-1)/2);
+                        //prob *= Math.exp((-1)*(coalTime-lowTau)*u*(u-1));
+                        if(_printDetail){
+                            //System.out.print("*exp(-" + u*(u-1) + "*" + (coalTime-lowTau) + "/2)");
+                            System.out.print("*exp(-" + u*(u-1)/2 + "*" + (coalTime-lowTau) + ")");
+                            hasPrint = true;
+                        }
+                        lowTau = coalTime;
+                        u--;
+                    }
+                    else{
+                        if(_printDetail){
+                            System.out.print("*0	:");
+                        }
+                        config._totalProb = 0;
+                        return;
+                    }
+                }
+            }
+            index ++;
+        }
+
+        if(u != 1){
+            //TODO /2
+            prob *= Math.exp((-1)*(highTau-lowTau)*u*(u-1)/2);
+            //prob *= Math.exp((-1)*(highTau-lowTau)*u*(u-1));
+            if(_printDetail){
+                //System.out.print("*exp(-" + u*(u-1) + "*" + (highTau-lowTau) + "/2)");
+                System.out.print("*exp(-" + u*(u-1)/2 + "*" + (highTau-lowTau) + ")");
+                hasPrint = true;
+            }
+        }
+        if(_printDetail){
+            if(hasPrint)
+                System.out.print("	:");
+            else
+                System.out.print("1	:");
+        }
+        prob = Math.max(0, prob);
+        config._totalProb = config._totalProb * prob;
+    }
+
+
+    /**
+     * The function is to calculate the _R matrix for the given tree.
+     * Read the paper "Gene tree distributions under the coalescent process." by James Degnan to for details.
+     */
+    private void computeR(List<STITreeClusterWD<Double>> gtClusters){
+        _R = new boolean[gtClusters.size()][gtClusters.size()];
+        for(int i=0; i<gtClusters.size(); i++){
+            STITreeCluster cl1 = gtClusters.get(i);
+            for(int j=i+1; j<gtClusters.size(); j++){
+                STITreeCluster cl2 = gtClusters.get(j);
+                if(cl1.containsCluster(cl2)){
+                    _R[i][j] = true;
+                }
+                else if(cl2.containsCluster(cl1)){
+                    _R[j][i] = true;
+                }
+            }
+        }
+    }
+
+
+    private void processNetwork(Network<Integer> net){
+        removeBinaryNodes(net);
+        _netNodeNum = 0;
+        _totalNodeNum = 0;
+        _netNode2time = new HashMap<Integer, Double>();
+        List<String> taxa = new ArrayList<String>();
+        for(NetNode<Integer> node: Networks.postTraversal(net)){
+            double minTime = Double.MAX_VALUE;
+            if(node.isLeaf()){
+                taxa.add(node.getName());
+                minTime = 0;
+
+            }else{
+                if(node.isNetworkNode()){
+                    _netNodeNum++;
+                }
+                for (NetNode<Integer> child : node.getChildren()) {
+                    minTime = Math.min(minTime, _netNode2time.get(child.getData()) + child.getParentDistance(node));
+                }
+            }
+            _netNode2time.put(_totalNodeNum, minTime);
+            node.setData(_totalNodeNum++);
+        }
+        //_netTaxa = taxa.toArray(new String[0]);
+
+        computeNodeCoverage(net);
+
+    }
+
+
+    private void processGT(Tree gt, String[] gtTaxa){
+        Trees.removeBinaryNodes((MutableTree)gt);
+        _gtClusters = new ArrayList<STITreeClusterWD<Double>>();
+        Map<TNode, STITreeCluster> map = new HashMap<TNode, STITreeCluster>();
+        for (TNode node : gt.postTraverse()) {
+            STITreeCluster cl = new STITreeCluster(gtTaxa);
+            double maxTime = Double.MIN_VALUE;
+            int index = -1;
+            if (node.isLeaf()) {
+                cl.addLeaf(node.getName());
+                ((STINode<Double>)node).setData(0.0);
+                maxTime = 0;
+            }
+            else {
+                for(TNode child : node.getChildren()) {
+                    cl = cl.merge(map.get(child));
+                    maxTime = Math.max(maxTime, ((STINode<Double>)child).getData()+child.getParentDistance());
+                }
+                ((STINode<Double>)node).setData(maxTime);
+                for(index=0; index<_gtClusters.size(); index++){
+                    double clTime = _gtClusters.get(index).getData();
+                    if(clTime == 0 || clTime > maxTime){
+                        break;
+                    }
+                }
+
+            }
+            map.put(node, cl);
+
+            STITreeClusterWD<Double> newCl = new STITreeClusterWD<Double>(cl);
+            newCl.setData(maxTime);
+            if(index == -1){
+                _gtClusters.add(newCl);
+            }
+            else{
+                _gtClusters.add(index, newCl);
+            }
+        }
+        computeR(_gtClusters);
+    }
+
+
+
+    private void removeBinaryNodes(Network<Integer> net)
+    {
+        // Find all binary nodes.
+        List<NetNode<Integer>> binaryNodes = new LinkedList<NetNode<Integer>>();
+        for (NetNode<Integer> node : net.bfs()) {
+            if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
+                binaryNodes.add(node);
+            }
+        }
+
+        // Remove them.
+        for (NetNode<Integer> node : binaryNodes) {
+            NetNode child = node.getChildren().iterator().next();	// Node's only child.
+            if(child.getIndeg() != 1){
+                continue;
+            }
+            NetNode parent = node.getParents().iterator().next();	// Node's only parent.
+            double distance = node.getParentDistance(parent) + child.getParentDistance(node);
+            double gamma = node.getParentProbability(parent) * child.getParentProbability(node);
+            parent.removeChild(node);
+            node.removeChild(child);
+            parent.adoptChild(child, distance);
+            child.setParentProbability(parent, gamma);
+        }
+    }
+
+
+
+
+
+    private void computeNodeCoverage(Network<Integer> net){
+        //List<Integer> leaves = new ArrayList<Integer>();
+        List<NetNode> allTotalNodes = new ArrayList<NetNode>();
+        _totalCoverNodes = new HashSet<NetNode>();
+        for(NetNode<Integer> node: Networks.postTraversal(net)){
+            if(node.isLeaf()){
+                //leaves.add(id);
+                allTotalNodes.add(node);
+            }
+
+            else if(node.isRoot()){
+                boolean ftotal = true;
+                for(NetNode<Integer> child: node.getChildren()){
+                    if(!allTotalNodes.contains(child.getData())){
+                        ftotal = false;
+                        break;
+                    }
+                }
+                if(!ftotal){
+                    _totalCoverNodes.add(node);
+                }
+
+            }
+            else if(node.isTreeNode()){
+                boolean ftotal = true;
+                for(NetNode<Integer> child: node.getChildren()){
+                    if(!allTotalNodes.contains(child.getData())){
+                        ftotal = false;
+                        break;
+                    }
+                }
+                if(ftotal){
+                    allTotalNodes.add(node);
+                }else{
+                    NetNode parent = node.getParents().iterator().next();
+                    double distance = node.getParentDistance(parent);
+                    parent.removeChild(node);
+                    boolean disconnect = isValidNetwork(net);
+                    parent.adoptChild(node, distance);
+                    if (disconnect) {
+                        _totalCoverNodes.add(node);
+                        allTotalNodes.add(node);
+                    }
+                }
+
+            }
+        }
+    }
+
+    private boolean isValidNetwork(Network<Integer> net){
+        List<NetNode> visited = new ArrayList<NetNode>();
+        List<NetNode> seen = new ArrayList<NetNode>();
+        for(NetNode<Integer> node: net.bfs()){
+            if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
+            visited.add(node);
+            for(NetNode<Integer> parent: node.getParents()){
+                seen.add(parent);
+            }
+            for(NetNode<Integer> child: node.getChildren()){
+                seen.add(child);
+            }
+        }
+        return visited.size()==seen.size();
+    }
+
+
+
+
+    private List<boolean[]> getSelected(int n, int m){
+        List<boolean[]> selectedList = new ArrayList<boolean[]>();
+        int[] order = new int[m+1];
+        for(int i=0; i<=m; i++){
+            order[i] = i-1;
+        }
+        int k = m;
+        boolean flag = true;
+        while(order[0] == -1){
+            if(flag){
+                boolean[] bs = new boolean[n];
+                for(int i=1; i<=m; i++){
+                    bs[order[i]] = true;
+                }
+                selectedList.add(bs);
+                flag = false;
+            }
+
+            order[k]++;
+            if(order[k] == n){
+                order[k--] = 0;
+                continue;
+            }
+
+            if(k < m){
+                order[++k] = order[k-1];
+                continue;
+            }
+
+            if(k == m)
+                flag = true;
+        }
+
+        return selectedList;
+    }
+
+    private class Configuration{
+        private HashSet<Integer> _lineages;
+        private double _totalProb;
+        private BitSet _coverage;
+        int[] _netNodeIndex;
+        //private Set<Integer> _coalEvents;
+
+        public Configuration(){
+            _lineages = new HashSet<Integer>();
+            _netNodeIndex = new int[_netNodeNum];
+            Arrays.fill(_netNodeIndex, 0);
+            _coverage = new BitSet();
+        }
+
+        public Configuration(Configuration config){
+            _lineages = (HashSet)config._lineages.clone();
+            _totalProb = config._totalProb;
+            _netNodeIndex = config._netNodeIndex.clone();
+            _coverage = (BitSet)(config._coverage.clone());
+        }
+
+        public Configuration(Configuration config1, Configuration config2){
+            _lineages = (HashSet)config1._lineages.clone();
+            _lineages.addAll(config2._lineages);
+            _totalProb = Math.max(0, config1._totalProb * config2._totalProb);
+            _netNodeIndex = new int[_netNodeNum];
+            for(int i=0; i< _netNodeNum; i++){
+                if(config1._netNodeIndex[i] == config2._netNodeIndex[i]){
+                    _netNodeIndex[i] = config1._netNodeIndex[i];
+                }
+                else{
+                    _netNodeIndex[i] = Math.max(config1._netNodeIndex[i], config2._netNodeIndex[i]);
+                }
+            }
+            _coverage = (BitSet)(config1._coverage.clone());
+            _coverage.or(config2._coverage);
+        }
+
+        public boolean isCompatible(Configuration config){
+            boolean compatible = true;
+            for(int i=0; i< _netNodeNum; i++){
+                if(_netNodeIndex[i] != config._netNodeIndex[i] && _netNodeIndex[i]!=0 && config._netNodeIndex[i]!=0){
+                    compatible = false;
+                    break;
+                }
+            }
+            return compatible;
+        }
+
+
+        public void addLineage(int index){
+            _lineages.add(index);
+            _coverage.or(_gtClusters.get(index).getCluster());
+        }
+
+
+        public void mergeCluster(int e){
+            Iterator<Integer> lineageIt = _lineages.iterator();
+            while(lineageIt.hasNext()) {
+                int lin = lineageIt.next();
+                if(_R[e][lin]){
+                    lineageIt.remove();
+                }
+            }
+            _lineages.add(e);
+
+        }
+
+
+        public void setTotalProbability(double prob){
+            _totalProb = prob;
+        }
+
+
+        public int getLineageCount(){
+            return _lineages.size();
+        }
+
+        public void addTotalProbability(double adds){
+            _totalProb += adds;
+        }
+
+        public String toString(){
+            String exp = "";
+            for(int id: _lineages) {
+                exp = exp + _gtClusters.get(id);
+            }
+            exp = exp + "/[";
+            for(int i=0; i<_netNodeIndex.length; i++){
+                exp = exp + _netNodeIndex[i];
+                if(i!=_netNodeIndex.length-1){
+                    exp = exp + ",";
+                }
+            }
+            exp = exp + "]:" + _totalProb;
+            return exp;
+        }
+
+        public void addNetNodeChoice(int net, int index){
+            _netNodeIndex[net] = index;
+        }
+
+        public void setNetNodeChoice(int[] choice){
+            _netNodeIndex = choice.clone();
+        }
+
+        public void clearNetNodeChoice(){
+            Arrays.fill(_netNodeIndex, 0);
+        }
+
+
+        public boolean equals(Object o) {
+            if(!(o instanceof Configuration)){
+                return false;
+            }
+
+            Configuration config = (Configuration) o;
+            return config._lineages.equals(_lineages) && Arrays.equals(config._netNodeIndex, _netNodeIndex);
+        }
+
+        public int hashCode(){
+            return _lineages.hashCode()+Arrays.hashCode(_netNodeIndex);
+        }
+
+    }
+
+    class IntArray{
+        int[] _data;
+        int _code;
+
+        public IntArray(int[] d){
+            _data = d;
+            for(int e: _data){
+                _code += e;
+            }
+        }
+
+        public boolean equals(Object o) {
+            if(!(o instanceof IntArray)){
+                return false;
+            }
+
+            IntArray ia = (IntArray) o;
+            return Arrays.equals(ia._data, _data);
+        }
+
+        public int hashCode(){
+            return _code;
+        }
+    }
+
+}

@@ -521,12 +521,21 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    public List<Double> calculateGTDistribution(Network<List<CoalescePattern>> network, List<Tree> gts, NetNode editedChild, NetNode editedParent){
+    public List<Double> calculateGTDistribution(Network<List<CoalescePattern>> network, List<Tree> gts, Set<NetNode> editedChilds, Set<NetNode> editedParents){
         List<Double> probList = new ArrayList<Double>();
         processNetwork(network, false);
 
-        int childID = _node2ID.get(editedChild);
-        int parentID = editedParent==null ? childID : _node2ID.get(editedParent);
+        //int childID = _node2ID.get(editedChild);
+        //int parentID = editedParent==null ? childID : _node2ID.get(editedParent);
+        Set<Integer> childIDSet = new HashSet<Integer>();
+        for(NetNode editedChild: editedChilds){
+            childIDSet.add(_node2ID.get(editedChild));
+        }
+        Set<Integer> parentIDSet = new HashSet<Integer>();
+        for(NetNode editedParent: editedParents){
+            parentIDSet.add(_node2ID.get(editedParent));
+        }
+
 
         int gtIndex = 0;
 
@@ -547,7 +556,18 @@ public class GeneTreeProbabilityYF {
                     System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
                 }
                 int nodeID = _node2ID.get(node);
-                if(!_M[nodeID][parentID] && nodeID!=childID){
+                boolean unchange = !childIDSet.contains(nodeID);
+                if(unchange){
+                    //System.out.println(parentIDSet);
+                    for(int editedParentID: parentIDSet){
+                        if(_M[nodeID][editedParentID]){
+                            unchange = false;
+                            break;
+                        }
+                    }
+                }
+
+                if(unchange){
                     if(_printDetails){
                         System.out.println("Unchange ");
 
@@ -574,45 +594,15 @@ public class GeneTreeProbabilityYF {
                     continue;
                 }
 
-                if(nodeID==childID){
-                    if(_printDetails){
-                        System.out.println("AC:");
-                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
-                            System.out.println("To " + node2configList.getKey().getName());
-                            for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
-                            }
-                            System.out.println();
-                        }
-                        System.out.println();
-                    }
-                    for(NetNode parent: node.getParents()){
-                        if(editedParent!=null && parent!=editedParent)continue;
-                        for(Configuration coalescedConfig: cp.getACMinuss(parent)){
-                            coalescedConfig._totalProb = 0;
-                            Iterator<CoalescingInfo> coalescedInfos = coalescedConfig._coalesingInfo.iterator();
-                            while(coalescedInfos.hasNext()){
-                                CoalescingInfo info = coalescedInfos.next();
-                                double inheritanceProb = node.getParentProbability(parent);
-                                inheritanceProb = Double.isNaN(inheritanceProb)?1:inheritanceProb;
-                                double prob = Math.max(0,computeProbability(info._uncoalescedConfig, coalescedConfig, info._coalWeight, node.getParentDistance(parent), inheritanceProb));
-                                info._coalProb = prob;
-                                coalescedConfig.addTotalProbability(Math.max(0, prob*info._uncoalescedConfig._totalProb));
-                            }
-                        }
-                    }
-                    if(_printDetails){
-                        System.out.println("AC Minus:");
-                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
-                            System.out.println("To " + node2configList.getKey().getName());
-                            for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
-                            }
-                            System.out.println();
-                        }
+                boolean ACUpdate = false;
+                for(NetNode child: node.getChildren()){
+                    if(childIDSet.contains(_node2ID.get(child))){
+                        ACUpdate = true;
+                        break;
                     }
                 }
-                else{
+
+                if(ACUpdate || !childIDSet.contains(nodeID)){
                     if(node.isNetworkNode()){
                         for(Map.Entry<Configuration, List<Configuration>> entry: cp._config2splitedConfigs.entrySet()){
                             double prob = Math.sqrt(entry.getKey()._totalProb);
@@ -670,6 +660,48 @@ public class GeneTreeProbabilityYF {
                             System.out.println();
                         }
                     }
+                }
+
+                if(childIDSet.contains(nodeID)){
+                    if(_printDetails){
+                        System.out.println("AC:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
+                            System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                        System.out.println();
+                    }
+                    for(NetNode parent: node.getParents()){
+                        if(!editedParents.contains(parent))continue;
+                        for(Configuration coalescedConfig: cp.getACMinuss(parent)){
+                            coalescedConfig._totalProb = 0;
+                            Iterator<CoalescingInfo> coalescedInfos = coalescedConfig._coalesingInfo.iterator();
+                            while(coalescedInfos.hasNext()){
+                                CoalescingInfo info = coalescedInfos.next();
+                                double inheritanceProb = node.getParentProbability(parent);
+                                inheritanceProb = Double.isNaN(inheritanceProb)?1:inheritanceProb;
+                                double prob = Math.max(0,computeProbability(info._uncoalescedConfig, coalescedConfig, info._coalWeight, node.getParentDistance(parent), inheritanceProb));
+                                info._coalProb = prob;
+                                coalescedConfig.addTotalProbability(Math.max(0, prob*info._uncoalescedConfig._totalProb));
+                            }
+                        }
+                    }
+                    if(_printDetails){
+                        System.out.println("AC Minus:");
+                        for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
+                            System.out.println("To " + node2configList.getKey().getName());
+                            for(Configuration config: node2configList.getValue()){
+                                System.out.print(config.toString()+"  ");
+                            }
+                            System.out.println();
+                        }
+                    }
+                }
+                else{
+
 
                 }
 

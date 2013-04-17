@@ -30,9 +30,11 @@ import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
 import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkNeighbourhoodRandomWalkGenerator;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkWholeNeighbourhoodGenerator;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
@@ -62,30 +64,37 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewickJung {
-    private Network[] _optimalNetworks;
-    private double[] _optimalScores;
-    int _maxRounds;
-    int _maxTryPerBranch;
-    double _improvementThreshold;
-    double _maxBranchLength;
-    double _Brent1;
-    double _Brent2;
+    protected Network[] _optimalNetworks;
+    protected double[] _optimalScores;
+    protected int _maxRounds;
+    protected int _maxTryPerBranch;
+    protected double _improvementThreshold;
+    protected double _maxBranchLength;
+    protected double _Brent1;
+    protected double _Brent2;
+    protected Long _maxExaminations;
+    protected int _diameterLimit;
+    protected Network _startNetwork;
 
 
     public InferILSNetworkProbabilistically(){
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setBrentParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, int diameterLimit, Network startNetwork){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
         _maxBranchLength = maxBranchLength;
+        //_maxBranchLength = 12;
         _Brent1 = Brent1;
         _Brent2 = Brent2;
+        _maxExaminations = maxExaminations;
+        _diameterLimit = diameterLimit;
+        _startNetwork = startNetwork;
     }
 
-    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
+    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol){
         _optimalNetworks = new Network[numSol];
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Double.NEGATIVE_INFINITY);
@@ -93,13 +102,20 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         List<Tree> distinctTrees = new ArrayList<Tree>();
         List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList = new ArrayList<Tuple3<Tree, Double, List<Integer>>>();
         summarizeGeneTrees(gts, distinctTrees, nbTreeAndCountAndBinaryIDList);
+        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,_startNetwork);
         NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
         AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
 
+        //double[] operationProb = {0.15,0.15,0.2,0.5};
+        //NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(operationProb, makeNode, makeEdge);
+        //AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
         Comparator<Double> comparator = getDoubleScoreComparator();
-        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
-        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, diameterLimit); // search starts here
+        //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
+        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _diameterLimit); // search starts here
+        //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, new Long(100)); // search starts here
+
         List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
         for(int i=0; i<numSol; i++){
             resultList.add(new Tuple<Network, Double>(_optimalNetworks[i], _optimalScores[i]));
@@ -109,7 +125,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     }
 
 
-    private DirectedGraphToGraphAdapter<String,PhyloEdge<String>> getStartNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Network<Object> startingNetwork){
+    protected DirectedGraphToGraphAdapter<String,PhyloEdge<String>> getStartNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Network<Object> startingNetwork){
         if(startingNetwork == null){
             Map<String,String> allele2species = null;
             if(species2alleles!=null){
@@ -145,6 +161,11 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                 }while(startingNetwork.findNode(name)!=null);
                 node.setName(name);
             }
+            for(NetNode<Object> parent: node.getParents()){
+                node.setParentDistance(parent, Double.NaN);
+                node.setParentSupport(parent, Double.NaN);
+                node.setParentProbability(parent, Double.NaN);
+            }
         }
 
         String newNetwork = network2String(startingNetwork);
@@ -153,9 +174,12 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
     }
 
-    private void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    protected void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         for(Tree tr: originalGTs){
-            double weight = ((STINode<Double>)tr.getRoot()).getData();
+            Double weight = ((STINode<Double>)tr.getRoot()).getData();
+            if(weight == null){
+                weight = 1.0;
+            }
             int index = 0;
             Tuple3<Tree, Double, List<Integer>> newTuple = null;
             for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
@@ -181,6 +205,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         }
                         index++;
                     }
+
                     if(!exist){
                         distinctGTs.add(btr);
                         binaryIDs.add(index);
@@ -192,7 +217,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         }
     }
 
-    private Comparator<Double> getDoubleScoreComparator(){
+    protected Comparator<Double> getDoubleScoreComparator(){
         return new Comparator<Double>() {
             public int compare(Double o1, Double o2)
             {
@@ -202,7 +227,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     }
 
 
-    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    protected Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
             public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
                 //System.out.println("Start scoring ...");
@@ -210,7 +235,9 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                 //long start = System.currentTimeMillis();
                 Network<Object> speciesNetwork = networkNew2Old(network);
 
-                double score = findOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles,nbTreeAndCountAndBinaryIDList);
+                //double score = findUltrametricOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
+                double score = findNonUltrametricOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
+
 
                 if(score > _optimalScores[_optimalNetworks.length-1]){
                     boolean exist = false;
@@ -240,33 +267,226 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
+                System.out.println();
+                System.out.println(network2String(speciesNetwork) + ": "+score);
+                //System.out.println();
                 //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
+                //System.exit(0);
                 return score;
             }
         };
     }
 
 
-    private double findOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    protected double findUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
         boolean continueRounds = true; // keep trying to improve network
 
-        //boolean isNetwork = false;
-        for(NetNode<Object> node: speciesNetwork.dfs()){
-            for(NetNode<Object> parent: node.getParents()){
-                node.setParentDistance(parent,1.0);
-                if(node.isNetworkNode()){
-                    node.setParentProbability(parent, 0.5);
-                    //isNetwork = true;
+        Map<NetNode<Object>, Double> node2height = new Hashtable<NetNode<Object>, Double>();
+        for(NetNode<Object> parent: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
+            if(parent.isLeaf()){
+                node2height.put(parent, 0.0);
+                continue;
+            }
+            double height = 0;
+            for(NetNode<Object> child: parent.getChildren()){
+                height = Math.max(height, node2height.get(child));
+            }
+
+            height = height + 1;
+
+
+            node2height.put(parent, height);
+            for(NetNode<Object> child: parent.getChildren()){
+                if(child.isNetworkNode()){
+                    child.setParentProbability(parent,0.5);
+                }
+
+                child.setParentDistance(parent, height - node2height.get(child));
+            }
+        }
+
+
+        final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList));  // records the GTProb of the network at all times
+        final Container<Map<NetNode<Object>, Double>> node2heightContainer = new Container<Map<NetNode<Object>, Double>>(node2height);
+
+
+        int roundIndex = 0;
+        for(; roundIndex <_maxRounds && continueRounds; roundIndex++)
+        {
+            double lnGtProbLastRound = lnGtProbOfSpeciesNetwork.getContents();
+            for(final NetNode<Object> node : edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork))
+            {
+                if(node.isLeaf()){
+                    continue;
+                }
+
+                final Container<Double> minHeight = new Container<Double>(0.0);
+                final Container<Double> maxHeight = new Container<Double>(Double.MAX_VALUE);
+
+
+                for(NetNode<Object> child: node.getChildren()){
+                    double childHeight = node2heightContainer.getContents().get(child);
+                    minHeight.setContents(Math.max(minHeight.getContents(), childHeight));
+
+                }
+
+                if(!node.isRoot()){
+                    for(NetNode<Object> parent: node.getParents()){
+                        double parentHeight = node2heightContainer.getContents().get(parent);
+                        maxHeight.setContents(Math.min(maxHeight.getContents(), parentHeight));
+                    }
+                }
+                else{
+                    maxHeight.setContents(minHeight.getContents() + _maxBranchLength);
+                }
+
+                UnivariateFunction functionToOptimize = new UnivariateFunction() {
+
+                    public double value(double suggestedHeight) {  // brent suggests a new branch length
+                        double incumbentHeight = node2heightContainer.getContents().get(node);
+
+
+                        for(NetNode<Object> child: node.getChildren()){
+                            child.setParentDistance(node, suggestedHeight - node2heightContainer.getContents().get(child));
+                        }
+
+                        if(!node.isRoot()){
+                            for(NetNode<Object> parent: node.getParents()){
+                                node.setParentDistance(parent, node2heightContainer.getContents().get(parent) - suggestedHeight);
+                            }
+                        }
+
+                        double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, node, true);
+                        if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
+                        {
+                            lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                            node2heightContainer.getContents().put(node, suggestedHeight);
+
+                        }
+                        else  // didn't improve, roll back change
+                        {
+                            for(NetNode<Object> child: node.getChildren()){
+                                child.setParentDistance(node, incumbentHeight - node2heightContainer.getContents().get(child));
+                            }
+                            if(!node.isRoot()){
+                                for(NetNode<Object> parent: node.getParents()){
+                                    node.setParentDistance(parent, node2heightContainer.getContents().get(parent) - incumbentHeight);
+                                }
+                            }
+                        }
+                        return lnProb;
+                    }
+                };
+                BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+
+                try
+                {
+                    optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, minHeight.getContents(), maxHeight.getContents());
+                }
+                catch(TooManyEvaluationsException e) // _maxAssigmentAttemptsPerBranchParam exceeded
+                {
+                }
+
+                computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, node, true);
+
+            }
+
+            for(final NetNode<Object> child : speciesNetwork.getNetworkNodes()) // find every hybrid node
+            {
+
+
+                Iterator<NetNode<Object>> hybridParents = child.getParents().iterator();
+                final NetNode hybridParent1 = hybridParents.next();
+                final NetNode hybridParent2 = hybridParents.next();
+
+                UnivariateFunction functionToOptimize = new UnivariateFunction() {
+                    public double value(double suggestedProb) {
+                        double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
+                        child.setParentProbability(hybridParent1, suggestedProb);
+                        child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
+
+                        double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+
+                        if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
+                        {
+
+                            lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                        }
+                        else // change did not improve, roll back
+                        {
+
+                            child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
+                            child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
+                        }
+                        return lnProb;
+                    }
+                };
+                BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+
+                try
+                {
+                    optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
+                }
+                catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
+                {
+                }
+                computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+
+
+
+            }
+
+            if( ((double)lnGtProbOfSpeciesNetwork.getContents()) == lnGtProbLastRound)  // if no improvement was made wrt to last around, stop trying to find a better assignment
+            {
+                continueRounds = false;
+            }
+            else if (lnGtProbOfSpeciesNetwork.getContents() > lnGtProbLastRound) // improvement was made, ensure it is large enough wrt to improvement threshold to continue searching
+            {
+
+                double improvementPercentage = Math.pow(Math.E, (lnGtProbOfSpeciesNetwork.getContents() - lnGtProbLastRound)) - 1.0;  // how much did we improve over last round
+                //System.out.println(improvementPercentage + " vs. " + _improvementThreshold);
+                if(improvementPercentage < _improvementThreshold  )  // improved, but not enough to keep searching
+                {
+                    continueRounds = false;
+                }
+            }
+            else
+            {
+                throw new IllegalStateException("Should never have decreased prob.");
+            }
+        }
+
+        for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
+            if(node.isLeaf()){
+                if(species2alleles == null || species2alleles.get(node.getName()).size()<2){
+                    node.setParentDistance(node.getParents().iterator().next(), Double.NaN) ;
                 }
             }
         }
 
-        //final boolean hasNetworkNode = isNetwork;
-        //long start = System.currentTimeMillis();
+        //System.out.println(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList) + " vs. " + lnGtProbOfSpeciesNetwork.getContents());
+        return lnGtProbOfSpeciesNetwork.getContents();
+    }
+
+
+
+    protected double findNonUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+        boolean continueRounds = true; // keep trying to improve network
+
+
+        for(NetNode<Object> node: speciesNetwork.dfs()){
+            for(NetNode<Object> parent: node.getParents()){
+                node.setParentDistance(parent,1.0);
+                if(node.isNetworkNode()){
+                    //node.setParentDistance(parent,0.0);
+                    node.setParentProbability(parent, 0.5);
+                }
+            }
+        }
+        //System.out.println();
+        //System.out.println(network2String(speciesNetwork));
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList));  // records the GTProb of the network at all times
-        //System.out.println("first one : " + (System.currentTimeMillis()-start)/1000.0);
-        //final Container<Double> timeTotal = new Container<Double>(System.currentTimeMillis()/1000.0);  // records the GTProb of the network at all times
-        //final Container<Integer> timeCount = new Container<Integer>(0);  // records the GTProb of the network at all times
+        final Container<Integer> callCount = new Container<Integer>(0);
 
 
         int roundIndex = 0;
@@ -279,9 +499,10 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
             double lnGtProbLastRound = lnGtProbOfSpeciesNetwork.getContents();
             List<Proc> assigmentActions = new ArrayList<Proc>(); // store adjustment commands here.  Will execute them one by one later.
 
-            // add branch length adjustments to the list
 
-            for(final NetNode<Object> parent : speciesNetwork.bfs())
+
+
+            for(final NetNode<Object> parent : edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork))
             {
 
                 for(final NetNode<Object> child : parent.getChildren())
@@ -296,38 +517,22 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                     {
                         public void execute()
                         {
-                            //timeTotal.setContents(System.currentTimeMillis()/1000.0);
-                            //final Container<Integer> callCount = new Container<Integer>(0);
+
                             UnivariateFunction functionToOptimize = new UnivariateFunction() {
-                                public double value(double suggestedBranchLength) {  // brent suggests a new branch length
-                                    //callCount.setContents(callCount.getContents()+1);
+                                public double value(double suggestedBranchLength) {
+                                    callCount.setContents(callCount.getContents()+1);
                                     double incumbentBranchLength = child.getParentDistance(parent);
-
-
-                                    // mutate and see if it yields an improved network
-
 
                                     child.setParentDistance(parent, suggestedBranchLength);
 
                                     double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, parent);
-/*
-                                            timeCount.setContents(timeCount.getContents()+1);
-                                            if(timeCount.getContents()%1000==0){
-                                                //timeTotal.setContents(timeTotal.getContents()+(System.currentTimeMillis()/1000.0-timeTotal.getContents()));
-                                                System.out.println(timeCount.getContents() + ": " +(System.currentTimeMillis()/1000.0-timeTotal.getContents())/timeCount.getContents());
-                                            }
-*/
-                                    /*
-                                    RnNewickPrinter<Object> rnNewickPrinter = new RnNewickPrinter<Object>();
-                                    StringWriter sw = new StringWriter();
-                                    rnNewickPrinter.print(speciesNetwork, sw);
-                                       String inferredNetwork = sw.toString();
-                                        System.out.println(inferredNetwork + "\t" + lnProb);
-                                    */
+                                    //System.out.println("Changing branch ("+parent.getName()+","+child.getName()+") to " + suggestedBranchLength);
+                                    //System.out.println(network2String(speciesNetwork)+": " + lnProb);
+
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
-                                        lnGtProbOfSpeciesNetwork.setContents(lnProb); // System.out.println("(improved)");
-                                        //System.out.println(network2String(speciesNetwork) + ":" + lnProb);
+                                        lnGtProbOfSpeciesNetwork.setContents(lnProb);
+
                                     }
                                     else  // didn't improve, roll back change
                                     {
@@ -346,10 +551,6 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                             {
                             }
 
-                            //System.out.println(computeProbability(speciesNetwork, geneTrees, counter, child, parent) + " vs. " + computeProbability(speciesNetwork, geneTrees, counter));
-
-                            //   System.out.println("-----------------------------------------------------------------------");
-                            //System.out.println(callCount.getContents());
                             computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, parent);
                         }
                     });
@@ -357,39 +558,29 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
             }
 
 
-            // add hybrid probs to hybrid edges
             for(final NetNode<Object> child : speciesNetwork.getNetworkNodes()) // find every hybrid node
             {
 
                 Iterator<NetNode<Object>> hybridParents = child.getParents().iterator();
                 final NetNode hybridParent1 = hybridParents.next();
                 final NetNode hybridParent2 = hybridParents.next();
-                //child.setParentProbability(hybridParent1,0.5);
-                //child.setParentProbability(hybridParent2,0.5);
+
                 assigmentActions.add(new Proc()
                 {
                     public void execute()
                     {
                         UnivariateFunction functionToOptimize = new UnivariateFunction() {
                             public double value(double suggestedProb) {
-
+                                callCount.setContents(callCount.getContents()+1);
                                 double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
 
-                                // try new pair of hybrid probs
                                 child.setParentProbability(hybridParent1, suggestedProb);
                                 child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                                //long start = System.currentTimeMillis();
-                                double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, null);
-                                //System.out.print((System.currentTimeMillis()-start)/1000.0 + " ");
-                                //double lnProb = computeProbability(speciesNetwork, geneTrees, counter);
-                                /*
-                                timeCount.setContents(timeCount.getContents()+1);
-                                if(timeCount.getContents()%1000==0){
-                                    //timeTotal.setContents(timeTotal.getContents()+(System.currentTimeMillis()/1000.0-timeTotal.getContents()));
-                                    System.out.println(timeCount.getContents() + ": " +(System.currentTimeMillis()/1000.0-timeTotal.getContents())/timeCount.getContents());
-                                }
-                                */
+                                double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+                                //System.out.println("Changing node probability to "+ suggestedProb);
+                                //System.out.println(network2String(speciesNetwork)+": " + lnProb);
+                                //System.out.println(Math.abs(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList) - lnProb));
                                 if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                 {
 
@@ -413,16 +604,17 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
                         {
                         }
-                        computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, null);
-                        //System.out.println(computeProbability(speciesNetwork, geneTrees, counter, child, null) + " vs. " + computeProbability(speciesNetwork, geneTrees, counter));
-
+                        computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+                        //System.out.println(network2String(speciesNetwork) + " : " + lnGtProbOfSpeciesNetwork.getContents());
                     }
                 });
 
 
             }
 
-            //     Collections.shuffle(assigmentActions); // randomize the order we will try to adjust network edge properties
+
+            // add hybrid probs to hybrid edges
+
 
             for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
             {
@@ -436,6 +628,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
             }
             else if (lnGtProbOfSpeciesNetwork.getContents() > lnGtProbLastRound) // improvement was made, ensure it is large enough wrt to improvement threshold to continue searching
             {
+
                 double improvementPercentage = Math.pow(Math.E, (lnGtProbOfSpeciesNetwork.getContents() - lnGtProbLastRound)) - 1.0;  // how much did we improve over last round
                 if(improvementPercentage < _improvementThreshold  )  // improved, but not enough to keep searching
                 {
@@ -447,12 +640,13 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
-
-        //System.out.println(standardComputeProbability(speciesNetwork, geneTrees, counter) + " vs. " + lnGtProbOfSpeciesNetwork.getContents());
+        //System.out.println(callCount.getContents());
+        //System.out.println(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList) + " vs. " + lnGtProbOfSpeciesNetwork.getContents());
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
-    private double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
+
+    protected double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
         GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles);
         double total = 0;
@@ -470,8 +664,40 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
 
     public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode child, NetNode parent) {
+        Set<NetNode> childNodes = new HashSet<NetNode>();
+        childNodes.add(child);
+        Set<NetNode> parentNodes = new HashSet<NetNode>();
+        parentNodes.add(parent);
+        return computeProbability(speciesNetwork, geneTrees, nbTreeAndCountAndBinaryIDList, childNodes, parentNodes);
+    }
+
+    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode node, boolean changeBranchLength) {
+        Set<NetNode> childNodes = new HashSet<NetNode>();
+        Set<NetNode> parentNodes = new HashSet<NetNode>();
+        if(changeBranchLength){
+            //parentNodes = new HashSet<NetNode>();
+            parentNodes.add(node);
+            for(Object childObject: node.getChildren()){
+                childNodes.add((NetNode)childObject);
+            }
+
+            childNodes.add(node);
+            for(Object parentObject: node.getParents()){
+                parentNodes.add((NetNode)parentObject);
+            }
+        }
+        else{
+            for(Object parentObject: node.getParents()){
+                parentNodes.add((NetNode)parentObject);
+            }
+            childNodes.add(node);
+        }
+        return computeProbability(speciesNetwork, geneTrees, nbTreeAndCountAndBinaryIDList, childNodes, parentNodes);
+    }
+
+    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
         GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, child, parent);
+        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, childNodes, parentNodes);
         double total = 0;
         for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
             double maxProb = 0;
@@ -483,14 +709,14 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         return total;
     }
 
-    private String network2String(Network speciesNetwork){
+    protected String network2String(Network speciesNetwork){
         RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
         StringWriter sw = new StringWriter();
         rnNewickPrinter.print(speciesNetwork, sw);
         return sw.toString();
     }
 
-    private String network2String(final DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork){
+    protected String network2String(final DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork){
         Func1<String,String> _getNetworkNodeLabel  = new Func1<String,String>()
         {
             public String execute(String node) {
@@ -587,7 +813,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
 
 
-    private Network networkNew2Old(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork){
+    protected Network networkNew2Old(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork){
         Network<Object> bniNetwork = null;
         try{
 
@@ -600,7 +826,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         return bniNetwork;
     }
 
-    private Network string2Network(String networkString){
+    protected Network string2Network(String networkString){
         try{
             RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
             reader.setHybridSumTolerance(BigDecimal.valueOf(0.00001));

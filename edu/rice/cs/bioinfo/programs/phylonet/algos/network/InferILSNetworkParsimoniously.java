@@ -67,7 +67,7 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, Long maxReticulations, int diameterLimit, Network startNetwork, int numSol){
+    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Long maxExaminations, int maxReticulations, int diameterLimit, Network startNetwork, int numSol){
         _optimalNetworks = new Network[numSol];
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Integer.MAX_VALUE);

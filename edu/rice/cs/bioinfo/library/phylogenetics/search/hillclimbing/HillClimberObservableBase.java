@@ -28,7 +28,7 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
     }
 
     protected Long _maxExaminations;
-    protected Long _maxGenerations;
+    protected int _maxGenerations = -1 ;
 
 
     @Override
@@ -41,7 +41,7 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
     }
 
     //@Override
-    public HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, Long maxGenerations)
+    public HillClimbResult<T1,S> search(T1 solution, Func1<T1,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations)
     {
         _maxExaminations = maxExaminations;
         _maxGenerations = maxGenerations;
@@ -78,7 +78,7 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
                 concludeSearch();
             }
             //System.out.println(sawBetterSolution + ": " + bestSeenSolutionScore);
-            if(_maxGenerations!=null && _maxGenerations==getGenerationNumber())break;
+            if(_maxGenerations!=-1 && _maxGenerations==getGenerationNumber())break;
             //System.out.println(sawBetterSolution + ": " + bestSeenSolutionScore);
         }
 

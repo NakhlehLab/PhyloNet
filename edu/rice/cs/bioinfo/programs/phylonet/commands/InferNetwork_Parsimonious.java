@@ -55,7 +55,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
     private List<NetworkNonEmpty> _geneTrees;
     private double _bootstrap = 100;
     private NetworkNonEmpty _startSpeciesNetwork = null;
-    private Long _maxReticulations;
+    private int _maxReticulations;
     private Long _maxExaminations = null;
     private int _maxDiameter = 0;
     private int _returnNetworks = 1;
@@ -89,7 +89,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
         ParameterIdent number = this.assertParameterIdent(1);
         try
         {
-            _maxReticulations = new Long(Integer.parseInt(number.Content));
+            _maxReticulations = Integer.parseInt(number.Content);
         }
         catch(NumberFormatException e)
         {
@@ -286,7 +286,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
         //long start = System.currentTimeMillis();
         InferILSNetworkParsimoniously inference = new InferILSNetworkParsimoniously();
-        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter,speciesNetwork, _returnNetworks);
+        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
         int index = 1;
         for(Tuple<Network, Double> tuple: resultTuples){

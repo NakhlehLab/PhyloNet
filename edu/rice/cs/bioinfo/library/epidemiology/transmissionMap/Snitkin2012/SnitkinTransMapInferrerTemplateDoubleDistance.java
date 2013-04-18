@@ -11,11 +11,11 @@ import java.util.Map;
  * Time: 11:42 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class SnitkinTransMapInferrerTemplateDoubleDistance<P, S> extends SnitkinTransMapInferrerTemplate<P, S,Double>
+public abstract class SnitkinTransMapInferrerTemplateDoubleDistance<E, S> extends SnitkinTransMapInferrerTemplate<E, S,Double>
 {
 
-    public SnitkinTransMapInferrerTemplateDoubleDistance(Map<P, Map<LocalDate, Object>> patientTraces,
-                                                         Map<P, LocalDate> patientToFirstPositiveDate, Map<S, P> sequencingToPatient) {
+    public SnitkinTransMapInferrerTemplateDoubleDistance(Map<E, Map<LocalDate, Object>> patientTraces,
+                                                         Map<E, LocalDate> patientToFirstPositiveDate, Map<S, E> sequencingToPatient) {
         super(patientTraces, patientToFirstPositiveDate, sequencingToPatient);
     }
 
@@ -35,7 +35,7 @@ public abstract class SnitkinTransMapInferrerTemplateDoubleDistance<P, S> extend
     }
 
     @Override
-    protected SnitkinEdge<P, Double> makeEdge(P source, P destination, int geneticDistance, int epidemiologicalDistance) {
-        return new SnitkinEdgeDouble<P>(source, destination, geneticDistance, epidemiologicalDistance, this.getEMax());
+    protected SnitkinEdge<E, Double> makeEdge(E source, E destination, int geneticDistance, int epidemiologicalDistance) {
+        return new SnitkinEdgeDouble<E>(source, destination, geneticDistance, epidemiologicalDistance, this.getEMax());
     }
 }

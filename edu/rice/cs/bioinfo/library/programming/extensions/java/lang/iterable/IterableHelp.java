@@ -20,12 +20,10 @@
 package edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable;
 
 
+import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Predicate1;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,15 +34,14 @@ import java.util.List;
  */
 public class IterableHelp {
 
-    public static Object[] toArray(Iterable elements)
+    public static <T> T[] toArray(Iterable<T> elements)
     {
-        LinkedList<Object> accum = new LinkedList<Object>();
-        for(Object element : elements)
+        LinkedList<T> accum = new LinkedList<T>();
+        for(T element : elements)
         {
             accum.add(element);
         }
-
-        return accum.toArray();
+        return (T[])accum.toArray();
     }
 
     public static <T2,T1 extends T2> List<T2> toList(Iterable<T1> elements)
@@ -170,5 +167,34 @@ public class IterableHelp {
         List<T> elementsList = toList(elements);
         Collections.sort(elementsList);
         return elementsList;
+    }
+
+    public static <T,R> Iterable<R> map(final Iterable<T> elements, final Func1<T,R> func)
+    {
+        return new Iterable<R>()
+        {
+            public Iterator<R> iterator()
+            {
+                return new Iterator<R>()
+                {
+                    private Iterator<T> _elements = elements.iterator();
+
+                    public boolean hasNext()
+                    {
+                        return _elements.hasNext();
+                    }
+
+                    public R next()
+                    {
+                        return func.execute(_elements.next());
+                    }
+
+                    public void remove()
+                    {
+                        _elements.remove();
+                    }
+                };
+            }
+        };
     }
 }

@@ -19,15 +19,15 @@ import java.util.*;
  * Time: 12:56 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D>> implements TransMapInferrer<P,SnitkinEdge<P,D>>
+public abstract class SnitkinTransMapInferrerTemplate<E,S,D extends Comparable<D>> implements TransMapInferrer<SnitkinEdge<E,D>>
 {
-    private final Set<P> _patients;
+    private final Set<E> _patients;
 
-    private final Map<P, Map<LocalDate,Object>> _patientTraces;
+    private final Map<E, Map<LocalDate,Object>> _patientTraces;
 
-    private final Map<P, LocalDate> _patientToFirstPositiveDate;
+    private final Map<E, LocalDate> _patientToFirstPositiveDate;
 
-    private final Map<S,P> _sequencingToPatient;
+    private final Map<S, E> _sequencingToPatient;
 
     private Integer _eMax;
 
@@ -46,14 +46,14 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
 
      /*
-    private DirectedGraph<P,SnitkinEdge<P,D>> makeEmptyGraph()
+    private DirectedGraph<E,SnitkinEdge<E,D>> makeEmptyGraph()
     {
-        return new DirectedSparseGraph<P, SnitkinEdge<P, D>>();
+        return new DirectedSparseGraph<E, SnitkinEdge<E, D>>();
     }
              */
-    public SnitkinTransMapInferrerTemplate(Map<P, Map<LocalDate, Object>> patientTraces,
-                                           Map<P, LocalDate> patientToFirstPositiveDate,
-                                           Map<S, P> sequencingToPatient) {
+    public SnitkinTransMapInferrerTemplate(Map<E, Map<LocalDate, Object>> patientTraces,
+                                           Map<E, LocalDate> patientToFirstPositiveDate,
+                                           Map<S, E> sequencingToPatient) {
 
         _patients = patientToFirstPositiveDate.keySet();
         _patientTraces = patientTraces;
@@ -61,7 +61,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
         _sequencingToPatient = sequencingToPatient;
 
         _datesInTrace = new HashSet<ReadablePartial>();
-        for(P patient : patientTraces.keySet())
+        for(E patient : patientTraces.keySet())
         {
             _datesInTrace.addAll(patientTraces.get(patient).keySet());
         }
@@ -69,22 +69,22 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
     }
 
-    public SnitkinTransMapInferrerResult<SnitkinEdge<P, D>> inferMaps()
+    public SnitkinTransMapInferrerResult<SnitkinEdge<E, D>> inferMaps()
     {
         return inferMaps(null);
     }
 
-    public  SnitkinTransMapInferrerResult<SnitkinEdge<P, D>> inferMaps(P assumedRoot)
+    public  SnitkinTransMapInferrerResult<SnitkinEdge<E, D>> inferMaps(E assumedRoot)
     {
-        Set<SnitkinEdge<P,D>> completePatientGraphEdges = makeCompletePatientGraph(assumedRoot);
+        Set<SnitkinEdge<E,D>> completePatientGraphEdges = makeCompletePatientGraph(assumedRoot);
 
         return inferMapsFromEdges(completePatientGraphEdges);
 
     }
 
-    SnitkinTransMapInferrerResult inferMapsFromEdges(Set<SnitkinEdge<P, D>> completePatientGraphEdges)
+    SnitkinTransMapInferrerResult inferMapsFromEdges(Set<SnitkinEdge<E, D>> completePatientGraphEdges)
     {
-        MinSpanArborescenceSolver<SnitkinEdge<P,D>,D> minSpanSolver = new MinSpanArborescenceSolverCompleteDigraph<SnitkinEdge<P,D>,D>(makeDistance(0), makeDistance(1))
+        MinSpanArborescenceSolver<SnitkinEdge<E,D>,D> minSpanSolver = new MinSpanArborescenceSolverCompleteDigraph<SnitkinEdge<E,D>,D>(makeDistance(0), makeDistance(1))
         {
             @Override
             protected D addWeight(D w1, D w2) {
@@ -97,50 +97,50 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
             }
 
             @Override
-            protected D getWeightOfEdge(SnitkinEdge<P, D> edge) {
+            protected D getWeightOfEdge(SnitkinEdge<E, D> edge) {
                 return edge.getDistance();
             }
 
             @Override
-            protected P getSource(SnitkinEdge<P, D> edge) {
+            protected E getSource(SnitkinEdge<E, D> edge) {
                 return edge.getSource();
             }
 
             @Override
-            protected P getDestination(SnitkinEdge<P, D> edge) {
+            protected E getDestination(SnitkinEdge<E, D> edge) {
                 return edge.getDestination();
             }
         };
 
-        MinSpanArborescence<SnitkinEdge<P,D>,D> minSpanTree = minSpanSolver.tryFindMinSpanArborescence(completePatientGraphEdges);
+        MinSpanArborescence<SnitkinEdge<E,D>,D> minSpanTree = minSpanSolver.tryFindMinSpanArborescence(completePatientGraphEdges);
 
         int geneticDistanceAccum = 0;
         int silentColonizationAccum = 0;
-        for(SnitkinEdge<P,D> edge : minSpanTree.Edges)
+        for(SnitkinEdge<E,D> edge : minSpanTree.Edges)
         {
             geneticDistanceAccum += edge.getGeneticDistance();
             silentColonizationAccum += edge.getEpidemiologicalDistance();
         }
 
-        Set<Set<SnitkinEdge<P, D>>> minimumSpans = new HashSet<Set<SnitkinEdge<P, D>>>();
+        Set<Set<SnitkinEdge<E, D>>> minimumSpans = new HashSet<Set<SnitkinEdge<E, D>>>();
         minimumSpans.add(minSpanTree.Edges);
 
         return new SnitkinTransMapInferrerResult(minimumSpans, geneticDistanceAccum, silentColonizationAccum);
 
     }
 
-    Set<SnitkinEdge<P,D>> makeCompletePatientGraph(final P assumedRoot)
+    Set<SnitkinEdge<E,D>> makeCompletePatientGraph(final E assumedRoot)
     {
-        final Map<P, Map<P, Integer>> geneticDistanceBetweenPatients = computeGeneticDistanceBetweenPatients();
+        final Map<E, Map<E, Integer>> geneticDistanceBetweenPatients = computeGeneticDistanceBetweenPatients();
 
-        return new CompleteDigraphFactory<P,SnitkinEdge<P,D>>()
+        return new CompleteDigraphFactory<E,SnitkinEdge<E,D>>()
                {
                    @Override
-                   public SnitkinEdge<P, D> makeEdge(P source, P destination)
+                   public SnitkinEdge<E, D> makeEdge(E source, E destination)
                    {
                        if(assumedRoot != null && destination.equals(assumedRoot))
                        {
-                          return new SnitkinEdgeBase<P, D>(source,  destination, -1, -1) {
+                          return new SnitkinEdgeBase<E, D>(source,  destination, -1, -1) {
                               public D getDistance() {
                                   return getMaxDistance();
                               }
@@ -150,7 +150,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
                        {
                            int geneticDistance = geneticDistanceBetweenPatients.get(source).get(destination);
                            int epidemiologicalDistance = getEpidemiologicalDistance(source,  destination);
-                           SnitkinEdge<P,D> edge = SnitkinTransMapInferrerTemplate.this.makeEdge(source, destination, geneticDistance, epidemiologicalDistance);
+                           SnitkinEdge<E,D> edge = SnitkinTransMapInferrerTemplate.this.makeEdge(source, destination, geneticDistance, epidemiologicalDistance);
                            return edge;
                        }
                    }
@@ -159,23 +159,23 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
     protected abstract D getMaxDistance();
 
-    private Map<P, Map<P, Integer>> computeGeneticDistanceBetweenPatients()
+    private Map<E, Map<E, Integer>> computeGeneticDistanceBetweenPatients()
     {
-        Map<P,Map<P,Integer>> geneticDistanceBetweenPatients = new HashMap<P, Map<P, Integer>>();
-        for(P patient : _patients)
+        Map<E,Map<E,Integer>> geneticDistanceBetweenPatients = new HashMap<E, Map<E, Integer>>();
+        for(E patient : _patients)
         {
-            geneticDistanceBetweenPatients.put(patient, new HashMap<P, Integer>());
+            geneticDistanceBetweenPatients.put(patient, new HashMap<E, Integer>());
         }
 
 
         for(S genome1 : _sequencingToPatient.keySet())
         {
-            P patientOfGenome1 = _sequencingToPatient.get(genome1);
-            Map<P,Integer> patient1Distances = geneticDistanceBetweenPatients.get(patientOfGenome1);
+            E patientOfGenome1 = _sequencingToPatient.get(genome1);
+            Map<E,Integer> patient1Distances = geneticDistanceBetweenPatients.get(patientOfGenome1);
 
             for(S genome2 : _sequencingToPatient.keySet())
             {
-                P patientOfGenome2 = _sequencingToPatient.get(genome2);
+                E patientOfGenome2 = _sequencingToPatient.get(genome2);
 
                 if(patientOfGenome1.equals(patientOfGenome2))
                     continue;
@@ -203,7 +203,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
         return geneticDistanceBetweenPatients;
     }
 
-    protected int getEpidemiologicalDistance(P donor, P recipient)
+    protected int getEpidemiologicalDistance(E donor, E recipient)
     {
         LocalDate donorFirstPositive = _patientToFirstPositiveDate.get(donor); // the first day the donor tested positive
         LocalDate recipientFirstPositive = _patientToFirstPositiveDate.get(recipient);  // the first day the recipient tested positive
@@ -259,7 +259,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
     }
 
     /*
-    private D getEpidemiologicalDistance(P donor, P recipient)
+    private D getEpidemiologicalDistance(E donor, E recipient)
     {
         LocalDate donorFirstPositive = _patientToFirstPositiveDate.get(donor);
         LocalDate recipientFirstPositive = _patientToFirstPositiveDate.get(recipient);
@@ -291,7 +291,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
 
 
-    private D getSilentColonizationOfRecipient(P donor, P recipient, LocalDate donorFirstPositive, LocalDate recipientFirstPositive) throws NoOverlapException {
+    private D getSilentColonizationOfRecipient(E donor, E recipient, LocalDate donorFirstPositive, LocalDate recipientFirstPositive) throws NoOverlapException {
 
         LocalDate firstOverlapAfterDonorPositive = findFirstDayOfMostRecentOverlap(donor, recipient, recipientFirstPositive);
         int numDays = Days.daysBetween(firstOverlapAfterDonorPositive, recipientFirstPositive).getDays();
@@ -317,7 +317,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
         }
     }
 
-    private LocalDate findFirstDayOfMostRecentOverlap(P patient1, P patient2, LocalDate onOrBefore) throws NoOverlapException {
+    private LocalDate findFirstDayOfMostRecentOverlap(E patient1, E patient2, LocalDate onOrBefore) throws NoOverlapException {
 
         Map<LocalDate,?> patient1Locations = _patientTraces.get(patient1);
         Map<LocalDate,?> patient2Locations = _patientTraces.get(patient2);
@@ -365,7 +365,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
     }
 
-    private LocalDate findLastDayOfMostRecentOverlap(P patient1, P patient2, LocalDate onOrBefore) throws NoOverlapException {
+    private LocalDate findLastDayOfMostRecentOverlap(E patient1, E patient2, LocalDate onOrBefore) throws NoOverlapException {
 
             Map<LocalDate,?> patient1Locations = _patientTraces.get(patient1);
             Map<LocalDate,?> patient2Locations = _patientTraces.get(patient2);
@@ -398,12 +398,12 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
         }
 
-    private LocalDate findFirstOverlap(P donor, P recipient)  throws NoOverlapException
+    private LocalDate findFirstOverlap(E donor, E recipient)  throws NoOverlapException
     {
         return findFirstOverlap(donor, recipient, null);
     }
 
-    private LocalDate findFirstOverlap(P donor, P recipient, LocalDate onOrAfter)  throws NoOverlapException
+    private LocalDate findFirstOverlap(E donor, E recipient, LocalDate onOrAfter)  throws NoOverlapException
     {
         Map<LocalDate,?> donorLocations = _patientTraces.get(donor);
         Map<LocalDate,?> recipientLocations = _patientTraces.get(recipient);
@@ -441,7 +441,7 @@ public abstract class SnitkinTransMapInferrerTemplate<P,S,D extends Comparable<D
 
     protected abstract D makeDistance(int intDistance);
 
-    protected abstract SnitkinEdge<P,D> makeEdge(P source, P destination, int geneticDistance, int epidemiologicalDistance);
+    protected abstract SnitkinEdge<E,D> makeEdge(E source, E destination, int geneticDistance, int epidemiologicalDistance);
 
 }
 

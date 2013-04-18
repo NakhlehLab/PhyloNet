@@ -47,6 +47,7 @@ public class TransMapViewDot<N,E> extends TransMapViewBase<N,E>
                 return transMapVM.getDestination(edge);
             }
 
+
             @Override
             protected String getNodeLabel(N node)
             {
@@ -54,7 +55,7 @@ public class TransMapViewDot<N,E> extends TransMapViewBase<N,E>
             }
 
 
-        }.toDot(transMapVM.getNodes(), transMapVM.getEdges());
+        }.toDot(transMapVM.getEdges());
 
     }
 }

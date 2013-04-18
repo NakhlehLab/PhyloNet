@@ -24,7 +24,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class WorkspaceViewSwing<DR extends DataRecord,
-                                AR extends AnalysisRecord> extends JFrame implements WorkspaceView<DR,AR>
+        AR extends AnalysisRecord> extends JFrame implements WorkspaceView<DR,AR>
 {
     class RecordTreeNode<R> extends DefaultMutableTreeNode
     {
@@ -80,6 +80,13 @@ public class WorkspaceViewSwing<DR extends DataRecord,
         _neighborJoiningAnalysisRequestedListeners.add(listener);
     }
 
+    private Set<Proc1<DR>> _minSpanTreeSnpRequestedListeners = new HashSet<Proc1<DR>>();
+
+    public void addMinSpanTreeSnpRequestedListener(Proc1<DR> listener)
+    {
+        _minSpanTreeSnpRequestedListeners.add(listener);
+    }
+
     private Set<Proc1<AR>> _analysisRecordSelectedListeners = new HashSet<Proc1<AR>>();
 
     public void addAnalysisRecordSelectedListener(Proc1<AR> listener)
@@ -131,7 +138,7 @@ public class WorkspaceViewSwing<DR extends DataRecord,
 
         _projectTreeModel = new DefaultTreeModel(_projectFolder);
         _projectTree = makeProjectTree(_projectTreeModel);
-     //   _projectTreeModel.reload();
+        //   _projectTreeModel.reload();
 
         _documentPanel.setLayout(new BorderLayout());
 
@@ -170,6 +177,11 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                 return new NeighborJoiningViewDot<N,E>(vm);
             }
 
+            public <N, Ed> JComponent forTreeVM(TreeVM<N, Ed> vm) throws RuntimeException
+            {
+                return new TreeViewDot<N,Ed>(vm);
+            }
+
             public JComponent forXMLDataVM(XMLDataVM xmlDataVM) {
                 return new XMLDataView(xmlDataVM);
             }
@@ -177,6 +189,8 @@ public class WorkspaceViewSwing<DR extends DataRecord,
             public JComponent forVAALOutDataVM(VAALOutDataVM vaalOutDataVM) {
                 return new VAALOutDataView(vaalOutDataVM);
             }
+
+
         });
         _documentPanel.removeAll();
         _documentPanel.add(newFocusView, BorderLayout.CENTER);
@@ -207,7 +221,7 @@ public class WorkspaceViewSwing<DR extends DataRecord,
             pathFolderToRootAccum.add(pathFolderToRootAccum.getLast().getParent());
         }
 
-       TreePath pathFromRootToFolder = new TreePath(pathFolderToRootAccum.removeLast()) ;
+        TreePath pathFromRootToFolder = new TreePath(pathFolderToRootAccum.removeLast()) ;
 
         while(!pathFolderToRootAccum.isEmpty())
         {
@@ -342,6 +356,24 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                 });
                 analysisOptions.add (doNeighborJoin);
 
+                final JMenuItem doMinimumSpanningTreeSnp =
+                        new JMenuItem("Infer Min Span Tree (SNP)");
+                doMinimumSpanningTreeSnp.addActionListener(new ActionListener()
+                {
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        if(e.getSource() == doMinimumSpanningTreeSnp)
+                        {
+                            for(Proc1<DR> listener : _minSpanTreeSnpRequestedListeners)
+                            {
+                                listener.execute(firstEntry);
+                            }
+                        }
+                    }
+                });
+                analysisOptions.add (doMinimumSpanningTreeSnp);
+
+
             }
 
         }
@@ -376,31 +408,31 @@ public class WorkspaceViewSwing<DR extends DataRecord,
 
 
             boolean showSnitkinAnalysisOption = sequencingsEntry != null && traceEntry != null &&
-                                                firstPositiveEntry != null;
+                    firstPositiveEntry != null;
 
 
 
 
-           if(showSnitkinAnalysisOption)
-           {
-               final DR sequencingsEntryFinal = sequencingsEntry, traceEntryFinal = traceEntry,
+            if(showSnitkinAnalysisOption)
+            {
+                final DR sequencingsEntryFinal = sequencingsEntry, traceEntryFinal = traceEntry,
                         firstPositiveEntryFinal = firstPositiveEntry;
-               analysisOptions = new JPopupMenu ();
-               final JMenuItem doSnitkin = new JMenuItem ( "Infer Snitkin Trans Map" );
-               doSnitkin.addActionListener(new ActionListener() {
-                   public void actionPerformed(ActionEvent e) {
-                       if(e.getSource() == doSnitkin)
-                       {
+                analysisOptions = new JPopupMenu ();
+                final JMenuItem doSnitkin = new JMenuItem ( "Infer Snitkin Trans Map" );
+                doSnitkin.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if(e.getSource() == doSnitkin)
+                        {
 
-                           for(Proc3<DR,DR,DR> listener : _snitkinTransMapAnalysisRequestedListeners)
-                           {
-                               listener.execute(sequencingsEntryFinal, traceEntryFinal, firstPositiveEntryFinal);
-                           }
-                       }
-                   }
-               });
-               analysisOptions.add (doSnitkin);
-           }
+                            for(Proc3<DR,DR,DR> listener : _snitkinTransMapAnalysisRequestedListeners)
+                            {
+                                listener.execute(sequencingsEntryFinal, traceEntryFinal, firstPositiveEntryFinal);
+                            }
+                        }
+                    }
+                });
+                analysisOptions.add (doSnitkin);
+            }
 
         }
 
@@ -450,9 +482,9 @@ public class WorkspaceViewSwing<DR extends DataRecord,
             pathFromRootToNewEntryParent = pathFromRootToNewEntryParent.pathByAddingChild(pathFromNewEntryToRootAccum.removeLast());
         }
 
-       _projectTreeModel.reload(_dataFolder);
-       _projectTree.expandPath(pathFromRootToNewEntryParent);
-       _splitPane.resetToPreferredSizes();
+        _projectTreeModel.reload(_dataFolder);
+        _projectTree.expandPath(pathFromRootToNewEntryParent);
+        _splitPane.resetToPreferredSizes();
 
 
 

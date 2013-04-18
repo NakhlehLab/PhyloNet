@@ -13,6 +13,8 @@ public interface DocumentVMAlgo<R, E extends Exception>
 
     public <N,Ed> R forNeighborJoiningVM(NeighborJoiningVM<N,Ed> vm) throws E;
 
+    public <N,Ed> R forTreeVM(TreeVM<N,Ed> vm) throws E;
+
     public R forXMLDataVM(XMLDataVM xmlDataVM);
 
     public R forVAALOutDataVM(VAALOutDataVM vaalOutDataVM);

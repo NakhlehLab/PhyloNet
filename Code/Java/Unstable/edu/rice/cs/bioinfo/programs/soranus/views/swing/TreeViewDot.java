@@ -1,7 +1,8 @@
 package edu.rice.cs.bioinfo.programs.soranus.views.swing;
 
-import edu.rice.cs.bioinfo.library.language.dot_2013_1.printing.DigraphDotPrinter;
-import edu.rice.cs.bioinfo.programs.soranus.viewModels.NeighborJoiningVM;
+import edu.rice.cs.bioinfo.library.language.dot_2013_1.printing.GraphDotPrinter;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.soranus.viewModels.TreeVM;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,13 +10,13 @@ import java.awt.*;
 /**
  * Created with IntelliJ IDEA.
  * User: Matt
- * Date: 4/1/13
- * Time: 12:52 PM
+ * Date: 4/5/13
+ * Time: 2:09 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NeighborJoiningViewDot<N,E> extends JPanel {
-
-    public NeighborJoiningViewDot(NeighborJoiningVM<N,E> vm)
+public class TreeViewDot<N,E> extends JPanel
+{
+    public TreeViewDot(TreeVM<N,E> vm)
     {
         this.setLayout(new BorderLayout());
 
@@ -33,18 +34,20 @@ public class NeighborJoiningViewDot<N,E> extends JPanel {
 
     }
 
-    private String generateDot(final NeighborJoiningVM<N,E> vm) {
+    private String generateDot(final TreeVM<N,E> vm) {
 
-        return new DigraphDotPrinter<N,E>()
+        return new GraphDotPrinter<N,E>()
         {
             @Override
-            protected N getSource(E edge) {
-                return vm.getNodesOfEdge(edge).Item1;
+            protected N getEdgeRhs(E edge)
+            {
+                return vm.getNodesOfEdge(edge).Item2;
             }
 
             @Override
-            protected N getDestination(E edge) {
-                return vm.getNodesOfEdge(edge).Item2;
+            protected N getEdgeLhs(E edge)
+            {
+                return vm.getNodesOfEdge(edge).Item1;
             }
 
             @Override
@@ -59,6 +62,11 @@ public class NeighborJoiningViewDot<N,E> extends JPanel {
             }
 
 
-        }.toDot(vm.Edges);
+            @Override
+            protected Tuple<N, N> getNodesOfEdge(E edge)
+            {
+                return vm.getNodesOfEdge(edge);  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }.toDot(vm.getEdges());
     }
 }

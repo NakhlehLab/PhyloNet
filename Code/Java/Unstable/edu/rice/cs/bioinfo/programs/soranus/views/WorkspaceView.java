@@ -24,6 +24,8 @@ public interface WorkspaceView<DR extends DataRecord,
 
     public void addSnitkinTransMapAnalysisRequestedListener(Proc3<DR,DR,DR> listener);
 
+    public void addMinSpanTreeSnpRequestedListener(Proc1<DR> listener);
+
     public void addDataRecordSelectedListener(Proc1<DR> listener);
 
     public void addNeighborJoiningAnalysisRequestedListener(Proc1<DR> listener);

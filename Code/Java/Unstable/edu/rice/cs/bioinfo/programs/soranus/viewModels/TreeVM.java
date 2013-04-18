@@ -5,22 +5,19 @@ import java.util.Set;
 /**
  * Created with IntelliJ IDEA.
  * User: Matt
- * Date: 2/4/13
- * Time: 7:00 PM
+ * Date: 4/5/13
+ * Time: 1:58 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class TransMapVM<N,E> extends DiGraphVMBase<N,E> implements DocumentVM
+public abstract class TreeVM<N,E> extends GraphVMBase<N,E> implements DocumentVM
 {
-
-    public TransMapVM(Set<E> edges) {
+    public TreeVM(Set<E> edges)
+    {
         super(edges);
-
     }
 
     public <R,E extends Exception> R execute(DocumentVMAlgo<R,E> algo) throws E
     {
-        return algo.forTransMapVM(this);
+        return algo.forTreeVM(this);
     }
-
-
 }

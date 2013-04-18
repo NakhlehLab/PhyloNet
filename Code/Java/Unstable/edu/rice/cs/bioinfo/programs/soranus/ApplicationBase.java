@@ -144,11 +144,28 @@ abstract class ApplicationBase
             }
         });
 
+        view.addMinSpanTreeSnpRequestedListener(new Proc1<DataController.FileDataRecord>()
+              {
+                  public void execute(DataController.FileDataRecord sequencings)
+                  {
+                      try
+                      {
+                        ac.performMinSpanTreeAnalysisSnp(sequencings.File);
+                      }
+                      catch(Exception e)
+                      {
+                          reportException(e);
+                      }
+                  }
+              });
+
         view.addAnalysisRecordSelectedListener(new Proc1<AnalysisController.AnalysisRecord>() {
                     public void execute(AnalysisController.AnalysisRecord record) {
                        ac.analysisRecordSelected(record);
                     }
                 });
+
+
     }
 
     private void reportException(Exception e) {

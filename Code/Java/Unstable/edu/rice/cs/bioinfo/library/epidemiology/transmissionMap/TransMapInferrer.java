@@ -7,7 +7,7 @@ package edu.rice.cs.bioinfo.library.epidemiology.transmissionMap;
  * Time: 12:42 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface TransMapInferrer<V,E>
+public interface TransMapInferrer<E>
 {
     TransMapResult<E> inferMaps();
 }

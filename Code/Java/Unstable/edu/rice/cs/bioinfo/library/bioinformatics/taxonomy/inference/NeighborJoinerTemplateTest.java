@@ -42,7 +42,7 @@ public class NeighborJoinerTemplateTest
                 }
 
 
-            }.toDot(Nodes, Edges);
+            }.toDot(Edges);
         }
 
     }

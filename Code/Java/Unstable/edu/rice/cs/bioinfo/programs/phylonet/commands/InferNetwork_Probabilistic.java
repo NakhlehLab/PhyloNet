@@ -28,11 +28,14 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilistically;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilisticallyBackup;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkUsingBLProbabilistically;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
@@ -55,7 +58,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private List<NetworkNonEmpty> _geneTrees;
     private double _bootstrap = 100;
     private NetworkNonEmpty _startSpeciesNetwork = null;
-    private Long _maxReticulations;
+    private int _maxReticulations;
     private Long _maxExaminations = null;
     private int _maxDiameter = 0;
     private int _returnNetworks = 1;
@@ -66,6 +69,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private double _Brent1 = 0.01;
     private double _Brent2 = 0.001;
     private boolean  _dentroscropeOutput = false;
+    private boolean _usingBL = false;
 
 
     public InferNetwork_Probabilistic(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
@@ -81,7 +85,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 21;
+        return 28;
     }
 
     @Override
@@ -95,7 +99,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         ParameterIdent number = this.assertParameterIdent(1);
         try
         {
-            _maxReticulations = new Long(Integer.parseInt(number.Content));
+            _maxReticulations = Integer.parseInt(number.Content);
         }
         catch(NumberFormatException e)
         {
@@ -366,8 +370,14 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 _dentroscropeOutput = true;
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam);
+            ParamExtractor blParam = new ParamExtractor("bl", this.params, this.errorDetected);
+            if(blParam.ContainsSwitch)
+            {
+                _usingBL = true;
+            }
+
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam);
         }
 
 
@@ -426,9 +436,35 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         }
 
         //long start = System.currentTimeMillis();
-        InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
-        inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2);
-        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxExaminations,_maxReticulations,_maxDiameter, speciesNetwork, _returnNetworks);
+
+        /*
+        //TODO
+        for(Tree tr: gts){
+            for(TNode node: tr.getNodes()){
+                if(node.getParent()!=null){
+                    node.setParentDistance(node.getParentDistance()*2);
+                }
+            }
+        }
+        */
+
+
+        List<Tuple<Network, Double>> resultTuples;
+        if(!_usingBL){
+            InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
+        //InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
+            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxDiameter, speciesNetwork);
+            resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+        }
+        else{
+            InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
+            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxDiameter, speciesNetwork);
+            resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+        }
+        //InferILSNetworkProbabilisticallyBackup inference = new InferILSNetworkProbabilisticallyBackup();
+        //inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2);
+        //List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap, _maxExaminations, _maxReticulations, _maxDiameter, speciesNetwork, _returnNetworks);
+
         //System.out.print(System.currentTimeMillis()-start);
 
         int index = 1;

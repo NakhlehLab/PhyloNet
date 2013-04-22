@@ -267,8 +267,8 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
-                System.out.println();
-                System.out.println(network2String(speciesNetwork) + ": "+score);
+                //System.out.println();
+                //System.out.println(network2String(speciesNetwork) + ": "+score);
                 //System.out.println();
                 //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
                 //System.exit(0);

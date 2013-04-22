@@ -19,29 +19,29 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;  // pass
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;  // changed
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;  // pass
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST; // pass
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
-import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
-import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
-import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkWholeNeighbourhoodGenerator;
-import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberSteepestAscent;
-import edu.rice.cs.bioinfo.library.programming.*;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;    // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;  // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;  // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;    // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;   // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkWholeNeighbourhoodGenerator; // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;  // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;  // pass
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberSteepestAscent; // pass
+import edu.rice.cs.bioinfo.library.programming.*;      // pass
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP; // Changed a lot
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;   // pass
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;  // pass
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;   // pass
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter; // Changed
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;  // Changed
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;   // pass
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -122,23 +122,20 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
 
             2. The inside loop is for cross validation. K rounds. No model with all data.
 
-            3. MyContainer holds the tsublist and vsublist MSE results for every sublist and every
-               reticulation node. MyContainer2 holds the total training MSE and total validation
+            3. myContainer_t and myContainer_v hold the tsublist and vsublist MSE results for every sublist and every
+               reticulation node. myContainer2_t and myContainer2_v hold the total training MSE and total validation
                MSE results for every reticulation node.
 
             4: The internal process inside the double loop.
 
             a. Given certain k (reticulation nodes), build a model with the tsublist.
-               Return ML value, probList (for each distinct gene tree in the whole list),
+               Return ML value, probList (for each distinct gene tree in the all tree list),
                and the optimized network.
-            b. Save the maximum likelihood into MyContainer.
-            c. Use the probList to compute the tsublist MSE.
-            d. Save the tsublist MSE squared into MyContainer.
-            e. Use the optimized network and the sub-list to compute the validation total errors
-            f. Save the validation sub-list MSE squared into MyContainer.
+            b. Use probList to compute training MSE and save it into myContainer_t.
+            c. Use probList to compute validation MSE and save it into myContainer_r.
 
-            5. If the weight of a tree is zero in a sublist, do not pass tuple information to the
-            sublist.
+            5. If the weight of a tree is zero in a sublist, do not pass tuple information
+                in nbTreeAndCountAndBinaryIDListForCV to nbTreeAndCountAndBinaryIDList of that sublist.
 
             6. The external process outside the double loop.
                MSE_vsublist = \sum{vsublist error squared}/numDistinctTrees in vsublist.
@@ -150,10 +147,16 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
         long curMaxReticulations = 0;  // initial value of reticulation nodes.
         long correctK = -1; // the correct number of reticulation nodes
 
-        ArrayList<Double> myContainer_t = new ArrayList<Double>();  // container for tsublists (1 to K) MSE for k=i
-        ArrayList<Double> myContainer_v = new ArrayList<Double>();  // container for vsublists (1 to K) MSE for k=i
-        ArrayList<Double> myContainer2_t = new ArrayList<Double>(); // container for total MSE for all reticulations
-        ArrayList<Double> myContainer2_v = new ArrayList<Double>(); // container for total MSE for all reticulations
+        List<Double> myContainer_t = new ArrayList<Double>();  // container for tsublists (1 to K) MSE for k=i
+        List<Double> myContainer_v = new ArrayList<Double>();  // container for vsublists (1 to K) MSE for k=i
+        List<Double> myContainer2_t = new ArrayList<Double>(); // container for total MSE for all reticulations
+        List<Double> myContainer2_v = new ArrayList<Double>(); // container for total MSE for all reticulations
+
+        // Add the likelihood counterparts
+        List<Double> myContainer_t_ML = new ArrayList<Double>();  // container for tsublists (1 to K) ML for k=i
+        List<Double> myContainer_v_ML = new ArrayList<Double>();  // container for vsublists (1 to K) ML for k=i
+        List<Double> myContainer2_t_ML = new ArrayList<Double>(); // container for total ML for all reticulations
+        List<Double> myContainer2_v_ML = new ArrayList<Double>(); // container for total ML for all reticulations
 
         while (!isTurningPointFound){
             System.out.println(); // restart from a line
@@ -281,8 +284,7 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                     }
                 }
                 // Generate the realFreqsDistinctTrees_tsublist
-                ArrayList<Double> realFreqsDistinctTrees_tsublist =
-                        new ArrayList<Double>();
+                List<Double> realFreqsDistinctTrees_tsublist = new ArrayList<Double>();
                 for (int i=0; i<=realWeightsDistinctTrees_tsublist.size()-1;i++)
                     realFreqsDistinctTrees_tsublist.add(realWeightsDistinctTrees_tsublist.get(i)/sum);
                 // Compute the MSE for the tsublist
@@ -298,6 +300,17 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
 
                 // Store MSE into myContainer
                 myContainer_t.add(MSE);
+
+                // Likelihood counterparts
+                double ML = 0;
+                for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+                    double maxProb = 0;
+                    for(int id: triple.Item3){
+                        maxProb = Math.max(maxProb, probList.get(id));
+                    }
+                    ML += Math.log(maxProb) * triple.Item2;
+                }
+                myContainer_t_ML.add(ML);
 
 
                 // 2. Work on nbTreeAndCountAndBinaryIDList_vsublist.
@@ -380,8 +393,20 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                 // Store MSE into myContainer
                 myContainer_v.add(MSE);
 
+
+                // Likelihood counterparts
+                double ML_v = 0;
+                for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList_vsubList){
+                    double maxProb = 0;
+                    for(int id: triple.Item3){
+                        maxProb = Math.max(maxProb, probList.get(id));
+                    }
+                    ML_v += Math.log(maxProb) * triple.Item2;
+                }
+                myContainer_v_ML.add(ML_v);
+
                 // Note: Since we are only using a sub-list, it may not have
-                // all the distinct gene trees as in the distinctGTs. Therefore,
+                // all the distinct gene trees as in the distinctTrees. Therefore,
                 // the real frequency should be with respect to these trees that
                 // appeared in the sublist.
             }  // for, K-fold rotation
@@ -407,6 +432,33 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                 System.out.println("In myContainer2_v:" + entry);
             }
 
+            // Likelihood counterparts
+            double total_ML_t = 0;
+            double total_ML_v = 0;
+            for (double entry: myContainer_t_ML)
+                total_ML_t += entry;
+            myContainer_t_ML.clear();
+
+            for (double entry: myContainer_v_ML)
+                total_ML_v += entry;
+            myContainer_v_ML.clear();
+
+            myContainer2_t_ML.add(total_ML_t);  // store total_ML_t
+            myContainer2_v_ML.add(total_ML_v);  // store total_ML_v
+
+            for (double entry: myContainer2_t_ML) {
+                System.out.println("In myContainer2_t_ML:" + entry);
+            }
+            for (double entry: myContainer2_v_ML) {
+                System.out.println("In myContainer2_v_ML:" + entry);
+            }
+
+            // Judgement criteria.
+            // There is randomness in each round of computation such that
+            // the third effective digit can be different. Also when trend changing happens, the difference is
+            // also pretty small, sometimes around third effective digit.  Therefore, a strict turning might not
+            // be fine. Instead we can add a percentage range to determine the peaking phenomena.
+            //
             if (myContainer2_t.size() <= 1) { // get two data points before any analysis
                 curMaxReticulations++;
                 continue;   // skip the rest of the code and go for the while loop
@@ -419,7 +471,7 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                     double MSE2_t = myContainer2_t.get(i+1);
                     if (MSE2_t >= MSE1_t) {
                         System.out.println("Unbelievable! MSE even increase in the training set.");
-                        System.exit(-1);
+                        // System.exit(-1);
                     }
                 }
 
@@ -441,15 +493,21 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                 // Loop
                 //      if there is a turning point,
                 //          Set the best reticulation node number.
-                //          Jump out of the while loop (break) and skip the next if (set isEnough to true)
+                //          Jump out of the while loop (break) and skip the next if (set isTurningPointFound to true)
 
                 for (int i=0; i <= myContainer2_v.size()-3;i++) {
 
                     double MSE1 = myContainer2_v.get(i);
                     double MSE2 = myContainer2_v.get(i+1);
                     double MSE3 = myContainer2_v.get(i+2);
-                    if (MSE2 < MSE1 && MSE2 < MSE3) { // turn point found
+                    if (MSE2 < MSE1 && MSE2 < MSE3)  {// turn point found by definition
                         System.out.println("Turning point found. The right reticulation number is " + (i+1));
+                        correctK = (long)(i+1);
+                        isTurningPointFound = true;
+                        break;
+                    }
+                    else if (Math.abs(MSE2-MSE3)/MSE2 < 1e-2) { // turning point found by sticky area criteria
+                        System.out.println("Turning point found with sticky method. The right reticulation number is " + (i+1));
                         correctK = (long)(i+1);
                         isTurningPointFound = true;
                         break;
@@ -466,12 +524,6 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                         curMaxReticulations++;
             }  // else >=2 data points
         } // while
-        for (double entry: myContainer2_t) {
-            System.out.println("In myContainer2_t:" + entry);
-        }
-        for (double entry: myContainer2_v) {
-            System.out.println("In myContainer2_v:" + entry);
-        }
         return correctK;
     }
 
@@ -480,7 +532,7 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
         if(startingNetwork == null){
             Map<String,String> allele2species = null;
             if(species2alleles!=null){
-                allele2species = new HashMap<String, String>();
+                allele2species = new LinkedHashMap<String, String>(); // J.D. Previously only HashMap
                 for(Map.Entry<String,List<String>> entry: species2alleles.entrySet()){
                     String species = entry.getKey();
                     for(String allele: entry.getValue()){
@@ -497,7 +549,9 @@ public class InferILSNetworkProbabilistically3 extends MDCOnNetworkYFFromRichNew
                 sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, 100, true, -1).get(0);
             }
 
-            Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
+            Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);   // This tree is random
+            // List<Tree> resolvedTrees = Trees.getAllBinaryResolution(sol._st);   // changed by Jianrong
+            // Tree startingTree = resolvedTrees.get(0);     // Changed by Jianrong
             startingNetwork = string2Network(startingTree.toString());
         }
 

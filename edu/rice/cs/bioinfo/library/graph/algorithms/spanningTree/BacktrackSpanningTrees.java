@@ -130,6 +130,9 @@ abstract class BacktrackSpanningTrees<G,N,E>
     private void executeHelp(Set<E> potentialSpanTreeEdges, Set<E> partialSpan, Set<N> uncoveredNodes, G graph,
                              int numEdgesInSpanningTree, CycleDetectorFromEdgesSets<E> cycleDetector,  Map<E,Tuple<? extends N, ? extends N>> edgeToNodesOfEdge)
     {
+        if(partialSpan.size() > numEdgesInSpanningTree)
+            return;
+
         if(uncoveredNodes.isEmpty() && partialSpan.size() == numEdgesInSpanningTree)
         {
             if(!cycleDetector.containsCycle(partialSpan))

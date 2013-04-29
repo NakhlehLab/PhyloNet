@@ -38,6 +38,10 @@ public class TreeViewDot<N,E> extends JPanel
 
         return new GraphDotPrinter<N,E>()
         {
+            {
+                this.setLegend(vm.Legend);
+            }
+
             @Override
             protected N getEdgeRhs(E edge)
             {
@@ -66,6 +70,27 @@ public class TreeViewDot<N,E> extends JPanel
             protected Tuple<N, N> getNodesOfEdge(E edge)
             {
                 return vm.getNodesOfEdge(edge);  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            protected String getEdgeColor(E edge)
+            {
+                int edgeColor = vm.getEdgeColor(edge);
+
+                switch (edgeColor)
+                {
+                    case 0:
+                        return "black";
+                    case 1:
+                        return "blue";
+                    case 2:
+                        return "red";
+                    default:
+                        return null;
+
+                }
+
+
             }
         }.toDot(vm.getEdges());
     }

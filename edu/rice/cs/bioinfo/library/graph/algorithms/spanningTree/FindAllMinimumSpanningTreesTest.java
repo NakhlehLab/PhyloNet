@@ -5,10 +5,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import junit.framework.Assert;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,8 +23,10 @@ public abstract class FindAllMinimumSpanningTreesTest
     @Test
     public void testExecuteCompleteDynamic() throws GraphDisconnectedException
     {
-        for(int numNodes = 4; numNodes<=8; numNodes++)
+        for(int numNodes = 4; numNodes<=10; numNodes++)
         {
+            Date start = new Date();
+
             Set<String> nodes = new HashSet<String>();
             for(int node = 1; node<=numNodes; node++)
             {
@@ -53,8 +52,16 @@ public abstract class FindAllMinimumSpanningTreesTest
                 numMsts++;
             }
 
+            Date stop = new Date();
+            Date delta = new Date(stop.getTime() - start.getTime());
+            long milis = delta.getTime();
+
+            System.out.println(numNodes + " " + milis);
+
             double expectedNumberOfMsts = Math.pow(numNodes, numNodes-2);
             Assert.assertEquals(expectedNumberOfMsts, (double) numMsts);
+
+
         }
     }
 }

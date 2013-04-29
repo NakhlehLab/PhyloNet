@@ -18,4 +18,6 @@ public interface DocumentVMAlgo<R, E extends Exception>
     public R forXMLDataVM(XMLDataVM xmlDataVM);
 
     public R forVAALOutDataVM(VAALOutDataVM vaalOutDataVM);
+
+    public R forRecombResult(RecombResultVM recombResultVM) throws E;
 }

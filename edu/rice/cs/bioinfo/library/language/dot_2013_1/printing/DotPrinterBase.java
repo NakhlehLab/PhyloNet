@@ -13,7 +13,14 @@ import java.util.Set;
  */
 public abstract class DotPrinterBase<N,E>
 {
-    public String toDot(Set<E> edges, String graphType)
+    private String _legend;
+
+    public void setLegend(String legend)
+    {
+        _legend = legend;
+    }
+
+    protected String toDot(Set<E> edges, String graphType)
     {
         HashSet<N> nodesAccum = new HashSet<N>();
 
@@ -62,18 +69,34 @@ public abstract class DotPrinterBase<N,E>
             dotAccum.append(sourceIdent + edgeString + destIdent);
 
             String edgeLabel = getEdgeLabel(edge);
+            String edgeColor = getEdgeColor(edge);
 
 
 
-            if(edgeLabel != null)
+            if(edgeLabel != null || edgeColor != null)
             {
-                dotAccum.append("[label=\"" + edgeLabel +"\"]");
+                dotAccum.append("[");
+
+                if(edgeLabel != null)
+                    dotAccum.append(" label=\"" + edgeLabel +"\"");
+
+                if(edgeColor != null)
+                    dotAccum.append(" color=" + edgeColor);
+
+                dotAccum.append("]");
             }
 
             dotAccum.append(";\n");
         }
 
+
+        if(_legend != null)
+        {
+            dotAccum.append("Legend [label=\"" + _legend + "\"];\n");
+        }
+
         dotAccum.append("}");
+
 
         return dotAccum.toString();
     }
@@ -85,6 +108,11 @@ public abstract class DotPrinterBase<N,E>
     protected abstract N getEdgeLhs(E edge);
 
     protected String getEdgeLabel(E edge) {
+        return null;
+    }
+
+    protected String getEdgeColor(E edge)
+    {
         return null;
     }
 

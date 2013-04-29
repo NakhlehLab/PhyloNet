@@ -16,13 +16,16 @@ public abstract class GraphVMBase<N,E>
 {
     private final Set<E> _edges;
 
+    public final String Legend;
+
     public Set<E> getEdges()
     {
         return _edges;
     }
 
-    public GraphVMBase(Set<E> edges) {
+    public GraphVMBase(Set<E> edges, String legend) {
         _edges = edges;
+        Legend = legend;
     }
 
     public Set<N> getNodes()
@@ -45,6 +48,13 @@ public abstract class GraphVMBase<N,E>
     public abstract String getNodeLabel(N n);
 
     public abstract String getEdgeLabel(E edge);
+
+    public int getEdgeColor(E edge)
+    {
+        return 0;
+    }
+
+
 
 
 }

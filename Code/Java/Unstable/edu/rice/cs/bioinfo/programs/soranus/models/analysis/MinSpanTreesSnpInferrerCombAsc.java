@@ -7,7 +7,6 @@ import edu.rice.cs.bioinfo.library.programming.Predicate1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -19,7 +18,7 @@ import java.util.Set;
  */
 public abstract class MinSpanTreesSnpInferrerCombAsc<S> implements MinSpanTreesSnpInferrer<S,SequencingEdge<S>,GraphDisconnectedException>
 {
-    public Set<Set<SequencingEdge<S>>> inferMinTrees(Set<S> sequencings) throws GraphDisconnectedException
+    public Iterable<Set<SequencingEdge<S>>> inferMinTrees(Set<S> sequencings) throws GraphDisconnectedException
     {
         final Set<SequencingEdge<S>> completeSeqGraphEdges = new CompleteGraphFactory<S,SequencingEdge<S>>()
         {
@@ -88,7 +87,7 @@ public abstract class MinSpanTreesSnpInferrerCombAsc<S> implements MinSpanTreesS
                     }
                 };
 
-        return new HashSet<Set<SequencingEdge<S>>>(IterableHelp.toList(msts));
+        return msts;
     }
 
     protected abstract Long getSnpDistance(S sequencing1, S sequencing2);

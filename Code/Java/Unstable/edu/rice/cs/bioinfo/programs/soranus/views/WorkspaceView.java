@@ -1,8 +1,6 @@
 package edu.rice.cs.bioinfo.programs.soranus.views;
 
-import edu.rice.cs.bioinfo.library.programming.Proc;
-import edu.rice.cs.bioinfo.library.programming.Proc1;
-import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.AnalysisRecord;
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.DataRecord;
 
@@ -20,17 +18,19 @@ public interface WorkspaceView<DR extends DataRecord,
 {
     public void addCreateSequencingsDataRequestListener(Proc listener);
 
-    public void addDataAddRequestListener(Proc1<File> listener);
+    public Observable1<File> getAddDataRequested();
 
-    public void addSnitkinTransMapAnalysisRequestedListener(Proc3<DR,DR,DR> listener);
+    public Observable1<DR> getNeighborJoiningAnalysisRequested();
 
-    public void addMinSpanTreeSnpRequestedListener(Proc1<DR> listener);
+    public Observable3<DR,DR,DR> getSnitkinTransMapAnalysisRequested();
 
-    public void addDataRecordSelectedListener(Proc1<DR> listener);
+    public Observable1<DR> getDetectRecombAnalysisRequested();
 
-    public void addNeighborJoiningAnalysisRequestedListener(Proc1<DR> listener);
+    public Observable1<AR> getAnalysisRecordSelected();
 
-    public void addAnalysisRecordSelectedListener(Proc1<AR> listener);
+    public Observable1<DR> getMinSpanTreeSnpRequested();
+
+    public Observable1<DR> getDataRecordSelected();
 
     public void startView();
 

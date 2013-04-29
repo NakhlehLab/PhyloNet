@@ -1,8 +1,6 @@
 package edu.rice.cs.bioinfo.programs.soranus.views.swing;
 
-import edu.rice.cs.bioinfo.library.programming.Proc;
-import edu.rice.cs.bioinfo.library.programming.Proc1;
-import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.soranus.viewModels.*;
 import edu.rice.cs.bioinfo.programs.soranus.views.WorkspaceView;
 
@@ -15,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -55,50 +54,56 @@ public class WorkspaceViewSwing<DR extends DataRecord,
 
     private Set<TreeNode> _dataRecordTreeNodes = new HashSet<TreeNode>();
 
-    private Set<Proc1<File>> _addDataListeners = new HashSet<Proc1<File>>();
+    public final Observable1<File> AddDataRequested = new Observable1<File>();
+
+    public Observable1<File> getAddDataRequested()
+    {
+        return AddDataRequested;
+    }
+
+    public final Observable1<DR> NeighborJoiningAnalysisRequested = new Observable1<DR>();
+
+    public Observable1<DR> getNeighborJoiningAnalysisRequested()
+    {
+        return NeighborJoiningAnalysisRequested;
+    }
+
+    public final Observable3<DR,DR,DR> SnitkinTransMapAnalysisRequested = new Observable3<DR,DR,DR>();
+
+    public Observable3<DR,DR,DR> getSnitkinTransMapAnalysisRequested() {
+        return SnitkinTransMapAnalysisRequested;
+    }
+
+    public final Observable1<DR> DetectRecombAnalysisRequested = new Observable1<DR>();
+
+    public Observable1<DR> getDetectRecombAnalysisRequested()
+    {
+        return DetectRecombAnalysisRequested;
+    }
 
     private Map<DefaultMutableTreeNode,AR> _analysisTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, AR>();
 
     private Map<DefaultMutableTreeNode,DR> _dataTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, DR>();
 
-    public void addDataAddRequestListener(Proc1<File> listener)
+    public final Observable1<DR> MinSpanTreeSnpRequested = new Observable1<DR>();
+
+    public Observable1<DR> getMinSpanTreeSnpRequested()
     {
-        _addDataListeners.add(listener);
+        return MinSpanTreeSnpRequested;
     }
 
-    private Set<Proc3<DR,DR,DR>> _snitkinTransMapAnalysisRequestedListeners = new HashSet<Proc3<DR,DR,DR>>();
+    public final Observable1<AR> AnalysisRecordSelected = new Observable1<AR>();
 
-    public void addSnitkinTransMapAnalysisRequestedListener(Proc3<DR,DR,DR> listener)
+    public Observable1<AR> getAnalysisRecordSelected()
     {
-        _snitkinTransMapAnalysisRequestedListeners.add(listener);
+        return AnalysisRecordSelected;
     }
 
-    private Set<Proc1<DR>> _neighborJoiningAnalysisRequestedListeners = new HashSet<Proc1<DR>>();
+    public final Observable1<DR> DataRecordSelected = new Observable1<DR>();
 
-    public void addNeighborJoiningAnalysisRequestedListener(Proc1<DR> listener)
+    public Observable1<DR> getDataRecordSelected()
     {
-        _neighborJoiningAnalysisRequestedListeners.add(listener);
-    }
-
-    private Set<Proc1<DR>> _minSpanTreeSnpRequestedListeners = new HashSet<Proc1<DR>>();
-
-    public void addMinSpanTreeSnpRequestedListener(Proc1<DR> listener)
-    {
-        _minSpanTreeSnpRequestedListeners.add(listener);
-    }
-
-    private Set<Proc1<AR>> _analysisRecordSelectedListeners = new HashSet<Proc1<AR>>();
-
-    public void addAnalysisRecordSelectedListener(Proc1<AR> listener)
-    {
-        _analysisRecordSelectedListeners.add(listener);
-    }
-
-    private Set<Proc1<DR>> _dataRecordSelectedListeners = new HashSet<Proc1<DR>>();
-
-    public void addDataRecordSelectedListener(Proc1<DR> listener)
-    {
-        _dataRecordSelectedListeners.add(listener);
+        return DataRecordSelected;
     }
 
     public void startView() {
@@ -188,6 +193,11 @@ public class WorkspaceViewSwing<DR extends DataRecord,
 
             public JComponent forVAALOutDataVM(VAALOutDataVM vaalOutDataVM) {
                 return new VAALOutDataView(vaalOutDataVM);
+            }
+
+            public JComponent forRecombResult(RecombResultVM vm) throws RuntimeException
+            {
+                return new RecombResultView(vm);
             }
 
 
@@ -297,12 +307,12 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                     if(_analysisTreeNodeToRecord.containsKey(lastPathComponent))
                     {
                         AR record = _analysisTreeNodeToRecord.get(lastPathComponent);
-                        onAnalysisRecordLeftClick(record);
+                        getAnalysisRecordSelected().notify(record);
                     }
                     else if(_dataTreeNodeToRecord.containsKey(lastPathComponent))
                     {
                         DR record = _dataTreeNodeToRecord.get(lastPathComponent);
-                        onDataRecordLeftClick(record);
+                        getDataRecordSelected().notify(record);
                     }
                 }
             }
@@ -311,21 +321,8 @@ public class WorkspaceViewSwing<DR extends DataRecord,
         return projectTree;
     }
 
-    private void onAnalysisRecordLeftClick(AR record) {
 
-        for(Proc1<AR> listener : _analysisRecordSelectedListeners)
-        {
-            listener.execute(record);
-        }
-    }
 
-    private void onDataRecordLeftClick(DR record) {
-
-        for(Proc1<DR> listener : _dataRecordSelectedListeners)
-        {
-            listener.execute(record);
-        }
-    }
 
     private void onDataRecordRightClick(MouseEvent e)
     {
@@ -347,14 +344,23 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                         if(e.getSource() == doNeighborJoin)
                         {
 
-                            for(Proc1<DR> listener : _neighborJoiningAnalysisRequestedListeners)
-                            {
-                                listener.execute(firstEntry);
-                            }
+                            getNeighborJoiningAnalysisRequested().notify(firstEntry);
                         }
                     }
                 });
                 analysisOptions.add (doNeighborJoin);
+
+
+                final JMenuItem detectRecomb = new JMenuItem ( "Detect recombination" );
+                detectRecomb.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if(e.getSource() == detectRecomb)
+                        {
+                            getDetectRecombAnalysisRequested().notify(firstEntry);
+                        }
+                    }
+                });
+                analysisOptions.add (detectRecomb);
 
                 final JMenuItem doMinimumSpanningTreeSnp =
                         new JMenuItem("Infer Min Span Tree (SNP)");
@@ -364,10 +370,8 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                     {
                         if(e.getSource() == doMinimumSpanningTreeSnp)
                         {
-                            for(Proc1<DR> listener : _minSpanTreeSnpRequestedListeners)
-                            {
-                                listener.execute(firstEntry);
-                            }
+                            getMinSpanTreeSnpRequested().notify(firstEntry);
+
                         }
                     }
                 });
@@ -423,11 +427,7 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                     public void actionPerformed(ActionEvent e) {
                         if(e.getSource() == doSnitkin)
                         {
-
-                            for(Proc3<DR,DR,DR> listener : _snitkinTransMapAnalysisRequestedListeners)
-                            {
-                                listener.execute(sequencingsEntryFinal, traceEntryFinal, firstPositiveEntryFinal);
-                            }
+                            getSnitkinTransMapAnalysisRequested().notify(sequencingsEntryFinal, traceEntryFinal, firstPositiveEntryFinal);
                         }
                     }
                 });
@@ -500,10 +500,7 @@ public class WorkspaceViewSwing<DR extends DataRecord,
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             for(File file : fc.getSelectedFiles())
             {
-                for(Proc1<File> addDataListener : _addDataListeners)
-                {
-                    addDataListener.execute(file);
-                }
+                AddDataRequested.notify(file);
             }
 
         }

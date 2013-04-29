@@ -7,7 +7,7 @@ package edu.rice.cs.bioinfo.programs.soranus.models.analysis;
  * Time: 8:02 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SequencingEdge<S>
+public class SequencingEdge<S> implements Comparable<SequencingEdge<S>>
 {
     public final S Sequencing1;
 
@@ -15,10 +15,15 @@ public class SequencingEdge<S>
 
     public final Long SnpDistance;
 
-    SequencingEdge(S sequencing1, S sequencing2, Long snpDistance)
+    public SequencingEdge(S sequencing1, S sequencing2, Long snpDistance)
     {
         Sequencing1 = sequencing1;
         Sequencing2 = sequencing2;
         SnpDistance = snpDistance;
+    }
+
+    public int compareTo(SequencingEdge<S> o)
+    {
+        return SnpDistance.compareTo(o.SnpDistance);
     }
 }

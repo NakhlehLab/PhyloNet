@@ -11,5 +11,5 @@ import java.util.Set;
  */
 public interface MinSpanTreesSnpInferrer<S,E,Ex extends Exception>
 {
-    public Set<Set<E>> inferMinTrees(Set<S> sequencings) throws Ex;
+    public Iterable<Set<E>> inferMinTrees(Set<S> sequencings) throws Ex;
 }

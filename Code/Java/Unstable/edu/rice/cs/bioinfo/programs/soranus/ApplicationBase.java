@@ -32,7 +32,7 @@ abstract class ApplicationBase
         DataController dc = new DataController(vm);
         AnalysisController<File,File,File,String,Exception> ac =
                 new AnalysisController<File,File,File, String, Exception>(vm, sequencingsDataProvider, traceDataProvider,
-                                                                          firstPositiveDataProvider);
+                        firstPositiveDataProvider);
         WorkspaceView view = makeWorkspaceView(vm);
         configureViewForDataController(view, dc);
         configureViewForAnalysisController(view, ac);
@@ -74,10 +74,10 @@ abstract class ApplicationBase
     }
 
     protected void configureViewForDataController(WorkspaceView<DataController.FileDataRecord,
-                                                                AnalysisController.AnalysisRecord> view,
+            AnalysisController.AnalysisRecord> view,
                                                   final DataController dc)
     {
-        view.addDataAddRequestListener(new Proc1<File>() {
+        view.getAddDataRequested().addObserver(new Proc1<File>() {
             public void execute(File input) {
                 try
                 {
@@ -90,7 +90,7 @@ abstract class ApplicationBase
             }
         });
 
-        view.addDataRecordSelectedListener(new Proc1<DataController.FileDataRecord>()
+        view.getDataRecordSelected().addObserver(new Proc1<DataController.FileDataRecord>()
         {
             public void execute(DataController.FileDataRecord input) {
                 dc.dataRecordSelected(input);
@@ -112,11 +112,11 @@ abstract class ApplicationBase
     }
 
     protected void configureViewForAnalysisController(WorkspaceView<DataController.FileDataRecord,
-                                                                    AnalysisController.AnalysisRecord> view,
-                                            final AnalysisController<File,File,File,String,Exception> ac)
+            AnalysisController.AnalysisRecord> view,
+                                                      final AnalysisController<File,File,File,String,Exception> ac)
     {
-        view.addSnitkinTransMapAnalysisRequestedListener(new Proc3<DataController.FileDataRecord, DataController.FileDataRecord,
-                                                                   DataController.FileDataRecord>() {
+        view.getSnitkinTransMapAnalysisRequested().addObserver(new Proc3<DataController.FileDataRecord, DataController.FileDataRecord,
+                DataController.FileDataRecord>() {
             public void execute(DataController.FileDataRecord sequencings, DataController.FileDataRecord traces,
                                 DataController.FileDataRecord firstPositive) {
 
@@ -131,39 +131,50 @@ abstract class ApplicationBase
             }
         });
 
-        view.addNeighborJoiningAnalysisRequestedListener(new Proc1<DataController.FileDataRecord>() {
-            public void execute(DataController.FileDataRecord sequencings) {
+        view.getNeighborJoiningAnalysisRequested().addObserver(new Proc1<DataController.FileDataRecord>()
+        {
+            public void execute(DataController.FileDataRecord sequencings)
+            {
+                try {
+                    ac.performNeighborJoiningAnalysis(sequencings.File);
+                } catch (Exception e) {
+                    reportException(e);
+                }
+            }
+        });
+
+        view.getDetectRecombAnalysisRequested().addObserver(new Proc1<DataController.FileDataRecord>()
+        {
+            public void execute(DataController.FileDataRecord sequencings)
+            {
+                try {
+                    ac.performRecombDetectionUnderInfSite(sequencings.File);
+                } catch (Exception e) {
+                    reportException(e);
+                }
+            }
+        });
+
+        view.getMinSpanTreeSnpRequested().addObserver(new Proc1<DataController.FileDataRecord>()
+        {
+            public void execute(DataController.FileDataRecord sequencings)
+            {
                 try
                 {
-                    ac.performNeighborJoiningAnalysis(sequencings.File);
+                    ac.performMinSpanTreeAnalysisSnpMax2(sequencings.File);
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
                     reportException(e);
                 }
             }
         });
 
-        view.addMinSpanTreeSnpRequestedListener(new Proc1<DataController.FileDataRecord>()
-              {
-                  public void execute(DataController.FileDataRecord sequencings)
-                  {
-                      try
-                      {
-                        ac.performMinSpanTreeAnalysisSnp(sequencings.File);
-                      }
-                      catch(Exception e)
-                      {
-                          reportException(e);
-                      }
-                  }
-              });
-
-        view.addAnalysisRecordSelectedListener(new Proc1<AnalysisController.AnalysisRecord>() {
-                    public void execute(AnalysisController.AnalysisRecord record) {
-                       ac.analysisRecordSelected(record);
-                    }
-                });
+        view.getAnalysisRecordSelected().addObserver(new Proc1<AnalysisController.AnalysisRecord>() {
+            public void execute(AnalysisController.AnalysisRecord record) {
+                ac.analysisRecordSelected(record);
+            }
+        });
 
 
     }

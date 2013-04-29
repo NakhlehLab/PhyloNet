@@ -47,9 +47,16 @@ public abstract class SequencingsMapFactory<I>
                 Node element = sequencingElements.item(i);
                 String sequenceText = element.getAttributes().getNamedItem("sequence").getNodeValue();
                 String sourceIdText = element.getAttributes().getNamedItem("sourceId").getNodeValue();
-                I id = makeId(sourceIdText);
+                final I id = makeId(sourceIdText);
 
-                resultMap.put(new Sequencing(sequenceText), id);
+                resultMap.put(new Sequencing(sequenceText)
+                {
+                    @Override
+                    public String toString()
+                    {
+                        return id.toString();
+                    }
+                }, id);
             }
 
             return resultMap;

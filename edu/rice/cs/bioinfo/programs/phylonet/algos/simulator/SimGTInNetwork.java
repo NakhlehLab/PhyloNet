@@ -19,20 +19,23 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,6 +48,7 @@ public class SimGTInNetwork
 {
     private Map<NetNode, Map<Integer, double[]>> _node2gij;
     private boolean _printDetails = false;
+
 
     public SimGTInNetwork(){
         _node2gij = new HashMap<NetNode, Map<Integer, double[]>>();
@@ -103,7 +107,7 @@ public class SimGTInNetwork
                 }
 
                 if(node.isRoot()){
-                    randomlyCoalGeneLineages(geneLineages, geneLineages.size(), 1, root);
+                    randomlyCoalGeneLineages(geneLineages, geneLineages.size(), 2, root);
                 }
                 else if(node.isTreeNode()){
                     NetNode parent = (NetNode)node.getParents().iterator().next();
@@ -247,6 +251,40 @@ public class SimGTInNetwork
         }
 
         return result;
+    }
+
+    private List<Tree> summarizeGTs(List<Tree> originalGTs){
+        List<Tree> distinctGTs = new ArrayList<Tree>();
+        for(Tree gt: originalGTs){
+            boolean exist = false;
+            for(Tree exgt: distinctGTs){
+                if(Trees.haveSameRootedTopology(gt, exgt)){
+                    ((STINode<Integer>)exgt.getRoot()).setData(((STINode<Integer>)exgt.getRoot()).getData()+1);
+                    exist = true;
+                    break;
+                }
+            }
+            if(!exist){
+                ((STINode<Integer>)gt.getRoot()).setData(1);
+                for(TNode node: gt.getNodes()){
+                    node.setParentDistance(TNode.NO_DISTANCE);
+                }
+                distinctGTs.add(gt);
+            }
+        }
+        for(int i=0; i<distinctGTs.size(); i++){
+            Tree tr1 = distinctGTs.get(i);
+            int count1 = ((STINode<Integer>)tr1.getRoot()).getData();
+            for(int j=0; j<i; j++){
+                int count2 = ((STINode<Integer>)distinctGTs.get(j).getRoot()).getData();
+                if(count2 < count1){
+                    distinctGTs.remove(i);
+                    distinctGTs.add(j,tr1);
+                    break;
+                }
+            }
+        }
+        return distinctGTs;
     }
 
 }

@@ -533,8 +533,8 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
 
     private boolean isValidNetwork(Network<Integer> net){
-        List<NetNode> visited = new ArrayList<NetNode>();
-        List<NetNode> seen = new ArrayList<NetNode>();
+        Set<NetNode> visited = new HashSet<NetNode>();
+        Set<NetNode> seen = new HashSet<NetNode>();
         for(NetNode<Integer> node: net.bfs()){
             if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
             visited.add(node);

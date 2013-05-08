@@ -492,8 +492,8 @@ public class InferILSNetworkUsingBLProbabilistically3 extends MDCOnNetworkYFFrom
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
-                System.out.println();
-                System.out.println(network2String(speciesNetwork) + ": "+score);
+                //System.out.println();
+                //System.out.println(network2String(speciesNetwork) + ": "+score);
                 //System.out.println();
                 //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
                 //System.exit(0);
@@ -793,7 +793,8 @@ public class InferILSNetworkUsingBLProbabilistically3 extends MDCOnNetworkYFFrom
                             }
                         }
                         else if(updatedIndex<currentIndex){
-                            for(int i=currentIndex; i>updatedIndex; i--){
+                            currentIndex = Math.min(currentIndex, spTuple._item1.size()-1);
+                            for(int i=currentIndex; i>=updatedIndex; i--){
                                 SpeciesPair sp = spTuple._item1.get(i);
                                 MutableTuple<List<NetNode>, BitSet> changedSP = pairHeight2nodes.get(sp);
                                 int offBit = changedSP._item1.indexOf(node);

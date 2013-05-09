@@ -831,6 +831,7 @@ public class InferILSNetworkUsingBLProbabilistically3 extends MDCOnNetworkYFFrom
         }
 
         //System.out.println(computeProbability(speciesNetwork, distinctTrees, species2alleles));
+        /*
         for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
             if(node.isLeaf()){
                 if(species2alleles == null || species2alleles.get(node.getName()).size()<2){
@@ -838,6 +839,7 @@ public class InferILSNetworkUsingBLProbabilistically3 extends MDCOnNetworkYFFrom
                 }
             }
         }
+        */
         //System.out.println("\n"+network2String(speciesNetwork));
 
         //System.out.println(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList) + " vs. " + lnGtProbOfSpeciesNetwork.getContents());

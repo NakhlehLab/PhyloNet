@@ -215,7 +215,10 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
                 //System.out.println("Start scoring ...");
                 //System.out.println("\n"+network2String(network));
                 //long start = System.currentTimeMillis();
+
                 Network<Object> speciesNetwork = networkNew2Old(network);
+                //System.out.println();
+                //System.out.println(network2String(speciesNetwork));
 
                 double score = findUltrametricOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles);
 
@@ -248,8 +251,8 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
-                System.out.println();
-                System.out.println(network2String(speciesNetwork) + ": "+score);
+                //System.out.println();
+                //System.out.println(network2String(speciesNetwork) + ": "+score);
                 //System.out.println();
                 //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
                 //System.exit(0);
@@ -550,7 +553,8 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
                             }
                         }
                         else if(updatedIndex<currentIndex){
-                            for(int i=currentIndex; i>updatedIndex; i--){
+                            currentIndex = Math.min(currentIndex, spTuple._item1.size()-1);
+                            for(int i=currentIndex; i>=updatedIndex; i--){
                                 SpeciesPair sp = spTuple._item1.get(i);
                                 MutableTuple<List<NetNode>, BitSet> changedSP = pairHeight2nodes.get(sp);
                                 int offBit = changedSP._item1.indexOf(node);
@@ -587,6 +591,7 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
         }
 
         //System.out.println(computeProbability(speciesNetwork, distinctTrees, species2alleles));
+        /*
         for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
             if(node.isLeaf()){
                 if(species2alleles == null || species2alleles.get(node.getName()).size()<2){
@@ -594,6 +599,7 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
                 }
             }
         }
+        */
         //System.out.println("\n"+network2String(speciesNetwork));
 
         //System.out.println(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList) + " vs. " + lnGtProbOfSpeciesNetwork.getContents());

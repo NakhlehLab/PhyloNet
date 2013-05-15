@@ -11,8 +11,10 @@ import edu.rice.cs.bioinfo.library.programming.Func4;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,17 +34,17 @@ public abstract class MDCOnNetworkYFFromRichNewick<G extends Graph<String,PhyloE
         public String execute(G input1) {
             //return IterableHelp.countInt(input1.getNodes()) + "";
             String newNode;
-            boolean exist;
-            do{
-                newNode = (int)(Math.random()*1000000)+"";
-                exist = false;
-                for(String node: input1.getNodes()){
-                    if(node.equals(newNode)){
-                        exist = true;
-                        break;
-                    }
-                }
-            }while(exist);
+            Set<String> existingNames = new HashSet<String>();
+            for(String node: input1.getNodes()){
+                existingNames.add(node);
+            }
+
+            int i = 1;
+            newNode = "i" + i;
+            while(existingNames.contains(newNode)){
+                newNode = "i" + (++i);
+            }
+
             return newNode;
         }
     };

@@ -144,7 +144,10 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
 
     private void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Double> counter){
         for(Tree tr: originalGTs){
-            double weight = ((STINode<Double>)tr.getRoot()).getData();
+            Double weight = ((STINode<Double>)tr.getRoot()).getData();
+            if(weight == null){
+                weight = 1.0;
+            }
             int index = 0;
             boolean exist = false;
             for(Tree exTr: distinctGTs){

@@ -31,14 +31,14 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
         Func4<G,Integer,E,E,Boolean> rearrangementComputed = getRearrangementComputedListener(solution, getScore, scoreComparator, bestSeenSolutionScore,
                 getBetterSolution, newBestScore, sawBetterSolution, currentBestSeenSolutionScore);
         boolean incrementHybrid = getGenerationNumber()==_maxGenerations ? false:true;
-        _networkGenerator.computeRandomNeighbour(solution, incrementHybrid, rearrangementComputed);
+        _networkGenerator.computeRandomNeighbour(solution, incrementHybrid, rearrangementComputed, diameterLimit);
 
         return sawBetterSolution.get();
     }
 
-    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations, Long maxFailure){
+    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations, Long maxFailure, int diameterLimit){
         _maxFailure = maxFailure;
-        return super.search(solution, getScore, scoreComparator, maxExaminations, maxGenerations);
+        return super.search(solution, getScore, scoreComparator, maxExaminations, maxGenerations, diameterLimit);
     }
 
 

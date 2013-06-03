@@ -74,7 +74,8 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
     private double _maxBranchLength;
     private double _Brent1;
     private double _Brent2;
-    private Long _maxExaminations;
+    private long _maxExaminations;
+    private long _maxFailure;
     private int _diameterLimit;
     private Network _startNetwork;
 
@@ -85,7 +86,7 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, int diameterLimit, Network startNetwork){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, long maxFailure, int diameterLimit, Network startNetwork){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
@@ -96,6 +97,7 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
         _maxExaminations = maxExaminations;
         _diameterLimit = diameterLimit;
         _startNetwork = startNetwork;
+        _maxFailure = maxFailure;
     }
 
     public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol){
@@ -251,8 +253,8 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
-                //System.out.println();
-                //System.out.println(network2String(speciesNetwork) + ": "+score);
+                System.out.println();
+                System.out.println(network2String(speciesNetwork) + ": "+score);
                 //System.out.println();
                 //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
                 //System.exit(0);

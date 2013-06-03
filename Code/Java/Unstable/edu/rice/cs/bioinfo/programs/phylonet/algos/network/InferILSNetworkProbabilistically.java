@@ -72,6 +72,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
     protected double _maxBranchLength;
     protected double _Brent1;
     protected double _Brent2;
+    protected Long _maxFailure;
     protected Long _maxExaminations;
     protected int _diameterLimit;
     protected Network _startNetwork;
@@ -81,7 +82,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, int diameterLimit, Network startNetwork){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, Long maxFailure, int diameterLimit, Network startNetwork){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
@@ -92,6 +93,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         _maxExaminations = maxExaminations;
         _diameterLimit = diameterLimit;
         _startNetwork = startNetwork;
+        _maxFailure = maxFailure;
     }
 
     public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol){
@@ -113,7 +115,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
         Comparator<Double> comparator = getDoubleScoreComparator();
         //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
-        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, new Long(100), _diameterLimit); // search starts here
+        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
         //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, new Long(100)); // search starts here
 
         List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();

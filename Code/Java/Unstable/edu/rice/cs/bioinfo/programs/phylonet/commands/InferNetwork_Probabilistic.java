@@ -60,6 +60,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private NetworkNonEmpty _startSpeciesNetwork = null;
     private int _maxReticulations;
     private Long _maxExaminations = null;
+    private long _maxFailure = 100;
     private int _maxDiameter = 0;
     private int _returnNetworks = 1;
     private int _maxRounds = 100;
@@ -185,6 +186,26 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 else
                 {
                     errorDetected.execute("Expected value after switch -s.", sParam.SwitchParam.getLine(), sParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor fParam = new ParamExtractor("f", this.params, this.errorDetected);
+            if(fParam.ContainsSwitch)
+            {
+                if(fParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _maxFailure = Long.parseLong(fParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value of maximum consecutive failure " + fParam.PostSwitchValue, fParam.PostSwitchParam.getLine(), fParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -n.", fParam.SwitchParam.getLine(), fParam.SwitchParam.getColumn());
                 }
             }
 
@@ -376,8 +397,8 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 _usingBL = true;
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl","f");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam);
         }
 
 
@@ -453,12 +474,12 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         if(!_usingBL){
             InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
         //InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
-            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxDiameter, speciesNetwork);
+            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, speciesNetwork);
             resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
         }
         else{
             InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
-            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxDiameter, speciesNetwork);
+            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations,_maxFailure, _maxDiameter, speciesNetwork);
             resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
         }
         //InferILSNetworkProbabilisticallyBackup inference = new InferILSNetworkProbabilisticallyBackup();

@@ -53,7 +53,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
             Ref<S> newBestScore = new Ref<S>(null);
             boolean sawBetterSolution = considerRandomNeighbor(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore, _diameterLimit);
             if(sawBetterSolution){
-                tried = 0;
+                tried = 1;
                 //System.out.println("Success: " + bestSeenSolutionScore);
                 bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
                 bestSeenSolutionScore = newBestScore.get();

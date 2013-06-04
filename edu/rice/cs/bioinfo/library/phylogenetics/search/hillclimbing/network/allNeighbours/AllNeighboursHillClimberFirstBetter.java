@@ -18,7 +18,7 @@ import java.util.Comparator;
  */
 public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> extends AllNeighboursHillClimberBase<G,N,E,S> {
     private NetworkNeighbourhoodRandomWalkGenerator<G,N,E> _networkGenerator;
-    private long _maxFailure;
+    private long _maxFailure = -1;
 
     public AllNeighboursHillClimberFirstBetter(NetworkNeighbourhoodRandomWalkGenerator<G, N, E> generator) {
         _networkGenerator = generator;
@@ -53,7 +53,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
             Ref<S> newBestScore = new Ref<S>(null);
             boolean sawBetterSolution = considerRandomNeighbor(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore, _diameterLimit);
             if(sawBetterSolution){
-                tried = 1;
+                tried = 0;
                 //System.out.println("Success: " + bestSeenSolutionScore);
                 bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
                 bestSeenSolutionScore = newBestScore.get();

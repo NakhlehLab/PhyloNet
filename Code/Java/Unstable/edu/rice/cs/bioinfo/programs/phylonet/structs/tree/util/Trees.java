@@ -273,6 +273,23 @@ public class Trees {
 		return true;
 	}
 
+    public static final Tree generateRandomTree(String[] leaves){
+        String prefix = "PhyloNetTemp";
+        Tree tree = new STITree();
+        generateRandomTree((MutableTree)tree, leaves.length);
+        for(TNode leaf: tree.getNodes()){
+            if(leaf.isLeaf()){
+                ((STINode)leaf).setName(prefix+leaves[Integer.parseInt(leaf.getName())]);
+            }
+        }
+        for(TNode leaf: tree.getNodes()){
+            if(leaf.isLeaf()){
+                ((STINode)leaf).setName(leaf.getName().substring(prefix.length(),leaf.getName().length()));
+            }
+        }
+        return tree;
+    }
+
 	/**
 	 * Generate a random binary tree in the object specified.  Leaves will be
 	 * named '0' - num_leaves.
@@ -794,7 +811,7 @@ public class Trees {
 		return resolvedTrees;
 	}
 
-    public static Tree generateRandomBinaryResolution(Tree tree){
+    public static final Tree generateRandomBinaryResolution(Tree tree){
         Tree newTree = new STITree(tree);
         List<TNode> nonBinaryNodes = new ArrayList<TNode>();
         for(TNode node: newTree.getNodes()){
@@ -960,6 +977,42 @@ public class Trees {
             }
         }
         return fp==0 && fn==0;
+    }
+
+    public static Tree generateRandomSPRNeighbor(Tree tree, int numMoves){
+        STITree neighbor = new STITree(tree);
+        for(int i=0; i<numMoves; i++){
+            STINode edgeToPrune = neighbor.selectRandomNode(true, false);
+            //System.out.print("Attach " + edgeToPrune + " to ");
+            STITree temp = new STITree(edgeToPrune);
+            edgeToPrune.removeNode();
+            Trees.removeBinaryNodes(neighbor);
+            STINode edgeToAttachChild = neighbor.selectRandomNode(true, true);
+            //STINode edgeToAttachChild = neighbor.getNode("R");
+            //System.out.println(edgeToAttachChild);
+            if(edgeToAttachChild.isRoot()){
+                if(neighbor.getRoot().isLeaf()){
+                    String leafName = neighbor.getRoot().getName();
+                    neighbor.getRoot().setName("");
+                    neighbor.getRoot().createChild(leafName);
+                }
+                else{
+                    STINode<Object> originalRoot = neighbor.getRoot().createChild();
+                    for(TNode node: originalRoot.getSiblings()){
+                        originalRoot.adoptChild((TMutableNode)node);
+                    }
+                }
+                neighbor.getRoot().createChild(temp.getRoot());
+            }
+            else{
+                STINode edgeToAttachParent = edgeToAttachChild.getParent();
+                STINode<Object> insertedNode = edgeToAttachParent.createChild();
+                insertedNode.adoptChild(edgeToAttachChild);
+                insertedNode.createChild(temp.getRoot());
+            }
+            //System.out.println(neighbor);
+        }
+        return neighbor;
     }
 
 }

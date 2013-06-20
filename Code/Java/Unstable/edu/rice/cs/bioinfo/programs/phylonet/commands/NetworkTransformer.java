@@ -376,7 +376,7 @@ public class NetworkTransformer {
                     {
                         label = UUID.randomUUID().toString().replace("-", "");
                     }
-                    while(!labelSet.contains(label));
+                    while(labelSet.contains(label));
                     hybridIndexToHybridNodeLabel.put(hybridNodeIndex, label);
 
                     return null;

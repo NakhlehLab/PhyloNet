@@ -74,8 +74,8 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
     private double _maxBranchLength;
     private double _Brent1;
     private double _Brent2;
-    private long _maxExaminations;
-    private long _maxFailure;
+    private Long _maxExaminations;
+    private Long _maxFailure;
     private int _diameterLimit;
     private Network _startNetwork;
 
@@ -86,7 +86,7 @@ public class InferILSNetworkUsingBLProbabilistically extends MDCOnNetworkYFFromR
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, long maxFailure, int diameterLimit, Network startNetwork){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, Long maxFailure, int diameterLimit, Network startNetwork){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;

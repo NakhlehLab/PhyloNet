@@ -70,7 +70,7 @@ public class MDCInference_DP
 		}
 
 
-		Collapse.CollapseDescriptor cd = doCollapse(trees);
+		//Collapse.CollapseDescriptor cd = doCollapse(trees);
 		//System.out.println("after collapse");
 
 		List<String> taxalist = new ArrayList<String>();
@@ -119,7 +119,7 @@ public class MDCInference_DP
 			}
 		}
 
-		restoreCollapse(solutions, trees, cd);
+		//restoreCollapse(solutions, trees, cd);
 		return solutions;
 	}
 
@@ -158,16 +158,6 @@ public class MDCInference_DP
 			}
 		}
 
-        System.out.println();
-        for(Tree gt: trees){
-            System.out.println(gt);
-            for(TNode node:gt.getNodes()){
-                if(node.getChildCount()>2){
-                    System.out.print(node.getChildCount()+" ");
-                }
-            }
-            System.out.println();
-        }
 
 
 		List<String> temp1 = new LinkedList<String>();

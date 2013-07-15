@@ -264,11 +264,14 @@ public class NetworkTransformer {
             NetworkNonEmpty relabeledSubNetwork = makeRelabeledNetwork(subNetwork, hybridIndexToHybridNodeLabel);
             String relabeledString = printer.toString(relabeledSubNetwork);
 
+      //      NetworkNonEmpty subNetworkDescList = new NetworkNonEmpty(new RootageQualifierNonEmpty(RootageQualifier.ROOTED) , subNetwork.PrincipleDescendants,
+        //            new NetworkInfo(NodeLabelEmpty.Singleton, HybridNodeQualifierEmpty.Singleton, BranchLengthEmpty.Singleton, SupportEmpty.Singleton, ProbabilityEmpty.Singleton));
+
             // at this point relabeledString will be a newick style string that looks something like:
             //        (A,B)R;
             // but in eNewick for the repeated trees of a network we need the form:
             //        R = (A,B);
-            String relabeledStringWithoutApendedRoot = relabeledString.substring(0, relabeledString.length()-2) + ";";
+            String relabeledStringWithoutApendedRoot = relabeledString.substring(0, relabeledString.lastIndexOf(')') + 1) + ";";
             b.append("\n" + rootLabel + " = " + relabeledStringWithoutApendedRoot);
         }
 

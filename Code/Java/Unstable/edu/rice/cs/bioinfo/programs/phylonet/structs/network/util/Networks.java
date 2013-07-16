@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.util;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.bipartitematching.HungarianBipartiteMatcher;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.fitchpars.ParsimonyCalculator;
@@ -483,15 +484,61 @@ public class Networks
 		}
 	}
 
-	/**
-	 * Restrict network 1 and network 2 on the common set of leaves.
-	 *
-	 * @param net1
-	 * @param net2
-	 */
-	public <T> void pruneNetworks(Network<T> net1, Network<T> net2) {
+    //With respect to topology only
+    public static <T> void addRandomReticulationEdge(Network<T> network, int numReticulations){
+        for(int i=0; i<numReticulations; i++){
+            addRandomReticulationEdge(network);
+        }
+    }
 
-	}
+
+    private static <T> void addRandomReticulationEdge(Network<T> network){
+        List<Tuple<NetNode<T>,NetNode<T>>> edgeList = new ArrayList<Tuple<NetNode<T>,NetNode<T>>>();
+        Map<NetNode<T>, Integer> node2id = new HashMap<NetNode<T>, Integer>();
+        int index = 0;
+        for(NetNode<T> node: postTraversal(network)){
+            for(NetNode<T> child: node.getChildren()){
+                edgeList.add(new Tuple<NetNode<T>, NetNode<T>>(node, child));
+            }
+            node2id.put(node, index++);
+        }
+        int size = node2id.size();
+        boolean[][] matrix = new boolean[size][size];
+        for(NetNode<T> node: postTraversal(network)){
+            int nodeID = node2id.get(node);
+            matrix[nodeID][nodeID] = true;
+            for(NetNode<T> child: node.getChildren()){
+                int childID = node2id.get(child);
+                matrix[nodeID][childID] = true;
+                for(int i=0; i<size; i++){
+                    if(matrix[childID][i]){
+                        matrix[nodeID][i] = true;
+                    }
+                }
+            }
+        }
+
+        int numEdges = edgeList.size();
+        int sourceEdgeId = (int)(Math.random() * numEdges);
+        Tuple<NetNode<T>,NetNode<T>> sourceEdge = edgeList.get(sourceEdgeId);
+        //System.out.println("Source Edge:(" + sourceEdge.Item1.getName()+ "," +sourceEdge.Item2.getName()+ ")");
+        int sourceEdgeChildID = node2id.get(sourceEdge.Item2);
+        Tuple<NetNode<T>,NetNode<T>> destinationEdge;
+        do{
+            destinationEdge = edgeList.get((int)(Math.random() * numEdges));
+            //System.out.println("Destination Edge:(" + destinationEdge.Item1.getName()+ "," +destinationEdge.Item2.getName()+ ")");
+        }while(matrix[node2id.get(destinationEdge.Item2)][sourceEdgeChildID]);
+        NetNode<T> insertedSourceNode = new BniNetNode<T>();
+        insertedSourceNode.adoptChild(sourceEdge.Item2, NetNode.NO_DISTANCE);
+        sourceEdge.Item1.removeChild(sourceEdge.Item2);
+        sourceEdge.Item1.adoptChild(insertedSourceNode, NetNode.NO_DISTANCE);
+        NetNode<T> insertedDestinationNode = new BniNetNode<T>();
+        insertedDestinationNode.adoptChild(destinationEdge.Item2, NetNode.NO_DISTANCE);
+        destinationEdge.Item1.removeChild(destinationEdge.Item2);
+        destinationEdge.Item1.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
+        insertedSourceNode.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
+    }
+
 
 
     public static <T> List<NetNode<T>> postTraversal(Network<T> net){

@@ -47,9 +47,17 @@ public class GeneTreeProbabilityYF {
     List<STITreeCluster> _gtClusters;
     boolean[][] _M;
     Map<NetNode, Integer> _node2ID;
+    boolean _parallel = false;
     //double t1, t2, t3, t4, t5, t6;
 
 
+    public void setParallel(boolean parallel){
+        _parallel = parallel;
+    }
+
+    public void setTotalNodes(Set<NetNode> totalCoverNodes){
+        _totalCoverNodes = totalCoverNodes;
+    }
 
     public void setPrintDetails(boolean p){
         _printDetails = p;
@@ -57,9 +65,11 @@ public class GeneTreeProbabilityYF {
 
 
 
-    public List<Double> calculateGTDistribution(Network<List<CoalescePattern>> network, List<Tree> gts, Map<String, List<String>> species2alleles){
+    public List<Double> calculateGTDistribution(Network<CoalescePattern[]> network, List<Tree> gts, Map<String, List<String>> species2alleles, int startingIndex){
         List<Double> probList = new ArrayList<Double>();
-        processNetwork(network, true);
+        processNetwork(network, gts.size(), true);
+        //System.out.println("\ngts:" + gts.size());
+
 
         int gtIndex = 0;
         for(Tree gt: gts){
@@ -76,10 +86,10 @@ public class GeneTreeProbabilityYF {
 
             int netNodeIndex = 0;
 
-            for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(network)){
+            for(NetNode<CoalescePattern[]> node: Networks.postTraversal(network)){
                 //long start = System.currentTimeMillis();
                 CoalescePattern cp = new CoalescePattern();
-                node.getData().add(cp);
+                node.getData()[startingIndex] = cp;
                 //t6 += (System.currentTimeMillis()-start)/1000.0;
                 if(_printDetails){
                     System.out.println();
@@ -118,7 +128,7 @@ public class GeneTreeProbabilityYF {
                 }
                 else{
                     if(node.isNetworkNode()){
-                        CoalescePattern childCP = ((NetNode<List<CoalescePattern>>)(node.getChildren().iterator().next())).getData().get(gtIndex);
+                        CoalescePattern childCP = ((NetNode<CoalescePattern[]>)(node.getChildren().iterator().next())).getData()[startingIndex];
                         Map<Set<Integer>,List<Configuration>> temp = new HashMap<Set<Integer>, List<Configuration>>();
                         List<Configuration> ACMinus = childCP._ACMinuss.get(node);
                         temp.put(null,ACMinus);
@@ -159,9 +169,9 @@ public class GeneTreeProbabilityYF {
 
                     }
                     else{
-                        Iterator<NetNode<List<CoalescePattern>>> childNode = node.getChildren().iterator();
-                        List<Configuration> AC1 = childNode.next().getData().get(gtIndex).getACMinuss(node);
-                        List<Configuration> AC2 = childNode.next().getData().get(gtIndex).getACMinuss(node);
+                        Iterator<NetNode<CoalescePattern[]>> childNode = node.getChildren().iterator();
+                        List<Configuration> AC1 = childNode.next().getData()[startingIndex].getACMinuss(node);
+                        List<Configuration> AC2 = childNode.next().getData()[startingIndex].getACMinuss(node);
                         //TODO
                         //System.out.println("AC1: " + AC1.size() + " & AC2:" + AC2.size());
                         //System.out.println("total");
@@ -456,8 +466,8 @@ public class GeneTreeProbabilityYF {
                         }
                         System.out.println("}");
                     }
-                    Iterator<NetNode<List<CoalescePattern>>> it = node.getParents().iterator();
-                    NetNode<List<CoalescePattern>> parentNode1 = it.next();
+                    Iterator<NetNode<CoalescePattern[]>> it = node.getParents().iterator();
+                    NetNode<CoalescePattern[]> parentNode1 = it.next();
                     double distance1 = node.getParentDistance(parentNode1);
                     double hybridProb1 = node.getParentProbability(parentNode1);
                     hybridProb1 = Double.isNaN(hybridProb1)?1:hybridProb1;
@@ -470,7 +480,7 @@ public class GeneTreeProbabilityYF {
                     //start = System.currentTimeMillis();
                     cp.addACs(parentNode1, temp);
                     //t5 += (System.currentTimeMillis()-start)/1000.0;
-                    NetNode<List<CoalescePattern>> parentNode2 = it.next();
+                    NetNode<CoalescePattern[]> parentNode2 = it.next();
                     double distance2 = node.getParentDistance(parentNode2);
                     double hybridProb2 = node.getParentProbability(parentNode2);
                     hybridProb2 = Double.isNaN(hybridProb2)?1:hybridProb2;
@@ -515,15 +525,16 @@ public class GeneTreeProbabilityYF {
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
             gtIndex++;
+            startingIndex++;
         }
         //System.out.println(t1 + " " + t2 + " " + t3+ " " + t4+ " " + t5+ " " + t6);
         return probList;
     }
 
 
-    public List<Double> calculateGTDistribution(Network<List<CoalescePattern>> network, List<Tree> gts, Set<NetNode> editedChilds, Set<NetNode> editedParents){
+    public List<Double> calculateGTDistribution(Network<CoalescePattern[]> network, Set<NetNode> editedChilds, Set<NetNode> editedParents, int startingIndex, int endIndex){
         List<Double> probList = new ArrayList<Double>();
-        processNetwork(network, false);
+        processNetwork(network, -1, false);
 
         //int childID = _node2ID.get(editedChild);
         //int parentID = editedParent==null ? childID : _node2ID.get(editedParent);
@@ -537,9 +548,9 @@ public class GeneTreeProbabilityYF {
         }
 
 
-        int gtIndex = 0;
+        //int gtIndex = 0;
 
-        for(Tree gt: gts){
+        for(;startingIndex<endIndex;startingIndex++){
             double gtProb = 0;
             /*
 
@@ -549,8 +560,8 @@ public class GeneTreeProbabilityYF {
             computeR();
             */
 
-            for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(network)){
-                CoalescePattern cp = node.getData().get(gtIndex);
+            for(NetNode<CoalescePattern[]> node: Networks.postTraversal(network)){
+                CoalescePattern cp = node.getData()[startingIndex];
                 if(_printDetails){
                     System.out.println();
                     System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
@@ -637,7 +648,7 @@ public class GeneTreeProbabilityYF {
                     }
 
                     if(!node.isRoot()){
-                        for(NetNode<List<CoalescePattern>> parent: node.getParents()){
+                        for(NetNode<CoalescePattern[]> parent: node.getParents()){
                             for(Configuration coalescedConfig: cp.getACMinuss(parent)){
                                 coalescedConfig._totalProb = 0;
                                 Iterator<CoalescingInfo> coalescedInfos = coalescedConfig._coalesingInfo.iterator();
@@ -718,8 +729,6 @@ public class GeneTreeProbabilityYF {
             if(_printDetails){
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
-
-            gtIndex++;
         }
 
         return probList;
@@ -1042,8 +1051,10 @@ public class GeneTreeProbabilityYF {
 
     }
 
-    private void processNetwork(Network<List<CoalescePattern>> net, boolean fromScratch){
-        removeBinaryNodes(net);
+    private void processNetwork(Network<CoalescePattern[]> net, int totalNumGTs, boolean fromScratch){
+        if(fromScratch && !_parallel){
+            removeBinaryNodes(net);
+        }
         _netNodeNum = 0;
         int totalNode = 0;
         _node2ID = new HashMap<NetNode, Integer>();
@@ -1056,11 +1067,12 @@ public class GeneTreeProbabilityYF {
                 _netNodeNum++;
             }
         }
-        if(fromScratch){
-            computeNodeCoverage(net);
-            for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(net)){
-                node.setData(new ArrayList<CoalescePattern>());
+        if(fromScratch && !_parallel){
+            _totalCoverNodes = computeNodeCoverage(net);
+            for(NetNode<CoalescePattern[]> node: Networks.postTraversal(net)){
+                node.setData(new CoalescePattern[totalNumGTs]);
             }
+
         }
         else{
             computeM(net, totalNode);
@@ -1069,9 +1081,9 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private void computeM(Network<List<CoalescePattern>> net, int numEdge){
+    private void computeM(Network<CoalescePattern[]> net, int numEdge){
         _M = new boolean[numEdge][numEdge];
-        for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(net)){
+        for(NetNode<CoalescePattern[]> node: Networks.postTraversal(net)){
             int pID = _node2ID.get(node);
             _M[pID][pID] = true;
             for(NetNode child: node.getChildren()){
@@ -1116,13 +1128,13 @@ public class GeneTreeProbabilityYF {
         }
     }
 
-    private void removeBinaryNodes(Network<List<CoalescePattern>> net)
+    public static void removeBinaryNodes(Network net)
     {
         // Find all binary nodes.
-        List<NetNode<List<CoalescePattern>>> binaryNodes = new ArrayList<NetNode<List<CoalescePattern>>>();
-        List<NetNode<List<CoalescePattern>>> degreeTwoNodes = new ArrayList<NetNode<List<CoalescePattern>>>();
-
-        for (NetNode node : net.bfs()) {
+        List<NetNode> binaryNodes = new ArrayList<NetNode>();
+        List<NetNode> degreeTwoNodes = new ArrayList<NetNode>();
+        Network<Object> network = net;
+        for (NetNode node : network.bfs()) {
             if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
                 binaryNodes.add(node);
             }
@@ -1133,9 +1145,9 @@ public class GeneTreeProbabilityYF {
         }
 
         // Remove them.
-        for (NetNode<List<CoalescePattern>> node : binaryNodes) {
-            NetNode<List<CoalescePattern>> child = node.getChildren().iterator().next();	// Node's only child.
-            NetNode<List<CoalescePattern>> parent = node.getParents().iterator().next();	// Node's only parent.
+        for (NetNode<Object> node : binaryNodes) {
+            NetNode child = node.getChildren().iterator().next();	// Node's only child.
+            NetNode parent = node.getParents().iterator().next();	// Node's only parent.
             double distance = node.getParentDistance(parent) + child.getParentDistance(node);
             double inheritanceProb1 = node.getParentProbability(parent);
             inheritanceProb1 = Double.isNaN(inheritanceProb1)?1:inheritanceProb1;
@@ -1148,8 +1160,8 @@ public class GeneTreeProbabilityYF {
             child.setParentProbability(parent, gamma);
         }
 
-        for (NetNode<List<CoalescePattern>> node : degreeTwoNodes) {
-            NetNode<List<CoalescePattern>> newNode = new BniNetNode<List<CoalescePattern>>();
+        for (NetNode<CoalescePattern[]> node : degreeTwoNodes) {
+            NetNode<CoalescePattern[]> newNode = new BniNetNode<CoalescePattern[]>();
             List<NetNode> removedChildren = new ArrayList<NetNode>();
             for(NetNode child: node.getChildren()){
                 newNode.adoptChild(child, child.getParentDistance(node));
@@ -1166,11 +1178,12 @@ public class GeneTreeProbabilityYF {
 
 
 
-    private void computeNodeCoverage(Network<List<CoalescePattern>> net){
+    public static Set<NetNode> computeNodeCoverage(Network net){
         //List<Integer> leaves = new ArrayList<Integer>();
+        Network<Object> network = net;
         List<NetNode> allTotalNodes = new ArrayList<NetNode>();
-        _totalCoverNodes = new HashSet<NetNode>();
-        for(NetNode<List<CoalescePattern>> node: Networks.postTraversal(net)){
+        Set<NetNode> totalCoverNodes = new HashSet<NetNode>();
+        for(NetNode<Object> node: Networks.postTraversal(network)){
             if(node.isLeaf()){
                 //leaves.add(id);
                 allTotalNodes.add(node);
@@ -1178,20 +1191,20 @@ public class GeneTreeProbabilityYF {
 
             else if(node.isRoot()){
                 boolean ftotal = true;
-                for(NetNode<List<CoalescePattern>> child: node.getChildren()){
+                for(NetNode child: node.getChildren()){
                     if(!allTotalNodes.contains(child.getData())){
                         ftotal = false;
                         break;
                     }
                 }
                 if(!ftotal){
-                    _totalCoverNodes.add(node);
+                    totalCoverNodes.add(node);
                 }
 
             }
             else if(node.isTreeNode()){
                 boolean ftotal = true;
-                for(NetNode<List<CoalescePattern>> child: node.getChildren()){
+                for(NetNode child: node.getChildren()){
                     if(!allTotalNodes.contains(child.getData())){
                         ftotal = false;
                         break;
@@ -1206,25 +1219,26 @@ public class GeneTreeProbabilityYF {
                     boolean disconnect = isValidNetwork(net);
                     parent.adoptChild(node, distance);
                     if (disconnect) {
-                        _totalCoverNodes.add(node);
+                        totalCoverNodes.add(node);
                         allTotalNodes.add(node);
                     }
                 }
 
             }
         }
+        return totalCoverNodes;
     }
 
-    private boolean isValidNetwork(Network<List<CoalescePattern>> net){
+    private static boolean isValidNetwork(Network<Object> net){
         Set<NetNode> visited = new HashSet<NetNode>();
         Set<NetNode> seen = new HashSet<NetNode>();
-        for(NetNode<List<CoalescePattern>> node: net.bfs()){
+        for(NetNode<Object> node: net.bfs()){
             if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
             visited.add(node);
-            for(NetNode<List<CoalescePattern>> parent: node.getParents()){
+            for(NetNode parent: node.getParents()){
                 seen.add(parent);
             }
-            for(NetNode<List<CoalescePattern>> child: node.getChildren()){
+            for(NetNode child: node.getChildren()){
                 seen.add(child);
             }
         }
@@ -1480,7 +1494,7 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private class CoalescePattern{
+    public class CoalescePattern{
         private Map<NetNode, List<Configuration>> _ACMinuss;
         private Map<NetNode, List<Configuration>> _ACs; //for network node
         private Map<Configuration, List<Configuration>> _config2splitedConfigs;

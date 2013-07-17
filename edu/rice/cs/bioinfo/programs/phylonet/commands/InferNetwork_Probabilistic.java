@@ -29,6 +29,7 @@ import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilistically;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilisticallyBackup;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilisticallyParallel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkUsingBLProbabilistically;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -70,7 +71,12 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private double _Brent1 = 0.01;
     private double _Brent2 = 0.001;
     private boolean  _dentroscropeOutput = false;
+    private int _parallel = 1;
     private boolean _usingBL = false;
+    private Set<String> _fixedHybrid = new HashSet<String>();
+
+    //TODO
+    private int _hasTried = 0;
 
 
     public InferNetwork_Probabilistic(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
@@ -168,6 +174,25 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 else
                 {
                     errorDetected.execute("Expected value after switch -m.", mParam.SwitchParam.getLine(), mParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor plParam = new ParamExtractor("pl", this.params, this.errorDetected);
+            if(plParam.ContainsSwitch){
+                if(plParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _parallel = Integer.parseInt(plParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized maximum number of networks for search " + plParam.PostSwitchValue, plParam.PostSwitchParam.getLine(), plParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -pl.", plParam.SwitchParam.getLine(), plParam.SwitchParam.getColumn());
                 }
             }
 
@@ -270,6 +295,27 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
+            //TODO
+            ParamExtractor htParam = new ParamExtractor("ht", this.params, this.errorDetected);
+            if(htParam.ContainsSwitch)
+            {
+                if(htParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _hasTried = Integer.parseInt(htParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value of maximum branch length " + htParam.PostSwitchValue, htParam.PostSwitchParam.getLine(), htParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -l.", htParam.SwitchParam.getLine(), htParam.SwitchParam.getColumn());
+                }
+            }
+
             ParamExtractor lParam = new ParamExtractor("l", this.params, this.errorDetected);
             if(lParam.ContainsSwitch)
             {
@@ -354,14 +400,40 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                     {
                         errorDetected.execute("Unrecognized value after switch -p.", pParam.PostSwitchParam.getLine(), pParam.PostSwitchParam.getColumn());
                     }
-                    catch(RuntimeException e)
-                    {
-                        errorDetected.execute("Unexpected value after switch -p.", pParam.PostSwitchParam.getLine(), pParam.PostSwitchParam.getColumn());
-                    }
+
                 }
                 else
                 {
                     errorDetected.execute("Expected value after switch -p.", pParam.SwitchParam.getLine(), pParam.SwitchParam.getColumn());
+                }
+            }
+
+
+            ParamExtractor hParam = new ParamExtractor("h", this.params, this.errorDetected);
+            if(hParam.ContainsSwitch)
+            {
+                if(hParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        if(!(hParam.PostSwitchParam instanceof ParameterIdentList)){
+                            throw new RuntimeException();
+                        }
+                        ParameterIdentList hybrids = (ParameterIdentList)hParam.PostSwitchParam;
+                        for(String value: hybrids.Elements){
+                            _fixedHybrid.add(value);
+                        }
+
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after switch -h.", hParam.PostSwitchParam.getLine(), hParam.PostSwitchParam.getColumn());
+                    }
+
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -h.", hParam.SwitchParam.getLine(), hParam.SwitchParam.getColumn());
                 }
             }
 
@@ -397,8 +469,8 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 _usingBL = true;
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl","f");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl","f","pl","h","ht");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam,plParam,hParam,htParam);
         }
 
 
@@ -455,7 +527,6 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         if(_startSpeciesNetwork!=null){
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
-
         //long start = System.currentTimeMillis();
 
         /*
@@ -472,10 +543,21 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
         List<Tuple<Network, Double>> resultTuples;
         if(!_usingBL){
-            InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
-        //InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
-            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, speciesNetwork);
-            resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+            /*
+            if(_parallel ==1){
+                InferILSNetworkProbabilistically inference = new InferILSNetworkProbabilistically();
+                inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, speciesNetwork);
+                resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+            }
+            */
+            //else{
+                //TODO hybrid, check the starting network
+                InferILSNetworkProbabilisticallyParallel inference = new InferILSNetworkProbabilisticallyParallel();
+                inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid);
+                resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks, _hasTried);
+            //}
+
+
         }
         else{
             InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
@@ -529,4 +611,9 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         return result.toString();
 
     }
+
+
+
+
+
 }

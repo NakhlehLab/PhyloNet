@@ -27,6 +27,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYFBackup3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -233,7 +234,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap, false);
         }
         else{
-            GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
+            GeneTreeProbabilityYFBackup3 gtp = new GeneTreeProbabilityYFBackup3();
             probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap);
         }
         Iterator<Double> nbCounterIt = nbCounter.iterator();

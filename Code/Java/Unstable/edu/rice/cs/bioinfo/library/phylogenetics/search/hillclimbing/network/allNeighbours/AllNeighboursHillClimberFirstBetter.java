@@ -19,6 +19,7 @@ import java.util.Comparator;
 public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> extends AllNeighboursHillClimberBase<G,N,E,S> {
     private NetworkNeighbourhoodRandomWalkGenerator<G,N,E> _networkGenerator;
     private long _maxFailure = -1;
+    private long _hasTried = 0;
 
     public AllNeighboursHillClimberFirstBetter(NetworkNeighbourhoodRandomWalkGenerator<G, N, E> generator) {
         _networkGenerator = generator;
@@ -41,11 +42,17 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
         return super.search(solution, getScore, scoreComparator, maxExaminations, maxGenerations, diameterLimit);
     }
 
+    public HillClimbResult<G,S> search(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, Long maxExaminations, int maxGenerations, Long maxFailure, int diameterLimit, int hasTried){
+        _maxFailure = maxFailure;
+        _hasTried = hasTried;
+        return super.search(solution, getScore, scoreComparator, maxExaminations, maxGenerations, diameterLimit);
+    }
+
 
 
     public HillClimbResult<G,S> search(G bestSeenSolution, Func1<G,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore)
     {
-        long tried = 0;
+        long tried = _hasTried;
         while(_continueSearch)
         {
 
@@ -62,6 +69,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
                 tried++;
                 //System.out.println("Failure #"+tried+": " + bestSeenSolutionScore);
             }
+            System.out.println("#"+tried);
             if(_maxFailure == tried){
                 concludeSearch();
             }

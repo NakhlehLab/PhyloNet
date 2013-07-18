@@ -1,0 +1,4 @@
+5
+human TATAT
+gorilla CACCC
+chimp CATAC

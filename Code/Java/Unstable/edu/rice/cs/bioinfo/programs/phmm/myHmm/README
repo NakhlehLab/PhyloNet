@@ -1,0 +1,127 @@
+README FILE FOR LUAY'S JAHMM
+
+/**
+* Luay's JaHmm implemented by Jingxuan Dai and Kathy Truong
+*/
+
+******************
+File Formats
+******************
+
+-> Basic Info File
+		This is a .txt file that should contain general information about your 
+		sequence files. 
+
+		name format: filename.txt
+
+		Format:
+		Line 1) NumberOfSequences (this should be the same number of species)
+		Line 2) Legal Alphabet symbols each separated by a space
+		Line 3) Species or Taxa each separated by a space (note: this should appear
+		in the same order as they are in the sequence files)
+
+		Example:
+		3\n
+		A C T G\n
+		Human Chimp Gorilla\n
+
+
+-> Tree File
+		This .tree file contains all the possible trees or states needed for the 
+		Hmm.
+
+		name format: treefilename.tree
+
+		Format of trees should be in NEWICK format
+		The File itself is in NEXUS format.
+		
+		Format:
+		line 1) #NEXUS
+		line 2) begin trees;
+		line 3) tree nameOfTree1 = Tree in newick format
+		line 4) tree nameOfTree2 = Tree in newick format
+		line 5) tree nameOfTree3 = Tree in newick format
+				.
+				.
+				.
+				.
+		line *) end;
+
+		Example:
+		#NEXUS
+		begin trees;
+		tree one = (human:10,(chimp:20, gorilla:5):2);
+		tree two  = (chimp:10,(human:20, gorilla:5):2);
+		tree three = (gorilla:10,(human:20, chimp:5):2);
+		end;
+
+		Important NOTES: The order of the trees will be used as a mapping to 
+						states in the JAHMM implementation. ie. the first tree
+						will correspond to State 0 in HMM.
+
+
+-> Matrix File
+		This .matrix file will contain the state (trees) transition
+		probabilities. Once again, the order of the trees given in the .tree 
+		file will be used as the mapping and indexing of the matrix.
+		ie. matrix[0][1] will be the transition from tree 1 to tree 2.
+
+		Example for a model with 3 trees (3 states):
+		.2 .3 .5
+		.3 .5 .3
+		.5 .2 .2
+
+		Note: sum of probabilities must add up to 1 in each row and in each 
+				column
+
+
+-> Sequence File
+		This .seq file will contain all the observations sequence of the given
+		genomes.
+
+		Format:
+		line 1) LengthOfSequence
+		line 2) Type1 Sequence
+		line 3) Type2 Sequence
+		line 4) Type3 Sequence
+				.
+				.
+				.
+
+		Example:
+		5\n
+		human ACTGA\n
+		gorilla TATAG\n
+		chimp CCCTG\n
+
+		Important notes: order of taxa sequence here MUST MATCH the order given
+						in the basic info file.
+		****A Newline character is important to terminate every sequence line
+
+
+*********************************************************************
+Compilation Requirements and Instructions on how to Use Luay's JAHMM
+*********************************************************************
+Need to have at hand:
+	1. a basic info file
+	2. a trees file
+	3. a state transition probability matrix
+	4. initial state probabilities
+
+Compile the project with the included junit3.8.jar in the build path
+
+Run runHmm.java file.
+Follow the instructions and provide appropriate inputs
+
+
+***************************************
+Credits
+***************************************
+Our Hmm model is a modified of the JaHmm
+	- http://www.run.montefiore.ulg.ac.be/~francois/software/jahmm/
+Our TreeParser is a slightly modified version of James
+	- https://github.com/PMSeitzer/JContextExplorer/blob/master/JContextExplorer/src/newickTreeParsing/TreeParser.java
+
+ 
+
+

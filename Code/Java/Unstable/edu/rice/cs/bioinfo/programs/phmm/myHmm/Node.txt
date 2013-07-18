@@ -1,0 +1,81 @@
+package phylogeny;
+
+import java.util.ArrayList;
+
+/**
+ * Nodes class for a tree
+ */
+public abstract class Node {
+
+	protected Node left;			//left child
+	protected Node right;			//right child
+	protected double tLeft;			// left branch length
+	protected double tRight;		// right branch length
+	protected ArrayList<Double> likelihood;		// likelihood ArrayList
+	protected char[] genes = {'A', 'C', 'G', 'T'};
+	protected double lamda = 1;		// this value of the evolutionary constant
+	
+	/**
+	 * Constructor for Node. 
+	 * Should use constructors for specific node types instead. LeafNode or InternalNode
+	 */
+	public Node() {}
+	
+	/**
+	 * @return The Left child node
+	 */
+	abstract public Node getLeft();
+	
+	/**
+	 * @return The Right child node
+	 */
+	abstract public Node getRight();
+	
+	/**
+	 * @return The node's likelihood arraylist
+	 */
+	abstract public ArrayList<Double>  getLikelihood();
+	
+	/**
+	 * @return True if node is a leafNode, false otherwise
+	 */
+	abstract boolean isLeaf();
+	
+	/**
+	 * 
+	 * @param i - A Nucleotide Letter of type char {A, T, G, C}
+	 * @param j	- A Nucleotide Letter of type char {A, T, G, C}
+	 * @param u - A Double - base rate substitution/evolutionary constat
+	 * @param t - A Double - the time interval or branch length time
+	 * @return returns the Pij value, or the transition probability between two nucleotides given the branch length
+	 */
+	public double getPij(char i, char j, double u, double t) {
+		double p;
+		p = (3/4) * (1-Math.pow(Math.E,-3*u*t/4));
+		return p;
+	}
+	
+	/**
+	 * @return A clone of the current node itself
+	 */
+	abstract public Node cloneNode();
+
+	/**
+	 * @param species - A String taxa to be added as a leaf to the tree
+	 * @return An Arraylist of all the new nodes created by adding new leaf
+	 */
+	abstract public ArrayList<Node> addNewLeaf(String species);
+
+	/**
+	 * @return An ArrayList of all the LeafNodes that this node can reach
+	 */
+	abstract public ArrayList<LeafNode> getLeaves();
+	
+	/**
+	 * String representation of the node for debugging and user-viewing purposes
+	 */
+	@Override
+	abstract public String toString();
+	
+	
+}

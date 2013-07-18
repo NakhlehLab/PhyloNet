@@ -1,0 +1,4 @@
+5
+human GTACA
+gorilla CAGAA
+chimp TACAA

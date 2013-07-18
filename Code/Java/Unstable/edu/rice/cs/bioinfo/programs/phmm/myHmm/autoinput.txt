@@ -1,0 +1,13 @@
+1
+basicInfo.txt
+y
+3
+treeoflife.tree
+y
+.3 .2 .5
+a
+matrix.matrix
+1
+1
+myseq.seq myseq2.seq
+

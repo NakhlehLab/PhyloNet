@@ -116,6 +116,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         Comparator<Double> comparator = getDoubleScoreComparator();
         //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
         HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
+        //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations,  _diameterLimit); // search starts here
         //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, new Long(100)); // search starts here
 
         List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
@@ -268,7 +269,8 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
-                //System.out.println(network2String(_optimalNetworks[0]));
+                //System.out.println(score + ": "+network2String(speciesNetwork));
+                //System.out.println(_optimalScores[0] + ":" + network2String(_optimalNetworks[0]));
                 //System.out.println();
                 //System.out.println();
                 //System.out.println(network2String(speciesNetwork) + ": "+score);
@@ -488,10 +490,14 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
         }
         //System.out.println();
         //System.out.println(network2String(speciesNetwork));
+        //long start = System.currentTimeMillis();
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList));  // records the GTProb of the network at all times
         final Container<Integer> callCount = new Container<Integer>(0);
-
-
+        /*
+        System.out.println("\n"+(System.currentTimeMillis()-start));
+        System.out.println(lnGtProbOfSpeciesNetwork.getContents());
+        System.exit(0);
+        */
         int roundIndex = 0;
         for(; roundIndex <_maxRounds && continueRounds; roundIndex++)
         {
@@ -651,7 +657,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
     protected double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
         GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles);
+        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles, 0);
         double total = 0;
         for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
             double maxProb = 0;
@@ -700,7 +706,7 @@ public class InferILSNetworkProbabilistically extends MDCOnNetworkYFFromRichNewi
 
     public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
         GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, childNodes, parentNodes);
+        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, childNodes, parentNodes, 0, geneTrees.size());
         double total = 0;
         for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
             double maxProb = 0;

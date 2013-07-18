@@ -22,6 +22,7 @@ public class Parser {
 	private ArrayList<EvoTree> trees_states;						/* the list of trees or states in the hmm */
 	private HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
 	private HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
+	private static double baseSub;											/* Base substitution rate for Juke Cantor Model used to calculate Emissions Probabilities */
 	private int seqNum;												/* Number of sequences */
 	
 	/**
@@ -253,6 +254,14 @@ public class Parser {
 		this.trees_states = trees;
 	}
 	
+	/**
+	 * Set the Base Substitution Rate for the Jukes Cantor Formula
+	 * for the Emissions Probabilities
+	 */
+	public void setBaseSub(double u) {
+		Parser.baseSub = u;
+	}
+	
 	
 	/**
 	 * @return Number of Taxa or types of sequences
@@ -347,7 +356,7 @@ public class Parser {
 				EvoTree aTree = tree_states.get(i);
 				mapObsToLeaves(aTree, obs, seqType);
 				// input Likelihood into HMM here
-				double myLikelihood = aTree.getLikelihood();
+				double myLikelihood = aTree.getLikelihood(baseSub);
 				MyHMM.setEmission(myhmm, i, obsInt, myLikelihood);
 				aTree.clearTree();
 			}

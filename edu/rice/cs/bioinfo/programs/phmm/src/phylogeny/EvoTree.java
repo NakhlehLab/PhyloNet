@@ -100,10 +100,10 @@ public class EvoTree {
 	 * @return the Likelihood of this tree with the given leaf sequence
 	 * Note: the leaves of the tree must already be populated with the appropriate sequence
 	 */
-	public double getLikelihood() {
+	public double getLikelihood(double u) {
 		double result = 0;
 		for (int i = 0; i < 4; i++) {
-			result += 0.25 * root.getLikelihood().get(i);
+			result += 0.25 * root.getLikelihood(u).get(i);
 		}
 		return result;
 	}

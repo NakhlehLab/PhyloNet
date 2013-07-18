@@ -223,7 +223,7 @@ public class Node {
 	/**
 	 * @return The node's likelihood arraylist
 	 */
-	public ArrayList<Double>  getLikelihood() {
+	public ArrayList<Double>  getLikelihood(double u) {
 		if (isLeaf()) {
 			//System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
 			
@@ -235,16 +235,16 @@ public class Node {
 				return this.likelihood;
 			}
 			
-			ArrayList<Double> leftLike = children.get(0).getLikelihood();
-			ArrayList<Double> rightLike = children.get(1).getLikelihood();
+			ArrayList<Double> leftLike = children.get(0).getLikelihood(u);
+			ArrayList<Double> rightLike = children.get(1).getLikelihood(u);
 			ArrayList<Double> result = new ArrayList<Double>();
 			
 			for (int i = 0; i < 4; i++) {
 				double tempLeft = 0.0;
 				double tempRight = 0.0;
 				for (int j = 0; j < 4; j++) {
-					tempLeft += leftLike.get(j) * getPij(genes[i], genes[j], lamda, children.get(0).getTbranch());
-					tempRight += rightLike.get(j) * getPij(genes[i], genes[j], lamda, children.get(1).getTbranch());
+					tempLeft += leftLike.get(j) * getPij(genes[i], genes[j], u, children.get(0).getTbranch());
+					tempRight += rightLike.get(j) * getPij(genes[i], genes[j], u, children.get(1).getTbranch());
 				}
 				result.add(tempLeft * tempRight);
 			}

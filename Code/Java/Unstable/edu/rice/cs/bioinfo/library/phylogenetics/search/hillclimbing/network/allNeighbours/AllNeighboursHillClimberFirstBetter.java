@@ -69,7 +69,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
                 tried++;
                 //System.out.println("Failure #"+tried+": " + bestSeenSolutionScore);
             }
-            System.out.println("#"+tried);
+            //System.out.println("#"+tried);
             if(_maxFailure == tried){
                 concludeSearch();
             }

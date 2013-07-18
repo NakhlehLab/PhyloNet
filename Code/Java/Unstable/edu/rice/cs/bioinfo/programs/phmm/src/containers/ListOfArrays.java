@@ -45,7 +45,8 @@ public class ListOfArrays<Type> extends AbstractList<Type> implements
 	private void init(IArrayFactory<Type> arrayFactory, int growthIncrement,
 			int initialCapacity) {
 
-		arrays = new ArrayList<>();
+	    // kliu - added IArray<Type> argument to fix compilation error
+		arrays = new ArrayList<IArray<Type>>();
 		
 		assert (growthIncrement > 0);
 		assert (initialCapacity > 0);

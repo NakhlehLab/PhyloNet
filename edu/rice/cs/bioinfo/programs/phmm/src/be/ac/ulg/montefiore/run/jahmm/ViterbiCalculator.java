@@ -75,7 +75,8 @@ public class ViterbiCalculator
 		//building Psy array
 		System.out.println("Building Psy Array");
 		for (int i = 0; i < oseq.size(); i++) {
-			Psy.add(new ListOfArrays<>(arrayFactory, hmm.nbStates()));
+		    // kliu - added Integer type argument to fix compilation error
+			Psy.add(new ListOfArrays<Integer>(arrayFactory, hmm.nbStates()));
 			if ((i%10000) == 0) {
 				System.out.print("\r"+ (((double)i/(double)oseq.size()) * 100.0) + "%");
 			}

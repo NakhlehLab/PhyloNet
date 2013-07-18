@@ -47,9 +47,7 @@ public class ViterbiCalculator
 	 * papers.
 	 */
 	private double[][] delta;
-	//private int[][] psy;
 	private List<ListOfArrays<Integer>> Psy;
-	//private int[] stateSequence;
 	private List<Integer> StateSequence;
 	private double lnProbability;
 	
@@ -67,12 +65,15 @@ public class ViterbiCalculator
 		if (oseq.isEmpty())
 			throw new IllegalArgumentException("Invalid empty sequence");
 		
-		delta = new double[2][hmm.nbStates()];
-		//psy = new int[oseq.size()][hmm.nbStates()];
-		IArrayFactory<Integer> arrayFactory = new IntArrayFactory();
 		final int growthSize = 10000;
-		StateSequence = new ListOfArrays<Integer>(arrayFactory, growthSize);
+		
+		IArrayFactory<Integer> arrayFactory = new IntArrayFactory();
+		delta = new double[2][hmm.nbStates()];
 		Psy = new ArrayList<ListOfArrays<Integer>>();
+		StateSequence = new ListOfArrays<Integer>(arrayFactory, growthSize);
+		
+		//building Psy array
+		System.out.println("Building Psy Array");
 		for (int i = 0; i < oseq.size(); i++) {
 			Psy.add(new ListOfArrays<>(arrayFactory, hmm.nbStates()));
 			if ((i%10000) == 0) {
@@ -80,9 +81,8 @@ public class ViterbiCalculator
 			}
 		}
 		
+		System.out.print("\r100% Done!                             ");
 		System.out.println("");
-		//stateSequence = new int[oseq.size()];
-		
 		
 		MemoryReport.report();
 		
@@ -92,6 +92,7 @@ public class ViterbiCalculator
 			Psy.get(0).add(i, 0);
 		}
 		
+		System.out.println("Begin computing Viterbi's algorithm : FORWARD PART ");
 		Iterator<? extends O> oseqIterator = oseq.iterator();
 		if (oseqIterator.hasNext())
 			oseqIterator.next();
@@ -109,8 +110,15 @@ public class ViterbiCalculator
 				delta[0][k] = delta[1][k];
 			}
 			
+			if ((t%10000) == 0) {
+				System.out.print("\r"+ (((double)t/(double)oseq.size()) * 100.0) + "%");
+			}
+			
 			t++;
+			
 		}
+		
+		System.out.print("\r 100% DONE!                                \n");
 		
 		lnProbability = Double.MAX_VALUE;
 		
@@ -120,22 +128,27 @@ public class ViterbiCalculator
 			
 			if (lnProbability > thisProbability) {
 				lnProbability = thisProbability;
-				//stateSequence[oseq.size() - 1] = i;
 				index = i;
-				//StateSequence.add(oseq.size()-1, i);	
 			}
 		}
 		StateSequence.add(index);
 		
 		lnProbability = -lnProbability;
 
+		
+		System.out.println("Begin computing Viterbi's algorithm : BACKWARD PART ");
 		int ss = 0; 
 		for (int t2 = oseq.size() - 2; t2 >= 0; t2--) {
-			//stateSequence[t2] = psy[t2+1][stateSequence[t2+1]];
-
 			StateSequence.add(Psy.get(t2+1).get(StateSequence.get(ss)));
+			
+			if ((ss%10000) == 0) {
+				System.out.print("\r"+ (((double)ss/(double)oseq.size()) * 100.0) + "%");
+			}
+			
 			ss++;
 		}
+		
+		System.out.print("\r 100% DONE!                                   \n");
 		
 		
 	}
@@ -162,7 +175,6 @@ public class ViterbiCalculator
 		
 		
 		delta[1][j] = minDelta - Math.log(hmm.getOpdf(j).probability(o));
-		//psy[t][j] = min_psy;
 		Psy.get(t).add(min_psy);
 		
 	}
@@ -207,6 +219,7 @@ public class ViterbiCalculator
 	 * 
 	 */
 	public void printStateSequence(String filename) {
+		System.out.println("Begin Printing State Sequence to File.");
 		try {
 		    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
 		    for (int j = StateSequence.size() -1; j >= 0; j--) {
@@ -215,7 +228,13 @@ public class ViterbiCalculator
 		    	if (j % 1024 == 0) {
 		    		out.flush();
 		    	}
+		    	
+		    	if ((j %10000) == 0) {
+					System.out.print("\r"+ (((double)j/(double)StateSequence.size()) * 100.0) + "%");
+				}
 		    }
+		    
+		    System.out.print("\r 100% DONE!                                \n");
 		    
 		    out.close();
 		} catch (IOException e) {

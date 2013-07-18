@@ -1,0 +1,8 @@
+#NEXUS
+begin trees;
+tree one = (human:100,(chimp:20, gorilla:5):200);
+tree two  = (chimp:15,(human:10, gorilla:5):500);
+tree three = (gorilla:35,(human:2, chimp:2):10);
+end;
+
+

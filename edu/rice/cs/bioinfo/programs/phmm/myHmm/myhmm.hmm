@@ -1,0 +1,13 @@
+Hmm v1.0
+
+NbStates 2
+
+State
+Pi 0.5
+A .9 .1
+IntegerOPDF [0.9 0.1 ]
+
+State
+Pi 0.5
+A .1 .9
+IntegerOPDF [0.1 0.9 ]

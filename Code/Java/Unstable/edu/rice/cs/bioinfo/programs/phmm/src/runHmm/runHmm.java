@@ -50,6 +50,7 @@ public class runHmm {
 			System.out.println("Input the basic file info path name:\n (note: see README for file format) \n ");
 			basicFileName = in.readLine();
 			
+			
 			// Get Trees/States Information
 			boolean getNumStates = true;
 			while (getNumStates) {
@@ -75,7 +76,7 @@ public class runHmm {
 			buildTrees();
 			
 			//Reading in Basic Info file and store information
-			buildParser();
+			buildParser(in);
 			
 			//Build HMM
 			buildHMM();
@@ -235,11 +236,26 @@ public class runHmm {
 	 * to build the Parser for reading sequences
 	 * @throws Exception 
 	 */
-	private static void buildParser() throws Exception {
+	private static void buildParser(BufferedReader in) throws Exception {
+		boolean getBSR = true;
+		double baseSub = 0.0;
+		while (getBSR) {
+			try {
+				System.out.println("Input the base subsitution rate");
+				baseSub = Double.parseDouble(in.readLine());
+			}
+			catch (Exception e) {
+				System.out.println(e);
+				System.out.println("Not a double! Please try again!");
+			}
+		}
+		
+		
 		if(basicFileName != null) {
 			System.out.println("\nNow reading and saving Basic Info for parser . . .");
 			fParser = new Parser(basicFileName);
 			fParser.setTrees(trees_states);
+			fParser.setBaseSub(baseSub);
 		} else throw new ParserFileException("Cannot read Basic Info File!");
 		
 	}

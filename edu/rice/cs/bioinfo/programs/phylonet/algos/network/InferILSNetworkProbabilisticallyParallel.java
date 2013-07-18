@@ -214,7 +214,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         }
 
         String newNetwork = network2String(startingNetwork);
-        System.out.println("\n" + newNetwork);
+        //System.out.println("\n" + newNetwork);
         return makeNetwork(newNetwork);
 
     }
@@ -342,9 +342,11 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
                         //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
+                /*
                 System.out.println(score + ": "+network2String(speciesNetwork));
                 System.out.println(_optimalScores[0] + ":" + network2String(_optimalNetworks[0]));
                 System.out.println();
+                */
                 //System.out.println();
                 //System.out.println(network2String(speciesNetwork) + ": "+score);
                 //System.out.println();

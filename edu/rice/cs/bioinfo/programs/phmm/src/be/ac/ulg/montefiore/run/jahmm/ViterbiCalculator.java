@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+// kliu - these appear to be new
 import runHmm.MemoryReport;
 import containers.IArrayFactory;
 import containers.IntArrayFactory;
@@ -47,6 +48,8 @@ public class ViterbiCalculator
 	 * papers.
 	 */
 	private double[][] delta;
+    // kliu - not sure why switched from original int indexing to 
+    // Integer indexing?
 	private List<ListOfArrays<Integer>> Psy;
 	private List<Integer> StateSequence;
 	private double lnProbability;

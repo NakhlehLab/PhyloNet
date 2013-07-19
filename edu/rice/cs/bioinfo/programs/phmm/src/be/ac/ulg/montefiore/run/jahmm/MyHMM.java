@@ -23,9 +23,9 @@ public class MyHMM {
 		for (int i = 0; i < nbStates; i++) {
 			double[] probabilities = new double[nbObs];
 			for (int j = 0; j < nbObs; j++) {
-			    // kliu - this doesn't look right??
-			    // need to hook in (or pre-compute) proper PDF for each possible data column
-			    // against each possible hidden state's (parental_tree, gene_tree) pair
+			    // chatted with Jingxuan and Kathy
+			    // this is just a default null value
+			    // look in Parser/Tree structure for Felsenstein's peeling algorithm implementation
 				probabilities[j] = 10;
 			}
 			Opdf<ObservationInteger> temp = new OpdfInteger(probabilities);

@@ -6,6 +6,8 @@ import java.util.List;
 
 import phylogeny.EvoTree;
 
+// kliu no state here - just a container for static methods
+
 public class MyHMM {
 	
 	public static Hmm<ObservationInteger> buildMyHmm(double[] pi, double[][] a, int nbObs) {
@@ -21,6 +23,9 @@ public class MyHMM {
 		for (int i = 0; i < nbStates; i++) {
 			double[] probabilities = new double[nbObs];
 			for (int j = 0; j < nbObs; j++) {
+			    // kliu - this doesn't look right??
+			    // need to hook in (or pre-compute) proper PDF for each possible data column
+			    // against each possible hidden state's (parental_tree, gene_tree) pair
 				probabilities[j] = 10;
 			}
 			Opdf<ObservationInteger> temp = new OpdfInteger(probabilities);

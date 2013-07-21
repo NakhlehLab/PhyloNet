@@ -9,11 +9,13 @@ public class Node {
 
 	protected ArrayList<Node> children;
 	protected Node parent;
+    // kliu - this will need to be set via E-M later
 	protected double tbranch;
 	protected String taxa;
 	protected String obs;
 	protected ArrayList<Double> likelihood;		// likelihood ArrayList
 	protected char[] genes = {'A', 'C', 'G', 'T'};
+    // kliu - what is this?
 	protected double lamda = .1;		// this value of the evolutionary constant
 	
 	/**
@@ -337,7 +339,8 @@ public class Node {
 	}
 	
 	
-	
+
+    // kliu - Jukes-Cantor model calculation
 	/**
 	 * @param i - A Nucleotide Letter of type char {A, T, G, C}
 	 * @param j	- A Nucleotide Letter of type char {A, T, G, C}

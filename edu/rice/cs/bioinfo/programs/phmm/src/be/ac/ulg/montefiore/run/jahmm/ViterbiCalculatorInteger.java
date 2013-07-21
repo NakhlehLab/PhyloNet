@@ -6,6 +6,10 @@ import phylogeny.EvoTree;
 
 import reader.*;
 
+// kliu - pull in additional library support
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+
+
 /* 
  * This class is the Viterbi Calculator that especially works for our integer observations.
  */
@@ -35,7 +39,7 @@ public class ViterbiCalculatorInteger {
 	 */
 	public <O extends Observation> 
 	ViterbiCalculatorInteger(List<ObservationInteger> oseq, 
-			ArrayList<EvoTree> treeStates, HashMap<String, Integer> seqType, HashMap<String, Integer> letterMap,
+				 ArrayList<Tuple<EvoTree,EvoTree>> treeStates, HashMap<String, Integer> seqType, HashMap<String, Integer> letterMap,
 			Hmm<ObservationInteger> hmm)
 	{
 		if (oseq.isEmpty())

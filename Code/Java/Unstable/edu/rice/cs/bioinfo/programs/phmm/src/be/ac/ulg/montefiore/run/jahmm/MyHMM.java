@@ -6,6 +6,9 @@ import java.util.List;
 
 import phylogeny.EvoTree;
 
+// kliu - pull in additional library support
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+
 // kliu no state here - just a container for static methods
 
 public class MyHMM {
@@ -57,7 +60,7 @@ public class MyHMM {
 	 *         This array can be modified.
 	 */
 	public static int[] mostLikelyStateSequenceForIntObs(List<ObservationInteger> oseq, 
-			ArrayList<EvoTree> treeStates, HashMap<String, Integer> seqType, HashMap<String, Integer> letterMap,
+							     ArrayList<Tuple<EvoTree,EvoTree>> treeStates, HashMap<String, Integer> seqType, HashMap<String, Integer> letterMap,
 			Hmm<ObservationInteger> hmm)
 	{
 		return (new ViterbiCalculatorInteger(oseq, treeStates, seqType, letterMap, hmm)).stateSequence();

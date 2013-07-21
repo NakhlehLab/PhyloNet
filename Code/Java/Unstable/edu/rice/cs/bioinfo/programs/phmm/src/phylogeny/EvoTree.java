@@ -2,6 +2,9 @@ package phylogeny;
 
 import java.util.ArrayList;
 
+// kliu - use this as the gene geneology class.
+// Each hidden state will then correspond to a (parental tree, gene genealogy) pair.
+
 /**
  * EvoTree is a class that stores an entire evolution tree.
  * It can be traversed through by recursion - tree/similar to linked list style.
@@ -93,7 +96,8 @@ public class EvoTree {
 	public int getID() {
 		return this.treeID;
 	}
-	
+
+    // kliu - entry point for emission probability calculation
 	/**
 	 * Returns the probability of this tree given the observed the sequence of genome
 	 * P(D|Tree)
@@ -103,6 +107,7 @@ public class EvoTree {
 	public double getLikelihood() {
 		double result = 0;
 		for (int i = 0; i < 4; i++) {
+		    // kliu - ArrayList recalculated four times over
 			result += 0.25 * root.getLikelihood().get(i);
 		}
 		return result;

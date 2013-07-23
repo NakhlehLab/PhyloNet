@@ -5,18 +5,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
 import reader.Parser;
 import reader.ParserFileException;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
+import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 //import be.ac.ulg.montefiore.run.jahmm.MyHMM;
-import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
-
 // kliu - pull in additional library support
-import be.ac.ulg.montefiore.run.jahmm.phmm.*;
-import java.util.List;
 
 public class runHmm {
 

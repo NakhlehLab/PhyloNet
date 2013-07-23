@@ -13,9 +13,10 @@ public class Node {
 	protected double tbranch;
 	protected String taxa;
 	protected String obs;
-	protected ArrayList<Double> likelihood;		// likelihood ArrayList
+	protected ArrayList<Double> likelihood = new ArrayList<Double>(4);	// likelihood ArrayList
+	protected ArrayList<Double> leftLike;
+	protected ArrayList<Double> rightLike;
 	protected char[] genes = {'A', 'C', 'G', 'T'};
-    // kliu - what is this?
 	protected double lamda = .1;		// this value of the evolutionary constant
 	
 	/**
@@ -24,9 +25,11 @@ public class Node {
 	 */
 	public Node() {
 		this.children = null;
-		this.likelihood = null;
 		this.parent = null;
 		this.tbranch = -1;
+		for (int i = 0; i < 4; i++) {
+			likelihood.add(-1.0);
+		}
 	}
 	
 	/**
@@ -39,11 +42,14 @@ public class Node {
 	public Node(Node leftChild, Node rightChild, Node parent, double tbranch) {
 		this.setLeftChild(leftChild);
 		this.setRightChild(rightChild);
-		this.likelihood = null;
 		this.parent = parent;
 		this.tbranch = tbranch;
 		this.taxa = null;
 		this.obs = null;
+		
+		for (int i = 0; i < 4; i++) {
+			likelihood.add(-1.0);
+		}
 	}
 	
 	/**
@@ -53,11 +59,13 @@ public class Node {
 	 */
 	public Node(Node parent, double tbranch) {
 		this.children = null;
-		this.likelihood = null;
 		this.parent = parent;
 		this.tbranch = tbranch;
 		this.taxa = null;
 		this.obs = null;
+		for (int i = 0; i < 4; i++) {
+			likelihood.add(-1.0);
+		}
 	}
 	
 	/**
@@ -65,11 +73,13 @@ public class Node {
 	 */
 	public Node(String taxa, Node parent, double tbranch) {
 		this.children = null;
-		this.likelihood = null;
 		this.parent = parent;
 		this.tbranch = tbranch;
 		this.taxa = taxa;
 		this.obs = null;
+		for (int i = 0; i < 4; i++) {
+			likelihood.add(-1.0);
+		}
 		
 	}
 	
@@ -78,13 +88,14 @@ public class Node {
 	 */
 	public Node(String taxa) {
 		this.children = null;
-		this.likelihood = null;
 		this.parent = null;
 		this.tbranch = -1;
 		this.taxa = taxa;
 		this.obs = null;
+		for (int i = 0; i < 4; i++) {
+			likelihood.add(-1.0);
+		}
 	}
-	
 	
 	
 	/**
@@ -149,7 +160,6 @@ public class Node {
 		this.obs = obs;
 		
 		// sets likelihood of leaf based on observation
-		likelihood = new ArrayList<Double>(4);
 		int index = -1;
 		for (int i = 0; i < genes.length; i++) {
 			if (obs.charAt(0) == genes[i]) {
@@ -159,9 +169,9 @@ public class Node {
 		
 		for (int i = 0; i < 4; i++) {
 			if (i == index) {
-				likelihood.add(i, 1.0);
+				likelihood.set(i, 1.0);
 			}
-			else likelihood.add(i, 0.0);
+			else likelihood.set(i, 0.0);
 		}
 		
 	}
@@ -227,19 +237,14 @@ public class Node {
 	 */
 	public ArrayList<Double>  getLikelihood() {
 		if (isLeaf()) {
-			//System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
+			System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
 			
 			return this.likelihood;
 		}
 		else {
-			if (this.likelihood != null) {
-				//System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
-				return this.likelihood;
-			}
 			
-			ArrayList<Double> leftLike = children.get(0).getLikelihood();
-			ArrayList<Double> rightLike = children.get(1).getLikelihood();
-			ArrayList<Double> result = new ArrayList<Double>();
+			leftLike = children.get(0).getLikelihood();
+			rightLike = children.get(1).getLikelihood();
 			
 			for (int i = 0; i < 4; i++) {
 				double tempLeft = 0.0;
@@ -248,14 +253,14 @@ public class Node {
 					tempLeft += leftLike.get(j) * getPij(genes[i], genes[j], lamda, children.get(0).getTbranch());
 					tempRight += rightLike.get(j) * getPij(genes[i], genes[j], lamda, children.get(1).getTbranch());
 				}
-				result.add(tempLeft * tempRight);
+				likelihood.set(i, tempLeft * tempRight);
 			}
 			
-			this.likelihood = result;
-			
-			//System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
 
-			return result;
+			
+			System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
+
+			return this.likelihood;
 		}
 	}
 	

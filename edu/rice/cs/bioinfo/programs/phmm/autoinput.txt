@@ -1,13 +1,11 @@
-1
-basicInfo.txt
-y
-3
-treeoflife.tree
-y
-.3 .2 .5
+0
+SpanishBasicInfo
+15
+spanishtree.tree
+.066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667
 a
-matrix.matrix
+spanish.matrix
+0
+15treeSpanish.states
+spanish.seq
 1
-1
-myseq.seq myseq2.seq
-

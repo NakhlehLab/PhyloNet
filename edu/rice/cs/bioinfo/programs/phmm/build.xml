@@ -48,7 +48,8 @@
     <!-- Create the distribution directory -->
     <mkdir dir="${dist}/lib"/>
 
-    <jar destfile="${dist}/lib/phmm-${DSTAMP}.jar" basedir="${build}" filesetmanifest="skip">
+    <!-- ${dist}/lib/phmm-${DSTAMP}.jar -->
+    <jar destfile="${dist}/lib/phmm.jar" basedir="${build}" filesetmanifest="skip">
       <!-- pull in classes in jar files from dependencies -->
       <!-- basically statically linking to libraries -->
       <zipgroupfileset dir="${dependencies}" includes="*.jar"/>

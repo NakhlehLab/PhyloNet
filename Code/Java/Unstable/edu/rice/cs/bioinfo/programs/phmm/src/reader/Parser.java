@@ -16,13 +16,12 @@ import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
 import be.ac.ulg.montefiore.run.jahmm.OpdfInteger;
 
 // kliu - pull in additional library support
-import edu.rice.cs.bioinfo.library.programming.Tuple;
+import be.ac.ulg.montefiore.run.jahmm.phmm.*;
 
 public class Parser {
-
     private ArrayList<String> alphabet;								/* ArrayList of legal characters/symbols */
     private ArrayList<ObservationInteger> sequence;					/* a REUSABLE arraylist that holds the converted and final usable sequence of integers for ONE file */
-    private ArrayList<Tuple<EvoTree,EvoTree>> trees_states;						/* the list of states in the hmm */
+    private ArrayList<HiddenState> trees_states;						/* the list of states in the hmm */
     private HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
     private HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
     private int seqNum;												/* Number of sequences */
@@ -252,7 +251,7 @@ public class Parser {
      * Function to set the list of trees/states of the hmm model
      * @param trees - an arraylist of type EvoTree
      */
-    public void setTrees(ArrayList<Tuple<EvoTree,EvoTree>> trees) {
+    public void setTrees(ArrayList<HiddenState> trees) {
 	this.trees_states = trees;
     }
 	
@@ -341,7 +340,7 @@ public class Parser {
      * and calculates the likelihood/ emission probabilities for that observation in each state
      * and inputs that probability into the Hmm 
      */
-    public static void inputEmissions(String obs, int obsInt, ArrayList<Tuple<EvoTree,EvoTree>> inputTreesStates, HashMap<String, Integer> seqType, Hmm<ObservationInteger> myhmm) {
+    public static void inputEmissions(String obs, int obsInt, ArrayList<HiddenState> inputTreesStates, HashMap<String, Integer> seqType, Hmm<ObservationInteger> myhmm) {
 	OpdfInteger tempOpdf = (OpdfInteger) myhmm.getOpdf(0);		// only need to check the first state --> 
 	// because likelihood calculations are done for every state in one go
 		
@@ -349,14 +348,14 @@ public class Parser {
 	// if it hasn't already been calculated
 	if (tempOpdf.probability(new ObservationInteger(obsInt)) > 1.0) {
 	    for (int i = 0; i < inputTreesStates.size(); i++) {
-		EvoTree geneTree = inputTreesStates.get(i).Item2;
-		mapObsToLeaves(geneTree, obs, seqType);
+		EvoTree geneTree = inputTreesStates.get(i).getGeneGenealogy();
+		//mapObsToLeaves(geneTree, obs, seqType);
 		// kliu - emission probability calculation is in here
 		// input Likelihood into HMM here
-		double myLikelihood = geneTree.getLikelihood();
-		MyHMM.setEmission(myhmm, i, obsInt, myLikelihood);
+		//double myLikelihood = geneTree.getLikelihood();
+		MyHMM.setEmission(myhmm, i, obsInt, geneTree.getLikelihood(obs, seqType));
 		// kliu - just clears observation and likelihood cache in EvoTree container of Node objects
-		geneTree.clearTree();
+		//geneTree.clearTree();
 	    }
 	}
 		

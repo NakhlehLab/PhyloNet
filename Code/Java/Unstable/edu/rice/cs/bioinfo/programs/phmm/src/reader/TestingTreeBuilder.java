@@ -62,7 +62,7 @@ public class TestingTreeBuilder {
 			System.out.println(leaves.get(i));
 		}
 		
-		System.out.println("my likelihood is = " + mytree.getLikelihood());
+		//System.out.println("my likelihood is = " + mytree.getLikelihood());
 	
 		
 	}

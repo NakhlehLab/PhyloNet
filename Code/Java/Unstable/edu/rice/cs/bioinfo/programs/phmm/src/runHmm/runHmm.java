@@ -15,7 +15,7 @@ import be.ac.ulg.montefiore.run.jahmm.MyHMM;
 import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
 
 // kliu - pull in additional library support
-import edu.rice.cs.bioinfo.library.programming.Tuple;
+import be.ac.ulg.montefiore.run.jahmm.phmm.*;
 
 public class runHmm {
 
@@ -29,7 +29,7 @@ public class runHmm {
     
     // information created/built
     // kliu - index into tuples
-    public static ArrayList<Tuple<EvoTree,EvoTree>> trees_states;			/* List of all states/trees */
+    public static ArrayList<HiddenState> trees_states;			/* List of all states/trees */
     public static Hmm<ObservationInteger> myhmm;			/* The entire HMM */
     public static double[] pi;								/* The initial pi probabilities for each state */
     public static double[][] aij;							/* The state transition probability matrix */
@@ -114,6 +114,8 @@ public class runHmm {
 		System.out.println("Path to your output file: ");
 		String outputfile = in.readLine();
 				
+		// kliu - only Viterbi algorithm appears to be implemented using Jahmm
+		// don't seem to have forward/backward implementation yet
 		ArrayList<ObservationInteger> obsSeq = getObsForViterbi(in);
 		myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
 				
@@ -233,10 +235,11 @@ public class runHmm {
      */
     private static void buildHMM() {
 	System.out.println("\n\nNow building HMM . . .");
+	// kliu - a^k - exponential in the number of sequences
+	// shouldn't cache anyways
 	myhmm = MyHMM.buildMyHmm(pi, aij, (int) Math.pow(fParser.getAlphabet().size(),fParser.getNumSeq()));
 	System.out.println("\nhey my hmm: \n " + myhmm);
     }
-	
 	
     /**
      * Read and parse basic info file
@@ -262,7 +265,7 @@ public class runHmm {
 	    throw new ParserFileException("Cannot read Trees file!");
 	}
 
-	trees_states = new ArrayList<Tuple<EvoTree,EvoTree>>();
+	trees_states = new ArrayList<HiddenState>();
 
 	System.out.println("\nNow building trees . . .");
 	BufferedReader ptreesbr = new BufferedReader(new FileReader(parentalTreesFileName));
@@ -278,7 +281,7 @@ public class runHmm {
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
 	for (EvoTree parentalTree : parentalTrees) {
 	    for (EvoTree geneGenealogy : geneGenealogies) {
-		trees_states.add(new Tuple<EvoTree,EvoTree>(parentalTree, geneGenealogy));
+		trees_states.add(new HiddenState(parentalTree, geneGenealogy));
 	    }
 	}
 	

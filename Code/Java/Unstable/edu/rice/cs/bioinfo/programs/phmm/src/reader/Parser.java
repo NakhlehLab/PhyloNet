@@ -6,19 +6,17 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Vector;
 
 import phylogeny.EvoTree;
 import phylogeny.Node;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
+import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 //import be.ac.ulg.montefiore.run.jahmm.MyHMM;
-import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
-import be.ac.ulg.montefiore.run.jahmm.OpdfInteger;
-
 // kliu - pull in additional library support
-import be.ac.ulg.montefiore.run.jahmm.phmm.*;
-import java.util.Vector;
-import java.util.Hashtable;
 
 public class Parser {
     protected ArrayList<String> alphabet;								/* ArrayList of legal characters/symbols */
@@ -202,7 +200,7 @@ public class Parser {
 
 	// Read the observations column by column
 	for (int j = 0; j < seqLen; j++) {
-	    String obs = "";
+	    //String obs = "";
 	    int letter;
 	    Hashtable<String,String> column = new Hashtable<String,String>();
 	    for (int i = 0; i < rafList.size(); i++) {

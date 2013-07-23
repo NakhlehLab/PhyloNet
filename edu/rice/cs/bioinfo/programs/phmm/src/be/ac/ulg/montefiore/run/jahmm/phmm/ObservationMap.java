@@ -24,14 +24,16 @@
  * Container for a data column from an MSA.
  * Map from taxon name to observed letter.
  * 
- * WARNING - this class is supposed to be immutable?
- * Use a final on the member map. Its keys/values are strings,
- * which are also immutable.
+ * WARNING - this class is supposed to be immutable.
+ * String keys and values are immutable.
+ * Use a little extra memory to enforce mutability
+ * of underlying Map store.
  */
 
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
 import java.text.NumberFormat;
+import java.util.Map;
 import java.util.Hashtable;
 import be.ac.ulg.montefiore.run.jahmm.Observation;
 
@@ -42,16 +44,27 @@ public class ObservationMap extends Observation
      * this class isn't truly immutable - can still add mappings into the map
      * after creation of the containing Observation object. Meh.
      */
-    protected final Hashtable<String,String> map;
+    protected final Map<String,String> map;
 	
     /**
      * An observation that can be described by a string->string map.
+     * Although this imposes a memory penalty,
+     * force a copy of input map at construction to enforce immutability
+     * of this class's objects.
      *
      * @param value The value of this observation.
      */
-    public ObservationMap (Hashtable<String,String> value)
+    public ObservationMap (Map<String,String> inMap)
     {
-	this.map = value;
+	map = new Hashtable<String,String>(inMap);
+    }
+
+    /**
+     * kliu - only expose get method to outside world.
+     * Keep this class immutable.
+     */
+    public String get (String k) {
+	return (map.get(k));
     }
 
     public String toString () {

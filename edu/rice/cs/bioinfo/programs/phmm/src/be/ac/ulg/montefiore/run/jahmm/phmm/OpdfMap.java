@@ -69,10 +69,8 @@ public class OpdfMap
     public double probability (ObservationMap o)
     {
 	// kliu - on-the-fly emission probability calculation goes here
-
-	// for now, just sub in implemented substitution model calculation
-
-	return (-1.0);
+	// TODO - add in coalescent model contribution
+	return (hiddenState.getGeneGenealogy().getLikelihood(o));
     }
 	
     /**

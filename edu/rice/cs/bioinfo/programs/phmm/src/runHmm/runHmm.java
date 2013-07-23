@@ -11,11 +11,12 @@ import phylogeny.TreeParser;
 import reader.Parser;
 import reader.ParserFileException;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
-import be.ac.ulg.montefiore.run.jahmm.MyHMM;
+//import be.ac.ulg.montefiore.run.jahmm.MyHMM;
 import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
 
 // kliu - pull in additional library support
 import be.ac.ulg.montefiore.run.jahmm.phmm.*;
+import java.util.List;
 
 public class runHmm {
 
@@ -30,7 +31,7 @@ public class runHmm {
     // information created/built
     // kliu - index into tuples
     public static ArrayList<HiddenState> trees_states;			/* List of all states/trees */
-    public static Hmm<ObservationInteger> myhmm;			/* The entire HMM */
+    public static Hmm<ObservationMap> myhmm;			/* The entire HMM */
     public static double[] pi;								/* The initial pi probabilities for each state */
     public static double[][] aij;							/* The state transition probability matrix */
     private static Parser fParser;							/* The parser for all basic info and read sequences --> also calculates likelihood */
@@ -116,7 +117,7 @@ public class runHmm {
 				
 		// kliu - only Viterbi algorithm appears to be implemented using Jahmm
 		// don't seem to have forward/backward implementation yet
-		ArrayList<ObservationInteger> obsSeq = getObsForViterbi(in);
+		ArrayList<ObservationMap> obsSeq = getObsForViterbi(in);
 		myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
 				
 		break;
@@ -186,7 +187,7 @@ public class runHmm {
     /**
      * Get Observation for Viterbi
      */
-    private static ArrayList<ObservationInteger> getObsForViterbi(BufferedReader in) {
+    private static ArrayList<ObservationMap> getObsForViterbi(BufferedReader in) {
 	try {
 	    System.out.println("Input observation sequence file path name : ");
 	    String filename = in.readLine();
@@ -228,18 +229,43 @@ public class runHmm {
 	}
     }
 	
+    // kliu - no reason to put it in a separate class
+    public static Hmm<ObservationMap> buildMyHmm(List<HiddenState> hiddenStates, double[] pi, double[][] a) {		
+	if ((pi.length != a.length) || (hiddenStates.size() != pi.length)) {
+	    throw new IllegalArgumentException("The dimension of the initial probability array, the transition probability matrix number of rows, and the number of hidden states are unequal.");
+	}
+		
+	int nbStates = pi.length;
+
+	// kliu testing
+	//System.out.println ("foo: |" + nbObs + "|");
 	
+	ArrayList<OpdfMap> opdfs = new ArrayList<OpdfMap>(nbStates);	
+	//ArrayList<Opdf<ObservationInteger>> opdfs = new ArrayList<Opdf<ObservationInteger>>(nbStates);
+		
+	for (int i = 0; i < nbStates; i++) {
+	    opdfs.add(new OpdfMap(hiddenStates.get(i)));
+	}
+		
+	// kliu - needs to not be cached - just need to map back from Opdf
+	// to the hidden state that's associated with it -> 
+	Hmm<ObservationMap> newHmm = new Hmm<ObservationMap>(pi, a, opdfs);
+		
+	return newHmm;		
+    }
+
 	
     /**
      * Build HMM
      */
     private static void buildHMM() {
 	System.out.println("\n\nNow building HMM . . .");
-	// kliu - a^k - exponential in the number of sequences
-	// shouldn't cache anyways
-	myhmm = MyHMM.buildMyHmm(pi, aij, (int) Math.pow(fParser.getAlphabet().size(),fParser.getNumSeq()));
+	myhmm = buildMyHmm(trees_states, pi, aij);
+	//myhmm = MyHMM.buildMyHmm(trees_states, pi, aij);
 	System.out.println("\nhey my hmm: \n " + myhmm);
     }
+
+//(int) Math.pow(fParser.getAlphabet().size(),fParser.getNumSeq()
 	
     /**
      * Read and parse basic info file

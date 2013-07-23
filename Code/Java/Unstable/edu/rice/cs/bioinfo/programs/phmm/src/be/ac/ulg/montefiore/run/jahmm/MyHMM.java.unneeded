@@ -1,0 +1,78 @@
+package be.ac.ulg.montefiore.run.jahmm;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import phylogeny.EvoTree;
+
+// kliu - pull in additional library support
+import be.ac.ulg.montefiore.run.jahmm.phmm.*;
+
+// kliu no state here - just a container for static methods
+
+public class MyHMM {
+	
+    // public static Hmm<ObservationMap> buildMyHmm(List<HiddenState> hiddenStates, double[] pi, double[][] a) {
+		
+    // 	if ((pi.length != a.length) || (hiddenStates.size() != pi.length)) {
+    // 	    throw new IllegalArgumentException("The dimension of the initial probability array, the transition probability matrix number of rows, and the number of hidden states are unequal.");
+    // 	}
+		
+    // 	int nbStates = pi.length;
+
+    // 	// kliu testing
+    // 	//System.out.println ("foo: |" + nbObs + "|");
+	
+    // 	ArrayList<OpdfMap> opdfs = new ArrayList<OpdfMap>(nbStates);	
+    // 	//ArrayList<Opdf<ObservationInteger>> opdfs = new ArrayList<Opdf<ObservationInteger>>(nbStates);
+		
+    // 	for (int i = 0; i < nbStates; i++) {
+    // 	    opdfs.add(new OpdfMap(hiddenStates.get(i)));
+    // 	}
+		
+    // 	// kliu - needs to not be cached - just need to map back from Opdf
+    // 	// to the hidden state that's associated with it -> 
+    // 	Hmm<ObservationMap> newHmm = new Hmm<ObservationMap>(pi, a, opdfs);
+		
+    // 	return newHmm;
+		
+    // }
+
+	    // double[] probabilities = new double[nbObs];
+	    // for (int j = 0; j < nbObs; j++) {
+	    // 	// chatted with Jingxuan and Kathy
+	    // 	// this is just a default null value
+	    // 	// look in Parser/Tree structure for Felsenstein's peeling algorithm implementation
+	    // 	probabilities[j] = 10;
+	    // }
+	    // Opdf<ObservationInteger> temp = new OpdfInteger(probabilities);
+	    // opdfs.add(temp);
+
+	
+    // public static void setEmission(Hmm<ObservationMap> curHmm, int state, int obsNo, double prob) {
+    // 	OpdfInteger curState = (OpdfInteger)curHmm.getOpdf(state);
+    // 	curState.setProb(obsNo, prob);
+    // }
+	
+	
+    // kliu - this doesn't seem to be called?
+    // /**
+    //  * Returns an array containing the most likely state sequence matching an
+    //  * observation sequence given this HMM.  This sequence <code>I</code>
+    //  * maximizes the probability of <code>P[I|O,Model]</code> where
+    //  * <code>O</code> is the observation sequence and <code>Model</code> this
+    //  * HMM model.
+    //  *
+    //  * @param oseq A non-empty observation sequence.
+    //  * @return An array containing the most likely sequence of state numbers.
+    //  *         This array can be modified.
+    //  */
+    // public static int[] mostLikelyStateSequenceForIntObs(List<ObservationMap> oseq, 
+    // 							 ArrayList<HiddenState> treeStates, HashMap<String, Integer> seqType, HashMap<String, Integer> letterMap,
+    // 							 Hmm<ObservationMap> hmm)
+    // {
+    // 	return (new ViterbiCalculatorInteger(oseq, treeStates, seqType, letterMap, hmm)).stateSequence();
+    // }
+
+}

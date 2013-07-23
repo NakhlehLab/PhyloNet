@@ -5,8 +5,11 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-// kliu - use this as the gene geneology class.
-// Each hidden state will then correspond to a (parental tree, gene genealogy) pair.
+// kliu - pull in additional library support
+import be.ac.ulg.montefiore.run.jahmm.phmm.*;
+
+// kliu - use this as general tree class.
+// Each hidden state corresponds to a (parental tree, gene genealogy) pair.
 
 /**
  * EvoTree is a class that stores an entire evolution tree.
@@ -19,7 +22,7 @@ public class EvoTree {
     protected String aname;
     protected int calcLeaves; 			// will be 0 if leaves have not been found, 1 if they have
     protected ArrayList<Node> leaves; // stores all the leafNodes of this tree
-	
+    
     /**
      * Constructor for EvoTree
      * @param root A Node type -- root of the tree
@@ -125,8 +128,8 @@ public class EvoTree {
      *
      * See writeup for details.
      */
-    public double getLikelihood (String obs, Map<String, Integer> seqType) {
-	mapObsToLeaves(obs, seqType);
+    public double getLikelihood (ObservationMap column) {
+	mapObsToLeaves(column);
 	
 	double result = 0;
 	for (int i = 0; i < 4; i++) {
@@ -139,22 +142,46 @@ public class EvoTree {
 	return result;
     }
 
+    // public double getLikelihood (String obs, Map<String, Integer> seqType) {
+    // 	mapObsToLeaves(obs, seqType);
+	
+    // 	double result = 0;
+    // 	for (int i = 0; i < 4; i++) {
+    // 	    // kliu - ArrayList recalculated four times over
+    // 	    result += 0.25 * root.getLikelihood().get(i);
+    // 	}
+
+    // 	clearTree();
+
+    // 	return result;
+    // }
+
     /**
-     * Helper function that Maps observations to leaves in all the possible trees
+     * Helper function that Maps observations to leaves.
      */
-    protected void mapObsToLeaves (String obs, Map<String, Integer> seqType) {
+    protected void mapObsToLeaves (ObservationMap column) {
 	ArrayList<Node> leaves = this.getLeaves();
 	for (int i = 0; i < leaves.size(); i++) {
 	    Node leaf = leaves.get(i);
-	    int index = seqType.get(leaf.getTaxa());
-	    String aObs = obs.substring(index,index+1); 
-	    leaf.setObs(aObs);			
+	    leaf.setObs(column.get(leaf.getTaxa()));			
 	}
 		
 	// Testing
 	//System.out.println("the Tree after mapping obs: " + this);
-		
     }
+
+    // protected void mapObsToLeaves (String obs, Map<String, Integer> seqType) {
+    // 	ArrayList<Node> leaves = this.getLeaves();
+    // 	for (int i = 0; i < leaves.size(); i++) {
+    // 	    Node leaf = leaves.get(i);
+    // 	    int index = seqType.get(leaf.getTaxa());
+    // 	    String aObs = obs.substring(index,index+1); 
+    // 	    leaf.setObs(aObs);			
+    // 	}
+		
+    // 	// Testing
+    // 	//System.out.println("the Tree after mapping obs: " + this);
+    // }
 	
     /**
      * Resets the Tree's leaves (but doesn't reset the leaf types) and the

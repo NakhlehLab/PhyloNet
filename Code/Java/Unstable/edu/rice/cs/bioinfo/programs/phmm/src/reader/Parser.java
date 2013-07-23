@@ -11,20 +11,23 @@ import java.util.List;
 import phylogeny.EvoTree;
 import phylogeny.Node;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
-import be.ac.ulg.montefiore.run.jahmm.MyHMM;
+//import be.ac.ulg.montefiore.run.jahmm.MyHMM;
 import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
 import be.ac.ulg.montefiore.run.jahmm.OpdfInteger;
 
 // kliu - pull in additional library support
 import be.ac.ulg.montefiore.run.jahmm.phmm.*;
+import java.util.Vector;
+import java.util.Hashtable;
 
 public class Parser {
-    private ArrayList<String> alphabet;								/* ArrayList of legal characters/symbols */
-    private ArrayList<ObservationInteger> sequence;					/* a REUSABLE arraylist that holds the converted and final usable sequence of integers for ONE file */
-    private ArrayList<HiddenState> trees_states;						/* the list of states in the hmm */
-    private HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
-    private HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
-    private int seqNum;												/* Number of sequences */
+    protected ArrayList<String> alphabet;								/* ArrayList of legal characters/symbols */
+    protected ArrayList<ObservationMap> sequence;					/* a REUSABLE arraylist that holds the converted and final usable sequence of integers for ONE file */
+    protected ArrayList<HiddenState> trees_states;						/* the list of states in the hmm */
+    protected HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
+    protected HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
+    protected Vector<String> taxa; //  reverse the above map
+    protected int seqNum;												/* Number of sequences */
 	
     /**
      * Constructor For the Parser
@@ -50,6 +53,7 @@ public class Parser {
 	alphabet = new ArrayList<String>();
 	myHashmap = new HashMap<String, Integer>();
 	seqTypes = new HashMap<String, Integer>();
+	taxa = new Vector<String>();
 	trees_states = null;
 	seqNum = 0; 
 		
@@ -95,6 +99,7 @@ public class Parser {
 	    for (int i = 0; i < line.length; i++) {
 		System.out.print(line[i] + " ");
 		seqTypes.put(line[i], i);
+		taxa.add(line[i]);
 	    }
 	} else {
 	    br.close();
@@ -127,12 +132,12 @@ public class Parser {
      * gorilla ttt </i><br><br>
      * 
      */
-    public void parseMe (String filename, Hmm<ObservationInteger> myhmm) throws Exception {
+    public void parseMe (String filename, Hmm<ObservationMap> myhmm) throws Exception {
 	List<RandomAccessFile> rafList = new ArrayList<RandomAccessFile>();			/* a list of buffered readers for each sequence */
 	String read;
 	int ch;
 	int seqLen;																/* Length of each sequence */
-	sequence = new ArrayList<ObservationInteger>();									/* The sequence of observation read from current file */
+	sequence = new ArrayList<ObservationMap>();									/* The sequence of observation read from current file */
 
 		
 	BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -189,14 +194,21 @@ public class Parser {
 	}
 		
 	System.out.println("Reading Observation Progress :");
-		
+	
+	// kliu - looks like order of sequences in sequence file must match 
+	// order in basic info file
+	// get students to change this to FASTA or something
+	// remove basic info file
+
 	// Read the observations column by column
 	for (int j = 0; j < seqLen; j++) {
 	    String obs = "";
 	    int letter;
+	    Hashtable<String,String> column = new Hashtable<String,String>();
 	    for (int i = 0; i < rafList.size(); i++) {
 		if ((letter = rafList.get(i).read()) != -1) {
-		    obs += (char)letter;	
+		    //obs += (char)letter;
+		    column.put(taxa.get(i), Character.toString((char) letter));
 		}
 		else { 
 		    multiFileCloser(rafList, rafList.size()-1);
@@ -206,14 +218,18 @@ public class Parser {
 
 
 	    //convert to corresponding integer sequence
-	    int obsInt = IntTranslator.letterToInt(obs, myHashmap);
-			
+	    //int obsInt = IntTranslator.letterToInt(obs, myHashmap);
+	
+	    // kliu - bleh - just keep around all columns
+	    
+		
 	    // add Integer obs to sequence
 	    //sequence.add(obsInt);
-	    sequence.add(new ObservationInteger(obsInt));
+	    sequence.add(new ObservationMap(column));
 			
+	    // kliu - no longer necessary - OpdfMap objects created as part of HMM creation in MyHMM.buildMyHMM
 	    //input emissions probabilities for observations into every state/tree
-	    inputEmissions(obs, obsInt, trees_states, seqTypes, myhmm);
+	    //inputEmissions(obs, obsInt, trees_states, seqTypes, myhmm);
 			
 	    //keep a progress report
 	    if ((j%10000) == 0) {
@@ -289,7 +305,7 @@ public class Parser {
     /**
      * @return the final converted Observation sequence for use in HMM
      */
-    public ArrayList<ObservationInteger> getObs() {
+    public ArrayList<ObservationMap> getObs() {
 	return sequence;
     }
 	
@@ -303,7 +319,7 @@ public class Parser {
      * 
      * @return None 
      */
-    private void multiFileCloser(List<RandomAccessFile> rafList, int index) {
+    protected void multiFileCloser(List<RandomAccessFile> rafList, int index) {
 	int myindex = index;
 	if (index >= rafList.size()) myindex = rafList.size()-1;
 	for (int i = 0; i <= myindex; i ++) {
@@ -340,26 +356,26 @@ public class Parser {
      * and calculates the likelihood/ emission probabilities for that observation in each state
      * and inputs that probability into the Hmm 
      */
-    public static void inputEmissions(String obs, int obsInt, ArrayList<HiddenState> inputTreesStates, HashMap<String, Integer> seqType, Hmm<ObservationInteger> myhmm) {
-	OpdfInteger tempOpdf = (OpdfInteger) myhmm.getOpdf(0);		// only need to check the first state --> 
-	// because likelihood calculations are done for every state in one go
+    // public static void inputEmissions(String obs, int obsInt, ArrayList<HiddenState> inputTreesStates, HashMap<String, Integer> seqType, Hmm<ObservationInteger> myhmm) {
+    // 	OpdfInteger tempOpdf = (OpdfInteger) myhmm.getOpdf(0);		// only need to check the first state --> 
+    // 	// because likelihood calculations are done for every state in one go
 		
-	// only calculate the likelihood emission probabilities for an observation
-	// if it hasn't already been calculated
-	if (tempOpdf.probability(new ObservationInteger(obsInt)) > 1.0) {
-	    for (int i = 0; i < inputTreesStates.size(); i++) {
-		EvoTree geneTree = inputTreesStates.get(i).getGeneGenealogy();
-		//mapObsToLeaves(geneTree, obs, seqType);
-		// kliu - emission probability calculation is in here
-		// input Likelihood into HMM here
-		//double myLikelihood = geneTree.getLikelihood();
-		MyHMM.setEmission(myhmm, i, obsInt, geneTree.getLikelihood(obs, seqType));
-		// kliu - just clears observation and likelihood cache in EvoTree container of Node objects
-		//geneTree.clearTree();
-	    }
-	}
+    // 	// only calculate the likelihood emission probabilities for an observation
+    // 	// if it hasn't already been calculated
+    // 	if (tempOpdf.probability(new ObservationInteger(obsInt)) > 1.0) {
+    // 	    for (int i = 0; i < inputTreesStates.size(); i++) {
+    // 		EvoTree geneTree = inputTreesStates.get(i).getGeneGenealogy();
+    // 		//mapObsToLeaves(geneTree, obs, seqType);
+    // 		// kliu - emission probability calculation is in here
+    // 		// input Likelihood into HMM here
+    // 		//double myLikelihood = geneTree.getLikelihood();
+    // 		MyHMM.setEmission(myhmm, i, obsInt, geneTree.getLikelihood(obs, seqType));
+    // 		// kliu - just clears observation and likelihood cache in EvoTree container of Node objects
+    // 		//geneTree.clearTree();
+    // 	    }
+    // 	}
 		
-    }
+    // }
 	
 	
 

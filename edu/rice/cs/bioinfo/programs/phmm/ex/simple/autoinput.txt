@@ -1,0 +1,12 @@
+0
+/home/kl23/code/phmm-repository/phmm/ex/simple/basicInfo.txt
+6
+/home/kl23/code/phmm-repository/phmm/ex/simple/parental.trees
+/home/kl23/code/phmm-repository/phmm/ex/simple/gene.trees
+.1 .1 .1 .1 .1 .5
+a
+/home/kl23/code/phmm-repository/phmm/ex/simple/matrix.matrix
+0
+/home/kl23/code/phmm-repository/phmm/ex/simple/viterbi.out
+/home/kl23/code/phmm-repository/phmm/ex/simple/myseq.seq
+1

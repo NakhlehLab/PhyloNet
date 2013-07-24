@@ -137,7 +137,8 @@ public class EvoTree {
 	    result += 0.25 * root.getLikelihood().get(i);
 	}
 
-	clearTree();
+	// kliu - no need to do this - just overwrite each time
+	//clearTree();
 
 	return result;
     }
@@ -156,6 +157,9 @@ public class EvoTree {
     // 	return result;
     // }
 
+    // kliu - gene genealogies associated with second parental
+    // tree seem to not have likelihood vector initialized
+    // correctly -> NullPointerException
     /**
      * Helper function that Maps observations to leaves.
      */

@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,14 +40,38 @@ public class runHmm {
     private static Parser fParser;							/* The parser for all basic info and read sequences --> also calculates likelihood */
     private static int numStates = -1;						/* The number of states for the HMM */
 	
+
+    protected static void printUsage () {
+	System.err.println ("Prompt-based usage: java -jar dist/lib/phmm.jar");
+	System.err.println ("File-based usage: java -jar dist/lib/phmm.jar <text file with input commands>");
+    }
+
     /**
-     * @param args
+     * kliu - add in the automatic input here.
+     */
+    public static void main (String[] args) throws Exception {
+	if (args.length == 1) {
+	    FileInputStream fis = new FileInputStream(new File(args[0]));
+	    System.setIn(fis);
+	    run();
+	}
+	else if (args.length == 0) {
+	    run();
+	}
+	else {
+	    printUsage();
+	    // strict!
+	    System.exit(1);
+	}
+    }
+
+    /**
      * @throws Exception
      * 		- will only throw exceptions when basic Info file or Tree file is unable to be parsed correctly
      * 			since these files are essential to building an hmm and the parser
      */
-    public static void main(String[] args) throws Exception{
-		
+    public static void run () throws Exception {
+	
 	int option;
 	
 	BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -299,13 +326,17 @@ public class runHmm {
 	ArrayList<EvoTree> parentalTrees = ptp.nexusFileTreeNames(parentalTreesFileName);
 	ptreesbr.close();
 
-	BufferedReader ggbr = new BufferedReader(new FileReader(geneGenealogiesFileName));
-	TreeParser gtp = new TreeParser(ggbr);
-	ArrayList<EvoTree> geneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
-	ggbr.close();
-
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
 	for (EvoTree parentalTree : parentalTrees) {
+	    // kliu - cheap hack to clone all gene genealogies across
+	    // each parental tree
+	    //
+	    // for now, don't share gene genealogies across parental trees (e.g. branch lengths)
+	    BufferedReader ggbr = new BufferedReader(new FileReader(geneGenealogiesFileName));
+	    TreeParser gtp = new TreeParser(ggbr);
+	    ArrayList<EvoTree> geneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
+	    ggbr.close();
+
 	    for (EvoTree geneGenealogy : geneGenealogies) {
 		trees_states.add(new HiddenState(parentalTree, geneGenealogy));
 	    }

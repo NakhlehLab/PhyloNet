@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 // kliu - pull in additional library support
 import be.ac.ulg.montefiore.run.jahmm.phmm.*;
@@ -20,8 +23,8 @@ public class EvoTree {
     protected Node root;					// Tree Root
     protected int treeID;					// unique Identification of tree, -1 means it has not yet been identified
     protected String aname;
-    protected int calcLeaves; 			// will be 0 if leaves have not been found, 1 if they have
-    protected ArrayList<Node> leaves; // stores all the leafNodes of this tree
+    //protected int calcLeaves; 			// will be 0 if leaves have not been found, 1 if they have
+    //protected ArrayList<Node> leaves; // stores all the leafNodes of this tree
     
     /**
      * Constructor for EvoTree
@@ -30,8 +33,8 @@ public class EvoTree {
     public EvoTree (Node root) {
 	this.root = root;
 	this.treeID = -1;
-	this.leaves = null;
-	this.calcLeaves = 0;
+	//this.leaves = null;
+	//this.calcLeaves = 0;
 	this.aname = "";
     }
 	
@@ -41,8 +44,8 @@ public class EvoTree {
     public EvoTree () {
 	this.root = null;
 	this.treeID = -1;
-	this.leaves = null;
-	this.calcLeaves = 0;
+	//this.leaves = null;
+	//this.calcLeaves = 0;
 	this.aname = "";
     }
 	
@@ -54,8 +57,8 @@ public class EvoTree {
     public EvoTree(Node root, int treeIDin) {
 	this.root = root;
 	this.treeID = treeIDin;
-	this.leaves = null;
-	this.calcLeaves = 0; 
+	//this.leaves = null;
+	//this.calcLeaves = 0; 
     }
 	
     /** 
@@ -66,7 +69,7 @@ public class EvoTree {
 	this.root = rootIn;
 		
 	// reset leaves --> new root means need to find leaves again
-	this.calcLeaves = 0;
+	//this.calcLeaves = 0;
     }
 	
     /**
@@ -124,7 +127,7 @@ public class EvoTree {
     /**
      * kliu - On-the-fly version of getLikelihood().
      * Calculates emission probability 
-     * P[O_t | x_t = s_i, \theta] = P[O_t | g(s_i), b_{g(s_i)}, \theta ] P[g(s_i) | T(s_i), c_{T(s_i)}]
+     * P[O_t | g(s_i), b_{g(s_i)}, \theta ]
      *
      * See writeup for details.
      */
@@ -224,18 +227,28 @@ public class EvoTree {
      * @return An ArrayList of Leaf Nodes of the tree
      */
     public ArrayList<Node> getLeaves() {
-	// leaves have been found previously already
-	if ((calcLeaves == 1) && (leaves != null)) {
-	    return this.leaves;
-	}
-		
-	// leaves have not yet been found
-	else {
-	    leaves = root.getLeaves();
-	    calcLeaves = 1;
-	    return this.leaves;
-	}
+	return (root.getLeaves());
     }
+
+    public ArrayList<Node> getNodes() {
+	return (root.getNodes());
+    }
+
+
+    
+
+	// // leaves have been found previously already
+	// if ((calcLeaves == 1) && (leaves != null)) {
+	//     return this.leaves;
+	// }
+		
+	// // leaves have not yet been found
+	// else {
+	//     leaves = root.getLeaves();
+	//     calcLeaves = 1;
+	//     return this.leaves;
+	// }
+
 	
     /**
      * Creates a string representable version of this tree for the purpose of debugging and reading
@@ -245,4 +258,46 @@ public class EvoTree {
 	return "Tree: " + aname + "\n" + root.toString() + "\n\n";
     }
 
+    protected static void test (String filename) {
+	try {
+	    BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));
+	    TreeParser ptp = new TreeParser(ptreesbr);
+	    ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
+	    ptreesbr.close();
+
+	    EvoTree tree = trees.get(0);
+
+	    if (trees.size() < 1) {
+		System.err.println("ERROR: must be at least one tree in input file " + filename + ". Aborting.");
+		System.exit(1);
+	    }
+	    else if (trees.size() > 1) {
+		System.err.println ("WARNING: more than one tree in input file " + filename + ". Only using first tree.");
+	    }
+
+	    for (Node n : tree.getNodes()) {
+		System.out.println (n.getTaxa() + " " + n.getTbranch() + " " );
+	    }
+	    System.out.println();
+
+	    HashMap<String,String> hm = new HashMap<String,String>();
+	    hm.put("human", "A");
+	    hm.put("chimp", "A");
+	    hm.put("gorilla", "G");
+	    ObservationMap column = new ObservationMap(hm);
+	    System.out.println ("Column likelihood: |" + tree.getLikelihood(column) + "|");
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    System.exit(1);
+	}
+    }
+
+    public static void main (String[] args) {
+	if (args.length != 1) {
+	    System.err.println ("Usage: java phylogeny.EvoTree <input tree file in Nexus format>");
+	    System.exit(1);
+	}
+	test(args[0]);
+    }
 }

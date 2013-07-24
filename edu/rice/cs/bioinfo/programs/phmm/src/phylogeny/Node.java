@@ -240,7 +240,7 @@ public class Node {
      */
     public ArrayList<Double>  getLikelihood() {
 	if (isLeaf()) {
-	    //System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
+	    System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
 	    return this.likelihood;
 	}
 	else {
@@ -258,7 +258,7 @@ public class Node {
 		likelihood.set(i, tempLeft * tempRight);
 	    }
 						
-	     //System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
+	    System.out.println(" I am an internal node " + this.getTaxa() + " and my likelihood array is : " + likelihood);
 
 	    return this.likelihood;
 	}
@@ -316,20 +316,35 @@ public class Node {
      * @return An ArrayList of all the LeafNodes that this node can reach
      */
     public ArrayList<Node> getLeaves() {
+	return (getNodesHelper(true));
+    }
+
+    public ArrayList<Node> getNodes () {
+	return (getNodesHelper(false));
+    }
+
+    public ArrayList<Node> getNodes (boolean leavesOnlyFlag) {
+	return (getNodesHelper(leavesOnlyFlag));
+    }
+
+    protected ArrayList<Node> getNodesHelper (boolean leavesOnlyFlag) {
+	ArrayList<Node> nodes = new ArrayList<Node>();
+	getNodesHelper(nodes, leavesOnlyFlag);
+	return (nodes);
+    }
+
+    protected void getNodesHelper (ArrayList<Node> nodes, boolean leavesOnlyFlag) {
 	if (isLeaf()) {
-	    ArrayList<Node> leaf = new ArrayList<Node>();
-	    leaf.add(this);
-	    return leaf;
+	    nodes.add(this);
 	}
 	else {
-	    ArrayList<Node> leaves = new ArrayList<Node>();
-	    leaves.addAll(this.children.get(0).getLeaves());
-	    leaves.addAll(this.children.get(1).getLeaves());
-	    return leaves;
+	    this.children.get(0).getNodesHelper(nodes, leavesOnlyFlag);
+	    this.children.get(1).getNodesHelper(nodes, leavesOnlyFlag);
+	    if (!leavesOnlyFlag) {
+		nodes.add(this);
+	    }
 	}
     }
-	
-	
 	
 	
     /**
@@ -361,7 +376,7 @@ public class Node {
     private double getPij(char i, char j, double u, double t) {
 	double p;
         if (!(Character.toString(i)).equals((Character.toString(j)))) {
-            return (0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t));
+            return (0.25 - 0.25 * Math.exp((-4.0 / 3.0) * u * t));
         }
         else
             return (0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t));

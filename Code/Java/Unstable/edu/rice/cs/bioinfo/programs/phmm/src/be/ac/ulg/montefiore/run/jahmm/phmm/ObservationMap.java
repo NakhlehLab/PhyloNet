@@ -26,7 +26,7 @@
  * 
  * WARNING - this class is supposed to be immutable.
  * String keys and values are immutable.
- * Use a little extra memory to enforce mutability
+ * Use a little extra memory to enforce immutability
  * of underlying Map store.
  */
 
@@ -40,9 +40,7 @@ import be.ac.ulg.montefiore.run.jahmm.Observation;
 public class ObservationMap extends Observation
 {	
     /**
-     * The observation's value. Unfortunately,
-     * this class isn't truly immutable - can still add mappings into the map
-     * after creation of the containing Observation object. Meh.
+     * The observation's value.
      */
     protected final Map<String,String> map;
 	

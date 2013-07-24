@@ -1,0 +1,4 @@
+#NEXUS
+begin trees;
+tree one = (gorilla:3,(human:1,chimp:2):4);
+end;

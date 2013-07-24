@@ -235,22 +235,12 @@ public class Node {
 	
 	
 	
-<<<<<<< .mine
     /**
      * @return The node's likelihood arraylist
      */
     public ArrayList<Double>  getLikelihood() {
 	if (isLeaf()) {
 	    //System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
-=======
-	/**
-	 * @return The node's likelihood arraylist
-	 */
-	public ArrayList<Double>  getLikelihood() {
-		if (isLeaf()) {
-			//System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
->>>>>>> .r454
-			
 	    return this.likelihood;
 	}
 	else {
@@ -267,14 +257,8 @@ public class Node {
 		}
 		likelihood.set(i, tempLeft * tempRight);
 	    }
-			
-
-			
-<<<<<<< .mine
-	    System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
-=======
-			//System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
->>>>>>> .r454
+						
+	     //System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
 
 	    return this.likelihood;
 	}

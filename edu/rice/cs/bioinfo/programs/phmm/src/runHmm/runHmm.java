@@ -211,6 +211,8 @@ public class runHmm {
 
 	
 
+    // kliu - appears to be a bug in here.
+    // Inferred trajectory length != input nucleotide sequence length???
     /**
      * Get Observation for Viterbi
      */

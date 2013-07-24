@@ -360,12 +360,11 @@ public class Node {
      */
     private double getPij(char i, char j, double u, double t) {
 	double p;
-        p = (.75) * (1-Math.pow(Math.E,-4*u*t/3));
         if (!(Character.toString(i)).equals((Character.toString(j)))) {
-            return p;
+            return (0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t));
         }
         else
-            return 1-p;
+            return (0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t));
 		
 
     }

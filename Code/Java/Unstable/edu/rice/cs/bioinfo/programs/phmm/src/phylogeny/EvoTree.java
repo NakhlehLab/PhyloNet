@@ -132,9 +132,10 @@ public class EvoTree {
 	mapObsToLeaves(column);
 	
 	double result = 0;
+	ArrayList<Double> rootLikelihoods = root.getLikelihood();
 	for (int i = 0; i < 4; i++) {
 	    // kliu - ArrayList recalculated four times over
-	    result += 0.25 * root.getLikelihood().get(i);
+	    result += 0.25 * rootLikelihoods.get(i);
 	}
 
 	// kliu - no need to do this - just overwrite each time

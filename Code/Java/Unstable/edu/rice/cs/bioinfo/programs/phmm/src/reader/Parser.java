@@ -204,10 +204,10 @@ public class Parser {
 	    int letter;
 	    Hashtable<String,String> column = new Hashtable<String,String>();
 	    for (int i = 0; i < rafList.size(); i++) {
-		if ((letter = rafList.get(i).read()) != -1) {
-		    //obs += (char)letter;
-		    column.put(taxa.get(i), Character.toString((char) letter));
-		}
+			if ((letter = rafList.get(i).read()) != -1) {
+			    //obs += (char)letter;
+			    column.put(taxa.get(i), Character.toString((char) letter));
+			}
 		else { 
 		    multiFileCloser(rafList, rafList.size()-1);
 		    throw new ParserFileException("Error while reading observation sequence!");

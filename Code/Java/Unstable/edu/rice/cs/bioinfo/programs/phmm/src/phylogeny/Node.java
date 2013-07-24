@@ -237,7 +237,7 @@ public class Node {
 	 */
 	public ArrayList<Double>  getLikelihood() {
 		if (isLeaf()) {
-			System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
+			//System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
 			
 			return this.likelihood;
 		}
@@ -258,7 +258,7 @@ public class Node {
 			
 
 			
-			System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
+			//System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
 
 			return this.likelihood;
 		}

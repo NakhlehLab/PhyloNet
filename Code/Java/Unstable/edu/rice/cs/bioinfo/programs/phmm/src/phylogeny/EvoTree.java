@@ -258,6 +258,15 @@ public class EvoTree {
 	return "Tree: " + aname + "\n" + root.toString() + "\n\n";
     }
 
+    /**
+     * Stub. Use a flag to indicate whether branch lengths and
+     * internal node names should be output or not.
+     */
+    public String toNewickString (boolean displayBranchLengthsFlag, 
+				  boolean displayInternalNodeNamesFlag) {
+	return ("TODO.");
+    }
+
     protected static void test (String filename) {
 	try {
 	    BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));

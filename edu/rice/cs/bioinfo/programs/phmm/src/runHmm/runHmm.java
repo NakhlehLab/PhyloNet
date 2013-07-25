@@ -1,12 +1,11 @@
 package runHmm;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,6 +144,20 @@ public class runHmm {
 		// kliu - only Viterbi algorithm appears to be implemented using Jahmm
 		// don't seem to have forward/backward implementation yet
 		ArrayList<ObservationMap> obsSeq = getObsForViterbi(in);
+		
+		// Testing purposes //
+//		System.out.println("Showing the pdf of all hidden states ---------------------------");
+//		for (int k =0; k < trees_states.size(); k++) {
+//			OpdfMap opdf = (OpdfMap) (myhmm.getOpdf(k));
+//			System.out.println("State: " + opdf.getHiddenState());
+//			System.out.print("\n < ");
+//			for (int i = 0; i < obsSeq.size(); i++) {
+//				System.out.print(opdf.probability(obsSeq.get(i)) + " ");
+//			}
+//			System.out.print("> \n \n\n");
+//		}
+		// Testing Purposes //
+		
 		myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
 				
 		break;

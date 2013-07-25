@@ -8,6 +8,6 @@
 a
 /home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/matrix.matrix
 0
-/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/viterbi1.out
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/viterbi.out
 /home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/myseq.seq
 1

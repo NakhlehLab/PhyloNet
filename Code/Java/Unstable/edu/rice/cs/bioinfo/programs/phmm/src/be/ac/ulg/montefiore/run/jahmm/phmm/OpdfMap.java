@@ -94,6 +94,16 @@ public class OpdfMap
     {
 	// kliu - on-the-fly emission probability calculation goes here
 	// later - add caching dependent on changes to emission probability parameters
+	//
+	// Emission probability calculation:
+	// \begin{eqnarray}
+	// e_{s_i, \theta}(O_t) & = & P[O_t | x_t = s_i, \theta] \nonumber \ \
+	//  & = & P[O_t | g(s_i), b_{g(s_i)}, \theta ] P[g(s_i), b_{g(s_i)} | T(s_i), c_{T(s_i)}] \nonumber \ \
+	//  & = & P[O_t | g(s_i), b_{g(s_i)}, \theta ] P[g(s_i) | T(s_i), c_{T(s_i)}] \nonumber
+	// \end{eqnarray}
+	//
+	// See writeup for details.
+
 	return (calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG) * 
 		hiddenState.getGeneGenealogy().getLikelihood(o));
     }

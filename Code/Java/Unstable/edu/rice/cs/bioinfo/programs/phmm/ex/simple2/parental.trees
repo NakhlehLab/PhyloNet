@@ -1,0 +1,5 @@
+#NEXUS
+begin trees;
+tree one = (gorilla:3,(human:1,chimp:2)foo:4)root;
+tree two = (chimp:3,(human:1,gorilla:2)fib:2.5)root;
+end;

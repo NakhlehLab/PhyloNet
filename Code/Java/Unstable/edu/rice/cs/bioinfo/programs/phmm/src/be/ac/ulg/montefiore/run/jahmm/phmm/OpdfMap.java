@@ -104,8 +104,17 @@ public class OpdfMap
 	//
 	// See writeup for details.
 
-	return (calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG) * 
-		hiddenState.getGeneGenealogy().getLikelihood(o));
+	double substitutionModelProbability = hiddenState.getGeneGenealogy().getLikelihood(o);
+	double coalescentModelProbability = calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG);
+
+	// looks good
+	//
+	// kliu - testing
+	// System.out.println ("Hidden state with parental tree " + hiddenState.getParentalTree().toNewickString() + " and gene genealogy " + hiddenState.getGeneGenealogy().toNewickString() + " :");
+	// System.out.println ("substitutionModelProbability: " + substitutionModelProbability);
+	// System.out.println ("coalescentModelProbability: " + coalescentModelProbability);
+
+	return (substitutionModelProbability * coalescentModelProbability);
     }
 
     /**
@@ -128,7 +137,9 @@ public class OpdfMap
 	geneGenealogies.add(geneGenealogy);
 
 	gtp.emptyState();
-
+	
+	// look like the calculation is proceeding OK
+	//
 	// calculation under model from Yu et al. 2012
 	// this method requires Network<Double>
 	// Yun uses Double to store hybridization probabilities during calculation

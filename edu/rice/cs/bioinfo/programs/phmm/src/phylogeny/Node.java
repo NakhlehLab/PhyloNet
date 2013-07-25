@@ -415,11 +415,12 @@ public class Node {
 		}
 		else {
 			String toPrint;
-			if (displayInternalNodeNamesFlag) toPrint = "(";	// currently no difference because Internal Nodes do not have names
-			else toPrint = "(";
+			toPrint = "(";
 			toPrint += children.get(0).toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag) + "," + 
 			children.get(1).toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag) + ")";
-			
+			if (displayInternalNodeNamesFlag) toPrint += taxa;
+
+
 			if ((parent != null) && (displayBranchLengthsFlag)) {
 				toPrint += ":" + tbranch;
 			}

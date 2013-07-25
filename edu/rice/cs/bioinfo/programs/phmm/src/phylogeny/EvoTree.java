@@ -270,6 +270,24 @@ public class EvoTree {
 	    TreeParser ptp = new TreeParser(ptreesbr);
 	    ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
 	    ptreesbr.close();
+	    
+	    int i = 0;
+	    for (EvoTree tree : trees) {
+		System.out.println ("Tree " + i + ": |" + tree.toNewickString(true, true) + "|");
+	    }
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    System.exit(1);
+	}	    
+    }
+
+    protected static void test2 (String filename) {
+	try {
+	    BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));
+	    TreeParser ptp = new TreeParser(ptreesbr);
+	    ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
+	    ptreesbr.close();
 
 	    EvoTree tree = trees.get(0);
 

@@ -76,8 +76,17 @@ public class OpdfMap
     }
 
     /**
-     * Perform standard coalescent model calculation.
+     * Perform standard coalescent model calculation to obtain
+     * probability P[g(s_i) | T(s_i), c_{T(s_i)}] of observing a gene genealogy given a parental tree.
+     *
+     * See writeup for details.
+     *
+     * Might move this later to HiddenState.
      */
+    protected double calculateProbabilityOfGeneGenealogyInParentalTree () {
+	return (-1.0);
+    }
+    
 	
     /**
      * TODO. For now, just a warning.

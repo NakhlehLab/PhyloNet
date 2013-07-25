@@ -29,6 +29,7 @@
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
 import phylogeny.*;
+import java.util.Map;
 
 public class HiddenState
 {

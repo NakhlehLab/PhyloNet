@@ -57,18 +57,30 @@ public class HiddenState
     }
 
     public void setGeneGenealogy (EvoTree inGeneGenealogy) {
-	this.geneGenealogy = inGeneGenealogy;
+    	this.geneGenealogy = inGeneGenealogy;
     }
 
-//    public Map<String,String> getAlleleToSpeciesMapping () {
-//	System.err.println ("TODO: implement this function.");
-//	return (null);
-//    }
-    
-    public String toString () {
-	return ("Parental tree:\n" +
-		parentalTree.toString() + "\n" +
-		"Gene genealogy:\n" +
-		geneGenealogy.toString() + "\n");
+    /**
+     * To String Method -> optional arguments
+     * @param displayBranchLengths
+     * @param displayInternalNodeNames
+     * @return
+     */
+    public String toString (boolean displayBranchLengths, boolean displayInternalNodeNames ) {
+		return ("Parental tree:\n" +
+			parentalTree.toNewickString(displayBranchLengths, displayInternalNodeNames) + "\n" +
+			"Gene genealogy:\n" +
+			geneGenealogy.toNewickString(displayBranchLengths, displayInternalNodeNames) + "\n");
     }
+    
+    /**
+     * Default to String Method
+     * Default will set display Branch lengths to true
+     * and display Internal Node names to false
+     */
+    public String toString () {
+		return this.toString(true,false);
+    }
+    
+    
 }

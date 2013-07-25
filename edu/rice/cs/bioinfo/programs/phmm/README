@@ -97,6 +97,23 @@ File Formats
 		Important notes: order of taxa sequence here MUST MATCH the order given
 						in the basic info file.
 		****A Newline character is important to terminate every sequence line
+		
+--> Allele Species Mapping File
+		This is file that will contain the alleles to species mapping
+		
+		Format:
+		line 1) number of mappings
+		line 2) Allele1 Species1
+		line 3) Allele2 Species2
+				.
+				.
+				.
+		
+		Example:
+		3\n
+		kathy human\n
+		willy chimp\n
+		kingkong gorilla\n
 
 
 *********************************************************************

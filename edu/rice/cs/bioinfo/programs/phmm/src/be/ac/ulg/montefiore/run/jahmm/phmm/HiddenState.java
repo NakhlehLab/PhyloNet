@@ -60,10 +60,10 @@ public class HiddenState
 	this.geneGenealogy = inGeneGenealogy;
     }
 
-    public Map<String,String> getAlleleToSpeciesMapping () {
-	System.err.println ("TODO: implement this function.");
-	return (null);
-    }
+//    public Map<String,String> getAlleleToSpeciesMapping () {
+//	System.err.println ("TODO: implement this function.");
+//	return (null);
+//    }
     
     public String toString () {
 	return ("Parental tree:\n" +

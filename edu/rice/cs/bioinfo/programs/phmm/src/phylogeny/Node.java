@@ -240,7 +240,7 @@ public class Node {
      */
     public ArrayList<Double>  getLikelihood() {
 	if (isLeaf()) {
-	    System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
+	    //System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
 	    return this.likelihood;
 	}
 	else {
@@ -258,7 +258,7 @@ public class Node {
 		likelihood.set(i, tempLeft * tempRight);
 	    }
 						
-	    System.out.println(" I am an internal node " + this.getTaxa() + " and my likelihood array is : " + likelihood);
+	    //System.out.println(" I am an internal node " + this.getTaxa() + " and my likelihood array is : " + likelihood);
 
 	    return this.likelihood;
 	}
@@ -418,7 +418,7 @@ public class Node {
 			toPrint = "(";
 			toPrint += children.get(0).toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag) + "," + 
 			children.get(1).toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag) + ")";
-			if (displayInternalNodeNamesFlag) toPrint += taxa;
+			if (displayInternalNodeNamesFlag && (taxa != null) && !taxa.trim().equals("")) toPrint += taxa;
 
 
 			if ((parent != null) && (displayBranchLengthsFlag)) {

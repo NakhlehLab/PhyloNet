@@ -44,6 +44,7 @@ public class InferST_MC extends InferSTBase
 {
     private boolean _treesRooted = true;
     private Map<String,String> _taxonMap;
+    private int _percentage = 0;
 
     public InferST_MC(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
                       Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
@@ -57,7 +58,7 @@ public class InferST_MC extends InferSTBase
 
     @Override
     protected int getMaxNumParams() {
-        return 5;  //To change body of implemented methods use File | Settings | File Templates.
+        return 7;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
 
@@ -76,9 +77,31 @@ public class InferST_MC extends InferSTBase
             _treesRooted = false;
         }
 
-        noError = noError && checkForUnknownSwitches("u", "a");
+        ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
+        if(pParam.ContainsSwitch){
+            if(pParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _percentage = Integer.parseInt(pParam.PostSwitchValue);
+                    if(_percentage <50){
+                        throw new NumberFormatException();
+                    }
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized accepted percentage " + pParam.PostSwitchValue, pParam.PostSwitchParam.getLine(), pParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value from 50 to 100 after switch -p.", pParam.SwitchParam.getLine(), pParam.SwitchParam.getColumn());
+            }
+        }
 
-        this.checkAndSetOutFile();
+        noError = noError && checkForUnknownSwitches("u", "a", "p");
+
+        this.checkAndSetOutFile(pParam, uParam);
 
        return  noError;
     }
@@ -99,18 +122,18 @@ public class InferST_MC extends InferSTBase
         Tree inferredTree;
         if(_taxonMap == null){
 			if(_treesRooted){
-				inferredTree = inference.inferSpeciesTreeRooted(trees);
+				inferredTree = inference.inferSpeciesTreeRooted(trees, _percentage);
 			}
 			else{
-				inferredTree = inference.inferSpeciesTreeUnrooted(trees);
+				inferredTree = inference.inferSpeciesTreeUnrooted(trees, _percentage);
 			}
 		}
 		else{
 			if(_treesRooted){
-				inferredTree = inference.inferSpeciesTreeRooted(trees,_taxonMap);
+				inferredTree = inference.inferSpeciesTreeRooted(trees,_taxonMap, _percentage);
 			}
 			else {
-				inferredTree = inference.inferSpeciesTreeUnrooted(trees,_taxonMap);
+				inferredTree = inference.inferSpeciesTreeUnrooted(trees,_taxonMap, _percentage);
 			}
 		}
 

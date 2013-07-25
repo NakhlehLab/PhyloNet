@@ -3,6 +3,7 @@ ex/simple-gene-only/basicInfo.txt
 3
 ex/simple-gene-only/parental.trees
 ex/simple-gene-only/gene.trees
+ex/simple-gene-only/allele-to-species.mapping
 .33333 .33333 .33334
 a
 ex/simple-gene-only/matrix.matrix

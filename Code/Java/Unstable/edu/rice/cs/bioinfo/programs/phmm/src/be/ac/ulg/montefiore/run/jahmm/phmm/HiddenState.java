@@ -35,6 +35,9 @@ public class HiddenState
     protected EvoTree parentalTree;
     protected EvoTree geneGenealogy;
 
+    // maintain mapping between taxa in parentalTree and geneGenealogy
+    // here - not sure if this is the best place to do it, but oh well
+
     public HiddenState (EvoTree inParentalTree, EvoTree inGeneGenealogy) {
 	setParentalTree(inParentalTree);
 	setGeneGenealogy(inGeneGenealogy);
@@ -56,6 +59,11 @@ public class HiddenState
 	this.geneGenealogy = inGeneGenealogy;
     }
 
+    public Map<String,String> getAlleleToSpeciesMapping () {
+	System.err.println ("TODO: implement this function.");
+	return (null);
+    }
+    
     public String toString () {
 	return ("Parental tree:\n" +
 		parentalTree.toString() + "\n" +

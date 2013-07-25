@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
@@ -25,9 +27,11 @@ public class runHmm {
     private static final double tolerated_error = 0.02;		/* Sum of probabilities margin of error allowed */
 	
     // stored information 
-    private static String basicFileName = null;				/* Basic Info file name */
+    private static String basicFileName = null;						/* Basic Info file name */
     private static String parentalTreesFileName = null;				/* Parental trees file name */
-    private static String geneGenealogiesFileName = null;				/* Gene genealogies file name */
+    private static String geneGenealogiesFileName = null;			/* Gene genealogies file name */
+    private static String alleleSpeciesFileName = null;				/* Allele Species Mapping file name */
+    
 
     
     // information created/built
@@ -99,6 +103,9 @@ public class runHmm {
 			
 	    System.out.println("\nInput the gene genealogies file path name:\n (note: see README for file format) \n");
 	    geneGenealogiesFileName = in.readLine();
+	    
+	    System.out.println("\nInput the Alleles to Species Mapping file path name: \n (note: see README for file format \n");
+	    alleleSpeciesFileName = in.readLine();
 
 	    // Get Pi probabilities array
 	    getPiInfo(in);
@@ -112,6 +119,9 @@ public class runHmm {
 	    //Reading in Basic Info file and store information
 	    buildParser();
 			
+	    // Building Allele to Species map
+	    buildAlleleSpeciesMap();
+	    
 	    //Build HMM
 	    buildHMM();
 			
@@ -323,6 +333,22 @@ public class runHmm {
 		
     }
 	
+    
+    /**
+     * Reads in and parse the alleles to species map
+     * @throws Exception
+     */
+    private static void buildAlleleSpeciesMap() throws Exception {
+    	fParser.parseAlleleSpecies (alleleSpeciesFileName);
+    	
+    	//Testing Purposes//
+    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
+    	Set<String> keyset = amap.keySet();
+    	for (String i : keyset) {
+    		System.out.println(i + " : " + amap.get(i));
+    	}
+    	// Testing purposes//
+    }
 	
     /**
      * Read and parse trees file

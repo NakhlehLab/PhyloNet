@@ -74,26 +74,26 @@ public class MajorityConsensusInference
 		return taxonMap;
 	}
 
-	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted){
+	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted, int percentage){
 		if(rooted){
-			return inferSpeciesTreeRooted(trees);
+			return inferSpeciesTreeRooted(trees, percentage);
 		}
 		else{
-			return inferSpeciesTreeUnrooted(trees);
+			return inferSpeciesTreeUnrooted(trees, percentage);
 		}
 	}
 
-	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted, Map<String, String> taxonMap){
+	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted, Map<String, String> taxonMap, int percentage){
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
 		if(rooted){
-			return inferSpeciesTreeRooted(trees, taxonMap);
+			return inferSpeciesTreeRooted(trees, taxonMap, percentage);
 		}
 		else{
-			return inferSpeciesTreeUnrooted(trees, taxonMap);
+			return inferSpeciesTreeUnrooted(trees, taxonMap, percentage);
 		}
 	}
 
@@ -104,7 +104,7 @@ public class MajorityConsensusInference
 	 *
 	 * @return	inferred species tree
 	 */
-    public Tree inferSpeciesTreeRooted(List<Tree> trees){
+    public Tree inferSpeciesTreeRooted(List<Tree> trees, int percentage){
 
 		// make sure that all binary nodes are removed (to avoid double counting edges)
 		// make sure that trees have the same leaf set
@@ -164,26 +164,35 @@ public class MajorityConsensusInference
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 
 		int size = trees.size();
-		for(STITreeClusterWD<Integer> cl: cls){
-			if(cl.getData()/(double)size > 0.5){
-				minClusters.add(cl);
-			}
-			else{
-				boolean compatible = true;
-				for(STITreeCluster c_ex : minClusters){
-					if(!c_ex.isCompatible(cl)){
-						compatible = false;
-						break;
-					}
-				}
-				if(compatible){
-					minClusters.add(cl);
-				}
-			}
-			if(minClusters.size() == taxa.length-2){
-				break;
-			}
-		}
+        if(percentage == 0){
+            for(STITreeClusterWD<Integer> cl: cls){
+                if(cl.getData()/(double)size > 0.5){
+                    minClusters.add(cl);
+                }
+                else{
+                    boolean compatible = true;
+                    for(STITreeCluster c_ex : minClusters){
+                        if(!c_ex.isCompatible(cl)){
+                            compatible = false;
+                            break;
+                        }
+                    }
+                    if(compatible){
+                        minClusters.add(cl);
+                    }
+                }
+                if(minClusters.size() == taxa.length-2){
+                    break;
+                }
+            }
+        }
+        else{
+            for(STITreeClusterWD<Integer> cl: cls){
+                if(cl.getData()/(double)size > percentage/100.0){
+                    minClusters.add(cl);
+                }
+            }
+        }
 
 		Tree tr = Trees.buildTreeFromClusters(minClusters);
 		return tr;
@@ -198,7 +207,7 @@ public class MajorityConsensusInference
 	 *
 	 * @return	inferred species tree
 	 */
-    public Tree inferSpeciesTreeRooted(List<Tree> trees, Map<String,String> taxonMap){
+    public Tree inferSpeciesTreeRooted(List<Tree> trees, Map<String,String> taxonMap, int percentage){
 
 		// make sure that all binary nodes are removed (to avoid double counting edges)
 		// make sure that trees have the same leaf set
@@ -347,21 +356,31 @@ public class MajorityConsensusInference
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 
-		for(STITreeClusterWD<Double> cl: cls){
-			boolean compatible = true;
-			for(STITreeCluster c_ex : minClusters){
-				if(!c_ex.isCompatible(cl)){
-					compatible = false;
-					break;
-				}
-			}
-			if(compatible){
-				minClusters.add(cl);
-			}
-			if(minClusters.size() == stTaxa.length-2){
-				break;
-			}
-		}
+		if(percentage == 0){
+            for(STITreeClusterWD<Double> cl: cls){
+                boolean compatible = true;
+                for(STITreeCluster c_ex : minClusters){
+                    if(!c_ex.isCompatible(cl)){
+                        compatible = false;
+                        break;
+                    }
+                }
+                if(compatible){
+                    minClusters.add(cl);
+                }
+                if(minClusters.size() == stTaxa.length-2){
+                    break;
+                }
+            }
+        }
+
+        else{
+            for(STITreeClusterWD<Double> cl: cls){
+                if(cl.getData()/(double)trees.size() > percentage/100.0){
+                    minClusters.add(cl);
+                }
+            }
+        }
 
 		return Trees.buildTreeFromClusters(minClusters);
     }
@@ -374,7 +393,7 @@ public class MajorityConsensusInference
 	 *
 	 * @return	inferred species tree
 	 */
-    public Tree inferSpeciesTreeUnrooted(List<Tree> trees){
+    public Tree inferSpeciesTreeUnrooted(List<Tree> trees, int percentage){
 		if(trees.size()==1){
 			return trees.get(0);
 		}
@@ -442,23 +461,34 @@ public class MajorityConsensusInference
 	 */
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new ArrayList<STITreeCluster>();
-		for(STITreeCluster c: clusters){
-			boolean compatible = true;
-			for(STITreeCluster ex_c: minClusters){
-				if(!c.isCompatible(ex_c)){
-						compatible = false;
-						break;
-					}
-			}
-			if(compatible){
-				minClusters.add(c);
-				/*
-				if(minClusters.size()==taxa.length-2){
-					break;
-				}
-				*/
-			}
-		}
+        if(percentage==0){
+            for(STITreeCluster c: clusters){
+                boolean compatible = true;
+                for(STITreeCluster ex_c: minClusters){
+                    if(!c.isCompatible(ex_c)){
+                            compatible = false;
+                            break;
+                        }
+                }
+                if(compatible){
+                    minClusters.add(c);
+                    /*
+                    if(minClusters.size()==taxa.length-2){
+                        break;
+                    }
+                    */
+                }
+            }
+        }
+        else{
+            for(STITreeClusterWD<Integer> cl: clusters){
+                if(cl.getData()/(double)trees.size() > percentage/100.0){
+                    minClusters.add(cl);
+                }
+            }
+        }
+
+
 		return Trees.buildTreeFromClusters(minClusters);
     }
 
@@ -472,7 +502,7 @@ public class MajorityConsensusInference
 	 * @return	inferred species tree
 	 */
 
-    public Tree inferSpeciesTreeUnrooted(List<Tree> trees, Map<String,String> taxonMap){
+    public Tree inferSpeciesTreeUnrooted(List<Tree> trees, Map<String,String> taxonMap, int percentage){
 
 		// make sure that all binary nodes are removed (to avoid double counting edges)
 		// make sure that trees have the same leaf set
@@ -617,21 +647,32 @@ public class MajorityConsensusInference
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new ArrayList<STITreeCluster>();
 
-		for(STITreeCluster stcl: clusters){
-			boolean comp = true;
-			for(STITreeCluster cl_ex:minClusters){
-				if(!cl_ex.isCompatible(stcl)){
-					comp = false;
-					break;
-				}
-			}
-			if(comp){
-				minClusters.add(stcl);
-			}
-			if(minClusters.size() == stTaxa.length-2){
-				break;
-			}
-		}
+        if(percentage == 0){
+            for(STITreeCluster stcl: clusters){
+                boolean comp = true;
+                for(STITreeCluster cl_ex:minClusters){
+                    if(!cl_ex.isCompatible(stcl)){
+                        comp = false;
+                        break;
+                    }
+                }
+                if(comp){
+                    minClusters.add(stcl);
+                }
+                if(minClusters.size() == stTaxa.length-2){
+                    break;
+                }
+            }
+
+        }
+        else{
+            for(STITreeClusterWD<Double> cl: clusters){
+                if(cl.getData()/(double)trees.size() > percentage/100.0){
+                    minClusters.add(cl);
+                }
+            }
+        }
+
 		/*
 		for(STITreeCluster c: minClusters){
 			System.out.println(c);

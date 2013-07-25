@@ -1,13 +1,13 @@
 0
-ex/simple-gene-only/basicInfo.txt
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/basicInfo.txt
 3
-ex/simple-gene-only/parental.trees
-ex/simple-gene-only/gene.trees
-ex/simple-gene-only/allele-to-species.mapping
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/parental.trees
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/gene.trees
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/allele-to-species.mapping
 .33333 .33333 .33334
 a
-ex/simple-gene-only/matrix.matrix
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/matrix.matrix
 0
-ex/simple-gene-only/viterbi1.out
-ex/simple-gene-only/myseq.seq
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/viterbi1.out
+/home/kl23/code/phmm-repository/phmm/ex/simple-gene-only/myseq.seq
 1

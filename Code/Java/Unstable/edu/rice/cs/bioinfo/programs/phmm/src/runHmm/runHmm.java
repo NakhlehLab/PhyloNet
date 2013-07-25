@@ -325,12 +325,12 @@ public class runHmm {
      * @throws Exception 
      */
     private static void buildParser() throws Exception {
-	if(basicFileName != null) {
+		if(basicFileName == null) {
+			throw new ParserFileException("Cannot read Basic Info File!");
+		}
 	    System.out.println("\nNow reading and saving Basic Info for parser . . .");
 	    fParser = new Parser(basicFileName);
-	    fParser.setTrees(trees_states);
-	} else throw new ParserFileException("Cannot read Basic Info File!");
-		
+	    fParser.setTrees(trees_states);	
     }
 	
     
@@ -339,14 +339,18 @@ public class runHmm {
      * @throws Exception
      */
     private static void buildAlleleSpeciesMap() throws Exception {
+    	if (alleleSpeciesFileName == null) {
+    	    throw new ParserFileException("Cannot read Trees file!");
+    	}
+    	
     	fParser.parseAlleleSpecies (alleleSpeciesFileName);
     	
     	//Testing Purposes//
-    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
-    	Set<String> keyset = amap.keySet();
-    	for (String i : keyset) {
-    		System.out.println(i + " : " + amap.get(i));
-    	}
+//    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
+//    	Set<String> keyset = amap.keySet();
+//    	for (String i : keyset) {
+//    		System.out.println(i + " : " + amap.get(i));
+//    	}
     	// Testing purposes//
     }
 	

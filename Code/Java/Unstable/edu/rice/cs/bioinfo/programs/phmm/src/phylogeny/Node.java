@@ -374,14 +374,11 @@ public class Node {
      * @return returns the Pij value, or the transition probability between two nucleotides given the branch length
      */
     private double getPij(char i, char j, double u, double t) {
-	double p;
         if (!(Character.toString(i)).equals((Character.toString(j)))) {
             return (0.25 - 0.25 * Math.exp((-4.0 / 3.0) * u * t));
         }
         else
             return (0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t));
-		
-
     }
 	
 	
@@ -392,20 +389,44 @@ public class Node {
      */
     @Override
     public String toString() {
-	if (isLeaf()) {
-	    if (obs != null) 
-		return taxa + "->" + obs + " :" + tbranch;
-	    else
-		return taxa + " :" + tbranch;
-	}
-	else {
-	    String toprint = "(" +  children.get(0) + ", " + children.get(1) + ")";
-	    if (parent != null) {
-		toprint += " :" + tbranch;
-	    }
-	    return toprint;
-	}
+		if (isLeaf()) {
+		    if (obs != null) 
+			return taxa + "->" + obs + " :" + tbranch;
+		    else
+			return taxa + " :" + tbranch;
+		}
+		else {
+		    String toprint = "(" +  children.get(0) + ", " + children.get(1) + ")";
+		    if (parent != null) {
+			toprint += " :" + tbranch;
+		    }
+		    return toprint;
+		}
     }
-	
+    
+    
+    /**
+     * @return Newick String Representation
+     */
+	public String toNewickString (boolean displayBranchLengthsFlag, boolean displayInternalNodeNamesFlag) {
+		if (isLeaf()) {
+			if (displayBranchLengthsFlag) return taxa + ":" + tbranch;
+			else return taxa;
+		}
+		else {
+			String toPrint;
+			if (displayInternalNodeNamesFlag) toPrint = "IntNode(";
+			else toPrint = "(";
+			toPrint += children.get(0).toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag) + "," + 
+			children.get(1).toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag) + ")";
+			
+			if ((parent != null) && (displayBranchLengthsFlag)) {
+				toPrint += ":" + tbranch;
+			}
+			
+			return toPrint;
+		}
+		
+	}
 	
 }

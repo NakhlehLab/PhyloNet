@@ -1,15 +1,13 @@
 package phylogeny;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
+import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 // kliu - pull in additional library support
-import be.ac.ulg.montefiore.run.jahmm.phmm.*;
 
 // kliu - use this as general tree class.
 // Each hidden state corresponds to a (parental tree, gene genealogy) pair.
@@ -262,9 +260,8 @@ public class EvoTree {
      * Stub. Use a flag to indicate whether branch lengths and
      * internal node names should be output or not.
      */
-    public String toNewickString (boolean displayBranchLengthsFlag, 
-				  boolean displayInternalNodeNamesFlag) {
-	return ("TODO.");
+    public String toNewickString (boolean displayBranchLengthsFlag, boolean displayInternalNodeNamesFlag) {
+    	return root.toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag);
     }
 
     protected static void test (String filename) {

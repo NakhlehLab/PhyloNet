@@ -115,7 +115,7 @@ public class runHmm {
 			
 	    // Now build the trees and get the tree mapping to integers
 	    buildTrees();
-			
+	    
 	    //Reading in Basic Info file and store information
 	    buildParser();
 			

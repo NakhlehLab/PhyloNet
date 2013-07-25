@@ -22,9 +22,25 @@
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
 import be.ac.ulg.montefiore.run.jahmm.Opdf;
+import phylogeny.EvoTree;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Vector;
+import java.util.List;
+import java.io.StringReader;
+import java.io.IOException;
+
+// kliu - Phylonet support libraries
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
+
+
 
 /**
  * Utility class for calculating the emission probability
@@ -48,6 +64,11 @@ public class OpdfMap
      * coalescent units).
      */
     protected HiddenState hiddenState;
+
+    /**
+     * For coalescent model calculations.
+     */
+    protected GeneTreeProbability gtp;
 	
     /**
      * Constructor. For simplicity, pass in reference to the
@@ -56,6 +77,7 @@ public class OpdfMap
      */
     public OpdfMap (HiddenState inHiddenState) {
 	setHiddenState(inHiddenState);
+	gtp = new GeneTreeProbability();
     }
 
     public HiddenState getHiddenState () {
@@ -82,11 +104,70 @@ public class OpdfMap
      * See writeup for details.
      *
      * Might move this later to HiddenState.
+     *
+     * Use code from ComputeGTProb.
+     * WARNING - returns likelihood, *NOT* log likelihood!
      */
-    protected double calculateProbabilityOfGeneGenealogyInParentalTree () {
-	return (-1.0);
+    protected double calculateProbabilityOfGeneGenealogyInParentalTree (boolean debugFlag) {
+	Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(hiddenState.getParentalTree());
+	Map<String,String> alleleToSpeciesMapping = hiddenState.getAlleleToSpeciesMapping();
+	Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(hiddenState.getGeneGenealogy());
+	// A list with one element. Inefficient - consider doing a one-shot approach later.
+	Vector<Tree> geneGenealogies = new Vector<Tree>();
+	geneGenealogies.add(geneGenealogy);
+
+	gtp.emptyState();
+
+	// calculation under model from Yu et al. 2012
+	// crap - this method requires Network<Double>
+	// Yun uses Double to store hybridization probabilities during calculation
+        List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
+
+	// should only be a single entry
+	if (probList.size() != 1) {
+	    System.err.println ("ERROR: GeneTreeProbability.calculateGTDistribution(...) didn't return exactly one probability. Returning -1 to signal error.");
+	    return (-1.0);
+	}
+
+        return (probList.get(0));
     }
-    
+
+    /**
+     * Convert an EvoTree into a PhyloNet Tree object.
+     */
+    protected Tree convertPHMMTreeToPhyloNetTree (EvoTree etree) {
+	NewickReader nr = new NewickReader(new StringReader(etree.toNewickString(true, true)));
+	// kliu - change this over to a String data member
+	// don't really use it anyways
+	STITree<Double> newtr = new STITree<Double>(true);
+	try {
+	    nr.readTree(newtr);
+	    return (newtr);
+	}
+	catch(Exception e) {
+	    System.err.println(e);
+	    e.printStackTrace();
+	    return (null);
+	}
+    }
+
+    /**
+     * Convert an EvoTree into a PhyloNet Network object
+     */
+    protected Network<Double> convertPHMMTreeToPhyloNetNetwork (EvoTree etree) {
+	ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(etree.toNewickString(true, true)));
+	// kliu - change this over to a String data member
+	// don't really use it anyways
+	try {
+	    Network<Double> network = enr.readNetwork();
+	    return (network);
+	}
+	catch(IOException ioe) {
+	    System.err.println(ioe);
+	    ioe.printStackTrace();
+	    return (null);
+	}
+    }
 	
     /**
      * TODO. For now, just a warning.
@@ -158,9 +239,7 @@ public class OpdfMap
 	        hiddenState.toString() + "\n");
     }
 	
-	
-
-
+    protected static final long serialVersionUID = 1L;
 }
 
 

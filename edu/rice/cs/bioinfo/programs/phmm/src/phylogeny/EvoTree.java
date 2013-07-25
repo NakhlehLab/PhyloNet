@@ -17,7 +17,9 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
  * It can be traversed through by recursion - tree/similar to linked list style.
  */
 public class EvoTree {
-	
+    protected static final boolean DEFAULT_DISPLAY_BRANCH_LENGTHS_FLAG = true;
+    protected static final boolean DEFAULT_DISPLAY_INTERNAL_NODE_NAMES_FLAG = true;
+
     protected Node root;					// Tree Root
     protected int treeID;					// unique Identification of tree, -1 means it has not yet been identified
     protected String aname;
@@ -254,6 +256,10 @@ public class EvoTree {
     @Override
     public String toString() {
 	return "Tree: " + aname + "\n" + root.toString() + "\n\n";
+    }
+
+    public String toNewickString () {
+	return (toNewickString(DEFAULT_DISPLAY_BRANCH_LENGTHS_FLAG, DEFAULT_DISPLAY_INTERNAL_NODE_NAMES_FLAG));
     }
 
     /**

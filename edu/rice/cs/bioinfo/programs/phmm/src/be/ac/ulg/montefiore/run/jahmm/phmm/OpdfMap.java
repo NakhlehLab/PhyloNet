@@ -70,8 +70,14 @@ public class OpdfMap
     {
 	// kliu - on-the-fly emission probability calculation goes here
 	// TODO - add in coalescent model contribution
+	//
+	// later - add caching dependent on changes to emission probability parameters
 	return (hiddenState.getGeneGenealogy().getLikelihood(o));
     }
+
+    /**
+     * Perform standard coalescent model calculation.
+     */
 	
     /**
      * TODO. For now, just a warning.

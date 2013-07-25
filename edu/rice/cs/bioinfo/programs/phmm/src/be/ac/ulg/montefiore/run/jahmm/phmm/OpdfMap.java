@@ -56,7 +56,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
  */
 public class OpdfMap
     implements Opdf<ObservationMap>
-{	
+{
+    public static final boolean DEBUG_FLAG = false;
+
     /**
      * Keep track of containing hidden state.
      * Need to access data associated with the hidden state (gene tree + branch lengths
@@ -91,10 +93,9 @@ public class OpdfMap
     public double probability (ObservationMap o)
     {
 	// kliu - on-the-fly emission probability calculation goes here
-	// TODO - add in coalescent model contribution
-	//
 	// later - add caching dependent on changes to emission probability parameters
-	return (hiddenState.getGeneGenealogy().getLikelihood(o));
+	return (calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG) * 
+		hiddenState.getGeneGenealogy().getLikelihood(o));
     }
 
     /**
@@ -119,7 +120,7 @@ public class OpdfMap
 	gtp.emptyState();
 
 	// calculation under model from Yu et al. 2012
-	// crap - this method requires Network<Double>
+	// this method requires Network<Double>
 	// Yun uses Double to store hybridization probabilities during calculation
         List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
 

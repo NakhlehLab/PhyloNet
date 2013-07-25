@@ -37,11 +37,13 @@ public class HiddenState
     protected EvoTree geneGenealogy;
 
     // maintain mapping between taxa in parentalTree and geneGenealogy
-    // here - not sure if this is the best place to do it, but oh well
+    // only store reference to a shared object
+    protected Map<String,String> alleleToSpeciesMapping;
 
-    public HiddenState (EvoTree inParentalTree, EvoTree inGeneGenealogy) {
+    public HiddenState (EvoTree inParentalTree, EvoTree inGeneGenealogy, Map<String,String> map) {
 	setParentalTree(inParentalTree);
 	setGeneGenealogy(inGeneGenealogy);
+	setAlleleToSpeciesMapping(map);
     }
 
     public EvoTree getParentalTree () {
@@ -52,12 +54,20 @@ public class HiddenState
 	return (geneGenealogy);
     }
 
+    public Map<String,String> getAlleleToSpeciesMapping () {
+	return (alleleToSpeciesMapping);
+    }
+
     public void setParentalTree (EvoTree inParentalTree) {
 	this.parentalTree = inParentalTree;
     }
 
     public void setGeneGenealogy (EvoTree inGeneGenealogy) {
     	this.geneGenealogy = inGeneGenealogy;
+    }
+
+    public void setAlleleToSpeciesMapping (Map<String,String> map) {
+	this.alleleToSpeciesMapping = map;
     }
 
     /**

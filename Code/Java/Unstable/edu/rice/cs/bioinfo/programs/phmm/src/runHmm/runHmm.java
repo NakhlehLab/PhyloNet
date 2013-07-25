@@ -113,15 +113,15 @@ public class runHmm {
 	    // Get transition Matrix
 	    getAij(in);
 			
-	    // Building Allele to Species map
-	    buildAlleleSpeciesMap();
-
 	    // Now build the trees and get the tree mapping to integers
 	    buildTrees();
 	    
 	    //Reading in Basic Info file and store information
 	    buildParser();
-				    
+			
+	    // Building Allele to Species map
+	    buildAlleleSpeciesMap();
+	    
 	    //Build HMM
 	    buildHMM();
 			
@@ -344,7 +344,20 @@ public class runHmm {
     	}
     	
     	fParser.parseAlleleSpecies (alleleSpeciesFileName);
-    	
+	
+	// kliu - paranoid
+	if ((fParser.getAlleleSpeciesMap() == null) ||
+	    fParser.getAlleleSpeciesMap().isEmpty()) {
+	    // strict!
+	    System.err.println ("ERROR: allele-to-species map empty or incorrectly formatted. Aborting.");
+	    System.exit(1);
+	}
+
+	// now set references in all hidden states
+	for (HiddenState hiddenState : trees_states) {
+	    hiddenState.setAlleleToSpeciesMapping(fParser.getAlleleSpeciesMap());
+	}
+
     	//Testing Purposes//
 //    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
 //    	Set<String> keyset = amap.keySet();
@@ -383,7 +396,8 @@ public class runHmm {
 	    ggbr.close();
 
 	    for (EvoTree geneGenealogy : geneGenealogies) {
-		trees_states.add(new HiddenState(parentalTree, geneGenealogy, fParser.getAlleleSpeciesMap()));
+		// kliu - meh - parse allele-to-species mapping later and add in references here
+		trees_states.add(new HiddenState(parentalTree, geneGenealogy, null));
 	    }
 	}
 	

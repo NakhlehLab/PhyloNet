@@ -473,7 +473,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             //    _usingBL = true;
             // }
 
-            ParamExtractor numMultipleRunsParam = new ParamExtractor("numMultipleRuns", this.params, this.errorDetected);
+            ParamExtractor numMultipleRunsParam = new ParamExtractor("nummultipleruns", this.params, this.errorDetected);
             if(numMultipleRunsParam.ContainsSwitch)
             {
                 if(numMultipleRunsParam.PostSwitchParam != null)
@@ -494,7 +494,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             }
 
 
-            ParamExtractor numFoldsParam = new ParamExtractor("numFolds", this.params, this.errorDetected);
+            ParamExtractor numFoldsParam = new ParamExtractor("numfolds", this.params, this.errorDetected);
             if(numFoldsParam.ContainsSwitch)
             {
                 if(numFoldsParam.PostSwitchParam != null)

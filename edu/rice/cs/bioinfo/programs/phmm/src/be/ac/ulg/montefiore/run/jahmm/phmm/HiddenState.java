@@ -28,8 +28,9 @@
 
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
-import phylogeny.*;
 import java.util.Map;
+
+import phylogeny.EvoTree;
 
 public class HiddenState
 {
@@ -47,19 +48,19 @@ public class HiddenState
     }
 
     public EvoTree getParentalTree () {
-	return (parentalTree);
+    	return (parentalTree);
     }
 
     public EvoTree getGeneGenealogy () {
-	return (geneGenealogy);
+    	return (geneGenealogy);
     }
 
     public Map<String,String> getAlleleToSpeciesMapping () {
-	return (alleleToSpeciesMapping);
+    	return (alleleToSpeciesMapping);
     }
 
     public void setParentalTree (EvoTree inParentalTree) {
-	this.parentalTree = inParentalTree;
+    	this.parentalTree = inParentalTree;
     }
 
     public void setGeneGenealogy (EvoTree inGeneGenealogy) {
@@ -67,11 +68,11 @@ public class HiddenState
     }
 
     public void setAlleleToSpeciesMapping (Map<String,String> map) {
-	this.alleleToSpeciesMapping = map;
+    	this.alleleToSpeciesMapping = map;
     }
 
     /**
-     * To String Method -> optional arguments
+     * To String Method --> optional arguments
      * @param displayBranchLengths
      * @param displayInternalNodeNames
      * @return

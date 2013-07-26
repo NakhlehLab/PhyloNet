@@ -22,8 +22,19 @@
 
 package be.ac.ulg.montefiore.run.jahmm;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+// kliu - these appear to be new
+import runHmm.MemoryReport;
+import containers.IArrayFactory;
+import containers.IntArrayFactory;
+import containers.ListOfArrays;
 
 
 /**
@@ -36,9 +47,11 @@ public class ViterbiCalculator
 	 * The psy and delta values, as described in Rabiner and Juand classical
 	 * papers.
 	 */
-	private double[][] delta; 
-	private int[][] psy;
-	private int[] stateSequence;
+	private double[][] delta;
+    // kliu - not sure why switched from original int indexing to 
+    // Integer indexing?
+	private List<ListOfArrays<Integer>> Psy;
+	private List<Integer> StateSequence;
 	private double lnProbability;
 	
 	
@@ -55,16 +68,35 @@ public class ViterbiCalculator
 		if (oseq.isEmpty())
 			throw new IllegalArgumentException("Invalid empty sequence");
 		
-		delta = new double[oseq.size()][hmm.nbStates()];
-		psy = new int[oseq.size()][hmm.nbStates()];
-		stateSequence = new int[oseq.size()];
+		final int growthSize = 10000;
+		
+		IArrayFactory<Integer> arrayFactory = new IntArrayFactory();
+		delta = new double[2][hmm.nbStates()];
+		Psy = new ArrayList<ListOfArrays<Integer>>();
+		StateSequence = new ListOfArrays<Integer>(arrayFactory, growthSize);
+		
+		//building Psy array
+		System.out.println("Building Psy Array");
+		for (int i = 0; i < oseq.size(); i++) {
+		    // kliu - added Integer type argument to fix compilation error
+			Psy.add(new ListOfArrays<Integer>(arrayFactory, hmm.nbStates()));
+			if ((i%10000) == 0) {
+				System.out.print("\r"+ (((double)i/(double)oseq.size()) * 100.0) + "%");
+			}
+		}
+		
+		System.out.print("\r100% Done!                             ");
+		System.out.println("");
+		
+		MemoryReport.report();
 		
 		for (int i = 0; i < hmm.nbStates(); i++) {
 			delta[0][i] = -Math.log(hmm.getPi(i)) - 
-			Math.log(hmm.getOpdf(i).probability(oseq.get(0)));
-			psy[0][i] = 0;
+					Math.log(hmm.getOpdf(i).probability(oseq.get(0)));
+			Psy.get(0).add(i, 0);
 		}
 		
+		System.out.println("Begin computing Viterbi's algorithm : FORWARD PART ");
 		Iterator<? extends O> oseqIterator = oseq.iterator();
 		if (oseqIterator.hasNext())
 			oseqIterator.next();
@@ -73,25 +105,56 @@ public class ViterbiCalculator
 		while (oseqIterator.hasNext()) {
 			O observation = oseqIterator.next();
 			
-			for (int i = 0; i < hmm.nbStates(); i++)
+			for (int i = 0; i < hmm.nbStates(); i++) {
+						
 				computeStep(hmm, observation, t, i);
+
+			}
+			for (int k = 0; k < delta[0].length; k++) {
+				delta[0][k] = delta[1][k];
+			}
+			
+			if ((t%10000) == 0) {
+				System.out.print("\r"+ (((double)t/(double)oseq.size()) * 100.0) + "%");
+			}
 			
 			t++;
+			
 		}
 		
+		System.out.print("\r 100% DONE!                                \n");
+		
 		lnProbability = Double.MAX_VALUE;
+		
+		int index = -1;
 		for (int i = 0; i < hmm.nbStates(); i++) {
-			double thisProbability = delta[oseq.size()-1][i];
+			double thisProbability = delta[0][i];
 			
 			if (lnProbability > thisProbability) {
 				lnProbability = thisProbability;
-				stateSequence[oseq.size() - 1] = i;
+				index = i;
 			}
 		}
-		lnProbability = -lnProbability;
+		StateSequence.add(index);
 		
-		for (int t2 = oseq.size() - 2; t2 >= 0; t2--)
-			stateSequence[t2] = psy[t2+1][stateSequence[t2+1]];
+		lnProbability = -lnProbability;
+
+		
+		System.out.println("Begin computing Viterbi's algorithm : BACKWARD PART ");
+		int ss = 0; 
+		for (int t2 = oseq.size() - 2; t2 >= 0; t2--) {
+			StateSequence.add(Psy.get(t2+1).get(StateSequence.get(ss)));
+			
+			if ((ss%10000) == 0) {
+				System.out.print("\r"+ (((double)ss/(double)oseq.size()) * 100.0) + "%");
+			}
+			
+			ss++;
+		}
+		
+		System.out.print("\r 100% DONE!                                   \n");
+		
+		
 	}
 	
 	
@@ -105,7 +168,8 @@ public class ViterbiCalculator
 		int min_psy = 0;
 		
 		for (int i = 0; i < hmm.nbStates(); i++) {
-			double thisDelta = delta[t-1][i] - Math.log(hmm.getAij(i, j));
+			double thisDelta = delta[0][i] - Math.log(hmm.getAij(i, j));
+			
 			
 			if (minDelta > thisDelta) {
 				minDelta = thisDelta;
@@ -113,8 +177,10 @@ public class ViterbiCalculator
 			}
 		}
 		
-		delta[t][j] = minDelta - Math.log(hmm.getOpdf(j).probability(o));
-		psy[t][j] = min_psy;
+		
+		delta[1][j] = minDelta - Math.log(hmm.getOpdf(j).probability(o));
+		Psy.get(t).add(min_psy);
+		
 	}
 	
 	
@@ -143,6 +209,41 @@ public class ViterbiCalculator
 	 */
 	public int[] stateSequence() 
 	{
-		return stateSequence.clone();
+		int[] statesseq = new int[StateSequence.size()];
+		int j = 0;
+		for (int i = StateSequence.size() - 1; i >= 0; i--) {
+			statesseq[j] = StateSequence.get(i);
+			j++;
+		}
+		return statesseq;
 	}
+	
+	/**
+	 * Print state sequence out to a file
+	 * 
+	 */
+	public void printStateSequence(String filename) {
+		System.out.println("Begin Printing State Sequence to File.");
+		try {
+		    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+		    for (int j = StateSequence.size() -1; j >= 0; j--) {
+		    	out.print(StateSequence.get(j));
+		    	
+		    	if (j % 1024 == 0) {
+		    		out.flush();
+		    	}
+		    	
+		    	if ((j %10000) == 0) {
+					System.out.print("\r"+ (((double)j/(double)StateSequence.size()) * 100.0) + "%");
+				}
+		    }
+		    
+		    System.out.print("\r 100% DONE!                                \n");
+		    
+		    out.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	}
+	
 }

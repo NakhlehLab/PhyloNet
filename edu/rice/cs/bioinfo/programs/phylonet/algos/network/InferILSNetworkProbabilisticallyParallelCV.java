@@ -472,20 +472,25 @@ public class InferILSNetworkProbabilisticallyParallelCV extends MDCOnNetworkYFFr
                         return correctK;
                     }
                 }
-
-                // Found slow declining point
-                for (int i=0; i<=myContainer2_v.size()-2; i++) {
-                    double MSE1_v = myContainer2_v.get(i);
-                    double MSE2_v = myContainer2_v.get(i+1);
-                    if (MSE1_v > MSE2_v && (MSE1_v-MSE2_v)/MSE1_v < 5e-2) { // turning point found by sticky area criteria
-                        System.out.println("Turning point found within 5% MSE. The right reticulation number is " + i);
-                        correctK = i;
-                        return correctK;
-                    }
-                }
             }
             ret++;
         } // while
+
+        // Found slow declining point for the whole curve
+        for (int i=0; i<=myContainer2_v.size()-3; i++) {
+            double MSE1_v = myContainer2_v.get(i);
+            double MSE2_v = myContainer2_v.get(i+1);
+            double MSE3_v = myContainer2_v.get(i+2);
+            if (MSE1_v > MSE2_v && MSE2_v > MSE3_v &&
+                    (MSE1_v-MSE2_v) > (MSE2_v-MSE3_v) &&
+                    (MSE2_v-MSE3_v)/MSE3_v< 3e-2) { // turning point found by sticky area criteria
+                System.out.println("Turning point found within 3% MSE after larger drop in MSE. The right reticulation number is " + (i+1));
+                correctK = i+1;
+                return correctK;
+            }
+        }
+
+        // Now I have nothing captured.
         System.out.println("Tested 0, 1, ..., and maxReticulations. No turning point found.");
         return correctK; // correctK = -1
     }

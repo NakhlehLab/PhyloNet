@@ -7,9 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
@@ -107,7 +105,7 @@ public class runHmm {
 	    System.out.println("\nInput the Alleles to Species Mapping file path name: \n (note: see README for file format \n");
 	    alleleSpeciesFileName = in.readLine();
 
-	    // Get Pi probabilities array
+	    // Get the Pi probabilities array
 	    getPiInfo(in);
 			
 	    // Get transition Matrix

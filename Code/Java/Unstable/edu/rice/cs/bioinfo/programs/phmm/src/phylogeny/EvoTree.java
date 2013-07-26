@@ -264,7 +264,7 @@ public class EvoTree {
 
     /**
      * Stub. Use a flag to indicate whether branch lengths and
-     * internal node names should be output or not.
+     * internal node names should be output or not..
      */
     public String toNewickString (boolean displayBranchLengthsFlag, boolean displayInternalNodeNamesFlag) {
     	return root.toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag);

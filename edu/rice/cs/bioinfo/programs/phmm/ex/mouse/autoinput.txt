@@ -1,11 +1,13 @@
 0
-SpanishBasicInfo
-15
-spanishtree.tree
-.066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667 .066667
+/home/kl23/code/phmm-repository/phmm/ex/mouse/SpanishBasicInfo
+6
+/home/kl23/code/phmm-repository/phmm/ex/mouse/parental.tree
+/home/kl23/code/phmm-repository/phmm/ex/mouse/gene.trees
+/home/kl23/code/phmm-repository/phmm/ex/mouse/allele-to-species.mapping
+.16667 .16667 .16667 .16667 .16667 .16665
 a
-spanish.matrix
+/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.matrix
 0
-15treeSpanish.states
-spanish.seq
+/home/kl23/code/phmm-repository/phmm/ex/mouse/viterbi.test.out
+/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.seq
 1

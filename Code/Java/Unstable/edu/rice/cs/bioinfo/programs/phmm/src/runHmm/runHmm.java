@@ -6,8 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
@@ -107,7 +111,7 @@ public class runHmm {
 
 	    // Get the Pi probabilities array
 	    getPiInfo(in);
-			
+	    
 	    // Get transition Matrix
 	    getAij(in);
 			
@@ -122,9 +126,15 @@ public class runHmm {
 	    
 	    //Build HMM
 	    buildHMM();
-			
-	    break;
 		
+	    // strict!
+	    if (!verifyInputs()) {
+		System.err.println ("ERROR: inputs are invalid. Please correct and try again.");
+		System.exit(1);
+	    }
+	    
+	    break;
+	    
 	case 1: 
 	    System.out.println("Get existing model");
 	    break;
@@ -179,8 +189,97 @@ public class runHmm {
 	    }
 	}
     }
+    
+    /**
+     * Additional verification step.
+     */
+    static protected boolean verifyInputs () {
+	if (!verifyGeneGenealogyTaxa()) {
+	    System.err.println ("ERROR: unable to verify gene genealogy inputs.");
+	    return (false);
+	}
 	
+	// check allele-to-species mapping
+	if (!verifyParentalTreeTaxa()) {
+	    System.err.println ("ERROR: unable to verify parental tree inputs.");
+	    return (false);
+	}
 	
+	// others as needed
+
+	return (true);
+    }
+    
+    /**
+     * Warning - constructs a new array each time.
+     */
+    static protected String[] getSortedGeneGenealogyTaxa () {
+	// array copy - don't lose original list order
+	String[] sortedGeneGenealogyTaxa = new String[fParser.getGeneGenealogyTaxa().size()];
+	sortedGeneGenealogyTaxa = fParser.getGeneGenealogyTaxa().toArray(sortedGeneGenealogyTaxa);
+	Arrays.sort(sortedGeneGenealogyTaxa);
+	return (sortedGeneGenealogyTaxa);
+    }
+
+    /**
+     * Use allele-to-species mapping.
+     * Set keyFlag to true to get keys (allele taxa), or false to get values (species taxa).
+     * Warning - constructs a new array each time.
+     */
+    static protected String[] getSortedTaxaFromAlleleSpeciesMapping (boolean keyFlag) {
+	HashMap<String,String> alleleSpeciesMap = fParser.getAlleleSpeciesMap();
+	// no official list of species names - meh
+        Set<String> set = keyFlag ? new HashSet<String>(alleleSpeciesMap.keySet()) : new HashSet<String>(alleleSpeciesMap.values());
+	String[] sortedParentalTreeTaxa = new String[set.size()];
+	sortedParentalTreeTaxa = set.toArray(sortedParentalTreeTaxa);
+	Arrays.sort(sortedParentalTreeTaxa);
+	return (sortedParentalTreeTaxa);
+    }
+
+    static protected boolean verifyGeneGenealogyTaxa () {
+	// list of taxa in allele-species-mapping and in basic-info-file must be consistent with 
+	// gene genealogies
+	if (!verifyTaxa(getSortedGeneGenealogyTaxa(), true)) {
+	    System.err.println ("ERROR: list of taxa in basic-info-file is not consistent with gene genealogies.");
+	    return (false);
+	}
+
+	if (!verifyTaxa(getSortedTaxaFromAlleleSpeciesMapping(true), true)) {
+	    System.err.println ("ERROR: list of taxa in allele-species-mapping is not consistent with gene genealogies.");
+	    return (false);
+	}
+
+	return (true);
+    }
+
+    static protected boolean verifyParentalTreeTaxa () {
+	if (!verifyTaxa(getSortedTaxaFromAlleleSpeciesMapping(false), false)) {
+	    System.err.println ("ERROR: list of taxa in basic-info-file is not consistent with parental trees.");
+	    return (false);
+	}
+
+	return (true);
+    }
+
+    /** 
+     * Set geneGenealogyTaxaFlag to true to check gene genealogy taxa, set to false
+     * to check parental tree taxa.
+     */
+    static protected boolean verifyTaxa (String[] sortedReferenceTaxa, boolean geneGenealogyTaxaFlag) {
+	for (HiddenState hiddenState : trees_states) {
+	    String[] sortedCheckTaxa = geneGenealogyTaxaFlag ? 
+		hiddenState.getGeneGenealogy().getTaxa() : 
+		hiddenState.getParentalTree().getTaxa();
+	    Arrays.sort(sortedCheckTaxa);
+	    if (!Arrays.equals(sortedReferenceTaxa, sortedCheckTaxa)) {
+		return (false);
+	    }
+	}
+
+	return (true);
+    }
+
+
     /**
      * Initial step and options:
      * a. build new model

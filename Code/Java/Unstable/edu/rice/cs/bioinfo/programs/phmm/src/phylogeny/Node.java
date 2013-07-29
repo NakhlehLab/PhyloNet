@@ -13,7 +13,7 @@ public class Node {
     protected Node parent;
     // kliu - this will need to be set via E-M later
     protected double tbranch;
-    protected String taxa;
+    protected String taxa; // kliu - change this name later
     protected String obs;
     protected ArrayList<Double> likelihood = new ArrayList<Double>(4);	// likelihood ArrayList
     protected ArrayList<Double> leftLike;

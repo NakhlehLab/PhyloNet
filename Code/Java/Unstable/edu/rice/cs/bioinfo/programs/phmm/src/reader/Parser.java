@@ -24,8 +24,8 @@ public class Parser {
     protected ArrayList<HiddenState> trees_states;						/* the list of states in the hmm */
     protected HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
     protected HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
-    protected HashMap<String, String> alleleSpeciesMap;					/* Allele to Species Mapping */
     protected Vector<String> taxa; //  reverse the above map
+    protected HashMap<String, String> alleleSpeciesMap;					/* Allele to Species Mapping */
     protected int seqNum;												/* Number of sequences */
 	
     /**
@@ -103,6 +103,11 @@ public class Parser {
 	} else {
 	    br.close();
 	    throw new ParserFileException("Error while reading sequence type or species or taxa in file.");
+	}
+
+	// strict!
+	if ((taxa.size() != seqNum) || (seqTypes.size() != seqNum)) {
+	    throw new ParserFileException("ERROR: actual and listed number of taxa in " + basicFileName + " differ.");
 	}
 
 		
@@ -304,6 +309,9 @@ public class Parser {
     	return seqNum;
     }
 	
+    public List<String> getGeneGenealogyTaxa () {
+	return (taxa);
+    }
 	
     /**
      * @return List of legal symbols/alphabet

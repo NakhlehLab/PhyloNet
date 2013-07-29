@@ -114,6 +114,13 @@ public class OpdfMap
 	// System.out.println ("substitutionModelProbability: " + substitutionModelProbability);
 	// System.out.println ("coalescentModelProbability: " + coalescentModelProbability);
 
+	// kliu - ERROR!
+	// This causes emission probability to not be a proper probability distribution!
+	// $ \sum_b e_x(b) = \sum_b P[b | g] P[g | T] = P[g | T] \neq 1 $
+	// 
+	// The problem is the coalescent model contribution. Multiply the non-self-
+	// transition probability by the coalescent model factor 
+	// and normalize the self-transition probabilities appropriately?
 	return (substitutionModelProbability * coalescentModelProbability);
     }
 

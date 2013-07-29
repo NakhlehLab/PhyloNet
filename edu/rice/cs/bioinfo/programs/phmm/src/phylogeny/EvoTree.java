@@ -234,7 +234,20 @@ public class EvoTree {
 	return (root.getNodes());
     }
 
-
+    /**
+     * Get names of taxa.
+     */
+    public String[] getTaxa () {
+	ArrayList<Node> leaves = getLeaves();
+	String[] taxa = new String[leaves.size()];
+	int i = 0;
+	for (Node leaf : leaves) {
+	    taxa[i] = leaf.getTaxa(); // kliu - change Node.getTaxa() name later
+	    i++;
+	}
+	
+	return (taxa);
+    }
     
 
 	// // leaves have been found previously already

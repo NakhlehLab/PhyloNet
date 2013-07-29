@@ -26,7 +26,7 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 
 public class runHmm {
 
-    private static final double tolerated_error = 0.02;		/* Sum of probabilities margin of error allowed */
+    private static final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
 	
     // stored information 
     private static String basicFileName = null;						/* Basic Info file name */

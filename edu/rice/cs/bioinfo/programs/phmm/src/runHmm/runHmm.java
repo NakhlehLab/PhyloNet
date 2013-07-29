@@ -156,7 +156,7 @@ public class runHmm {
 	    case 0:
 		System.out.print("\n");
 		// get name of output file
-		System.out.println("Path to your output file: ");
+		System.out.println("Path to output file containing Viterbi hidden state sequence: ");
 		String outputfile = in.readLine();
 				
 		// kliu - only Viterbi algorithm appears to be implemented using Jahmm
@@ -177,6 +177,12 @@ public class runHmm {
 		// Testing Purposes //
 		
 		myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
+
+		System.out.println ("Computing input HMM log likelihood for input sequences... ");
+		double llh = myhmm.lnProbability(obsSeq);
+		System.out.println ("Computing input HMM log likelihood for input sequences DONE.");
+
+		System.out.println ("Input HMM log likelihood: |" + llh + "|");
 				
 		break;
 	    case 1:
@@ -318,7 +324,7 @@ public class runHmm {
 	int option = -1;
 	while (operate) {
 	    System.out.println("Operate mode:");
-	    System.out.println("0) Use Viterbi's on an observation sequence");
+	    System.out.println("0) Process an observation sequence");
 	    System.out.println("1) Exit.");
 	    System.out.println("Choose an option: ");
 	    option = getOption(3, in);

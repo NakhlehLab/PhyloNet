@@ -46,6 +46,11 @@ public class HiddenState
 	setGeneGenealogy(inGeneGenealogy);
 	setAlleleToSpeciesMapping(map);
     }
+    
+    // For test
+    public HiddenState (EvoTree inGeneGenealogy) {
+    	setGeneGenealogy(inGeneGenealogy);
+    }
 
     public EvoTree getParentalTree () {
     	return (parentalTree);

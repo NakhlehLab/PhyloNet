@@ -59,7 +59,7 @@ public class BaumWelchLearner
      * @return A new, updated HMM.
      */
     public <O extends Observation> Hmm<O>
-		      iterate(Hmm<O> hmm, List<? extends List<? extends O>> sequences)
+		      iterate(Hmm<O> hmm, List<? extends O> obsSeq)
     {		
 	Hmm<O> nhmm;
 	try {
@@ -70,7 +70,7 @@ public class BaumWelchLearner
 			
 	/* gamma and xi arrays are those defined by Rabiner and Juang */
 	/* allGamma[n] = gamma array associated to observation sequence n */
-	double allGamma[][][] = new double[sequences.size()][][];
+	//double allGamma[][][] = new double[sequences.size()][][];
 		
 	/* a[i][j] = aijNum[i][j] / aijDen[i]
 	 * aijDen[i] = expected number of transitions from state i
@@ -83,14 +83,15 @@ public class BaumWelchLearner
 	for (int i = 0; i < hmm.nbStates(); i++)
 	    Arrays.fill(aijNum[i], 0.);
 		
-	int g = 0;
-	for (List<? extends O> obsSeq : sequences) {	    
+	//int g = 0;
+	//for (List<? extends O> obsSeq : sequences) {	    
 	    ForwardBackwardCalculator fbc = 
 		generateForwardBackwardCalculator(obsSeq, hmm);
 			
 	    double xi[][][] = estimateXi(obsSeq, fbc, hmm);
-	    double gamma[][] = allGamma[g++] = estimateGamma(xi, fbc);
-			
+	    //double gamma[][] = allGamma[g++] = estimateGamma(xi, fbc);
+	    double gamma[][] = estimateGamma(xi, fbc);
+	    
 	    for (int i = 0; i < hmm.nbStates(); i++)
 		for (int t = 0; t < obsSeq.size() - 1; t++) {
 		    aijDen[i] += gamma[t][i];
@@ -98,7 +99,7 @@ public class BaumWelchLearner
 		    for (int j = 0; j < hmm.nbStates(); j++)
 			aijNum[i][j] += xi[t][i][j];
 		}
-	}
+	//}
 		
 	for (int i = 0; i < hmm.nbStates(); i++) {
 	    if (aijDen[i] == 0.) // State i is not reachable
@@ -110,40 +111,40 @@ public class BaumWelchLearner
 	}
 		
 	/* pi computation */
-	for (int i = 0; i < hmm.nbStates(); i++)
-	    nhmm.setPi(i, 0.);
-		
-	for (int o = 0; o < sequences.size(); o++)
-	    for (int i = 0; i < hmm.nbStates(); i++)
-		nhmm.setPi(i,
-			   nhmm.getPi(i) + allGamma[o][0][i] / sequences.size());
+//	for (int i = 0; i < hmm.nbStates(); i++)
+//	    nhmm.setPi(i, 0.);
+//		
+//	for (int o = 0; o < sequences.size(); o++)
+//	    for (int i = 0; i < hmm.nbStates(); i++)
+//		nhmm.setPi(i,
+//			   nhmm.getPi(i) + allGamma[o][0][i] / sequences.size());
 
-	// kliu - don't use Baum-Welch re-estimation for emission probabilities.
-	// Use standard phylogenetics MLE for continuous parameter optimization: 
-	// E-M approach iteratively applying a univariate optimization heuristic (e.g., Brent's 
-	// method)
-	/* pdfs computation */
-	for (int i = 0; i < hmm.nbStates(); i++) {
-	    // kliu - just a static method that flattens a list of lists (?) into a single list
-	    // nothing to do with k-means clustering
-	    List<O> observations = KMeansLearner.flat(sequences);
-	    double[] weights = new double[observations.size()];
-	    double sum = 0.;
-	    int j = 0;
-			
-	    int o = 0;
-	    for (List<? extends O> obsSeq : sequences) {
-		for (int t = 0; t < obsSeq.size(); t++, j++)
-		    sum += weights[j] = allGamma[o][t][i];
-		o++;
-	    }
-			
-	    for (j--; j >= 0; j--)
-		weights[j] /= sum;
-			
-	    Opdf<O> opdf = nhmm.getOpdf(i);
-	    opdf.fit(observations, weights);
-	}
+//	// kliu - don't use Baum-Welch re-estimation for emission probabilities.
+//	// Use standard phylogenetics MLE for continuous parameter optimization: 
+//	// E-M approach iteratively applying a univariate optimization heuristic (e.g., Brent's 
+//	// method)
+//	/* pdfs computation */
+//	for (int i = 0; i < hmm.nbStates(); i++) {
+//	    // kliu - just a static method that flattens a list of lists (?) into a single list
+//	    // nothing to do with k-means clustering
+//	    List<O> observations = KMeansLearner.flat(sequences);
+//	    double[] weights = new double[observations.size()];
+//	    double sum = 0.;
+//	    int j = 0;
+//			
+//	    int o = 0;
+//	    for (List<? extends O> obsSeq : sequences) {
+//		for (int t = 0; t < obsSeq.size(); t++, j++)
+//		    sum += weights[j] = allGamma[o][t][i];
+//		o++;
+//	    }
+//			
+//	    for (j--; j >= 0; j--)
+//		weights[j] /= sum;
+//			
+//	    Opdf<O> opdf = nhmm.getOpdf(i);
+//	    opdf.fit(observations, weights);
+//	}
 		
 	return nhmm;
     }
@@ -170,7 +171,7 @@ public class BaumWelchLearner
      *         (according to the Baum-Welch algorithm).
      */
     public <O extends Observation> Hmm<O>
-		      learn(Hmm<O> initialHmm, List<? extends List<? extends O>> sequences)
+		      learn(Hmm<O> initialHmm, List<? extends O> sequences)
     {
 	Hmm<O> hmm = initialHmm;
 		
@@ -200,11 +201,11 @@ public class BaumWelchLearner
 	    O o = seqIterator.next();
 			
 	    for (int i = 0; i < hmm.nbStates(); i++)
-		for (int j = 0; j < hmm.nbStates(); j++)
-		    xi[t][i][j] = fbc.alphaElement(t, i) *
-			hmm.getAij(i, j) *
-			hmm.getOpdf(j).probability(o) *
-			fbc.betaElement(t+1, j) / probability;
+			for (int j = 0; j < hmm.nbStates(); j++)
+			    xi[t][i][j] = fbc.alphaElement(t, i) *
+				hmm.getAij(i, j) *
+				hmm.getOpdf(j).probability(o) *
+				fbc.betaElement(t+1, j) / probability;
 	}
 		
 	return xi;

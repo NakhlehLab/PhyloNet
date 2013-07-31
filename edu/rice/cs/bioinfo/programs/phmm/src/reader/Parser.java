@@ -107,6 +107,7 @@ public class Parser {
 
 	// strict!
 	if ((taxa.size() != seqNum) || (seqTypes.size() != seqNum)) {
+		br.close();
 	    throw new ParserFileException("ERROR: actual and listed number of taxa in " + basicFileName + " differ.");
 	}
 

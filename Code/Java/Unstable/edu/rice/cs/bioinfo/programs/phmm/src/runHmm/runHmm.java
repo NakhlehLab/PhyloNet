@@ -6,11 +6,11 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import phylogeny.EvoTree;
@@ -18,6 +18,7 @@ import phylogeny.TreeParser;
 import reader.Parser;
 import reader.ParserFileException;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
+import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
@@ -154,44 +155,56 @@ public class runHmm {
 	    option = operate(in);
 	    switch(option) {
 	    case 0:
-		System.out.print("\n");
-		// get name of output file
-		System.out.println("Path to output file containing Viterbi hidden state sequence: ");
-		String outputfile = in.readLine();
-				
-		// kliu - only Viterbi algorithm appears to be implemented using Jahmm
-		// don't seem to have forward/backward implementation yet
-		ArrayList<ObservationMap> obsSeq = getObsForViterbi(in);
-		
-		// Testing purposes //
-//		System.out.println("Showing the pdf of all hidden states ---------------------------");
-//		for (int k =0; k < trees_states.size(); k++) {
-//			OpdfMap opdf = (OpdfMap) (myhmm.getOpdf(k));
-//			System.out.println("State: " + opdf.getHiddenState());
-//			System.out.print("\n < ");
-//			for (int i = 0; i < obsSeq.size(); i++) {
-//				System.out.print(opdf.probability(obsSeq.get(i)) + " ");
-//			}
-//			System.out.print("> \n \n\n");
-//		}
-		// Testing Purposes //
-		
-		myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
-
-		System.out.println ("Computing input HMM log likelihood for input sequences... ");
-		double llh = myhmm.lnProbability(obsSeq);
-		System.out.println ("Computing input HMM log likelihood for input sequences DONE.");
-
-		System.out.println ("Input HMM log likelihood: |" + llh + "|");
-				
-		break;
+		    // RUN VITERBI
+			System.out.print("\n");
+			// get name of output file
+			System.out.println("Path to your output file: ");
+			String outputfile = in.readLine();
+					
+			// kliu - only Viterbi algorithm appears to be implemented using Jahmm
+			// don't seem to have forward/backward implementation yet
+			ArrayList<ObservationMap> obsSeq = getObs(in);
+			
+			myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
+					
+			break;
 	    case 1:
-		keepOperate = false;
-		System.exit(0);
-		break;
+		    // RUN BAUM WELCH
+			
+			// Testing purposes
+//			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
+//			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
+//			for (int i = 0; i < trees_states.size(); i++) {
+//				System.out.println("State : " + i);
+//				System.out.println("Opdf : {");
+//				for (int j = 0; j < oSeq.size(); j++) {
+//					System.out.print(oSeq.get(j) + ":" + myhmm.getOpdf(i).probability(oSeq.get(j)) + " , ");
+//				}
+//				System.out.print("}\n\n");
+//			}
+			
+	    	// END TEST PURPOSES
+				
+				
+			BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
+			
+			Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm,getObs(in));
+			myhmm = learnedhmm;
+			learnedhmm = null; // for garbage collection
+			System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");
+			System.out.println(myhmm + "\n\n");
+			
+			break;
+		
+		
+	    case 2:
+	    // EXIT
+			keepOperate = false;
+			System.exit(0);
+			break;
 	    default: 
-		keepOperate = false;
-		System.exit(-1);
+			keepOperate = false;
+			System.exit(-1);
 	    }
 	}
     }
@@ -325,7 +338,8 @@ public class runHmm {
 	while (operate) {
 	    System.out.println("Operate mode:");
 	    System.out.println("0) Process an observation sequence");
-	    System.out.println("1) Exit.");
+	    System.out.println("1) Learn Model using Baum Welch.");
+	    System.out.println("2) Exit.");
 	    System.out.println("Choose an option: ");
 	    option = getOption(3, in);
 	    if (option != -1) operate = false;
@@ -337,12 +351,10 @@ public class runHmm {
 
 	
 
-    // kliu - appears to be a bug in here.
-    // Inferred trajectory length != input nucleotide sequence length???
     /**
-     * Get Observation for Viterbi
+     * Read and Get Observation
      */
-    private static ArrayList<ObservationMap> getObsForViterbi(BufferedReader in) {
+    private static ArrayList<ObservationMap> getObs(BufferedReader in) {
 	try {
 	    System.out.println("Input observation sequence file path name : ");
 	    String filename = in.readLine();

@@ -10,7 +10,7 @@ public class hmmAutoRunner {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-		FileInputStream fis = new FileInputStream(new File("ex/simple-gene-only/autoinput.txt"));
+		FileInputStream fis = new FileInputStream(new File("ex/mouse/myautoinput.txt"));
 		System.setIn(fis);
 		
 		runHmm.main(args);

@@ -227,7 +227,7 @@ public class OpdfMap
     	else
     		rootGene = "C";
     	
-    	System.out.println("The root gene is: " + rootGene);
+    	// System.out.println("The root gene is: " + rootGene);
     	
     	generateHelper(myMap, myRoot.getLeft(), rootGene);
     	generateHelper(myMap, myRoot.getRight(), rootGene);
@@ -243,11 +243,11 @@ public class OpdfMap
     		String tempTaxa = curNode.getTaxa();
     		String tempGene = selectGene(previousGene, lamda, curNode.getTbranch());
     		yourColumn.put(tempTaxa, tempGene);
-    		System.out.println("Get to the leaf node! " + tempTaxa + ": " + tempGene);
+    		// System.out.println("Get to the leaf node! " + tempTaxa + ": " + tempGene);
     	}
     	else {
     		String tempGene = selectGene(previousGene, lamda, curNode.getTbranch());
-    		System.out.println("Internal node: " + tempGene);
+    		// System.out.println("Internal node: " + tempGene);
     		generateHelper(yourColumn, curNode.getLeft(), tempGene);
     		generateHelper(yourColumn, curNode.getRight(), tempGene);
     	}

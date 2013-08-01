@@ -79,7 +79,7 @@ extends ActionHandler
 		Hmm<O> initHmm = HmmReader.read(hmmFileReader, opdfReader);
 		BaumWelchLearner bw = new BaumWelchScaledLearner();
 		bw.setNbIterations(nbIterations);
-		Hmm<O> hmm = bw.learn(initHmm, seqs.get(0)); // changed from seqs to seqs.get(0) for compiliation
+		Hmm<O> hmm = bw.learn(initHmm, seqs.get(0),9); // changed from seqs to seqs.get(0) for compiliation
 		HmmWriter.write(hmmFileWriter, opdfWriter, hmm);
 	}
 }

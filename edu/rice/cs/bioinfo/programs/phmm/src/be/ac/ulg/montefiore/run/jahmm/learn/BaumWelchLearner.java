@@ -171,16 +171,32 @@ public class BaumWelchLearner
      *         (according to the Baum-Welch algorithm).
      */
     public <O extends Observation> Hmm<O>
-		      learn(Hmm<O> initialHmm, List<? extends O> sequences)
-    {
-	Hmm<O> hmm = initialHmm;
+    learn(Hmm<O> initialHmm, List<? extends O> sequences, int limitIter) {
+    	Hmm<O> hmm = initialHmm;
+		Hmm<O> newhmm;
+		double probability = hmm.probability(sequences);
+		double newprobability;
+		int runs = 1;
 		
-	for (int i = 0; i < nbIterations; i++)
-	    hmm = iterate(hmm, sequences);
+		while (runs <= limitIter) {
+			System.out.println("Running Iteration: " + runs + " on Baum Welch.");
+			runs++;
+			newhmm = iterate(hmm, sequences);
+			newprobability = newhmm.probability(sequences);
+			if (newprobability > probability) {
+				hmm = newhmm;
+				probability = newprobability;
+			}
+			else {
+				break;
+			}
+		}
 		
-	return hmm;
-    }
-	
+		//for (int i = 0; i < nbIterations; i++)
+		//hmm = iterate(hmm, sequences);
+		//
+		return hmm;
+	}
 	
     protected <O extends Observation> double[][][]
 			 estimateXi(List<? extends O> sequence, ForwardBackwardCalculator fbc,

@@ -188,7 +188,7 @@ public class runHmm {
 				
 			BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
 			
-			Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm,getObs(in));
+			Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm,getObs(in), 9);
 			myhmm = learnedhmm;
 			learnedhmm = null; // for garbage collection
 			System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");

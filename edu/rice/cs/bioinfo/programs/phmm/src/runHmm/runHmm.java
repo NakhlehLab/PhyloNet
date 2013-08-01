@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
@@ -22,31 +24,40 @@ import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 //import be.ac.ulg.montefiore.run.jahmm.MyHMM;
 // kliu - pull in additional library support
 
 public class runHmm {
 
-    private static final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
+    protected static final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
 	
     // stored information 
-    private static String basicFileName = null;						/* Basic Info file name */
-    private static String parentalTreesFileName = null;				/* Parental trees file name */
-    private static String geneGenealogiesFileName = null;			/* Gene genealogies file name */
-    private static String alleleSpeciesFileName = null;				/* Allele Species Mapping file name */
+    protected String basicFileName = null;						/* Basic Info file name */
+    protected String parentalTreesFileName = null;				/* Parental trees file name */
+    protected String geneGenealogiesFileName = null;			/* Gene genealogies file name */
+    protected String alleleSpeciesFileName = null;				/* Allele Species Mapping file name */
     
 
     
     // information created/built
     // kliu - index into tuples
-    public static ArrayList<HiddenState> trees_states;			/* List of all states/trees */
-    public static Hmm<ObservationMap> myhmm;			/* The entire HMM */
-    public static double[] pi;								/* The initial pi probabilities for each state */
-    public static double[][] aij;							/* The state transition probability matrix */
-    private static Parser fParser;							/* The parser for all basic info and read sequences --> also calculates likelihood */
-    private static int numStates = -1;						/* The number of states for the HMM */
-	
+    protected ArrayList<HiddenState> trees_states;			/* List of all states/trees */
+    protected Hmm<ObservationMap> myhmm;			/* The entire HMM */
 
+    // argh - in lieu of worrying about EvoTree.equals() method
+    // Maintain equivalence classes among hidden states based on shared parental tree.
+    protected Map<EvoTree,Set<HiddenState>> parentalTreeClasses;
+
+    protected TransitionProbabilityParameters transitionProbabilityParameters;
+
+    // kliu - neither are necessary anymore
+    //    public static double[] pi;								/* The initial pi probabilities for each state */    
+    //    public static double[][] aij;							/* The state transition probability matrix */
+    protected Parser fParser;							/* The parser for all basic info and read sequences --> also calculates likelihood */
+    protected int numStates = -1;						/* The number of states for the HMM */
+	
     protected static void printUsage () {
 	System.err.println ("Prompt-based usage: java -jar dist/lib/phmm.jar");
 	System.err.println ("File-based usage: java -jar dist/lib/phmm.jar <text file with input commands>");
@@ -56,13 +67,14 @@ public class runHmm {
      * kliu - add in the automatic input here.
      */
     public static void main (String[] args) throws Exception {
+	runHmm rh = new runHmm();
 	if (args.length == 1) {
 	    FileInputStream fis = new FileInputStream(new File(args[0]));
 	    System.setIn(fis);
-	    run();
+	    rh.run();
 	}
 	else if (args.length == 0) {
-	    run();
+	    rh.run();
 	}
 	else {
 	    printUsage();
@@ -76,7 +88,7 @@ public class runHmm {
      * 		- will only throw exceptions when basic Info file or Tree file is unable to be parsed correctly
      * 			since these files are essential to building an hmm and the parser
      */
-    public static void run () throws Exception {
+    public void run () throws Exception {
 	
 	int option;
 	
@@ -110,11 +122,14 @@ public class runHmm {
 	    System.out.println("\nInput the Alleles to Species Mapping file path name: \n (note: see README for file format \n");
 	    alleleSpeciesFileName = in.readLine();
 
+	    readTransitionProbabilityParameters(in);
+
 	    // Get the Pi probabilities array
-	    getPiInfo(in);
+	    //getPiInfo(in);
 	    
-	    // Get transition Matrix
-	    getAij(in);
+	    // Get transition probability parameters.
+	    // See writeup for details.
+	    //getAij(in);
 			
 	    // Now build the trees and get the tree mapping to integers
 	    buildTrees();
@@ -126,7 +141,7 @@ public class runHmm {
 	    buildAlleleSpeciesMap();
 	    
 	    //Build HMM
-	    buildHMM();
+	    buildInitialHMM();
 		
 	    // strict!
 	    if (!verifyInputs()) {
@@ -212,7 +227,7 @@ public class runHmm {
     /**
      * Additional verification step.
      */
-    static protected boolean verifyInputs () {
+    protected boolean verifyInputs () {
 	if (!verifyGeneGenealogyTaxa()) {
 	    System.err.println ("ERROR: unable to verify gene genealogy inputs.");
 	    return (false);
@@ -232,7 +247,7 @@ public class runHmm {
     /**
      * Warning - constructs a new array each time.
      */
-    static protected String[] getSortedGeneGenealogyTaxa () {
+    protected String[] getSortedGeneGenealogyTaxa () {
 	// array copy - don't lose original list order
 	String[] sortedGeneGenealogyTaxa = new String[fParser.getGeneGenealogyTaxa().size()];
 	sortedGeneGenealogyTaxa = fParser.getGeneGenealogyTaxa().toArray(sortedGeneGenealogyTaxa);
@@ -245,7 +260,7 @@ public class runHmm {
      * Set keyFlag to true to get keys (allele taxa), or false to get values (species taxa).
      * Warning - constructs a new array each time.
      */
-    static protected String[] getSortedTaxaFromAlleleSpeciesMapping (boolean keyFlag) {
+    protected String[] getSortedTaxaFromAlleleSpeciesMapping (boolean keyFlag) {
 	HashMap<String,String> alleleSpeciesMap = fParser.getAlleleSpeciesMap();
 	// no official list of species names - meh
         Set<String> set = keyFlag ? new HashSet<String>(alleleSpeciesMap.keySet()) : new HashSet<String>(alleleSpeciesMap.values());
@@ -255,7 +270,7 @@ public class runHmm {
 	return (sortedParentalTreeTaxa);
     }
 
-    static protected boolean verifyGeneGenealogyTaxa () {
+    protected boolean verifyGeneGenealogyTaxa () {
 	// list of taxa in allele-species-mapping and in basic-info-file must be consistent with 
 	// gene genealogies
 	if (!verifyTaxa(getSortedGeneGenealogyTaxa(), true)) {
@@ -271,7 +286,7 @@ public class runHmm {
 	return (true);
     }
 
-    static protected boolean verifyParentalTreeTaxa () {
+    protected boolean verifyParentalTreeTaxa () {
 	if (!verifyTaxa(getSortedTaxaFromAlleleSpeciesMapping(false), false)) {
 	    System.err.println ("ERROR: list of taxa in basic-info-file is not consistent with parental trees.");
 	    return (false);
@@ -284,7 +299,7 @@ public class runHmm {
      * Set geneGenealogyTaxaFlag to true to check gene genealogy taxa, set to false
      * to check parental tree taxa.
      */
-    static protected boolean verifyTaxa (String[] sortedReferenceTaxa, boolean geneGenealogyTaxaFlag) {
+    protected boolean verifyTaxa (String[] sortedReferenceTaxa, boolean geneGenealogyTaxaFlag) {
 	for (HiddenState hiddenState : trees_states) {
 	    String[] sortedCheckTaxa = geneGenealogyTaxaFlag ? 
 		hiddenState.getGeneGenealogy().getTaxa() : 
@@ -307,7 +322,7 @@ public class runHmm {
      * 
      * @return the option
      */
-    static private int initial(BufferedReader in) {
+    protected int initial(BufferedReader in) {
 	boolean init = true;
 	int option = -1;
 	while (init) {
@@ -332,7 +347,7 @@ public class runHmm {
      * 
      * @return the option
      */
-    private static int operate(BufferedReader in) {
+    protected int operate(BufferedReader in) {
 	boolean operate = true;
 	int option = -1;
 	while (operate) {
@@ -354,7 +369,7 @@ public class runHmm {
     /**
      * Read and Get Observation
      */
-    private static ArrayList<ObservationMap> getObs(BufferedReader in) {
+    protected ArrayList<ObservationMap> getObs(BufferedReader in) {
 	try {
 	    System.out.println("Input observation sequence file path name : ");
 	    String filename = in.readLine();
@@ -377,7 +392,7 @@ public class runHmm {
      * @param option int - the option the user inputted
      * @return int the option number
      */
-    private static int getOption(int numOptions, BufferedReader in) {
+    protected int getOption(int numOptions, BufferedReader in) {
 	try {
 	    int option = Integer.parseInt(in.readLine());
 	    if ((option >= 0) && (option < numOptions)) {
@@ -397,7 +412,7 @@ public class runHmm {
     }
 	
     // kliu - no reason to put it in a separate class
-    public static Hmm<ObservationMap> buildMyHmm(List<HiddenState> hiddenStates, double[] pi, double[][] a) {		
+    public Hmm<ObservationMap> buildMyHmm(List<HiddenState> hiddenStates, double[] pi, double[][] a) {		
 	if ((pi.length != a.length) || (hiddenStates.size() != pi.length)) {
 	    throw new IllegalArgumentException("The dimension of the initial probability array, the transition probability matrix number of rows, and the number of hidden states are unequal.");
 	}
@@ -420,15 +435,131 @@ public class runHmm {
 		
 	return newHmm;		
     }
-
 	
+    /**
+     * Initial state probabilities.
+     * \pi(s_i) = z(s_i) / (\sum_{s \in S} z(s)
+     * where z(s) is P[g(s_j)|T(s_j), c_{T(s_k)}]
+     *
+     * See writeup for details.
+     * 
+     * Also call this after changing parental tree branch lengths.
+     */
+    protected double[] calculatePi () {
+	double[] pi = new double[trees_states.size()];
+	int norm = 0;
+	for (int i = 0; i < trees_states.size(); i++) {
+	    HiddenState hiddenState = trees_states.get(i);
+	    pi[i] = hiddenState.calculateProbabilityOfGeneGenealogyInParentalTree();
+	    norm += pi[i];
+	}
+	
+	// barf if norm is basically zero
+	if (norm < tolerated_error) {
+	    System.err.println ("ERROR: sum of initial hidden state distribution is zero in calculateInitialPi(). Returning null to signal error.");
+	    return (null);
+	}
+
+	// normalize
+	for (int i = 0; i < pi.length; i++) {
+	    pi[i] /= norm;
+	}
+
+	return (pi);
+    }
+
+    protected boolean checkSameParentalClass (HiddenState si, HiddenState sj) {
+	Set<HiddenState> sic = parentalTreeClasses.get(si.getParentalTree());
+	return (sic.contains(sj));
+    }
+
+    /**
+     * Calculate initial transition probability matrix a_{ij}.
+     * See revised writeup for details.
+     *
+     * Call this after changing parental tree branch lengths
+     */
+    protected double[][] calculateAij () {
+	double[][] a = new double[trees_states.size()][trees_states.size()];
+	for (int i = 0; i < a.length; i++) {
+	    HiddenState si = trees_states.get(i);
+	    double totalNonSelfTransitionProbabilities = 0.0;
+	    for (int j = 0 ; j < a[i].length; j++) {
+		// set self-transition probability at the end
+		if (i == j) {
+		    continue;
+		}
+		
+		HiddenState sj = trees_states.get(j);
+		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+		if (checkSameParentalClass(si, sj)) {
+		    a[i][j] *= transitionProbabilityParameters.getRecombinationFrequency();
+		}
+		else {
+		    a[i][j] *= transitionProbabilityParameters.getHybridizationFrequency();
+		}
+
+		totalNonSelfTransitionProbabilities += a[i][j];
+	    }
+	    
+	    // now set self-transition probability
+	    a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
+	}
+	
+	// strict!
+	if (!verifyAij(a)) {
+	    System.err.println ("ERROR: verifyAij() failed. Returning null to signal error.");
+	    return (null);
+	}
+
+	return (a);
+    }
+
+    /**
+     * By construction, rows of a_ij matrix sum to one.
+     */
+    protected boolean verifyAij (double[][] a) {
+	for (int i = 0; i < a.length; i++) {
+	    for (int j = 0; j < a[i].length; j++) {
+		if ((a[i][j] < 0.0) || (a[i][j] > 1.0)) {
+		    System.err.println ("ERROR: entry in a_ij transition matrix is invalid. " + a[i][j]);
+		    return (false);
+		}
+	    }
+	}
+
+	return (true);
+    }
+
+    /**
+     * Call this after changes to parental tree branches, which affect
+     * coalescent model calculations and the transition probabilities.
+     *
+     * Hmm... shall we do E-M learning in this class?
+     */
+    public void updateTransitionProbabilities () {
+	double[] pi = calculatePi();
+	double[][] a = calculateAij();
+	
+	for (int i = 0; i < pi.length; i++) {
+	    myhmm.setPi(i, pi[i]);
+	}
+
+	for (int i = 0; i < a.length; i++) {
+	    for (int j = 0; j < a[i].length; j++) {
+		myhmm.setAij(i, j, a[i][j]);
+	    }
+	}
+    }
+
     /**
      * Build HMM
      */
-    private static void buildHMM() {
-	System.out.println("\n\nNow building HMM . . .");
+    protected void buildInitialHMM () {
+	System.out.println("\n\nNow building initialHMM . . .");
+	double[] pi = calculatePi();
+	double[][] aij = calculateAij();
 	myhmm = buildMyHmm(trees_states, pi, aij);
-	//myhmm = MyHMM.buildMyHmm(trees_states, pi, aij);
 	System.out.println("\nhey my hmm: \n " + myhmm);
     }
 
@@ -439,7 +570,7 @@ public class runHmm {
      * to build the Parser for reading sequences
      * @throws Exception 
      */
-    private static void buildParser() throws Exception {
+    protected void buildParser() throws Exception {
 		if(basicFileName == null) {
 			throw new ParserFileException("Cannot read Basic Info File!");
 		}
@@ -453,7 +584,7 @@ public class runHmm {
      * Reads in and parse the alleles to species map
      * @throws Exception
      */
-    private static void buildAlleleSpeciesMap() throws Exception {
+    protected void buildAlleleSpeciesMap() throws Exception {
     	if (alleleSpeciesFileName == null) {
     	    throw new ParserFileException("Cannot read Trees file!");
     	}
@@ -486,7 +617,7 @@ public class runHmm {
      * Read and parse trees file
      * @throws Exception 
      */
-    private static void buildTrees() throws Exception {
+    protected void buildTrees() throws Exception {
 	if (parentalTreesFileName == null) {
 	    throw new ParserFileException("Cannot read Trees file!");
 	}
@@ -499,6 +630,9 @@ public class runHmm {
 	ArrayList<EvoTree> parentalTrees = ptp.nexusFileTreeNames(parentalTreesFileName);
 	ptreesbr.close();
 
+	// also maintain equivalence classes among hidden states based on shared parental trees
+	parentalTreeClasses = new HashMap<EvoTree,Set<HiddenState>>();
+
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
 	for (EvoTree parentalTree : parentalTrees) {
 	    // kliu - cheap hack to clone all gene genealogies across
@@ -510,10 +644,17 @@ public class runHmm {
 	    ArrayList<EvoTree> geneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
 	    ggbr.close();
 
+	    HashSet<HiddenState> parentalTreeEquivalenceClass = new HashSet<HiddenState>();
+
 	    for (EvoTree geneGenealogy : geneGenealogies) {
+		HiddenState hiddenState = new HiddenState(parentalTree, geneGenealogy, null);
 		// kliu - meh - parse allele-to-species mapping later and add in references here
-		trees_states.add(new HiddenState(parentalTree, geneGenealogy, null));
+		trees_states.add(hiddenState);
+		parentalTreeEquivalenceClass.add(hiddenState);
 	    }
+
+	    // maintain the map
+	    parentalTreeClasses.put(parentalTree, parentalTreeEquivalenceClass);
 	}
 	
 	// ------- >Testing purposes
@@ -527,142 +668,170 @@ public class runHmm {
 	    throw new ParserFileException("Error: the number of trees read is not the same as the number of states previously inputted!");
 	}	
     }
-	
-	
-	
-	
+    
     /**
-     * Get State Transition Matrix Aij
-     * @throws IOException - rare
+     * Read transition probability parameters (other than those related to basic coalescent model calculations, i.e., parental tree
+     * branch lengths).
+     *
+     * Current model uses two parameters: a hybridization frequency $v$, and a recombination frequency $u$.
+     * See writeup for details.
      */
-    private static void getAij(BufferedReader in) throws IOException {
-	boolean getA = true;
-	boolean getChoice = true;
-		
-	while (getA) {			
-	    // Getting transition matrix A
-	    System.out.println("\nThe Transition of States/Trees Matrix Aij. \n(Note: Make sure the order in the matrix correspond to the same order of trees in the given tree input file.");
-	    while (getChoice) {
-		System.out.println("Choose an option: \n(a) Read transition matrix by file.\n(b) Input transition matrix manually.");
-		String choice = in.readLine().toLowerCase();
-		if (choice.equals("a")) {
-		    try {
-			System.out.println("Please see README for .matrix file format.");
-			System.out.println("Input .matrix file path name:");
-			String filename = in.readLine();
-			BufferedReader filebr = new BufferedReader(new FileReader(filename));
-			aij = readAij(numStates, filebr);
-			filebr.close();
-			getChoice = false;
-		    } catch (Exception e) {
-			System.out.println(e);
-			System.out.println("Please try again. \n");
-		    }
-		}
-		else if (choice.equals("b")) {
-		    try {
-			System.out.println("Example transition for 3 trees (inputted 3 times): \n   .3 .2 .5 \n   .2 .4 .4 \n   .5 .4 .1 \n");
-			System.out.println("Input transition Aij matrix:");
-			aij = readAij(numStates, in);
-			getChoice = false;
-		    } catch (Exception e) {
-			System.out.println(e);
-			System.out.println("Please try again.");
-		    }
-		}
-	    }
-	    getA = false;
+    protected void readTransitionProbabilityParameters (BufferedReader br) throws Exception {
+	System.out.println("Input transition probability parameters in format <recombination frequency parameter $u$> <hybridization frequency parameter $v$>");
+	String line = br.readLine();
+	StringTokenizer st = new StringTokenizer(line);
+	if (st.countTokens() != 2) {
+	    throw (new IOException("ERROR: invalid transition probability parameters."));
 	}
+	double recombinationFrequency = Double.parseDouble(st.nextToken());
+	double hybridizationFrequency = Double.parseDouble(st.nextToken());
+	transitionProbabilityParameters = new TransitionProbabilityParameters(recombinationFrequency, hybridizationFrequency);
     }
-	
-	
-	
-    /**
-     * Get Initial Pi Probabilities array
-     * @throws IOException - rare
-     */
-    private static void getPiInfo(BufferedReader in) throws IOException {
-	boolean getPi = true;
+}
+
+
+
+
+
+
+
+
+
+
+    // /**
+    //  * Get Initial Pi Probabilities array
+    //  * @throws IOException - rare
+    //  */
+    // protected static void getPiInfo(BufferedReader in) throws IOException {
+    // 	boolean getPi = true;
 		
-	while (getPi) {
+    // 	while (getPi) {
 			
-	    // Getting pi
-	    System.out.println("\nThe Pi or Initial Probabilities. \n(Note: Make sure pi probabilities correspond to the same order of trees in the trees input file.) \n Sample input for 4 trees/states: .2 .3 .1 .4");
-	    System.out.println("Input Initial Pi probabilities:");
-	    String[] piString;
-	    piString = in.readLine().split(" ");
+    // 	    // Getting pi
+    // 	    System.out.println("\nThe Pi or Initial Probabilities. \n(Note: Make sure pi probabilities correspond to the same order of trees in the trees input file.) \n Sample input for 4 trees/states: .2 .3 .1 .4");
+    // 	    System.out.println("Input Initial Pi probabilities:");
+    // 	    String[] piString;
+    // 	    piString = in.readLine().split(" ");
 
 				
-	    // Error Check: check to see if number of states and number of pi probabilities are the same
-	    if (numStates == piString.length) {
-		getPi = false;
+    // 	    // Error Check: check to see if number of states and number of pi probabilities are the same
+    // 	    if (numStates == piString.length) {
+    // 		getPi = false;
 					
-		// make pi probabilities array
-		pi = new double[numStates];
-		double sum = 0;
-		for (int i=0; i < piString.length; i++) {
-		    try {
-			pi[i] = Double.parseDouble(piString[i]);
-			sum += pi[i];
-		    } 
-		    catch (NumberFormatException e) { 
-			getPi = true;
-			System.out.println("Number format error: Cannot convert inputed pi number : " + piString[i] + " to a double."); 
-		    }
-		}
-		if (Math.abs(1.0 - sum) > tolerated_error) {
-		    System.out.println("Error: the sum of the pi probabilities did not sum up to 1.0");
-		    getPi = true;
-		}
+    // 		// make pi probabilities array
+    // 		pi = new double[numStates];
+    // 		double sum = 0;
+    // 		for (int i=0; i < piString.length; i++) {
+    // 		    try {
+    // 			pi[i] = Double.parseDouble(piString[i]);
+    // 			sum += pi[i];
+    // 		    } 
+    // 		    catch (NumberFormatException e) { 
+    // 			getPi = true;
+    // 			System.out.println("Number format error: Cannot convert inputed pi number : " + piString[i] + " to a double."); 
+    // 		    }
+    // 		}
+    // 		if (Math.abs(1.0 - sum) > tolerated_error) {
+    // 		    System.out.println("Error: the sum of the pi probabilities did not sum up to 1.0");
+    // 		    getPi = true;
+    // 		}
 					
-	    } else System.out.println("Error: number of pi probability inputs did not match number of states! ");
+    // 	    } else System.out.println("Error: number of pi probability inputs did not match number of states! ");
 
-	}
-    }
-	
-	
-	
-    /**
-     * Read in Transition matrix
-     * @param numStates - the number of states/trees
-     * @param br - a buffered reader
-     * @returns a double[][] transition of states/trees matrix probabilities
-     * @throws Exception - Either an IO exception if an IO error occurred or a ParserFileException that signals an incorrect matrix input.
-     */
-    public static double[][] readAij(int numStates, BufferedReader br) throws Exception {
-	String[] row;
-	double[] newRow;
-	double[][] aij = new double[numStates][numStates];
+    // 	}
+    // }
+
+
+
+
+    // /**
+    //  * Get State Transition Matrix Aij
+    //  * @throws IOException - rare
+    //  */
+    // protected static void getAij(BufferedReader in) throws IOException {
+    // 	boolean getA = true;
+    // 	boolean getChoice = true;
 		
-	for (int i = 0; i < numStates; i++) {
-	    newRow = new double[numStates];
-	    row = br.readLine().split(" ");
-	    double sum = 0;
-	    if (row.length != numStates) throw new ParserFileException("Error: Number of entries in matrix is incorrect!");
-	    for (int j = 0; j < row.length; j++) {
-		newRow[j] = Double.parseDouble(row[j]);
-		sum += newRow[j];
-	    }
-			
-	    // Check to make sure the sum of the entire row sums up to 1.0
-	    if (Math.abs(1.0 - sum) > tolerated_error) {
-		throw new ParserFileException("Error: the sum of row " + i + " did not sum up to 1.0.");
-	    }
-			
-	    aij[i] = newRow;
-	}
-		
-	// Check to make sure the sum of each column sums up to 1.0
-	for (int j = 0; j < numStates; j++) {
-	    double sum = 0;
-	    for (int i = 0; i < numStates; i++) {
-		sum+= aij[i][j];
-	    }
-	    if (Math.abs(1.0 - sum) > tolerated_error) {
-		throw new ParserFileException("Error: the sum of col " + j + " did not sum up to 1.0.");
-	    }
-	}
-	return aij;
-    }
+    // 	while (getA) {			
+    // 	    // Getting transition matrix A
+    // 	    System.out.println("\nThe Transition of States/Trees Matrix Aij. \n(Note: Make sure the order in the matrix correspond to the same order of trees in the given tree input file.");
+    // 	    while (getChoice) {
+    // 		System.out.println("Choose an option: \n(a) Read transition matrix by file.\n(b) Input transition matrix manually.");
+    // 		String choice = in.readLine().toLowerCase();
+    // 		if (choice.equals("a")) {
+    // 		    try {
+    // 			System.out.println("Please see README for .matrix file format.");
+    // 			System.out.println("Input .matrix file path name:");
+    // 			String filename = in.readLine();
+    // 			BufferedReader filebr = new BufferedReader(new FileReader(filename));
+    // 			aij = readAij(numStates, filebr);
+    // 			filebr.close();
+    // 			getChoice = false;
+    // 		    } catch (Exception e) {
+    // 			System.out.println(e);
+    // 			System.out.println("Please try again. \n");
+    // 		    }
+    // 		}
+    // 		else if (choice.equals("b")) {
+    // 		    try {
+    // 			System.out.println("Example transition for 3 trees (inputted 3 times): \n   .3 .2 .5 \n   .2 .4 .4 \n   .5 .4 .1 \n");
+    // 			System.out.println("Input transition Aij matrix:");
+    // 			aij = readAij(numStates, in);
+    // 			getChoice = false;
+    // 		    } catch (Exception e) {
+    // 			System.out.println(e);
+    // 			System.out.println("Please try again.");
+    // 		    }
+    // 		}
+    // 	    }
+    // 	    getA = false;
+    // 	}
+    // }
 	
-}
+	
+	
+	
+	
+	
+    // /**
+    //  * Read in Transition matrix
+    //  * @param numStates - the number of states/trees
+    //  * @param br - a buffered reader
+    //  * @returns a double[][] transition of states/trees matrix probabilities
+    //  * @throws Exception - Either an IO exception if an IO error occurred or a ParserFileException that signals an incorrect matrix input.
+    //  */
+    // public static double[][] readAij(int numStates, BufferedReader br) throws Exception {
+    // 	String[] row;
+    // 	double[] newRow;
+    // 	double[][] aij = new double[numStates][numStates];
+		
+    // 	for (int i = 0; i < numStates; i++) {
+    // 	    newRow = new double[numStates];
+    // 	    row = br.readLine().split(" ");
+    // 	    double sum = 0;
+    // 	    if (row.length != numStates) throw new ParserFileException("Error: Number of entries in matrix is incorrect!");
+    // 	    for (int j = 0; j < row.length; j++) {
+    // 		newRow[j] = Double.parseDouble(row[j]);
+    // 		sum += newRow[j];
+    // 	    }
+			
+    // 	    // Check to make sure the sum of the entire row sums up to 1.0
+    // 	    if (Math.abs(1.0 - sum) > tolerated_error) {
+    // 		throw new ParserFileException("Error: the sum of row " + i + " did not sum up to 1.0.");
+    // 	    }
+			
+    // 	    aij[i] = newRow;
+    // 	}
+		
+    // 	// Check to make sure the sum of each column sums up to 1.0
+    // 	for (int j = 0; j < numStates; j++) {
+    // 	    double sum = 0;
+    // 	    for (int i = 0; i < numStates; i++) {
+    // 		sum+= aij[i][j];
+    // 	    }
+    // 	    if (Math.abs(1.0 - sum) > tolerated_error) {
+    // 		throw new ParserFileException("Error: the sum of col " + j + " did not sum up to 1.0.");
+    // 	    }
+    // 	}
+    // 	return aij;
+    // }

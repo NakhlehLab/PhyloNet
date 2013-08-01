@@ -256,9 +256,10 @@ public class Hmm<O extends Observation>
     //	}
 	
     /**
-     * Saves Viterbi calculation to outputfile file
+     * Saves Viterbi calculation to outputfile file.
+     * Returns Viterbi log likelihood.
      */
-    public void saveMostLikelyStateSequence(List<? extends O> oseq, String filename) {
+    public double saveMostLikelyStateSequence(List<? extends O> oseq, String filename) {
 	ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
 	int[] trajectory = vc.stateSequence();
 
@@ -278,6 +279,9 @@ public class Hmm<O extends Observation>
 	    // strict!
 	    System.exit(1);
 	}
+
+	// kliu - also output Viterbi log likelihood
+	return (vc.lnProbability());
 
 	// kliu - switch back to original JAHMM implementation of Viterbi calculation
 	// appears to be a bug with the modified version

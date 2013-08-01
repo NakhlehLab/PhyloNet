@@ -180,8 +180,10 @@ public class runHmm {
 			// don't seem to have forward/backward implementation yet
 			ArrayList<ObservationMap> obsSeq = getObs(in);
 			
-			myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
-				
+			double viterbiLLH = myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
+			
+			System.out.println ("Input HMM Viterbi log likelihood: |" + viterbiLLH + "|");
+
 			System.out.println ("Computing input HMM log likelihood for input sequences... ");
 			double llh = myhmm.lnProbability(obsSeq);
 			System.out.println ("Computing input HMM log likelihood for input sequences DONE.");

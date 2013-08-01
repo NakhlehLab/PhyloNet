@@ -566,9 +566,26 @@ public class runHmm {
     protected void buildInitialHMM () {
 	System.out.println("\n\nNow building initialHMM . . .");
 	double[] pi = calculatePi();
-	double[][] aij = calculateAij();
-	myhmm = buildMyHmm(trees_states, pi, aij);
-	System.out.println("\nhey my hmm: \n " + myhmm);
+	double[][] a = calculateAij();
+
+	// kliu testing
+	System.out.println ("Initial pi values:");
+	for (double piv : pi) {
+	    System.out.print (piv + " ");
+	}
+	System.out.println();
+	
+	System.out.println ("Initial a_ij values: ");
+	for (int i = 0; i < a.length; i++) {
+	    for (int j = 0; j < a[i].length; j++) {
+		System.out.print (a[i][j] + " " );
+	    }
+	    System.out.println();
+	}
+	System.out.println();
+
+	myhmm = buildMyHmm(trees_states, pi, a);
+	System.out.println(myhmm);
     }
 
 //(int) Math.pow(fParser.getAlphabet().size(),fParser.getNumSeq()

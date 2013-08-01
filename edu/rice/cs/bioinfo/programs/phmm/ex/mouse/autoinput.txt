@@ -4,10 +4,8 @@
 /home/kl23/code/phmm-repository/phmm/ex/mouse/parental.tree
 /home/kl23/code/phmm-repository/phmm/ex/mouse/gene.trees
 /home/kl23/code/phmm-repository/phmm/ex/mouse/allele-to-species.mapping
-.16667 .16667 .16667 .16667 .16667 .16665
-a
-/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.matrix
+0.1 0.01
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/viterbi.test.out
 /home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.seq
-1
+2

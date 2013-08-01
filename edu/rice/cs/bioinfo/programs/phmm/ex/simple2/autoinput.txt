@@ -4,10 +4,8 @@
 /home/kl23/code/phmm-repository/phmm/ex/simple2/parental.trees
 /home/kl23/code/phmm-repository/phmm/ex/simple2/gene.trees
 /home/kl23/code/phmm-repository/phmm/ex/simple2/allele-to-species.mapping
-.16667 .16667 .16667 .16667 .16667 .16665
-a
-/home/kl23/code/phmm-repository/phmm/ex/simple2/matrix.matrix
+0.1 0.01
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/viterbi.out
 /home/kl23/code/phmm-repository/phmm/ex/simple2/myseq.seq
-1
+2

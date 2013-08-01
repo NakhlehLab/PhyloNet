@@ -181,7 +181,13 @@ public class runHmm {
 			ArrayList<ObservationMap> obsSeq = getObs(in);
 			
 			myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
-					
+				
+			System.out.println ("Computing input HMM log likelihood for input sequences... ");
+			double llh = myhmm.lnProbability(obsSeq);
+			System.out.println ("Computing input HMM log likelihood for input sequences DONE.");
+			
+			System.out.println ("Input HMM log likelihood: |" + llh + "|");
+	
 			break;
 	    case 1:
 		    // RUN BAUM WELCH
@@ -447,7 +453,7 @@ public class runHmm {
      */
     protected double[] calculatePi () {
 	double[] pi = new double[trees_states.size()];
-	int norm = 0;
+	double norm = 0.0;
 	for (int i = 0; i < trees_states.size(); i++) {
 	    HiddenState hiddenState = trees_states.get(i);
 	    pi[i] = hiddenState.calculateProbabilityOfGeneGenealogyInParentalTree();

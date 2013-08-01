@@ -29,20 +29,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
-import java.util.List;
-import java.io.StringReader;
-import java.io.IOException;
-
-// kliu - Phylonet support libraries
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
+import java.util.HashMap;
 
 
 
@@ -70,11 +58,6 @@ public class OpdfMap
      * coalescent units).
      */
     protected HiddenState hiddenState;
-
-    /**
-     * For coalescent model calculations.
-     */
-    protected GeneTreeProbability gtp;
     
     /**
      * The base substitution rate.
@@ -88,7 +71,6 @@ public class OpdfMap
      */
     public OpdfMap (HiddenState inHiddenState) {
 	setHiddenState(inHiddenState);
-	gtp = new GeneTreeProbability();
     }
 
     public HiddenState getHiddenState () {
@@ -114,7 +96,9 @@ public class OpdfMap
 	// See writeup for details.
 
 	double substitutionModelProbability = hiddenState.getGeneGenealogy().getLikelihood(o);
-	double coalescentModelProbability = calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG);
+	// kliu - moved this from emission probability to transition probability
+	// see revised writeup
+	//double coalescentModelProbability = hiddenState.calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG);
 
 	// looks good
 	//
@@ -130,83 +114,12 @@ public class OpdfMap
 	// The problem is the coalescent model contribution. Multiply the non-self-
 	// transition probability by the coalescent model factor 
 	// and normalize the self-transition probabilities appropriately?
-	return (substitutionModelProbability * coalescentModelProbability);
+	return (substitutionModelProbability);
     }
 
-    /**
-     * Perform standard coalescent model calculation to obtain
-     * probability P[g(s_i) | T(s_i), c_{T(s_i)}] of observing a gene genealogy given a parental tree.
-     *
-     * See writeup for details.
-     *
-     * Might move this later to HiddenState.
-     *
-     * Use code from ComputeGTProb.
-     * WARNING - returns likelihood, *NOT* log likelihood!
-     */
-    protected double calculateProbabilityOfGeneGenealogyInParentalTree (boolean debugFlag) {
-	Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(hiddenState.getParentalTree());
-	Map<String,String> alleleToSpeciesMapping = hiddenState.getAlleleToSpeciesMapping();
-	Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(hiddenState.getGeneGenealogy());
-	// A list with one element. Inefficient - consider doing a one-shot approach later.
-	Vector<Tree> geneGenealogies = new Vector<Tree>();
-	geneGenealogies.add(geneGenealogy);
+    // moved coalescent model contribution to transition probabilities
+    //* coalescentModelProbability
 
-	gtp.emptyState();
-	
-	// look like the calculation is proceeding OK
-	//
-	// calculation under model from Yu et al. 2012
-	// this method requires Network<Double>
-	// Yun uses Double to store hybridization probabilities during calculation
-        List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
-
-	// should only be a single entry
-	if (probList.size() != 1) {
-	    System.err.println ("ERROR: GeneTreeProbability.calculateGTDistribution(...) didn't return exactly one probability. Returning -1 to signal error.");
-	    return (-1.0);
-	}
-
-        return (probList.get(0));
-    }
-
-    /**
-     * Convert an EvoTree into a PhyloNet Tree object.
-     */
-    protected Tree convertPHMMTreeToPhyloNetTree (EvoTree etree) {
-	NewickReader nr = new NewickReader(new StringReader(etree.toNewickString(true, true)));
-	// kliu - change this over to a String data member
-	// don't really use it anyways
-	STITree<Double> newtr = new STITree<Double>(true);
-	try {
-	    nr.readTree(newtr);
-	    return (newtr);
-	}
-	catch(Exception e) {
-	    System.err.println(e);
-	    e.printStackTrace();
-	    return (null);
-	}
-    }
-
-    /**
-     * Convert an EvoTree into a PhyloNet Network object
-     */
-    protected Network<Double> convertPHMMTreeToPhyloNetNetwork (EvoTree etree) {
-	ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(etree.toNewickString(true, true)));
-	// kliu - change this over to a String data member
-	// don't really use it anyways
-	try {
-	    Network<Double> network = enr.readNetwork();
-	    return (network);
-	}
-	catch(IOException ioe) {
-	    System.err.println(ioe);
-	    ioe.printStackTrace();
-	    return (null);
-	}
-    }
-	
     /**
      * TODO. For now, just a warning.
      */

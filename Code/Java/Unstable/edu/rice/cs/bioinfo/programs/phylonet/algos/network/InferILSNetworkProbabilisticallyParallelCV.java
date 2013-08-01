@@ -144,7 +144,7 @@ public class InferILSNetworkProbabilisticallyParallelCV extends MDCOnNetworkYFFr
         _optimalScores = new double[numSol];
         _optimalNetworkswithReticulations = new Network[10];   // hold the best network so far with k reticulation nodes
         _optimalScoreswithReticulations = new double[10];     // hold the ML score with the corresponding k reticulation nodes
-
+        int numPopulated = -1;
 
         Arrays.fill(_optimalScores, Double.NEGATIVE_INFINITY);
         Arrays.fill(_optimalScoreswithReticulations, Double.NEGATIVE_INFINITY);
@@ -184,6 +184,24 @@ public class InferILSNetworkProbabilisticallyParallelCV extends MDCOnNetworkYFFr
             Comparator<Double> comparator = getDoubleScoreComparator();
             HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit, hasTried); // search starts here
             System.gc();
+
+            // Move the output here. Assume that there are enough rounds so that every network
+            // is populated with a real one until the maxReticulations (real reticulation node number + 2)
+
+            // Find numPopulated, which is normally maxReticulations. However, in rare situations,
+            // it can be as less than maxReticulations.
+
+            for (int j=0; j<=9; j++) {
+                if (_optimalScoreswithReticulations[j] == Double.NEGATIVE_INFINITY) {
+                    numPopulated = j-1;
+                    break;
+                }
+            }
+            System.out.println("numPopulated = " + numPopulated);
+            for (int j=0; j <= numPopulated; j++) {
+                System.out.println("_optimalNetworkswithReticulations["+j+"] =" + network2String(_optimalNetworkswithReticulations[j]));
+                System.out.println("_optimalScoreswithReticulations["+j+"] =" + _optimalScoreswithReticulations[j]);
+            }
         }
 
         /* Cross validation
@@ -225,7 +243,7 @@ public class InferILSNetworkProbabilisticallyParallelCV extends MDCOnNetworkYFFr
         List<Double> myContainer2_t = new ArrayList<Double>(); // container for total MSE for all reticulations
         List<Double> myContainer2_v = new ArrayList<Double>(); // container for total MSE for all reticulations
 
-        while (ret <= maxReticulations){
+        while (ret <= maxReticulations){   // real 2, consider 0 through 4 to pinpoint 3 if necessary
             System.out.println(); // restart from a line
 
             // Loop for K tsublists to train the network models
@@ -912,17 +930,17 @@ public class InferILSNetworkProbabilisticallyParallelCV extends MDCOnNetworkYFFr
                     iter.next();
                     indexCount++;
                 }
-                System.out.println("indexCount =" + indexCount);
+                // System.out.println("indexCount =" + indexCount);
 
                 if (score > _optimalScoreswithReticulations[indexCount]) {  // initially -inf, already assigned double value
                     _optimalNetworkswithReticulations[indexCount] = string2Network(network2String(speciesNetwork));
                     _optimalScoreswithReticulations[indexCount] = score;
                 }
-                System.out.println("score = " + score);
-                for (int i=0; i<=indexCount; i++) {
-                    System.out.println("_optimalNetworkswithReticulations["+i+"] =" + network2String(_optimalNetworkswithReticulations[i]));
-                    System.out.println("_optimalScoreswithReticulations["+i+"] =" + _optimalScoreswithReticulations[i]);
-                }
+                // System.out.println("score = " + score);
+                // for (int i=0; i<=indexCount; i++) {
+                //     System.out.println("_optimalNetworkswithReticulations["+i+"] =" + network2String(_optimalNetworkswithReticulations[i]));
+                //    System.out.println("_optimalScoreswithReticulations["+i+"] =" + _optimalScoreswithReticulations[i]);
+                // }
                 System.gc();
                 return score;
             }

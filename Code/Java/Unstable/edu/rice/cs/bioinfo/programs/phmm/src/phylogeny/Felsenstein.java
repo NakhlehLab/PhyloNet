@@ -10,6 +10,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 public class Felsenstein {
 
+	// STILL TESTING
+	// NOT PROPERLY WORKING YET
+	
     static private String[] genes = {"A", "C", "G", "T"};
     static private double lamda = .1;		// this value of the evolutionary constant
 	
@@ -20,7 +23,7 @@ public class Felsenstein {
      *
      * See writeup for details.
      */
-    public double getLikelihoodtree (Tree atree, ObservationMap column) {
+    public static double getLikelihoodtree (Tree atree, ObservationMap column) {
 	
 		double result = 0;
 		ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column);
@@ -56,7 +59,7 @@ public class Felsenstein {
     /**
      * @return The node's likelihood arraylist
      */
-    public ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column) {
+    public static ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column) {
     	ArrayList<Double> likelihood = new ArrayList<Double>();
     	
     	if (aNode.isLeaf()) {

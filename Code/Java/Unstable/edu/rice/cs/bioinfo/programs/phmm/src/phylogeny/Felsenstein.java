@@ -10,8 +10,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 public class Felsenstein {
 
-	// STILL TESTING
-	// NOT PROPERLY WORKING YET
 	
     static private String[] genes = {"A", "C", "G", "T"};
     static private double lamda = .1;		// this value of the evolutionary constant
@@ -28,12 +26,8 @@ public class Felsenstein {
 		double result = 0;
 		ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column);
 		for (int i = 0; i < 4; i++) {
-		    // kliu - ArrayList recalculated four times over
 		    result += 0.25 * rootLikelihoods.get(i);
 		}
-	
-		// kliu - no need to do this - just overwrite each time
-		//clearTree();
 	
 		return result;
     }
@@ -63,18 +57,19 @@ public class Felsenstein {
     	ArrayList<Double> likelihood = new ArrayList<Double>();
     	
     	if (aNode.isLeaf()) {
-		    //System.out.println(" I am leaf : " + taxa + " and my likelihood array is : " + likelihood);
 		    
+		    //The observation for this leaf
 			String obs = column.get(aNode.getName());
 			
 			// sets likelihood of leaf based on observation
 			int index = -1;
 			for (int i = 0; i < genes.length; i++) {
-			    if (obs == genes[i]) {
+			    if (obs.equals(genes[i])) {
 				index = i;
 			    }
 			}
-				
+			
+			// set likelihood for the observed observation as 1.0
 			for (int i = 0; i < 4; i++) {
 			    if (i == index) {
 				likelihood.add(i, 1.0);
@@ -82,6 +77,7 @@ public class Felsenstein {
 			    else likelihood.add(i, 0.0);
 			}
 			
+			//System.out.println(" I am leaf : " + aNode.getName() + " and my likelihood array is : " + likelihood);
 			return likelihood;
 		}
 		
@@ -92,13 +88,14 @@ public class Felsenstein {
 			 HashMap<TNode,ArrayList<Double>> childrenLikelihood = new HashMap<TNode,ArrayList<Double>>();
 			 ArrayList<TNode> children = new ArrayList<TNode>();
 			 
+			 //get all the children's likelihood arrays
 			 while(childrenIterator.hasNext()) {
 				 TNode next = childrenIterator.next();
 				 children.add(next);
 				 childrenLikelihood.put(next, getLikelihood(next, column));
 			 }
 			 
-
+			 //Calculate likelihood for this node using Felsenstein's algorithm 
 		    for (int i = 0; i < genes.length; i++) {
 				double[] tempvalues = new double[aNode.getChildCount()];
 				
@@ -117,7 +114,7 @@ public class Felsenstein {
 				likelihood.add(i, product);
 		    }
 							
-		    //System.out.println(" I am an internal node " + this.getTaxa() + " and my likelihood array is : " + likelihood);
+		    //System.out.println(" I am an internal node " + " and my likelihood array is : " + likelihood);
 	
 		    return likelihood;
 		}

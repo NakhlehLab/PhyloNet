@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import phylogeny.EvoTree;
@@ -25,7 +25,6 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
 //import be.ac.ulg.montefiore.run.jahmm.MyHMM;
 // kliu - pull in additional library support
 

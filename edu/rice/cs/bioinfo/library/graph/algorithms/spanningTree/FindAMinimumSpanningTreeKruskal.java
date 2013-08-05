@@ -32,16 +32,7 @@ public abstract class FindAMinimumSpanningTreeKruskal<G,E,W extends Comparable<W
 
         int distinctSpanSetsCount = graphNodes.size();
 
-        LinkedList<E> edgesByWeightAscending = new LinkedList<E>(getEdges(graph));
-        Collections.sort(edgesByWeightAscending, new Comparator<E>()
-        {
-            public int compare(E edge1, E edge2)
-            {
-                W weight1 = getWeight(edge1, graph);
-                W weight2 = getWeight(edge2, graph);
-                return weight1.compareTo(weight2);
-            }
-        } );
+        List<E> edgesByWeightAscending = sortEdgesAscending(graph);
 
         if(edgesByWeightAscending.size() == 0)
             throw new GraphDisconnectedException();
@@ -49,9 +40,9 @@ public abstract class FindAMinimumSpanningTreeKruskal<G,E,W extends Comparable<W
         Set<E> spanTreeEdges = new HashSet<E>();
 
         Iterator<E> edgesByWeightAscendingElements = edgesByWeightAscending.iterator();
-        while(distinctSpanSetsCount > 1)
+        while(distinctSpanSetsCount > 1 && edgesByWeightAscendingElements.hasNext())
         {
-           E edge = edgesByWeightAscendingElements.next();
+            E edge = edgesByWeightAscendingElements.next();
 
             Tuple<?,?> nodesOfEdge = getNodesOfEdge(edge, graph);
             Set<Object> setOfNode1 = nodeToSpanSet.get(nodesOfEdge.Item1);
@@ -78,6 +69,23 @@ public abstract class FindAMinimumSpanningTreeKruskal<G,E,W extends Comparable<W
         W totalWeight = sumWeights(spanTreeEdges, graph);
         return new Tuple<Set<E>, W>(spanTreeEdges, totalWeight);
 
+    }
+
+    protected List<E> sortEdgesAscending(final G graph)
+    {
+        ArrayList<E> edgesByWeightAscending = new ArrayList<E>(getEdges(graph));
+
+        Collections.sort(edgesByWeightAscending, new Comparator<E>()
+        {
+            public int compare(E edge1, E edge2)
+            {
+                W weight1 = getWeight(edge1, graph);
+                W weight2 = getWeight(edge2, graph);
+                return weight1.compareTo(weight2);
+            }
+        } );
+
+        return edgesByWeightAscending;
     }
 
     private W sumWeights(Set<E> edges, G graph)

@@ -150,7 +150,9 @@ public abstract class SnitkinTransMapInferrerTemplate<E,S,D extends Comparable<D
                        {
                            int geneticDistance = geneticDistanceBetweenPatients.get(source).get(destination);
                            int epidemiologicalDistance = getEpidemiologicalDistance(source,  destination);
+
                            SnitkinEdge<E,D> edge = SnitkinTransMapInferrerTemplate.this.makeEdge(source, destination, geneticDistance, epidemiologicalDistance);
+                           System.out.println(source + " " + destination + " " + geneticDistance + " " + epidemiologicalDistance);
                            return edge;
                        }
                    }

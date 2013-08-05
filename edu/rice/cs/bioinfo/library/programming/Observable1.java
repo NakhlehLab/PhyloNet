@@ -14,6 +14,8 @@ public class Observable1<T>
 {
     private Set<Proc1<T>> _observers;
 
+    //public final
+
     public Observable1()
     {
         _observers = makeSet();

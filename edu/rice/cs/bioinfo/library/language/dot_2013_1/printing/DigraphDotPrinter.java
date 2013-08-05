@@ -11,6 +11,10 @@ import java.util.Set;
  */
 public abstract class DigraphDotPrinter<N,E> extends DotPrinterBase<N,E>
 {
+    public String toDot(Set<N> nodes, Set<E> edges)
+    {
+        return super.toDot(nodes, edges, "digraph");
+    }
 
     public String toDot(Set<E> edges)
     {

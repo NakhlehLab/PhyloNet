@@ -85,12 +85,12 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
         if(proof != null)
         {
             vm = new RecombResultVM(proof.Sequence1.toString(), proof.Sequence2.toString(), proof.Sequence3.toString(),
-                                    proof.Sequence4.toString(),
-                                    proof.Site1.toString(), proof.Site2.toString(),
-                                    proof.Sequence1.Sequence.charAt(proof.Site1), proof.Sequence2.Sequence.charAt(proof.Site1),
-                                    proof.Sequence3.Sequence.charAt(proof.Site1), proof.Sequence4.Sequence.charAt(proof.Site1),
-                                    proof.Sequence1.Sequence.charAt(proof.Site2), proof.Sequence2.Sequence.charAt(proof.Site2),
-                                    proof.Sequence3.Sequence.charAt(proof.Site2), proof.Sequence4.Sequence.charAt(proof.Site2));
+                    proof.Sequence4.toString(),
+                    proof.Site1.toString(), proof.Site2.toString(),
+                    proof.Sequence1.Sequence.charAt(proof.Site1), proof.Sequence2.Sequence.charAt(proof.Site1),
+                    proof.Sequence3.Sequence.charAt(proof.Site1), proof.Sequence4.Sequence.charAt(proof.Site1),
+                    proof.Sequence1.Sequence.charAt(proof.Site2), proof.Sequence2.Sequence.charAt(proof.Site2),
+                    proof.Sequence3.Sequence.charAt(proof.Site2), proof.Sequence4.Sequence.charAt(proof.Site2));
         }
 
         AnalysisRecord ar = new AnalysisRecord("Recomb Result", vm);
@@ -143,14 +143,57 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
 
     }
 
-    public void performMinSpanTreeAnalysisSnpMax2(SDR sequencingsDataRecord) throws EX, GraphDisconnectedException
+    public void performMinSpanTreeAnalysisSnp(SDR sequencingsDataRecord) throws EX, GraphDisconnectedException
     {
         final Map<Sequencing, E> sequeincingToSource = _sequencingsDataProvider.getSequencingToPatientMap(sequencingsDataRecord);
 
-        final Map<E,String> sourceToDispalyString = new HashMap<E, String>();
+        final Map<E,String> sourceToDispalyString = makeSourceToDisplayString(sequeincingToSource);
 
 
+        Iterable<Set<SequencingEdge<Sequencing>>> msts = new FindMinSpanTreesSnp<Sequencing>()
+        {
+            @Override
+            protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
+            {
+                return new Long(sequencing1.getGeneticDistance(sequencing2));
+            }
 
+        }.inferMinTrees(sequeincingToSource.keySet());
+
+        for(Set<SequencingEdge<Sequencing>> mst : msts)
+        {
+            TreeVM<Sequencing,SequencingEdge<Sequencing>> vm = new
+                    TreeVM<Sequencing,SequencingEdge<Sequencing>>(mst)
+                    {
+
+                        @Override
+                        public Tuple<Sequencing, Sequencing> getNodesOfEdge(SequencingEdge<Sequencing> edge)
+                        {
+                            return new Tuple<Sequencing, Sequencing>(edge.Sequencing1, edge.Sequencing2);
+                        }
+
+                        @Override
+                        public String getNodeLabel(Sequencing sequencing)
+                        {
+                            return sourceToDispalyString.get(sequeincingToSource.get(sequencing));
+                        }
+
+                        @Override
+                        public String getEdgeLabel(SequencingEdge<Sequencing> edge)
+                        {
+                            return edge.SnpDistance + "";
+                        }
+                    };
+
+            AnalysisRecord ar = new AnalysisRecord("Min Span Tree (SNP)", vm);
+            _workspaceVM.addAnalysis(ar);
+            _workspaceVM.setFocusDocument(vm);
+        }
+    }
+
+    private Map<E,String> makeSourceToDisplayString(Map<Sequencing, E> sequeincingToSource)
+    {
+        Map<E,String> sourceToDispalyString = new HashMap<E, String>();
         E prev = null;
         String greatestCommonPrefix = null;
         for(E entity : sequeincingToSource.values())
@@ -172,6 +215,18 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
                     sourceToDispalyString.get(entity).substring(greatestCommonPrefix.length()));
         }
 
+        return sourceToDispalyString;
+    }
+
+    public void performMinSpanTreeAnalysisSnpMax2(SDR sequencingsDataRecord) throws EX, GraphDisconnectedException, Exception
+    {
+
+
+        final Map<Sequencing, E> sequeincingToSource = _sequencingsDataProvider.getSequencingToPatientMap(sequencingsDataRecord);
+
+        final Map<E,String> sourceToDispalyString = makeSourceToDisplayString(sequeincingToSource);
+
+           /*
         Iterable<Set<SequencingEdge<Sequencing>>> msts = new MinSpanTreesSnpInferrerMaxTwo<Sequencing>()
         {
             @Override
@@ -179,7 +234,54 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
             {
                 return new Long(sequencing1.getGeneticDistance(sequencing2));
             }
-        }.inferMinTrees(sequeincingToSource.keySet());
+        }.inferMinTrees(sequeincingToSource.keySet());     */
+
+
+        Iterable<Set<SequencingEdge<Sequencing>>> msts = new MinSpanTreesSnpInferrerDiversity<Sequencing>()
+                {
+                    @Override
+                    protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
+                    {
+                        return new Long(sequencing1.getGeneticDistance(sequencing2));
+                    }
+                }.inferMinTrees(sequeincingToSource.keySet());
+        /*
+        for(Set<SequencingEdge<Sequencing>> mst : msts)
+        {
+
+            TreeVM<Sequencing,SequencingEdge<Sequencing>> vm = new
+                            TreeVM<Sequencing,SequencingEdge<Sequencing>>(mst)
+                            {
+
+
+                                @Override
+                                public Tuple<Sequencing, Sequencing> getNodesOfEdge(SequencingEdge<Sequencing> edge)
+                                {
+                                    return new Tuple<Sequencing, Sequencing>(edge.Sequencing1, edge.Sequencing2);
+                                }
+
+                                @Override
+                                public String getNodeLabel(Sequencing sequencing)
+                                {
+                                    return sourceToDispalyString.get(sequeincingToSource.get(sequencing));
+                                }
+
+                                @Override
+                                public String getEdgeLabel(SequencingEdge<Sequencing> edge)
+                                {
+                                    return edge.SnpDistance + "";
+                                }
+                            };
+
+            AnalysisRecord ar = new AnalysisRecord("Min Span Tree (SNP)", vm);
+            _workspaceVM.addAnalysis(ar);
+            _workspaceVM.setFocusDocument(vm);
+        }
+
+
+         if(true)
+             return;       */
+
 
                 /*
         new MinSpanTreesSnpInferrerCombAsc<Sequencing>()

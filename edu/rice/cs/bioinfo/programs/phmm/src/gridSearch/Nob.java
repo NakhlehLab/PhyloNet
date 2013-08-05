@@ -1,7 +1,7 @@
 package gridSearch;
 
 public abstract class Nob {
-	// Note: Nob is usually spelled with as "Knob" but this is Phylonet Nob Style. 
+	// Note: Nob is usually spelled as "Knob" but this is written in Phylonet Nob Style. 
 	
 	private int g;
 	private double min;
@@ -13,9 +13,8 @@ public abstract class Nob {
 		this.max = maxIn;
 	}
 	
-	
-	/*
-	 * returns an array of sample parameter values
+	/**
+	 * @return an array of sample parameter values
 	 * given a set number of samples and an interval
 	 */
 	public double[] getSamples() {
@@ -27,7 +26,14 @@ public abstract class Nob {
 		return samples;
 	}
 	
+	/**
+	 * Sets a new value for the current parameter Knob
+	 * @param value
+	 */
 	abstract public void set_param(double value);
 	
+	/**
+	 * @return the current value of the parameter knob 
+	 */
 	abstract double get_param();
 }

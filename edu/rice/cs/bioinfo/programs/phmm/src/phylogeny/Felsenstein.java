@@ -11,9 +11,15 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 public class Felsenstein {
 
 	
-    static private String[] genes = {"A", "C", "G", "T"};
-    static private double lamda = .1;		// this value of the evolutionary constant
+    private String[] genes = {"A", "C", "G", "T"};
+    private double lamda = .1;		// this value of the evolutionary constant
 	
+    public Felsenstein() {
+    	// empty constructor
+    	// needs to initiate a Felsenstein object instance in order for any
+    	// heuristic to change lamda variable in parallel runs (cannot be static)
+    }
+    
 	 /**
      * On-the-fly version of getLikelihood() implemented for PhyloNet Trees
      * Calculates emission probability 
@@ -21,7 +27,7 @@ public class Felsenstein {
      *
      * See writeup for details.
      */
-    public static double getLikelihoodtree (Tree atree, ObservationMap column) {
+    public double getLikelihoodtree (Tree atree, ObservationMap column) {
 	
 		double result = 0;
 		ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column);
@@ -41,7 +47,7 @@ public class Felsenstein {
      * @param t - A Double - the time interval or branch length time
      * @return returns the Pij value, or the transition probability between two nucleotides given the branch length
      */
-    private static double getPij(String i, String j, double u, double t) {
+    private double getPij(String i, String j, double u, double t) {
         if (!i.equals(j)) {
             return (0.25 - 0.25 * Math.exp((-4.0 / 3.0) * u * t));
         }
@@ -53,7 +59,7 @@ public class Felsenstein {
     /**
      * @return The node's likelihood arraylist
      */
-    public static ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column) {
+    public ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column) {
     	ArrayList<Double> likelihood = new ArrayList<Double>();
     	
     	if (aNode.isLeaf()) {

@@ -9,7 +9,18 @@ public abstract class Nob {
 	private double min;
 	private double max;
 	
-	abstract public double[] getSamples();
+	/*
+	 * returns an array of sample parameter values
+	 * given a set number of samples and an interval
+	 */
+	public double[] getSamples() {
+		double[] samples = new double[g];
+		double interval = (max - min) *1.0/ g;
+		for (int iter = 0; iter < g; iter++) {
+			samples[iter] = min + (interval*iter);
+		}
+		return samples;
+	}
 	
 	abstract public void set_param(double value);
 }

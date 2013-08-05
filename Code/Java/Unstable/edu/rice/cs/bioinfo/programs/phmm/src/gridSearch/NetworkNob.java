@@ -2,6 +2,13 @@ package gridSearch;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
+/**
+ * This is a the knob used for the tree branch parameters from 
+ * Network trees.
+ * 
+ * @author k3kathy
+ *
+ */
 public class NetworkNob extends Nob {
 	
 	private NetNode<Double> netNode;

@@ -2,7 +2,12 @@ package gridSearch;
 
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 
-
+/**
+ * This knob is used for the recombination frequency parameter from
+ * the TransitionProbabilityParameters class.
+ * @author k3kathy
+ *
+ */
 public class RecombinationFreqNob extends Nob {
 
 	private TransitionProbabilityParameters probsParam;

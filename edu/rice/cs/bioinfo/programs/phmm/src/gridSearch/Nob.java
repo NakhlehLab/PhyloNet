@@ -1,7 +1,7 @@
 package gridSearch;
 
 public abstract class Nob {
-	
+	// Note: Nob is usually spelled with as "Knob" but this is Phylonet Nob Style. 
 	
 	private int g;
 	private double min;
@@ -28,4 +28,6 @@ public abstract class Nob {
 	}
 	
 	abstract public void set_param(double value);
+	
+	abstract double get_param();
 }

@@ -85,11 +85,18 @@ public class WorkspaceViewSwing<DR extends DataRecord,
 
     private Map<DefaultMutableTreeNode,DR> _dataTreeNodeToRecord = new HashMap<DefaultMutableTreeNode, DR>();
 
-    public final Observable1<DR> MinSpanTreeSnpRequested = new Observable1<DR>();
+    public final Observable1<DR> MinSpanTreeSnpMax2Requested = new Observable1<DR>();
 
-    public Observable1<DR> getMinSpanTreeSnpRequested()
+    public Observable1<DR> getMinSpanTreesMax2SnpRequested()
     {
-        return MinSpanTreeSnpRequested;
+        return MinSpanTreeSnpMax2Requested;
+    }
+
+    public final Observable1<DR> MinSpanTreesSnpRequested = new Observable1<DR>();
+
+    public Observable1<DR> getMinSpanTreesSnpRequested()
+    {
+        return MinSpanTreesSnpRequested;
     }
 
     public final Observable1<AR> AnalysisRecordSelected = new Observable1<AR>();
@@ -362,20 +369,35 @@ public class WorkspaceViewSwing<DR extends DataRecord,
                 });
                 analysisOptions.add (detectRecomb);
 
-                final JMenuItem doMinimumSpanningTreeSnp =
-                        new JMenuItem("Infer Min Span Tree (SNP)");
-                doMinimumSpanningTreeSnp.addActionListener(new ActionListener()
+                final JMenuItem doMinimumSpanningTreesSnpMax2 =
+                        new JMenuItem("Infer Min Span Trees Max2 (SNP)");
+                doMinimumSpanningTreesSnpMax2.addActionListener(new ActionListener()
                 {
                     public void actionPerformed(ActionEvent e)
                     {
-                        if(e.getSource() == doMinimumSpanningTreeSnp)
+                        if(e.getSource() == doMinimumSpanningTreesSnpMax2)
                         {
-                            getMinSpanTreeSnpRequested().notify(firstEntry);
+                            getMinSpanTreesMax2SnpRequested().notify(firstEntry);
 
                         }
                     }
                 });
-                analysisOptions.add (doMinimumSpanningTreeSnp);
+                analysisOptions.add (doMinimumSpanningTreesSnpMax2);
+
+                final JMenuItem doMinimumSpanningTreesSnp =
+                        new JMenuItem("Infer Min Span Trees (SNP)");
+                doMinimumSpanningTreesSnp.addActionListener(new ActionListener()
+                {
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        if(e.getSource() == doMinimumSpanningTreesSnp)
+                        {
+                            getMinSpanTreesSnpRequested().notify(firstEntry);
+
+                        }
+                    }
+                });
+                analysisOptions.add (doMinimumSpanningTreesSnp);
 
 
             }

@@ -28,7 +28,9 @@ public interface WorkspaceView<DR extends DataRecord,
 
     public Observable1<AR> getAnalysisRecordSelected();
 
-    public Observable1<DR> getMinSpanTreeSnpRequested();
+    public Observable1<DR> getMinSpanTreesMax2SnpRequested();
+
+    public Observable1<DR> getMinSpanTreesSnpRequested();
 
     public Observable1<DR> getDataRecordSelected();
 

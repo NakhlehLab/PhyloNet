@@ -155,7 +155,22 @@ abstract class ApplicationBase
             }
         });
 
-        view.getMinSpanTreeSnpRequested().addObserver(new Proc1<DataController.FileDataRecord>()
+        view.getMinSpanTreesSnpRequested().addObserver(new Proc1<DataController.FileDataRecord>()
+        {
+            public void execute(DataController.FileDataRecord sequencings)
+            {
+                try
+                {
+                    ac.performMinSpanTreeAnalysisSnp(sequencings.File);
+                }
+                catch(Exception e)
+                {
+                    reportException(e);
+                }
+            }
+        });
+
+        view.getMinSpanTreesMax2SnpRequested().addObserver(new Proc1<DataController.FileDataRecord>()
         {
             public void execute(DataController.FileDataRecord sequencings)
             {

@@ -1,13 +1,18 @@
 package gridSearch;
 
 public abstract class Nob {
-	public Nob() {
-		
-	}
+	
 	
 	private int g;
 	private double min;
 	private double max;
+	
+	public Nob(int gIn, double minIn, double maxIn) {
+		this.g = gIn;
+		this.min = minIn;
+		this.max = maxIn;
+	}
+	
 	
 	/*
 	 * returns an array of sample parameter values

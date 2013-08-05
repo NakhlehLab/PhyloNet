@@ -121,4 +121,18 @@ public class Felsenstein {
     }
     
     
+    /**
+     * @returns the base substitution rate for the Jukes Cantor model
+     */
+    public double getBaseSub() {
+    	return lamda;
+    }
+    
+    /**
+     * sets the base subsitution rate for the Jukes Cantor Model
+     */
+    public void setBaseSub(double value) {
+    	lamda = value;
+    }
+    
 }

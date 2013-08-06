@@ -11,14 +11,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 public class Felsenstein {
 
 	
-    private String[] genes = {"A", "C", "G", "T"};
-    private double lamda = .1;		// this value of the evolutionary constant
-	
-    public Felsenstein() {
-    	// empty constructor
-    	// needs to initiate a Felsenstein object instance in order for any
-    	// heuristic to change lamda variable in parallel runs (cannot be static)
-    }
+    static private String[] genes = {"A", "C", "G", "T"};
+ 
+
     
 	 /**
      * On-the-fly version of getLikelihood() implemented for PhyloNet Trees
@@ -27,10 +22,10 @@ public class Felsenstein {
      *
      * See writeup for details.
      */
-    public double getLikelihoodtree (Tree atree, ObservationMap column) {
+    static public double getLikelihoodtree (Tree atree, ObservationMap column, double baseSubRate) {
 	
 		double result = 0;
-		ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column);
+		ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column, baseSubRate);
 		for (int i = 0; i < 4; i++) {
 		    result += 0.25 * rootLikelihoods.get(i);
 		}
@@ -47,7 +42,7 @@ public class Felsenstein {
      * @param t - A Double - the time interval or branch length time
      * @return returns the Pij value, or the transition probability between two nucleotides given the branch length
      */
-    private double getPij(String i, String j, double u, double t) {
+    static private double getPij(String i, String j, double u, double t) {
         if (!i.equals(j)) {
             return (0.25 - 0.25 * Math.exp((-4.0 / 3.0) * u * t));
         }
@@ -59,7 +54,7 @@ public class Felsenstein {
     /**
      * @return The node's likelihood arraylist
      */
-    public ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column) {
+    static private ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column, double baseSubRate) {
     	ArrayList<Double> likelihood = new ArrayList<Double>();
     	
     	if (aNode.isLeaf()) {
@@ -98,7 +93,7 @@ public class Felsenstein {
 			 while(childrenIterator.hasNext()) {
 				 TNode next = childrenIterator.next();
 				 children.add(next);
-				 childrenLikelihood.put(next, getLikelihood(next, column));
+				 childrenLikelihood.put(next, getLikelihood(next, column, baseSubRate));
 			 }
 			 
 			 //Calculate likelihood for this node using Felsenstein's algorithm 
@@ -108,7 +103,7 @@ public class Felsenstein {
 				for (int j = 0; j < genes.length; j++) {
 					for (int k = 0; k < tempvalues.length; k++) {
 						double childLikelihood = childrenLikelihood.get(children.get(k)).get(j);
-						tempvalues[k] += childLikelihood * getPij(genes[i], genes[j], lamda, children.get(k).getParentDistance());
+						tempvalues[k] += childLikelihood * getPij(genes[i], genes[j], baseSubRate, children.get(k).getParentDistance());
 					}
 				}
 				
@@ -126,19 +121,5 @@ public class Felsenstein {
 		}
     }
     
-    
-    /**
-     * @returns the base substitution rate for the Jukes Cantor model
-     */
-    public double getBaseSub() {
-    	return lamda;
-    }
-    
-    /**
-     * sets the base subsitution rate for the Jukes Cantor Model
-     */
-    public void setBaseSub(double value) {
-    	lamda = value;
-    }
     
 }

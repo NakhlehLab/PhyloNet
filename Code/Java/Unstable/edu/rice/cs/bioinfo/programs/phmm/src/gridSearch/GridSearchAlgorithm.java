@@ -79,7 +79,7 @@ public class GridSearchAlgorithm<O extends Observation> {
      *
      * Call this after changing parental tree branch lengths
      */
-    private double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq, Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
+    protected static double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq, Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
 	double[][] a = new double[trees_states.size()][trees_states.size()];
 	for (int i = 0; i < a.length; i++) {
 	    HiddenState si = trees_states.get(i);
@@ -116,7 +116,7 @@ public class GridSearchAlgorithm<O extends Observation> {
     }
 	
     
-    protected boolean checkSameParentalClass (HiddenState si, HiddenState sj, Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
+    protected static boolean checkSameParentalClass (HiddenState si, HiddenState sj, Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
     	Set<HiddenState> sic = parentalTreeClasses.get(si.getParentalTree());
     	return (sic.contains(sj));
         }
@@ -124,7 +124,7 @@ public class GridSearchAlgorithm<O extends Observation> {
     /**
      * By construction, rows of a_ij matrix sum to one.
      */
-    protected boolean verifyAij (double[][] a) {
+    protected static boolean verifyAij (double[][] a) {
 	for (int i = 0; i < a.length; i++) {
 	    for (int j = 0; j < a[i].length; j++) {
 		if ((a[i][j] < 0.0) || (a[i][j] > 1.0)) {

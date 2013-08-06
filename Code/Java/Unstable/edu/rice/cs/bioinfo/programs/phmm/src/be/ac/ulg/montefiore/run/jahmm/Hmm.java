@@ -344,6 +344,16 @@ public class Hmm<O extends Observation>
 	return probability * getOpdf(sseq[sseq.length-1]).
 	    probability(oseq.get(sseq.length-1));
     }
+    
+    /**
+     * Set the whole transition matrix of the Hmm.
+     * 
+     * @param matrixIn The new transition matrix.
+     */
+    
+    public void setTransitionMatrix(double[][] matrixIn) {
+    	this.a = matrixIn;
+    }
 	
 	
     /**

@@ -711,10 +711,13 @@ public class runHmm {
 	double hybridizationFrequency = Double.parseDouble(st.nextToken());
 	transitionProbabilityParameters = new TransitionProbabilityParameters(recombinationFrequency, hybridizationFrequency);
     }
+    
+    
 }
 
 
 
+	
 
 
 

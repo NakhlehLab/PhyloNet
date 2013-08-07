@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
@@ -30,6 +31,7 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 
 public class runHmm {
 
+	
     protected static final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
 	
     // stored information 
@@ -713,11 +715,8 @@ public class runHmm {
     }
     
     
-}
 
-
-
-	
+	}
 
 
 

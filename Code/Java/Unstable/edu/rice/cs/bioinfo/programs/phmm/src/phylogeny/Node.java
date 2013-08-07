@@ -35,6 +35,20 @@ public class Node {
     }
 
     /**
+     * Constructor used for cloning an root node
+     * @param leftChildIn
+     * @param rightChildIn
+     */
+    public Node(Node leftChildIn, Node rightChildIn) {
+        this.setLeftChild(leftChildIn);
+        this.setRightChild(rightChildIn);
+        this.parent = null;
+        this.tbranch = -1;
+        this.taxa = null;
+        this.obs = null;
+    }
+
+    /**
      * Constructor used for cloning an Internal node
      * @param leftChild - left child Node
      * @param rightChild - right child Node
@@ -59,12 +73,12 @@ public class Node {
      * @param parent - the parent node
      * @param tbranch - a double that is the branch length from this node to its parent node
      */
-    public Node(Node parent, double tbranch) {
+    public Node(double tbranch, String obsIn, String taxaIn) {
     this.children = null;
-    this.parent = parent;
+    this.parent = null;
     this.tbranch = tbranch;
-    this.taxa = null;
-    this.obs = null;
+    this.taxa = taxaIn;
+    this.obs = obsIn;
     for (int i = 0; i < 4; i++) {
         likelihood.add(-1.0);
     }
@@ -353,13 +367,20 @@ public class Node {
     public Node cloneNode() {
 
     if (isLeaf()) {
-        return new Node(parent.cloneNode(), tbranch);
+        Node tempLeaf = new Node(tbranch, obs, taxa);
+        return tempLeaf;
     }
     else if (isRoot()) {
-        return new Node(children.get(0).cloneNode(), children.get(1).cloneNode(), null, tbranch);
+        Node tempRoot = new Node(children.get(0).cloneNode(), children.get(1).cloneNode());
+        tempRoot.children.get(0).setParent(tempRoot);
+        tempRoot.children.get(1).setParent(tempRoot);
+        return tempRoot;
     }
     else {
-        return new Node(children.get(0).cloneNode(), children.get(1).cloneNode(), parent.cloneNode(), tbranch);
+        Node tempInternal = new Node(children.get(0).cloneNode(), children.get(1).cloneNode(), parent.cloneNode(), tbranch);
+        tempInternal.children.get(0).setParent(tempInternal);
+        tempInternal.children.get(1).setParent(tempInternal);
+        return tempInternal;
     }
     }
 

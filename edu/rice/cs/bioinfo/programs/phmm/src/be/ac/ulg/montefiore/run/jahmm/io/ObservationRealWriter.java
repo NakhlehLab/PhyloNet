@@ -34,10 +34,10 @@ import be.ac.ulg.montefiore.run.jahmm.ObservationReal;
  */
 public class ObservationRealWriter
 extends ObservationWriter<ObservationReal>
-{	
-	public void write(ObservationReal observation, Writer writer) 
-	throws IOException
-	{
-		writer.write(observation.value + "; ");
-	}
+{
+    public void write(ObservationReal observation, Writer writer)
+    throws IOException
+    {
+        writer.write(observation.value + "; ");
+    }
 }

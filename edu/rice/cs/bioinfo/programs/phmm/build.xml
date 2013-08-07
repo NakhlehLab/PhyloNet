@@ -24,8 +24,8 @@
     <path refid="build.classpath"/>
     <mapper>
       <chainedmapper>
-	<flattenmapper/>
-	<globmapper from="*.jar" to="${dependencies}/*.jar"/>
+  <flattenmapper/>
+  <globmapper from="*.jar" to="${dependencies}/*.jar"/>
       </chainedmapper>
     </mapper>
   </pathconvert>

@@ -33,10 +33,10 @@ import java.util.Collection;
  */
 public class OpdfInteger
     implements Opdf<ObservationInteger>
-{	
+{
     private double[] probabilities;
-	
-	
+
+
     /**
      * Builds a new probability distribution which operates on integer values.
      * The probabilities are initialized so that the distribution is uniformaly
@@ -48,18 +48,18 @@ public class OpdfInteger
      *                  strictly smaller than <code>nbEntries</code>.
      */
     public OpdfInteger(int nbEntries)
-	{
-	    if (nbEntries <= 0) 
-		throw new IllegalArgumentException("Argument must be strictly " +
-						   "positive");
-		
-	    probabilities = new double[nbEntries];
-		
-	    for (int i = 0; i < nbEntries; i++)
-		probabilities[i] = 1. / ((double) nbEntries);
-	}
-	
-	
+    {
+        if (nbEntries <= 0)
+        throw new IllegalArgumentException("Argument must be strictly " +
+                           "positive");
+
+        probabilities = new double[nbEntries];
+
+        for (int i = 0; i < nbEntries; i++)
+        probabilities[i] = 1. / ((double) nbEntries);
+    }
+
+
     /**
      * Builds a new probability distribution which operates on integer values.
      *
@@ -69,18 +69,18 @@ public class OpdfInteger
      *                      of the observation <code>i</code>.
      */
     public OpdfInteger(double[] probabilities)
-	{		
-	    if (probabilities.length == 0) 
-		throw new IllegalArgumentException("Invalid empty array");
-		
-	    this.probabilities = new double[probabilities.length];
-		
-	    for (int i = 0; i < probabilities.length; i++)
-		if ((this.probabilities[i] = probabilities[i]) < 0.)
-		    throw new IllegalArgumentException();
-	}
-	
-	
+    {
+        if (probabilities.length == 0)
+        throw new IllegalArgumentException("Invalid empty array");
+
+        this.probabilities = new double[probabilities.length];
+
+        for (int i = 0; i < probabilities.length; i++)
+        if ((this.probabilities[i] = probabilities[i]) < 0.)
+            throw new IllegalArgumentException();
+    }
+
+
     /**
      * Returns how many integers are associated to probabilities by this
      * distribution.
@@ -89,36 +89,36 @@ public class OpdfInteger
      */
     public int nbEntries()
     {
-	return probabilities.length;
+    return probabilities.length;
     }
-	
-	
+
+
     public double probability(ObservationInteger o)
     {
-	if (o.value > probabilities.length-1)
-	    throw new IllegalArgumentException("Wrong observation value");
-		
-	return probabilities[o.value];
+    if (o.value > probabilities.length-1)
+        throw new IllegalArgumentException("Wrong observation value");
+
+    return probabilities[o.value];
     }
-	
-	
+
+
     public ObservationInteger generate()
-    {	
-	double rand = Math.random();
-		
-	for (int i = 0; i < probabilities.length - 1; i++)
-	    if ((rand -= probabilities[i]) < 0.)
-		return new ObservationInteger(i);
-		
-	return new ObservationInteger(probabilities.length - 1);
+    {
+    double rand = Math.random();
+
+    for (int i = 0; i < probabilities.length - 1; i++)
+        if ((rand -= probabilities[i]) < 0.)
+        return new ObservationInteger(i);
+
+    return new ObservationInteger(probabilities.length - 1);
     }
-	
-	
+
+
     public void fit(ObservationInteger... oa)
     {
-	fit(Arrays.asList(oa));
+    fit(Arrays.asList(oa));
     }
-	
+
 
     // kliu - looks like it's just taking the empirical distribution
     // for MLE fit
@@ -130,77 +130,77 @@ public class OpdfInteger
     //
     // Below re-estimation formula isn't what we want anyways.
     public void fit(Collection<? extends ObservationInteger> co)
-    {	
-	if (co.isEmpty())
-	    throw new IllegalArgumentException("Empty observation set");
-		
-	for (int i = 0; i < probabilities.length; i++)
-	    probabilities[i] = 0.;
-		
-	for (ObservationInteger o : co)
-	    probabilities[o.value]++;
-		
-	for (int i = 0; i < probabilities.length; i++)
-	    probabilities[i] /= co.size();
+    {
+    if (co.isEmpty())
+        throw new IllegalArgumentException("Empty observation set");
+
+    for (int i = 0; i < probabilities.length; i++)
+        probabilities[i] = 0.;
+
+    for (ObservationInteger o : co)
+        probabilities[o.value]++;
+
+    for (int i = 0; i < probabilities.length; i++)
+        probabilities[i] /= co.size();
     }
-	
-	
+
+
     public void fit(ObservationInteger[] o, double[] weights)
     {
-	fit(Arrays.asList(o), weights);
+    fit(Arrays.asList(o), weights);
     }
-	
+
     // kliu - looks like just empirical weighted distribution
     // similar to above, but weighted by weights
     public void fit(Collection<? extends ObservationInteger> co,
-		    double[] weights)
-    {	
-	if (co.isEmpty() || co.size() != weights.length)
-	    throw new IllegalArgumentException();
-		
-	Arrays.fill(probabilities, 0.);
-		
-	int i = 0;
-	for (ObservationInteger o : co) 
-	    probabilities[o.value] += weights[i++];
+            double[] weights)
+    {
+    if (co.isEmpty() || co.size() != weights.length)
+        throw new IllegalArgumentException();
+
+    Arrays.fill(probabilities, 0.);
+
+    int i = 0;
+    for (ObservationInteger o : co)
+        probabilities[o.value] += weights[i++];
     }
-	
-	
+
+
     public OpdfInteger clone()
-    {	
-	try {
-	    return (OpdfInteger) super.clone();
-	} catch(CloneNotSupportedException e) {
+    {
+    try {
+        return (OpdfInteger) super.clone();
+    } catch(CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
     }
-	
-	
+
+
     public String toString()
     {
-	return toString(NumberFormat.getInstance());
+    return toString(NumberFormat.getInstance());
     }
-	
-	
+
+
     public String toString(NumberFormat numberFormat)
-    {	
-	String s = "Integer distribution --- ";
-		
-	for (int i = 0; i < nbEntries();) {
-	    ObservationInteger oi = new ObservationInteger(i);
-			
-	    s += numberFormat.format(probability(oi)) +
-		((++i < nbEntries()) ? " " : "");
-	}
-		
-	return s;
+    {
+    String s = "Integer distribution --- ";
+
+    for (int i = 0; i < nbEntries();) {
+        ObservationInteger oi = new ObservationInteger(i);
+
+        s += numberFormat.format(probability(oi)) +
+        ((++i < nbEntries()) ? " " : "");
     }
-	
-	
+
+    return s;
+    }
+
+
     public void setProb(int obsNo, double prob)  {
         this.probabilities[obsNo] = prob;
     }
-   
+
     public void printProbArray() {
         for (int i = 0; i < probabilities.length; i++)
             System.out.println(probabilities[i]);

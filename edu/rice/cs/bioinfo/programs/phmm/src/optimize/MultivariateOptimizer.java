@@ -9,7 +9,7 @@
 // TODO:
 // 1. Cache/restore HMM parameter values.
 
-// 2. Organize HMM parameters, enter them into a queue. 
+// 2. Organize HMM parameters, enter them into a queue.
 //    Single iteration == exhaust queue once.
 
 // 3. Add in llh evaluator.
@@ -86,14 +86,14 @@ public class MultivariateOptimizer {
     protected Map<EvoTree,Set<HiddenState>> parentalTreeClasses;
 
     public MultivariateOptimizer (Hmm<ObservationMap> inHmm,
-				  List<HiddenState> inHiddenStates,
-				  TransitionProbabilityParameters inTransitionProbabilityParameters,
-				  Map<EvoTree,Set<HiddenState>> inParentalTreeClasses
-				  ) {
-	this.hmm = inHmm;
-	this.hiddenStates = inHiddenStates;
-	this.transitionProbabilityParameters = inTransitionProbabilityParameters;
-	this.parentalTreeClasses = inParentalTreeClasses;
+                  List<HiddenState> inHiddenStates,
+                  TransitionProbabilityParameters inTransitionProbabilityParameters,
+                  Map<EvoTree,Set<HiddenState>> inParentalTreeClasses
+                  ) {
+    this.hmm = inHmm;
+    this.hiddenStates = inHiddenStates;
+    this.transitionProbabilityParameters = inTransitionProbabilityParameters;
+    this.parentalTreeClasses = inParentalTreeClasses;
     }
 
 
@@ -104,18 +104,18 @@ public class MultivariateOptimizer {
      * or multiple branches share a LengthParameter
      * or multiple parental trees have branches that share a LengthParameter
      * etc.
-     * 
+     *
      * don't push this into Parameter
      * too complicated
      */
     protected void updateHMM (Parameter parameter) {
-	System.err.println ("TODO");
-	System.exit(1);
+    System.err.println ("TODO");
+    System.exit(1);
     }
 
     protected double computeHMMLikelihood () {
-	System.err.println ("TODO");
-	return (-1.0);
+    System.err.println ("TODO");
+    return (-1.0);
     }
 
 
@@ -123,59 +123,59 @@ public class MultivariateOptimizer {
      * Other than min/max values, no difference between LengthParameter and FrequencyParameter.
      */
     protected class ParameterUnivariateFunction implements MutableUnivariateFunction<Parameter> {
-	protected Parameter parameter;
+    protected Parameter parameter;
 
-	public ParameterUnivariateFunction
-	    (Parameter inParameter) {
-	    setParameter(inParameter);
-	}
-
-	public void setParameter (Parameter inParameter) {
-	    this.parameter = inParameter;
-	}
-
-	public Parameter getParameter () {
-	    return (parameter);
-	}
-
-	/**
-	 * Evaluate likelihood function f(x) for a particular x'.
-	 * WARNING: f(x) is always a log likelihood, since computeGTProb() always returns a log likelihood!
-	 *
-	 * Meaning of x differs for nodes that are subject to set branch length constraints:
-	 * for these nodes, x is weighted ratio.
-	 */
-	public double value (double x) {
-	    // cache original setting, set new setting
-	    double originalSetting = parameter.getValue();
-	   
-	    // update
-	    parameter.setValue(x);
-	    // update associated model values associated with a single parameter
-	    // e.g., for LengthParameter objects that belong to a LengthParameterConstraintSet
-	    // or multiple branches share a LengthParameter
-	    // or multiple parental trees have branches that share a LengthParameter
-	    // etc.
-	    // 
-	    // don't push this into Parameter
-	    // too complicated
-	    updateHMM(parameter);
-
-	    // evaluate f(x) using forward/backwards algorithm
-	    double result = computeHMMLikelihood();
-
-	    // restore original setting
-	    parameter.setValue(originalSetting);
-	    updateHMM(parameter);
-
-	    // above restore original setting op
-	    // not really necessary if always accept new branch length even if no likelihood improvement
-	    // since Brent's method is guaranteed to never make the likelihood worse
-	    // meh, no update if no likelihood improvement
-	    // -> above is necessary
-
-	    return (result);
-	}	
+    public ParameterUnivariateFunction
+        (Parameter inParameter) {
+        setParameter(inParameter);
     }
-    
+
+    public void setParameter (Parameter inParameter) {
+        this.parameter = inParameter;
+    }
+
+    public Parameter getParameter () {
+        return (parameter);
+    }
+
+    /**
+     * Evaluate likelihood function f(x) for a particular x'.
+     * WARNING: f(x) is always a log likelihood, since computeGTProb() always returns a log likelihood!
+     *
+     * Meaning of x differs for nodes that are subject to set branch length constraints:
+     * for these nodes, x is weighted ratio.
+     */
+    public double value (double x) {
+        // cache original setting, set new setting
+        double originalSetting = parameter.getValue();
+
+        // update
+        parameter.setValue(x);
+        // update associated model values associated with a single parameter
+        // e.g., for LengthParameter objects that belong to a LengthParameterConstraintSet
+        // or multiple branches share a LengthParameter
+        // or multiple parental trees have branches that share a LengthParameter
+        // etc.
+        //
+        // don't push this into Parameter
+        // too complicated
+        updateHMM(parameter);
+
+        // evaluate f(x) using forward/backwards algorithm
+        double result = computeHMMLikelihood();
+
+        // restore original setting
+        parameter.setValue(originalSetting);
+        updateHMM(parameter);
+
+        // above restore original setting op
+        // not really necessary if always accept new branch length even if no likelihood improvement
+        // since Brent's method is guaranteed to never make the likelihood worse
+        // meh, no update if no likelihood improvement
+        // -> above is necessary
+
+        return (result);
+    }
+    }
+
 }

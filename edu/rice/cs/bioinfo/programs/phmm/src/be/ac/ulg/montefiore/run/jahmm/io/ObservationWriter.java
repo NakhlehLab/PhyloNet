@@ -35,15 +35,15 @@ import be.ac.ulg.montefiore.run.jahmm.Observation;
  * {@link ObservationReader ObservationReader}.
  */
 public abstract class ObservationWriter<O extends Observation>
-{	
-	/**
-	 * Writes an
-	 * {@link be.ac.ulg.montefiore.run.jahmm.Observation Observation} (followed
-	 * by a semi-colon) using a {@link java.io.Writer Writer}.
-	 *
-	 * @param observation The observation to write.
-	 * @param writer The <code>writer</code> used to write the observations.
-	 **/
-	public abstract void write(O observation, Writer writer) 
-	throws IOException;
+{
+    /**
+     * Writes an
+     * {@link be.ac.ulg.montefiore.run.jahmm.Observation Observation} (followed
+     * by a semi-colon) using a {@link java.io.Writer Writer}.
+     *
+     * @param observation The observation to write.
+     * @param writer The <code>writer</code> used to write the observations.
+     **/
+    public abstract void write(O observation, Writer writer)
+    throws IOException;
 }

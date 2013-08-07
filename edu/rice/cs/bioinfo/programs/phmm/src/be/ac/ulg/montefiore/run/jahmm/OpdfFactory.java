@@ -30,10 +30,10 @@ package be.ac.ulg.montefiore.run.jahmm;
  * only a certain kind of distribution (e.g. Gaussian).
  */
 public interface OpdfFactory<D extends Opdf<?>>
-{    
+{
     /**
      * Generates a new observation probability distribution function.
-     * 
+     *
      * @return The new opdf.
      */
     public D factor();

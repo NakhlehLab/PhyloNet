@@ -42,30 +42,30 @@ public class ObservationSequencesWriter
      *
      * @param writer The writer to write to. It should use the "US-ASCII"
      *               character set.
-     * @param ow The observation writer used to generate the observations. 
+     * @param ow The observation writer used to generate the observations.
      * @param sequences The set of observation sequences.
      */
-	static public <O extends Observation> void 
-	write(Writer writer, ObservationWriter<? super O> ow,
-			List<? extends List<O>> sequences)
-	throws IOException
-	{
-		for (List<O> s : sequences)
-			write(s, ow, writer);
-	}
-	
-	
-	/* 
-	 * Writes the sequence 'sequence' to the writer 'writer' using the
-	 * observation writer 'ow'.
-	 */
-	static <O extends Observation> void
-	write(List<O> sequence, ObservationWriter<? super O> ow, Writer writer) 
-	throws IOException
-	{
-		for (O o : sequence) 
-			ow.write(o, writer);
-		
-		writer.write("\n");
+    static public <O extends Observation> void
+    write(Writer writer, ObservationWriter<? super O> ow,
+            List<? extends List<O>> sequences)
+    throws IOException
+    {
+        for (List<O> s : sequences)
+            write(s, ow, writer);
+    }
+
+
+    /*
+     * Writes the sequence 'sequence' to the writer 'writer' using the
+     * observation writer 'ow'.
+     */
+    static <O extends Observation> void
+    write(List<O> sequence, ObservationWriter<? super O> ow, Writer writer)
+    throws IOException
+    {
+        for (O o : sequence)
+            ow.write(o, writer);
+
+        writer.write("\n");
     }
 }

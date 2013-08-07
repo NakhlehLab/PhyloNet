@@ -34,15 +34,15 @@ import be.ac.ulg.montefiore.run.jahmm.*;
  */
 public class ObservationVectorWriter
 extends ObservationWriter<ObservationVector>
-{	
-	public void write(ObservationVector observation, Writer writer) 
-	throws IOException
-	{	
-		String s = "[ ";
-		
-		for (int i = 0; i < observation.dimension(); i++)
-			s += observation.value(i) + " ";
-		
-		writer.write(s + "]; ");
-	}
+{
+    public void write(ObservationVector observation, Writer writer)
+    throws IOException
+    {
+        String s = "[ ";
+
+        for (int i = 0; i < observation.dimension(); i++)
+            s += observation.value(i) + " ";
+
+        writer.write(s + "]; ");
+    }
 }

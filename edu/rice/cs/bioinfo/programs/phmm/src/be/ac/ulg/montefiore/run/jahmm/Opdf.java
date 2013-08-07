@@ -31,14 +31,14 @@ import java.text.NumberFormat;
  * Objects implementing this interface represent an observation probability
  * (distribution) function.
  * <p>
- * An <code>Opdf</code> can represent a probability function (if the 
+ * An <code>Opdf</code> can represent a probability function (if the
  * observations can take discrete values) or a probability distribution (if
  * the observations are continous).
  */
-public interface Opdf<O extends Observation> 
+public interface Opdf<O extends Observation>
 extends Cloneable, Serializable
 {
-    
+
     /**
      * Returns the probability (density) of an observation given a distribution.
      *
@@ -48,7 +48,7 @@ extends Cloneable, Serializable
      */
     public double probability(O o);
 
-    
+
      /**
      * Generates a (pseudo) random observation according to this
      * distribution.
@@ -56,8 +56,8 @@ extends Cloneable, Serializable
      * @return An observation.
      */
     public O generate();
-    
-    
+
+
     /**
      * Fits this observation probability (distribution) function to a (non
      * empty) set of observations.  The meaning to give to <i>fits</i> should be
@@ -67,7 +67,7 @@ extends Cloneable, Serializable
      */
     public void fit(O... oa);
 
-    
+
     /**
      * Fits this observation probability (distribution) function to a (non
      * empty) set of observations.  The meaning to give to <i>fits</i> should be
@@ -76,12 +76,12 @@ extends Cloneable, Serializable
      * @param co A set of observations compatible with this function.
      */
     public void fit(Collection<? extends O> co);
-    
+
 
     /**
      * Fits this observation probability (distribution) function to a
      * weighted (non empty) set of observations.  Equations (53) and (54)
-     * of Rabiner's <i>A Tutorial on Hidden Markov Models and Selected 
+     * of Rabiner's <i>A Tutorial on Hidden Markov Models and Selected
      * Applications in Speech Recognition</i> explain how the weights can be
      * used.
      *
@@ -91,12 +91,12 @@ extends Cloneable, Serializable
      *                all the elements equals 1).
      */
     void fit(O[] o, double[] weights);
-    
+
 
     /**
      * Fits this observation probability (distribution) function to a
      * weighted (non empty) set of observations.  Equations (53) and (54)
-     * of Rabiner's <i>A Tutorial on Hidden Markov Models and Selected 
+     * of Rabiner's <i>A Tutorial on Hidden Markov Models and Selected
      * Applications in Speech Recognition</i> explain how the weights can be
      * used.
      *
@@ -106,17 +106,17 @@ extends Cloneable, Serializable
      *                all the elements equals 1).
      */
     void fit(Collection<? extends O> co, double[] weights);
-    
-    
+
+
     /**
      * Returns a {@link java.lang.String String} describing this distribution.
-     * 
+     *
      * @param numberFormat A formatter used to convert the numbers (<i>e.g.</i>
      *      probabilities) to strings.
      * @return A {@link java.lang.String String} describing this distribution.
      */
     public String toString(NumberFormat numberFormat);
-    
-    
+
+
     public Opdf<O> clone();
 }

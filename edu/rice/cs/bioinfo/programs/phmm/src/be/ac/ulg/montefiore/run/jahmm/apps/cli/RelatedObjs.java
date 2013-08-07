@@ -37,12 +37,12 @@ import be.ac.ulg.montefiore.run.jahmm.toolbox.MarkovGenerator;
  */
 public interface RelatedObjs<O extends Observation & CentroidFactory<O>>
 {
-	public ObservationReader<O> observationReader();
-	public ObservationWriter<O> observationWriter();
-	public OpdfFactory<? extends Opdf<O>> opdfFactory();
-	public OpdfReader<? extends Opdf<O>> opdfReader();
-	public OpdfWriter<? extends Opdf<O>> opdfWriter();
-	public List<List<O>> readSequences(Reader reader)
-	throws FileFormatException, IOException;
-	public MarkovGenerator<O> generator(Hmm<O> hmm);
+    public ObservationReader<O> observationReader();
+    public ObservationWriter<O> observationWriter();
+    public OpdfFactory<? extends Opdf<O>> opdfFactory();
+    public OpdfReader<? extends Opdf<O>> opdfReader();
+    public OpdfWriter<? extends Opdf<O>> opdfWriter();
+    public List<List<O>> readSequences(Reader reader)
+    throws FileFormatException, IOException;
+    public MarkovGenerator<O> generator(Hmm<O> hmm);
 }

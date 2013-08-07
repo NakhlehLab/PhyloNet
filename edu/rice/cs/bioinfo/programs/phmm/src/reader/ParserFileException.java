@@ -3,11 +3,11 @@ package reader;
 public class ParserFileException extends RuntimeException {
 
     /**
-	 *	Exception is thrown any time an incorrect read is done while parsing sequencing file.
-	 */
-	private static final long serialVersionUID = 1L;
+     *	Exception is thrown any time an incorrect read is done while parsing sequencing file.
+     */
+    private static final long serialVersionUID = 1L;
 
-	//Parameterless Constructor
+    //Parameterless Constructor
       public ParserFileException() {}
 
       //Constructor that accepts a message
@@ -15,6 +15,6 @@ public class ParserFileException extends RuntimeException {
       {
          super(message);
       }
-	
+
 
 }

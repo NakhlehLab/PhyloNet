@@ -4,146 +4,146 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 
 public class ListOfArrays<Type> extends AbstractList<Type> implements
-		IListOfArrays<Type> {
+        IListOfArrays<Type> {
 
-	private IArrayFactory<Type> arrayFactory;
+    private IArrayFactory<Type> arrayFactory;
 
-	private ArrayList<IArray<Type>> arrays;
+    private ArrayList<IArray<Type>> arrays;
 
-	/**
-	 * The number of elements currently stored in the arrays.
-	 */
-	private int size;
+    /**
+     * The number of elements currently stored in the arrays.
+     */
+    private int size;
 
-	/**
-	 * The number of elements it is possible to store in the arrays if all
-	 * spaces are filled.
-	 */
-	private int capacity;
+    /**
+     * The number of elements it is possible to store in the arrays if all
+     * spaces are filled.
+     */
+    private int capacity;
 
-	/**
-	 * The size of each array to be added.
-	 */
-	private int growthIncrement;
+    /**
+     * The size of each array to be added.
+     */
+    private int growthIncrement;
 
-	private static final int defaultGrowthIncrement = 100;
-	private static final int defaultInitialCapacity = 0;
+    private static final int defaultGrowthIncrement = 100;
+    private static final int defaultInitialCapacity = 0;
 
-	public ListOfArrays(IArrayFactory<Type> arrayFactory) {
-		init(arrayFactory, defaultGrowthIncrement, defaultInitialCapacity);
-	}
+    public ListOfArrays(IArrayFactory<Type> arrayFactory) {
+        init(arrayFactory, defaultGrowthIncrement, defaultInitialCapacity);
+    }
 
-	public ListOfArrays(IArrayFactory<Type> arrayFactory, int growthIncrement) {
-		init(arrayFactory, growthIncrement, defaultInitialCapacity);
-	}
+    public ListOfArrays(IArrayFactory<Type> arrayFactory, int growthIncrement) {
+        init(arrayFactory, growthIncrement, defaultInitialCapacity);
+    }
 
-	public ListOfArrays(IArrayFactory<Type> arrayFactory, int growthIncrement,
-			int initialCapacity) {
-		init(arrayFactory, growthIncrement, initialCapacity);
-	}
+    public ListOfArrays(IArrayFactory<Type> arrayFactory, int growthIncrement,
+            int initialCapacity) {
+        init(arrayFactory, growthIncrement, initialCapacity);
+    }
 
-	private void init(IArrayFactory<Type> arrayFactory, int growthIncrement,
-			int initialCapacity) {
+    private void init(IArrayFactory<Type> arrayFactory, int growthIncrement,
+            int initialCapacity) {
 
-	    // kliu - added IArray<Type> argument to fix compilation error
-		arrays = new ArrayList<IArray<Type>>();
-		
-		assert (growthIncrement > 0);
-		assert (initialCapacity > 0);
+        // kliu - added IArray<Type> argument to fix compilation error
+        arrays = new ArrayList<IArray<Type>>();
 
-		this.arrayFactory = arrayFactory;
-		this.size = 0;
-		this.capacity = 0;
-		this.growthIncrement = growthIncrement;
+        assert (growthIncrement > 0);
+        assert (initialCapacity > 0);
 
-		while (capacity < initialCapacity) {
-			enlarge();
-		}
-	}
+        this.arrayFactory = arrayFactory;
+        this.size = 0;
+        this.capacity = 0;
+        this.growthIncrement = growthIncrement;
 
-	private void enlarge() {
-		IArray<Type> next = arrayFactory.make(growthIncrement);
-		arrays.add(next);
+        while (capacity < initialCapacity) {
+            enlarge();
+        }
+    }
 
-		capacity += growthIncrement;
-		
-		if (growthIncrement >= 10000) {
-			System.out.println("Enlarging... capacity = " + capacity );
-		}
-	}
+    private void enlarge() {
+        IArray<Type> next = arrayFactory.make(growthIncrement);
+        arrays.add(next);
 
-	private void shrink() {
-		arrays.remove(arrays.size() - 1);
+        capacity += growthIncrement;
 
-		capacity -= growthIncrement;
-	}
+        if (growthIncrement >= 10000) {
+            System.out.println("Enlarging... capacity = " + capacity );
+        }
+    }
 
-	@Override
-	public void add(int index, Type element) {
-		// Check the bounds
-		if (index < 0 || index > size()) {
-			throw new IndexOutOfBoundsException("The index " + index
-					+ " is invalid for a ListOfArrays of length " + size());
-		}
+    private void shrink() {
+        arrays.remove(arrays.size() - 1);
 
-		// Check if we need to enlarge
-		if (size() == capacity) {
-			enlarge();
-		}
+        capacity -= growthIncrement;
+    }
 
-		// Shift everything to the right
-		for (int i = size(); i > index; i--) {
-			set(i, get(i - 1));
-		}
+    @Override
+    public void add(int index, Type element) {
+        // Check the bounds
+        if (index < 0 || index > size()) {
+            throw new IndexOutOfBoundsException("The index " + index
+                    + " is invalid for a ListOfArrays of length " + size());
+        }
 
-		set(index, element);
+        // Check if we need to enlarge
+        if (size() == capacity) {
+            enlarge();
+        }
 
-		size++;
-	}
+        // Shift everything to the right
+        for (int i = size(); i > index; i--) {
+            set(i, get(i - 1));
+        }
 
-	@Override
-	public Type get(int index) {
-		int arrayNum = index / growthIncrement;
-		int indexInArray = index % growthIncrement;
+        set(index, element);
 
-		return arrays.get(arrayNum).get(indexInArray);
-	}
+        size++;
+    }
 
-	@Override
-	public Type set(int index, Type element) {
-		int arrayNum = index / growthIncrement;
-		int indexInArray = index % growthIncrement;
+    @Override
+    public Type get(int index) {
+        int arrayNum = index / growthIncrement;
+        int indexInArray = index % growthIncrement;
 
-		arrays.get(arrayNum).set(indexInArray, element);
-		return element;
-	}
+        return arrays.get(arrayNum).get(indexInArray);
+    }
 
-	@Override
-	public Type remove(int index) {
-		// Check the bounds
-		if (index < 0 || index >= size()) {
-			throw new IndexOutOfBoundsException("The removal index " + index
-					+ " is invalid for a ListOfArrays of length " + size()
-					+ " (max index: " + (size() - 1) + ").");
-		}
+    @Override
+    public Type set(int index, Type element) {
+        int arrayNum = index / growthIncrement;
+        int indexInArray = index % growthIncrement;
 
-		Type result = get(index);
-		
-		// Shift everything to the left
-		for (int i = index; i < size() - 1; i++) {
-			set(i, get(i + 1));
-		}
-		
-		// See if we can shrink
-		if (size() < capacity - growthIncrement) {
-			shrink();
-		}
+        arrays.get(arrayNum).set(indexInArray, element);
+        return element;
+    }
 
-		return result;
-	}
+    @Override
+    public Type remove(int index) {
+        // Check the bounds
+        if (index < 0 || index >= size()) {
+            throw new IndexOutOfBoundsException("The removal index " + index
+                    + " is invalid for a ListOfArrays of length " + size()
+                    + " (max index: " + (size() - 1) + ").");
+        }
 
-	@Override
-	public int size() {
-		return size;
-	}
+        Type result = get(index);
+
+        // Shift everything to the left
+        for (int i = index; i < size() - 1; i++) {
+            set(i, get(i + 1));
+        }
+
+        // See if we can shrink
+        if (size() < capacity - growthIncrement) {
+            shrink();
+        }
+
+        return result;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
 }

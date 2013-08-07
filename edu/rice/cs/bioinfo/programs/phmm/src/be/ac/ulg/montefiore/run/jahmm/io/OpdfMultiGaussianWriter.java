@@ -35,16 +35,16 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfMultiGaussian;
 public class OpdfMultiGaussianWriter
 extends OpdfWriter<OpdfMultiGaussian>
 {
-	public void write(Writer writer, OpdfMultiGaussian opdf)
-	throws IOException
-	{
-		writer.write("MultiGaussianOPDF [ ");
-		write(writer, opdf.mean());	
-		writer.write(" [");
-		for (double[] line : opdf.covariance()) {
-			writer.write(" ");
-			write(writer, line);
-		}
-		writer.write(" ] ]");
-	}
+    public void write(Writer writer, OpdfMultiGaussian opdf)
+    throws IOException
+    {
+        writer.write("MultiGaussianOPDF [ ");
+        write(writer, opdf.mean());
+        writer.write(" [");
+        for (double[] line : opdf.covariance()) {
+            writer.write(" ");
+            write(writer, line);
+        }
+        writer.write(" ] ]");
+    }
 }

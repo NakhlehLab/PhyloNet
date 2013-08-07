@@ -16,15 +16,15 @@ public class LengthParameter extends Parameter {
     // except that we can also share across multiple gene trees.
 
     public LengthParameter (String inName, double inValue) {
-	super(inName, inValue);
+    super(inName, inValue);
     }
 
     public double getMinimumValue () {
-	return (DEFAULT_MINIMUM_BRANCH_LENGTH);
+    return (DEFAULT_MINIMUM_BRANCH_LENGTH);
     }
 
     public double getMaximumValue () {
-	return (DEFAULT_MAXIMUM_BRANCH_LENGTH);
+    return (DEFAULT_MAXIMUM_BRANCH_LENGTH);
     }
 
 }

@@ -34,49 +34,49 @@
 //
 //public class LearnerTest
 //extends TestCase
-//{	
+//{
 //	final static private double DELTA = 5.E-3;
-//	
+//
 //	private Hmm<ObservationInteger> hmm;
 //	private List<List<ObservationInteger>> sequences;
 //	private KullbackLeiblerDistanceCalculator klc;
-//	
-//	
-//	protected void setUp() 
-//	{ 
+//
+//
+//	protected void setUp()
+//	{
 //		hmm = new Hmm<ObservationInteger>(3, new OpdfIntegerFactory(10));
 //		hmm.getOpdf(0).fit(new ObservationInteger(1), new ObservationInteger(2));
-//		
+//
 //		MarkovGenerator<ObservationInteger> mg =
 //			new MarkovGenerator<ObservationInteger>(hmm);
-//		
-//		sequences = new ArrayList<List<ObservationInteger>>();		
+//
+//		sequences = new ArrayList<List<ObservationInteger>>();
 //		for (int i = 0; i < 100; i++)
 //			sequences.add(mg.observationSequence(100));
-//		
+//
 //		klc = new KullbackLeiblerDistanceCalculator();
 //	}
-//	
-//	
+//
+//
 //	public void testBaumWelch()
 //	{
 //		/* Model sequences using BW algorithm */
-//		
+//
 //		BaumWelchLearner bwl = new BaumWelchLearner();
 //
 //		Hmm<ObservationInteger> bwHmm = bwl.learn(hmm, sequences);
-//		
+//
 //		assertEquals(0., klc.distance(bwHmm, hmm), DELTA);
-//		
+//
 //		/* Model sequences using the scaled BW algorithm */
-//		
+//
 //		BaumWelchScaledLearner bwsl = new BaumWelchScaledLearner();
 //		bwHmm = bwsl.learn(hmm, sequences);
 //
 //		assertEquals(0., klc.distance(bwHmm, hmm), DELTA);
 //	}
-//	
-//	
+//
+//
 //	public void testKMeans()
 //	{
 //		KMeansLearner<ObservationInteger> kml =

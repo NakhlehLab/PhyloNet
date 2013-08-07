@@ -30,37 +30,37 @@ import java.text.*;
  */
 public class ObservationInteger extends Observation
 implements CentroidFactory<ObservationInteger>
-{	
-	/**
-	 * The observation's value.
-	 */
-	final public int value;
-	
-	
-	/**
-	 * An observation that can be described by an integer.
-	 *
-	 * @param value The value of this observation.
-	 */
-	public ObservationInteger(int value)
-	{
-		this.value = value;
-	}
-	
-	
-	/**
-	 * Returns the centroid matching this observation.
-	 *
-	 * @return The corresponding observation.
-	 */
-	public Centroid<ObservationInteger> factor()
-	{
-		return new CentroidObservationInteger(this);
-	}	
+{
+    /**
+     * The observation's value.
+     */
+    final public int value;
 
-	
-	public String toString(NumberFormat numberFormat)
-	{
-		return numberFormat.format(value);
-	}
+
+    /**
+     * An observation that can be described by an integer.
+     *
+     * @param value The value of this observation.
+     */
+    public ObservationInteger(int value)
+    {
+        this.value = value;
+    }
+
+
+    /**
+     * Returns the centroid matching this observation.
+     *
+     * @return The corresponding observation.
+     */
+    public Centroid<ObservationInteger> factor()
+    {
+        return new CentroidObservationInteger(this);
+    }
+
+
+    public String toString(NumberFormat numberFormat)
+    {
+        return numberFormat.format(value);
+    }
 }

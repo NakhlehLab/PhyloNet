@@ -44,17 +44,17 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfGaussian;
 public class OpdfGaussianReader
 extends OpdfReader<OpdfGaussian>
 {
-	String keyword()
-	{
-		return "GaussianOPDF";
-	}
-	
-	public OpdfGaussian read(StreamTokenizer st)
-	throws IOException,	FileFormatException {
-		HmmReader.readWords(st, keyword());
-		
-		double[] meanVariance = OpdfReader.read(st, 2);
-		
-		return new OpdfGaussian(meanVariance[0], meanVariance[1]);
-	}
+    String keyword()
+    {
+        return "GaussianOPDF";
+    }
+
+    public OpdfGaussian read(StreamTokenizer st)
+    throws IOException,	FileFormatException {
+        HmmReader.readWords(st, keyword());
+
+        double[] meanVariance = OpdfReader.read(st, 2);
+
+        return new OpdfGaussian(meanVariance[0], meanVariance[1]);
+    }
 }

@@ -7,110 +7,110 @@ import java.util.ArrayList;
  * and in addition contains methods unique to its class.
  */
 public class LeafNode extends Node {
-	
-	
-	protected String obs; 		// the observation nucleotide
-	protected String taxa;		// taxa or species
-	
-	
-	/**
-	 * Constructor for the LeafNode class
-	 * @param taxa String representing the species or taxa of this leaf
-	 */
-	public LeafNode(String taxa) {
-		this.taxa = taxa;
-		this.likelihood = null;
-		this.obs = null;
-	}
-	
 
-	/**
-	 * @return The Left child node
-	 */
-	public Node getLeft() {
-		return null;
-	}
 
-	/**
-	 * @return The Right child node
-	 */
-	public Node getRight() {
-		return null;
-	}
-	
-	/**
-	 * @return A String of length 1, the observation (nucleotide) at this leaf 
-	 */
-	// get the observation at this leafNode
-	public String getObs() {
-		return this.obs;
-	}
-	
-	/**
-	 * @return A String -- the Species or taxon of the leaf 
-	 */
-	// get the observation at this leafNode
-	public String getTaxa() {
-		return this.taxa;
-	}
+  protected String obs; 		// the observation nucleotide
+  protected String taxa;		// taxa or species
 
-	/**
-	 * Sets the observed nucleotide {A,T,C,G} of the leaf node
-	 * @param obsIn String of length 1, the observation (nucleotide) at this leaf 
-	 */
-	public void setObs(String obsIn) {
-		this.obs = obsIn;
-	}
-	
-	/**
-	 * @return The node's likelihood arraylist
-	 */
-	public ArrayList<Double> getLikelihood() {
-		return this.likelihood;
-	}
 
-	/**
-	 * @return True if node is a leafNode, false otherwise
-	 */
-	public boolean isLeaf() {
-		return true;
-	}
-	
-	/**
-	 * @return A clone of the current node itself
-	 */
-	public Node cloneNode() {
-		return new LeafNode(this.taxa);
-	}
+  /**
+   * Constructor for the LeafNode class
+   * @param taxa String representing the species or taxa of this leaf
+   */
+  public LeafNode(String taxa) {
+    this.taxa = taxa;
+    this.likelihood = null;
+    this.obs = null;
+  }
 
-	/**
-	 * @param species - A String taxa to be added as a leaf to the tree
-	 * @return An Arraylist of all the new nodes created by adding new leaf
-	 */
-	public ArrayList<Node> addNewLeaf(String species) {
-		//this is the base case
-		//If is a leaf, simple return clone of self and a copy of self with newly added leaf
-		ArrayList<Node> combos = new ArrayList<Node>();
-		combos.add(0,this.cloneNode());	// always add the unchanged self to the beginning of list
-		combos.add(new InternalNode(this.cloneNode(), new LeafNode(species), .5, .5)); // value .5 need to be changed
-		
-		return combos;
-	}
-	
-	/**
-	 * @return An ArrayList of all the LeafNodes that this node can reach
-	 */
-	public ArrayList<LeafNode> getLeaves() {
-		ArrayList<LeafNode> leaf = new ArrayList<LeafNode>();
-		leaf.add(this);
-		return leaf;
-	}
-	
-	/**
-	 * String representation of the node for debugging and user-viewing purposes
-	 */
-	@Override
-	public String toString() {
-		return taxa;
-	}
+
+  /**
+   * @return The Left child node
+   */
+  public Node getLeft() {
+    return null;
+  }
+
+  /**
+   * @return The Right child node
+   */
+  public Node getRight() {
+    return null;
+  }
+
+  /**
+   * @return A String of length 1, the observation (nucleotide) at this leaf
+   */
+  // get the observation at this leafNode
+  public String getObs() {
+    return this.obs;
+  }
+
+  /**
+   * @return A String -- the Species or taxon of the leaf
+   */
+  // get the observation at this leafNode
+  public String getTaxa() {
+    return this.taxa;
+  }
+
+  /**
+   * Sets the observed nucleotide {A,T,C,G} of the leaf node
+   * @param obsIn String of length 1, the observation (nucleotide) at this leaf
+   */
+  public void setObs(String obsIn) {
+    this.obs = obsIn;
+  }
+
+  /**
+   * @return The node's likelihood arraylist
+   */
+  public ArrayList<Double> getLikelihood() {
+    return this.likelihood;
+  }
+
+  /**
+   * @return True if node is a leafNode, false otherwise
+   */
+  public boolean isLeaf() {
+    return true;
+  }
+
+  /**
+   * @return A clone of the current node itself
+   */
+  public Node cloneNode() {
+    return new LeafNode(this.taxa);
+  }
+
+  /**
+   * @param species - A String taxa to be added as a leaf to the tree
+   * @return An Arraylist of all the new nodes created by adding new leaf
+   */
+  public ArrayList<Node> addNewLeaf(String species) {
+    //this is the base case
+    //If is a leaf, simple return clone of self and a copy of self with newly added leaf
+    ArrayList<Node> combos = new ArrayList<Node>();
+    combos.add(0,this.cloneNode());	// always add the unchanged self to the beginning of list
+    combos.add(new InternalNode(this.cloneNode(), new LeafNode(species), .5, .5)); // value .5 need to be changed
+
+    return combos;
+  }
+
+  /**
+   * @return An ArrayList of all the LeafNodes that this node can reach
+   */
+  public ArrayList<LeafNode> getLeaves() {
+    ArrayList<LeafNode> leaf = new ArrayList<LeafNode>();
+    leaf.add(this);
+    return leaf;
+  }
+
+  /**
+   * String representation of the node for debugging and user-viewing purposes
+   */
+  @Override
+  public String toString() {
+    return taxa;
+  }
 }

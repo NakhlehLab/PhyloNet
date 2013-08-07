@@ -49,23 +49,23 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfGaussianMixture;
 public class OpdfGaussianMixtureReader
 extends OpdfReader<OpdfGaussianMixture>
 {
-	String keyword()
-	{
-		return "GaussianMixtureOPDF";
-	}
+    String keyword()
+    {
+        return "GaussianMixtureOPDF";
+    }
 
-	
-	public OpdfGaussianMixture read(StreamTokenizer st)
-	throws IOException,	FileFormatException {
-		HmmReader.readWords(st, keyword(), "[");
-		
-		double[] means = OpdfReader.read(st, -1);
-		double[] variances = OpdfReader.read(st, means.length);
-		double[] proportions = OpdfReader.read(st, means.length);
-		
-		HmmReader.readWords(st, "]");
-		
-		return new OpdfGaussianMixture(means, variances,
-				proportions);
-	}
+
+    public OpdfGaussianMixture read(StreamTokenizer st)
+    throws IOException,	FileFormatException {
+        HmmReader.readWords(st, keyword(), "[");
+
+        double[] means = OpdfReader.read(st, -1);
+        double[] variances = OpdfReader.read(st, means.length);
+        double[] proportions = OpdfReader.read(st, means.length);
+
+        HmmReader.readWords(st, "]");
+
+        return new OpdfGaussianMixture(means, variances,
+                proportions);
+    }
 }

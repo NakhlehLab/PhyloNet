@@ -34,10 +34,10 @@ import be.ac.ulg.montefiore.run.jahmm.ObservationInteger;
  */
 public class ObservationIntegerWriter
 extends ObservationWriter<ObservationInteger>
-{	
-	public void write(ObservationInteger observation, Writer writer) 
-	throws IOException
-	{
-		writer.write(observation.value + "; ");
-	}
+{
+    public void write(ObservationInteger observation, Writer writer)
+    throws IOException
+    {
+        writer.write(observation.value + "; ");
+    }
 }

@@ -41,7 +41,7 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfMultiGaussian;
  * <p>
  * The second describes the covariance matrix; it is given line by line, from
  * top to bottom. Each line is represented by the values of its elements, from
- * left to right, separated by a space and between brackets.  
+ * left to right, separated by a space and between brackets.
  * <p>
  * For example, reading<br>
  * <tt>MultiGaussianOPDF [ [ 5. 5. ] [ [ 1.2 .3 ] [ .3 4. ] ] ]</tt>
@@ -52,25 +52,25 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfMultiGaussian;
 public class OpdfMultiGaussianReader
 extends OpdfReader<OpdfMultiGaussian>
 {
-	String keyword()
-	{
-		return "MultiGaussianOPDF";
-	}
+    String keyword()
+    {
+        return "MultiGaussianOPDF";
+    }
 
-	
-	public OpdfMultiGaussian read(StreamTokenizer st)
-	throws IOException, FileFormatException
-	{
-		HmmReader.readWords(st, keyword(), "[");
-				
-		double[] means = OpdfReader.read(st, -1);		
-		double[][] covariance = new double[means.length][];
-		
-		HmmReader.readWords(st, "[");
-		for (int l = 0; l < covariance.length; l++)
-			covariance[l] = OpdfReader.read(st, means.length);
-		HmmReader.readWords(st, "]");
-		
-		return new OpdfMultiGaussian(means, covariance);
-	}
+
+    public OpdfMultiGaussian read(StreamTokenizer st)
+    throws IOException, FileFormatException
+    {
+        HmmReader.readWords(st, keyword(), "[");
+
+        double[] means = OpdfReader.read(st, -1);
+        double[][] covariance = new double[means.length][];
+
+        HmmReader.readWords(st, "[");
+        for (int l = 0; l < covariance.length; l++)
+            covariance[l] = OpdfReader.read(st, means.length);
+        HmmReader.readWords(st, "]");
+
+        return new OpdfMultiGaussian(means, covariance);
+    }
 }

@@ -25,15 +25,15 @@ package be.ac.ulg.montefiore.run.distributions;
 import java.io.*;
 
 
-/** 
+/**
  * This interface must be implemented by all the package's classes implementing
  * a multi-variate random distribution.
  */
-public interface MultiRandomDistribution 
+public interface MultiRandomDistribution
 extends Serializable
-{   
+{
     /**
-     * Returns the dimension of the vectors handled by this random 
+     * Returns the dimension of the vectors handled by this random
      * distribution.
      *
      * @return The generated vectors' dimension.

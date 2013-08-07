@@ -58,10 +58,10 @@ public class GridSearchAlgorithm<O extends Observation> {
 		nobs.add(new BaseSubNob(gBaseSub, branchMin, branchMax));
 		
 		//add transition probability recombination
-		nobs.add(new RecombinationFreqNob(gRecombination, recombinationMin, recombinationMax, tpp));
+		nobs.add(new RecombinationFreqNob(gRecombination, recombinationMin, recombinationMax, hmm, tpp, trees_states, parentalTreeClasses));
 		
 		//add transition probability hybridization
-		nobs.add(new RecombinationFreqNob(gHybridization, hybridizationMin, hybridizationMax, tpp));
+		nobs.add(new RecombinationFreqNob(gHybridization, hybridizationMin, hybridizationMax, hmm, tpp, trees_states, parentalTreeClasses));
 		
 		//add tree branches
 		

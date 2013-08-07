@@ -23,10 +23,14 @@ public class HybridizationFreqNob extends Nob {
 	private ArrayList<HiddenState> trees_states;
 	private Map<EvoTree,Set<HiddenState>> parentalTreeClasses;
 	
-	public HybridizationFreqNob(int gIn, double minIn, double maxIn, TransitionProbabilityParameters probsParamIn) {
+	public HybridizationFreqNob(int gIn, double minIn, double maxIn, 
+			Hmm hmmIn, TransitionProbabilityParameters probsParamIn, ArrayList<HiddenState> treeStatesIn, 
+			Map<EvoTree, Set<HiddenState>> parentalTreeIn) {
 		super(gIn, minIn, maxIn);
-		
+		this.thisHmm = hmmIn;
 		this.probsParam = probsParamIn;
+		this.trees_states = treeStatesIn;
+		this.parentalTreeClasses = parentalTreeIn;
 	}
 	
 	public void set_param(double value) {

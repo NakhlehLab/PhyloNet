@@ -227,6 +227,15 @@ public class Node {
     }
 
     /**
+     * Get all children
+     */
+    public ArrayList<Node> getChildren() {
+        if (isLeaf())
+            return null;
+        else return children;
+    }
+
+    /**
      * @return String Observation {A,T,G,C}
      */
     public String getObs() {

@@ -1,7 +1,13 @@
 package optimize;
 
+/**
+ * Up to caller to associate this LengthParameter class
+ * with a specific branch.
+ */
+
 public class LengthParameter extends Parameter {
     public static final double DEFAULT_MINIMUM_BRANCH_LENGTH = MultivariateOptimizer.DEFAULT_MINIMUM_BRANCH_LENGTH;
+    public static final double DEFAULT_INITIAL_BRANCH_LENGTH = MultivariateOptimizer.DEFAULT_INITIAL_BRANCH_LENGTH;
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = MultivariateOptimizer.DEFAULT_MAXIMUM_BRANCH_LENGTH;
 
     // Use external BidirectionalMap to
@@ -21,6 +27,10 @@ public class LengthParameter extends Parameter {
 
     public double getMinimumValue () {
     return (DEFAULT_MINIMUM_BRANCH_LENGTH);
+    }
+
+    public double getDefaultInitialValue () {
+	return (DEFAULT_INITIAL_BRANCH_LENGTH);
     }
 
     public double getMaximumValue () {

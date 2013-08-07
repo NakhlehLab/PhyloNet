@@ -7,7 +7,7 @@
 //	public IArray<IListOfArrays<Type>> make(final int length) {
 //		return new IArray<IListOfArrays<Type>>() {
 //			ArrayList<IListOfArrays<Type>> list = new ArrayList<IListOfArrays<Type>>(length);
-//			
+//
 //			@Override
 //			public IListOfArrays<Type> get(int index) {
 //				return list.get(index);

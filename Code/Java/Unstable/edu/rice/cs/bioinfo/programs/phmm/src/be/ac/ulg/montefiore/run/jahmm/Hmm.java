@@ -30,7 +30,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 
-/** 
+/**
  *  Main Hmm class; it implements an Hidden Markov Model.
  *  An HMM is composed of:
  *  <ul>
@@ -51,14 +51,14 @@ import java.util.*;
  * the vector being the i-th element of the sequence). A set of observation
  * sequences is a {@link java.util.List List} of such sequences.
  */
-public class Hmm<O extends Observation> 
+public class Hmm<O extends Observation>
     implements Serializable, Cloneable
-{		
+{
     private double pi[];
     private double a[][];
     private ArrayList<Opdf<O>> opdfs;
-	
-	
+
+
     /**
      * Creates a new HMM.  Each state has the same <i>pi</i> value and
      * the transition probabilities are all equal.
@@ -68,31 +68,31 @@ public class Hmm<O extends Observation>
      *        pdfs associated to each state.
      */
     public Hmm(int nbStates, OpdfFactory<? extends Opdf<O>> opdfFactory)
-	{
-	    if (nbStates <= 0)
-		throw new IllegalArgumentException("Number of states must be " +
-						   "strictly positive");
-		
-	    pi = new double[nbStates];
-	    a = new double[nbStates][nbStates];
-	    opdfs = new ArrayList<Opdf<O>>(nbStates);
-		
-	    for (int i = 0; i < nbStates; i++) {
-		pi[i] = 1. / ((double) nbStates);
-		opdfs.add(opdfFactory.factor());
-			
-		for (int j = 0; j < nbStates; j++)
-		    a[i][j] = 1. / ((double) nbStates);
-	    }
-	}
+    {
+        if (nbStates <= 0)
+        throw new IllegalArgumentException("Number of states must be " +
+                           "strictly positive");
 
-	
+        pi = new double[nbStates];
+        a = new double[nbStates][nbStates];
+        opdfs = new ArrayList<Opdf<O>>(nbStates);
+
+        for (int i = 0; i < nbStates; i++) {
+        pi[i] = 1. / ((double) nbStates);
+        opdfs.add(opdfFactory.factor());
+
+        for (int j = 0; j < nbStates; j++)
+            a[i][j] = 1. / ((double) nbStates);
+        }
+    }
+
+
     /**
      * Creates a new HMM.  All the HMM parameters are given as arguments.
      *
      * @param pi The initial probability values.  <code>pi[i]</code> is the
      *        initial probability of state <code>i</code>. This array is
-     *        copied. 
+     *        copied.
      * @param a The state transition probability array. <code>a[i][j]</code>
      *        is the probability of going from state <code>i</code> to state
      *        <code>j</code>.  This array is copied.
@@ -101,25 +101,25 @@ public class Hmm<O extends Observation>
      *        <code>i</code>.  The distributions are not copied.
      */
     public Hmm(double[] pi, double[][] a, List<? extends Opdf<O>> opdfs)
-	{
-	    if (a.length == 0 || pi.length != a.length || 
-		opdfs.size() != a.length)
-		throw new IllegalArgumentException("Wrong parameter");
-		
-	    this.pi = pi.clone();
-	    this.a = new double[a.length][];
-		
-	    for (int i = 0; i < a.length; i++) {
-		if (a[i].length != a.length)
-		    throw new IllegalArgumentException("'A' is not a square" +
-						       "matrix");
-		this.a[i] = a[i].clone();
-	    }
-		
-	    this.opdfs = new ArrayList<Opdf<O>>(opdfs);
-	}
-	
-	
+    {
+        if (a.length == 0 || pi.length != a.length ||
+        opdfs.size() != a.length)
+        throw new IllegalArgumentException("Wrong parameter");
+
+        this.pi = pi.clone();
+        this.a = new double[a.length][];
+
+        for (int i = 0; i < a.length; i++) {
+        if (a[i].length != a.length)
+            throw new IllegalArgumentException("'A' is not a square" +
+                               "matrix");
+        this.a[i] = a[i].clone();
+        }
+
+        this.opdfs = new ArrayList<Opdf<O>>(opdfs);
+    }
+
+
     /**
      * Creates a new HMM.  The parameters of the created HMM set to
      * <code>null</code> specified and must be set using the appropriate
@@ -128,20 +128,20 @@ public class Hmm<O extends Observation>
      * @param nbStates The (strictly positive) number of states of the HMM.
      */
     protected Hmm(int nbStates)
-	{
-	    if (nbStates <= 0)
-		throw new IllegalArgumentException("Number of states must be " +
-						   "positive");
-		
-	    pi = new double[nbStates];
-	    a = new double[nbStates][nbStates];
-	    opdfs = new ArrayList<Opdf<O>>(nbStates);
-		
-	    for (int i = 0; i < nbStates; i++)
-		opdfs.add(null);
-	}
-	
-	
+    {
+        if (nbStates <= 0)
+        throw new IllegalArgumentException("Number of states must be " +
+                           "positive");
+
+        pi = new double[nbStates];
+        a = new double[nbStates][nbStates];
+        opdfs = new ArrayList<Opdf<O>>(nbStates);
+
+        for (int i = 0; i < nbStates; i++)
+        opdfs.add(null);
+    }
+
+
     /**
      * Returns the number of states of this HMM.
      *
@@ -149,10 +149,10 @@ public class Hmm<O extends Observation>
      */
     public int nbStates()
     {
-	return pi.length;
+    return pi.length;
     }
-	
-	
+
+
     /**
      * Returns the <i>pi</i> value associated with a given state.
      *
@@ -162,10 +162,10 @@ public class Hmm<O extends Observation>
      */
     public double getPi(int stateNb)
     {
-	return pi[stateNb];
+    return pi[stateNb];
     }
-	
-	
+
+
     /**
      * Sets the <i>pi</i> value associated with a given state.
      *
@@ -176,10 +176,10 @@ public class Hmm<O extends Observation>
      */
     public void setPi(int stateNb, double value)
     {
-	pi[stateNb] = value;
+    pi[stateNb] = value;
     }
-	
-	
+
+
     /**
      * Returns the opdf associated with a given state.
      *
@@ -189,10 +189,10 @@ public class Hmm<O extends Observation>
      */
     public Opdf<O> getOpdf(int stateNb)
     {
-	return opdfs.get(stateNb);
+    return opdfs.get(stateNb);
     }
-	
-	
+
+
     /**
      * Sets the opdf associated with a given state.
      *
@@ -202,10 +202,10 @@ public class Hmm<O extends Observation>
      */
     public void setOpdf(int stateNb, Opdf<O> opdf)
     {
-	opdfs.set(stateNb, opdf);
+    opdfs.set(stateNb, opdf);
     }
-	
-	
+
+
     /**
      * Returns the probability associated with the transition going from
      * state <i>i</i> to state <i>j</i> (<i>a<sub>i,j</sub></i>).
@@ -219,10 +219,10 @@ public class Hmm<O extends Observation>
      */
     public double getAij(int i, int j)
     {
-	return a[i][j];
+    return a[i][j];
     }
-	
-	
+
+
     /**
      * Sets the probability associated to the transition going from
      * state <i>i</i> to state <i>j</i> (<i>A<sub>i,j</sub></i>).
@@ -235,10 +235,10 @@ public class Hmm<O extends Observation>
      */
     public void setAij(int i, int j, double value)
     {
-	a[i][j] = value;
+    a[i][j] = value;
     }
-	
-	
+
+
     /**
      * Returns an array containing the most likely state sequence matching an
      * observation sequence given this HMM.  This sequence <code>I</code>
@@ -254,42 +254,42 @@ public class Hmm<O extends Observation>
     //	{
     //		return (new ViterbiCalculator(oseq, this)).stateSequence();
     //	}
-	
+
     /**
      * Saves Viterbi calculation to outputfile file.
      * Returns Viterbi log likelihood.
      */
     public double saveMostLikelyStateSequence(List<? extends O> oseq, String filename) {
-	ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
-	int[] trajectory = vc.stateSequence();
+    ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
+    int[] trajectory = vc.stateSequence();
 
-	String result = "";
-	for (int s : trajectory) {
-	    result += Integer.toString(s);
-	}
-
-	try {
-	    BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
-	    bw.write(result); bw.newLine();
-	    bw.flush();
-	    bw.close();
-	}
-	catch (IOException ioe) {
-	    System.err.println (ioe);
-	    // strict!
-	    System.exit(1);
-	}
-
-	// kliu - also output Viterbi log likelihood
-	return (vc.lnProbability());
-
-	// kliu - switch back to original JAHMM implementation of Viterbi calculation
-	// appears to be a bug with the modified version
-	// ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
-	// vc.printStateSequence(filename);
+    String result = "";
+    for (int s : trajectory) {
+        result += Integer.toString(s);
     }
-	
-	
+
+    try {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+        bw.write(result); bw.newLine();
+        bw.flush();
+        bw.close();
+    }
+    catch (IOException ioe) {
+        System.err.println (ioe);
+        // strict!
+        System.exit(1);
+    }
+
+    // kliu - also output Viterbi log likelihood
+    return (vc.lnProbability());
+
+    // kliu - switch back to original JAHMM implementation of Viterbi calculation
+    // appears to be a bug with the modified version
+    // ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
+    // vc.printStateSequence(filename);
+    }
+
+
     /**
      * Returns the probability of an observation sequence given this HMM.
      *
@@ -298,25 +298,25 @@ public class Hmm<O extends Observation>
      */
     public double probability(List<? extends O> oseq)
     {
-	return (new ForwardBackwardCalculator(oseq, this)).probability();
+    return (new ForwardBackwardCalculator(oseq, this)).probability();
     }
-	
-	
+
+
     /**
      * Returns the neperian logarithm of observation sequence's probability
      * given this HMM.  A <i>scaling</i> procedure is used in order to
-     * avoid underflows when computing the probability of long sequences. 
+     * avoid underflows when computing the probability of long sequences.
      *
      * @param oseq A non-empty observation sequence.
      * @return The probability of this sequence.
      */
     public double lnProbability(List<? extends O> oseq)
     {
-	return (new ForwardBackwardScaledCalculator(oseq, this)).
-	    lnProbability();
+    return (new ForwardBackwardScaledCalculator(oseq, this)).
+        lnProbability();
     }
-	
-	
+
+
     /**
      * Returns the probability of an observation sequence along a state
      * sequence given this HMM.
@@ -329,87 +329,87 @@ public class Hmm<O extends Observation>
      */
     public double probability(List<? extends O> oseq, int[] sseq)
     {
-	if (oseq.size() != sseq.length || oseq.isEmpty())
-	    throw new IllegalArgumentException();
-		
-	double probability = getPi(sseq[0]);
-		
-	Iterator<? extends O> oseqIterator = oseq.iterator();
-		
-	for (int i = 0; i < sseq.length-1; i++)
-	    probability *= 
-		getOpdf(sseq[i]).probability(oseqIterator.next()) *
-		getAij(sseq[i], sseq[i+1]);
-		
-	return probability * getOpdf(sseq[sseq.length-1]).
-	    probability(oseq.get(sseq.length-1));
+    if (oseq.size() != sseq.length || oseq.isEmpty())
+        throw new IllegalArgumentException();
+
+    double probability = getPi(sseq[0]);
+
+    Iterator<? extends O> oseqIterator = oseq.iterator();
+
+    for (int i = 0; i < sseq.length-1; i++)
+        probability *=
+        getOpdf(sseq[i]).probability(oseqIterator.next()) *
+        getAij(sseq[i], sseq[i+1]);
+
+    return probability * getOpdf(sseq[sseq.length-1]).
+        probability(oseq.get(sseq.length-1));
     }
-    
+
     /**
      * Set the whole transition matrix of the Hmm.
-     * 
+     *
      * @param matrixIn The new transition matrix.
      */
-    
+
     public void setTransitionMatrix(double[][] matrixIn) {
-    	this.a = matrixIn;
+        this.a = matrixIn;
     }
-	
-	
+
+
     /**
      * Gives a description of this HMM.
-     * 
+     *
      * @param nf A number formatter used to print numbers (e.g. Aij values).
      * @return A textual description of this HMM.
      */
     public String toString(NumberFormat nf)
     {
-	String s = "HMM with " + nbStates() + " state(s)\n";
-		
-	for (int i = 0; i < nbStates(); i++) {
-	    s += "\nState " + i + "\n";
-	    s += "  Pi: " + getPi(i) + "\n";
-	    s += "  Aij:";
-			
-	    for (int j = 0; j < nbStates(); j++)
-		s += " " + nf.format(getAij(i,j));
-	    s += "\n";
-			
-	    s += "  Opdf: " + ((Opdf<O>) getOpdf(i)).toString(nf) + "\n";
-	}
-			
-	return s;
+    String s = "HMM with " + nbStates() + " state(s)\n";
+
+    for (int i = 0; i < nbStates(); i++) {
+        s += "\nState " + i + "\n";
+        s += "  Pi: " + getPi(i) + "\n";
+        s += "  Aij:";
+
+        for (int j = 0; j < nbStates(); j++)
+        s += " " + nf.format(getAij(i,j));
+        s += "\n";
+
+        s += "  Opdf: " + ((Opdf<O>) getOpdf(i)).toString(nf) + "\n";
     }
-	
-	
+
+    return s;
+    }
+
+
     /**
      * Gives a description of this HMM.
-     * 
+     *
      * @return A textual description of this HMM.
      */
     public String toString()
     {
-	return toString(NumberFormat.getInstance());
+    return toString(NumberFormat.getInstance());
     }
 
-	
+
     public Hmm<O> clone()
-	throws CloneNotSupportedException
+    throws CloneNotSupportedException
     {
-	Hmm<O> hmm = new Hmm<O>(nbStates());
-		
-	hmm.pi = pi.clone();
-	hmm.a = a.clone();
-		
-	for (int i = 0; i < a.length; i++)
-	    hmm.a[i] = a[i].clone();
-		
-	for (int i = 0; i < hmm.opdfs.size(); i++)
-	    hmm.opdfs.set(i, opdfs.get(i).clone());
-		
-	return hmm;
+    Hmm<O> hmm = new Hmm<O>(nbStates());
+
+    hmm.pi = pi.clone();
+    hmm.a = a.clone();
+
+    for (int i = 0; i < a.length; i++)
+        hmm.a[i] = a[i].clone();
+
+    for (int i = 0; i < hmm.opdfs.size(); i++)
+        hmm.opdfs.set(i, opdfs.get(i).clone());
+
+    return hmm;
     }
-	
-	
-    private static final long serialVersionUID = 2L;	
+
+
+    private static final long serialVersionUID = 2L;
 }

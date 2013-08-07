@@ -5,171 +5,171 @@ import java.util.ArrayList;
 /**
  * This InternalNode class extends the Node class
  * and in addition contains methods unique to its class.
- * 
+ *
  * Can be traversed through tree/similar to linked list style.
  */
 public class InternalNode extends Node {
-	
-	/**
-	 * Constructor for the InternalNode
-	 * @param leftIn Node to be set as the left child
-	 * @param rightIn Node to be set as the right child
-	 * @param tLeftIn Double - the branch length time of current node to the left child
-	 * @param tRightIn Double - the branch length time of current node to the right child
-	 */
-	public InternalNode(Node leftIn, Node rightIn, double tLeftIn, double tRightIn) {
-		this.left = leftIn;
-		this.right  = rightIn;
-		this.tLeft = tLeftIn;
-		this.tRight = tRightIn;
-		this.likelihood = null;
-	}
 
-	/**
-	 * @return The Left child node
-	 */
-	public Node getLeft() {
-		return this.left;
-	}
+  /**
+   * Constructor for the InternalNode
+   * @param leftIn Node to be set as the left child
+   * @param rightIn Node to be set as the right child
+   * @param tLeftIn Double - the branch length time of current node to the left child
+   * @param tRightIn Double - the branch length time of current node to the right child
+   */
+  public InternalNode(Node leftIn, Node rightIn, double tLeftIn, double tRightIn) {
+    this.left = leftIn;
+    this.right  = rightIn;
+    this.tLeft = tLeftIn;
+    this.tRight = tRightIn;
+    this.likelihood = null;
+  }
 
-	/**
-	 * @return The Right child node
-	 */
-	public Node getRight() {
-		return this.right;
-	}
-	
-	/**
-	 * Sets the left child node
-	 * @param leftIn Node to be set as left child
-	 */
-	public void setLeft(Node leftIn) {
-		this.left = leftIn; 
-	}
-	
-	/**
-	 * Sets the right child node
-	 * @param rightIn Node to be set as right child
-	 */
-	public void setRight(Node rightIn) {
-		this.right = rightIn;
-	}
+  /**
+   * @return The Left child node
+   */
+  public Node getLeft() {
+    return this.left;
+  }
 
-	/**
-	 * @return The node's likelihood arraylist
-	 */
-	public ArrayList<Double> getLikelihood() {
-		
-		if (this.likelihood != null) 
-			return this.likelihood;
-		
-		ArrayList<Double> leftLike = left.getLikelihood();
-		ArrayList<Double> rightLike = right.getLikelihood();
-		ArrayList<Double> result = new ArrayList<Double>();
-		
-		for (int i = 0; i < 4; i++) {
-			double tempLeft = 0;
-			double tempRight = 0;
-			for (int j = 0; j < 4; j++) {
-				tempLeft += leftLike.get(j) * getPij(genes[i], genes[j], lamda, this.tLeft);
-				tempRight += rightLike.get(j) * getPij(genes[i], genes[j], lamda, this.tRight);
-			}
-			result.add(tempLeft * tempRight);
-		}
-		
-		this.likelihood = result;
-		return result;
-	}
-	
-	/**
-	 * Sets the left branch length time.
-	 * @param tLeft Double
-	 */
-	public void setLeftLength(double tLeft) {
-		this.tLeft = tLeft;
-	}
-	
-	/**
-	 * Sets the right branch length time.
-	 * @param tRight Double
-	 */
-	public void setReftLength(double tRight) {
-		this.tRight = tRight;
-	}
-	
-	/**
-	 * @return Double - the Left branch length
-	 */
-	public double getLeftLength() {
-		return this.tLeft;
-	}
-	
-	/**
-	 * @return Double - the Right branch length
-	 */
-	public double getRightLength() {
-		return this.tRight;
-	}
-	
-	/**
-	 * @return True if node is a leafNode, false otherwise
-	 */
-	public boolean isLeaf() {
-		return false;
-	}
-	
-	/**
-	 * @return A clone of the current node itself
-	 */
-	public Node cloneNode() {
-		return new InternalNode(left.cloneNode(), right.cloneNode(), tLeft, tRight);
-	}
-	
-	/**
-	 * @param species - A String taxa to be added as a leaf to the tree
-	 * @return An Arraylist of all the new nodes created by adding new leaf
-	 */
-	public ArrayList<Node> addNewLeaf(String species) {
-		ArrayList<Node> combos = new ArrayList<Node>();
-		
-		ArrayList<Node> leftList = left.addNewLeaf(species);
-		ArrayList<Node> rightList = right.addNewLeaf(species);
-		
-		// since we know that the first element in every list is the unchanged element
-		//first add our unchanged self to the list
-		combos.add(this.cloneNode());
-		// now add to the list different combinations of changes from each list
-		for (int i = 1; i < rightList.size(); i++) {
-			combos.add(new InternalNode(leftList.get(0), rightList.get(i), .5, .5)); // values .5 need to be changed
-		}
-		for (int i = 1; i < leftList.size(); i++) {
-			combos.add(new InternalNode(leftList.get(i), rightList.get(0), .5, .5)); // values . 5 need to be changed
-		}
-		
-		combos.add(new InternalNode(this.cloneNode(), new LeafNode(species), .5, .5 )); // values .5 need to be changed
-		
-		return combos;
-	}
-	
-	/**
-	 * @return An ArrayList of all the LeafNodes that this node can reach
-	 */
-	public ArrayList<LeafNode> getLeaves() {
-		ArrayList<LeafNode> leaves = new ArrayList<LeafNode>();
-		leaves.addAll(this.left.getLeaves());
-		leaves.addAll(this.right.getLeaves());
-		return leaves;
-	}
-	
-	/**
-	 * String representation of the node for debugging and user-viewing purposes
-	 */
-	@Override
-	public String toString() {
-		String toprint = "(" +  left + ", " + right + ")";
-		return toprint;
-	}
-	
-	
-	
+  /**
+   * @return The Right child node
+   */
+  public Node getRight() {
+    return this.right;
+  }
+
+  /**
+   * Sets the left child node
+   * @param leftIn Node to be set as left child
+   */
+  public void setLeft(Node leftIn) {
+    this.left = leftIn;
+  }
+
+  /**
+   * Sets the right child node
+   * @param rightIn Node to be set as right child
+   */
+  public void setRight(Node rightIn) {
+    this.right = rightIn;
+  }
+
+  /**
+   * @return The node's likelihood arraylist
+   */
+  public ArrayList<Double> getLikelihood() {
+
+    if (this.likelihood != null)
+      return this.likelihood;
+
+    ArrayList<Double> leftLike = left.getLikelihood();
+    ArrayList<Double> rightLike = right.getLikelihood();
+    ArrayList<Double> result = new ArrayList<Double>();
+
+    for (int i = 0; i < 4; i++) {
+      double tempLeft = 0;
+      double tempRight = 0;
+      for (int j = 0; j < 4; j++) {
+        tempLeft += leftLike.get(j) * getPij(genes[i], genes[j], lamda, this.tLeft);
+        tempRight += rightLike.get(j) * getPij(genes[i], genes[j], lamda, this.tRight);
+      }
+      result.add(tempLeft * tempRight);
+    }
+
+    this.likelihood = result;
+    return result;
+  }
+
+  /**
+   * Sets the left branch length time.
+   * @param tLeft Double
+   */
+  public void setLeftLength(double tLeft) {
+    this.tLeft = tLeft;
+  }
+
+  /**
+   * Sets the right branch length time.
+   * @param tRight Double
+   */
+  public void setReftLength(double tRight) {
+    this.tRight = tRight;
+  }
+
+  /**
+   * @return Double - the Left branch length
+   */
+  public double getLeftLength() {
+    return this.tLeft;
+  }
+
+  /**
+   * @return Double - the Right branch length
+   */
+  public double getRightLength() {
+    return this.tRight;
+  }
+
+  /**
+   * @return True if node is a leafNode, false otherwise
+   */
+  public boolean isLeaf() {
+    return false;
+  }
+
+  /**
+   * @return A clone of the current node itself
+   */
+  public Node cloneNode() {
+    return new InternalNode(left.cloneNode(), right.cloneNode(), tLeft, tRight);
+  }
+
+  /**
+   * @param species - A String taxa to be added as a leaf to the tree
+   * @return An Arraylist of all the new nodes created by adding new leaf
+   */
+  public ArrayList<Node> addNewLeaf(String species) {
+    ArrayList<Node> combos = new ArrayList<Node>();
+
+    ArrayList<Node> leftList = left.addNewLeaf(species);
+    ArrayList<Node> rightList = right.addNewLeaf(species);
+
+    // since we know that the first element in every list is the unchanged element
+    //first add our unchanged self to the list
+    combos.add(this.cloneNode());
+    // now add to the list different combinations of changes from each list
+    for (int i = 1; i < rightList.size(); i++) {
+      combos.add(new InternalNode(leftList.get(0), rightList.get(i), .5, .5)); // values .5 need to be changed
+    }
+    for (int i = 1; i < leftList.size(); i++) {
+      combos.add(new InternalNode(leftList.get(i), rightList.get(0), .5, .5)); // values . 5 need to be changed
+    }
+
+    combos.add(new InternalNode(this.cloneNode(), new LeafNode(species), .5, .5 )); // values .5 need to be changed
+
+    return combos;
+  }
+
+  /**
+   * @return An ArrayList of all the LeafNodes that this node can reach
+   */
+  public ArrayList<LeafNode> getLeaves() {
+    ArrayList<LeafNode> leaves = new ArrayList<LeafNode>();
+    leaves.addAll(this.left.getLeaves());
+    leaves.addAll(this.right.getLeaves());
+    return leaves;
+  }
+
+  /**
+   * String representation of the node for debugging and user-viewing purposes
+   */
+  @Override
+  public String toString() {
+    String toprint = "(" +  left + ", " + right + ")";
+    return toprint;
+  }
+
+
+
 }

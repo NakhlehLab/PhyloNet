@@ -13,24 +13,24 @@ public class TransitionProbabilityParameters {
     protected double hybridizationFrequency;
 
     public TransitionProbabilityParameters (double inRecombinationFrequency,
-						  double inHybridizationFrequency) {
-	setRecombinationFrequency(inRecombinationFrequency);
-	setHybridizationFrequency(inHybridizationFrequency);
+                          double inHybridizationFrequency) {
+    setRecombinationFrequency(inRecombinationFrequency);
+    setHybridizationFrequency(inHybridizationFrequency);
     }
 
     public double getRecombinationFrequency () {
-	return (recombinationFrequency);
+    return (recombinationFrequency);
     }
 
     public void setRecombinationFrequency (double inRecombinationFrequency) {
-	this.recombinationFrequency = inRecombinationFrequency;
+    this.recombinationFrequency = inRecombinationFrequency;
     }
-    
+
     public double getHybridizationFrequency () {
-	return (hybridizationFrequency);
+    return (hybridizationFrequency);
     }
 
     public void setHybridizationFrequency (double inHybridizationFrequency) {
-	this.hybridizationFrequency = inHybridizationFrequency;
+    this.hybridizationFrequency = inHybridizationFrequency;
     }
 }

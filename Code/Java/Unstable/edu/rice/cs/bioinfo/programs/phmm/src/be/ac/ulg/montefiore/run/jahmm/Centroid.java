@@ -30,7 +30,7 @@ import java.util.*;
  * algorithm.
  */
 public interface Centroid<O>
-{    
+{
     /**
      * Reevalue the value of this centroid, knowing that it currently is the
      * centroid of the observations composing <code>v</code> and that we
@@ -39,15 +39,15 @@ public interface Centroid<O>
      *
      * @param e An observation that must be involved in the computation
      *          of the new value of this centroid.
-     * @param v The set of observations that gave the current value of this 
+     * @param v The set of observations that gave the current value of this
      *          centroid.
      */
     public void reevaluateAdd(O e, List<? extends O> v);
-    
-    
+
+
     /**
      * Reevalue the value of this centroid, knowing that it currently is the
-     * centroid of the observations composing <code>v</code> and that we want 
+     * centroid of the observations composing <code>v</code> and that we want
      * it to be the centroid of <code>v</code> minus the value of the
      * observation <code>e</code>.
      *
@@ -57,8 +57,8 @@ public interface Centroid<O>
      *          the current value of this centroid.
      */
     public void reevaluateRemove(O e, List<? extends O> v);
-    
-    
+
+
     /**
      * Returns the distance from this centroid to a given element.
      *

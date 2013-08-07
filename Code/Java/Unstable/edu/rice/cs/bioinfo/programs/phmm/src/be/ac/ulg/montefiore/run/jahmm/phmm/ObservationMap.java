@@ -23,7 +23,7 @@
 /**
  * Container for a data column from an MSA.
  * Map from taxon name to observed letter.
- * 
+ *
  * WARNING - this class is supposed to be immutable.
  * String keys and values are immutable.
  * Use a little extra memory to enforce immutability
@@ -38,12 +38,12 @@ import java.util.Hashtable;
 import be.ac.ulg.montefiore.run.jahmm.Observation;
 
 public class ObservationMap extends Observation
-{	
+{
     /**
      * The observation's value.
      */
     protected final Map<String,String> map;
-	
+
     /**
      * An observation that can be described by a string->string map.
      * Although this imposes a memory penalty,
@@ -54,7 +54,7 @@ public class ObservationMap extends Observation
      */
     public ObservationMap (Map<String,String> inMap)
     {
-	map = new Hashtable<String,String>(inMap);
+    map = new Hashtable<String,String>(inMap);
     }
 
     /**
@@ -62,15 +62,15 @@ public class ObservationMap extends Observation
      * Keep this class immutable.
      */
     public String get (String k) {
-	return (map.get(k));
+    return (map.get(k));
     }
 
     public String toString () {
-	return (map.toString());
+    return (map.toString());
     }
-	
+
     public String toString (NumberFormat numberFormat)
     {
-	return (this.toString());
+    return (this.toString());
     }
 }

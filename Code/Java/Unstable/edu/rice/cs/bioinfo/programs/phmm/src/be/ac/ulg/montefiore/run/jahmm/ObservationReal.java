@@ -31,37 +31,37 @@ import java.text.*;
 public class ObservationReal extends Observation
 implements CentroidFactory<ObservationReal>
 {
-	
-	/**
-	 * The observation's value.
-	 */
-	final public double value;
-	
-	
-	/**
-	 * An observation that can be described by a real.
-	 *
-	 * @param value The value of this observation.
-	 */
-	public ObservationReal(double value)
-	{
-		this.value = value;
-	}
-	
-	
-	/**
-	 * Returns the centroid matching this observation.
-	 *
-	 * @return The corresponding observation.
-	 */
-	public Centroid<ObservationReal> factor()
-	{
-		return new CentroidObservationReal(this);
-	}
-	
-	
-	public String toString(NumberFormat numberFormat)
-	{
-		return numberFormat.format(value);
-	}
+
+    /**
+     * The observation's value.
+     */
+    final public double value;
+
+
+    /**
+     * An observation that can be described by a real.
+     *
+     * @param value The value of this observation.
+     */
+    public ObservationReal(double value)
+    {
+        this.value = value;
+    }
+
+
+    /**
+     * Returns the centroid matching this observation.
+     *
+     * @return The corresponding observation.
+     */
+    public Centroid<ObservationReal> factor()
+    {
+        return new CentroidObservationReal(this);
+    }
+
+
+    public String toString(NumberFormat numberFormat)
+    {
+        return numberFormat.format(value);
+    }
 }

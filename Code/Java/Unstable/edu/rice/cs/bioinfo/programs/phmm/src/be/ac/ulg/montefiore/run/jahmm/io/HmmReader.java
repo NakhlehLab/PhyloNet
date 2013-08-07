@@ -56,7 +56,7 @@ import be.ac.ulg.montefiore.run.jahmm.*;
  * Hmm
  * v1.0
  * NbStates 2
- * 
+ *
  * State
  * Pi 0.7
  * A 0.1 0.9
@@ -70,109 +70,109 @@ import be.ac.ulg.montefiore.run.jahmm.*;
  * The lines starting with 'IntegerOPDF' are distributions descriptions.
  */
 public class HmmReader
-{	
-	/**
-	 * Reads a HMM from a text file.
-	 * 
-	 * @param reader The reader to read the HMM description from.
-	 * @param opdfReader The {@link OpdfReader} used to read the observation
-	 *        distributions.
-	 */
-	public static <O extends Observation> Hmm<O>
-	read(Reader reader, OpdfReader<? extends Opdf<O>> opdfReader)
-	throws IOException, FileFormatException
-	{
-		StreamTokenizer st = new StreamTokenizer(reader);
-		initSyntaxTable(st);
-		
-		readWords(st, "Hmm", "v1.0", "NbStates");
-		int nbStates = (int) readNumber(st);
-		
-		double[] pi = new double[nbStates];
-		double[][] a = new double[nbStates][nbStates];
-		List<Opdf<O>> opdfs = new ArrayList<Opdf<O>>(nbStates); 
-		
-		for (int i = 0; i < nbStates; i++) 
-			readState(st, nbStates, i, pi, a, opdfs, opdfReader);
-		
-		return new Hmm<O>(pi, a, opdfs);
-	}
-	
-	
-	static private <O extends Observation> void
-	readState(StreamTokenizer st, int nbStates,	int stateNb, double[] pi,
-			double[][] a,
-			List<Opdf<O>> opdfs, OpdfReader<? extends Opdf<O>> opdfReader)
-	throws IOException, FileFormatException
-	{
-		readWords(st, "State", "Pi");
-		pi[stateNb] = readNumber(st);
-		
-		readWords(st, "A");
-		for (int i = 0; i < nbStates; i++)
-			a[stateNb][i] = readNumber(st);
-		
-		opdfs.add(opdfReader.read(st));
-	}
-	
-	
-	/**
-	 * Reads some keywords out of a {@link StreamTokenizer}. 
-	 * 
-	 * @param st A stream tokenizer.
-	 * @param words The words to read, in the right order.
-	 */
-	static void readWords(StreamTokenizer st, String... words)
-	throws IOException, FileFormatException
-	{
-		for (String word : words) {
-			st.nextToken();
-			
-			if (st.ttype == StreamTokenizer.TT_WORD)
-				if (st.sval.equals(word))
-					continue;
-				else
-					throw new FileFormatException(st.lineno(),
-							"Syntax error: unexpected token '" +
-							st.sval + "', ('" + word + "' expected)");
-			
-			if (st.ttype > 0) // Single character token
-				if (word.length() == 1 && st.ttype == (int) word.charAt(0))
-					continue;
-				else
-					throw new FileFormatException(st.lineno(),
-							"Syntax error: unexpected token '" +
-							(char) st.ttype + "' (" + word + "' expected)");
-			
-			throw new FileFormatException(st.lineno(), "Syntax error: '" +
-					word + "' expected");
-		}
-	}
-	
+{
+    /**
+     * Reads a HMM from a text file.
+     *
+     * @param reader The reader to read the HMM description from.
+     * @param opdfReader The {@link OpdfReader} used to read the observation
+     *        distributions.
+     */
+    public static <O extends Observation> Hmm<O>
+    read(Reader reader, OpdfReader<? extends Opdf<O>> opdfReader)
+    throws IOException, FileFormatException
+    {
+        StreamTokenizer st = new StreamTokenizer(reader);
+        initSyntaxTable(st);
 
-	static double readNumber(StreamTokenizer st)
-	throws IOException, FileFormatException
-	{
-		st.nextToken();
-		
-		if (st.ttype != StreamTokenizer.TT_NUMBER)
-			throw new FileFormatException(st.lineno(),
-					"Syntax error: number expected");
-		
-		return st.nval;
-	}
+        readWords(st, "Hmm", "v1.0", "NbStates");
+        int nbStates = (int) readNumber(st);
 
-	
-	/* Initialize the syntax table of a stream tokenizer */
-	static void initSyntaxTable(StreamTokenizer st)
-	{
-		st.resetSyntax();
-		st.parseNumbers();
-		st.wordChars('a', 'z');
-		st.wordChars('A', 'Z');
-		st.whitespaceChars(0, (int) ' ');
-		st.whitespaceChars((int) '\t', (int) '\t');
-		st.eolIsSignificant(false);
-		st.commentChar((int) '#');
-	}
+        double[] pi = new double[nbStates];
+        double[][] a = new double[nbStates][nbStates];
+        List<Opdf<O>> opdfs = new ArrayList<Opdf<O>>(nbStates);
+
+        for (int i = 0; i < nbStates; i++)
+            readState(st, nbStates, i, pi, a, opdfs, opdfReader);
+
+        return new Hmm<O>(pi, a, opdfs);
+    }
+
+
+    static private <O extends Observation> void
+    readState(StreamTokenizer st, int nbStates,	int stateNb, double[] pi,
+            double[][] a,
+            List<Opdf<O>> opdfs, OpdfReader<? extends Opdf<O>> opdfReader)
+    throws IOException, FileFormatException
+    {
+        readWords(st, "State", "Pi");
+        pi[stateNb] = readNumber(st);
+
+        readWords(st, "A");
+        for (int i = 0; i < nbStates; i++)
+            a[stateNb][i] = readNumber(st);
+
+        opdfs.add(opdfReader.read(st));
+    }
+
+
+    /**
+     * Reads some keywords out of a {@link StreamTokenizer}.
+     *
+     * @param st A stream tokenizer.
+     * @param words The words to read, in the right order.
+     */
+    static void readWords(StreamTokenizer st, String... words)
+    throws IOException, FileFormatException
+    {
+        for (String word : words) {
+            st.nextToken();
+
+            if (st.ttype == StreamTokenizer.TT_WORD)
+                if (st.sval.equals(word))
+                    continue;
+                else
+                    throw new FileFormatException(st.lineno(),
+                            "Syntax error: unexpected token '" +
+                            st.sval + "', ('" + word + "' expected)");
+
+            if (st.ttype > 0) // Single character token
+                if (word.length() == 1 && st.ttype == (int) word.charAt(0))
+                    continue;
+                else
+                    throw new FileFormatException(st.lineno(),
+                            "Syntax error: unexpected token '" +
+                            (char) st.ttype + "' (" + word + "' expected)");
+
+            throw new FileFormatException(st.lineno(), "Syntax error: '" +
+                    word + "' expected");
+        }
+    }
+
+
+    static double readNumber(StreamTokenizer st)
+    throws IOException, FileFormatException
+    {
+        st.nextToken();
+
+        if (st.ttype != StreamTokenizer.TT_NUMBER)
+            throw new FileFormatException(st.lineno(),
+                    "Syntax error: number expected");
+
+        return st.nval;
+    }
+
+
+    /* Initialize the syntax table of a stream tokenizer */
+    static void initSyntaxTable(StreamTokenizer st)
+    {
+        st.resetSyntax();
+        st.parseNumbers();
+        st.wordChars('a', 'z');
+        st.wordChars('A', 'Z');
+        st.whitespaceChars(0, (int) ' ');
+        st.whitespaceChars((int) '\t', (int) '\t');
+        st.eolIsSignificant(false);
+        st.commentChar((int) '#');
+    }
 }

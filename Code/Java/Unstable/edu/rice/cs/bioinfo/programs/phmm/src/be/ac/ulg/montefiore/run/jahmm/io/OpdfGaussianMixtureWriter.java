@@ -35,17 +35,17 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfGaussianMixture;
 public class OpdfGaussianMixtureWriter
 extends OpdfWriter<OpdfGaussianMixture>
 {
-	public void write(Writer writer, OpdfGaussianMixture opdf)
-	throws IOException
-	{
-		writer.write("GaussianMixtureOPDF [ ");
-		
-		write(writer, opdf.means());
-		writer.write(" ");
-		write(writer, opdf.variances());
-		writer.write(" ");
-		write(writer, opdf.proportions());
-		
-		writer.write(" ]");
-	}
+    public void write(Writer writer, OpdfGaussianMixture opdf)
+    throws IOException
+    {
+        writer.write("GaussianMixtureOPDF [ ");
+
+        write(writer, opdf.means());
+        writer.write(" ");
+        write(writer, opdf.variances());
+        writer.write(" ");
+        write(writer, opdf.proportions());
+
+        writer.write(" ]");
+    }
 }

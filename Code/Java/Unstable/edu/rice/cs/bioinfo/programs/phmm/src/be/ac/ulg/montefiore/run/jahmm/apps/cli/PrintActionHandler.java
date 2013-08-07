@@ -35,18 +35,18 @@ import be.ac.ulg.montefiore.run.jahmm.io.*;
  */
 class PrintActionHandler extends ActionHandler
 {
-	@SuppressWarnings({"unchecked"}) // We use a generic reader 
-	public void act()
-	throws FileFormatException, IOException, FileNotFoundException,
-	AbnormalTerminationException
-	{
-		EnumSet<Arguments> args = EnumSet.of(Arguments.IN_HMM);
-		CommandLineArguments.checkArgs(args);
-		
-		InputStream in = Arguments.IN_HMM.getAsInputStream();
-		OpdfReader opdfReader = new OpdfGenericReader();
-		Hmm<?> hmm = HmmReader.read(new InputStreamReader(in), opdfReader);
-		
-		System.out.println(hmm);
-	}
+    @SuppressWarnings({"unchecked"}) // We use a generic reader
+    public void act()
+    throws FileFormatException, IOException, FileNotFoundException,
+    AbnormalTerminationException
+    {
+        EnumSet<Arguments> args = EnumSet.of(Arguments.IN_HMM);
+        CommandLineArguments.checkArgs(args);
+
+        InputStream in = Arguments.IN_HMM.getAsInputStream();
+        OpdfReader opdfReader = new OpdfGenericReader();
+        Hmm<?> hmm = HmmReader.read(new InputStreamReader(in), opdfReader);
+
+        System.out.println(hmm);
+    }
 }

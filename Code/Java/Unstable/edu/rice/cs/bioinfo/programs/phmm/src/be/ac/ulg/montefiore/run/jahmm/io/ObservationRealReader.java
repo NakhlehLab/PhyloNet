@@ -33,7 +33,7 @@ import be.ac.ulg.montefiore.run.jahmm.ObservationReal;
  * ObservationReal} up to (and including) a semi-colon.
  * <p>
  * The format of this observation is a simple real number
- * (following the format [+-]?[0123456789]+[.]?[0123456789]*, <i>e.g.</i> 
+ * (following the format [+-]?[0123456789]+[.]?[0123456789]*, <i>e.g.</i>
  * 12.3).
  * <p>
  * For example, reading
@@ -43,44 +43,44 @@ import be.ac.ulg.montefiore.run.jahmm.ObservationReal;
  */
 public class ObservationRealReader
 extends ObservationReader<ObservationReal>
-{	
-	/**
-	 * Reads an {@link be.ac.ulg.montefiore.run.jahmm.ObservationReal
-	 * ObservationReal} reader, as explained in 
-	 * {@link ObservationReader ObservationReader}.
-	 *
-	 * @param st A stream tokenizer.
-	 * @return The {@link be.ac.ulg.montefiore.run.jahmm.ObservationReal
-	 *         ObservationReal} read.
-	 */
-	public ObservationReal read(StreamTokenizer st) 
-	throws IOException, FileFormatException
-	{	
-		ObservationReal or;
-		
-		switch (st.nextToken()) {
-		case StreamTokenizer.TT_EOL:
-		case StreamTokenizer.TT_EOF:
-		case StreamTokenizer.TT_WORD:
-			throw new FileFormatException("Real value expected");
-			
-		case StreamTokenizer.TT_NUMBER:
-			or = new ObservationReal(st.nval);
-			break;
-			
-		default:
-			throw new FileFormatException("Real value expected");
-		}
-		
-		switch (st.nextToken()) {
-		case ';':
-			break;
-			
-		default:
-			if (st.ttype != ';')
-				throw new FileFormatException("';' expected");
-		}
-		
-		return or;
-	}
+{
+    /**
+     * Reads an {@link be.ac.ulg.montefiore.run.jahmm.ObservationReal
+     * ObservationReal} reader, as explained in
+     * {@link ObservationReader ObservationReader}.
+     *
+     * @param st A stream tokenizer.
+     * @return The {@link be.ac.ulg.montefiore.run.jahmm.ObservationReal
+     *         ObservationReal} read.
+     */
+    public ObservationReal read(StreamTokenizer st)
+    throws IOException, FileFormatException
+    {
+        ObservationReal or;
+
+        switch (st.nextToken()) {
+        case StreamTokenizer.TT_EOL:
+        case StreamTokenizer.TT_EOF:
+        case StreamTokenizer.TT_WORD:
+            throw new FileFormatException("Real value expected");
+
+        case StreamTokenizer.TT_NUMBER:
+            or = new ObservationReal(st.nval);
+            break;
+
+        default:
+            throw new FileFormatException("Real value expected");
+        }
+
+        switch (st.nextToken()) {
+        case ';':
+            break;
+
+        default:
+            if (st.ttype != ';')
+                throw new FileFormatException("';' expected");
+        }
+
+        return or;
+    }
 }

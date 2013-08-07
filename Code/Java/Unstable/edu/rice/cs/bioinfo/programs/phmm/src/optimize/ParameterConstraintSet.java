@@ -14,45 +14,45 @@ public class ParameterConstraintSet {
     protected double value;
 
     public ParameterConstraintSet (String inName, double inValue) {
-	setName(inName);
-	setValue(inValue);
+    setName(inName);
+    setValue(inValue);
     }
 
     public String getName () {
-	return (name);
+    return (name);
     }
 
     public double getValue () {
-	return (value);
+    return (value);
     }
 
     // immutable once created
     protected void setName (String inName) {
-	name = inName;
+    name = inName;
     }
 
     protected void setValue (double inValue) {
-	value = inValue;
+    value = inValue;
     }
 
     // ParameterConstraintSet objects are hashCode() and equals() equivalent to
     // their name Strings
-	
+
     public String toString () {
-	return (name.toString() + ": " + Double.toString(value));
+    return (name.toString() + ": " + Double.toString(value));
     }
 
     public int hashCode () {
-	return (name.hashCode());
+    return (name.hashCode());
     }
 
     // derp
     public boolean equals (Object obj) {
-	if (!(obj instanceof ParameterConstraintSet)) {
-	    return (false);
-	}
-	ParameterConstraintSet lpcs = (ParameterConstraintSet) obj;
-	return (this.getName().equals(lpcs.getName()));
+    if (!(obj instanceof ParameterConstraintSet)) {
+        return (false);
+    }
+    ParameterConstraintSet lpcs = (ParameterConstraintSet) obj;
+    return (this.getName().equals(lpcs.getName()));
     }
 }
-    
+

@@ -42,82 +42,82 @@ import be.ac.ulg.montefiore.run.jahmm.*;
  * <code>(distance(hmm1, hmm2) + distance(hmm2, hmm1)) / 2</code>.
  */
 public class KullbackLeiblerDistanceCalculator
-{	
-	private int sequencesLength = 1000;
-	private int nbSequences = 10;
-	
-	
-	/**
-	 * Computes the Kullback-Leibler distance between two HMMs.
-	 *
-	 * @param hmm1 The first HMM against which the distance is computed.
-	 *             The distance is mesured with regard to this HMM (this must
-	 *             be defined since the Kullback-Leibler distance is not
-	 *             symetric).
-	 * @param hmm2 The second HMM against which the distance is computed.
-	 * @return The distance between <code>hmm1</code> and <code>hmm2</code> with
-	 *      regard to <code>hmm1</code>
-	 */
-	public <O extends Observation> double 
-	distance(Hmm<O> hmm1, Hmm<? super O> hmm2)
-	{			
-		double distance = 0.;
-		
-		for (int i = 0; i < nbSequences; i++) {
-			
-			List<O> oseq = new MarkovGenerator<O>(hmm1).
-			observationSequence(sequencesLength);
-			
-			distance += (new ForwardBackwardScaledCalculator(oseq, hmm1).
-					lnProbability() -
-					new ForwardBackwardScaledCalculator(oseq, hmm2).
-					lnProbability()) / sequencesLength;
-		}
-		
-		return distance / nbSequences;
-	}
+{
+    private int sequencesLength = 1000;
+    private int nbSequences = 10;
 
 
-	/**
-	 * Returns the number of sequences generated to estimate a distance.
-	 * 
-	 * @return The number of generated sequences.
-	 */
-	public int getNbSequences()
-	{
-		return nbSequences;
-	}
+    /**
+     * Computes the Kullback-Leibler distance between two HMMs.
+     *
+     * @param hmm1 The first HMM against which the distance is computed.
+     *             The distance is mesured with regard to this HMM (this must
+     *             be defined since the Kullback-Leibler distance is not
+     *             symetric).
+     * @param hmm2 The second HMM against which the distance is computed.
+     * @return The distance between <code>hmm1</code> and <code>hmm2</code> with
+     *      regard to <code>hmm1</code>
+     */
+    public <O extends Observation> double
+    distance(Hmm<O> hmm1, Hmm<? super O> hmm2)
+    {
+        double distance = 0.;
+
+        for (int i = 0; i < nbSequences; i++) {
+
+            List<O> oseq = new MarkovGenerator<O>(hmm1).
+            observationSequence(sequencesLength);
+
+            distance += (new ForwardBackwardScaledCalculator(oseq, hmm1).
+                    lnProbability() -
+                    new ForwardBackwardScaledCalculator(oseq, hmm2).
+                    lnProbability()) / sequencesLength;
+        }
+
+        return distance / nbSequences;
+    }
 
 
-	/**
-	 * Sets the number of sequences generated to estimate a distance.
-	 * 
-	 * @param nb The number of generated sequences.
-	 */
-	public void setNbSequences(int nb)
-	{
-		this.nbSequences = nb;
-	}
-	
-	
-	/**
-	 * Returns the length of sequences generated to estimate a distance.
-	 * 
-	 * @return The sequences length.
-	 */
-	public int getSequencesLength()
-	{
-		return sequencesLength;
-	}
+    /**
+     * Returns the number of sequences generated to estimate a distance.
+     *
+     * @return The number of generated sequences.
+     */
+    public int getNbSequences()
+    {
+        return nbSequences;
+    }
 
 
-	/**
-	 * Sets the length of sequences generated to estimate a distance.
-	 * 
-	 * @param length The sequences length.
-	 */
-	public void setSequencesLength(int length)
-	{
-		this.sequencesLength = length;
-	}
+    /**
+     * Sets the number of sequences generated to estimate a distance.
+     *
+     * @param nb The number of generated sequences.
+     */
+    public void setNbSequences(int nb)
+    {
+        this.nbSequences = nb;
+    }
+
+
+    /**
+     * Returns the length of sequences generated to estimate a distance.
+     *
+     * @return The sequences length.
+     */
+    public int getSequencesLength()
+    {
+        return sequencesLength;
+    }
+
+
+    /**
+     * Sets the length of sequences generated to estimate a distance.
+     *
+     * @param length The sequences length.
+     */
+    public void setSequencesLength(int length)
+    {
+        this.sequencesLength = length;
+    }
 }

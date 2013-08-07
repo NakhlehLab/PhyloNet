@@ -30,12 +30,12 @@ package be.ac.ulg.montefiore.run.jahmm;
  * @author Benjamin Chung (Creation)
  * @author Jean-Marc Francois (Minor adaptions)
  */
-public class OpdfGaussianMixtureFactory 
+public class OpdfGaussianMixtureFactory
 implements OpdfFactory<OpdfGaussianMixture>
 {
     final private int gaussiansNb;
-    
-    
+
+
     /**
      * Creates a new factory of Gaussian mixtures.
      *
@@ -46,8 +46,8 @@ implements OpdfFactory<OpdfGaussianMixture>
     {
         this.gaussiansNb = gaussiansNb;
     }
-    
-    
+
+
     public OpdfGaussianMixture factor()
     {
         return new OpdfGaussianMixture(gaussiansNb);

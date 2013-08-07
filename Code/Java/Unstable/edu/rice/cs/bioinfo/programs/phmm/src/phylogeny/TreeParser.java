@@ -17,42 +17,42 @@ import javax.swing.JProgressBar;
  * Parses the newick portion of a file
  * For nexus files, additional node-number mapping is needed to rename files
  * Identification of a file as either newick or nexus determines contents
- * 
+ *
  * */
 public class TreeParser
 {
-	/** Nexus file identifier.  We look for this as the first token to identify a tree file as Nexus, or other. */
-	private static final String nexusFileID = "#NEXUS";
-	/** Begin tag. */
-	private static final String beginTag = "begin";
-	/** End tag. */
-	private static final String endTag = "end";
+    /** Nexus file identifier.  We look for this as the first token to identify a tree file as Nexus, or other. */
+    private static final String nexusFileID = "#NEXUS";
+    /** Begin tag. */
+    private static final String beginTag = "begin";
+    /** End tag. */
+    private static final String endTag = "end";
     //  trees section
-	/** Tree section. */
-	private static final String treeSectionTag = "trees";
-	/** Tree ID. */
-	private static final String treeID = "tree";
-	/** Tree ID (same or similar to {@link #treeID}?). */
-	private static final String utreeID = "utree"; // two different tree IDs?
-    
-	/** Line (and tree information) termination. */
-	private static final char lineTerminator = ';';
-	/** Equality sign. */
-	private static final char equals = '=';
-	/** Nexus comment open. */
-	private static final char commentOpen = '[';
-	/** Nexus comment close. */
-	private static final char commentClose = ']';
+    /** Tree section. */
+    private static final String treeSectionTag = "trees";
+    /** Tree ID. */
+    private static final String treeID = "tree";
+    /** Tree ID (same or similar to {@link #treeID}?). */
+    private static final String utreeID = "utree"; // two different tree IDs?
 
-	/**
-	 * True: show debug output.  False: suppress printing.
-	 */
+    /** Line (and tree information) termination. */
+    private static final char lineTerminator = ';';
+    /** Equality sign. */
+    private static final char equals = '=';
+    /** Nexus comment open. */
+    private static final char commentOpen = '[';
+    /** Nexus comment close. */
+    private static final char commentClose = ']';
+
+    /**
+     * True: show debug output.  False: suppress printing.
+     */
     private StreamTokenizer tokenizer;
     /**
      * Root node of the tree being parsed.  Must be initialized outside the tokenizer.
      */
     private Node rootNode;
-    
+
 
     /**
      * Parses names of trees in nexus file.
@@ -60,7 +60,7 @@ public class TreeParser
      * @return List of all tree names found in nexus file
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	public ArrayList<EvoTree> nexusFileTreeNames(String fileName)
+    public ArrayList<EvoTree> nexusFileTreeNames(String fileName)
     {
         ArrayList returnList = null;
         ArrayList<EvoTree> thetrees = new ArrayList<EvoTree>();
@@ -107,14 +107,14 @@ public class TreeParser
                                     }
                                 }
                                 else st.nextToken(); // eat a non-word while looking for first tree word
-                                    
+
 //                                    System.out.println("Not a word while looking for a tree start tag: " + st.ttype);
                             }
                         }
                         // not a tree section, find the end tag or the next start tag
                         else while (st.nextToken() != StreamTokenizer.TT_EOF &&
                                     st.ttype != StreamTokenizer.TT_WORD ||
-                                    (!st.sval.equalsIgnoreCase(beginTag) && 
+                                    (!st.sval.equalsIgnoreCase(beginTag) &&
                                     !st.sval.equalsIgnoreCase(endTag)));
                     }
                     else
@@ -135,11 +135,11 @@ public class TreeParser
         }
         return thetrees;
     }
-    
+
 
     /**
      * Initializes parsing of a tree by creating a tokenizer and setting default
-     * properties (such as spacing, quoting characters).  
+     * properties (such as spacing, quoting characters).
      * {@link #tokenize(long, String, JProgressBar)} is required to start the parsing.
      * @param b Buffered reader that could start in the middle of a nexus file or
      * the start of a newick file (basically the beginning of a newick tree, is run
@@ -180,37 +180,37 @@ public class TreeParser
      * @param name Name of the node.
      * @param nodeStack Stack of nodes that haven't been added to the tree yet.  Nodes are popped when
      * they have names and all children are processed.
-     * @return Newly added treeNode linked into the tree. 
+     * @return Newly added treeNode linked into the tree.
      */
     private Node popAndName(String name, @SuppressWarnings("rawtypes") Stack nodeStack)
     {
-	    Node topNode = (Node)nodeStack.pop();
-	    if (name == null)
-	    {
-	    	//
-	    }
-	    else
-	    {
-	    	topNode.setTaxa(name);
-	    }
-	    try
-	    {
-	    	Node parent = (Node) nodeStack.peek();
-	    	topNode.setParent(parent);
-	    	parent.addChild(topNode);
-	    }
-	    catch (EmptyStackException e)
-	    {
-	        if (topNode != rootNode)
-	            System.out.println("Parser error on node " + topNode);
-	    }
-	    //topNode.setExtremeLeaves(); // sets leftmost and rightmost leaf, non-recursive
-	    //topNode.setNumberLeaves(); // sets number of leaves, non-recursive
-	    //topNode.linkNodesInPreorder();
-	    //topNode.linkNodesInPostorder();
-	    return topNode;
+        Node topNode = (Node)nodeStack.pop();
+        if (name == null)
+        {
+            //
+        }
+        else
+        {
+            topNode.setTaxa(name);
+        }
+        try
+        {
+            Node parent = (Node) nodeStack.peek();
+            topNode.setParent(parent);
+            parent.addChild(topNode);
+        }
+        catch (EmptyStackException e)
+        {
+            if (topNode != rootNode)
+                System.out.println("Parser error on node " + topNode);
+        }
+        //topNode.setExtremeLeaves(); // sets leftmost and rightmost leaf, non-recursive
+        //topNode.setNumberLeaves(); // sets number of leaves, non-recursive
+        //topNode.linkNodesInPreorder();
+        //topNode.linkNodesInPostorder();
+        return topNode;
     }
-    
+
     /**
      * Newick tokenizer: converts a string (tree as a string) into a tree object.
      * The stream tokenizer should be initialized before calling this function.
@@ -221,88 +221,88 @@ public class TreeParser
      * @return Tree parsed from the stream.
      */
     @SuppressWarnings("unchecked")
-	public EvoTree tokenize(long fileLength, String streamName,
+    public EvoTree tokenize(long fileLength, String streamName,
             JProgressBar progressBar)
     {
         final char openBracket = '(', closeBracket = ')', childSeparator = ',',
-        	treeTerminator = lineTerminator, quote = '\'', doubleQuote = '"', infoSeparator = ':';
+            treeTerminator = lineTerminator, quote = '\'', doubleQuote = '"', infoSeparator = ':';
         int progress = 0;
         rootNode = new Node();
         EvoTree t = new EvoTree();
         t.setRoot(rootNode);
         t.setName(streamName);
         @SuppressWarnings("rawtypes")
-		Stack nodeStack = new Stack();
+        Stack nodeStack = new Stack();
         nodeStack.push(rootNode);
         int thisToken;
         Node lastNamed = null;
         boolean EOT = false;
         boolean nameNext = true;
         int percentage = 0;
-	try {
+    try {
             while (EOT == false &&
                     (thisToken = tokenizer.nextToken()) != StreamTokenizer.TT_EOF)
             {
             switch (thisToken)
             {
 //            	case quote:
-            	case doubleQuote:
-            	case StreamTokenizer.TT_WORD:
-            	    if (!nameNext)
-            	        System.err.println("Error: didn't expect this name here: " + tokenizer.sval);
-            	    lastNamed = popAndName(tokenizer.sval, nodeStack);
-            		progress += tokenizer.sval.length();
-            		nameNext = false;
-            		break;
-            	case StreamTokenizer.TT_NUMBER:
-            		if (nameNext)
-            		    lastNamed = popAndName(tokenizer.sval, nodeStack);
-            		else
-            		{
-            		    if (lastNamed != null)
-            		        lastNamed.setTbranch(tokenizer.nval);
-            		    else
-            		        System.err.println("Error: can't set value " + tokenizer.nval + " to a null node");
-            		    lastNamed = null;
-            		}
-            		progress += (new Double(tokenizer.nval).toString()).length();
-            		nameNext = false;
-            		break;
-            	case infoSeparator:
-            	    if (nameNext)
-            	        lastNamed = popAndName(null, nodeStack);
-            	    progress += 1;
-            	    nameNext = false;
-            	    break;
-            	case treeTerminator:
-            	case StreamTokenizer.TT_EOF:
-            	    if (nameNext)
-            	        lastNamed = popAndName(null, nodeStack);
-            	    EOT = true;
-            	    progress += 1;
-            	    nameNext = false;
-            	    break;
-            	case openBracket:
-            	    nodeStack.push(new Node());
-            	    progress += 1;
-            	    nameNext = true;
-            	    break;
-            	case closeBracket:
-            	    if (nameNext)
-            	        lastNamed = popAndName(null, nodeStack);
-            	    progress += 1;
-            	    nameNext = true;
-            	    break;
-            	case childSeparator:
-            	    if (nameNext)
-            	        lastNamed = popAndName(null, nodeStack);
-            	    nodeStack.push(new Node());
-            	    progress += 1;
-            	    nameNext = true;
-            	    break;
-            	default:
-            	    //debugOutput("default " + (char)thisToken);
-            		break;
+                case doubleQuote:
+                case StreamTokenizer.TT_WORD:
+                    if (!nameNext)
+                        System.err.println("Error: didn't expect this name here: " + tokenizer.sval);
+                    lastNamed = popAndName(tokenizer.sval, nodeStack);
+                    progress += tokenizer.sval.length();
+                    nameNext = false;
+                    break;
+                case StreamTokenizer.TT_NUMBER:
+                    if (nameNext)
+                        lastNamed = popAndName(tokenizer.sval, nodeStack);
+                    else
+                    {
+                        if (lastNamed != null)
+                            lastNamed.setTbranch(tokenizer.nval);
+                        else
+                            System.err.println("Error: can't set value " + tokenizer.nval + " to a null node");
+                        lastNamed = null;
+                    }
+                    progress += (new Double(tokenizer.nval).toString()).length();
+                    nameNext = false;
+                    break;
+                case infoSeparator:
+                    if (nameNext)
+                        lastNamed = popAndName(null, nodeStack);
+                    progress += 1;
+                    nameNext = false;
+                    break;
+                case treeTerminator:
+                case StreamTokenizer.TT_EOF:
+                    if (nameNext)
+                        lastNamed = popAndName(null, nodeStack);
+                    EOT = true;
+                    progress += 1;
+                    nameNext = false;
+                    break;
+                case openBracket:
+                    nodeStack.push(new Node());
+                    progress += 1;
+                    nameNext = true;
+                    break;
+                case closeBracket:
+                    if (nameNext)
+                        lastNamed = popAndName(null, nodeStack);
+                    progress += 1;
+                    nameNext = true;
+                    break;
+                case childSeparator:
+                    if (nameNext)
+                        lastNamed = popAndName(null, nodeStack);
+                    nodeStack.push(new Node());
+                    progress += 1;
+                    nameNext = true;
+                    break;
+                default:
+                    //debugOutput("default " + (char)thisToken);
+                    break;
             }
         }
         }
@@ -314,5 +314,5 @@ public class TreeParser
         return t;
     }
 
-   
+
 }

@@ -59,39 +59,39 @@ public class HiddenState
     protected GeneTreeProbability gtp;
 
     public HiddenState (EvoTree inParentalTree, EvoTree inGeneGenealogy, Map<String,String> map) {
-	setParentalTree(inParentalTree);
-	setGeneGenealogy(inGeneGenealogy);
-	setAlleleToSpeciesMapping(map);
-	gtp = new GeneTreeProbability();
+    setParentalTree(inParentalTree);
+    setGeneGenealogy(inGeneGenealogy);
+    setAlleleToSpeciesMapping(map);
+    gtp = new GeneTreeProbability();
     }
-    
+
     // For test
     public HiddenState (EvoTree inGeneGenealogy) {
-    	setGeneGenealogy(inGeneGenealogy);
+        setGeneGenealogy(inGeneGenealogy);
     }
 
     public EvoTree getParentalTree () {
-    	return (parentalTree);
+        return (parentalTree);
     }
 
     public EvoTree getGeneGenealogy () {
-    	return (geneGenealogy);
+        return (geneGenealogy);
     }
 
     public Map<String,String> getAlleleToSpeciesMapping () {
-    	return (alleleToSpeciesMapping);
+        return (alleleToSpeciesMapping);
     }
 
     public void setParentalTree (EvoTree inParentalTree) {
-    	this.parentalTree = inParentalTree;
+        this.parentalTree = inParentalTree;
     }
 
     public void setGeneGenealogy (EvoTree inGeneGenealogy) {
-    	this.geneGenealogy = inGeneGenealogy;
+        this.geneGenealogy = inGeneGenealogy;
     }
 
     public void setAlleleToSpeciesMapping (Map<String,String> map) {
-    	this.alleleToSpeciesMapping = map;
+        this.alleleToSpeciesMapping = map;
     }
 
     /**
@@ -101,19 +101,19 @@ public class HiddenState
      * @return
      */
     public String toString (boolean displayBranchLengths, boolean displayInternalNodeNames ) {
-		return ("Parental tree:\n" +
-			parentalTree.toNewickString(displayBranchLengths, displayInternalNodeNames) + "\n" +
-			"Gene genealogy:\n" +
-			geneGenealogy.toNewickString(displayBranchLengths, displayInternalNodeNames) + "\n");
+        return ("Parental tree:\n" +
+            parentalTree.toNewickString(displayBranchLengths, displayInternalNodeNames) + "\n" +
+            "Gene genealogy:\n" +
+            geneGenealogy.toNewickString(displayBranchLengths, displayInternalNodeNames) + "\n");
     }
-    
+
     /**
      * Default to String Method
      * Default will set display Branch lengths to true
      * and display Internal Node names to false
      */
     public String toString () {
-		return this.toString(true,false);
+        return this.toString(true,false);
     }
 
     /**
@@ -121,7 +121,7 @@ public class HiddenState
      * Default to no debug messages.
      */
     public double calculateProbabilityOfGeneGenealogyInParentalTree () {
-	return (calculateProbabilityOfGeneGenealogyInParentalTree(false));
+    return (calculateProbabilityOfGeneGenealogyInParentalTree(false));
     }
 
     /**
@@ -137,27 +137,27 @@ public class HiddenState
      *
      */
     protected double calculateProbabilityOfGeneGenealogyInParentalTree (boolean debugFlag) {
-	Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(getParentalTree());
-	Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
-	Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(getGeneGenealogy());
-	// A list with one element. Inefficient - consider doing a one-shot approach later.
-	Vector<Tree> geneGenealogies = new Vector<Tree>();
-	geneGenealogies.add(geneGenealogy);
+    Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(getParentalTree());
+    Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
+    Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(getGeneGenealogy());
+    // A list with one element. Inefficient - consider doing a one-shot approach later.
+    Vector<Tree> geneGenealogies = new Vector<Tree>();
+    geneGenealogies.add(geneGenealogy);
 
-	gtp.emptyState();
-	
-	// look like the calculation is proceeding OK
-	//
-	// calculation under model from Yu et al. 2012
-	// this method requires Network<Double>
-	// Yun uses Double to store hybridization probabilities during calculation
+    gtp.emptyState();
+
+    // look like the calculation is proceeding OK
+    //
+    // calculation under model from Yu et al. 2012
+    // this method requires Network<Double>
+    // Yun uses Double to store hybridization probabilities during calculation
         List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
 
-	// should only be a single entry
-	if (probList.size() != 1) {
-	    System.err.println ("ERROR: GeneTreeProbability.calculateGTDistribution(...) didn't return exactly one probability. Returning -1 to signal error.");
-	    return (-1.0);
-	}
+    // should only be a single entry
+    if (probList.size() != 1) {
+        System.err.println ("ERROR: GeneTreeProbability.calculateGTDistribution(...) didn't return exactly one probability. Returning -1 to signal error.");
+        return (-1.0);
+    }
 
         return (probList.get(0));
     }
@@ -166,37 +166,37 @@ public class HiddenState
      * Convert an EvoTree into a PhyloNet Tree object.
      */
     protected Tree convertPHMMTreeToPhyloNetTree (EvoTree etree) {
-	NewickReader nr = new NewickReader(new StringReader(etree.toNewickString(true, true)));
-	// kliu - change this over to a String data member
-	// don't really use it anyways
-	STITree<Double> newtr = new STITree<Double>(true);
-	try {
-	    nr.readTree(newtr);
-	    return (newtr);
-	}
-	catch(Exception e) {
-	    System.err.println(e);
-	    e.printStackTrace();
-	    return (null);
-	}
+    NewickReader nr = new NewickReader(new StringReader(etree.toNewickString(true, true)));
+    // kliu - change this over to a String data member
+    // don't really use it anyways
+    STITree<Double> newtr = new STITree<Double>(true);
+    try {
+        nr.readTree(newtr);
+        return (newtr);
+    }
+    catch(Exception e) {
+        System.err.println(e);
+        e.printStackTrace();
+        return (null);
+    }
     }
 
     /**
      * Convert an EvoTree into a PhyloNet Network object
      */
     protected Network<Double> convertPHMMTreeToPhyloNetNetwork (EvoTree etree) {
-	ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(etree.toNewickString(true, true)));
-	// kliu - change this over to a String data member
-	// don't really use it anyways
-	try {
-	    Network<Double> network = enr.readNetwork();
-	    return (network);
-	}
-	catch(IOException ioe) {
-	    System.err.println(ioe);
-	    ioe.printStackTrace();
-	    return (null);
-	}
-    }    
-    
+    ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(etree.toNewickString(true, true)));
+    // kliu - change this over to a String data member
+    // don't really use it anyways
+    try {
+        Network<Double> network = enr.readNetwork();
+        return (network);
+    }
+    catch(IOException ioe) {
+        System.err.println(ioe);
+        ioe.printStackTrace();
+        return (null);
+    }
+    }
+
 }

@@ -14,17 +14,17 @@ public class TestingMe {
         TreeParser tp = new TreeParser(r);
         ArrayList<EvoTree> treeoflife = tp.nexusFileTreeNames("treeoflife.tree");
         for (int i = 0; i < treeoflife.size(); i ++) {
-        	System.out.println(((EvoTree)treeoflife.get(i)));
-        	//recursive_print(0, 0, (EvoTree) treeoflife.get(i));
-        	System.out.println("\n\n");
+            System.out.println(((EvoTree)treeoflife.get(i)));
+            //recursive_print(0, 0, (EvoTree) treeoflife.get(i));
+            System.out.println("\n\n");
         }
-        
-        
-        
+
+
+
         //treeoflife = tp.tokenize(1, "treeoflife", null);
         //int tree_height = treeoflife.getHeight();
         //System.out.println("largest tree height is: " + tree_height);
-        
+
     }
 
 //    static void recursive_print (int currkey, int currdepth, Tree atree) {
@@ -38,5 +38,5 @@ public class TestingMe {
 //            recursive_print(childkey, currdepth+1, atree);
 //        }
 //    }
-	
+
 }

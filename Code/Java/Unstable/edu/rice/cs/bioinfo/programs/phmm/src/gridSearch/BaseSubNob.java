@@ -7,19 +7,19 @@ package gridSearch;
  * @author k3kathy
  */
 public class BaseSubNob extends Nob {
-	private double baseRateSub = .1;	/* Default value*/
-	
-	public BaseSubNob(int gIn, double minIn, double maxIn) {
-		super(gIn, minIn, maxIn);
-	}
-	
-	public void set_param(double value) {
-		baseRateSub = value;
-	}
-	
+    private double baseRateSub = .1;	/* Default value*/
 
-	public double get_param() {
-		return baseRateSub;
-	}
-	
+    public BaseSubNob(int gIn, double minIn, double maxIn) {
+        super(gIn, minIn, maxIn);
+    }
+
+    public void set_param(double value) {
+        baseRateSub = value;
+    }
+
+
+    public double get_param() {
+        return baseRateSub;
+    }
+
 }

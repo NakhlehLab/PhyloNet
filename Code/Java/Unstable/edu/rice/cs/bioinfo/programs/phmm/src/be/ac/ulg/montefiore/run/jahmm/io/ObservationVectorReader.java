@@ -47,81 +47,81 @@ import be.ac.ulg.montefiore.run.jahmm.ObservationVector;
 public class ObservationVectorReader
 extends ObservationReader<ObservationVector>
 {
-	private int dimension;
-	
-	
-	/**
-	 * Constructs a reader of {@link ObservationVector ObservationVector}.
-	 */
-	public ObservationVectorReader()
-	{
-		dimension = -1;
-	}
-	
-	
-	/**
-	 * Constructs a reader of {@link ObservationVector ObservationVector}.
-	 * Verifies the dimension of the observations read.
-	 *
-	 * @param dimension The dimension of each observation.
-	 */
-	public ObservationVectorReader(int dimension)
-	{
-		if (dimension <= 0)
-			throw new IllegalArgumentException("Argument must be strictly " +
-			"positive");
-		
-		this.dimension = dimension;
-	}
-	
-	
-	/**
-	 * An {@link be.ac.ulg.montefiore.run.jahmm.ObservationInteger
-	 * ObservationInteger} reader, as explained in 
-	 * {@link ObservationReader ObservationReader}.
-	 *
-	 * @param st A stream tokenizer.
-	 * @return An {@link be.ac.ulg.montefiore.run.jahmm.ObservationInteger
-	 *         ObservationInteger}.
-	 */
-	public ObservationVector read(StreamTokenizer st) 
-	throws IOException, FileFormatException
-	{
-		if (st.nextToken() != (int) '[')
-			throw new FileFormatException(st.lineno(), "'[' expected");
-		
-		List<Double> values = new ArrayList<Double>();
-		
-		loop: 
-			while(true)
-				switch (st.nextToken()) {
-				case StreamTokenizer.TT_NUMBER:
-					values.add(new Double(st.nval));
-					break;
-					
-				case ']':
-					if (values.size() == 0)
-						throw new FileFormatException(st.lineno(), 
-								"Empty vector found");
-					break loop;
-					
-				default:
-					throw new FileFormatException(st.lineno(),
-							"Number or ']' expected");
-				}
-		
-		if (st.nextToken() != (int) ';')
-			throw new FileFormatException(st.lineno(), "';' expected");
-		
-		if (dimension > 0 && values.size() != dimension)
-			throw new FileFormatException(st.lineno(),
-					"Bad observation: wrong dimension (" + values.size() +
-					" instead of " + dimension +")");
-		
-		double[] valuesArray = new double[values.size()];
-		for (int i = 0; i < values.size(); i++)
-			valuesArray[i] = (values.get(i)).doubleValue();
-		
-		return new ObservationVector(valuesArray);
-	}
+    private int dimension;
+
+
+    /**
+     * Constructs a reader of {@link ObservationVector ObservationVector}.
+     */
+    public ObservationVectorReader()
+    {
+        dimension = -1;
+    }
+
+
+    /**
+     * Constructs a reader of {@link ObservationVector ObservationVector}.
+     * Verifies the dimension of the observations read.
+     *
+     * @param dimension The dimension of each observation.
+     */
+    public ObservationVectorReader(int dimension)
+    {
+        if (dimension <= 0)
+            throw new IllegalArgumentException("Argument must be strictly " +
+            "positive");
+
+        this.dimension = dimension;
+    }
+
+
+    /**
+     * An {@link be.ac.ulg.montefiore.run.jahmm.ObservationInteger
+     * ObservationInteger} reader, as explained in
+     * {@link ObservationReader ObservationReader}.
+     *
+     * @param st A stream tokenizer.
+     * @return An {@link be.ac.ulg.montefiore.run.jahmm.ObservationInteger
+     *         ObservationInteger}.
+     */
+    public ObservationVector read(StreamTokenizer st)
+    throws IOException, FileFormatException
+    {
+        if (st.nextToken() != (int) '[')
+            throw new FileFormatException(st.lineno(), "'[' expected");
+
+        List<Double> values = new ArrayList<Double>();
+
+        loop:
+            while(true)
+                switch (st.nextToken()) {
+                case StreamTokenizer.TT_NUMBER:
+                    values.add(new Double(st.nval));
+                    break;
+
+                case ']':
+                    if (values.size() == 0)
+                        throw new FileFormatException(st.lineno(),
+                                "Empty vector found");
+                    break loop;
+
+                default:
+                    throw new FileFormatException(st.lineno(),
+                            "Number or ']' expected");
+                }
+
+        if (st.nextToken() != (int) ';')
+            throw new FileFormatException(st.lineno(), "';' expected");
+
+        if (dimension > 0 && values.size() != dimension)
+            throw new FileFormatException(st.lineno(),
+                    "Bad observation: wrong dimension (" + values.size() +
+                    " instead of " + dimension +")");
+
+        double[] valuesArray = new double[values.size()];
+        for (int i = 0; i < values.size(); i++)
+            valuesArray[i] = (values.get(i)).doubleValue();
+
+        return new ObservationVector(valuesArray);
+    }
 }

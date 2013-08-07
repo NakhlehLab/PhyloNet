@@ -5,5 +5,5 @@ package be.ac.ulg.montefiore.run.jahmm;
  */
 public interface CentroidFactory<O>
 {
-	public Centroid<O> factor();
+    public Centroid<O> factor();
 }

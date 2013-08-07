@@ -38,16 +38,16 @@ public abstract class Observation
      * @return A string describing this observation.
      */
     public abstract String toString(NumberFormat numberFormat);
-    
-    
-	/**
-	 * Converts this Observation to a {@link java.lang.String String}.
-	 *
-	 * @return A descriptive string.
-	 */
-	public String toString()
-	{
-		return toString(NumberFormat.getInstance());
-	}
+
+
+    /**
+     * Converts this Observation to a {@link java.lang.String String}.
+     *
+     * @return A descriptive string.
+     */
+    public String toString()
+    {
+        return toString(NumberFormat.getInstance());
+    }
 }
 

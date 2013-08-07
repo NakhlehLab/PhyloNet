@@ -35,14 +35,14 @@ import be.ac.ulg.montefiore.run.jahmm.OpdfInteger;
 public class OpdfIntegerWriter
 extends OpdfWriter<OpdfInteger>
 {
-	public void write(Writer writer, OpdfInteger opdf)
-	throws IOException
-	{
-		String s = "IntegerOPDF [";
-		
-		for (int i = 0; i < opdf.nbEntries(); i++)
-			s += opdf.probability(new ObservationInteger(i)) + " ";
-			
-		writer.write(s + "]\n");
-	}
+    public void write(Writer writer, OpdfInteger opdf)
+    throws IOException
+    {
+        String s = "IntegerOPDF [";
+
+        for (int i = 0; i < opdf.nbEntries(); i++)
+            s += opdf.probability(new ObservationInteger(i)) + " ";
+
+        writer.write(s + "]\n");
+    }
 }

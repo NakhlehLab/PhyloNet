@@ -659,6 +659,9 @@ public class runHmm {
     // also maintain equivalence classes among hidden states based on shared parental trees
     parentalTreeClasses = new HashMap<EvoTree,Set<HiddenState>>();
 
+    // keep track of the parental tree ID
+    int parentID = 0;
+
     // kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
     for (EvoTree parentalTree : parentalTrees) {
         // kliu - cheap hack to clone all gene genealogies across
@@ -673,7 +676,7 @@ public class runHmm {
         HashSet<HiddenState> parentalTreeEquivalenceClass = new HashSet<HiddenState>();
 
         for (EvoTree geneGenealogy : geneGenealogies) {
-        HiddenState hiddenState = new HiddenState(parentalTree, geneGenealogy, null);
+        HiddenState hiddenState = new HiddenState(parentalTree, parentID, geneGenealogy, null);
         // kliu - meh - parse allele-to-species mapping later and add in references here
         trees_states.add(hiddenState);
         parentalTreeEquivalenceClass.add(hiddenState);
@@ -681,6 +684,8 @@ public class runHmm {
 
         // maintain the map
         parentalTreeClasses.put(parentalTree, parentalTreeEquivalenceClass);
+
+        parentID++;
     }
 
     // ------- >Testing purposes

@@ -64,77 +64,23 @@ public class GridSearchAlgorithm<O extends Observation> {
 		nobs.add(new RecombinationFreqNob(gHybridization, hybridizationMin, hybridizationMax, hmm, tpp, trees_states, parentalTreeClasses));
 		
 		//add tree branches
-		
-		
-	}
-	
-	
-
-	
-	
-	
-	 /**
-     * Calculate initial transition probability matrix a_{ij}.
-     * See revised writeup for details.
-     *
-     * Call this after changing parental tree branch lengths
-     */
-    protected static double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq, Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
-	double[][] a = new double[trees_states.size()][trees_states.size()];
-	for (int i = 0; i < a.length; i++) {
-	    HiddenState si = trees_states.get(i);
-	    double totalNonSelfTransitionProbabilities = 0.0;
-	    for (int j = 0 ; j < a[i].length; j++) {
-		// set self-transition probability at the end
-		if (i == j) {
-		    continue;
+		int currentparent = -1;
+		for (int i = 0; i < hmm.nbStates(); i++) {
+			// get the parent tree
+			// get id
+			//if (parenttreeid != currentparent) {
+				// do something
+				//currentparent = parenttreeid;
+				
+			//}
+			// get geneology tree
+			
 		}
 		
-		HiddenState sj = trees_states.get(j);
-		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
-		if (checkSameParentalClass(si, sj, parentalTreeClasses)) {
-		    a[i][j] *= recombinationFreq;
-		}
-		else {
-		    a[i][j] *= hybridizationFreq;
-		}
-
-		totalNonSelfTransitionProbabilities += a[i][j];
-	    }
-	    
-	    // now set self-transition probability
-	    a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
+		
 	}
 	
-	// strict!
-	if (!verifyAij(a)) {
-	    System.err.println ("ERROR: verifyAij() failed. Returning null to signal error.");
-	    return (null);
-	}
-
-	return (a);
-    }
 	
-    
-    protected static boolean checkSameParentalClass (HiddenState si, HiddenState sj, Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
-    	Set<HiddenState> sic = parentalTreeClasses.get(si.getParentalTree());
-    	return (sic.contains(sj));
-        }
-	
-    /**
-     * By construction, rows of a_ij matrix sum to one.
-     */
-    protected static boolean verifyAij (double[][] a) {
-	for (int i = 0; i < a.length; i++) {
-	    for (int j = 0; j < a[i].length; j++) {
-		if ((a[i][j] < 0.0) || (a[i][j] > 1.0)) {
-		    System.err.println ("ERROR: entry in a_ij transition matrix is invalid. " + a[i][j]);
-		    return (false);
-		}
-	    }
-	}
 
-	return (true);
-    }
-    
+
 }

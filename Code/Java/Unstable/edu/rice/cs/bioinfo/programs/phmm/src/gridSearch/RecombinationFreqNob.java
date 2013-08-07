@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import phylogeny.EvoTree;
+import runHmm.AllInformation;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
@@ -35,7 +36,7 @@ public class RecombinationFreqNob extends Nob {
 	
 	public void set_param(double value) {
 		probsParam.setRecombinationFrequency(value);
-		double[][] newTransition = GridSearchAlgorithm.calculateAij(trees_states, value, probsParam.getHybridizationFrequency(),
+		double[][] newTransition = AllInformation.calculateAij(trees_states, value, probsParam.getHybridizationFrequency(),
 				parentalTreeClasses);
 		thisHmm.setTransitionMatrix(newTransition);
 	}

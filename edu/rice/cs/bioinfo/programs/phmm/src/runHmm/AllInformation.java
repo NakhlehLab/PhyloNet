@@ -12,6 +12,11 @@ import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
+import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 public class AllInformation {
     static public final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
@@ -26,7 +31,7 @@ public class AllInformation {
 
     // argh - in lieu of worrying about EvoTree.equals() method
     // Maintain equivalence classes among hidden states based on shared parental tree.
-    static public Map<EvoTree,Set<HiddenState>> parentalTreeClasses;
+    static public BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses;
     static public TransitionProbabilityParameters transitionProbabilityParameters;
 
     // Parser
@@ -45,7 +50,7 @@ public class AllInformation {
      *
      * Call this after changing parental tree branch lengths
      */
-    public static double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq,Map<EvoTree,Set<HiddenState>> parentalTreeClasses) {
+    public static double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq,BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
     double[][] a = new double[trees_states.size()][trees_states.size()];
     for (int i = 0; i < a.length; i++) {
         HiddenState si = trees_states.get(i);

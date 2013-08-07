@@ -9,6 +9,11 @@ import runHmm.AllInformation;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
+import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 /**
  * This knob is used for the recombination frequency parameter from
@@ -22,11 +27,11 @@ public class RecombinationFreqNob extends Nob {
 
     private TransitionProbabilityParameters probsParam;
     private ArrayList<HiddenState> trees_states;
-    private Map<EvoTree,Set<HiddenState>> parentalTreeClasses;
+    private BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses;
 
     public RecombinationFreqNob(int gIn, double minIn, double maxIn,
             Hmm hmmIn, TransitionProbabilityParameters probsParamIn, ArrayList<HiddenState> treeStatesIn,
-            Map<EvoTree, Set<HiddenState>> parentalTreeIn) {
+            BijectiveHashtable<Network<Double>, Set<HiddenState>> parentalTreeIn) {
         super(gIn, minIn, maxIn);
         this.thisHmm = hmmIn;
         this.probsParam = probsParamIn;

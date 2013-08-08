@@ -41,6 +41,7 @@ public class HybridizationFreqNob extends Nob {
     }
 
     public void set_param(double value) {
+        backupParam = probsParam.getHybridizationFrequency();
         probsParam.setHybridizationFrequency(value);
         double[][] newTransition = AllInformation.calculateAij(trees_states,
                 probsParam.getRecombinationFrequency(), value,
@@ -51,6 +52,15 @@ public class HybridizationFreqNob extends Nob {
 
     public double get_param() {
         return probsParam.getHybridizationFrequency();
+    }
+
+    @Override
+    public void restoreParameterValue() {
+        // TODO Auto-generated method stub
+        probsParam.setHybridizationFrequency(backupParam);
+        double[][] newTransition = AllInformation.calculateAij(trees_states, probsParam.getRecombinationFrequency(), backupParam,
+                parentalTreeClasses);
+        thisHmm.setTransitionMatrix(newTransition);
     }
 
 }

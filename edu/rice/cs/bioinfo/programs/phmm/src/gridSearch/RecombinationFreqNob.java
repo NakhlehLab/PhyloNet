@@ -40,6 +40,7 @@ public class RecombinationFreqNob extends Nob {
     }
 
     public void set_param(double value) {
+        backupParam = probsParam.getRecombinationFrequency();
         probsParam.setRecombinationFrequency(value);
         double[][] newTransition = AllInformation.calculateAij(trees_states, value, probsParam.getHybridizationFrequency(),
                 parentalTreeClasses);
@@ -49,6 +50,15 @@ public class RecombinationFreqNob extends Nob {
 
     public double get_param() {
         return probsParam.getRecombinationFrequency();
+    }
+
+    @Override
+    public void restoreParameterValue() {
+        // TODO Auto-generated method stub
+        probsParam.setRecombinationFrequency(backupParam);
+        double[][] newTransition = AllInformation.calculateAij(trees_states, backupParam, probsParam.getHybridizationFrequency(),
+                parentalTreeClasses);
+        thisHmm.setTransitionMatrix(newTransition);
     }
 
 }

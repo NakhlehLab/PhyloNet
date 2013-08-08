@@ -8,7 +8,7 @@ public abstract class Nob {
     private int g;
     private double min;
     private double max;
-    private double backupParam;
+    protected double backupParam;
 
     // kliu - add in a cache for previous values
     protected Stack<Double> cache;

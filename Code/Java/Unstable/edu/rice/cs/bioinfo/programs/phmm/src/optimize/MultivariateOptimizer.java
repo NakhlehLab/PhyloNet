@@ -127,7 +127,7 @@ public class MultivariateOptimizer {
     protected List<HiddenState> hiddenStates;
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
-    protected Map<String,Network<Double>> parentalTreeNameMap;
+    protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
     protected List<ObservationMap> observation;
 
     // bijective map between parental tree node objects and their names
@@ -177,7 +177,7 @@ public class MultivariateOptimizer {
 				  List<HiddenState> inHiddenStates,
 				  TransitionProbabilityParameters inTransitionProbabilityParameters,
 				  Map<Network<Double>,Set<HiddenState>> inParentalTreeClasses,
-				  Map<String,Network<Double>> inParentalTreeNameMap,
+				  BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
 				  List<ObservationMap> inObservation,
 				  String inputLengthParameterToEdgeMapFilename,
 				  String inputLengthParameterSetConstraintsFilename
@@ -539,7 +539,7 @@ public class MultivariateOptimizer {
     }
 
     protected void createParentalNodeLabelMap () {
-	for (String parentalTreeName : parentalTreeNameMap.keySet()) {
+	for (String parentalTreeName : parentalTreeNameMap.keys()) {
 	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
 	    for (NetNode<Double> node : parentalTree.dfs()) {
 		String label = parentalTreeName + PARENTAL_NODE_LABEL_DELIMITER + node.getName();

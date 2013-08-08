@@ -2,7 +2,6 @@ package gridSearch;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
@@ -13,8 +12,6 @@ import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-//import phylogeny.EvoTree;
-//import phylogeny.Node;
 
 
 public class GridSearchAlgorithm<O extends Observation> {
@@ -75,12 +72,14 @@ public class GridSearchAlgorithm<O extends Observation> {
     private void initializeGridSearch(Hmm<O> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
-            BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) throws CloneNotSupportedException {
+            BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses)
+                    throws CloneNotSupportedException {
+
         // Initialize Nobs array
         nobs = new ArrayList<Nob>();
 
         //add base sub nob
-        nobs.add(new BaseSubNob(gBaseSub, branchMin, branchMax));
+        nobs.add(new BaseSubNob(gBaseSub, baseSubMin, baseSubMax));
 
         //add transition probability recombination
         nobs.add(new RecombinationFreqNob(gRecombination, recombinationMin,
@@ -90,65 +89,33 @@ public class GridSearchAlgorithm<O extends Observation> {
         nobs.add(new RecombinationFreqNob(gHybridization, hybridizationMin,
                 hybridizationMax, hmm, tpp, trees_states, parentalTreeClasses));
 
-	// kliu - need to use PhyloNet tree/network structures
-	// walk through unique parental tree objects
-	for (Network<Double> parentalTree : parentalTreeClasses.keys()) {
-	    for (NetNode<Double> node : parentalTree.dfs()) {
-		// root has no incoming edge to optimize
-		if (node.isRoot()) {
-		    continue;
-		}
+    	// kliu - need to use PhyloNet tree/network structures
+    	// walk through unique parental tree objects
+    	for (Network<Double> parentalTree : parentalTreeClasses.keys()) {
+    	    for (NetNode<Double> node : parentalTree.dfs()) {
+    		// root has no incoming edge to optimize
+    		if (node.isRoot()) {
+    		    continue;
+    		}
 
-		// create a knob
-		nobs.add(new ParentalTreeNob(gBranch, branchMin, branchMax, node));
-	    }
-	}
+    		// create a knob
+    		nobs.add(new ParentalTreeNob(gBranch, branchMin, branchMax, node));
+    	    }
+    	}
 
-	// ditto for all gene genealogies
-	for (HiddenState hiddenState : trees_states) {
-	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
-		// root has no incoming edge to optimize
-		if (node.isRoot()) {
-		    continue;
-		}
+    	// ditto for all gene genealogies
+    	for (HiddenState hiddenState : trees_states) {
+    	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
+    		// root has no incoming edge to optimize
+        		if (node.isRoot()) {
+        		    continue;
+        		}
 
-		nobs.add(new GeneGenealogyNob(gBranch, branchMin, branchMax, node));
-	    }
-	}
-
-
-
+        		nobs.add(new GeneGenealogyNob(gBranch, branchMin, branchMax, node));
+    	    }
+    	}
 
     }
-
-
-
-    /**
-     * Runs the Grid Search Algorithm
-     * @param observation - the observation Sequence
-     * @param hmm - the initilized hmm
-     * @param tpp - the Transition Probability Parameters
-     * @param trees_states - the list of hidden states
-     * @param parentalTreeClasses -  the set of HiddenStates
-     * @throws CloneNotSupportedException
-     */
-    // private void getBranches(Node aNode) {
-    //     if (!aNode.isRoot()) {
-    //         //if Node is not a root then do this
-
-    //         // add self to NOBs array
-    //         nobs.add(new EvoTreeNob(gBranch, branchMin, branchMax, aNode));
-
-    //         if (!aNode.isLeaf()) {
-    //             // if node is not a leaf then run this method on its children
-    //             ArrayList<Node> children = aNode.getChildren();
-    //             for (int i = 0; i < children.size(); i++) {
-    //                 getBranches(children.get(i));
-    //             }
-    //         }
-    //     }
-    // }
-
 
     public void runGridSearch(List<O> observation, Hmm<O> hmm,
             TransitionProbabilityParameters tpp,

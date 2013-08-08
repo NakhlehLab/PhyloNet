@@ -27,6 +27,7 @@
       <root url="jar://$PROJECT_DIR$/dependencies/vecmath-1.3.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/dependencies/jung-3d-2.0.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/dependencies/PhyloNet_Unstable.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dependencies/jblas-1.2.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

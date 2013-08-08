@@ -1,0 +1,4 @@
+t1 1.0 anc,root
+t2 0.1 human,anc
+t3 0.1 chimp,anc
+t4 0.5 gorilla,anc

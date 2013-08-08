@@ -1,5 +1,5 @@
 #NEXUS
 begin trees;
-tree ptree1 = (gorilla:3,(human:1,chimp:2)foo:4)root;
-tree ptree2 = (chimp:3,(human:1,gorilla:2)fib:2.5)root;
+tree ptree1 = (gorilla:3,(human:1,chimp:2)anc:4)root;
+tree ptree2 = (chimp:3,(human:1,gorilla:2)anc:5)root;
 end;

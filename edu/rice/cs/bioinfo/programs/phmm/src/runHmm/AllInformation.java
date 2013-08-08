@@ -1,36 +1,47 @@
 package runHmm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
+import phylogeny.EvoTree;
+import reader.Parser;
+import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 public class AllInformation {
-//    static public final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
-//
-//    // HMM
-//    static public Hmm<ObservationMap> myhmm;						/* The entire HMM */
-//
-//
-//    // Trees and Hidden States
-//    static public int numStates = -1;								/* The number of states for the HMM */
-//    static public ArrayList<HiddenState> trees_states;				/* List of all states/trees */
-//
-//    // argh - in lieu of worrying about EvoTree.equals() method
-//    // Maintain equivalence classes among hidden states based on shared parental tree.
-//    static public BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses;
-//    static public TransitionProbabilityParameters transitionProbabilityParameters;
-//
-//    // Parser
-//    static public Parser fParser;									/* The parser for all basic info and read sequences --> also calculates likelihood */
-//    static public ArrayList<String> alphabet;						/* ArrayList of legal characters/symbols */
-//    static public ArrayList<ObservationMap> sequence;				/* a REUSABLE arraylist that holds the converted and final usable sequence for ONE file */
-//    static public HashMap<String, Integer> seqTypes;				/* mapping from types of sequences to integers */
-//    static public Vector<String> taxa; 								//  reverse the above map
-//    static public HashMap<String, String> alleleSpeciesMap;			/* Allele to Species Mapping */
-//
+    static public final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
+
+    // HMM
+    static public Hmm<ObservationMap> myhmm;						/* The entire HMM */
+
+
+    // Trees and Hidden States
+    static public int numStates = -1;								/* The number of states for the HMM */
+    static public ArrayList<HiddenState> trees_states;				/* List of all states/trees */
+
+    // argh - in lieu of worrying about EvoTree.equals() method
+    // Maintain equivalence classes among hidden states based on shared parental tree.
+    static public Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
+    static public TransitionProbabilityParameters transitionProbabilityParameters;
+
+    // Parser
+    static public Parser fParser;									/* The parser for all basic info and read sequences --> also calculates likelihood */
+    static public ArrayList<String> alphabet;						/* ArrayList of legal characters/symbols */
+    static public ArrayList<ObservationMap> sequence;				/* a REUSABLE arraylist that holds the converted and final usable sequence for ONE file */
+    static public HashMap<String, Integer> seqTypes;				/* mapping from types of sequences to integers */
+    static public Vector<String> taxa; 								//  reverse the above map
+    static public HashMap<String, String> alleleSpeciesMap;			/* Allele to Species Mapping */
+
 
 
      /**
@@ -39,7 +50,7 @@ public class AllInformation {
      *
      * Call this after changing parental tree branch lengths
      */
-    public static double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq,BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
+    public static double[][] calculateAij (ArrayList<HiddenState> trees_states, double recombinationFreq, double hybridizationFreq,Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
     double[][] a = new double[trees_states.size()][trees_states.size()];
     for (int i = 0; i < a.length; i++) {
         HiddenState si = trees_states.get(i);
@@ -52,7 +63,7 @@ public class AllInformation {
 
         HiddenState sj = trees_states.get(j);
         a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
-        if (checkSameParentalClass(parentalTreeClasses, si, sj)) {
+        if (checkSameParentalClass(si, sj)) {
             a[i][j] *= recombinationFreq;
         }
         else {
@@ -76,7 +87,7 @@ public class AllInformation {
     }
 
 
-    public static boolean checkSameParentalClass (BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses, HiddenState si, HiddenState sj) {
+    public static boolean checkSameParentalClass (HiddenState si, HiddenState sj) {
         Set<HiddenState> sic = parentalTreeClasses.get(si.getParentalTree());
         return (sic.contains(sj));
         }

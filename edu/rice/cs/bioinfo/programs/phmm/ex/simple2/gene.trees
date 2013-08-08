@@ -1,8 +1,8 @@
 #NEXUS
 begin trees;
-tree one    = (gorilla:3,(human:1,chimp:2):4);
-tree two    = (chimp:3,(human:1,gorilla:2):5);
-tree three  = (human:6,(chimp:7,gorilla:8):9);
+tree gtree1 = (gorilla:3,(human:1,chimp:2):4);
+tree gtree2 = (chimp:3,(human:1,gorilla:2):5);
+tree gtree3 = (human:6,(chimp:7,gorilla:8):9);
 end;
 
 

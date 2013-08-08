@@ -1,5 +1,5 @@
 #NEXUS
 begin trees;
-tree one    = ((GeorgianDomesticus:5,SpanishMainlandDomesticus:6):7,(Spretus2:8,Spretus1:9):10);
-tree two    = ((GeorgianDomesticus:4,Spretus1:5):6,(Spretus2:7,SpanishMainlandDomesticus:8):9);
+tree p1 = ((GeorgianDomesticus:5,SpanishMainlandDomesticus:6):7,(Spretus2:8,Spretus1:9):10);
+tree p2 = ((GeorgianDomesticus:4,Spretus1:5):6,(Spretus2:7,SpanishMainlandDomesticus:8):9);
 end;

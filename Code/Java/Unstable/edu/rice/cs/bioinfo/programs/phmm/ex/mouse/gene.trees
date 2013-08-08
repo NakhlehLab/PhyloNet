@@ -1,8 +1,8 @@
 #NEXUS
 begin trees;
-tree one    = ((GeorgianDomesticus:1,SpanishMainlandDomesticus:1):1,(Spretus2:1,Spretus1:1):1);
-tree two    = ((GeorgianDomesticus:1,Spretus1:1):1,(Spretus2:1,SpanishMainlandDomesticus:1):1);
-tree three  = ((GeorgianDomesticus:1,Spretus2:1):1,(SpanishMainlandDomesticus:1,Spretus1:1):1);
+tree g1 = ((GeorgianDomesticus:1,SpanishMainlandDomesticus:1):1,(Spretus2:1,Spretus1:1):1);
+tree g2 = ((GeorgianDomesticus:1,Spretus1:1):1,(Spretus2:1,SpanishMainlandDomesticus:1):1);
+tree g3 = ((GeorgianDomesticus:1,Spretus2:1):1,(SpanishMainlandDomesticus:1,Spretus1:1):1);
 end;
 
 

@@ -27,11 +27,11 @@ public class RecombinationFreqNob extends Nob {
 
     private TransitionProbabilityParameters probsParam;
     private ArrayList<HiddenState> trees_states;
-    private BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses;
+    private Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
 
     public RecombinationFreqNob(int gIn, double minIn, double maxIn,
             Hmm hmmIn, TransitionProbabilityParameters probsParamIn, ArrayList<HiddenState> treeStatesIn,
-            BijectiveHashtable<Network<Double>, Set<HiddenState>> parentalTreeIn) {
+            Map<Network<Double>, Set<HiddenState>> parentalTreeIn) {
         super(gIn, minIn, maxIn);
         this.thisHmm = hmmIn;
         this.probsParam = probsParamIn;

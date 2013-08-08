@@ -2,21 +2,17 @@ package gridSearch;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
-//import phylogeny.EvoTree;
-//import phylogeny.Node;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.Observation;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
-import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
-import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+
 
 
 public class GridSearchAlgorithm<O extends Observation> {
@@ -94,87 +90,43 @@ public class GridSearchAlgorithm<O extends Observation> {
         nobs.add(new RecombinationFreqNob(gHybridization, hybridizationMin,
                 hybridizationMax, hmm, tpp, trees_states, parentalTreeClasses));
 
-	// kliu - need to use PhyloNet tree/network structures
-	// walk through unique parental tree objects
-	for (Network<Double> parentalTree : parentalTreeClasses.keySet()) {
-	    for (NetNode<Double> node : parentalTree.dfs()) {
-		// root has no incoming edge to optimize
-		if (node.isRoot()) {
-		    continue;
-		}
+    	// kliu - need to use PhyloNet tree/network structures
+    	// walk through unique parental tree objects
+    	for (Network<Double> parentalTree : parentalTreeClasses.keySet()) {
+    	    for (NetNode<Double> node : parentalTree.dfs()) {
+    		// root has no incoming edge to optimize
+    		if (node.isRoot()) {
+    		    continue;
+    		}
 
-		// create a knob
-		nobs.add(new ParentalTreeNob(gBranch, branchMin, branchMax, node));
-	    }
-	}
+    		// create a knob
+    		nobs.add(new ParentalTreeNob(gBranch, branchMin, branchMax, node));
+    	    }
+    	}
 
-	// ditto for all gene genealogies
-	for (HiddenState hiddenState : trees_states) {
-	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
-		// root has no incoming edge to optimize
-		if (node.isRoot()) {
-		    continue;
-		}
+    	// ditto for all gene genealogies
+    	for (HiddenState hiddenState : trees_states) {
+    	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
+    		// root has no incoming edge to optimize
+    		if (node.isRoot()) {
+    		    continue;
+    		}
 
-		nobs.add(new GeneGenealogyNob(gBranch, branchMin, branchMax, node));
-	    }
-	}
-
-        //add tree branches
-        // for (int i = 0; i < hmm.nbStates(); i++) {
-        //     // get the current hidden state
-        //     HiddenState currentState = ((OpdfMap)hmm.getOpdf(i)).getHiddenState();
-
-        //     // Only if it's a parent that has not been encountered
-        //     if (currentState.getParentalTreeID() != currentparentID) {
-        //         //add all parent branches into the NOBs array
-        //         getBranches(currentState.getParentalTree().getRoot());
-        //     }
-
-        //     // set the current Id
-        //     currentparentID = currentState.getParentalTreeID();
-
-        //     // add all gene tree branches into the NOBs array
-        //     getBranches(currentState.getGeneGenealogy().getRoot());
-
-        // }
-
+    		nobs.add(new GeneGenealogyNob(gBranch, branchMin, branchMax, node));
+    	    }
+    	}
 
     }
 
 
-    /**
-     * Helper function that aids in getting all the branches
-     * in a tree.
-     * Wraps each branch in a Nob Class and inserts this Nob object
-     * into a the Nobs Array
-     *
-     * @param aNode
-     */
-    // private void getBranches(Node aNode) {
-    //     if (!aNode.isRoot()) {
-    //         //if Node is not a root then do this
-
-    //         // add self to NOBs array
-    //         nobs.add(new EvoTreeNob(gBranch, branchMin, branchMax, aNode));
-
-    //         if (!aNode.isLeaf()) {
-    //             // if node is not a leaf then run this method on its children
-    //             ArrayList<Node> children = aNode.getChildren();
-    //             for (int i = 0; i < children.size(); i++) {
-    //                 getBranches(children.get(i));
-    //             }
-    //         }
-    //     }
-    // }
 
 
     public void runGridSearch(List<O> observation, Hmm<O> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
             Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
-	
-	
+
+
         initializeGridSearch(hmm, tpp, trees_states, parentalTreeClasses);
 
         double[] sampleInterval;
@@ -182,8 +134,10 @@ public class GridSearchAlgorithm<O extends Observation> {
         double tempProb;
         double paramBackup;
 
+
         for (Nob curNob: nobs) {
             curMaxProb = hmm.probability(observation);
+            System.out.println("curMaxProb : " + curMaxProb);
             sampleInterval = curNob.getSamples();
             for (int i = 0; i < sampleInterval.length; i++) {
                 paramBackup = curNob.get_param();
@@ -191,8 +145,10 @@ public class GridSearchAlgorithm<O extends Observation> {
                 tempProb = hmm.probability(observation);
                 if (tempProb <= curMaxProb)
                     curNob.set_param(paramBackup);
-                else
+                else {
                     curMaxProb = tempProb;
+                    System.out.println("tempMaxProb : " + tempProb);
+                }
             }
         }
 

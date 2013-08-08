@@ -539,6 +539,7 @@ public class MultivariateOptimizer {
     }
 
     protected void createParentalNodeLabelMap () {
+	parentalNodeLabelMap = new BijectiveHashtable<NetNode<Double>,String>();
 	for (String parentalTreeName : parentalTreeNameMap.keys()) {
 	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
 	    for (NetNode<Double> node : parentalTree.dfs()) {

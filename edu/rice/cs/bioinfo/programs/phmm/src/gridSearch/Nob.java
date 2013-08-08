@@ -52,11 +52,10 @@ public abstract class Nob {
      * cacheParameterValue() operation was performed previously.
      */
     public void restoreParameterValue () {
-	if (cache.empty()) {
-	    throw (new RuntimeException("ERROR: Nob.restoreParameterValue() called before a corresponding cacheParameterValue() operation was performed."));
-	}
-
-	set_param(cache.pop());
+        if (cache.empty()) {
+            throw (new RuntimeException("ERROR: Nob.restoreParameterValue() called before a corresponding cacheParameterValue() operation was performed."));
+    	}
+	    set_param(cache.pop());
     }
 
     // kliu - don't do a cache peek

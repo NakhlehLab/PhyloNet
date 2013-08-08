@@ -30,7 +30,8 @@ public class HybridizationFreqNob extends Nob {
     private BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses;
 
     public HybridizationFreqNob(int gIn, double minIn, double maxIn,
-            Hmm hmmIn, TransitionProbabilityParameters probsParamIn, ArrayList<HiddenState> treeStatesIn,
+            Hmm hmmIn, TransitionProbabilityParameters probsParamIn,
+            ArrayList<HiddenState> treeStatesIn,
             BijectiveHashtable<Network<Double>, Set<HiddenState>> parentalTreeIn) {
         super(gIn, minIn, maxIn);
         this.thisHmm = hmmIn;
@@ -41,7 +42,8 @@ public class HybridizationFreqNob extends Nob {
 
     public void set_param(double value) {
         probsParam.setHybridizationFrequency(value);
-        double[][] newTransition = AllInformation.calculateAij(trees_states, probsParam.getRecombinationFrequency(), value,
+        double[][] newTransition = AllInformation.calculateAij(trees_states,
+                probsParam.getRecombinationFrequency(), value,
                 parentalTreeClasses);
         thisHmm.setTransitionMatrix(newTransition);
     }

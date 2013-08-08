@@ -5,18 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-//import phylogeny.EvoTree;
-//import phylogeny.Node;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.Observation;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
-import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+//import phylogeny.EvoTree;
+//import phylogeny.Node;
 
 
 public class GridSearchAlgorithm<O extends Observation> {
@@ -118,36 +116,20 @@ public class GridSearchAlgorithm<O extends Observation> {
 	    }
 	}
 
-        //add tree branches
-        // for (int i = 0; i < hmm.nbStates(); i++) {
-        //     // get the current hidden state
-        //     HiddenState currentState = ((OpdfMap)hmm.getOpdf(i)).getHiddenState();
 
-        //     // Only if it's a parent that has not been encountered
-        //     if (currentState.getParentalTreeID() != currentparentID) {
-        //         //add all parent branches into the NOBs array
-        //         getBranches(currentState.getParentalTree().getRoot());
-        //     }
-
-        //     // set the current Id
-        //     currentparentID = currentState.getParentalTreeID();
-
-        //     // add all gene tree branches into the NOBs array
-        //     getBranches(currentState.getGeneGenealogy().getRoot());
-
-        // }
 
 
     }
 
 
+
     /**
-     * Helper function that aids in getting all the branches
-     * in a tree.
-     * Wraps each branch in a Nob Class and inserts this Nob object
-     * into a the Nobs Array
-     *
-     * @param aNode
+     * Runs the Grid Search Algorithm
+     * @param observation - the observation Sequence
+     * @param hmm - the initilized hmm
+     * @param tpp - the Transition Probability Parameters
+     * @param trees_states - the list of hidden states
+     * @param parentalTreeClasses -  the set of HiddenStates
      * @throws CloneNotSupportedException
      */
     // private void getBranches(Node aNode) {

@@ -1,6 +1,7 @@
 package gridSearch;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,11 +72,12 @@ public class GridSearchAlgorithm<O extends Observation> {
      * @param observation
      * @param trees_states
      * @param parentalTreeClasses
+     * @throws CloneNotSupportedException
      */
     private void initializeGridSearch(Hmm<O> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
-            BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
+            BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) throws CloneNotSupportedException {
         // Initialize Nobs array
         nobs = new ArrayList<Nob>();
 
@@ -146,6 +148,7 @@ public class GridSearchAlgorithm<O extends Observation> {
      * into a the Nobs Array
      *
      * @param aNode
+     * @throws CloneNotSupportedException
      */
     // private void getBranches(Node aNode) {
     //     if (!aNode.isRoot()) {
@@ -165,14 +168,26 @@ public class GridSearchAlgorithm<O extends Observation> {
     // }
 
 
-    public void runGridSearch(O observation, Hmm<O> hmm,
+    public void runGridSearch(List<O> observation, Hmm<O> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
-            BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
+            BijectiveHashtable<Network<Double>,Set<HiddenState>> parentalTreeClasses) throws CloneNotSupportedException {
 
         initializeGridSearch(hmm, tpp, trees_states, parentalTreeClasses);
 
-
+        for (Nob curNob: nobs) {
+            double curMaxProb = hmm.probability(observation);
+            double[] sampleInterval = curNob.getSamples();
+            for (int i = 0; i < sampleInterval.length; i++) {
+                double paramBackup = curNob.get_param();
+                curNob.set_param(sampleInterval[i]);
+                double tempProb = hmm.probability(observation);
+                if (tempProb <= curMaxProb)
+                    curNob.set_param(paramBackup);
+                else
+                    curMaxProb = tempProb;
+            }
+        }
 
     }
 

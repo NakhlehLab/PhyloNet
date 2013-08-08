@@ -157,13 +157,18 @@ public class GridSearchAlgorithm<O extends Observation> {
 
         initializeGridSearch(hmm, tpp, trees_states, parentalTreeClasses);
 
+        double[] sampleInterval;
+        double curMaxProb;
+        double tempProb;
+        double paramBackup;
+
         for (Nob curNob: nobs) {
-            double curMaxProb = hmm.probability(observation);
-            double[] sampleInterval = curNob.getSamples();
+            curMaxProb = hmm.probability(observation);
+            sampleInterval = curNob.getSamples();
             for (int i = 0; i < sampleInterval.length; i++) {
-                double paramBackup = curNob.get_param();
+                paramBackup = curNob.get_param();
                 curNob.set_param(sampleInterval[i]);
-                double tempProb = hmm.probability(observation);
+                tempProb = hmm.probability(observation);
                 if (tempProb <= curMaxProb)
                     curNob.set_param(paramBackup);
                 else

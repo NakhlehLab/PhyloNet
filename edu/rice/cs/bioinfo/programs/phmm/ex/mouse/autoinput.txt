@@ -7,5 +7,6 @@
 0.1 0.01
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/viterbi.test.out
+1
 /home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.seq
-2
+3

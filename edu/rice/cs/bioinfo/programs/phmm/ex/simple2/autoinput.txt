@@ -7,5 +7,6 @@
 0.5 0.1
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/viterbi.out
+1
 /home/kl23/code/phmm-repository/phmm/ex/simple2/myseq.seq
-2
+3

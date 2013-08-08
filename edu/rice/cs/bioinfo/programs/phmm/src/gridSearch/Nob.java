@@ -1,6 +1,5 @@
 package gridSearch;
 
-import java.util.Stack;
 
 public abstract class Nob {
     // Note: Nob is usually spelled as "Knob" but this is written in Phylonet Nob Style.
@@ -10,8 +9,6 @@ public abstract class Nob {
     private double max;
     protected double backupParam;
 
-    // kliu - add in a cache for previous values
-    protected Stack<Double> cache;
 
     public Nob(int gIn, double minIn, double maxIn) {
         this.g = gIn;
@@ -46,11 +43,8 @@ public abstract class Nob {
 
 
     /**
-     * WARNING - will throw an exception if no corresponding
-     * cacheParameterValue() operation was performed previously.
+     * Restores hmm state back to the previous backup parameter
      */
     abstract public void restoreParameterValue();
 
-    // kliu - don't do a cache peek
-    // unnecessary for now
 }

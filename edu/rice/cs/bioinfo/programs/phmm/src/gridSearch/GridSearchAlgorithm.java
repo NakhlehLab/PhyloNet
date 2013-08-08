@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Set;
 
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
-import be.ac.ulg.montefiore.run.jahmm.Observation;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -15,7 +15,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 
 
 
-public class GridSearchAlgorithm<O extends Observation> {
+public class GridSearchAlgorithm {
 
     private int gBranch;
     private int gRecombination;
@@ -72,7 +72,7 @@ public class GridSearchAlgorithm<O extends Observation> {
      * @param parentalTreeClasses
      * @throws CloneNotSupportedException
      */
-    private void initializeGridSearch(Hmm<O> hmm,
+    private void initializeGridSearch(Hmm<ObservationMap> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
             Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
@@ -121,7 +121,7 @@ public class GridSearchAlgorithm<O extends Observation> {
 
 
 
-    public void runGridSearch(List<O> observation, Hmm<O> hmm,
+    public void runGridSearch(List<ObservationMap> observation, Hmm<ObservationMap> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
             Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
@@ -132,19 +132,16 @@ public class GridSearchAlgorithm<O extends Observation> {
         double[] sampleInterval;
         double curMaxProb;
         double tempProb;
-        double paramBackup;
-
 
         for (Nob curNob: nobs) {
             curMaxProb = hmm.probability(observation);
             System.out.println("curMaxProb : " + curMaxProb);
             sampleInterval = curNob.getSamples();
             for (int i = 0; i < sampleInterval.length; i++) {
-                paramBackup = curNob.get_param();
                 curNob.set_param(sampleInterval[i]);
                 tempProb = hmm.probability(observation);
                 if (tempProb <= curMaxProb)
-                    curNob.set_param(paramBackup);
+                    curNob.restoreParameterValue();
                 else {
                     curMaxProb = tempProb;
                     System.out.println("tempMaxProb : " + tempProb);

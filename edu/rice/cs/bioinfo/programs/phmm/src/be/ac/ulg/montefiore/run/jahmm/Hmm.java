@@ -355,6 +355,14 @@ public class Hmm<O extends Observation>
         this.a = matrixIn;
     }
 
+    /**
+     * Retrieve the whole transition matrix of the Hmm.
+     */
+
+    public double[][] getTransitionMatrix() {
+        return this.a;
+    }
+
 
     /**
      * Gives a description of this HMM.

@@ -1,6 +1,5 @@
 package gridSearch;
 
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
 public class ParentalTreeNob extends Nob {
@@ -21,12 +20,17 @@ public class ParentalTreeNob extends Nob {
 
     @Override
     public void set_param(double value) {
+        backupParam = childNode.getParentDistance(parentNode);
         childNode.setParentDistance(parentNode, value);
     }
 
     @Override
     public double get_param() {
         return childNode.getParentDistance(parentNode);
+    }
+
+    public void restoreParameterValue() {
+        childNode.setParentDistance(parentNode, backupParam);
     }
 
 }

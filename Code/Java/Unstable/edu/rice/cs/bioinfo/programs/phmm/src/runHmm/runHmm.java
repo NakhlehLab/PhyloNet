@@ -10,7 +10,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import gridSearch.GridSearchAlgorithm;
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
 import reader.Parser;
@@ -29,14 +27,14 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import gridSearch.GridSearchAlgorithm;
 
 public class runHmm {
 
@@ -306,8 +304,8 @@ public class runHmm {
                 System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
                 double baseSubMaxIn = Double.parseDouble(in.readLine());
 
-                GridSearchAlgorithm<ObservationMap> gsa =
-                        new GridSearchAlgorithm<ObservationMap>(gBranchIn, gRecombinationIn,
+                GridSearchAlgorithm gsa =
+                        new GridSearchAlgorithm(gBranchIn, gRecombinationIn,
                         gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
                         recombinationMinIn, recombinationMaxIn, hybridizationMinIn,
                         hybridizationMaxIn, baseSubMinIn, baseSubMaxIn);

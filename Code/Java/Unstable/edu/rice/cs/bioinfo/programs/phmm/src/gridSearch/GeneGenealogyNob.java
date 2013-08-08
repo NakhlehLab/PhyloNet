@@ -14,12 +14,17 @@ public class GeneGenealogyNob extends Nob {
 
     @Override
     public void set_param(double value) {
+        backupParam = childNode.getParentDistance();
         childNode.setParentDistance(value);
     }
 
     @Override
     public double get_param() {
         return childNode.getParentDistance();
+    }
+
+    public void restoreParameterValue() {
+        childNode.setParentDistance(backupParam);
     }
 
 }

@@ -14,12 +14,18 @@ public class BaseSubNob extends Nob {
     }
 
     public void set_param(double value) {
+        backupParam = baseRateSub;
         baseRateSub = value;
+
     }
 
 
     public double get_param() {
         return baseRateSub;
+    }
+
+    public void restoreParameterValue() {
+        baseRateSub = backupParam;
     }
 
 }

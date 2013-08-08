@@ -561,7 +561,7 @@ public class runHmm {
 	    System.out.println("3) Learn Model using a multivariate optimization heuristic that incorporates Brent's method");
 	    System.out.println("4) Exit");
 	    System.out.println("Choose an option: ");
-	    option = getOption(4, in);
+	    option = getOption(5, in);
 	    if (option != -1) operate = false;
 	}
 	return option;

@@ -306,7 +306,7 @@ public class runHmm {
                         hybridizationMaxIn, baseSubMinIn, baseSubMaxIn);
 
                 gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
-                        trees_states, (BijectiveHashtable)parentalTreeClasses);
+                        trees_states, (BijectiveHashtable<Network<Double>,Set<HiddenState>>)parentalTreeClasses);
 
             }
             catch (Exception e) {
@@ -481,7 +481,7 @@ public class runHmm {
 	int option = -1;
 	while (operate) {
 	    System.out.println("Operate mode:");
-	    System.out.println("0) Process an observation sequence");
+	    System.out.println("0) Run Viterbi");
 	    System.out.println("1) Learn Model using Baum Welch.");
 	    System.out.println("2) Learn Model using Grid Search");
 	    System.out.println("3) Exit");
@@ -865,7 +865,7 @@ public class runHmm {
     	    HashSet<String> geneGenealogyNames = new HashSet<String>();
 
     	    for (EvoTree egg : eGeneGenealogies) {
-        		Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(egg);
+    	        Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(egg);
         		if (hasDuplicateNames(geneGenealogy)) {
         		    throw (new RuntimeException("ERROR: duplicate node names are present in gene genealogy " + egg.getName() + ".Check inputs and try again."));
         		}

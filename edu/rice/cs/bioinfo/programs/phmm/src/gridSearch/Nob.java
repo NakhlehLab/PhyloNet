@@ -16,7 +16,7 @@ public abstract class Nob {
         this.g = gIn;
         this.min = minIn;
         this.max = maxIn;
-	cache = new Stack<Double();
+	cache = new Stack<Double>();
     }
 
     /**
@@ -44,7 +44,7 @@ public abstract class Nob {
     abstract double get_param();
 
     public void cacheParameterValue () {
-	cache.push(new Double(get_param));
+	cache.push(new Double(get_param()));
     }
 
     /**

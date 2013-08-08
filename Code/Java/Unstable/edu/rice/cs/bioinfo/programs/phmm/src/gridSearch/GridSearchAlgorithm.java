@@ -1,8 +1,9 @@
 package gridSearch;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 //import phylogeny.EvoTree;
 //import phylogeny.Node;
@@ -61,6 +62,8 @@ public class GridSearchAlgorithm<O extends Observation> {
 
     }
 
+    // throws CloneNotSupportedException
+
     /**
      * Builds the Nobs array that contain all parameters
      * that need to be learned
@@ -71,6 +74,7 @@ public class GridSearchAlgorithm<O extends Observation> {
      * @param observation
      * @param trees_states
      * @param parentalTreeClasses
+     * @throws CloneNotSupportedException
      */
     private void initializeGridSearch(Hmm<O> hmm,
             TransitionProbabilityParameters tpp,
@@ -80,7 +84,7 @@ public class GridSearchAlgorithm<O extends Observation> {
         nobs = new ArrayList<Nob>();
 
         //add base sub nob
-        nobs.add(new BaseSubNob(gBaseSub, branchMin, branchMax));
+        nobs.add(new BaseSubNob(gBaseSub, baseSubMin, baseSubMax));
 
         //add transition probability recombination
         nobs.add(new RecombinationFreqNob(gRecombination, recombinationMin,
@@ -165,14 +169,32 @@ public class GridSearchAlgorithm<O extends Observation> {
     // }
 
 
-    public void runGridSearch(O observation, Hmm<O> hmm,
+    public void runGridSearch(List<O> observation, Hmm<O> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
             Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
-
+	
+	
         initializeGridSearch(hmm, tpp, trees_states, parentalTreeClasses);
 
+        double[] sampleInterval;
+        double curMaxProb;
+        double tempProb;
+        double paramBackup;
 
+        for (Nob curNob: nobs) {
+            curMaxProb = hmm.probability(observation);
+            sampleInterval = curNob.getSamples();
+            for (int i = 0; i < sampleInterval.length; i++) {
+                paramBackup = curNob.get_param();
+                curNob.set_param(sampleInterval[i]);
+                tempProb = hmm.probability(observation);
+                if (tempProb <= curMaxProb)
+                    curNob.set_param(paramBackup);
+                else
+                    curMaxProb = tempProb;
+            }
+        }
 
     }
 

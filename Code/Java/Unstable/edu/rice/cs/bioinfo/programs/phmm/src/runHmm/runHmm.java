@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import gridSearch.GridSearchAlgorithm;
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
 import reader.Parser;
@@ -188,8 +189,18 @@ public class runHmm {
 					
 			// kliu - only Viterbi algorithm appears to be implemented using Jahmm
 			// don't seem to have forward/backward implementation yet
-			ArrayList<ObservationMap> obsSeq = getObs(in);
-			
+
+			// Allow users to read in New Sequence Observation or re-use a
+            // previously read in Sequence
+			ArrayList<ObservationMap> obsSeq;
+			int seqChoice = sequenceChoice(in);
+            if (seqChoice == 1) {
+                obsSeq = getObs(in);
+            } else {
+                obsSeq = fParser.getObs();
+            }
+
+
 			double viterbiLLH = myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
 			
 			System.out.println ("Input HMM Viterbi log likelihood: |" + viterbiLLH + "|");
@@ -203,7 +214,10 @@ public class runHmm {
 			break;
 	    case 1:
 		    // RUN BAUM WELCH
-			
+	        // Modifies the current Hmm;
+
+	        System.out.println("\n");
+
 			// Testing purposes
 //			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
 //			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
@@ -217,11 +231,20 @@ public class runHmm {
 //			}
 			
 	    	// END TEST PURPOSES
-				
-				
+
+	        // Allow users to read in New Sequence Observation or re-use a
+	        // previously read in Sequence
+	        int seqChoice2 = sequenceChoice(in);
+	        ArrayList<ObservationMap> obsSequence;
+	        if (seqChoice2 == 1) {
+	            obsSequence = getObs(in);
+	        } else {
+	            obsSequence = fParser.getObs();
+	        }
+
 			BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
-			
-			Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm,getObs(in), 9);
+
+			Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm, obsSequence, 9);
 			myhmm = learnedhmm;
 			learnedhmm = null; // for garbage collection
 			System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");
@@ -231,11 +254,80 @@ public class runHmm {
 		
 		
 	    case 2:
-	    // EXIT
-			keepOperate = false;
-			System.exit(0);
-			break;
-	    default: 
+	        // RUN GRID SEARCH
+	        // Modifies the current hmm;
+
+	        System.out.println("\n");
+	        // Allow users to read in New Sequence Observation or re-use a
+            // previously read in Sequence
+            int seqChoice3 = sequenceChoice(in);
+            ArrayList<ObservationMap> seqObs;
+            if (seqChoice3 == 1) {
+                seqObs = getObs(in);
+            } else {
+                seqObs = fParser.getObs();
+            }
+
+            //Get the max and mins and g samples of each parameter
+            try {
+                System.out.println("Input the number of samples for tree branch lengths: ");
+                int gBranchIn = Integer.parseInt(in.readLine());
+
+                System.out.println("Input the number of samples for Recombination Frequency: ");
+                int gRecombinationIn = Integer.parseInt(in.readLine());
+
+                System.out.println("Input the number of samples for Hybridization Frequency: ");
+                int gHybridizationIn = Integer.parseInt(in.readLine());
+
+                System.out.println("Input the number of samples for Felsenstein Base Substitution Rate: ");
+                int gBaseSubIn = Integer.parseInt(in.readLine());
+
+                System.out.println("Input the minimum double value for all tree branch lengths: ");
+                double branchMinIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the maximum double value for all tree branch lengths: ");
+                double branchMaxIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the minimum double value for Recombination frequency: ");
+                double recombinationMinIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the maximum double value for Recombination frequency: ");
+                double recombinationMaxIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the minimum double value for Hybridization frequency: ");
+                double hybridizationMinIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the maximum double value for Hybridization frequency: ");
+                double hybridizationMaxIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the minimum double value for Felsenstein base substitution rate: ");
+                double baseSubMinIn = Double.parseDouble(in.readLine());
+
+                System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
+                double baseSubMaxIn = Double.parseDouble(in.readLine());
+
+                GridSearchAlgorithm<ObservationMap> gsa =
+                        new GridSearchAlgorithm<ObservationMap>(gBranchIn, gRecombinationIn,
+                        gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
+                        recombinationMinIn, recombinationMaxIn, hybridizationMinIn,
+                        hybridizationMaxIn, baseSubMinIn, baseSubMaxIn);
+
+                gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
+                        trees_states, parentalTreeClasses);
+
+            }
+            catch (Exception e) {
+                System.err.println("Input error : " + e);
+                break;
+            }
+
+	        break;
+	    case 3:
+	        // EXIT
+	            keepOperate = false;
+	            System.exit(0);
+	            break;
+	    default:
 			keepOperate = false;
 			System.exit(-1);
 	    }
@@ -396,11 +488,12 @@ public class runHmm {
 	int option = -1;
 	while (operate) {
 	    System.out.println("Operate mode:");
-	    System.out.println("0) Process an observation sequence");
+	    System.out.println("0) Run Viterbi");
 	    System.out.println("1) Learn Model using Baum Welch.");
-	    System.out.println("2) Exit.");
+	    System.out.println("2) Learn Model using Grid Search");
+	    System.out.println("3) Exit");
 	    System.out.println("Choose an option: ");
-	    option = getOption(3, in);
+	    option = getOption(4, in);
 	    if (option != -1) operate = false;
 	}
 	return option;
@@ -408,7 +501,26 @@ public class runHmm {
 	
 	
 
-	
+
+    /**
+     * Re-Use sequence or Insert a new Sequence?
+     *
+     * @return the option
+     */
+    protected int sequenceChoice(BufferedReader in) {
+    boolean init = true;
+    int option = -1;
+    while (init) {
+        System.out.println("Which observation sequence would you like to use?");
+        System.out.println("0) Reuse previously read sequence.");
+        System.out.println("1) Load a new observation sequence.");
+        System.out.println("Choose an option: ");
+        option = getOption(2, in);
+        if (option != -1) init = false;
+    }
+    return option;
+    }
+
 
     /**
      * Read and Get Observation

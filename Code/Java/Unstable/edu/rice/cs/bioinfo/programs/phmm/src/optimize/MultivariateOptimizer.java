@@ -117,7 +117,7 @@ public class MultivariateOptimizer {
 
 
 
-
+    // carry over references to runHmm/etc. state
     protected Hmm<ObservationMap> hmm;
     // need a few helper routines in this object
     // lots of shared state between this class and runHmm class
@@ -189,6 +189,8 @@ public class MultivariateOptimizer {
 	this.parentalTreeClasses = inParentalTreeClasses;
 	this.parentalTreeNameMap = inParentalTreeNameMap;
 	this.observation = inObservation;
+
+	brentOptimizer = new BrentOptimizer(RELATIVE_ACCURACY, ABSOLUTE_ACCURACY);
 
 	verifySearchSettings();
 
@@ -906,6 +908,8 @@ public class MultivariateOptimizer {
 	}
 
 	if (Constants.WARNLEVEL > 4) { System.out.println (debugMessage + " l x u fx fl fu log likelihoods after satisfying constraint #3 in getSearchInterval() : |" + l + " " + x + " " + u + " " + f.value(l) + " " + f.value(x) + " " + f.value(u) + "|"); }
+
+	if (Constants.WARNLEVEL > 2) { System.out.println (debugMessage + " l x u fx fl fu log likelihoods at end of getSearchInterval() : |" + l + " " + x + " " + u + " " + f.value(l) + " " + f.value(x) + " " + f.value(u) + "|"); }
 
 	Tuple3<Double,Double,Double> result = new Tuple3<Double,Double,Double>
 	    (new Double(l), new Double(x), new Double(u));

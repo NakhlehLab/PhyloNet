@@ -8,6 +8,7 @@ public abstract class Nob {
     private int g;
     private double min;
     private double max;
+    private double backupParam;
 
     // kliu - add in a cache for previous values
     protected Stack<Double> cache;
@@ -16,7 +17,7 @@ public abstract class Nob {
         this.g = gIn;
         this.min = minIn;
         this.max = maxIn;
-	cache = new Stack<Double>();
+
     }
 
     /**
@@ -43,20 +44,12 @@ public abstract class Nob {
      */
     abstract double get_param();
 
-    public void cacheParameterValue () {
-	cache.push(new Double(get_param()));
-    }
 
     /**
      * WARNING - will throw an exception if no corresponding
      * cacheParameterValue() operation was performed previously.
      */
-    public void restoreParameterValue () {
-        if (cache.empty()) {
-            throw (new RuntimeException("ERROR: Nob.restoreParameterValue() called before a corresponding cacheParameterValue() operation was performed."));
-    	}
-	    set_param(cache.pop());
-    }
+    abstract public void restoreParameterValue();
 
     // kliu - don't do a cache peek
     // unnecessary for now

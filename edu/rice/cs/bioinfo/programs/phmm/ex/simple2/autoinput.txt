@@ -9,4 +9,4 @@
 /home/kl23/code/phmm-repository/phmm/ex/simple2/viterbi.out
 1
 /home/kl23/code/phmm-repository/phmm/ex/simple2/myseq.seq
-3
+4

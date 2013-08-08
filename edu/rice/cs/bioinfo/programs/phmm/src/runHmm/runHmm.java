@@ -558,7 +558,8 @@ public class runHmm {
 	    System.out.println("0) Run Viterbi");
 	    System.out.println("1) Learn Model using Baum Welch.");
 	    System.out.println("2) Learn Model using Grid Search");
-	    System.out.println("3) Exit");
+	    System.out.println("3) Learn Model using a multivariate optimization heuristic that incorporates Brent's method");
+	    System.out.println("4) Exit");
 	    System.out.println("Choose an option: ");
 	    option = getOption(4, in);
 	    if (option != -1) operate = false;

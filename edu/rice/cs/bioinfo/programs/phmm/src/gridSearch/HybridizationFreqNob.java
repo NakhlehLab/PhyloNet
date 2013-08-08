@@ -25,6 +25,8 @@ public class HybridizationFreqNob extends Nob {
 
     private Hmm thisHmm;
 
+    private double[][] backupMatrix;
+
     private TransitionProbabilityParameters probsParam;
     private ArrayList<HiddenState> trees_states;
     private Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
@@ -42,6 +44,7 @@ public class HybridizationFreqNob extends Nob {
 
     public void set_param(double value) {
         backupParam = probsParam.getHybridizationFrequency();
+        backupMatrix = thisHmm.getTransitionMatrix();
         probsParam.setHybridizationFrequency(value);
         double[][] newTransition = AllInformation.calculateAij(trees_states,
                 probsParam.getRecombinationFrequency(), value,
@@ -58,9 +61,7 @@ public class HybridizationFreqNob extends Nob {
     public void restoreParameterValue() {
         // TODO Auto-generated method stub
         probsParam.setHybridizationFrequency(backupParam);
-        double[][] newTransition = AllInformation.calculateAij(trees_states, probsParam.getRecombinationFrequency(), backupParam,
-                parentalTreeClasses);
-        thisHmm.setTransitionMatrix(newTransition);
+        thisHmm.setTransitionMatrix(backupMatrix);
     }
 
 }

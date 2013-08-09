@@ -1134,6 +1134,8 @@ public class MultivariateOptimizer {
     /**
      * Caller's responsibility to make sure that HMM is up to date prior to calling 
      * this method.
+     * Hmm... this is the only place that we actually compute a model likelihood,
+     * and it's a log likelihood.
      */
     protected double computeHMMLikelihood () {
 	return (hmm.lnProbability(observation));

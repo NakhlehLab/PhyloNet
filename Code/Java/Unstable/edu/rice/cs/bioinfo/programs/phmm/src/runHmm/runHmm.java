@@ -740,6 +740,65 @@ public class runHmm {
     }
 
     /**
+     * Given the current model parameter values, 
+     * calculate the maximum possible value for a frequency parameter.
+     * Anything greater will cause a self-transition probability to go negative.
+     *
+     * Hmm... need to expose this externally.
+     */
+    public double calculateMaximumFrequencyParameter (TransitionProbabilityParameters.ParameterChoice parameterChoice) {
+	double minmax = -1.0;
+	boolean initializedFlag = false; // bleh
+
+	// strict!
+	if (trees_states.size() <= 1) {
+	    throw (new RuntimeException("ERROR: not enough hidden states in runHmm.calculateMaximumFrequencyParameter(...)."));
+	}
+
+	// take min max value over all states
+	for (int i = 0; i < trees_states.size(); i++) {
+	    HiddenState si = trees_states.get(i);
+	    double sumCoalescentContributionRecombination = 0.0;
+	    double sumCoalescentContributionHybridization = 0.0;
+
+	    // compute max for a state si
+	    for (int j = 0 ; j < trees_states.size(); j++) {
+		// set self-transition probability at the end
+		if (i == j) {
+		    continue;
+		}
+		
+		HiddenState sj = trees_states.get(j);
+		if (checkSameParentalClass(si, sj)) {
+		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+		}
+		else {
+		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+		}
+	    }
+
+	    double max;
+	    switch (parameterChoice) {
+	    case RECOMBINATION_FREQUENCY:
+		max = (1 - sumCoalescentContributionHybridization * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.HYBRIDIZATION_FREQUENCY)) / sumCoalescentContributionRecombination;
+		break;
+	    case HYBRIDIZATION_FREQUENCY:
+	    default:
+		max = (1 - sumCoalescentContributionRecombination * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.RECOMBINATION_FREQUENCY)) / sumCoalescentContributionHybridization;
+		break;
+	    }
+
+	    // update appropriately
+	    if (!initializedFlag || (max < minmax)) {
+		minmax = max;
+		initializedFlag = true;
+	    }
+	}
+
+	return (minmax);
+    }
+
+    /**
      * By construction, rows of a_ij matrix sum to one.
      */
     protected boolean verifyAij (double[][] a) {
@@ -977,6 +1036,11 @@ public class runHmm {
 	if (numStates != trees_states.size()) {
 	    throw new ParserFileException("Error: the number of trees read is not the same as the number of states previously inputted!");
 	}	
+
+	// strict!
+	if (trees_states.size() < 2) {
+	    throw (new ParserFileException("ERROR: must be at least two hidden states in PhyloNet-HMM."));
+	}
     }
     
     /**

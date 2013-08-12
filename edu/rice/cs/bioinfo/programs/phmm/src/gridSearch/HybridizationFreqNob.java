@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import runHmm.AllInformation;
+import runHmm.runHmm;
+//import runHmm.AllInformation;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
@@ -27,25 +28,29 @@ public class HybridizationFreqNob extends Nob {
     private ArrayList<HiddenState> trees_states;
     private Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
 
+    protected runHmm runHmmObject;
+
     public HybridizationFreqNob(int gIn, double minIn, double maxIn,
             Hmm<ObservationMap> hmmIn, TransitionProbabilityParameters probsParamIn,
             ArrayList<HiddenState> treeStatesIn,
-            Map<Network<Double>, Set<HiddenState>> parentalTreeIn) {
+				Map<Network<Double>, Set<HiddenState>> parentalTreeIn, runHmm inRunHmmObject) {
         super(gIn, minIn, maxIn);
         this.thisHmm = hmmIn;
         this.probsParam = probsParamIn;
         this.trees_states = treeStatesIn;
         this.parentalTreeClasses = parentalTreeIn;
+	runHmmObject = inRunHmmObject;
     }
 
     public void set_param(double value) {
         backupParam = probsParam.getHybridizationFrequency();
         backupMatrix = thisHmm.getTransitionMatrix();
         probsParam.setHybridizationFrequency(value);
-        double[][] newTransition = AllInformation.calculateAij(trees_states,
-                probsParam.getRecombinationFrequency(), value,
-                parentalTreeClasses);
-        thisHmm.setTransitionMatrix(newTransition);
+        // double[][] newTransition = AllInformation.calculateAij(trees_states,
+        //         probsParam.getRecombinationFrequency(), value,
+        //         parentalTreeClasses);
+        // thisHmm.setTransitionMatrix(newTransition);
+	runHmmObject.updateTransitionProbabilities();
     }
 
 

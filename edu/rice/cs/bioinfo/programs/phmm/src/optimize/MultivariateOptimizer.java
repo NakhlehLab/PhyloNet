@@ -214,9 +214,9 @@ public class MultivariateOptimizer {
 							   transitionProbabilityParameters.get(parameterChoice),
 							   transitionProbabilityParameters,
 							   parameterChoice,
-							   runHmmObject,
 							   false // no need to update
 							   );
+							   //runHmmObject,
 	    frequencyParameters.add(fp);
 	}
     }
@@ -1207,7 +1207,6 @@ public class MultivariateOptimizer {
 	    }
 	}	    
 
-	// warning - random number may be larger than permitted
 	if (enableFrequencyOptimizationFlag) {
 	    for (FrequencyParameter fp : frequencyParameters) {
 		double parameterMinimumValue = fp.getMinimumValue();

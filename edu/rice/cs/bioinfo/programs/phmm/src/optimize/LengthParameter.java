@@ -22,19 +22,21 @@ public class LengthParameter extends Parameter {
     // except that we can also share across multiple gene trees.
 
     public LengthParameter (String inName, double inValue) {
-    super(inName, inValue);
+	super(inName, inValue);
     }
 
     public double getMinimumValue () {
-    return (DEFAULT_MINIMUM_BRANCH_LENGTH);
+	return (DEFAULT_MINIMUM_BRANCH_LENGTH);
     }
 
     public double getDefaultInitialValue () {
 	return (DEFAULT_INITIAL_BRANCH_LENGTH);
     }
 
+    // kliu - crap - need to also constrain max based on rest of HMM state
+    // no closed form solution for this???
     public double getMaximumValue () {
-    return (DEFAULT_MAXIMUM_BRANCH_LENGTH);
+	return (DEFAULT_MAXIMUM_BRANCH_LENGTH);
     }
 
 }

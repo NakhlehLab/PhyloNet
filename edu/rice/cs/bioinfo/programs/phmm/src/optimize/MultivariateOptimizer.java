@@ -91,8 +91,9 @@ public class MultivariateOptimizer {
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = 1e1; // scientific notation - e for decimal exponent
 
     // only for randomization purposes
-    public static final double MAXIMUM_BRANCH_LENGTH_FOR_RANDOMIZATION_PURPOSES = 2.0;
-    public static final double MAXIMUM_PROBABILITY_FOR_RANDOMIZATION_PURPOSES = 1e-1;
+    //
+    // only go to 80% of max for randomization purposes
+    public static final double FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES = 0.8;
 
     // hmm... is GeneTreeProbability able to handle probability == 0 or 1?
     // yes, it handles this fine
@@ -213,6 +214,7 @@ public class MultivariateOptimizer {
 							   transitionProbabilityParameters.get(parameterChoice),
 							   transitionProbabilityParameters,
 							   parameterChoice,
+							   runHmmObject,
 							   false // no need to update
 							   );
 	    frequencyParameters.add(fp);
@@ -971,17 +973,23 @@ public class MultivariateOptimizer {
      * For diagnostic purposes.
      */
     protected void debugModel () {
+	System.out.println ("============================================");
+	System.out.println ("Current PhyloNet-HMM state: ");
+	System.out.println ();
 	System.out.println ("Hidden states: ");
 	for (int i = 0; i < hiddenStates.size(); i++) {
 	    System.out.println("Hidden state " + i + ":");
 	    System.out.println(hiddenStates.get(i).toString());
 	}
+	System.out.println ();
 	System.out.println ("Parameters: ");
 	for (Parameter parameter : parameters) {
 	    System.out.println (parameter.toString());
 	}
+	System.out.println ();
 	System.out.println ("HMM transition and emission probabilities: ");
 	System.out.println (hmm.toString());
+	System.out.println ("============================================");
     }
 
     /**
@@ -1182,7 +1190,9 @@ public class MultivariateOptimizer {
 		    parentalLengthParameter.setValue(1.0);
 		}
 		else {
-		    double randomDistance = Math.random() * (MAXIMUM_BRANCH_LENGTH_FOR_RANDOMIZATION_PURPOSES - parentalLengthParameter.getMinimumValue()) + parentalLengthParameter.getMaximumValue();
+		    double parameterMinimumValue = parentalLengthParameter.getMinimumValue();
+		    double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * parentalLengthParameter.getMaximumValue();
+		    double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
 		    parentalLengthParameter.setValue(randomDistance);
 		}
 	    }
@@ -1190,14 +1200,19 @@ public class MultivariateOptimizer {
 
 	if (enableGeneGenealogyOptimizationFlag) {
 	    for (SingleBranchLengthParameter sblp : singleBranchLengthParameters) {
-		double randomDistance = Math.random() * (MAXIMUM_BRANCH_LENGTH_FOR_RANDOMIZATION_PURPOSES - sblp.getMinimumValue()) + sblp.getMaximumValue();
+		double parameterMinimumValue = sblp.getMinimumValue();
+		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * sblp.getMaximumValue();
+		double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
 		sblp.setValue(randomDistance);
 	    }
 	}	    
 
+	// warning - random number may be larger than permitted
 	if (enableFrequencyOptimizationFlag) {
 	    for (FrequencyParameter fp : frequencyParameters) {
-		double randomProbability = Math.random() * (MAXIMUM_PROBABILITY_FOR_RANDOMIZATION_PURPOSES - fp.getMinimumValue()) + fp.getMaximumValue();
+		double parameterMinimumValue = fp.getMinimumValue();
+		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * fp.getMaximumValue();
+		double randomProbability = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
 		fp.setValue(randomProbability);
 	    }
 	}

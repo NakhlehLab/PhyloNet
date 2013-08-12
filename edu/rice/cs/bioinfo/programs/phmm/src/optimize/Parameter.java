@@ -18,17 +18,34 @@ public abstract class Parameter extends ParameterConstraintSet {
 	super(inName, inValue);
     }
 
+    // alternative constructor with relaxed constraints
+    public Parameter (String inName, 
+		      double inValue,
+		      boolean checkValueMinimumConstraintFlag,
+		      boolean checkValueMaximumConstraintFlag) {
+	super(inName);
+	setValue(inValue, checkValueMinimumConstraintFlag, checkValueMaximumConstraintFlag);
+    }
+
     public void setName (String inName) {
 	super.setName(inName);
     }
 
     public void setValue (double inValue) {
+	setValue(inValue, true, true);
+    }
+
+    public void setValue (double inValue, 
+			  boolean checkValueMinimumConstraintFlag,
+			  boolean checkValueMaximumConstraintFlag) {
 	// paranoid
-	if (inValue < getMinimumValue()) {
+	if (checkValueMinimumConstraintFlag && (inValue < getMinimumValue())) {
 	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value smaller than getMinimumValue() amount."));
 	}
 
-	if (inValue > getMaximumValue()) {
+	// kliu - this can cause an issue for FrequencyParameter
+	// constructor
+	if (checkValueMaximumConstraintFlag && (inValue > getMaximumValue())) {
 	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value greater than getMaximumValue() amount."));
 	}
 

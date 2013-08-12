@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import util.Constants;
 import optimize.MultivariateOptimizer;
 import gridSearch.GridSearchAlgorithm;
 import phylogeny.EvoTree;
@@ -291,11 +292,11 @@ public class runHmm {
                 System.out.println("Input the maximum double value for all tree branch lengths: ");
                 double branchMaxIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the minimum double value for Recombination frequency: ");
-                double recombinationMinIn = Double.parseDouble(in.readLine());
+                // System.out.println("Input the minimum double value for Recombination frequency: ");
+                // double recombinationMinIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the maximum double value for Recombination frequency: ");
-                double recombinationMaxIn = Double.parseDouble(in.readLine());
+                // System.out.println("Input the maximum double value for Recombination frequency: ");
+                // double recombinationMaxIn = Double.parseDouble(in.readLine());
 
                 System.out.println("Input the minimum double value for Hybridization frequency: ");
                 double hybridizationMinIn = Double.parseDouble(in.readLine());
@@ -309,11 +310,13 @@ public class runHmm {
                 System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
                 double baseSubMaxIn = Double.parseDouble(in.readLine());
 
+		// gRecombinationIn,
+		// recombinationMinIn, recombinationMaxIn, 
                 GridSearchAlgorithm gsa =
-                        new GridSearchAlgorithm(gBranchIn, gRecombinationIn,
+                        new GridSearchAlgorithm(gBranchIn, 
                         gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
-                        recombinationMinIn, recombinationMaxIn, hybridizationMinIn,
-                        hybridizationMaxIn, baseSubMinIn, baseSubMaxIn);
+                        hybridizationMinIn,
+						hybridizationMaxIn, baseSubMinIn, baseSubMaxIn, this);
 
                 gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
                         trees_states, parentalTreeClasses);
@@ -701,33 +704,34 @@ public class runHmm {
      * Calculate initial transition probability matrix a_{ij}.
      * See revised writeup for details.
      *
-     * Call this after changing parental tree branch lengths
+     * Call this after changing parental tree branch lengths, hybridization frequency, and
+     * any other parameters related to the transition probabilities.
      */
     protected double[][] calculateAij () {
 	double[][] a = new double[trees_states.size()][trees_states.size()];
 	for (int i = 0; i < a.length; i++) {
 	    HiddenState si = trees_states.get(i);
-	    double totalNonSelfTransitionProbabilities = 0.0;
+	    //double totalNonSelfTransitionProbabilities = 0.0;
 	    for (int j = 0 ; j < a[i].length; j++) {
 		// set self-transition probability at the end
-		if (i == j) {
-		    continue;
-		}
+		// if (i == j) {
+		//     continue;
+		// }
 		
 		HiddenState sj = trees_states.get(j);
 		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
 		if (checkSameParentalClass(si, sj)) {
-		    a[i][j] *= transitionProbabilityParameters.getRecombinationFrequency();
+		    a[i][j] *= (1.0 - transitionProbabilityParameters.getHybridizationFrequency());
 		}
 		else {
 		    a[i][j] *= transitionProbabilityParameters.getHybridizationFrequency();
 		}
 
-		totalNonSelfTransitionProbabilities += a[i][j];
+		//totalNonSelfTransitionProbabilities += a[i][j];
 	    }
 	    
 	    // now set self-transition probability
-	    a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
+	    //a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
 	}
 	
 	// strict!
@@ -739,6 +743,7 @@ public class runHmm {
 	return (a);
     }
 
+    // kliu - no longer needed
     /**
      * Given the current model parameter values, 
      * calculate the maximum possible value for a frequency parameter.
@@ -746,68 +751,76 @@ public class runHmm {
      *
      * Hmm... need to expose this externally.
      */
-    public double calculateMaximumFrequencyParameter (TransitionProbabilityParameters.ParameterChoice parameterChoice) {
-	double minmax = -1.0;
-	boolean initializedFlag = false; // bleh
+    // public double calculateMaximumFrequencyParameter (TransitionProbabilityParameters.ParameterChoice parameterChoice) {
+    // 	double minmax = -1.0;
+    // 	boolean initializedFlag = false; // bleh
 
-	// strict!
-	if (trees_states.size() <= 1) {
-	    throw (new RuntimeException("ERROR: not enough hidden states in runHmm.calculateMaximumFrequencyParameter(...)."));
-	}
+    // 	// strict!
+    // 	if (trees_states.size() <= 1) {
+    // 	    throw (new RuntimeException("ERROR: not enough hidden states in runHmm.calculateMaximumFrequencyParameter(...)."));
+    // 	}
 
-	// take min max value over all states
-	for (int i = 0; i < trees_states.size(); i++) {
-	    HiddenState si = trees_states.get(i);
-	    double sumCoalescentContributionRecombination = 0.0;
-	    double sumCoalescentContributionHybridization = 0.0;
+    // 	// take min max value over all states
+    // 	for (int i = 0; i < trees_states.size(); i++) {
+    // 	    HiddenState si = trees_states.get(i);
+    // 	    double sumCoalescentContributionRecombination = 0.0;
+    // 	    double sumCoalescentContributionHybridization = 0.0;
 
-	    // compute max for a state si
-	    for (int j = 0 ; j < trees_states.size(); j++) {
-		// set self-transition probability at the end
-		if (i == j) {
-		    continue;
-		}
+    // 	    // compute max for a state si
+    // 	    for (int j = 0 ; j < trees_states.size(); j++) {
+    // 		// set self-transition probability at the end
+    // 		if (i == j) {
+    // 		    continue;
+    // 		}
 		
-		HiddenState sj = trees_states.get(j);
-		if (checkSameParentalClass(si, sj)) {
-		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
-		}
-		else {
-		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
-		}
-	    }
+    // 		HiddenState sj = trees_states.get(j);
+    // 		if (checkSameParentalClass(si, sj)) {
+    // 		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+    // 		}
+    // 		else {
+    // 		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+    // 		}
+    // 	    }
 
-	    double max;
-	    switch (parameterChoice) {
-	    case RECOMBINATION_FREQUENCY:
-		max = (1 - sumCoalescentContributionHybridization * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.HYBRIDIZATION_FREQUENCY)) / sumCoalescentContributionRecombination;
-		break;
-	    case HYBRIDIZATION_FREQUENCY:
-	    default:
-		max = (1 - sumCoalescentContributionRecombination * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.RECOMBINATION_FREQUENCY)) / sumCoalescentContributionHybridization;
-		break;
-	    }
+    // 	    double max;
+    // 	    switch (parameterChoice) {
+    // 	    case RECOMBINATION_FREQUENCY:
+    // 		max = (1 - sumCoalescentContributionHybridization * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.HYBRIDIZATION_FREQUENCY)) / sumCoalescentContributionRecombination;
+    // 		break;
+    // 	    case HYBRIDIZATION_FREQUENCY:
+    // 	    default:
+    // 		max = (1 - sumCoalescentContributionRecombination * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.RECOMBINATION_FREQUENCY)) / sumCoalescentContributionHybridization;
+    // 		break;
+    // 	    }
 
-	    // update appropriately
-	    if (!initializedFlag || (max < minmax)) {
-		minmax = max;
-		initializedFlag = true;
-	    }
-	}
+    // 	    // update appropriately
+    // 	    if (!initializedFlag || (max < minmax)) {
+    // 		minmax = max;
+    // 		initializedFlag = true;
+    // 	    }
+    // 	}
 
-	return (minmax);
-    }
+    // 	return (minmax);
+    // }
 
     /**
-     * By construction, rows of a_ij matrix sum to one.
+     * Verify that each entry is a probability. 
+     * Also verify that each row sums to one.
      */
     protected boolean verifyAij (double[][] a) {
 	for (int i = 0; i < a.length; i++) {
+	    double rowsum = 0.0;
 	    for (int j = 0; j < a[i].length; j++) {
 		if ((a[i][j] < 0.0) || (a[i][j] > 1.0)) {
 		    System.err.println ("ERROR: entry in a_ij transition matrix is invalid. " + a[i][j]);
 		    return (false);
 		}
+		rowsum += a[i][j];
+	    }
+
+	    if (Math.abs(rowsum - 1.0) > Constants.ZERO_DELTA) {
+		System.err.println ("ERROR: row " + i + " in a_ij transition matrix doesn't sum to one.");
+		return (false);
 	    }
 	}
 
@@ -1051,15 +1064,17 @@ public class runHmm {
      * See writeup for details.
      */
     protected void readTransitionProbabilityParameters (BufferedReader br) throws Exception {
-	System.out.println("Input transition probability parameters in format <recombination frequency parameter $u$> <hybridization frequency parameter $v$>");
+	// <recombination frequency parameter $u$>
+	System.out.println("Input transition probability parameters in format <hybridization frequency parameter $v$>: ");
 	String line = br.readLine();
 	StringTokenizer st = new StringTokenizer(line);
-	if (st.countTokens() != 2) {
+	if (st.countTokens() != 1) {
 	    throw (new IOException("ERROR: invalid transition probability parameters."));
 	}
-	double recombinationFrequency = Double.parseDouble(st.nextToken());
+	// double recombinationFrequency = Double.parseDouble(st.nextToken());
 	double hybridizationFrequency = Double.parseDouble(st.nextToken());
-	transitionProbabilityParameters = new TransitionProbabilityParameters(recombinationFrequency, hybridizationFrequency);
+	// recombinationFrequency, 
+	transitionProbabilityParameters = new TransitionProbabilityParameters(hybridizationFrequency);
     }
 }
 

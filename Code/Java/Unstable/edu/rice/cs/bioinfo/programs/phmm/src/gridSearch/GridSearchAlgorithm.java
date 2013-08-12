@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import runHmm.runHmm;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
@@ -18,7 +19,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 public class GridSearchAlgorithm {
 
     private int gBranch;
-    private int gRecombination;
+    //private int gRecombination;
     private int gHybridization;
     private int gBaseSub;
 
@@ -31,31 +32,35 @@ public class GridSearchAlgorithm {
     private double baseSubMin;
     private double baseSubMax;
 
+    protected runHmm runHmmObject;
+
     private ArrayList<Nob> nobs;
 
-    public GridSearchAlgorithm(int gBranchIn, int gRecombinationIn,
+    // int gRecombinationIn,
+    //             double recombinationMinIn, double recombinationMaxIn,
+    public GridSearchAlgorithm(int gBranchIn, 
             int gHybridizationIn, int gBaseSubIn,
             double branchMinIn, double branchMaxIn,
-            double recombinationMinIn, double recombinationMaxIn,
             double hybridizationMinIn, double hybridizationMaxIn,
-			       double baseSubMinIn, double baseSubMaxIn
+			       double baseSubMinIn, double baseSubMaxIn,
+			       runHmm inRunHmmObject
 			       ) {
 
         this.gBranch = gBranchIn;
-        this.gRecombination = gRecombinationIn;
+        //this.gRecombination = gRecombinationIn;
         this.gHybridization = gHybridizationIn;
         this.gBaseSub = gBaseSubIn;
 
         this.branchMin = branchMinIn;
         this.branchMax = branchMaxIn;
-        this.recombinationMin = recombinationMinIn;
-        this.recombinationMax = recombinationMaxIn;
+        // this.recombinationMin = recombinationMinIn;
+        // this.recombinationMax = recombinationMaxIn;
         this.hybridizationMin = hybridizationMinIn;
         this.hybridizationMax = hybridizationMaxIn;
         this.baseSubMin = baseSubMinIn;
         this.baseSubMax = baseSubMaxIn;
 
-
+	runHmmObject = inRunHmmObject;
     }
 
     // throws CloneNotSupportedException
@@ -83,12 +88,12 @@ public class GridSearchAlgorithm {
         nobs.add(new BaseSubNob(gBaseSub, baseSubMin, baseSubMax));
 
         //add transition probability recombination
-        nobs.add(new RecombinationFreqNob(gRecombination, recombinationMin,
-                recombinationMax, hmm, tpp, trees_states, parentalTreeClasses));
+        //nobs.add(new RecombinationFreqNob(gRecombination, recombinationMin,
+	//recombinationMax, hmm, tpp, trees_states, parentalTreeClasses, runHmmObject));
 
         //add transition probability hybridization
-        nobs.add(new RecombinationFreqNob(gHybridization, hybridizationMin,
-                hybridizationMax, hmm, tpp, trees_states, parentalTreeClasses));
+        nobs.add(new HybridizationFreqNob(gHybridization, hybridizationMin,
+					  hybridizationMax, hmm, tpp, trees_states, parentalTreeClasses, runHmmObject));
 
     	// kliu - need to use PhyloNet tree/network structures
     	// walk through unique parental tree objects
@@ -100,7 +105,7 @@ public class GridSearchAlgorithm {
     		}
 
     		// create a knob
-    		nobs.add(new ParentalTreeNob(gBranch, branchMin, branchMax, node));
+    		nobs.add(new ParentalTreeNob(gBranch, branchMin, branchMax, node, runHmmObject));
     	    }
     	}
 

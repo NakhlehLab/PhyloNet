@@ -11,35 +11,37 @@ public class FrequencyParameter extends Parameter {
     public static final double DEFAULT_MINIMUM_PROBABILITY = MultivariateOptimizer.DEFAULT_MINIMUM_PROBABILITY;
     public static final double DEFAULT_INITIAL_PROBABILITY = MultivariateOptimizer.DEFAULT_INITIAL_PROBABILITY;
     // need to calculate it on the basis of the current HMM parameter values
-    //public static final double DEFAULT_MAXIMUM_PROBABILITY = MultivariateOptimizer.DEFAULT_MAXIMUM_PROBABILITY;
+    public static final double DEFAULT_MAXIMUM_PROBABILITY = MultivariateOptimizer.DEFAULT_MAXIMUM_PROBABILITY;
 
     protected TransitionProbabilityParameters.ParameterChoice parameterChoice;
 
     protected TransitionProbabilityParameters transitionProbabilityParameters;
 
     // need to access rest of HMM state to figure out maximum possible frequency parameter value
-    protected runHmm runHmmObject;
+    //protected runHmm runHmmObject;
 
     /**
      * User must explicitly request whether or not an update is requested 
      * during construction.
+     *
+     * Don't really need access to HMM state anymore.
      */
-    public FrequencyParameter (String inName, double inValue, TransitionProbabilityParameters inTransitionProbabilityParameters, TransitionProbabilityParameters.ParameterChoice inParameterChoice, runHmm inRunHmmObject, boolean updateFlag) {
+    public FrequencyParameter (String inName, double inValue, TransitionProbabilityParameters inTransitionProbabilityParameters, TransitionProbabilityParameters.ParameterChoice inParameterChoice, boolean updateFlag) {
 	// order forced by Java language constraints
 	// need to delay the setValue() check until after runHmmObject reference ready
 	super(inName, inValue, false, false);
 
 	this.parameterChoice = inParameterChoice;
 	this.transitionProbabilityParameters = inTransitionProbabilityParameters;
-	this.runHmmObject = inRunHmmObject;
+	//this.runHmmObject = inRunHmmObject;
 
 	// retry the setValue now
 	// since runHmmObject reference finally ready
-	setValue(inValue, updateFlag);
+	//setValue(inValue, updateFlag);
 
-	// if (updateFlag) {
-	//     updateModelState();
-	// }
+	if (updateFlag) {
+	    updateModelState();
+	}
     }
 
     public double getMinimumValue () {
@@ -51,12 +53,12 @@ public class FrequencyParameter extends Parameter {
     }
 
     public double getMaximumValue () {
-	return (runHmmObject.calculateMaximumFrequencyParameter(getParameterChoice()));
-
 	// need to refer to current HMM parameter value settings to figure 
 	// out maximum possible frequency parameter setting
-	//return (DEFAULT_MAXIMUM_PROBABILITY);
+	return (DEFAULT_MAXIMUM_PROBABILITY);
     }
+
+	//return (runHmmObject.calculateMaximumFrequencyParameter(getParameterChoice()));
 
     /**
      * WARNING: doesn't update attached TransitionProbabilityParameters object by default!
@@ -83,3 +85,5 @@ public class FrequencyParameter extends Parameter {
 
 
 }
+
+// runHmm inRunHmmObject, 

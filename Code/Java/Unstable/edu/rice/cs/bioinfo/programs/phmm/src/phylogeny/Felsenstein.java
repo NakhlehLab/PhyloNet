@@ -14,6 +14,8 @@ public class Felsenstein {
     static private String[] genes = {"A", "C", "G", "T"};
 
 
+    // kliu - CACHE OPPORTUNITY #2
+    // if gene tree branch lengths and substitution rates don't change, then re-use cached value if it exists.
 
      /**
      * On-the-fly version of getLikelihood() implemented for PhyloNet Trees

@@ -84,6 +84,9 @@ public class OpdfMap
     public void setHiddenState (HiddenState inHiddenState) {
 	this.hiddenState = inHiddenState;
     }
+
+    // kliu - CACHE OPPORTUNITY #1
+    // if parental tree branch lengths don't change, then re-use cached value if it exists.
 	
     public double probability (ObservationMap o)
     {

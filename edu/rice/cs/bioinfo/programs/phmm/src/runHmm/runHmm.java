@@ -712,6 +712,7 @@ public class runHmm {
 	for (int i = 0; i < a.length; i++) {
 	    HiddenState si = trees_states.get(i);
 	    //double totalNonSelfTransitionProbabilities = 0.0;
+	    //double check = 0.0;
 	    for (int j = 0 ; j < a[i].length; j++) {
 		// set self-transition probability at the end
 		// if (i == j) {
@@ -720,6 +721,8 @@ public class runHmm {
 		
 		HiddenState sj = trees_states.get(j);
 		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+		//check += a[i][j];
+		//System.out.println ("inner loop in calculateAij(): " + a[i][j]);
 		if (checkSameParentalClass(si, sj)) {
 		    a[i][j] *= (1.0 - transitionProbabilityParameters.getHybridizationFrequency());
 		}
@@ -727,8 +730,11 @@ public class runHmm {
 		    a[i][j] *= transitionProbabilityParameters.getHybridizationFrequency();
 		}
 
+
 		//totalNonSelfTransitionProbabilities += a[i][j];
 	    }
+	    
+	    //System.out.println ("check in calculateAij(): " + check);
 	    
 	    // now set self-transition probability
 	    //a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
@@ -807,7 +813,7 @@ public class runHmm {
      * Verify that each entry is a probability. 
      * Also verify that each row sums to one.
      */
-    protected boolean verifyAij (double[][] a) {
+    protected boolean verifyAij (double[][] a) {	
 	for (int i = 0; i < a.length; i++) {
 	    double rowsum = 0.0;
 	    for (int j = 0; j < a[i].length; j++) {
@@ -816,10 +822,14 @@ public class runHmm {
 		    return (false);
 		}
 		rowsum += a[i][j];
+
+		//if (Constants.WARNLEVEL > 4) { System.out.println(a[i][j] + " "); }
 	    }
+	    
+	    //if (Constants.WARNLEVEL > 4) { System.out.println(); }
 
 	    if (Math.abs(rowsum - 1.0) > Constants.ZERO_DELTA) {
-		System.err.println ("ERROR: row " + i + " in a_ij transition matrix doesn't sum to one.");
+		System.err.println ("ERROR: row " + i + " in a_ij transition matrix doesn't sum to one. Sum is " + rowsum + ". Make sure that list of gene genealogies includes all possible topologies.");
 		return (false);
 	    }
 	}

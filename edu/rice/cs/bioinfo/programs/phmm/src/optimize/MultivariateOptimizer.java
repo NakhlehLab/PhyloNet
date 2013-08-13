@@ -932,7 +932,7 @@ public class MultivariateOptimizer {
 	     p.getValue(), 
 	     p.getMinimumValue(), 
 	     p.getMaximumValue(),
-	     "optimizeSingleLengthParameter: ");
+	     "optimizeSingleParameter: ");
 	UnivariatePointValuePair upvp = brentOptimizer.optimize(BRENT_METHOD_SINGLE_ROUND_MAXIMUM_ITERATIONS,
 								f,
 								GoalType.MAXIMIZE,
@@ -1347,6 +1347,12 @@ public class MultivariateOptimizer {
 	   
 	    // update
 	    parameter.setValue(x);
+
+	    // kliu - hmm... updateHmm is *WAYYYY* too slow
+	    // need to cache computations as much as possible - only 
+	    // recompute when necessary
+	    // *especially* for probability of gene tree given parental tree P[g|T]
+
 	    // update associated model values associated with a single parameter
 	    // e.g., for LengthParameter objects that belong to a ParameterConstraintSet
 	    // or multiple branches share a LengthParameter

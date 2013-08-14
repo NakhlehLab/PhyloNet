@@ -2,6 +2,27 @@
  * Container for data associated with a hidden state.
  * Neater to do it this way.
  * Modularity good - may want to extend it later.
+ * 
+ * Heaviest calculations go in here: 
+ * - P[g|T] probability of gene genealogy given parental tree
+ *   - parental tree -> gene genealogy -> double
+ *     - Change one parental tree's branch length -> update its entry
+ * - Conversion from GTR (rate matrix, base frequency vector, length of time) to 
+ *   substitution probability matrix
+ *   - substitution model object -> gene genealogy node -> double[][]
+ *     - Change one gene genealogy's branch length -> update its entry.
+ *     - Change any other substitution model parameter -> update entire cache.
+ * - Emission probability calculation. Remember to use above substitution probability
+ *   matrix cache when re-computing this one.
+ *   - substitution model object -> gene genealogy -> ObservationMap -> double
+ *     - Change one gene genealogy's branch length -> update its entry.
+ *     - Change any other substitution model parameter -> update entire cache.
+ *     - ObservationMap objects never change.
+ *
+ * All of the heaviest calculations must go through the cache.
+ * Expensive to optimize substitution model parameters?
+ * 
+ * Perform caching for each parameter globally. Each HiddenState will have access to a global cache object.
  */
 
 package be.ac.ulg.montefiore.run.jahmm.phmm;
@@ -14,8 +35,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.IOException;
 //import phylogeny.EvoTree;
-
-// kliu - Phylonet support libraries
+import phylogeny.Felsenstein;
+import substitutionModel.SubstitutionModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -23,7 +44,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
-
 
 public class HiddenState
 {
@@ -33,8 +53,10 @@ public class HiddenState
     protected String name;
     protected Network<Double> parentalTree;
     protected Tree geneGenealogy;
-
-    // hmm, why not keep caches in hidden state?
+   
+    // hmm, why not keep caches in HiddenState?
+    // keep substitution probability cache in OpdfMap
+    // keep transition probability cache in MultivariateOptimizer??
 
     // maintain mapping between taxa in parentalTree and geneGenealogy
     // only store reference to a shared object
@@ -42,6 +64,9 @@ public class HiddenState
 
     // kliu - provide functionality to check if two HiddenState objects share a parental tree (Network<Double> object)
     protected Set<HiddenState> parentalTreeEquivalenceClass;
+
+    // for emission probability calculation
+    protected SubstitutionModel substitutionModel;
 
     /**
      * For coalescent model calculations.
@@ -51,12 +76,13 @@ public class HiddenState
     // cache it
     protected RnNewickPrinter<Double> rnNewickPrinter;
 
-    public HiddenState (String inName, Network<Double> inParentalTree, Tree inGeneGenealogy, Map<String,String> inputAlleleToSpeciesMapping, Set<HiddenState> inParentalTreeEquivalenceClass) {
+    public HiddenState (String inName, Network<Double> inParentalTree, Tree inGeneGenealogy, Map<String,String> inputAlleleToSpeciesMapping, Set<HiddenState> inParentalTreeEquivalenceClass, SubstitutionModel inSubstitutionModel) {
 	setName(inName);
 	setParentalTree(inParentalTree);
 	setGeneGenealogy(inGeneGenealogy);
 	setAlleleToSpeciesMapping(inputAlleleToSpeciesMapping);
 	this.parentalTreeEquivalenceClass = inParentalTreeEquivalenceClass;
+	setSubstitutionModel(inSubstitutionModel);
 	gtp = new GeneTreeProbability();
 	rnNewickPrinter = new RnNewickPrinter<Double>();
     }
@@ -86,6 +112,10 @@ public class HiddenState
     	return (alleleToSpeciesMapping);
     }
 
+    public SubstitutionModel getSubstitutionModel () {
+	return (substitutionModel);
+    }
+
     public void setParentalTree (Network<Double> inParentalTree) {
     	this.parentalTree = inParentalTree;
     }
@@ -96,6 +126,10 @@ public class HiddenState
 
     public void setAlleleToSpeciesMapping (Map<String,String> map) {
     	this.alleleToSpeciesMapping = map;
+    }
+
+    public void setSubstitutionModel (SubstitutionModel inSubstitutionModel) {
+	this.substitutionModel = inSubstitutionModel;
     }
 
     /**
@@ -176,6 +210,8 @@ public class HiddenState
         return (probList.get(0));
     }
 
-
+    public double calculateEmissionProbability (ObservationMap o) {
+	return (Felsenstein.getLikelihoodtree(getGeneGenealogy(), o, getSubstitutionModel()));
+    }
     
 }

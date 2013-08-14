@@ -24,7 +24,7 @@ package be.ac.ulg.montefiore.run.jahmm.phmm;
 import be.ac.ulg.montefiore.run.jahmm.Opdf;
 import phylogeny.EvoTree;
 import phylogeny.Node;
-import phylogeny.Felsenstein;
+//import phylogeny.Felsenstein;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class OpdfMap
      * The base substitution rate.
      * kliu - Need to parameterize substitution model choice and parameters. Get to this in a bit.
      */
-    protected double lamda = .1;
+    //protected double lamda = .1;
 	
     /**
      * Constructor. For simplicity, pass in reference to the
@@ -102,8 +102,10 @@ public class OpdfMap
 	//
 	// See writeup for details.
 
+	// Felsenstein.getLikelihoodtree(hiddenState.getGeneGenealogy(), o, lamda);
+
 	//double substitutionModelProbability = hiddenState.getGeneGenealogy().getLikelihood(o);
-	double substitutionModelProbability = Felsenstein.getLikelihoodtree(hiddenState.getGeneGenealogy(), o, lamda);
+	double substitutionModelProbability = hiddenState.calculateEmissionProbability(o);
 
 	// kliu - moved this from emission probability to transition probability
 	// see revised writeup
@@ -134,50 +136,51 @@ public class OpdfMap
      */
     public ObservationMap generate()
     {	
-    	//System.err.println ("ERROR: OpdfMap.generate() not implemented yet. Returning null.");
+    	System.err.println ("ERROR: OpdfMap.generate() not implemented yet. Returning null.");
+	return (null);
+
+    	// Map<String, String> myMap = new HashMap<String, String>();
+    	// TNode myRoot = hiddenState.getGeneGenealogy().getRoot();
+    	// String rootGene= new String();
+    	// double rand = Math.random();
+    	// if (rand < 0.25)
+    	// 	rootGene = "A";
+    	// else if (rand < 0.5)
+    	// 	rootGene = "T";
+    	// else if (rand < 0.75)
+    	// 	rootGene = "G";
+    	// else
+    	// 	rootGene = "C";
     	
-    	Map<String, String> myMap = new HashMap<String, String>();
-    	TNode myRoot = hiddenState.getGeneGenealogy().getRoot();
-    	String rootGene= new String();
-    	double rand = Math.random();
-    	if (rand < 0.25)
-    		rootGene = "A";
-    	else if (rand < 0.5)
-    		rootGene = "T";
-    	else if (rand < 0.75)
-    		rootGene = "G";
-    	else
-    		rootGene = "C";
+    	// // System.out.println("The root gene is: " + rootGene);
     	
-    	// System.out.println("The root gene is: " + rootGene);
+	// for (TNode child : myRoot.getChildren()) {
+	//     generateHelper(myMap, child, rootGene);
+	// }
     	
-	for (TNode child : myRoot.getChildren()) {
-	    generateHelper(myMap, child, rootGene);
-	}
+    	// ObservationMap myColumn = new ObservationMap(myMap);
     	
-    	ObservationMap myColumn = new ObservationMap(myMap);
-    	
-    	return (myColumn);
+    	// return (myColumn);
     }
     
     
-    protected void generateHelper(Map<String, String> yourColumn, TNode curNode, String previousGene) {
-    	if (curNode.isLeaf()) {
-	    //String tempTaxa = curNode.getTaxa();
-       	    String tempTaxa = curNode.getName();
-	    // getTbranch
-    		String tempGene = selectGene(previousGene, lamda, curNode.getParentDistance());
-    		yourColumn.put(tempTaxa, tempGene);
-    		// System.out.println("Get to the leaf node! " + tempTaxa + ": " + tempGene);
-    	}
-    	else {
-    		String tempGene = selectGene(previousGene, lamda, curNode.getParentDistance());
-    		// System.out.println("Internal node: " + tempGene);
-		for (TNode child : curNode.getChildren()) {
-		    generateHelper(yourColumn, child, tempGene);
-		}
-    	}
-    }
+    // protected void generateHelper(Map<String, String> yourColumn, TNode curNode, String previousGene) {
+    // 	if (curNode.isLeaf()) {
+    // 	    //String tempTaxa = curNode.getTaxa();
+    //    	    String tempTaxa = curNode.getName();
+    // 	    // getTbranch
+    // 		String tempGene = selectGene(previousGene, lamda, curNode.getParentDistance());
+    // 		yourColumn.put(tempTaxa, tempGene);
+    // 		// System.out.println("Get to the leaf node! " + tempTaxa + ": " + tempGene);
+    // 	}
+    // 	else {
+    // 		String tempGene = selectGene(previousGene, lamda, curNode.getParentDistance());
+    // 		// System.out.println("Internal node: " + tempGene);
+    // 		for (TNode child : curNode.getChildren()) {
+    // 		    generateHelper(yourColumn, child, tempGene);
+    // 		}
+    // 	}
+    // }
     
     
     /**
@@ -189,39 +192,39 @@ public class OpdfMap
      * @return A randomly selected nucleotide.
      */
     
-    protected String selectGene(String geneIn, double u, double t) {
-    	String geneOut = new String();
-    	ArrayList<String> allGenes = new ArrayList<String>();
-    	allGenes.add("A");
-    	allGenes.add("T");
-    	allGenes.add("G");
-    	allGenes.add("C");
+    // protected String selectGene(String geneIn, double u, double t) {
+    // 	String geneOut = new String();
+    // 	ArrayList<String> allGenes = new ArrayList<String>();
+    // 	allGenes.add("A");
+    // 	allGenes.add("T");
+    // 	allGenes.add("G");
+    // 	allGenes.add("C");
     	
-    	double rand = Math.random();
-    	double p0 = 0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t);
-    	double p1 = 0.25 - 0.25 * Math.exp((-4.0 / 3.0) * u * t);
+    // 	double rand = Math.random();
+    // 	double p0 = 0.25 + 0.75 * Math.exp((-4.0 / 3.0) * u * t);
+    // 	double p1 = 0.25 - 0.25 * Math.exp((-4.0 / 3.0) * u * t);
     	
-    	if (rand < p0) {
-    		geneOut = geneIn;
-    		return geneOut;
-    	}
+    // 	if (rand < p0) {
+    // 		geneOut = geneIn;
+    // 		return geneOut;
+    // 	}
     	
-    	allGenes.remove(geneIn);
+    // 	allGenes.remove(geneIn);
     	
-    	if (p0 <= rand && rand < p0+p1) {
-    		geneOut = allGenes.get(0);
-    	}
+    // 	if (p0 <= rand && rand < p0+p1) {
+    // 		geneOut = allGenes.get(0);
+    // 	}
     	
-    	if (p0+p1 <= rand && rand < p0+p1*2) {
-    		geneOut = allGenes.get(1);
-    	}
+    // 	if (p0+p1 <= rand && rand < p0+p1*2) {
+    // 		geneOut = allGenes.get(1);
+    // 	}
     	
-    	if (p0+p1*2 <= rand) {
-    		geneOut = allGenes.get(2);
-    	}
+    // 	if (p0+p1*2 <= rand) {
+    // 		geneOut = allGenes.get(2);
+    // 	}
     	
-    	return geneOut;
-    }
+    // 	return geneOut;
+    // }
 	
 	
     public void fit (ObservationMap... oa)

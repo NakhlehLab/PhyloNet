@@ -21,6 +21,9 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import util.Constants;
+import substitutionModel.SubstitutionModel;
+import substitutionModel.GTRSubstitutionModel;
+import substitutionModel.NucleotideAlphabet;
 import optimize.MultivariateOptimizer;
 import gridSearch.GridSearchAlgorithm;
 import phylogeny.EvoTree;
@@ -66,6 +69,8 @@ public class runHmm {
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
 
     protected TransitionProbabilityParameters transitionProbabilityParameters;
+    
+    protected SubstitutionModel substitutionModel;
 
     // kliu - neither are necessary anymore
     //    public static double[] pi;								/* The initial pi probabilities for each state */    
@@ -138,6 +143,8 @@ public class runHmm {
 	    alleleSpeciesFileName = in.readLine();
 
 	    readTransitionProbabilityParameters(in);
+
+	    readSubstitutionModelParameters(in);
 
 	    // Get the Pi probabilities array
 	    //getPiInfo(in);
@@ -1031,7 +1038,7 @@ public class runHmm {
 		}
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + egg.getName();
 		// kliu - meh - parse allele-to-species mapping later and add in references here
-		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass);
+		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, substitutionModel);
 		trees_states.add(hiddenState);
 		parentalTreeEquivalenceClass.add(hiddenState);
 		// really strict
@@ -1085,6 +1092,35 @@ public class runHmm {
 	double hybridizationFrequency = Double.parseDouble(st.nextToken());
 	// recombinationFrequency, 
 	transitionProbabilityParameters = new TransitionProbabilityParameters(hybridizationFrequency);
+    }
+
+    protected void readSubstitutionModelParameters (BufferedReader br) throws Exception {
+	System.out.println("Input substitution model rates in format <AG> <AC> <AT> <GC> <GT>: ");
+	String line = br.readLine();
+	StringTokenizer st = new StringTokenizer(line);
+	// // Let GTRSubstitutionModel take care of checking number of input rates.
+	// if (st.countTokens() != GTRSubstitutionModel.getSubstitutionParameterCount()) {
+	//     throw (new IOException("ERROR: invalid number of substitution model rates."));
+	// }
+	double[] rates = new double[st.countTokens()];
+	for (int i = 0; i < st.countTokens(); i++) {
+	    rates[i] = Double.parseDouble(st.nextToken());
+	}
+	
+	System.out.println("Input substitution model base frequencies in format <A> <G> <C> <T>: ");
+	line = br.readLine();
+	st = new StringTokenizer(line);
+	if (st.countTokens() != NucleotideAlphabet.getClassInstance().getAlphabet().length()) {
+	    throw (new IOException("ERROR: invalid number of substitution model base frequencies."));
+	}
+	double[] baseFrequencies = new double[st.countTokens()];
+	for (int i = 0; i < st.countTokens(); i++) {
+	    baseFrequencies[i] = Double.parseDouble(st.nextToken());
+	}
+
+	GTRSubstitutionModel gtrSubstitutionModel = new GTRSubstitutionModel();
+	gtrSubstitutionModel.setSubstitutionRates(rates, baseFrequencies);
+	substitutionModel = gtrSubstitutionModel;
     }
 }
 

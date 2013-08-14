@@ -49,70 +49,70 @@ public class Parser {
      */
 
     public Parser(String basicFileName) throws Exception {
-    alphabet = new ArrayList<String>();
-    myHashmap = new HashMap<String, Integer>();
-    seqTypes = new HashMap<String, Integer>();
-    taxa = new Vector<String>();
-    trees_states = null;
-    seqNum = 0;
+	alphabet = new ArrayList<String>();
+	myHashmap = new HashMap<String, Integer>();
+	seqTypes = new HashMap<String, Integer>();
+	taxa = new Vector<String>();
+	trees_states = null;
+	seqNum = 0;
 
-    String[] line;
-    String read;
+	String[] line;
+	String read;
 
-    // Reads in the necessary initialization information:
-    BufferedReader br = new BufferedReader(new FileReader(basicFileName));
+	// Reads in the necessary initialization information:
+	BufferedReader br = new BufferedReader(new FileReader(basicFileName));
 
-    // Read in the first line: number of sequences
-    if ((read = br.readLine()) != null) {
-        // Save data as variables
-        seqNum = Integer.parseInt(read);
-    } else {
-        br.close();
-        throw new ParserFileException("Error while reading number of Sequences in file.");
-    }
+	// Read in the first line: number of sequences
+	if ((read = br.readLine()) != null) {
+	    // Save data as variables
+	    seqNum = Integer.parseInt(read);
+	} else {
+	    br.close();
+	    throw new ParserFileException("Error while reading number of Sequences in file.");
+	}
 
-    // Read in alphabet symbols
-    if ((read = br.readLine()) != null) {
-        line = read.split(" ");
-        for (int i = 0; i < line.length; i++) {
-        alphabet.add(line[i]);
-        }
-    } else {
-        br.close();
-        throw new ParserFileException("Error while reading alphabet symbols in file.");
-    }
-
-
-    System.out.println("The legal alphabet symbols: " + alphabet);
+	// Read in alphabet symbols
+	if ((read = br.readLine()) != null) {
+	    line = read.split(" ");
+	    for (int i = 0; i < line.length; i++) {
+		alphabet.add(line[i]);
+	    }
+	} else {
+	    br.close();
+	    throw new ParserFileException("Error while reading alphabet symbols in file.");
+	}
 
 
-
-    //build Hashmap for integer translation from the alphabet
-    myHashmap = IntTranslator.buildMap(alphabet);
-
-    // Read in Sequence Types (taxa or species)
-    if ((read = br.readLine()) != null) {
-        line = read.split(" ");
-        System.out.println("The number of species: " + seqNum);
-        System.out.print("The species: ");
-        for (int i = 0; i < line.length; i++) {
-        System.out.print(line[i] + " ");
-        seqTypes.put(line[i], i);
-        taxa.add(line[i]);
-        }
-    } else {
-        br.close();
-        throw new ParserFileException("Error while reading sequence type or species or taxa in file.");
-    }
-
-    // strict!
-    if ((taxa.size() != seqNum) || (seqTypes.size() != seqNum)) {
-        br.close();
-        throw new ParserFileException("ERROR: actual and listed number of taxa in " + basicFileName + " differ.");
-    }
+	System.out.println("The legal alphabet symbols: " + alphabet);
 
 
-    br.close();
+
+	//build Hashmap for integer translation from the alphabet
+	myHashmap = IntTranslator.buildMap(alphabet);
+
+	// Read in Sequence Types (taxa or species)
+	if ((read = br.readLine()) != null) {
+	    line = read.split(" ");
+	    System.out.println("The number of species: " + seqNum);
+	    System.out.print("The species: ");
+	    for (int i = 0; i < line.length; i++) {
+		System.out.print(line[i] + " ");
+		seqTypes.put(line[i], i);
+		taxa.add(line[i]);
+	    }
+	} else {
+	    br.close();
+	    throw new ParserFileException("Error while reading sequence type or species or taxa in file.");
+	}
+
+	// strict!
+	if ((taxa.size() != seqNum) || (seqTypes.size() != seqNum)) {
+	    br.close();
+	    throw new ParserFileException("ERROR: actual and listed number of taxa in " + basicFileName + " differ.");
+	}
+
+
+	br.close();
 
     }
 
@@ -178,13 +178,13 @@ public class Parser {
             // and map it to the appropriate line number
             //String type = "";		// Uncomment to Test
             while ((ch = raf.read() ) != -1) {
-            if (ch == ' ') break;
-            //else type += (char)ch;		// Uncomment to Test
-            fseekpos += 1;
+		if (ch == ' ') break;
+		//else type += (char)ch;		// Uncomment to Test
+		fseekpos += 1;
             }
             if (ch == -1) {
-            multiFileCloser(rafList, i); // Closes current file and any file opened
-            throw new ParserFileException("File Input is incorrectly formatted!");
+		multiFileCloser(rafList, i); // Closes current file and any file opened
+		throw new ParserFileException("File Input is incorrectly formatted!");
             }
 
             //now RAF is at the correct position
@@ -209,16 +209,16 @@ public class Parser {
         for (int j = 0; j < seqLen; j++) {
             //String obs = "";
             int letter;
-            Hashtable<String,String> column = new Hashtable<String,String>();
+            Hashtable<String,Character> column = new Hashtable<String,Character>();
             for (int i = 0; i < rafList.size(); i++) {
                 if ((letter = rafList.get(i).read()) != -1) {
                     //obs += (char)letter;
-                    column.put(taxa.get(i), Character.toString((char) letter));
+                    column.put(taxa.get(i), new Character((char) letter));
                 }
-            else {
-                multiFileCloser(rafList, rafList.size()-1);
-                throw new ParserFileException("Error while reading observation sequence!");
-            }
+		else {
+		    multiFileCloser(rafList, rafList.size()-1);
+		    throw new ParserFileException("Error while reading observation sequence!");
+		}
             }
 
 
@@ -238,7 +238,7 @@ public class Parser {
 
             //keep a progress report
             if ((j%10000) == 0) {
-            System.out.print("\r"+ (((double)j/(double)seqLen) * 100.0) + "%");
+		System.out.print("\r"+ (((double)j/(double)seqLen) * 100.0) + "%");
             }
 
             //			if (j % 1000000 == 0) {
@@ -311,7 +311,7 @@ public class Parser {
     }
 
     public List<String> getGeneGenealogyTaxa () {
-    return (taxa);
+	return (taxa);
     }
 
     /**
@@ -368,20 +368,20 @@ public class Parser {
     /**
      * Helper function that Maps observations to leaves in all the possible trees
      */
-    public static void mapObsToLeaves(EvoTree aTree, String obs, HashMap<String, Integer> seqType) {
-        ArrayList<Node> leaves = aTree.getLeaves();
-        for (int i = 0; i < leaves.size(); i++) {
-            Node leaf = leaves.get(i);
-            int index = seqType.get(leaf.getTaxa());
-            String aObs = obs.substring(index,index+1);
-            leaf.setObs(aObs);
+    // public static void mapObsToLeaves(EvoTree aTree, String obs, HashMap<String, Integer> seqType) {
+    //     ArrayList<Node> leaves = aTree.getLeaves();
+    //     for (int i = 0; i < leaves.size(); i++) {
+    //         Node leaf = leaves.get(i);
+    //         int index = seqType.get(leaf.getTaxa());
+    //         String aObs = obs.substring(index,index+1);
+    //         leaf.setObs(aObs);
 
-        }
+    //     }
 
-        // Testing
-        //System.out.println("the Tree after mapping obs: " + aTree);
+    //     // Testing
+    //     //System.out.println("the Tree after mapping obs: " + aTree);
 
-    }
+    // }
 
     // kliu - need to do this on-the-fly as parameter inference proceeds
     // instead of caching up front

@@ -64,18 +64,15 @@ public class GTRSubstitutionModel implements SubstitutionModel {
      */
     public void setSubstitutionRates (double[] rateParameters, double[] freqParameters) {
 	if (rateParameters.length != getSubstitutionParameterCount()) {
-	    System.err.println ("ERROR: number of rate parameters in setSubstitutionRates() should be " + getSubstitutionParameterCount() + ". Not setting.");
-	    return;
+	    throw (new RuntimeException("ERROR: number of rate parameters in setSubstitutionRates() should be " + getSubstitutionParameterCount() + "."));
 	}
 
 	if (freqParameters.length != getAlphabet().length()) {
-	    System.err.println ("ERROR: number of stationary frequency parameters is incorrect. Not setting. " + Matrix.toString(freqParameters) + " " + getAlphabet().length());
-	    return;
+	    throw (new RuntimeException("ERROR: number of stationary frequency parameters is incorrect. " + Matrix.toString(freqParameters) + " " + getAlphabet().length()));
 	}
 
 	if (!(Math.abs(Matrix.sum(freqParameters) - 1.0) <= Constants.ZERO_DELTA)) {
-	    System.err.println ("ERROR: stationary frequency parameters don't sum to one. Not setting.");
-	    return;
+	    throw (new RuntimeException("ERROR: stationary frequency parameters don't sum to one. Not setting."));
 	}
 
 	originalRateParameters = rateParameters;

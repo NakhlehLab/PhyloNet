@@ -37,9 +37,9 @@ public class TestingTreeBuilder {
         Node leaf1 = new Node("human", in1, 10);
         Node leaf2 = new Node("chimp", in1, 5);
         Node leaf3 = new Node("gorilla", root, 3);
-        leaf1.setObs("A");
-        leaf2.setObs("T");
-        leaf3.setObs("G");
+        // leaf1.setObs("A");
+        // leaf2.setObs("T");
+        // leaf3.setObs("G");
         in1.setParent(root);
 
         in1.addChild(leaf2);

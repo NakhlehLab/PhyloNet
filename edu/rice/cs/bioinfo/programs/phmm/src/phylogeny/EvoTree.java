@@ -31,22 +31,22 @@ public class EvoTree {
      * @param root A Node type -- root of the tree
      */
     public EvoTree (Node root) {
-    this.root = root;
-    this.treeID = -1;
-    //this.leaves = null;
-    //this.calcLeaves = 0;
-    this.aname = "";
+	this.root = root;
+	this.treeID = -1;
+	//this.leaves = null;
+	//this.calcLeaves = 0;
+	this.aname = "";
     }
 
     /**
      * Empty constructor for EvoTree
      */
     public EvoTree () {
-    this.root = null;
-    this.treeID = -1;
-    //this.leaves = null;
-    //this.calcLeaves = 0;
-    this.aname = "";
+	this.root = null;
+	this.treeID = -1;
+	//this.leaves = null;
+	//this.calcLeaves = 0;
+	this.aname = "";
     }
 
     /**
@@ -55,10 +55,10 @@ public class EvoTree {
      * @param treeIDin An Integer that unqiuely defines the tree
      */
     public EvoTree(Node root, int treeIDin) {
-    this.root = root;
-    this.treeID = treeIDin;
-    //this.leaves = null;
-    //this.calcLeaves = 0;
+	this.root = root;
+	this.treeID = treeIDin;
+	//this.leaves = null;
+	//this.calcLeaves = 0;
     }
 
     /**
@@ -66,17 +66,17 @@ public class EvoTree {
      * @param rootIn A Node type
      */
     public void setRoot(Node rootIn) {
-    this.root = rootIn;
+	this.root = rootIn;
 
-    // reset leaves --> new root means need to find leaves again
-    //this.calcLeaves = 0;
+	// reset leaves --> new root means need to find leaves again
+	//this.calcLeaves = 0;
     }
 
     /**
      * @return The root of type Node of the tree
      */
     public Node getRoot(){
-    return root;
+	return root;
     }
 
     /**
@@ -84,18 +84,18 @@ public class EvoTree {
      * @param idIn An integer that uniquely identifies the tree
      */
     public void setID(int idIn) {
-    this.treeID = idIn;
+	this.treeID = idIn;
     }
 
     /**
      * Set name of tree
      */
     public void setName(String name) {
-    this.aname = name;
+	this.aname = name;
     }
 
     public String getName() {
-    return aname;
+	return aname;
     }
 
     /**
@@ -103,7 +103,7 @@ public class EvoTree {
      * @return An integer that uniquely defines this tree
      */
     public int getID() {
-    return this.treeID;
+	return this.treeID;
     }
 
     // kliu - entry point for emission probability calculation
@@ -131,21 +131,21 @@ public class EvoTree {
      *
      * See writeup for details.
      */
-    public double getLikelihood (ObservationMap column) {
-    mapObsToLeaves(column);
+    // public double getLikelihood (ObservationMap column) {
+    // 	mapObsToLeaves(column);
 
-    double result = 0;
-    ArrayList<Double> rootLikelihoods = root.getLikelihood();
-    for (int i = 0; i < 4; i++) {
-        // kliu - ArrayList recalculated four times over
-        result += 0.25 * rootLikelihoods.get(i);
-    }
+    // 	double result = 0;
+    // 	ArrayList<Double> rootLikelihoods = root.getLikelihood();
+    // 	for (int i = 0; i < 4; i++) {
+    // 	    // kliu - ArrayList recalculated four times over
+    // 	    result += 0.25 * rootLikelihoods.get(i);
+    // 	}
 
-    // kliu - no need to do this - just overwrite each time
-    //clearTree();
+    // 	// kliu - no need to do this - just overwrite each time
+    // 	//clearTree();
 
-    return result;
-    }
+    // 	return result;
+    // }
 
     // public double getLikelihood (String obs, Map<String, Integer> seqType) {
     // 	mapObsToLeaves(obs, seqType);
@@ -167,16 +167,16 @@ public class EvoTree {
     /**
      * Helper function that Maps observations to leaves.
      */
-    protected void mapObsToLeaves (ObservationMap column) {
-    ArrayList<Node> leaves = this.getLeaves();
-    for (int i = 0; i < leaves.size(); i++) {
-        Node leaf = leaves.get(i);
-        leaf.setObs(column.get(leaf.getTaxa()));
-    }
+    // protected void mapObsToLeaves (ObservationMap column) {
+    // ArrayList<Node> leaves = this.getLeaves();
+    // for (int i = 0; i < leaves.size(); i++) {
+    //     Node leaf = leaves.get(i);
+    //     leaf.setObs(column.get(leaf.getTaxa()));
+    // }
 
     // Testing
     //System.out.println("the Tree after mapping obs: " + this);
-    }
+    //}
 
     // protected void mapObsToLeaves (String obs, Map<String, Integer> seqType) {
     // 	ArrayList<Node> leaves = this.getLeaves();
@@ -196,14 +196,14 @@ public class EvoTree {
      * tree nodes' likelihood values
      */
     public void clearTree() {
-    root.clearNode();
+	root.clearNode();
     }
 
     /**
      * @return A clone of this current tree
      */
     public EvoTree cloneTree() {
-    return new EvoTree(root.cloneNode());
+	return new EvoTree(root.cloneNode());
     }
 
     //	/**
@@ -227,26 +227,26 @@ public class EvoTree {
      * @return An ArrayList of Leaf Nodes of the tree
      */
     public ArrayList<Node> getLeaves() {
-    return (root.getLeaves());
+	return (root.getLeaves());
     }
 
     public ArrayList<Node> getNodes() {
-    return (root.getNodes());
+	return (root.getNodes());
     }
 
     /**
      * Get names of taxa.
      */
     public String[] getTaxa () {
-    ArrayList<Node> leaves = getLeaves();
-    String[] taxa = new String[leaves.size()];
-    int i = 0;
-    for (Node leaf : leaves) {
-        taxa[i] = leaf.getTaxa(); // kliu - change Node.getTaxa() name later
-        i++;
-    }
+	ArrayList<Node> leaves = getLeaves();
+	String[] taxa = new String[leaves.size()];
+	int i = 0;
+	for (Node leaf : leaves) {
+	    taxa[i] = leaf.getTaxa(); // kliu - change Node.getTaxa() name later
+	    i++;
+	}
 
-    return (taxa);
+	return (taxa);
     }
 
 
@@ -268,11 +268,11 @@ public class EvoTree {
      */
     @Override
     public String toString() {
-    return "Tree: " + aname + "\n" + root.toString() + "\n\n";
+	return "Tree: " + aname + "\n" + root.toString() + "\n\n";
     }
 
     public String toNewickString () {
-    return (toNewickString(DEFAULT_DISPLAY_BRANCH_LENGTHS_FLAG, DEFAULT_DISPLAY_INTERNAL_NODE_NAMES_FLAG));
+	return (toNewickString(DEFAULT_DISPLAY_BRANCH_LENGTHS_FLAG, DEFAULT_DISPLAY_INTERNAL_NODE_NAMES_FLAG));
     }
 
     /**
@@ -280,67 +280,67 @@ public class EvoTree {
      * internal node names should be output or not..
      */
     public String toNewickString (boolean displayBranchLengthsFlag, boolean displayInternalNodeNamesFlag) {
-        return root.toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag);
+	return root.toNewickString(displayBranchLengthsFlag, displayInternalNodeNamesFlag);
     }
 
     protected static void test (String filename) {
-    try {
-        BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));
-        TreeParser ptp = new TreeParser(ptreesbr);
-        ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
-        ptreesbr.close();
+	try {
+	    BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));
+	    TreeParser ptp = new TreeParser(ptreesbr);
+	    ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
+	    ptreesbr.close();
 
-        int i = 0;
-        for (EvoTree tree : trees) {
-        System.out.println ("Tree " + i + ": |" + tree.toNewickString(true, true) + "|");
-        }
-    }
-    catch (IOException ioe) {
-        System.err.println (ioe);
-        System.exit(1);
-    }
+	    int i = 0;
+	    for (EvoTree tree : trees) {
+		System.out.println ("Tree " + i + ": |" + tree.toNewickString(true, true) + "|");
+	    }
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    System.exit(1);
+	}
     }
 
     protected static void test2 (String filename) {
-    try {
-        BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));
-        TreeParser ptp = new TreeParser(ptreesbr);
-        ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
-        ptreesbr.close();
+	try {
+	    BufferedReader ptreesbr = new BufferedReader(new FileReader(filename));
+	    TreeParser ptp = new TreeParser(ptreesbr);
+	    ArrayList<EvoTree> trees = ptp.nexusFileTreeNames(filename);
+	    ptreesbr.close();
 
-        EvoTree tree = trees.get(0);
+	    EvoTree tree = trees.get(0);
 
-        if (trees.size() < 1) {
-        System.err.println("ERROR: must be at least one tree in input file " + filename + ". Aborting.");
-        System.exit(1);
-        }
-        else if (trees.size() > 1) {
-        System.err.println ("WARNING: more than one tree in input file " + filename + ". Only using first tree.");
-        }
+	    if (trees.size() < 1) {
+		System.err.println("ERROR: must be at least one tree in input file " + filename + ". Aborting.");
+		System.exit(1);
+	    }
+	    else if (trees.size() > 1) {
+		System.err.println ("WARNING: more than one tree in input file " + filename + ". Only using first tree.");
+	    }
 
-        for (Node n : tree.getNodes()) {
-        System.out.println (n.getTaxa() + " " + n.getTbranch() + " " );
-        }
-        System.out.println();
+	    for (Node n : tree.getNodes()) {
+		System.out.println (n.getTaxa() + " " + n.getTbranch() + " " );
+	    }
+	    System.out.println();
 
-        HashMap<String,String> hm = new HashMap<String,String>();
-        hm.put("human", "A");
-        hm.put("chimp", "A");
-        hm.put("gorilla", "G");
-        ObservationMap column = new ObservationMap(hm);
-        System.out.println ("Column likelihood: |" + tree.getLikelihood(column) + "|");
-    }
-    catch (IOException ioe) {
-        System.err.println (ioe);
-        System.exit(1);
-    }
+	    HashMap<String,Character> hm = new HashMap<String,Character>();
+	    hm.put("human", 'A');
+	    hm.put("chimp", 'A');
+	    hm.put("gorilla", 'G');
+	    //ObservationMap column = new ObservationMap(hm);
+	    //System.out.println ("Column likelihood: |" + tree.getLikelihood(column) + "|");
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    System.exit(1);
+	}
     }
 
     public static void main (String[] args) {
-    if (args.length != 1) {
-        System.err.println ("Usage: java phylogeny.EvoTree <input tree file in Nexus format>");
-        System.exit(1);
-    }
-    test(args[0]);
+	if (args.length != 1) {
+	    System.err.println ("Usage: java phylogeny.EvoTree <input tree file in Nexus format>");
+	    System.exit(1);
+	}
+	test(args[0]);
     }
 }

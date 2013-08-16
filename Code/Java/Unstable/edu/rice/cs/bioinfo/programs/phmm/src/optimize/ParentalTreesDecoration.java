@@ -33,6 +33,11 @@ public class ParentalTreesDecoration {
     // indirection between parental tree name and parental tree objects themselves
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
 
+    // for convenience, map from a parental tree node back to the parental tree that contains it
+    // no similar method in PhyloNet's network structure
+    // although one exists in PhyloNet's tree structure 
+    protected Hashtable<NetNode<Double>,Network<Double>> parentalNodeTreeMap;
+
     // bijective map between parental tree node objects and their names
     // naming convention:
     // "<tree name>,<node name>"
@@ -63,15 +68,20 @@ public class ParentalTreesDecoration {
     // shoot - since ParentalBranchLengthParameter object construction occurs in here
     protected runHmm runHmmObject;
 
+    protected CalculationCache calculationCache;
+
     public ParentalTreesDecoration(BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
 				   String inputParentalBranchLengthParameterToEdgeMapFilename,
 				   String inputParentalBranchLengthParameterSetConstraintsFilename,
-				   runHmm inRunHmmObject
+				   runHmm inRunHmmObject,
+				   CalculationCache inCalculationCache
 				   ) {
 	this.parentalTreeNameMap = inParentalTreeNameMap;
-	runHmmObject = inRunHmmObject;
+	this.runHmmObject = inRunHmmObject;
+	this.calculationCache = inCalculationCache;
 
 	createParentalNodeLabelMap();
+	createParentalNodeTreeMap();
 	
 	// no model update
 	// this creates LengthParameter objects representing parental tree branch length parameters
@@ -87,6 +97,19 @@ public class ParentalTreesDecoration {
 	return (new Vector<ParentalBranchLengthParameter>(lpEidMap.keys()));
     }
 
+    protected void createParentalNodeTreeMap () {
+	parentalNodeTreeMap = new Hashtable<NetNode<Double>,Network<Double>>();
+	for (Network<Double> parentalTree : parentalTreeNameMap.values()) {
+	    for (NetNode<Double> node : parentalTree.dfs()) {
+		parentalNodeTreeMap.put(node, parentalTree);
+	    }
+	}
+    }
+
+    /**
+     * Create map between parental nodes and their labels,
+     * Also create a map between parental node and the tree that contains it.
+     */
     protected void createParentalNodeLabelMap () {
 	parentalNodeLabelMap = new BijectiveHashtable<NetNode<Double>,String>();
 	for (String parentalTreeName : parentalTreeNameMap.keys()) {
@@ -235,6 +258,7 @@ public class ParentalTreesDecoration {
 										     runHmmObject,
 										     // meh
 										     this,
+										     calculationCache,
 										     true,
 										     true,
 										     // no update during parse
@@ -410,6 +434,11 @@ public class ParentalTreesDecoration {
 		}
 	    }
 	    child.setParentDistance(parent, length);
+
+	    // invalidate cache for the associated tree
+	    // paranoid
+	    calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.clear(parentalNodeTreeMap.get(child));
+	    calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.clear(parentalNodeTreeMap.get(parent));
 
 	    //System.out.println ("setParentDistance: " + child.getName() + " " + parent.getName() + " " + length);
 	}

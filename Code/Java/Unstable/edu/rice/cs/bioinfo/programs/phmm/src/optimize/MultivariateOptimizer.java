@@ -133,6 +133,7 @@ public class MultivariateOptimizer {
     protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
     protected List<ObservationMap> observation;
+    protected CalculationCache calculationCache;
 
     // create parental tree decorations/parameter maps
     protected ParentalTreesDecoration parentalTreesDecoration;
@@ -168,7 +169,8 @@ public class MultivariateOptimizer {
 				  BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
-				  String inputParentalBranchLengthParameterSetConstraintsFilename
+				  String inputParentalBranchLengthParameterSetConstraintsFilename,
+				  CalculationCache inCalculationCache
 				  ) {
 	this.hmm = inHmm;
 	this.runHmmObject = inRunHmm;
@@ -178,6 +180,7 @@ public class MultivariateOptimizer {
 	this.parentalTreeClasses = inParentalTreeClasses;
 	this.parentalTreeNameMap = inParentalTreeNameMap;
 	this.observation = inObservation;
+	this.calculationCache = inCalculationCache;
 
 	brentOptimizer = new BrentOptimizer(RELATIVE_ACCURACY, ABSOLUTE_ACCURACY);
 
@@ -187,7 +190,8 @@ public class MultivariateOptimizer {
 	parentalTreesDecoration = new ParentalTreesDecoration(parentalTreeNameMap,
 							      inputParentalBranchLengthParameterToEdgeMapFilename,
 							      inputParentalBranchLengthParameterSetConstraintsFilename,
-							      runHmmObject);
+							      runHmmObject,
+							      calculationCache);
 	parentalBranchLengthParameters = parentalTreesDecoration.getParentalBranchLengthParameters();
 
 	// no model update
@@ -213,6 +217,7 @@ public class MultivariateOptimizer {
 									 gtrSubstitutionModel,
 									 i,
 									 gtrBaseFrequencyParameters,
+									 calculationCache,
 									 true,
 									 true,
 									 false // no need to update
@@ -226,6 +231,7 @@ public class MultivariateOptimizer {
 						       currentSubstitutionRateParameters[i], // is this syntax ok?
 						       gtrSubstitutionModel,
 						       i,
+						       calculationCache,
 						       true,
 						       true,
 						       false // no need to update
@@ -264,12 +270,13 @@ public class MultivariateOptimizer {
 		}
 		
 		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(hiddenState.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
-										   node.getParentDistance(),
-										   node,
-										   true,
-										   true,
-										   // no need for update
-										   false);
+											 node.getParentDistance(),
+											 node,
+											 calculationCache,
+											 true,
+											 true,
+											 // no need for update
+											 false);
 		genealogyBranchLengthParameters.add(gblp);
 	    }
 	}

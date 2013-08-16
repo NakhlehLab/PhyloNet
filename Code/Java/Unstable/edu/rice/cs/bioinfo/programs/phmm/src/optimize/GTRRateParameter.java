@@ -10,17 +10,20 @@ public class GTRRateParameter extends Parameter {
     protected GTRSubstitutionModel gtrSubstitutionModel;
     // choice of which parameter to optimize
     protected int index;
+    protected CalculationCache calculationCache;
 
     public GTRRateParameter (String inName, 
 			     double inValue,
 			     GTRSubstitutionModel inGTRSubstitutionModel,
 			     int inIndex,
+			     CalculationCache inCalculationCache,
 			     boolean checkValueMinimumConstraintFlag,
 			     boolean checkValueMaximumConstraintFlag,
 			     boolean updateModelStateFlag) {
 	super(inName, inValue, checkValueMinimumConstraintFlag, checkValueMaximumConstraintFlag, false);
 
 	this.gtrSubstitutionModel = inGTRSubstitutionModel;
+	this.calculationCache = inCalculationCache;
 	// paranoid
 	if ((inIndex < 0) || (inIndex >= gtrSubstitutionModel.getRateParameterCount())) {
 	    throw (new RuntimeException("ERROR: index in GTRRateParameter(...) is out of bounds. " + inIndex));
@@ -49,5 +52,10 @@ public class GTRRateParameter extends Parameter {
 	// set by reference
 	originalRateParameters[index] = this.getValue();
 	gtrSubstitutionModel.updateRateMatrix();
+
+	// totally clear out associated caches
+	calculationCache.cacheSubstitutionProbabilityMatrix.clear();
+	calculationCache.cacheSubstitutionProbability.clear();
+
     }
 }

@@ -63,16 +63,15 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.optimization.GoalType;
 import runHmm.runHmm;
 import util.Constants;
+import substitutionModel.GTRSubstitutionModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
-import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
-
 
 public class MultivariateOptimizer {
     public static final double RELATIVE_ACCURACY = 1e-12;
@@ -90,6 +89,10 @@ public class MultivariateOptimizer {
     public static final double DEFAULT_INITIAL_BRANCH_LENGTH = 1e-1;
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = 1e1; // scientific notation - e for decimal exponent
 
+    public static final double DEFAULT_MINIMUM_RATE = 1e-2;
+    public static final double DEFAULT_INITIAL_RATE = 1.0;
+    public static final double DEFAULT_MAXIMUM_RATE = 1e2; // scientific notation - e for decimal exponent
+
     // only for randomization purposes
     //
     // only go to 80% of max for randomization purposes
@@ -106,8 +109,6 @@ public class MultivariateOptimizer {
     // PhyloNet's Rich Newick support has some craziness about '_' underscore letter.
     // use dash '-' instead.
     public static final String IDENTIFIER_SET_BRANCH_LENGTH_CONSTRAINTS = "-CONSTRAINT-SET-";
-
-    public static final String PARENTAL_NODE_LABEL_DELIMITER = ",";
 
     // to support fixed network probabilities
     // over-parameterization issue with optimization of model of Yu et al. 2012
@@ -127,66 +128,53 @@ public class MultivariateOptimizer {
     // should really just wrap all into custom HMM class
     protected List<HiddenState> hiddenStates;
     protected TransitionProbabilityParameters transitionProbabilityParameters;
+    // bleh - need to assume a GTR model here due to specific parameterization
+    protected GTRSubstitutionModel gtrSubstitutionModel;
     protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
     protected List<ObservationMap> observation;
 
-    // bijective map between parental tree node objects and their names
-    // naming convention:
-    // "<tree name>,<node name>"
-    protected BijectiveHashtable<NetNode<Double>,String> parentalNodeLabelMap;
-
-    // Use a single BidirectionalMultimap to capture many-to-many 
-    // relationship between
-    // length parameters and edge ids:
-    // lid <-> eid
-    protected BidirectionalMultimap<LengthParameter,Tuple<String,String>> lpEidMap;
-    // reverse lookup from lid name to length-parameter references
-    protected Hashtable<String,LengthParameter> lidLpMap;
-
-    // One more layer of indirection.
-    // Group length parameters into length-parameter-constraint-sets.
-    // Each length-parameter-constraint-set has a total length constraint.
-    // If length-parameter belongs to a length-parameter-constaint-set, then
-    // enable fixed-total-length optimization for the set.
-    protected BidirectionalMultimap<ParameterConstraintSet,LengthParameter> setLpMap;
-    // By convention, first length-parameter in a length-parameter-constraint-set 
-    // has relative weight 1.0 and isn't optimized.
-    // Beware degree-of-freedoms == one less than number of length-parameters in
-    // a length-parameter-constraint-set.
-    //
-    // Store this info in sid->lid map.
-    protected Hashtable<ParameterConstraintSet,LengthParameter> setFirstLpMap;
+    // create parental tree decorations/parameter maps
+    protected ParentalTreesDecoration parentalTreesDecoration;
     
     // kliu - implement this later
     protected boolean enableParentalTreeOptimizationFlag = true;
     protected boolean enableGeneGenealogyOptimizationFlag = true;
-    protected boolean enableFrequencyOptimizationFlag = true;
+    protected boolean enableSwitchingFrequencyOptimizationFlag = true;
+    protected boolean enableSubstitutionModelOptimizationFlag = true;
 
     // heuristic for univariate optimization
     protected BrentOptimizer brentOptimizer;
 
-    // keep list of Parameters
+    // for convenience, keep list of Parameters
     protected Vector<Parameter> parameters;
-    // use lpEidMap.keys() to get a list of all parental tree branch length parameters (LengthParameter objects)
-    protected Vector<SingleBranchLengthParameter> singleBranchLengthParameters;
-    protected Vector<FrequencyParameter> frequencyParameters;
+    
+    protected Vector<ParentalBranchLengthParameter> parentalBranchLengthParameters;
+    protected Vector<GenealogyBranchLengthParameter> genealogyBranchLengthParameters;
+    protected Vector<SwitchingFrequencyParameter> switchingFrequencyParameters;
+    protected Vector<GTRRateParameter> gtrRateParameters;
+    protected Vector<GTRBaseFrequencyParameter> gtrBaseFrequencyParameters;
+
+    // meh - just keep above for clarity
+    // use lpEidMap.keys() to get a list of all parental tree branch length parameters (ParentalBranchLengthParameter objects)
 
     public MultivariateOptimizer (Hmm<ObservationMap> inHmm,
 				  // HMM update routines are located in this object
 				  runHmm inRunHmm,
 				  List<HiddenState> inHiddenStates,
 				  TransitionProbabilityParameters inTransitionProbabilityParameters,
+				  GTRSubstitutionModel inGTRSubstitutionModel,
 				  Map<Network<Double>,Set<HiddenState>> inParentalTreeClasses,
 				  BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
 				  List<ObservationMap> inObservation,
-				  String inputLengthParameterToEdgeMapFilename,
-				  String inputLengthParameterSetConstraintsFilename
+				  String inputParentalBranchLengthParameterToEdgeMapFilename,
+				  String inputParentalBranchLengthParameterSetConstraintsFilename
 				  ) {
 	this.hmm = inHmm;
 	this.runHmmObject = inRunHmm;
 	this.hiddenStates = inHiddenStates;
 	this.transitionProbabilityParameters = inTransitionProbabilityParameters;
+	this.gtrSubstitutionModel = inGTRSubstitutionModel;
 	this.parentalTreeClasses = inParentalTreeClasses;
 	this.parentalTreeNameMap = inParentalTreeNameMap;
 	this.observation = inObservation;
@@ -195,29 +183,70 @@ public class MultivariateOptimizer {
 
 	verifySearchSettings();
 
-	createParentalNodeLabelMap();
-	
-	// this creates LengthParameter objects representing parental tree branch length parameters
-	parseInputLengthParameterToEdgeMapFile(inputLengthParameterToEdgeMapFilename);
-	parseParameterConstraintSetsFile(inputLengthParameterSetConstraintsFilename);
+	// ParentalBranchLengthParameter objects created in here
+	parentalTreesDecoration = new ParentalTreesDecoration(parentalTreeNameMap,
+							      inputParentalBranchLengthParameterToEdgeMapFilename,
+							      inputParentalBranchLengthParameterSetConstraintsFilename,
+							      runHmmObject);
+	parentalBranchLengthParameters = parentalTreesDecoration.getParentalBranchLengthParameters();
 
-	createSingleBranchLengthParameters();
-	createFrequencyParameters();
+	// no model update
+	createGenealogyBranchLengthParameters();
+	createSwitchingFrequencyParameters();
+	createSubstitutionModelParameters();	
 
+	// for convenience only
 	createListOfAllParameters();
+
+	// finally do update
+	updateModelStateForEveryParameter();
     }
 
-    protected void createFrequencyParameters () {
-	frequencyParameters = new Vector<FrequencyParameter>();
+    protected void createSubstitutionModelParameters () {
+	gtrBaseFrequencyParameters = new Vector<GTRBaseFrequencyParameter>();
+	double[] currentStationaryProbabilities = gtrSubstitutionModel.getStationaryProbabilities();
+	for (int i = 0; i < gtrSubstitutionModel.getAlphabet().length(); i++) {
+	    gtrBaseFrequencyParameters.add(new GTRBaseFrequencyParameter(Character.toString(gtrSubstitutionModel.getAlphabet().getAlphabet().charAt(i)),
+									 // by convention, first parameter in a constraint-set
+									 // gets set to 1.0
+									 (i == 0) ? 1.0 : currentStationaryProbabilities[i], // is this syntax ok?
+									 gtrSubstitutionModel,
+									 i,
+									 gtrBaseFrequencyParameters,
+									 true,
+									 true,
+									 false // no need to update
+									 ));
+	}
+
+	gtrRateParameters = new Vector<GTRRateParameter>();
+	double[] currentSubstitutionRateParameters = gtrSubstitutionModel.getOriginalRateParameters();
+	for (int i = 0; i < gtrSubstitutionModel.getRateParameterCount(); i++) {
+	    gtrRateParameters.add(new GTRRateParameter(Integer.toString(i),
+						       currentSubstitutionRateParameters[i], // is this syntax ok?
+						       gtrSubstitutionModel,
+						       i,
+						       true,
+						       true,
+						       false // no need to update
+						       ));
+	}
+    }
+
+    protected void createSwitchingFrequencyParameters () {
+	switchingFrequencyParameters = new Vector<SwitchingFrequencyParameter>();
 	for (TransitionProbabilityParameters.ParameterChoice parameterChoice : TransitionProbabilityParameters.ParameterChoice.values()) {
-	    FrequencyParameter fp = new FrequencyParameter(parameterChoice.toString(),
-							   transitionProbabilityParameters.get(parameterChoice),
-							   transitionProbabilityParameters,
-							   parameterChoice,
-							   false // no need to update
-							   );
-							   //runHmmObject,
-	    frequencyParameters.add(fp);
+	    SwitchingFrequencyParameter sfp = new SwitchingFrequencyParameter(parameterChoice.toString(),
+									      transitionProbabilityParameters.get(parameterChoice),
+									      runHmmObject,
+									      transitionProbabilityParameters,
+									      parameterChoice,
+									      true,
+									      true,
+									      false // no need to update
+									      );
+	    //runHmmObject,
+	    switchingFrequencyParameters.add(sfp);
 	}
     }
 
@@ -226,275 +255,33 @@ public class MultivariateOptimizer {
      * gene trees. Each hidden state has a gene tree that is parameterized
      * separately from any other gene tree in the HMM.
      */
-    protected void createSingleBranchLengthParameters () {
-	singleBranchLengthParameters = new Vector<SingleBranchLengthParameter>();
+    protected void createGenealogyBranchLengthParameters () {
+	genealogyBranchLengthParameters = new Vector<GenealogyBranchLengthParameter>();
 	for (HiddenState hiddenState : hiddenStates) {
 	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
 		if (node.isRoot() || node.getParent() == null) {
 		    continue;
 		}
 		
-		SingleBranchLengthParameter sblp = new SingleBranchLengthParameter(hiddenState.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
+		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(hiddenState.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
 										   node.getParentDistance(),
 										   node,
+										   true,
+										   true,
 										   // no need for update
 										   false);
-		singleBranchLengthParameters.add(sblp);
+		genealogyBranchLengthParameters.add(gblp);
 	    }
 	}
     }
 
     protected void createListOfAllParameters () {
 	parameters = new Vector<Parameter>();
-
-	// parental tree branch length parameters
-	for (LengthParameter lp : lpEidMap.keys()) {
-	    parameters.add(lp);
-	}
-	
-	for (SingleBranchLengthParameter sblp : singleBranchLengthParameters) {
-	    parameters.add(sblp);
-	}
-
-	for (FrequencyParameter fp : frequencyParameters) {
-	    parameters.add(fp);
-	}
-    }
-
-    /**
-     * Token format: <branch parental tree name>,<branch child id>,<branch parent id>
-     */
-    protected Tuple<String,String> parseEid (String filename, String s) {
-	StringTokenizer st = new StringTokenizer(s, ",");
-	if (st.countTokens() != 3) {
-	    throw (new RuntimeException("ERROR: incorrectly formatted edge id in file " + filename + ": " + s));
-	}
-
-	String tid = st.nextToken();
-	String cid = st.nextToken();
-	String pid = st.nextToken();
-	return (new Tuple<String,String>(tid + PARENTAL_NODE_LABEL_DELIMITER + cid, tid + PARENTAL_NODE_LABEL_DELIMITER + pid));
-    }
-
-    /**
-     * Input file format:
-     * <length-parameter-constraint-set ID> <total length> <length parameter 1 unique ID> <length parameter 2 unique ID> ...
-     *
-     * A length parameter ID can appear AT MOST ONCE in this input file!
-     * Avoid complex constraints - sets *MUST* be disjoint!
-     */
-    protected void parseParameterConstraintSetsFile (String filename) {
-	if ((filename == null) ||
-	    (filename.trim().length() <= 0)) {
-	    throw (new RuntimeException ("ERROR: invalid filename in parseParameterConstraintSetsFile()."));
-	}
-
-	if (!(new File(filename)).isFile()) {
-	    throw (new RuntimeException ("ERROR: filename " + filename + " does not exist."));
-	}
-
-	setLpMap = new BidirectionalMultimap<ParameterConstraintSet,LengthParameter>();
-	setFirstLpMap = new Hashtable<ParameterConstraintSet,LengthParameter>();
-
-	try {
-	    BufferedReader br = new BufferedReader(new FileReader(filename));
-	    String line;
-	    while ((line = br.readLine()) != null) {
-		// skip empty lines
-		line = line.trim();
-		if (line.length() <= 0) {
-		    continue;
-		}
-
-		StringTokenizer st = new StringTokenizer(line);
-		if (st.countTokens() < 3) {
-		    throw (new RuntimeException ("ERROR: incorrectly formatted line in filename " + filename + ": " + line));
-		}
-
-		String sid = st.nextToken();
-		double value = Double.parseDouble(st.nextToken());
-		ParameterConstraintSet slp = new LengthParameter(sid, value);
-		
-		// Disallow duplicate length-parameter-ids in input file.
-		if (setLpMap.containsKey(slp)) {
-		    throw (new RuntimeException ("ERROR: duplicate length-parameter-constraint-set id in filename " + filename + ": " + slp.toString()));
-		}
-
-		while (st.hasMoreTokens()) {
-		    String lid = st.nextToken();
-		    if (!lidLpMap.containsKey(lid)) {
-			// barf
-			throw (new RuntimeException("ERROR: invalid lid " + lid + " in file " + filename + "."));
-		    }
-		    LengthParameter lp = lidLpMap.get(lid);
-		    // duplicate lids fine
-		    // all goes into a HashSet anyways
-		    setLpMap.put(slp, lp);
-
-		    // Keep track of first lid in set.
-		    if (!setFirstLpMap.containsKey(slp)) {
-			setFirstLpMap.put(slp, lp);
-			// Weight of first lid is always 1.0.
-			lp.setValue(1.0);
-		    }
-		}
-	    }
-	}
-	catch (IOException ioe) {
-	    System.err.println (ioe);
-	    System.exit(1);
-	}
-
-	// One last constraint - each length-parameter can belong to *ONLY* 
-	// one length-parameter-constraint-set.
-	// No complex constraints.
-	if (!setLpMap.checkInjective()) {
-	    throw (new RuntimeException ("ERROR: injective property violated in input file + " + filename + ". Make sure that each length-parameter belongs to at most one length-parameter-constraint-set."));
-	}
-
-	if (Constants.WARNLEVEL > 4) { System.out.println ("setLpMap at end of parseParameterConstraintSetsFile(): \n" + setLpMap.toString() + "\n"); }
-    }
-
-    /**
-     * Input file format:
-     * <length parameter unique ID> <initial value> <branch 1 parental tree name>,<branch 1 child id>,<branch 1 parent id> <branch 2 parental tree name>,<branch 2 child id>,<branch 2 parent id> ...
-     */
-    protected void parseInputLengthParameterToEdgeMapFile (String filename) {
-	if ((filename == null) ||
-	    (filename.trim().length() <= 0)) {
-	    throw (new RuntimeException ("ERROR: invalid filename in parseInputLengthParameterToEdgeMapFile()."));
-	}
-
-	if (!(new File(filename)).isFile()) {
-	    throw (new RuntimeException ("ERROR: filename " + filename + " does not exist."));
-	}
-
-	lpEidMap = new BidirectionalMultimap<LengthParameter,Tuple<String,String>>();
-	lidLpMap = new Hashtable<String,LengthParameter>();
-
-	try {
-	    BufferedReader br = new BufferedReader(new FileReader(filename));
-	    String line;
-	    while ((line = br.readLine()) != null) {
-		// skip empty lines
-		line = line.trim();
-		if (line.length() <= 0) {
-		    continue;
-		}
-
-		StringTokenizer st = new StringTokenizer(line);
-		if (st.countTokens() < 3) {
-		    throw (new RuntimeException ("ERROR: incorrectly formatted line in filename " + filename + ": " + line));
-		}
-		String lid = st.nextToken();
-		double value = Double.parseDouble(st.nextToken());
-		LengthParameter lp = new LengthParameter(lid, value);
-		
-		//if (Constants.WARNLEVEL > 4) { System.out.println ("Parsing " + filename + " lid: |" + lid + "| value: |" + value); }
-
-		lidLpMap.put(lp.getName(), lp);
-
-		// Disallow duplicate length-parameter-ids in input file.
-		if (lpEidMap.containsKey(lp)) {
-		    throw (new RuntimeException ("ERROR: duplicate length-parameter-id in filename " + filename + ": " + lp.toString()));
-		}
-		
-		while (st.hasMoreTokens()) {
-		    Tuple<String,String> eid = parseEid (filename, st.nextToken());
-
-		    //if (Constants.WARNLEVEL > 4) { System.out.println ("Parsing " + filename + " lid: |" + lid + "| value: |" + value + "| eid: |" + eid + "|"); }
-
-		    // Repeated eid per length-parameter ok.
-		    // All goes into a set anyways (keyed on length-parameter).
-		    lpEidMap.put(lp, eid);
-		}
-	    }
-	}
-	catch (IOException ioe) {
-	    System.err.println (ioe);
-	    System.exit(1);
-	}
-
-	// force all eids to exist
-	// furthermore, force all edges to be listed in lpEidMap
-	if (!checkLpEidMap()) {
-	    throw (new RuntimeException("ERROR: invalid lpEidMap in parseInputLengthParameterToEdgeMapFile."));
-	}
-
-	if (Constants.WARNLEVEL > 4) { System.out.println ("lpEidMap at end of parseInputLengthParameterToEdgeMapFile: \n" + lpEidMap.toString() + "\n"); }
-    }
-
-    protected boolean checkLpEidMap () {
-	// also make sure that every edge in the tree is contained in lpEidMap
-	// 
-	// actually - not necessary
-	// excluded edges -> not optimized
-	//
-	// Just warn.
-	for (Network<Double> parentalTree : parentalTreeClasses.keySet()) {
-	    for(NetNode<Double> node : parentalTree.dfs()) {
-		for(NetNode<Double> parent : node.getParents()) {
-		    Tuple<String,String> eid = new Tuple<String,String>(parentalNodeLabelMap.get(node), parentalNodeLabelMap.get(parent));
-		    
-		    // testing
-		    System.out.println ("Edge: |" + eid + "|");
-		    
-		    if (!lpEidMap.containsValue(eid)) {
-			if (Constants.WARNLEVEL > 1) { System.err.println ("WARNING: no map entry for edge with id " + eid + ". No length optimization will be performed for this edge."); }
-			//return (false);
-		    }
-		}
-	    }
-	}
-
-	for (Tuple<String,String> eid : lpEidMap.values()) {
-	    if (!checkEid(eid)) {
-		if (Constants.WARNLEVEL > 1) { System.err.println ("ERROR: invalid map entry with edge id " + eid + "."); }
-		return (false);
-	    }
-	}
-
-	return (true);
-    }
-
-    protected boolean checkEid (Tuple<String,String> eid) {
-	if (!(parentalNodeLabelMap.containsValue(eid.Item1) && parentalNodeLabelMap.containsValue(eid.Item2))) {
-	    return (false);
-	}
-
-	// guaranteed bijective by guard in constructor
-	NetNode<Double> c = parentalNodeLabelMap.rget(eid.Item1);
-	NetNode<Double> p = parentalNodeLabelMap.rget(eid.Item2);
-
-	// argh
-	for (NetNode<Double> cp : c.getParents()) {
-	    if (checkNodesEqual(p, cp)) {
-		return (true);
-	    }
-	}
-	
-	return (false);
-    }
-
-    /**
-     * annoying
-     * kludged equals() function.
-     * Warning - throws RuntimeException if node<->label map lookup fails.
-     */
-    protected boolean checkNodesEqual (NetNode<Double> x, NetNode<Double> y) {
-	if (parentalNodeLabelMap == null) {
-	    throw (new NodeEqualityTestException("ERROR: node<->label map not initialized in checkNodesEqual()."));
-	}
-
-	if (!parentalNodeLabelMap.containsKey(x)) {
-	    throw (new NodeEqualityTestException("ERROR: node<->label map doesn't contain node " + x.getName() + "."));
-	}
-
-	if (!parentalNodeLabelMap.containsKey(y)) {
-	    throw (new NodeEqualityTestException("ERROR: node<->label map doesn't contain node " + y.getName() + "."));
-	}
-
-	return (parentalNodeLabelMap.get(x).equals(parentalNodeLabelMap.get(y)));
+	parameters.addAll(parentalBranchLengthParameters); // parental tree branch length parameters
+	parameters.addAll(genealogyBranchLengthParameters);
+	parameters.addAll(switchingFrequencyParameters);
+	parameters.addAll(gtrRateParameters);
+	parameters.addAll(gtrBaseFrequencyParameters);
     }
 
     protected boolean verifyProbability (double p) {
@@ -542,25 +329,11 @@ public class MultivariateOptimizer {
 	}
     }
 
-    protected void createParentalNodeLabelMap () {
-	parentalNodeLabelMap = new BijectiveHashtable<NetNode<Double>,String>();
-	for (String parentalTreeName : parentalTreeNameMap.keys()) {
-	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
-	    for (NetNode<Double> node : parentalTree.dfs()) {
-		String label = parentalTreeName + PARENTAL_NODE_LABEL_DELIMITER + node.getName();
-		// strict!
-		if (parentalNodeLabelMap.containsKey(label)) {
-		    throw (new RuntimeException("ERROR: duplicate label " + label + " in parental node <-> label map. Check inputs for duplicate parental tree names and/or parental node names."));
-		}
-		parentalNodeLabelMap.put(node, label);
-	    }
-	}
-    }
-
     /**
-     * Handles all parameters.
+     * Convenience function. Use this if you called Parameter.setValue(...) for every Parameter object
+     * with updateModelStateFlag set to false.
      */
-    protected void updateHMM () {
+    protected void updateModelStateForEveryParameter () {
 	// duplicated work here for each member of a length-parameter-constraint-set
 	// oh well
 	// ok since each call below just rebalances weight to satisfy constraint on a constraint-set
@@ -568,182 +341,13 @@ public class MultivariateOptimizer {
 	// parameter values are unchanged
 	for (Parameter p : parameters) {
 	    // manually update Jahmm's probability matrices/vectors *once* at the end
-	    updateHMM(p, true);
+	    p.updateModelState();
 	}
+    }
 
 	// see above comment
-	runHmmObject.updateTransitionProbabilities();
-    }
+    //runHmmObject.updateTransitionProbabilities();
 
-    protected void updateHMM (Parameter parameter) {
-	updateHMM(parameter, false);
-    }
-
-    /**
-     * Update associated model values associated with a single parameter
-     * e.g., for LengthParameter objects that belong to a ParameterConstraintSet
-     * or multiple branches share a LengthParameter
-     * or multiple parental trees have branches that share a LengthParameter
-     * etc.
-     * 
-     * don't push this into Parameter
-     * too complicated
-     *
-     * Don't set disableHMMProbabilityUpdateFlag to true unless you 
-     * know what you're doing. Otherwise can cause inconsistent state
-     * between our HMM state and Jahmm's probability matrices/vectors.
-     */
-    protected void updateHMM (Parameter parameter, boolean disableHMMProbabilityUpdateFlag) {
-	if (parameter instanceof SingleBranchLengthParameter) {
-	    SingleBranchLengthParameter sblp = (SingleBranchLengthParameter) parameter;
-	    sblp.updateModelState();
-	}
-	else if (parameter instanceof FrequencyParameter) {
-	    FrequencyParameter fp = (FrequencyParameter) parameter;
-	    fp.updateModelState();
-	}
-	else if (parameter instanceof LengthParameter) {
-	    LengthParameter inputLengthParameter = (LengthParameter) parameter;
-	    // do appropriate multiplexing here
-	    if (setLpMap.containsValue(inputLengthParameter)) {
-		ParameterConstraintSet slp = getParameterConstraintSet(inputLengthParameter);
-		for (LengthParameter member : setLpMap.get(slp)) {
-		    updateLengthParameterBranchLengthsHelper(member);
-		}
-	    }
-	    else { 
-		// not a member of a constraint-set
-		updateLengthParameterBranchLengthsHelper(inputLengthParameter);
-	    }
-	}
-	else {
-	    throw (new RuntimeException("ERROR: parameter in updateHMM(...) has unrecognized type."));
-	}
-
-	// need to propagate changes on to Jahmm's probability matrices/vectors
-	if (!disableHMMProbabilityUpdateFlag) {
-	    runHmmObject.updateTransitionProbabilities();
-	}
-    }
-
-    /**
-     * Compute the current value for a member of a 
-     * length-parameter-constraint-set.
-     * Would be more elegant to do some sort of caching.
-     */
-    protected double computeValueForMemberOfParameterConstraintSet (LengthParameter lp) {
-	// paranoid
-	if (!setLpMap.containsValue(lp)) {
-	    throw (new RuntimeException ("ERROR: computeValueForMemberOfParameterConstraintSet() called with length-parameter that is not a member of a length-parameter-constraint-set."));
-	}
-
-	// sum up weights from members of length-parameter-constraint-set
-	ParameterConstraintSet slp = getParameterConstraintSet(lp);
-	double totalWeight = 0.0;
-	for (LengthParameter members : setLpMap.get(slp)) {
-	    // no need to any recursion here due to
-	    // injective property of setLpMap
-	    //
-	    // Each length-parameter belongs to *at most* one length-parameter-constraint-set.
-	    // All members uniquely belong to this length-parameter-constraint-set.
-	    totalWeight += members.getValue();
-	}
-	// solve for x
-	double frac = slp.getValue() / totalWeight;
-
-	// substitute
-	return (lp.getValue() * frac);
-    }
-
-    /**
-     * Update all network branch lengths associated with a length-parameter.
-     * If length-parameter belongs to a length-parameter-constraint-set,
-     * need to maintain total length in set.
-     * 
-     * WARNING: only updates inputLengthParameter!
-     */
-    protected void updateLengthParameterBranchLengthsHelper (LengthParameter inputLengthParameter) {
-	// if length-parameter is a member of a length-parameter-constraint-set
-	// need to "atomically" update all members in the set
-
-	//if (Constants.WARNLEVEL > 4) { System.out.println ("updateNetworkBranchLengthsHelper() for length-parameter with id " + inputLengthParameter.getName() + "."); }
-
-	// Get relevant branches.
-	// Weird? No branches returned from map?
-	for (Tuple<String,String> eid : lpEidMap.get(inputLengthParameter)) {
-
-	    //if (Constants.WARNLEVEL > 4) { System.out.println ("Processing eid: " + eid.toString()); }
-
-	    // Update relevant branch.
-	    if (!checkEid(eid)) {
-		throw (new RuntimeException("ERROR: unknown node labels in eid " + eid + " in updateNetworkBranchLengths()."));
-	    } 
-
-	    NetNode<Double> child = parentalNodeLabelMap.rget(eid.Item1);
-	    NetNode<Double> parent = parentalNodeLabelMap.rget(eid.Item2);
-	    double length = 0.0;
-	    // simple addition, nothing fancy
-	    for (LengthParameter lp : lpEidMap.rget(eid)) {
-		// if length-parameter belongs to length-parameter-constraint-set,
-		// no storage - just re-compute value based on weighted ratios
-		// each time
-		if (setLpMap.containsValue(lp)) {
-		    length += computeValueForMemberOfParameterConstraintSet(lp);
-		}
-		else {
-		    // straightforward for length-parameters
-		    // that aren't subject to length-parameter-constraint-sets
-		    length += lp.getValue();
-		}
-	    }
-	    child.setParentDistance(parent, length);
-
-	    //System.out.println ("setParentDistance: " + child.getName() + " " + parent.getName() + " " + length);
-	}
-
-	//if (Constants.WARNLEVEL > 4) { System.out.println ("updateNetworkBranchLengthsHelper() for length-parameter with id " + inputLengthParameter.getName() + " DONE."); }
-    }
-
-    /**
-     * Get length-parameter-constraint-set for a length-parameter.
-     * Enforces injective property of setLpMap via RuntimeExceptions.
-     * Returns null if length-parameter doesn't belong to a length-parameter-constraint-set.
-     */
-    protected ParameterConstraintSet getParameterConstraintSet (LengthParameter lp) {
-	if (!setLpMap.containsValue(lp)) {
-	    return (null);
-	}
-
-	// paranoid
-	// despite injective constraint on relation
-	if (setLpMap.rget(lp).size() != 1) {
-	    throw (new RuntimeException("ERROR: injective property violated in setLpMap for length-parameter with id " + lp.getName() + "."));
-	}
-	ParameterConstraintSet slp = setLpMap.rget(lp).iterator().next();
-	
-	return (slp);
-    }
-
-    /**
-     * Convenience function.
-     * Check to see if a length-parameter is the first in a
-     * length-parameter-constraint-set.
-     */
-    protected boolean checkFirstInParameterConstraintSet (LengthParameter lp) {
-	if (setLpMap.containsValue(lp)) {
-	    ParameterConstraintSet slp = getParameterConstraintSet(lp);
-	    // paranoid
-	    if (!setFirstLpMap.containsKey(slp)) {
-		throw (new RuntimeException ("ERROR: setFirstLpMap doesn't contain sid " + slp.getName() + "."));
-	    }
-	    
-	    if (setFirstLpMap.get(slp).equals(lp)) {
-		return (true);
-	    }
-	}
-
-	return (false);
-    }
 
     protected boolean checkConvergence (int round, double prevLogLikelihood, double currLogLikelihood) {
 	if (round >= MAXIMUM_NUM_ROUNDS) {
@@ -949,7 +553,7 @@ public class MultivariateOptimizer {
 
 	    // update 
 	    p.setValue(upvp.getPoint());
-	    updateHMM(p);
+	    //updateHMM(p); // migrated to setValue
 	    logLikelihood = brentOptimizedLogLikelihood;
 	}
 	else {
@@ -1070,30 +674,42 @@ public class MultivariateOptimizer {
 	    // may want to make order random??
 	    int pCount = 0;
 	    for (Parameter p : parameters) {
-		// by convention, skip the first lengthParameter
-		// in a length-parameter-constraint-set
-		if ((p instanceof LengthParameter) && 
-		    (!(p instanceof SingleBranchLengthParameter)) && 
-		    checkFirstInParameterConstraintSet((LengthParameter) p)) {
-		    continue;
-		}
-
 		// skip parental tree branch length optimization if disabled
 		if (!enableParentalTreeOptimizationFlag && 
-		    (p instanceof LengthParameter) &&
-		    (!(p instanceof SingleBranchLengthParameter))) {
+		    (p instanceof ParentalBranchLengthParameter)
+		    ) {
 		    continue;
 		}
 
 		// skip gene genealogy branch length optimization if disabled
 		if (!enableGeneGenealogyOptimizationFlag &&
-		    (p instanceof SingleBranchLengthParameter)) {
+		    (p instanceof GenealogyBranchLengthParameter)) {
 		    continue;
 		}
 
 		// skip frequency optimization if disabled
-		if (!enableFrequencyOptimizationFlag &&
-		    (p instanceof FrequencyParameter)) {
+		if (!enableSwitchingFrequencyOptimizationFlag &&
+		    (p instanceof SwitchingFrequencyParameter)) {
+		    continue;
+		}
+
+		// skip substitution model optimization if disabled
+		if (!enableSubstitutionModelOptimizationFlag && 
+		    ((p instanceof GTRRateParameter) ||
+		     (p instanceof GTRBaseFrequencyParameter))) {
+		    continue;
+		}
+
+		// by convention, skip the first lengthParameter
+		// in a length-parameter-constraint-set
+		if ((p instanceof ParentalBranchLengthParameter) && 
+		    parentalTreesDecoration.checkFirstInParameterConstraintSet((ParentalBranchLengthParameter) p)) {
+		    continue;
+		}
+
+		// skip first substitution model first base frequency parameter
+		if ((p instanceof GTRBaseFrequencyParameter) && 
+		    (gtrBaseFrequencyParameters.get(0) == (GTRBaseFrequencyParameter) p)) {
 		    continue;
 		}
 
@@ -1151,30 +767,47 @@ public class MultivariateOptimizer {
 
     protected void initializeDefault () {
 	if (enableParentalTreeOptimizationFlag) {
-	    for (LengthParameter parentalLengthParameter : lpEidMap.keys()) {
-		if (checkFirstInParameterConstraintSet(parentalLengthParameter)) {
+	    for (ParentalBranchLengthParameter parentalLengthParameter : parentalBranchLengthParameters) {
+		if (parentalTreesDecoration.checkFirstInParameterConstraintSet(parentalLengthParameter)) {
 		    // canonical!
-		    parentalLengthParameter.setValue(1.0);
+		    parentalLengthParameter.setValue(1.0, true, true, false);
 		}
 		else {
-		    parentalLengthParameter.setValue(parentalLengthParameter.getDefaultInitialValue());
+		    parentalLengthParameter.setValue(parentalLengthParameter.getDefaultInitialValue(), true, true, false);
 		}
 	    }
 	}
 
 	if (enableGeneGenealogyOptimizationFlag) {
-	    for (SingleBranchLengthParameter sblp : singleBranchLengthParameters) {
-		sblp.setValue(sblp.getDefaultInitialValue());
+	    for (GenealogyBranchLengthParameter gblp : genealogyBranchLengthParameters) {
+		gblp.setValue(gblp.getDefaultInitialValue(), true, true, false);
 	    }
 	}	    
 
-	if (enableFrequencyOptimizationFlag) {
-	    for (FrequencyParameter fp : frequencyParameters) {
-		fp.setValue(fp.getDefaultInitialValue());
+	if (enableSwitchingFrequencyOptimizationFlag) {
+	    for (SwitchingFrequencyParameter sfp : switchingFrequencyParameters) {
+		sfp.setValue(sfp.getDefaultInitialValue(), true, true, false);
 	    }
 	}
 
-	updateHMM();
+	if (enableSubstitutionModelOptimizationFlag) {
+	    for (GTRRateParameter grp : gtrRateParameters) {
+		grp.setValue(grp.getDefaultInitialValue(), true, true, false);
+	    }
+	    
+	    for (int i = 0; i < gtrBaseFrequencyParameters.size(); i++) {
+		GTRBaseFrequencyParameter gbfp = gtrBaseFrequencyParameters.get(i);
+		if (i == 0) {
+		    // by convention
+		    gbfp.setValue(1.0, true, true, false);
+		}
+		else {
+		    gbfp.setValue(gbfp.getDefaultInitialValue(), true, true, false);
+		}
+	    }
+	}
+
+	updateModelStateForEveryParameter();
     }
 
     /**
@@ -1184,39 +817,63 @@ public class MultivariateOptimizer {
      */
     protected void initializeRandom () {
 	if (enableParentalTreeOptimizationFlag) {
-	    for (LengthParameter parentalLengthParameter : lpEidMap.keys()) {
-		if (checkFirstInParameterConstraintSet(parentalLengthParameter)) {
+	    for (ParentalBranchLengthParameter parentalLengthParameter : parentalBranchLengthParameters) {
+		if (parentalTreesDecoration.checkFirstInParameterConstraintSet(parentalLengthParameter)) {
 		    // canonical!
-		    parentalLengthParameter.setValue(1.0);
+		    parentalLengthParameter.setValue(1.0, true, true, false);
 		}
 		else {
 		    double parameterMinimumValue = parentalLengthParameter.getMinimumValue();
 		    double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * parentalLengthParameter.getMaximumValue();
 		    double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
-		    parentalLengthParameter.setValue(randomDistance);
+		    parentalLengthParameter.setValue(randomDistance, true, true, false);
 		}
 	    }
 	}
 
 	if (enableGeneGenealogyOptimizationFlag) {
-	    for (SingleBranchLengthParameter sblp : singleBranchLengthParameters) {
-		double parameterMinimumValue = sblp.getMinimumValue();
-		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * sblp.getMaximumValue();
+	    for (GenealogyBranchLengthParameter gblp : genealogyBranchLengthParameters) {
+		double parameterMinimumValue = gblp.getMinimumValue();
+		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * gblp.getMaximumValue();
 		double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
-		sblp.setValue(randomDistance);
+		gblp.setValue(randomDistance, true, true, false);
 	    }
 	}	    
 
-	if (enableFrequencyOptimizationFlag) {
-	    for (FrequencyParameter fp : frequencyParameters) {
-		double parameterMinimumValue = fp.getMinimumValue();
-		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * fp.getMaximumValue();
+	if (enableSwitchingFrequencyOptimizationFlag) {
+	    for (SwitchingFrequencyParameter sfp : switchingFrequencyParameters) {
+		double parameterMinimumValue = sfp.getMinimumValue();
+		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * sfp.getMaximumValue();
 		double randomProbability = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
-		fp.setValue(randomProbability);
+		sfp.setValue(randomProbability, true, true, false);
 	    }
 	}
 
-	updateHMM();
+	if (enableSubstitutionModelOptimizationFlag) {
+	    for (GTRRateParameter grp : gtrRateParameters) {
+		double parameterMinimumValue = grp.getMinimumValue();
+		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * grp.getMaximumValue();
+		double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
+		grp.setValue(randomDistance, true, true, false);
+	    }
+	    
+	    for (int i = 0; i < gtrBaseFrequencyParameters.size(); i++) {
+		GTRBaseFrequencyParameter gbfp = gtrBaseFrequencyParameters.get(i);
+
+		if (i == 0) {
+		    // by convention
+		    gbfp.setValue(1.0, true, true, false);
+		}
+		else {
+		    double parameterMinimumValue = gbfp.getMinimumValue();
+		    double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * gbfp.getMaximumValue();
+		    double randomWeight = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
+		    gbfp.setValue(randomWeight, true, true, false);
+		}
+	    }
+	}
+	
+	updateModelStateForEveryParameter();
     }
 
     /**
@@ -1227,19 +884,22 @@ public class MultivariateOptimizer {
      *
      * Need to pass in two empty maps.
      */
-    protected void cacheParameterValues () {
+    protected void pushCacheValues () {
 	for (Parameter parameter : parameters) {
-	    parameter.cacheValue();
+	    parameter.pushCacheValue();
 	}
     }
 
-    protected void restoreParameterValues () {
+    protected void popCacheValues (boolean setValueFlag) {
 	for (Parameter parameter : parameters) {
-	    parameter.restoreCachedValue();
+	    // delay Parameter.updateModelState() calls until all parameter values updated
+	    parameter.popCacheValue(true, true, false, setValueFlag);
 	}
 
 	// finally, update internal state of HMM and propagate through to Jahmm's probability matrices/vectors
-	updateHMM();
+	if (setValueFlag) {
+	    updateModelStateForEveryParameter();
+	}
     }
 
     /**
@@ -1272,13 +932,15 @@ public class MultivariateOptimizer {
 	    // Maintain the invariant that branch-length-constraint-set constraints are
 	    // satisfied prior to each cache operation.
 	    // Thus, no need for cache to worry about branch-length-constraint-set weights.
-	    cacheParameterValues();
+	    pushCacheValues();
 
 	    double passLikelihood = singlePassOptimization(pass, initialSearchSettingsForEachPass[pass]);
 
 	    // update
 	    if (pass == 0) {
 		finalLikelihood = passLikelihood;
+		// no need for restore
+		popCacheValues(false);
 
 		if (Constants.WARNLEVEL > 1) { 
 		    System.out.println ("Updating with likelihood " + passLikelihood + ".");
@@ -1288,6 +950,7 @@ public class MultivariateOptimizer {
 		if (passLikelihood > finalLikelihood) {
 		    finalLikelihood = passLikelihood;
 		    // no need for restore
+		    popCacheValues(false);
 
 		    if (Constants.WARNLEVEL > 1) { 
 			System.out.println ("Updating with likelihood " + passLikelihood + ".");
@@ -1295,7 +958,7 @@ public class MultivariateOptimizer {
 		}
 		else {
 		    // need to restore
-		    restoreParameterValues();
+		    popCacheValues(true);
 
 		    if (Constants.WARNLEVEL > 1) { 
 			System.out.println ("Not updating.");
@@ -1343,8 +1006,10 @@ public class MultivariateOptimizer {
 	 */
 	public double value (double x) {
 	    // cache original setting, set new setting
-	    double originalSetting = parameter.getValue();
-	   
+	    parameter.pushCacheValue();
+
+	    //double originalSetting = parameter.getValue();
+
 	    // update
 	    parameter.setValue(x);
 
@@ -1361,14 +1026,18 @@ public class MultivariateOptimizer {
 	    // 
 	    // don't push this into Parameter
 	    // too complicated
-	    updateHMM(parameter);
+	    // updateHMM(parameter); // migrated to setValue
 
 	    // evaluate f(x) using forward/backwards algorithm
 	    double result = computeHMMLikelihood();
 
 	    // restore original setting
-	    parameter.setValue(originalSetting);
-	    updateHMM(parameter);
+	    // use all guards, all set ops
+	    parameter.popCacheValue(true, true, true, true);
+
+	    //parameter.setValue(originalSetting);
+	    //updateHMM(parameter); migrated to setValue
+	    
 
 	    // above restore original setting op
 	    // not really necessary if always accept new branch length even if no likelihood improvement
@@ -1396,12 +1065,6 @@ public class MultivariateOptimizer {
 	}
     }
 
-    public class NodeEqualityTestException extends RuntimeException {
-	public NodeEqualityTestException (String message) {
-	    super(message);
-	}
-    }
-
 }
 
 
@@ -1411,3 +1074,34 @@ public class MultivariateOptimizer {
 // Since might need to fix gene genealogy branch lengths.
 // Also neater this way.
 // This means that all trees must be named.
+
+
+    // protected void updateHMM (Parameter parameter) {
+    // 	updateHMM(parameter, false);
+    // }
+
+    // /**
+    //  * Update associated model values associated with a single parameter
+    //  * e.g., for LengthParameter objects that belong to a ParameterConstraintSet
+    //  * or multiple branches share a LengthParameter
+    //  * or multiple parental trees have branches that share a LengthParameter
+    //  * etc.
+    //  * 
+    //  * don't push this into Parameter
+    //  * too complicated
+    //  *
+    //  * Don't set disableHMMProbabilityUpdateFlag to true unless you 
+    //  * know what you're doing. Otherwise can cause inconsistent state
+    //  * between our HMM state and Jahmm's probability matrices/vectors.
+    //  */
+    // protected void updateHMM (Parameter parameter, boolean disableHMMProbabilityUpdateFlag) {
+
+    // 	else {
+    // 	    throw (new RuntimeException("ERROR: parameter in updateHMM(...) has unrecognized type."));
+    // 	}
+
+    // 	// need to propagate changes on to Jahmm's probability matrices/vectors
+    // 	if (!disableHMMProbabilityUpdateFlag) {
+    // 	    runHmmObject.updateTransitionProbabilities();
+    // 	}
+    // }

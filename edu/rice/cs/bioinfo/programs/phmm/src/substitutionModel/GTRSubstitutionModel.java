@@ -52,19 +52,18 @@ public class GTRSubstitutionModel implements SubstitutionModel {
 	return (true);
     }
 
-    protected int getSubstitutionParameterCount () {
+    public int getRateParameterCount () {
 	// (n choose 2) - 1
 	// since all rates relative to last rate, and last rate arbitrarily set to 1.0
 	return ((getAlphabet().length() * (getAlphabet().length() - 1) / 2) - 1);
     }
     
     /**
-     * As it stands in NucleotideAlphabet, rateParameters is <AG> <AC> <AT> <GC> <GT>.
-     * <CT> is always 1.0.
+     * Recomputes based on original parameter values.
      */
     public void setSubstitutionRates (double[] rateParameters, double[] freqParameters) {
-	if (rateParameters.length != getSubstitutionParameterCount()) {
-	    throw (new RuntimeException("ERROR: number of rate parameters in setSubstitutionRates() should be " + getSubstitutionParameterCount() + "."));
+	if (rateParameters.length != getRateParameterCount()) {
+	    throw (new RuntimeException("ERROR: number of rate parameters in setSubstitutionRates() should be " + getRateParameterCount() + "."));
 	}
 
 	if (freqParameters.length != getAlphabet().length()) {
@@ -72,32 +71,40 @@ public class GTRSubstitutionModel implements SubstitutionModel {
 	}
 
 	if (!(Math.abs(Matrix.sum(freqParameters) - 1.0) <= Constants.ZERO_DELTA)) {
-	    throw (new RuntimeException("ERROR: stationary frequency parameters don't sum to one. Not setting."));
+	    throw (new RuntimeException("ERROR: stationary frequency parameters don't sum to one. " + Matrix.sum(freqParameters)));
 	}
 
 	originalRateParameters = rateParameters;
 	originalFreqParameters = freqParameters;
 
+	updateRateMatrix();
+    }
+
+    /**
+     * As it stands in NucleotideAlphabet, originalRateParameters is <AG> <AC> <AT> <GC> <GT>.
+     * <CT> is always 1.0.
+     */
+    public void updateRateMatrix () {
 	int cnt = 0;
 	for (int i = 0; i < getAlphabet().length(); i++) {
 	    for (int j = i + 1; j < getAlphabet().length(); j++) {
 		if ((i == getAlphabet().length() - 2) && (j == getAlphabet().length() - 1)) {
 		    continue;
 		}
-		rates[i][j] = freqParameters[j] * rateParameters[cnt];
-		rates[j][i] = freqParameters[i] * rateParameters[cnt];
+		rates[i][j] = originalFreqParameters[j] * originalRateParameters[cnt];
+		rates[j][i] = originalFreqParameters[i] * originalRateParameters[cnt];
 		cnt++;
 	    }
 	}
 
 	// paranoid
-	if (cnt != getSubstitutionParameterCount()) {
+	if (cnt != getRateParameterCount()) {
 	    System.err.println ("ERROR: internal logic error! Count of rates not equal to calculation in setSubstitutionRates. Exiting.");
 	    System.exit(1);
 	}
 
-	rates[getAlphabet().length() - 2][getAlphabet().length() - 1] = freqParameters[getAlphabet().length() - 1]; // * 1.0
-	rates[getAlphabet().length() - 1][getAlphabet().length() - 2] = freqParameters[getAlphabet().length() - 2]; // * 1.0
+	rates[getAlphabet().length() - 2][getAlphabet().length() - 1] = originalFreqParameters[getAlphabet().length() - 1]; // * 1.0
+	rates[getAlphabet().length() - 1][getAlphabet().length() - 2] = originalFreqParameters[getAlphabet().length() - 2]; // * 1.0
 	// sets them so that rows sum to 0
 	setRateMatrixDiagonals();
 	

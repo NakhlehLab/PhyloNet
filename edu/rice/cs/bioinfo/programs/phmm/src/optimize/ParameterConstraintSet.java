@@ -14,7 +14,7 @@ public class ParameterConstraintSet {
     protected double value;
 
     public ParameterConstraintSet (String inName) {
-	setName(inName);
+    	setName(inName);
     }
 
     public ParameterConstraintSet (String inName, double inValue) {

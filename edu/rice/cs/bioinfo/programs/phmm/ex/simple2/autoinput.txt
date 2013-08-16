@@ -5,6 +5,8 @@
 /home/kl23/code/phmm-repository/phmm/ex/simple2/gene.trees
 /home/kl23/code/phmm-repository/phmm/ex/simple2/allele-to-species.mapping
 0.1
+2.0 2.5 3.0 4.0 5.0
+0.3 0.3 0.3 0.1
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/initial.viterbi.sequence
 1

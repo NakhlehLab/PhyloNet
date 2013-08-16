@@ -28,6 +28,7 @@ public abstract class Parameter extends ParameterConstraintSet {
 		      boolean checkValueMaximumConstraintFlag,
 		      boolean updateModelStateFlag) {
 	super(inName);
+	cacheValues = new Stack<Double>();
 	setValue(inValue, checkValueMinimumConstraintFlag, checkValueMaximumConstraintFlag, updateModelStateFlag);
     }
 
@@ -71,7 +72,7 @@ public abstract class Parameter extends ParameterConstraintSet {
      * Also provide cache and restore feature.
      */
     public void pushCacheValue () {
-	cacheValues.push(getValue());
+	cacheValues.push(new Double(getValue()));
     }
     
     /**
@@ -86,7 +87,7 @@ public abstract class Parameter extends ParameterConstraintSet {
 			       boolean setValueFlag) {
 	if (setValueFlag) {
 	    // This will call updateModelState() appropriately.
-	    setValue(cacheValues.pop(),
+	    setValue(cacheValues.pop().doubleValue(),
 		     checkValueMinimumConstraintFlag,
 		     checkValueMaximumConstraintFlag,
 		     updateModelStateFlag);

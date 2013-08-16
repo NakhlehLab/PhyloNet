@@ -7,7 +7,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="2699e17a-9b46-4e41-baa7-f8ad9409a080" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/LengthParameter.java" afterPath="$PROJECT_DIR$/src/optimize/LengthParameter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/autoinput.txt" afterPath="$PROJECT_DIR$/ex/simple2/autoinput.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/runHmm/runHmm.java" afterPath="$PROJECT_DIR$/src/runHmm/runHmm.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" afterPath="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" />
     </list>
     <ignored path="phmm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,7 +28,7 @@
   </component>
   <component name="DebuggerManager">
     <line_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java" line="145" class="be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap" package="be.ac.ulg.montefiore.run.jahmm.phmm">
+      <breakpoint url="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java" line="151" class="be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap" package="be.ac.ulg.montefiore.run.jahmm.phmm">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -40,6 +42,32 @@
         <option name="LOG_MESSAGE" value="&#13;&#13;JAVA" />
       </breakpoint>
       <breakpoint url="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" line="924" class="optimize.MultivariateOptimizer" package="optimize">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="1120" class="runHmm.runHmm" package="runHmm">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="1104" class="runHmm.runHmm" package="runHmm">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -100,8 +128,8 @@
       <property name="field_breakpoints_groupByClasses" value="true" />
       <property name="method_breakpoints_groupByClasses" value="true" />
       <property name="exception_breakpoints_viewId" value="TABLE" />
-      <property name="exception_breakpoints_groupByClasses" value="true" />
       <property name="field_breakpoints_viewId" value="TABLE" />
+      <property name="exception_breakpoints_groupByClasses" value="true" />
       <property name="method_breakpoints_groupByMethods" value="false" />
     </ui_properties>
   </component>
@@ -113,7 +141,7 @@
       <file leaf-file-name="MultivariateOptimizer.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1359" column="0" selection-start="50642" selection-end="50642" vertical-scroll-proportion="0.0">
+            <state line="1359" column="0" selection-start="50697" selection-end="50697" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -122,7 +150,7 @@
       <file leaf-file-name="FrequencyParameter.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/optimize/FrequencyParameter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="53" column="0" selection-start="2003" selection-end="2003" vertical-scroll-proportion="0.0">
+            <state line="53" column="0" selection-start="1996" selection-end="1996" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -131,7 +159,7 @@
       <file leaf-file-name="runHmm.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="797" column="0" selection-start="27161" selection-end="27161" vertical-scroll-proportion="0.33333334">
+            <state line="1109" column="0" selection-start="38849" selection-end="38849" vertical-scroll-proportion="0.33333334">
               <folding />
             </state>
           </provider>
@@ -149,7 +177,7 @@
       <file leaf-file-name="Felsenstein.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="102" column="0" selection-start="3494" selection-end="3494" vertical-scroll-proportion="0.0">
+            <state line="102" column="0" selection-start="3767" selection-end="3767" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -158,7 +186,7 @@
       <file leaf-file-name="OpdfMap.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="145" column="0" selection-start="5363" selection-end="5363" vertical-scroll-proportion="0.0">
+            <state line="145" column="0" selection-start="5425" selection-end="5425" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -194,7 +222,7 @@
       <file leaf-file-name="ObservationMap.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/ObservationMap.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="64" column="0" selection-start="1970" selection-end="1970" vertical-scroll-proportion="0.0">
+            <state line="56" column="0" selection-start="1414" selection-end="1414" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -212,10 +240,10 @@
       <list>
         <option value="$PROJECT_DIR$/src/phylogeny/EvoTree.java" />
         <option value="$PROJECT_DIR$/src/phylogeny/Node.java" />
-        <option value="$PROJECT_DIR$/src/runHmm/runHmm.java" />
         <option value="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java" />
         <option value="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
         <option value="$PROJECT_DIR$/src/optimize/FrequencyParameter.java" />
+        <option value="$PROJECT_DIR$/src/runHmm/runHmm.java" />
       </list>
     </option>
   </component>
@@ -249,16 +277,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -409,6 +427,16 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -424,9 +452,9 @@
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.searchVisible" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RunManager" selected="Application.runHMM">
     <configuration default="false" name="EvoTree" type="Application" factoryName="Application" temporary="true">
@@ -474,24 +502,6 @@
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="true" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -517,6 +527,24 @@
       <envs />
       <properties />
       <listeners />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
@@ -762,28 +790,48 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/optimize/LengthParameter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="0" selection-start="1081" selection-end="1081" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="28" column="0" selection-start="1081" selection-end="1081" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/optimize/ParameterConstraintSet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="711" selection-end="711" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="29" column="0" selection-start="711" selection-end="711" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="166" column="24" selection-start="5049" selection-end="5049" vertical-scroll-proportion="0.0">
+        <state line="166" column="24" selection-start="5049" selection-end="5049" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1359" column="0" selection-start="50697" selection-end="50697" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/FrequencyParameter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="53" column="0" selection-start="1996" selection-end="1996" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="47" column="0" selection-start="1367" selection-end="1367" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="102" column="0" selection-start="3767" selection-end="3767" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="145" column="0" selection-start="5363" selection-end="5363" vertical-scroll-proportion="0.0">
+        <state line="145" column="0" selection-start="5425" selection-end="5425" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -795,56 +843,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/ViterbiCalculator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="0" selection-start="3056" selection-end="3056" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="93" column="0" selection-start="3056" selection-end="3056" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/Hmm.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="258" column="0" selection-start="8518" selection-end="8518" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="258" column="0" selection-start="8518" selection-end="8518" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/ObservationMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="64" column="0" selection-start="1970" selection-end="1970" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="102" column="0" selection-start="3494" selection-end="3494" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1359" column="0" selection-start="50642" selection-end="50642" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="0" selection-start="1367" selection-end="1367" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/optimize/FrequencyParameter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="0" selection-start="2003" selection-end="2003" vertical-scroll-proportion="0.0">
+        <state line="56" column="0" selection-start="1414" selection-end="1414" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="797" column="0" selection-start="27161" selection-end="27161" vertical-scroll-proportion="0.33333334">
+        <state line="1109" column="0" selection-start="38849" selection-end="38849" vertical-scroll-proportion="0.33333334">
           <folding />
         </state>
       </provider>

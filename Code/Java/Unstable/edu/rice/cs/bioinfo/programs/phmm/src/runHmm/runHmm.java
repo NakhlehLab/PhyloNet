@@ -70,7 +70,8 @@ public class runHmm {
 
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     
-    protected SubstitutionModel substitutionModel;
+    // need to assume GTR substitution model due to parameterization differences
+    protected GTRSubstitutionModel gtrSubstitutionModel;
 
     // kliu - neither are necessary anymore
     //    public static double[] pi;								/* The initial pi probabilities for each state */    
@@ -375,6 +376,7 @@ public class runHmm {
 										    this,
 										    trees_states,
 										    transitionProbabilityParameters,
+										    gtrSubstitutionModel,
 										    parentalTreeClasses,
 										    parentalTreeNameMap,
 										    obsSequence,
@@ -1038,7 +1040,7 @@ public class runHmm {
 		}
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + egg.getName();
 		// kliu - meh - parse allele-to-species mapping later and add in references here
-		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, substitutionModel);
+		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, gtrSubstitutionModel);
 		trees_states.add(hiddenState);
 		parentalTreeEquivalenceClass.add(hiddenState);
 		// really strict
@@ -1103,8 +1105,10 @@ public class runHmm {
 	//     throw (new IOException("ERROR: invalid number of substitution model rates."));
 	// }
 	double[] rates = new double[st.countTokens()];
-	for (int i = 0; i < st.countTokens(); i++) {
+	int i = 0;
+	while (st.hasMoreTokens()) {
 	    rates[i] = Double.parseDouble(st.nextToken());
+	    i++;
 	}
 	
 	System.out.println("Input substitution model base frequencies in format <A> <G> <C> <T>: ");
@@ -1114,13 +1118,14 @@ public class runHmm {
 	    throw (new IOException("ERROR: invalid number of substitution model base frequencies."));
 	}
 	double[] baseFrequencies = new double[st.countTokens()];
-	for (int i = 0; i < st.countTokens(); i++) {
+	i = 0;
+	while (st.hasMoreTokens()) {
 	    baseFrequencies[i] = Double.parseDouble(st.nextToken());
+	    i++;
 	}
 
 	GTRSubstitutionModel gtrSubstitutionModel = new GTRSubstitutionModel();
 	gtrSubstitutionModel.setSubstitutionRates(rates, baseFrequencies);
-	substitutionModel = gtrSubstitutionModel;
     }
 }
 

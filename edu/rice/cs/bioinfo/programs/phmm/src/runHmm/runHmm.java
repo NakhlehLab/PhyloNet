@@ -1124,7 +1124,7 @@ public class runHmm {
 	    i++;
 	}
 
-	GTRSubstitutionModel gtrSubstitutionModel = new GTRSubstitutionModel();
+	gtrSubstitutionModel = new GTRSubstitutionModel();
 	gtrSubstitutionModel.setSubstitutionRates(rates, baseFrequencies);
     }
 }

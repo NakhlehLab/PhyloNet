@@ -16,6 +16,7 @@ public class GenealogyBranchLengthParameter extends Parameter {
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = MultivariateOptimizer.DEFAULT_MAXIMUM_BRANCH_LENGTH;
 
     protected TNode node;
+    protected CalculationCache calculationCache;
 
     /**
      * User must explicitly request whether or not an update is requested 
@@ -24,6 +25,7 @@ public class GenealogyBranchLengthParameter extends Parameter {
     public GenealogyBranchLengthParameter (String inName, 
 					   double inValue, 
 					   TNode inNode, 
+					   CalculationCache inCalculationCache,
 					   boolean checkValueMinimumConstraintFlag,
 					   boolean checkValueMaximumConstraintFlag,
 					   boolean updateModelStateFlag) {
@@ -31,6 +33,7 @@ public class GenealogyBranchLengthParameter extends Parameter {
 	super(inName, inValue, checkValueMinimumConstraintFlag, checkValueMinimumConstraintFlag, false);
 
 	this.node = inNode;
+	this.calculationCache = inCalculationCache;
 
 	if (updateModelStateFlag) {
 	    updateModelState();
@@ -45,6 +48,10 @@ public class GenealogyBranchLengthParameter extends Parameter {
 	// 
 	// later, however, may want to consider caching here???
 	// or just within HiddenState???
+
+	// invalidate caches for associated gene genealogy node and tree
+	calculationCache.cacheSubstitutionProbabilityMatrix.remove(node);
+	calculationCache.cacheSubstitutionProbability.clear(node.getTree());
     }
 
     public double getMinimumValue () {

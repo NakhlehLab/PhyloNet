@@ -63,12 +63,6 @@ public class OpdfMap
     protected HiddenState hiddenState;
     
     /**
-     * The base substitution rate.
-     * kliu - Need to parameterize substitution model choice and parameters. Get to this in a bit.
-     */
-    //protected double lamda = .1;
-	
-    /**
      * Constructor. For simplicity, pass in reference to the
      * associated hidden state. Need to access data associated with
      * hidden state to perform emission probability calculation on the fly.
@@ -102,7 +96,6 @@ public class OpdfMap
 	//
 	// See writeup for details.
 
-	// Felsenstein.getLikelihoodtree(hiddenState.getGeneGenealogy(), o, lamda);
 
 	//double substitutionModelProbability = hiddenState.getGeneGenealogy().getLikelihood(o);
 	double substitutionModelProbability = hiddenState.calculateEmissionProbability(o);

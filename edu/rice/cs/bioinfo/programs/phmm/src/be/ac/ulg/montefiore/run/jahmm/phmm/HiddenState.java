@@ -36,6 +36,7 @@ import java.io.StringWriter;
 import java.io.IOException;
 //import phylogeny.EvoTree;
 import phylogeny.Felsenstein;
+import optimize.CalculationCache;
 import substitutionModel.SubstitutionModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -68,6 +69,15 @@ public class HiddenState
     // for emission probability calculation
     protected SubstitutionModel substitutionModel;
 
+    // shared reference to a single global CalculationCache object
+    protected CalculationCache calculationCache;
+
+    /**
+     * For emission probability calculation.
+     * Use a standard phylogenetic substitution model.
+     */
+    protected Felsenstein felsensteinCalculator;
+
     /**
      * For coalescent model calculations.
      */
@@ -76,13 +86,23 @@ public class HiddenState
     // cache it
     protected RnNewickPrinter<Double> rnNewickPrinter;
 
-    public HiddenState (String inName, Network<Double> inParentalTree, Tree inGeneGenealogy, Map<String,String> inputAlleleToSpeciesMapping, Set<HiddenState> inParentalTreeEquivalenceClass, SubstitutionModel inSubstitutionModel) {
+    public HiddenState (String inName, 
+			Network<Double> inParentalTree, 
+			Tree inGeneGenealogy, 
+			Map<String,String> inputAlleleToSpeciesMapping, 
+			Set<HiddenState> inParentalTreeEquivalenceClass, 
+			SubstitutionModel inSubstitutionModel,
+			CalculationCache inCalculationCache) {
 	setName(inName);
 	setParentalTree(inParentalTree);
 	setGeneGenealogy(inGeneGenealogy);
 	setAlleleToSpeciesMapping(inputAlleleToSpeciesMapping);
 	this.parentalTreeEquivalenceClass = inParentalTreeEquivalenceClass;
 	setSubstitutionModel(inSubstitutionModel);
+	this.calculationCache = inCalculationCache;
+	// keep our own Felsenstein calculator
+	// everything shares the same inCalculationCache anyways
+	felsensteinCalculator = new Felsenstein(getSubstitutionModel(), calculationCache);
 	gtp = new GeneTreeProbability();
 	rnNewickPrinter = new RnNewickPrinter<Double>();
     }
@@ -187,6 +207,13 @@ public class HiddenState
      *
      */
     protected double calculateProbabilityOfGeneGenealogyInParentalTree (boolean debugFlag) {
+	// use cache if it exists
+	if (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.contains(getParentalTree(), getGeneGenealogy())) {
+	    return (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.get(getParentalTree(), getGeneGenealogy()).doubleValue());
+	}
+
+	// otherwise compute and cache
+
 	Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
 	// A list with one element. Inefficient - consider doing a one-shot approach later.
 	Vector<Tree> geneGenealogies = new Vector<Tree>();
@@ -207,11 +234,23 @@ public class HiddenState
 	    return (-1.0);
 	}
 
-        return (probList.get(0));
+	double result = probList.get(0).doubleValue();
+	// not quite right - while parental tree objects are unique by topology, gene genealogies aren't
+	// under the current model
+	// meh
+	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getGeneGenealogy(), new Double(result));
+        return (result);
     }
 
     public double calculateEmissionProbability (ObservationMap o) {
-	return (Felsenstein.getLikelihoodtree(getGeneGenealogy(), o, getSubstitutionModel()));
+	// if cache entry exists, use it
+	if (calculationCache.cacheSubstitutionProbability.contains(getGeneGenealogy(), o)) {
+	    return (calculationCache.cacheSubstitutionProbability.get(getGeneGenealogy(), o));
+	}
+	
+	double result = felsensteinCalculator.getLikelihoodtree(getGeneGenealogy(), o);
+	calculationCache.cacheSubstitutionProbability.put(getGeneGenealogy(), o, new Double(result));
+	return (result);
     }
     
 }

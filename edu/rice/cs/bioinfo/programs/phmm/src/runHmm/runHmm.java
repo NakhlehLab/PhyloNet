@@ -25,6 +25,7 @@ import substitutionModel.SubstitutionModel;
 import substitutionModel.GTRSubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
 import optimize.MultivariateOptimizer;
+import optimize.CalculationCache;
 import gridSearch.GridSearchAlgorithm;
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
@@ -73,6 +74,9 @@ public class runHmm {
     // need to assume GTR substitution model due to parameterization differences
     protected GTRSubstitutionModel gtrSubstitutionModel;
 
+    // single cache shared amongst all objects
+    protected CalculationCache calculationCache;
+
     // kliu - neither are necessary anymore
     //    public static double[] pi;								/* The initial pi probabilities for each state */    
     //    public static double[][] aij;							/* The state transition probability matrix */
@@ -82,6 +86,10 @@ public class runHmm {
     protected static void printUsage () {
 	System.err.println ("Prompt-based usage: java -jar dist/lib/phmm.jar");
 	System.err.println ("File-based usage: java -jar dist/lib/phmm.jar <text file with input commands>");
+    }
+
+    public runHmm () {
+	calculationCache = new CalculationCache();
     }
 
     /**
@@ -381,7 +389,8 @@ public class runHmm {
 										    parentalTreeNameMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
-										    inputLengthParameterSetConstraintsFilename
+										    inputLengthParameterSetConstraintsFilename,
+										    calculationCache
 										    );
 
 	    System.out.println ("Optimizing PhyloNet-HMM parameters... ");
@@ -1040,7 +1049,7 @@ public class runHmm {
 		}
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + egg.getName();
 		// kliu - meh - parse allele-to-species mapping later and add in references here
-		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, gtrSubstitutionModel);
+		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, gtrSubstitutionModel, calculationCache);
 		trees_states.add(hiddenState);
 		parentalTreeEquivalenceClass.add(hiddenState);
 		// really strict

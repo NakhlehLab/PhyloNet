@@ -3,6 +3,7 @@ package phylogeny;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import optimize.CalculationCache;
 import substitutionModel.SubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
 import substitutionModel.Alphabet;
@@ -10,11 +11,21 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
+/**
+ * Simple Felsenstein calculator class.
+ */
+
 public class Felsenstein {
+    protected static final String genes = NucleotideAlphabet.alphabet;
 
+    protected SubstitutionModel substitutionModel;
+    protected CalculationCache calculationCache;
 
-    static private String genes = NucleotideAlphabet.alphabet;
-
+    public Felsenstein (SubstitutionModel inSubstitutionModel,
+			CalculationCache inCalculationCache) {
+	this.substitutionModel = inSubstitutionModel;
+	this.calculationCache = inCalculationCache;
+    }
 
     // kliu - CACHE OPPORTUNITY #2
     // if gene tree branch lengths and substitution rates don't change, then re-use cached value if it exists.
@@ -26,10 +37,10 @@ public class Felsenstein {
      *
      * See writeup for details.
      */
-    static public double getLikelihoodtree (Tree atree, ObservationMap column, SubstitutionModel substitutionModel) {
+    public double getLikelihoodtree (Tree atree, ObservationMap column) {
         double result = 0;
 	double[] baseFrequencies = substitutionModel.getStationaryProbabilities();
-        ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column, substitutionModel);
+        ArrayList<Double> rootLikelihoods = getLikelihood(atree.getRoot(), column);
         for (int i = 0; i < 4; i++) {
             result += baseFrequencies[i] * rootLikelihoods.get(i);
         }
@@ -46,9 +57,18 @@ public class Felsenstein {
      * @param t - A Double - the time interval or branch length time
      * @return returns the Pij value, or the transition probability between two nucleotides given the branch length
      */
-    static private double getPij(char i, char j, SubstitutionModel substitutionModel, double t) {
-	double[][] pij = substitutionModel.calculateProbabilitiesFromRates(t);
+    protected double getPij(char i, char j, double t, TNode n) {
 	Alphabet alphabet = NucleotideAlphabet.getClassInstance();
+
+	// if cache entry exists, use it
+	if (calculationCache.cacheSubstitutionProbabilityMatrix.containsKey(n)) {
+	    double[][] pij = calculationCache.cacheSubstitutionProbabilityMatrix.get(n);
+	    return (pij[alphabet.getObservationSymbolIndex(i)][alphabet.getObservationSymbolIndex(j)]);
+	}
+
+	// otherwise calculate and cache it
+	double[][] pij = substitutionModel.calculateProbabilitiesFromRates(t);
+	calculationCache.cacheSubstitutionProbabilityMatrix.put(n, pij);
 	return (pij[alphabet.getObservationSymbolIndex(i)][alphabet.getObservationSymbolIndex(j)]);
     }
 
@@ -56,7 +76,7 @@ public class Felsenstein {
     /**
      * @return The node's likelihood arraylist
      */
-    static private ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column, SubstitutionModel substitutionModel) {
+    protected ArrayList<Double> getLikelihood(TNode aNode, ObservationMap column) {
         ArrayList<Double> likelihood = new ArrayList<Double>();
 
         if (aNode.isLeaf()) {
@@ -95,7 +115,7 @@ public class Felsenstein {
 	    while(childrenIterator.hasNext()) {
 		TNode next = childrenIterator.next();
 		children.add(next);
-		childrenLikelihood.put(next, getLikelihood(next, column, substitutionModel));
+		childrenLikelihood.put(next, getLikelihood(next, column));
 	    }
 
 	    //Calculate likelihood for this node using Felsenstein's algorithm
@@ -105,7 +125,8 @@ public class Felsenstein {
                 for (int j = 0; j < genes.length(); j++) {
                     for (int k = 0; k < tempvalues.length; k++) {
                         double childLikelihood = childrenLikelihood.get(children.get(k)).get(j);
-                        tempvalues[k] += childLikelihood * getPij(genes.charAt(i), genes.charAt(j), substitutionModel, children.get(k).getParentDistance());
+			// last argument is for caching behavior
+                        tempvalues[k] += childLikelihood * getPij(genes.charAt(i), genes.charAt(j), children.get(k).getParentDistance(), children.get(k));
                     }
                 }
 

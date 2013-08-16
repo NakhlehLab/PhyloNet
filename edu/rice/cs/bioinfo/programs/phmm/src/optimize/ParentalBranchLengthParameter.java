@@ -32,12 +32,14 @@ public class ParentalBranchLengthParameter extends Parameter {
     // except that we can also share across multiple gene trees.
 
     protected runHmm runHmmObject; // for pushing updated transition probabilities
-    protected ParentalTreesDecoration parentalTreesDecoration;
+    protected ParentalTreesDecoration parentalTreesDecoration; // works with CalculationCache directly
+    protected CalculationCache calculationCache;
 
     public ParentalBranchLengthParameter (String inName, 
 					  double inValue, 
 					  runHmm inRunHmmObject,
-					  ParentalTreesDecoration inParentalTreesDecoration,	  
+					  ParentalTreesDecoration inParentalTreesDecoration,
+					  CalculationCache inCalculationCache,
 					  boolean checkValueMinimumConstraintFlag,
 					  boolean checkValueMaximumConstraintFlag,
 					  boolean updateModelStateFlag) {
@@ -45,6 +47,7 @@ public class ParentalBranchLengthParameter extends Parameter {
 	
 	this.runHmmObject = inRunHmmObject;
 	this.parentalTreesDecoration = inParentalTreesDecoration;
+	this.calculationCache = inCalculationCache;
 
 	if (updateModelStateFlag) {
 	    updateModelState();
@@ -54,11 +57,15 @@ public class ParentalBranchLengthParameter extends Parameter {
     public void updateModelState () {
 	// propagate length-parameter values (under length-parameter-constraint-set constraints, if applicable)
 	// to parental tree branch lengths
+	//
+	// also clear out caches based on parental branch changes
 	// ...
 	parentalTreesDecoration.updateBranchesBasedOnParentalBranchLengthParameters(this);
 
 	// ...
 	// and finally propagate parental tree branch lengths on to HMM transition probability matrix
+	//
+	// this will also re-fill and use the caches appropriately
 	runHmmObject.updateTransitionProbabilities();
     }
 

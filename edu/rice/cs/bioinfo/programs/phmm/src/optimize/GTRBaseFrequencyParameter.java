@@ -14,12 +14,14 @@ public class GTRBaseFrequencyParameter extends Parameter {
     //
     // the first is always set to 1.0
     protected Vector<GTRBaseFrequencyParameter> gbfps;
+    protected CalculationCache calculationCache;
 
     public GTRBaseFrequencyParameter (String inName, 
 				      double inValue,
 				      GTRSubstitutionModel inGTRSubstitutionModel,
 				      int inIndex,
 				      Vector<GTRBaseFrequencyParameter> inGbfps,
+				      CalculationCache inCalculationCache,
 				      boolean checkValueMinimumConstraintFlag,
 				      boolean checkValueMaximumConstraintFlag,
 				      boolean updateModelStateFlag) {
@@ -32,6 +34,7 @@ public class GTRBaseFrequencyParameter extends Parameter {
 	}
 	this.index = inIndex;
 	this.gbfps = inGbfps;
+	this.calculationCache = inCalculationCache;
 
 	if (updateModelStateFlag) {
 	    updateModelState();
@@ -51,6 +54,10 @@ public class GTRBaseFrequencyParameter extends Parameter {
 	    originalFreqParameters[i] = newFreqParameters[i];
 	}
 	gtrSubstitutionModel.updateRateMatrix();
+
+	// totally clear out associated caches
+	calculationCache.cacheSubstitutionProbabilityMatrix.clear();
+	calculationCache.cacheSubstitutionProbability.clear();
     }
 
     /**

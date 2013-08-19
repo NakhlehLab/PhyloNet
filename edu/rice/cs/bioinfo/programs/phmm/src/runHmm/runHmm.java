@@ -449,7 +449,7 @@ public class runHmm {
 	    bw.newLine();
 	    for (HiddenState hiddenState : hiddenStates) {
 		bw.write("Gene genealogy associated with hidden state " + hiddenState.getName() + ":"); bw.newLine();
-		bw.write(hiddenState.getGeneGenealogy().toNewickWD()); bw.newLine();
+		bw.write(hiddenState.getGeneGenealogy().toNewick()); bw.newLine();
 		bw.newLine();
 	    }
 	    bw.newLine();

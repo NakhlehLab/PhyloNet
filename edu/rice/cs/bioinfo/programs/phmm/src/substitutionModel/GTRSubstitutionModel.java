@@ -140,8 +140,9 @@ public class GTRSubstitutionModel implements SubstitutionModel {
      */
     public double[][] calculateProbabilitiesFromRates (double time) {
 	DoubleMatrix dm = new DoubleMatrix(rates);
-	dm.mul(time);
-	DoubleMatrix expdm = MatrixFunctions.expm(dm);
+	// kliu - crap - this returns a new DoubleMatrix object
+	DoubleMatrix dmscaled = dm.mul(time);
+	DoubleMatrix expdm = MatrixFunctions.expm(dmscaled);
 	return (expdm.toArray2());
 
 	//double[][] result = new double[getAlphabet().length()][getAlphabet().length()];
@@ -152,6 +153,12 @@ public class GTRSubstitutionModel implements SubstitutionModel {
     }
 
     public static void main (String[] args) {
+	if (args.length != 1) {
+	    System.err.println ("USAGE: java GTRSubstitutionModel <branch length>");
+	}
+	
+	double time = Double.parseDouble(args[0]);
+
 	GTRSubstitutionModel gsm = new GTRSubstitutionModel();
 	double[] rates = new double[5];
 	rates[0] = 2.0;
@@ -166,7 +173,7 @@ public class GTRSubstitutionModel implements SubstitutionModel {
 	freqs[3] = 0.25;
 	gsm.setSubstitutionRates(rates, freqs);
 
-	double[][] probs = gsm.calculateProbabilitiesFromRates(0.1);
+	double[][] probs = gsm.calculateProbabilitiesFromRates(time);
 
 	System.out.println (Matrix.toString(probs));
     }

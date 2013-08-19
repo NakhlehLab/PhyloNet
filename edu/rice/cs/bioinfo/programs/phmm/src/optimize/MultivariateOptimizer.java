@@ -720,13 +720,13 @@ public class MultivariateOptimizer {
 		    continue;
 		}
 
-		if (Constants.WARNLEVEL > 1) { System.out.println ("Processing parameter " + p.getName() + " count " + pCount + "."); }
+		if (Constants.WARNLEVEL > 1) { System.out.println ("Processing " + p.getClass().getName() + " parameter " + p.getName() + " count " + pCount + "."); }
 
 		// single branch length optimization
 		// does update appropriately
 		    roundLogLikelihood = optimizeSingleParameter(p, roundLogLikelihood, round);
 
-		if (Constants.WARNLEVEL > 1) { System.out.println ("Processing length parameter " + p.getName() + " count " + pCount + " DONE."); }
+		if (Constants.WARNLEVEL > 1) { System.out.println ("Processing " + p.getClass().getName() + " parameter " + p.getName() + " count " + pCount + " DONE."); }
 		pCount++;
 	    }
 

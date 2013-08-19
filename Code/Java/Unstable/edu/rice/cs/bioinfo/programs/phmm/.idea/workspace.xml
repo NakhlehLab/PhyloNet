@@ -7,8 +7,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="2699e17a-9b46-4e41-baa7-f8ad9409a080" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/Parameter.java" afterPath="$PROJECT_DIR$/src/optimize/Parameter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/GenealogyBranchLengthParameter.java" afterPath="$PROJECT_DIR$/src/optimize/GenealogyBranchLengthParameter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" afterPath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" afterPath="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/runHmm/runHmm.java" afterPath="$PROJECT_DIR$/src/runHmm/runHmm.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" afterPath="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" />
     </list>
     <ignored path="phmm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -54,6 +58,19 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
       <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="1113" class="runHmm.runHmm" package="runHmm">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java" line="67" class="phylogeny.Felsenstein" package="phylogeny">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -127,7 +144,7 @@
       <file leaf-file-name="MultivariateOptimizer.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1107" column="0" selection-start="41892" selection-end="41892" vertical-scroll-proportion="0.0">
+            <state line="1107" column="0" selection-start="41949" selection-end="41949" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -136,16 +153,16 @@
       <file leaf-file-name="runHmm.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1126" column="0" selection-start="39508" selection-end="39508" vertical-scroll-proportion="0.0">
+            <state line="1126" column="0" selection-start="39578" selection-end="39578" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Parameter.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Parameter.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="0" selection-start="1301" selection-end="1301" vertical-scroll-proportion="1.4578005">
+            <state line="48" column="0" selection-start="1301" selection-end="1301" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -154,8 +171,19 @@
       <file leaf-file-name="Felsenstein.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="30" column="0" selection-start="1026" selection-end="1026" vertical-scroll-proportion="0.0">
+            <state line="72" column="0" selection-start="2718" selection-end="2718" vertical-scroll-proportion="0.0">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GTRSubstitutionModel.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.6503497">
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -163,7 +191,7 @@
       <file leaf-file-name="OpdfMap.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="145" column="0" selection-start="5425" selection-end="5425" vertical-scroll-proportion="0.0">
+            <state line="145" column="0" selection-start="5333" selection-end="5333" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -222,6 +250,8 @@
         <option value="$PROJECT_DIR$/src/optimize/FrequencyParameter.java" />
         <option value="$PROJECT_DIR$/src/runHmm/runHmm.java" />
         <option value="$PROJECT_DIR$/src/optimize/Parameter.java" />
+        <option value="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" />
+        <option value="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" />
       </list>
     </option>
   </component>
@@ -292,6 +322,24 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="substitutionModel" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -434,7 +482,7 @@
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="dynamic.classpath" value="false" />
   </component>
-  <component name="RunManager" selected="Application.runHMM">
+  <component name="RunManager" selected="Application.GTRSubstitutionModel">
     <configuration default="false" name="EvoTree" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="phylogeny.EvoTree" />
       <option name="VM_PARAMETERS" value="" />
@@ -616,9 +664,55 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <list size="2">
+    <configuration default="false" name="Felsenstein" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="phylogeny.Felsenstein" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="Phmm" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="GTRSubstitutionModel" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="substitutionModel.GTRSubstitutionModel" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="0.1" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="Phmm" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <list size="4">
       <item index="0" class="java.lang.String" itemvalue="Application.runHMM" />
       <item index="1" class="java.lang.String" itemvalue="Application.EvoTree" />
+      <item index="2" class="java.lang.String" itemvalue="Application.Felsenstein" />
+      <item index="3" class="java.lang.String" itemvalue="Application.GTRSubstitutionModel" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -693,7 +787,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24928162" sideWeight="0.60082304" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24928162" sideWeight="0.6707819" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -771,21 +865,24 @@
         <state line="29" column="0" selection-start="711" selection-end="711" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="166" column="24" selection-start="5049" selection-end="5049" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1107" column="0" selection-start="41892" selection-end="41892" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="1107" column="0" selection-start="41949" selection-end="41949" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1126" column="0" selection-start="39578" selection-end="39578" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="0" selection-start="1301" selection-end="1301" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="145" column="0" selection-start="5425" selection-end="5425" vertical-scroll-proportion="0.0" />
+        <state line="145" column="0" selection-start="5333" selection-end="5333" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="jar://$PROJECT_DIR$/dependencies/PhyloNet_Unstable.jar!/edu/rice/cs/bioinfo/programs/phylonet/structs/tree/io/NewickReader.class">
@@ -810,22 +907,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="0" selection-start="1026" selection-end="1026" vertical-scroll-proportion="0.0">
+        <state line="72" column="0" selection-start="2718" selection-end="2718" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
+    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1126" column="0" selection-start="39508" selection-end="39508" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="0" selection-start="1301" selection-end="1301" vertical-scroll-proportion="1.4578005">
-          <folding />
+        <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.6503497">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

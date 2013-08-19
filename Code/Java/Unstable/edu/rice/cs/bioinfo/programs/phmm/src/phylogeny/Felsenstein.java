@@ -3,13 +3,20 @@ package phylogeny;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Hashtable;
+import java.io.StringReader;
 import optimize.CalculationCache;
+import substitutionModel.GTRSubstitutionModel;
 import substitutionModel.SubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
 import substitutionModel.Alphabet;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+
 
 /**
  * Simple Felsenstein calculator class.
@@ -144,6 +151,41 @@ public class Felsenstein {
         }
     }
 
+    // looks good
+    protected static void test () {
+	NewickReader nr = new NewickReader(new StringReader("((human:1.0,chimp:2.0)anc:10.0,gorilla:3.0)root"));
+	// kliu - change this over to a String data member
+	// don't really use it anyways
+	STITree<Double> tree = new STITree<Double>(true);
+	try {
+	    nr.readTree(tree);
+	}
+	catch(Exception e) {
+	    System.err.println(e);
+	    e.printStackTrace();
+	    return;
+	}
+
+	Map<String,Character> omap = new Hashtable<String,Character>();
+	omap.put("human", 'A');
+	omap.put("chimp", 'A');
+	omap.put("gorilla", 'T');
+	ObservationMap observationMap = new ObservationMap(omap);
+
+	GTRSubstitutionModel gtrsm = new GTRSubstitutionModel();
+	double[] rates = {1.0, 1.0, 1.0, 1.0, 1.0};
+	double[] freqs = {0.25, 0.25, 0.25, 0.25};
+	gtrsm.setSubstitutionRates(rates, freqs);
+
+	Felsenstein fcalc = new Felsenstein(gtrsm, new CalculationCache());
+	double result = fcalc.getLikelihoodtree(tree, observationMap);
+	
+	System.out.println ("Result: |" + result + "|");
+    }
+
+    public static void main (String[] args) {
+	test();
+    }
 
 }
 

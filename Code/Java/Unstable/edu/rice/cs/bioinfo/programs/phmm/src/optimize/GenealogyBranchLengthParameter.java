@@ -41,6 +41,7 @@ public class GenealogyBranchLengthParameter extends Parameter {
     }
 
     public void updateModelState () {
+	// kliu - is this getting set properly?
 	this.node.setParentDistance(getValue());
 
 	// emission probabilities calculated on-the-fly in HMM object

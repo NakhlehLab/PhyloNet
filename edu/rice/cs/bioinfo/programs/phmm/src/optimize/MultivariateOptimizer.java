@@ -918,10 +918,11 @@ public class MultivariateOptimizer {
 	// try fewer rounds, but a couple of random restarts
 	InitialSearchSettings[] initialSearchSettingsForEachPass = new InitialSearchSettings[] 
 	    { InitialSearchSettings.CURRENT, // think about how to get parameter settings in line with inputs???
-	      InitialSearchSettings.DEFAULT,
-	      InitialSearchSettings.RANDOM,
-	      InitialSearchSettings.RANDOM,
-	      InitialSearchSettings.RANDOM
+	      // // kliu - hold off on this now for testing purposes
+	      //InitialSearchSettings.DEFAULT,
+	      //InitialSearchSettings.RANDOM,
+	      //InitialSearchSettings.RANDOM,
+	      //InitialSearchSettings.RANDOM
 	    };
 
 	// testing

@@ -79,7 +79,7 @@ public class MultivariateOptimizer {
     public static final double SEARCH_INTERVAL_MINIMUM_WIDTH = 1e-4;
     public static final int BRENT_METHOD_SINGLE_ROUND_MAXIMUM_ITERATIONS = 100;
     public static final int MAXIMUM_NUM_ROUNDS = 100;
-    public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = ABSOLUTE_ACCURACY;
+    public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-3;
     public static final double MINIMUM_FACTOR_WIDTH_FOR_MINIMUM_MAXIMUM_INTERVAL = 4.0;
 
     // search defaults
@@ -89,9 +89,9 @@ public class MultivariateOptimizer {
     public static final double DEFAULT_INITIAL_BRANCH_LENGTH = 1e-1;
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = 1e1; // scientific notation - e for decimal exponent
 
-    public static final double DEFAULT_MINIMUM_RATE = 1e-2;
+    public static final double DEFAULT_MINIMUM_RATE = 1e-1;
     public static final double DEFAULT_INITIAL_RATE = 1.0;
-    public static final double DEFAULT_MAXIMUM_RATE = 1e2; // scientific notation - e for decimal exponent
+    public static final double DEFAULT_MAXIMUM_RATE = 1e1; // scientific notation - e for decimal exponent
 
     // only for randomization purposes
     //
@@ -551,12 +551,12 @@ public class MultivariateOptimizer {
 								searchInterval.Item3.doubleValue(), // u
 							        searchInterval.Item2.doubleValue()); // x
 
-	if (Constants.WARNLEVEL > 4) { System.out.println ("Brent optimization point: |" + upvp.getPoint() + "| likelihood: |" + upvp.getValue() + "|"); }
+	if (Constants.WARNLEVEL > 2) { System.out.println ("Brent optimization point: |" + upvp.getPoint() + "| likelihood: |" + upvp.getValue() + "|"); }
 
 	double brentOptimizedLogLikelihood = upvp.getValue();
 	// see function comments
 	if (brentOptimizedLogLikelihood > logLikelihood) {
-	    if (Constants.WARNLEVEL > 4) { System.out.println ("INFO: Brent's method resulted in strict improvement in likelihood. Updating."); }
+	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Brent's method resulted in strict improvement in likelihood. Updating."); }
 
 	    // update 
 	    p.setValue(upvp.getPoint());
@@ -565,7 +565,7 @@ public class MultivariateOptimizer {
 	}
 	else {
 	    // no update - info instead
-	    if (Constants.WARNLEVEL > 4) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + ". Not updating branch length nor best round log likelihood."); }
+	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + ". Not updating branch length nor best round log likelihood."); }
 	}
 
 	return (logLikelihood);

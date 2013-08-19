@@ -5,6 +5,8 @@
 /home/kl23/code/phmm-repository/phmm/ex/mouse/gene.trees
 /home/kl23/code/phmm-repository/phmm/ex/mouse/allele-to-species.mapping
 0.1
+2.0 2.5 3.0 4.0 5.0
+0.3 0.3 0.3 0.1
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/initial.viterbi.sequence
 1
@@ -15,4 +17,5 @@
 /home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameter-constraint-sets
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.model.likelihoods
+/home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.model.parameters
 4

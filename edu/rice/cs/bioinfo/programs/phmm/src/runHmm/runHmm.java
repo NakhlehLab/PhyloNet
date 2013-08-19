@@ -475,7 +475,7 @@ public class runHmm {
 		    a[i][j] = myhmm.getAij(i, j);
 		}
 	    }
-	    bw.write("PhyloNet-HMM transition probability matrix: ");
+	    bw.write("PhyloNet-HMM transition probability matrix: "); bw.newLine();
 	    bw.write(Matrix.toString(a)); bw.newLine();
 	    bw.newLine();
 	    bw.flush();

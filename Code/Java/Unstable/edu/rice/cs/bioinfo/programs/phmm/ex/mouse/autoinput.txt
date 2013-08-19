@@ -10,7 +10,7 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/initial.viterbi.sequence
 1
-/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.seq
+/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish-last-6k.seq
 3
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameters

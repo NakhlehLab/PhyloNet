@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,8 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.Collections;
 
 import util.Constants;
+import util.Matrix;
 import substitutionModel.SubstitutionModel;
 import substitutionModel.GTRSubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
@@ -40,6 +43,7 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
@@ -60,7 +64,7 @@ public class runHmm {
     
     // information created/built
     // kliu - index into tuples
-    protected ArrayList<HiddenState> trees_states;			/* List of all states/trees */
+    protected ArrayList<HiddenState> hiddenStates;			/* List of all states/trees */
     protected Hmm<ObservationMap> myhmm;			/* The entire HMM */
 
     // argh - in lieu of worrying about EvoTree.equals() method
@@ -241,7 +245,7 @@ public class runHmm {
 			// Testing purposes
 //			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
 //			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
-//			for (int i = 0; i < trees_states.size(); i++) {
+//			for (int i = 0; i < hiddenStates.size(); i++) {
 //				System.out.println("State : " + i);
 //				System.out.println("Opdf : {");
 //				for (int j = 0; j < oSeq.size(); j++) {
@@ -335,7 +339,7 @@ public class runHmm {
 						hybridizationMaxIn, baseSubMinIn, baseSubMaxIn, this);
 
                 gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
-                        trees_states, parentalTreeClasses);
+                        hiddenStates, parentalTreeClasses);
 
             }
             catch (Exception e) {
@@ -379,10 +383,12 @@ public class runHmm {
 	    String viterbiHiddenStateSequenceFilename = in.readLine();
 	    System.out.println("Output model likelihoods file: ");
 	    String modelLikelihoodsFilename = in.readLine();
+	    System.out.println("Output file with optimized model parameter values: ");
+	    String optimizedModelParameterValuesFilename = in.readLine();
 
 	    MultivariateOptimizer multivariateOptimizer = new MultivariateOptimizer(myhmm,
 										    this,
-										    trees_states,
+										    hiddenStates,
 										    transitionProbabilityParameters,
 										    gtrSubstitutionModel,
 										    parentalTreeClasses,
@@ -415,6 +421,65 @@ public class runHmm {
 	    bw.flush();
 	    bw.close();
 	    System.out.println ("Saving log likelihoods DONE. ");
+	    
+	    // also save values for all model parameters
+	    outputOptimizedModelParameterValues(optimizedModelParameterValuesFilename);
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    ioe.printStackTrace();
+	}
+    }
+
+    protected void outputOptimizedModelParameterValues (String filename) {
+	try {
+	    // bleh
+	    RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
+	    BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+	    List<String> parentalTreeNames = new ArrayList<String>(parentalTreeNameMap.keys());
+	    Collections.sort(parentalTreeNames);
+	    for (String parentalTreeName : parentalTreeNames) {
+		bw.write("Parental tree " + parentalTreeName + ": "); bw.newLine();
+		// bleh again
+		StringWriter sw = new StringWriter();
+		rnNewickPrinter.print(parentalTreeNameMap.get(parentalTreeName), sw);
+		bw.write(sw.toString()); bw.newLine();
+		bw.newLine();
+	    }
+	    bw.newLine();
+	    for (HiddenState hiddenState : hiddenStates) {
+		bw.write("Gene genealogy associated with hidden state " + hiddenState.getName() + ":"); bw.newLine();
+		bw.write(hiddenState.getGeneGenealogy().toNewickWD()); bw.newLine();
+		bw.newLine();
+	    }
+	    bw.newLine();
+	    for (TransitionProbabilityParameters.ParameterChoice parameterChoice : TransitionProbabilityParameters.ParameterChoice.values()) {
+		bw.write (parameterChoice.toString() + ": "); bw.newLine();
+		bw.write (Double.toString(transitionProbabilityParameters.get(parameterChoice))); bw.newLine();
+		bw.newLine();
+	    }
+	    bw.newLine();
+	    bw.write("GTR base frequencies: "); bw.newLine();
+	    bw.write(Matrix.toString(gtrSubstitutionModel.getStationaryProbabilities())); bw.newLine();
+	    bw.newLine();
+	    bw.write("GTR substitution rate parameter values: "); bw.newLine();
+	    bw.write(Matrix.toString(gtrSubstitutionModel.getOriginalRateParameters())); bw.newLine();
+	    bw.newLine();
+	    bw.write("GTR rate matrix: "); bw.newLine();
+	    bw.write(Matrix.toString(gtrSubstitutionModel.getFullRateMatrix())); bw.newLine();
+	    bw.newLine();
+	    // bleh
+	    double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
+	    for (int i = 0; i < hiddenStates.size(); i++) {
+		for (int j = 0; j < hiddenStates.size(); j++) {
+		    a[i][j] = myhmm.getAij(i, j);
+		}
+	    }
+	    bw.write("PhyloNet-HMM transition probability matrix: ");
+	    bw.write(Matrix.toString(a)); bw.newLine();
+	    bw.newLine();
+	    bw.flush();
+	    bw.close();
 	}
 	catch (IOException ioe) {
 	    System.err.println (ioe);
@@ -498,7 +563,7 @@ public class runHmm {
      * to check parental tree taxa.
      */
     protected boolean verifyTaxa (String[] sortedReferenceTaxa, boolean geneGenealogyTaxaFlag) {
-	for (HiddenState hiddenState : trees_states) {
+	for (HiddenState hiddenState : hiddenStates) {
 	    String[] sortedCheckTaxa = geneGenealogyTaxaFlag ? 
 		hiddenState.getGeneGenealogy().getLeaves() : 
 		getTaxa(hiddenState.getParentalTree());
@@ -691,10 +756,10 @@ public class runHmm {
      * Also call this after changing parental tree branch lengths.
      */
     protected double[] calculatePi () {
-	double[] pi = new double[trees_states.size()];
+	double[] pi = new double[hiddenStates.size()];
 	double norm = 0.0;
-	for (int i = 0; i < trees_states.size(); i++) {
-	    HiddenState hiddenState = trees_states.get(i);
+	for (int i = 0; i < hiddenStates.size(); i++) {
+	    HiddenState hiddenState = hiddenStates.get(i);
 	    pi[i] = hiddenState.calculateProbabilityOfGeneGenealogyInParentalTree();
 	    norm += pi[i];
 	}
@@ -726,9 +791,9 @@ public class runHmm {
      * any other parameters related to the transition probabilities.
      */
     protected double[][] calculateAij () {
-	double[][] a = new double[trees_states.size()][trees_states.size()];
+	double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
 	for (int i = 0; i < a.length; i++) {
-	    HiddenState si = trees_states.get(i);
+	    HiddenState si = hiddenStates.get(i);
 	    //double totalNonSelfTransitionProbabilities = 0.0;
 	    //double check = 0.0;
 	    for (int j = 0 ; j < a[i].length; j++) {
@@ -737,7 +802,7 @@ public class runHmm {
 		//     continue;
 		// }
 		
-		HiddenState sj = trees_states.get(j);
+		HiddenState sj = hiddenStates.get(j);
 		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
 		//check += a[i][j];
 		//System.out.println ("inner loop in calculateAij(): " + a[i][j]);
@@ -780,24 +845,24 @@ public class runHmm {
     // 	boolean initializedFlag = false; // bleh
 
     // 	// strict!
-    // 	if (trees_states.size() <= 1) {
+    // 	if (hiddenStates.size() <= 1) {
     // 	    throw (new RuntimeException("ERROR: not enough hidden states in runHmm.calculateMaximumFrequencyParameter(...)."));
     // 	}
 
     // 	// take min max value over all states
-    // 	for (int i = 0; i < trees_states.size(); i++) {
-    // 	    HiddenState si = trees_states.get(i);
+    // 	for (int i = 0; i < hiddenStates.size(); i++) {
+    // 	    HiddenState si = hiddenStates.get(i);
     // 	    double sumCoalescentContributionRecombination = 0.0;
     // 	    double sumCoalescentContributionHybridization = 0.0;
 
     // 	    // compute max for a state si
-    // 	    for (int j = 0 ; j < trees_states.size(); j++) {
+    // 	    for (int j = 0 ; j < hiddenStates.size(); j++) {
     // 		// set self-transition probability at the end
     // 		if (i == j) {
     // 		    continue;
     // 		}
 		
-    // 		HiddenState sj = trees_states.get(j);
+    // 		HiddenState sj = hiddenStates.get(j);
     // 		if (checkSameParentalClass(si, sj)) {
     // 		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
     // 		}
@@ -900,7 +965,7 @@ public class runHmm {
 	}
 	System.out.println();
 
-	myhmm = buildMyHmm(trees_states, pi, a);
+	myhmm = buildMyHmm(hiddenStates, pi, a);
 	System.out.println(myhmm);
     }
 
@@ -917,7 +982,7 @@ public class runHmm {
 		}
 	    System.out.println("\nNow reading and saving Basic Info for parser . . .");
 	    fParser = new Parser(basicFileName);
-	    fParser.setTrees(trees_states);	
+	    fParser.setTrees(hiddenStates);	
     }
 	
     
@@ -941,7 +1006,7 @@ public class runHmm {
 	}
 
 	// now set references in all hidden states
-	for (HiddenState hiddenState : trees_states) {
+	for (HiddenState hiddenState : hiddenStates) {
 	    hiddenState.setAlleleToSpeciesMapping(fParser.getAlleleSpeciesMap());
 	}
 
@@ -1000,7 +1065,7 @@ public class runHmm {
 	    throw new ParserFileException("Cannot read Trees file!");
 	}
 
-	trees_states = new ArrayList<HiddenState>();
+	hiddenStates = new ArrayList<HiddenState>();
 	// also maintain equivalence classes among hidden states based on shared parental trees
 	parentalTreeClasses = new HashMap<Network<Double>,Set<HiddenState>>();
 	// also retain parental tree names
@@ -1050,7 +1115,7 @@ public class runHmm {
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + egg.getName();
 		// kliu - meh - parse allele-to-species mapping later and add in references here
 		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, gtrSubstitutionModel, calculationCache);
-		trees_states.add(hiddenState);
+		hiddenStates.add(hiddenState);
 		parentalTreeEquivalenceClass.add(hiddenState);
 		// really strict
 		if (parentalTreeNameMap.containsKey(egg.getName())) {
@@ -1069,17 +1134,17 @@ public class runHmm {
 	
 	// ------- >Testing purposes
 	//	        System.out.println("Trees read in and built:");
-	//	        for (int i = 0; i < trees_states.size(); i++) {
-	//	        	System.out.println((trees_states.get(i)));
+	//	        for (int i = 0; i < hiddenStates.size(); i++) {
+	//	        	System.out.println((hiddenStates.get(i)));
 	//	        }
 	// <------Testing purposes
 
-	if (numStates != trees_states.size()) {
+	if (numStates != hiddenStates.size()) {
 	    throw new ParserFileException("Error: the number of trees read is not the same as the number of states previously inputted!");
 	}	
 
 	// strict!
-	if (trees_states.size() < 2) {
+	if (hiddenStates.size() < 2) {
 	    throw (new ParserFileException("ERROR: must be at least two hidden states in PhyloNet-HMM."));
 	}
     }

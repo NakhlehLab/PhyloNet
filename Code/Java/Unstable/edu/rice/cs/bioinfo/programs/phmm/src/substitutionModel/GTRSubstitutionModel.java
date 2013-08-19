@@ -43,6 +43,10 @@ public class GTRSubstitutionModel implements SubstitutionModel {
 	return (originalRateParameters);
     }
 
+    public double[][] getFullRateMatrix () {
+	return (rates);
+    }
+
     public Alphabet getAlphabet () {
 	return (NucleotideAlphabet.getClassInstance());
     }

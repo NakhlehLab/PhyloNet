@@ -924,27 +924,27 @@ public class MultivariateOptimizer {
      * WARNING - modifies HMM object and associated objects.
      * Returns likelihood of optimized model given observations.
      */
-    public double optimize () {
+    public double optimize (MultivariateOptimizer.InitialSearchSettings[] initialSearchSettings) {
 	// initial search settings matter quite a bit
 	// try fewer rounds, but a couple of random restarts
-	InitialSearchSettings[] initialSearchSettingsForEachPass = new InitialSearchSettings[] 
-	    { InitialSearchSettings.CURRENT, // think about how to get parameter settings in line with inputs???
-	      // // kliu - hold off on this now for testing purposes
-	      InitialSearchSettings.DEFAULT,
-	      //InitialSearchSettings.RANDOM,
-	      //InitialSearchSettings.RANDOM,
-	      InitialSearchSettings.RANDOM
-	    };
+	// InitialSearchSettings[] initialSearchSettings = new InitialSearchSettings[] 
+	//     { InitialSearchSettings.CURRENT, // think about how to get parameter settings in line with inputs???
+	//       // // kliu - hold off on this now for testing purposes
+	//       InitialSearchSettings.DEFAULT,
+	//       //InitialSearchSettings.RANDOM,
+	//       //InitialSearchSettings.RANDOM,
+	//       InitialSearchSettings.RANDOM
+	//     };
 
 	// testing
-	// InitialSearchSettings[] initialSearchSettingsForEachPass = new InitialSearchSettings[] 
+	// InitialSearchSettings[] initialSearchSettings = new InitialSearchSettings[] 
 	//     { InitialSearchSettings.RANDOM,
 	//       InitialSearchSettings.RANDOM
 	//     };
 
 	double finalLikelihood = 1.0; // impossible log likelihood - why won't the compiler allow this to be uninitialized?
 
-	for (int pass = 0; pass < initialSearchSettingsForEachPass.length; pass++) {
+	for (int pass = 0; pass < initialSearchSettings.length; pass++) {
 	    // cache all continuous model parameters
 	    // could save a cache if we just did a restore - meh
 	    //
@@ -953,7 +953,7 @@ public class MultivariateOptimizer {
 	    // Thus, no need for cache to worry about branch-length-constraint-set weights.
 	    pushCacheValues();
 
-	    double passLikelihood = singlePassOptimization(pass, initialSearchSettingsForEachPass[pass]);
+	    double passLikelihood = singlePassOptimization(pass, initialSearchSettings[pass]);
 
 	    // update
 	    if (pass == 0) {

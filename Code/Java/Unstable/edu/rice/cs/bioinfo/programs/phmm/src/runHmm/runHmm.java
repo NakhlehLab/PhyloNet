@@ -389,6 +389,8 @@ public class runHmm {
 	    String modelLikelihoodsFilename = in.readLine();
 	    System.out.println("Output file with optimized model parameter values: ");
 	    String optimizedModelParameterValuesFilename = in.readLine();
+	    System.out.println("Initial search settings vector <setting 1> <setting 2> ... <setting s>, where <setting s> is one of CURRENT, DEFAULT, RANDOM");
+	    MultivariateOptimizer.InitialSearchSettings[] initialSearchSettings = parseInitialSearchSettings(in.readLine());
 	    System.out.println("Enable optimization flag vector <enable parental tree optimization flag> <enable gene genealogy optimization flag> <enable switching frequency optimization flag> <enable substitution model optimization flag>");
 	    StringTokenizer flagTokens = new StringTokenizer(in.readLine());
 	    if (flagTokens.countTokens() != 4) { throw (new RuntimeException("ERROR: invalid optimization flag vector.")); }
@@ -416,7 +418,7 @@ public class runHmm {
 										    );
 
 	    System.out.println ("Optimizing PhyloNet-HMM parameters... ");
-	    multivariateOptimizer.optimize();
+	    multivariateOptimizer.optimize(initialSearchSettings);
 	    System.out.println ("Optimizing PhyloNet-HMM parameters DONE. ");
 
 	    System.out.println ("Saving Viterbi-optimal hidden state sequence... "); 
@@ -445,6 +447,17 @@ public class runHmm {
 	    System.err.println (ioe);
 	    ioe.printStackTrace();
 	}
+    }
+
+    protected MultivariateOptimizer.InitialSearchSettings[] parseInitialSearchSettings (String line) {
+	StringTokenizer st = new StringTokenizer(line);
+	Vector<MultivariateOptimizer.InitialSearchSettings> vec = new Vector<MultivariateOptimizer.InitialSearchSettings>();
+	while (st.hasMoreTokens()) {
+	    vec.add(MultivariateOptimizer.InitialSearchSettings.valueOf(st.nextToken()));
+	}
+	MultivariateOptimizer.InitialSearchSettings[] result = new MultivariateOptimizer.InitialSearchSettings[vec.size()];
+	result = vec.toArray(result);
+	return (result);
     }
 
     protected void outputOptimizedModelParameterValues (String filename) {

@@ -70,8 +70,12 @@ public class runHmm {
     // argh - in lieu of worrying about EvoTree.equals() method
     // Maintain equivalence classes among hidden states based on shared parental tree.
     protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
+    // ditto for gene genealogy
+    protected Map<Tree,Set<HiddenState>> geneGenealogyClasses;
     // Since it's bijective, make it reversible
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
+    // ditto for gene genealogies
+    protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
 
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     
@@ -385,18 +389,30 @@ public class runHmm {
 	    String modelLikelihoodsFilename = in.readLine();
 	    System.out.println("Output file with optimized model parameter values: ");
 	    String optimizedModelParameterValuesFilename = in.readLine();
+	    System.out.println("Enable optimization flag vector <enable parental tree optimization flag> <enable gene genealogy optimization flag> <enable switching frequency optimization flag> <enable substitution model optimization flag>");
+	    StringTokenizer flagTokens = new StringTokenizer(in.readLine());
+	    if (flagTokens.countTokens() != 4) { throw (new RuntimeException("ERROR: invalid optimization flag vector.")); }
+	    boolean enableParentalTreeOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
+	    boolean enableGeneGenealogyOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
+	    boolean enableSwitchingFrequencyOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
+	    boolean enableSubstitutionModelOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
 
 	    MultivariateOptimizer multivariateOptimizer = new MultivariateOptimizer(myhmm,
 										    this,
 										    hiddenStates,
 										    transitionProbabilityParameters,
 										    gtrSubstitutionModel,
-										    parentalTreeClasses,
+										    //parentalTreeClasses,
 										    parentalTreeNameMap,
+										    geneGenealogyNameMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
 										    inputLengthParameterSetConstraintsFilename,
-										    calculationCache
+										    calculationCache,
+										    enableParentalTreeOptimizationFlag,
+										    enableGeneGenealogyOptimizationFlag,
+										    enableSwitchingFrequencyOptimizationFlag,
+										    enableSubstitutionModelOptimizationFlag
 										    );
 
 	    System.out.println ("Optimizing PhyloNet-HMM parameters... ");
@@ -778,8 +794,21 @@ public class runHmm {
 	return (pi);
     }
 
-    protected boolean checkSameParentalClass (HiddenState si, HiddenState sj) {
+    /**
+     * Do two hidden states share the same parental tree object?
+     * (Same row in the HMM hidden state space?)
+     */
+    protected boolean checkSameParentalTreeClass (HiddenState si, HiddenState sj) {
 	Set<HiddenState> sic = parentalTreeClasses.get(si.getParentalTree());
+	return (sic.contains(sj));
+    }
+
+    /**
+     * Do two hidden states share the same gene genealogy object?
+     * (Same column in the HMM hidden state space?)
+     */
+    protected boolean checkSameGeneGenealogyClass (HiddenState si, HiddenState sj) {
+	Set<HiddenState> sic = geneGenealogyClasses.get(si.getGeneGenealogy());
 	return (sic.contains(sj));
     }
 
@@ -806,7 +835,7 @@ public class runHmm {
 		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
 		//check += a[i][j];
 		//System.out.println ("inner loop in calculateAij(): " + a[i][j]);
-		if (checkSameParentalClass(si, sj)) {
+		if (checkSameParentalTreeClass(si, sj)) {
 		    a[i][j] *= (1.0 - transitionProbabilityParameters.getHybridizationFrequency());
 		}
 		else {
@@ -1067,24 +1096,24 @@ public class runHmm {
 
 	hiddenStates = new ArrayList<HiddenState>();
 	// also maintain equivalence classes among hidden states based on shared parental trees
-	parentalTreeClasses = new HashMap<Network<Double>,Set<HiddenState>>();
+	parentalTreeClasses = new Hashtable<Network<Double>,Set<HiddenState>>();
+	geneGenealogyClasses = new Hashtable<Tree,Set<HiddenState>>();
 	// also retain parental tree names
 	// to facilitate parameter inputs/constraints on parental tree branches
 	parentalTreeNameMap = new BijectiveHashtable<String,Network<Double>>();
+	geneGenealogyNameMap = new BijectiveHashtable<String,Tree>();
 
 	System.out.println("\nNow building trees . . .");
 	BufferedReader ptreesbr = new BufferedReader(new FileReader(parentalTreesFileName));
 	TreeParser ptp = new TreeParser(ptreesbr);
 	ArrayList<EvoTree> eParentalTrees = ptp.nexusFileTreeNames(parentalTreesFileName);
 	ptreesbr.close();
-	Vector<Network<Double>> parentalTrees = new Vector<Network<Double>>();
 	for (EvoTree etree : eParentalTrees) {
 	    Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(etree);
 	    // no duplicate node names allowed!
 	    if (parentalTree.hasDuplicateNames()) {
 		throw (new RuntimeException("ERROR: duplicate node names are present in parental tree " + etree.getName() + ". Check inputs and try again."));
 	    }
-	    parentalTrees.add(parentalTree);
 	    // no duplicate parental tree names allowed!
 	    if (parentalTreeNameMap.containsKey(etree.getName())) {
 		throw (new RuntimeException("ERROR: duplicate parental tree name " + etree.getName() + ". Check inputs and try again."));
@@ -1092,44 +1121,49 @@ public class runHmm {
 	    parentalTreeNameMap.put(etree.getName(), parentalTree);
 	}
 	
-	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
-	for (Network<Double> parentalTree : parentalTrees) {
-	    // kliu - cheap hack to clone all gene genealogies across
-	    // each parental tree
-	    //
-	    // for now, don't share gene genealogies across parental trees (e.g. branch lengths)
-	    BufferedReader ggbr = new BufferedReader(new FileReader(geneGenealogiesFileName));
-	    TreeParser gtp = new TreeParser(ggbr);
-	    ArrayList<EvoTree> eGeneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
-	    ggbr.close();
+	BufferedReader ggbr = new BufferedReader(new FileReader(geneGenealogiesFileName));
+	TreeParser gtp = new TreeParser(ggbr);
+	ArrayList<EvoTree> eGeneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
+	ggbr.close();
 
-	    HashSet<HiddenState> parentalTreeEquivalenceClass = new HashSet<HiddenState>();
-	    // disallow duplicate gene genealogy names
-	    HashSet<String> geneGenealogyNames = new HashSet<String>();
-
-	    for (EvoTree egg : eGeneGenealogies) {
-		Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(egg);
-		if (hasDuplicateNames(geneGenealogy)) {
-		    throw (new RuntimeException("ERROR: duplicate node names are present in gene genealogy " + egg.getName() + ".Check inputs and try again."));
-		}
-		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + egg.getName();
-		// kliu - meh - parse allele-to-species mapping later and add in references here
-		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, parentalTreeEquivalenceClass, gtrSubstitutionModel, calculationCache);
-		hiddenStates.add(hiddenState);
-		parentalTreeEquivalenceClass.add(hiddenState);
-		// really strict
-		if (parentalTreeNameMap.containsKey(egg.getName())) {
-		    throw (new RuntimeException("ERROR: gene genealogy name " + egg.getName() + " appears as a parental tree name. Check inputs and try again."));
-		}
-
-		if (geneGenealogyNames.contains(egg.getName())) {
-		    throw (new RuntimeException("ERROR: duplicate gene genealogy name " + egg.getName() + ". Check inputs and try again."));
-		}
-		geneGenealogyNames.add(egg.getName());
+	for (EvoTree egg : eGeneGenealogies) {
+	    Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(egg);
+	    if (hasDuplicateNames(geneGenealogy)) {
+		throw (new RuntimeException("ERROR: duplicate node names are present in gene genealogy " + egg.getName() + ".Check inputs and try again."));
 	    }
 
-	    // maintain the map
-	    parentalTreeClasses.put(parentalTree, parentalTreeEquivalenceClass);
+	    // really strict
+	    if (parentalTreeNameMap.containsKey(egg.getName())) {
+		throw (new RuntimeException("ERROR: gene genealogy name " + egg.getName() + " appears as a parental tree name. Check inputs and try again."));
+	    }
+	    
+	    if (geneGenealogyNameMap.containsKey(egg.getName())) {
+		throw (new RuntimeException("ERROR: duplicate gene genealogy name " + egg.getName() + ". Check inputs and try again."));
+	    }
+	    
+	    geneGenealogyNameMap.put(egg.getName(), geneGenealogy);
+	}
+
+	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
+	for (Network<Double> parentalTree : parentalTreeNameMap.values()) {
+	    for (Tree geneGenealogy : geneGenealogyNameMap.values()) {
+		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(geneGenealogy);
+		// kliu - meh - parse allele-to-species mapping later and add in references here
+		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, gtrSubstitutionModel, calculationCache);
+		hiddenStates.add(hiddenState);
+
+		// maintain equivalence class maps
+		if (!parentalTreeClasses.containsKey(parentalTree)) {
+		    parentalTreeClasses.put(parentalTree, new HashSet<HiddenState>());
+		}
+		
+		if (!geneGenealogyClasses.containsKey(geneGenealogy)) {
+		    geneGenealogyClasses.put(geneGenealogy, new HashSet<HiddenState>());
+		}
+
+		parentalTreeClasses.get(parentalTree).add(hiddenState);
+		geneGenealogyClasses.get(geneGenealogy).add(hiddenState);
+	    }
 	}
 	
 	// ------- >Testing purposes
@@ -1148,6 +1182,8 @@ public class runHmm {
 	    throw (new ParserFileException("ERROR: must be at least two hidden states in PhyloNet-HMM."));
 	}
     }
+
+    // parentalTreeEquivalenceClass
     
     /**
      * Read transition probability parameters (other than those related to basic coalescent model calculations, i.e., parental tree

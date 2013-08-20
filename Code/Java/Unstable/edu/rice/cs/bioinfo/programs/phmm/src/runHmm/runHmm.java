@@ -452,6 +452,11 @@ public class runHmm {
 	    // bleh
 	    RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
 	    BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+	    bw.write("Hidden state order: "); bw.newLine();
+	    for (int i = 0 ; i < hiddenStates.size(); i++) {
+		bw.write(i + " " + hiddenStates.get(i).getName()); bw.newLine();
+	    }
+	    bw.newLine();
 	    List<String> parentalTreeNames = new ArrayList<String>(parentalTreeNameMap.keys());
 	    Collections.sort(parentalTreeNames);
 	    for (String parentalTreeName : parentalTreeNames) {
@@ -1145,8 +1150,15 @@ public class runHmm {
 	}
 
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
-	for (Network<Double> parentalTree : parentalTreeNameMap.values()) {
-	    for (Tree geneGenealogy : geneGenealogyNameMap.values()) {
+	// kliu - hmm... would be nice to go in alphabetical order according to tree names
+	ArrayList<String> parentalTreeNames = new ArrayList<String>(parentalTreeNameMap.keys());
+	Collections.sort(parentalTreeNames);
+	ArrayList<String> geneGenealogyNames = new ArrayList<String>(geneGenealogyNameMap.keys());
+	Collections.sort(geneGenealogyNames);
+	for (String parentalTreeName : parentalTreeNames) {
+	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
+	    for (String geneGenealogyName : geneGenealogyNames) {
+		Tree geneGenealogy = geneGenealogyNameMap.get(geneGenealogyName);
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(geneGenealogy);
 		// kliu - meh - parse allele-to-species mapping later and add in references here
 		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, gtrSubstitutionModel, calculationCache);

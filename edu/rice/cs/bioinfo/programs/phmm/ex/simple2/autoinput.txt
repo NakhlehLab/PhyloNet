@@ -18,4 +18,5 @@
 /home/kl23/code/phmm-repository/phmm/ex/simple2/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/simple2/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/simple2/optimized.model.parameters
+true true true true
 4

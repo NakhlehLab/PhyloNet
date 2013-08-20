@@ -130,8 +130,9 @@ public class MultivariateOptimizer {
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     // bleh - need to assume a GTR model here due to specific parameterization
     protected GTRSubstitutionModel gtrSubstitutionModel;
-    protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
+    //protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
+    protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
     protected List<ObservationMap> observation;
     protected CalculationCache calculationCache;
 
@@ -165,22 +166,32 @@ public class MultivariateOptimizer {
 				  List<HiddenState> inHiddenStates,
 				  TransitionProbabilityParameters inTransitionProbabilityParameters,
 				  GTRSubstitutionModel inGTRSubstitutionModel,
-				  Map<Network<Double>,Set<HiddenState>> inParentalTreeClasses,
+				  //Map<Network<Double>,Set<HiddenState>> inParentalTreeClasses,
 				  BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
+				  BijectiveHashtable<String,Tree> inGeneGenealogyNameMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
 				  String inputParentalBranchLengthParameterSetConstraintsFilename,
-				  CalculationCache inCalculationCache
+				  CalculationCache inCalculationCache,
+				  boolean inEnableParentalTreeOptimizationFlag,
+				  boolean inEnableGeneGenealogyOptimizationFlag,
+				  boolean inEnableSwitchingFrequencyOptimizationFlag,
+				  boolean inEnableSubstitutionModelOptimizationFlag
 				  ) {
 	this.hmm = inHmm;
 	this.runHmmObject = inRunHmm;
 	this.hiddenStates = inHiddenStates;
 	this.transitionProbabilityParameters = inTransitionProbabilityParameters;
 	this.gtrSubstitutionModel = inGTRSubstitutionModel;
-	this.parentalTreeClasses = inParentalTreeClasses;
+	//this.parentalTreeClasses = inParentalTreeClasses;
 	this.parentalTreeNameMap = inParentalTreeNameMap;
+	this.geneGenealogyNameMap = inGeneGenealogyNameMap;
 	this.observation = inObservation;
 	this.calculationCache = inCalculationCache;
+	this.enableParentalTreeOptimizationFlag = inEnableParentalTreeOptimizationFlag;
+	this.enableGeneGenealogyOptimizationFlag = inEnableGeneGenealogyOptimizationFlag;
+	this.enableSwitchingFrequencyOptimizationFlag = inEnableSwitchingFrequencyOptimizationFlag;
+	this.enableSubstitutionModelOptimizationFlag = inEnableSubstitutionModelOptimizationFlag;
 
 	brentOptimizer = new BrentOptimizer(RELATIVE_ACCURACY, ABSOLUTE_ACCURACY);
 
@@ -257,19 +268,19 @@ public class MultivariateOptimizer {
     }
 
     /**
-     * In current model, hidden states share parental trees but not
-     * gene trees. Each hidden state has a gene tree that is parameterized
-     * separately from any other gene tree in the HMM.
+     * In current model, hidden states share both parental trees and
+     * gene genealogies. Gene genealogy parameterization done
+     * per object only.
      */
     protected void createGenealogyBranchLengthParameters () {
 	genealogyBranchLengthParameters = new Vector<GenealogyBranchLengthParameter>();
-	for (HiddenState hiddenState : hiddenStates) {
-	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
+	for (Tree geneGenealogy : geneGenealogyNameMap.values()) {
+	    for (TNode node : geneGenealogy.postTraverse()) {
 		if (node.isRoot() || node.getParent() == null) {
 		    continue;
 		}
 		
-		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(hiddenState.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
+		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(geneGenealogyNameMap.rget(geneGenealogy) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
 											 node.getParentDistance(),
 											 node,
 											 calculationCache,

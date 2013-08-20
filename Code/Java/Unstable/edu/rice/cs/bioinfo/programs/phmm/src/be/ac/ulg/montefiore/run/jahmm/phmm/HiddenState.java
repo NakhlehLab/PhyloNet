@@ -64,7 +64,7 @@ public class HiddenState
     protected Map<String,String> alleleToSpeciesMapping;    
 
     // kliu - provide functionality to check if two HiddenState objects share a parental tree (Network<Double> object)
-    protected Set<HiddenState> parentalTreeEquivalenceClass;
+    //protected Set<HiddenState> parentalTreeEquivalenceClass;
 
     // for emission probability calculation
     protected SubstitutionModel substitutionModel;
@@ -90,14 +90,14 @@ public class HiddenState
 			Network<Double> inParentalTree, 
 			Tree inGeneGenealogy, 
 			Map<String,String> inputAlleleToSpeciesMapping, 
-			Set<HiddenState> inParentalTreeEquivalenceClass, 
+			//Set<HiddenState> inParentalTreeEquivalenceClass, 
 			SubstitutionModel inSubstitutionModel,
 			CalculationCache inCalculationCache) {
 	setName(inName);
 	setParentalTree(inParentalTree);
 	setGeneGenealogy(inGeneGenealogy);
 	setAlleleToSpeciesMapping(inputAlleleToSpeciesMapping);
-	this.parentalTreeEquivalenceClass = inParentalTreeEquivalenceClass;
+	//this.parentalTreeEquivalenceClass = inParentalTreeEquivalenceClass;
 	setSubstitutionModel(inSubstitutionModel);
 	this.calculationCache = inCalculationCache;
 	// keep our own Felsenstein calculator
@@ -156,9 +156,9 @@ public class HiddenState
      * Checks to see if another HiddenState object hs shares a parental tree object
      * (hs.getParentalTree()) with this HiddenState object.
      */
-    public boolean checkSharedParentalTree (HiddenState hs) {
-	return (this.parentalTreeEquivalenceClass.contains(hs));
-    }
+    // public boolean checkSharedParentalTree (HiddenState hs) {
+    // 	return (this.parentalTreeEquivalenceClass.contains(hs));
+    // }
 
     /**
      * Convenience function.

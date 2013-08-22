@@ -52,13 +52,13 @@ public abstract class Parameter extends ParameterConstraintSet {
 			  boolean updateModelStateFlag) {
 	// paranoid
 	if (checkValueMinimumConstraintFlag && (inValue < getMinimumValue())) {
-	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value smaller than getMinimumValue() amount."));
+	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value smaller than getMinimumValue() amount. " + inValue + " " + getMinimumValue()));
 	}
 
 	// kliu - this can cause an issue for FrequencyParameter
 	// constructor
 	if (checkValueMaximumConstraintFlag && (inValue > getMaximumValue())) {
-	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value greater than getMaximumValue() amount."));
+	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value greater than getMaximumValue() amount. " + inValue + " " + getMaximumValue()));
 	}
 
 	super.setValue(inValue);

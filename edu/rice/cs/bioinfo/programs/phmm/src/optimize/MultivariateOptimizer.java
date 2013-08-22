@@ -50,6 +50,8 @@ import java.util.StringTokenizer;
 import java.io.StringWriter;
 import java.io.File;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
@@ -78,8 +80,8 @@ public class MultivariateOptimizer {
     public static final double ABSOLUTE_ACCURACY = 1e-8;
     public static final double SEARCH_INTERVAL_MINIMUM_WIDTH = 1e-4;
     public static final int BRENT_METHOD_SINGLE_ROUND_MAXIMUM_ITERATIONS = 100;
-    public static final int MAXIMUM_NUM_ROUNDS = 100;
-    public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-3;
+    public static final int MAXIMUM_NUM_ROUNDS = 10000;
+    public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-1;
     public static final double MINIMUM_FACTOR_WIDTH_FOR_MINIMUM_MAXIMUM_INTERVAL = 4.0;
 
     // search defaults
@@ -89,7 +91,7 @@ public class MultivariateOptimizer {
     public static final double DEFAULT_INITIAL_BRANCH_LENGTH = 1e-1;
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = 1e1; // scientific notation - e for decimal exponent
 
-    public static final double DEFAULT_MINIMUM_RATE = 1e-1;
+    public static final double DEFAULT_MINIMUM_RATE = 1e-2;
     public static final double DEFAULT_INITIAL_RATE = 1.0;
     public static final double DEFAULT_MAXIMUM_RATE = 1e1; // scientific notation - e for decimal exponent
 
@@ -109,6 +111,12 @@ public class MultivariateOptimizer {
     // PhyloNet's Rich Newick support has some craziness about '_' underscore letter.
     // use dash '-' instead.
     public static final String IDENTIFIER_SET_BRANCH_LENGTH_CONSTRAINTS = "-CONSTRAINT-SET-";
+
+    public static final String CHECKPOINT_PARAMETER_STATE_FILENAME = "CHECKPOINT-PARAMETER-STATE";
+    public static final String CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER = "\t";
+    public static final String CHECKPOINT_LATEST_SUFFIX = "LATEST";
+
+    public static final String FILENAME_SUFFIX_DELIMITER = ".";
 
     // to support fixed network probabilities
     // over-parameterization issue with optimization of model of Yu et al. 2012
@@ -147,15 +155,18 @@ public class MultivariateOptimizer {
 
     // heuristic for univariate optimization
     protected BrentOptimizer brentOptimizer;
-
-    // for convenience, keep list of Parameters
-    protected Vector<Parameter> parameters;
     
     protected Vector<ParentalBranchLengthParameter> parentalBranchLengthParameters;
     protected Vector<GenealogyBranchLengthParameter> genealogyBranchLengthParameters;
     protected Vector<SwitchingFrequencyParameter> switchingFrequencyParameters;
     protected Vector<GTRRateParameter> gtrRateParameters;
     protected Vector<GTRBaseFrequencyParameter> gtrBaseFrequencyParameters;
+
+    // for convenience, keep list of Parameters
+    // and bijective map between parameters and their names
+    //
+    // force parameters to have unique names and no tabs, otherwise barf
+    protected BijectiveHashtable<String,Parameter> parameterNameMap;
 
     // meh - just keep above for clarity
     // use lpEidMap.keys() to get a list of all parental tree branch length parameters (ParentalBranchLengthParameter objects)
@@ -176,7 +187,8 @@ public class MultivariateOptimizer {
 				  boolean inEnableParentalTreeOptimizationFlag,
 				  boolean inEnableGeneGenealogyOptimizationFlag,
 				  boolean inEnableSwitchingFrequencyOptimizationFlag,
-				  boolean inEnableSubstitutionModelOptimizationFlag
+				  boolean inEnableSubstitutionModelOptimizationFlag,
+				  String inputRestoreCheckpointFilename
 				  ) {
 	this.hmm = inHmm;
 	this.runHmmObject = inRunHmm;
@@ -211,7 +223,13 @@ public class MultivariateOptimizer {
 	createSubstitutionModelParameters();	
 
 	// for convenience only
-	createListOfAllParameters();
+	createNameMapOfAllParameters();
+
+	// do restore if necessary
+	if ((inputRestoreCheckpointFilename != null) &&
+	    (!inputRestoreCheckpointFilename.trim().equals(""))) {
+	    restoreParameterValuesFromCheckpointWithNoUpdate(inputRestoreCheckpointFilename);
+	}
 
 	// finally do update
 	updateModelStateForEveryParameter();
@@ -221,7 +239,7 @@ public class MultivariateOptimizer {
 	gtrBaseFrequencyParameters = new Vector<GTRBaseFrequencyParameter>();
 	double[] currentStationaryProbabilities = gtrSubstitutionModel.getStationaryProbabilities();
 	for (int i = 0; i < gtrSubstitutionModel.getAlphabet().length(); i++) {
-	    gtrBaseFrequencyParameters.add(new GTRBaseFrequencyParameter(Character.toString(gtrSubstitutionModel.getAlphabet().getAlphabet().charAt(i)),
+	    gtrBaseFrequencyParameters.add(new GTRBaseFrequencyParameter(GTRBaseFrequencyParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + Character.toString(gtrSubstitutionModel.getAlphabet().getAlphabet().charAt(i)),
 									 // by convention, first parameter in a constraint-set
 									 // gets set to 1.0
 									 (i == 0) ? 1.0 : currentStationaryProbabilities[i], // is this syntax ok?
@@ -238,7 +256,7 @@ public class MultivariateOptimizer {
 	gtrRateParameters = new Vector<GTRRateParameter>();
 	double[] currentSubstitutionRateParameters = gtrSubstitutionModel.getOriginalRateParameters();
 	for (int i = 0; i < gtrSubstitutionModel.getRateParameterCount(); i++) {
-	    gtrRateParameters.add(new GTRRateParameter(Integer.toString(i),
+	    gtrRateParameters.add(new GTRRateParameter(GTRRateParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + Integer.toString(i),
 						       currentSubstitutionRateParameters[i], // is this syntax ok?
 						       gtrSubstitutionModel,
 						       i,
@@ -253,7 +271,7 @@ public class MultivariateOptimizer {
     protected void createSwitchingFrequencyParameters () {
 	switchingFrequencyParameters = new Vector<SwitchingFrequencyParameter>();
 	for (TransitionProbabilityParameters.ParameterChoice parameterChoice : TransitionProbabilityParameters.ParameterChoice.values()) {
-	    SwitchingFrequencyParameter sfp = new SwitchingFrequencyParameter(parameterChoice.toString(),
+	    SwitchingFrequencyParameter sfp = new SwitchingFrequencyParameter(SwitchingFrequencyParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + parameterChoice.toString(),
 									      transitionProbabilityParameters.get(parameterChoice),
 									      runHmmObject,
 									      transitionProbabilityParameters,
@@ -280,7 +298,7 @@ public class MultivariateOptimizer {
 		    continue;
 		}
 		
-		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(geneGenealogyNameMap.rget(geneGenealogy) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
+		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(GenealogyBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(geneGenealogy) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
 											 node.getParentDistance(),
 											 node,
 											 calculationCache,
@@ -293,13 +311,27 @@ public class MultivariateOptimizer {
 	}
     }
 
-    protected void createListOfAllParameters () {
-	parameters = new Vector<Parameter>();
+    protected void createNameMapOfAllParameters () {
+	Vector<Parameter> parameters = new Vector<Parameter>();
 	parameters.addAll(parentalBranchLengthParameters); // parental tree branch length parameters
 	parameters.addAll(genealogyBranchLengthParameters);
 	parameters.addAll(switchingFrequencyParameters);
 	parameters.addAll(gtrRateParameters);
 	parameters.addAll(gtrBaseFrequencyParameters);
+
+	for (Parameter parameter : parameters) {
+	    // strict!
+	    if (parameterNameMap.containsKey(parameter.getName())) {
+		// barf
+		throw (new RuntimeException("ERROR: parameters must have unique names. Check for duplicate parameter name " + parameter.getName() + "."));
+	    }
+
+	    if (parameter.getName().contains(CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER)) {
+		throw (new RuntimeException("ERROR: parameter names cannot contain the character used to delimit checkpoint pair items. Check parameter name " + parameter.getName() + "."));
+	    }
+
+	    parameterNameMap.put(parameter.getName(), parameter);
+	}
     }
 
     protected boolean verifyProbability (double p) {
@@ -357,7 +389,7 @@ public class MultivariateOptimizer {
 	// ok since each call below just rebalances weight to satisfy constraint on a constraint-set
 	// repeated re-balancings don't change anything, so long as individual
 	// parameter values are unchanged
-	for (Parameter p : parameters) {
+	for (Parameter p : parameterNameMap.values()) {
 	    // manually update Jahmm's probability matrices/vectors *once* at the end
 	    p.updateModelState();
 	}
@@ -586,7 +618,7 @@ public class MultivariateOptimizer {
      * For diagnostic purposes.
      */
     // protected void debugParameters () {
-    // 	for (Parameter p : parameters) {
+    // 	for (Parameter p : parameterNameMap.values()) {
     // 	    System.out.println (p.toString());
     // 	}
     // }
@@ -594,25 +626,27 @@ public class MultivariateOptimizer {
     /**
      * For diagnostic purposes.
      */
-    protected void debugModel () {
-	System.out.println ("============================================");
-	System.out.println ("Current PhyloNet-HMM state: ");
-	System.out.println ();
-	System.out.println ("Hidden states: ");
-	for (int i = 0; i < hiddenStates.size(); i++) {
-	    System.out.println("Hidden state " + i + ":");
-	    System.out.println(hiddenStates.get(i).toString());
-	}
-	System.out.println ();
-	System.out.println ("Parameters: ");
-	for (Parameter parameter : parameters) {
-	    System.out.println (parameter.toString());
-	}
-	System.out.println ();
-	System.out.println ("HMM transition and emission probabilities: ");
-	System.out.println (hmm.toString());
-	System.out.println ("============================================");
-    }
+    // protected void debugModel () {
+    // 	System.out.println ("============================================");
+    // 	System.out.println ("Current PhyloNet-HMM state: ");
+    // 	System.out.println ();
+    // 	System.out.println ("Hidden states: ");
+    // 	for (int i = 0; i < hiddenStates.size(); i++) {
+    // 	    System.out.println("Hidden state " + i + ":");
+    // 	    System.out.println(hiddenStates.get(i).toString());
+    // 	}
+    // 	System.out.println ();
+    // 	System.out.println ("Parameters: ");
+    // 	for (Parameter parameter : parameterNameMap.values()) {
+    // 	    System.out.println (parameter.toString());
+    // 	}
+    // 	System.out.println ();
+    // 	System.out.println ("HMM transition and emission probabilities: ");
+    // 	System.out.println (hmm.toString());
+    // 	System.out.println ("============================================");
+    // }
+
+    // (int pass, InitialSearchSettings initialSearchSettings)
 
     /**
      * Perform one optimization pass from a single starting point.
@@ -626,7 +660,7 @@ public class MultivariateOptimizer {
 	}
 
 	if (Constants.WARNLEVEL > 1) { 
-	    debugModel();
+	    //debugModel();
 	    System.out.println ("Input log likelihood: |" + inputLogLikelihood + "|");
 	}
 
@@ -669,7 +703,7 @@ public class MultivariateOptimizer {
 	// child.inDeg >= 2 -> only then parent probabilities printed
 	// defaults to probability zero
 	if (Constants.WARNLEVEL > 1) { 
-	    debugModel();
+	    //debugModel();
 	    System.out.println ("Initial log likelihood: |" + initialLogLikelihood + "|");
 	    // // Also print out length-parameters.
 	    // System.out.println ("Initial parameters:");
@@ -684,14 +718,16 @@ public class MultivariateOptimizer {
 	// previous round's log likelihood
 	double prevLogLikelihood = initialLogLikelihood; // checkConvergence() doesn't look at this during first round
 	double currLogLikelihood = initialLogLikelihood; // checkConvergence() doesn't look at this during first round
-	double roundLogLikelihood = initialLogLikelihood;
+
 	while (!checkConvergence(round, prevLogLikelihood, currLogLikelihood)) {
 	    if (Constants.WARNLEVEL > 1) { System.out.println ("Processing round " + round + "."); }
+
+	    double roundLogLikelihood = initialLogLikelihood;
 
 	    // iterate through parameters
 	    // may want to make order random??
 	    int pCount = 0;
-	    for (Parameter p : parameters) {
+	    for (Parameter p : parameterNameMap.values()) {
 		// skip parental tree branch length optimization if disabled
 		if (!enableParentalTreeOptimizationFlag && 
 		    (p instanceof ParentalBranchLengthParameter)
@@ -735,16 +771,16 @@ public class MultivariateOptimizer {
 
 		// single branch length optimization
 		// does update appropriately
-		    roundLogLikelihood = optimizeSingleParameter(p, roundLogLikelihood, round);
+		roundLogLikelihood = optimizeSingleParameter(p, roundLogLikelihood, round);
+
+		// paranoid
+		if (Double.isNaN(roundLogLikelihood)) {
+		    System.err.println ("ERROR: unable to evaluate round " + round + " parameter " + p.getName() + " log likelihood. Aborting and returning NaN.");
+		    return (Double.NaN);
+		}
 
 		if (Constants.WARNLEVEL > 1) { System.out.println ("Processing " + p.getClass().getName() + " parameter " + p.getName() + " count " + pCount + " DONE."); }
 		pCount++;
-	    }
-
-	    // paranoid
-	    if (Double.isNaN(roundLogLikelihood)) {
-		System.err.println ("ERROR: unable to evaluate round " + round + " log likelihood. Aborting and returning NaN.");
-		return (Double.NaN);
 	    }
 
 	    // end of round
@@ -753,24 +789,27 @@ public class MultivariateOptimizer {
 	    prevLogLikelihood = currLogLikelihood;
 	    currLogLikelihood = roundLogLikelihood;
 
+	    // kliu - cache state to disk also
+	    writeCheckpoint(pass, round);
+
 	    if (Constants.WARNLEVEL > 1) { System.out.println ("Processing round " + round + " DONE."); }
 
 	    round++;
 	}
 
 	// recompute for debugging output
-	double finalLikelihood = computeHMMLikelihood();
+	double resultLikelihood = computeHMMLikelihood();
 
 	if (Constants.WARNLEVEL > 1) { 
-	    debugModel();
-	    System.out.println ("Pass log likelihood: |" + finalLikelihood + "|");	    
+	    //debugModel();
+	    System.out.println ("Pass log likelihood: |" + resultLikelihood + "|");	    
 	    // // Also print out length-parameters.
 	    // System.out.println ("Pass parameters:");
 	    // debugParameters();
 	    System.out.println ("Processing pass " + pass + " with initial search setting " + initialSearchSettings.toString() + " DONE.");
 	}
 
-	return (finalLikelihood);
+	return (resultLikelihood);
     }
 
     /**
@@ -903,13 +942,103 @@ public class MultivariateOptimizer {
      * Need to pass in two empty maps.
      */
     protected void pushCacheValues () {
-	for (Parameter parameter : parameters) {
+	for (Parameter parameter : parameterNameMap.values()) {
 	    parameter.pushCacheValue();
 	}
     }
 
+    /**
+     * Restore from a checkpoint file filename.
+     * WARNING - doesn't perform an update after writing all Parameter object values! 
+     * Caller must call updateModelStateForEveryParameter() after calling this function!
+     */
+    protected void restoreParameterValuesFromCheckpointWithNoUpdate (String filename) {
+	Hashtable<String,Double> map = new Hashtable<String,Double>();
+
+	// read checkpoint first, make sure everything is legit
+	try {
+	    BufferedReader br = new BufferedReader(new FileReader(filename));
+	    String line;
+	    while ((line = br.readLine()) != null) {
+		StringTokenizer st = new StringTokenizer(line);
+		// strict!
+		if (st.countTokens() != 2) {
+		    System.err.println ("Invalid line in checkpoint file " + filename + ". Not restoring from checkpoint.");
+		    return;
+		}
+
+		try {
+		    String name = st.nextToken();
+		    Double value = Double.valueOf(st.nextToken());
+
+		    // make sure that a Parameter object
+		    // with the specified name exists.
+		    if (!parameterNameMap.containsKey(name)) {
+			System.err.println ("Invalid parameter name " + name + " in checkpoint file " + filename + " line " + line + ". Not restoring from checkpoint.");
+			return;
+		    }
+
+		    // make sure no duplicate names in checkpoint file
+		    if (map.containsKey(name)) {
+			System.err.println ("Duplicate parameter name " + name + " in checkpoint file " + filename + " line " + line + ". Not restoring from checkpoint.");
+			return;
+		    }
+
+		    map.put(name, value);
+		}
+		catch (NumberFormatException nfe) {
+		    System.err.println (nfe);
+		    nfe.printStackTrace();
+		    System.err.println ("Invalid line in checkpoint file " + filename + " line " + line + ". Not restoring from checkpoint.");
+		    return;
+		}
+	    }
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    ioe.printStackTrace();
+	    // no update
+	    System.err.println ("ERROR: restoreCheckpoint(...) failed on checkpoint file " + filename + ". Not restoring from checkpoint.");
+	    return;
+	}
+
+	// then do atomic update
+	for (String name : map.keySet()) {
+	    // kliu - no delay update until the end
+	    parameterNameMap.get(name).setValue(map.get(name).doubleValue(), true, true, false);
+	}
+    }
+
+    /**
+     * Simple map. 
+     * Everything goes through Parameter objects.
+     *
+     * Use tabs to delimit Parameter name/value pairs.
+     *
+     * Also need to cache pass/round counts. 
+     */
+    protected void writeCheckpoint (int pass, int round) {
+	try {
+	    // write out Parameter-based state
+	    BufferedWriter bw = new BufferedWriter(new FileWriter(runHmmObject.getWorkingDirectory() + File.pathSeparator + CHECKPOINT_PARAMETER_STATE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round)));
+	    // safe due to guards in createNameMapOfAllParameters()
+	    for (Parameter parameter : parameterNameMap.values()) {
+		bw.write(parameter.getName() + CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER + parameter.getValue()); bw.newLine();
+	    }
+	    bw.flush();
+	    bw.close();
+	}
+	catch (IOException ioe) {
+	    System.err.println (ioe);
+	    ioe.printStackTrace();
+	    // ok to return without writing checkpoint
+	    // just lose a bit of progress - that's fine
+	}
+    }
+
+
     protected void popCacheValues (boolean setValueFlag) {
-	for (Parameter parameter : parameters) {
+	for (Parameter parameter : parameterNameMap.values()) {
 	    // delay Parameter.updateModelState() calls until all parameter values updated
 	    parameter.popCacheValue(true, true, false, setValueFlag);
 	}
@@ -923,6 +1052,8 @@ public class MultivariateOptimizer {
     /**
      * WARNING - modifies HMM object and associated objects.
      * Returns likelihood of optimized model given observations.
+     * 
+     * WARNING - only InitialSearchSettings.CURRENT will use checkpoint state to begin search.
      */
     public double optimize (MultivariateOptimizer.InitialSearchSettings[] initialSearchSettings) {
 	// initial search settings matter quite a bit
@@ -951,12 +1082,23 @@ public class MultivariateOptimizer {
 	    // Maintain the invariant that branch-length-constraint-set constraints are
 	    // satisfied prior to each cache operation.
 	    // Thus, no need for cache to worry about branch-length-constraint-set weights.
+	    //
+	    // Crap - this makes checkpointing more difficult than it needs to be.
+	    // A simpler way would just be to keep track of complete Parameter object state
+	    // for solution with best likelihod so far.
+	    // If current solution not as good as best, then revert.
+	    // Just need to constantly checkpoint best and current solution (Parameter state),
+	    // as well as iteration state.
+	    // Meh - still too complicated.
+	    // Max 1 day for 1 pass isn't too much of a restriction.
+	    // DMTCP easiest anyways.
 	    pushCacheValues();
 
 	    double passLikelihood = singlePassOptimization(pass, initialSearchSettings[pass]);
 
 	    // update
-	    if (pass == 0) {
+	    if ((finalLikelihood > 0.0) || // uninitialized 
+            (passLikelihood > finalLikelihood)) { // improvement
 		finalLikelihood = passLikelihood;
 		// no need for restore
 		popCacheValues(false);
@@ -966,22 +1108,11 @@ public class MultivariateOptimizer {
 		}
 	    }
 	    else {
-		if (passLikelihood > finalLikelihood) {
-		    finalLikelihood = passLikelihood;
-		    // no need for restore
-		    popCacheValues(false);
+		// need to restore
+		popCacheValues(true);
 
-		    if (Constants.WARNLEVEL > 1) { 
-			System.out.println ("Updating with likelihood " + passLikelihood + ".");
-		    }
-		}
-		else {
-		    // need to restore
-		    popCacheValues(true);
-
-		    if (Constants.WARNLEVEL > 1) { 
-			System.out.println ("Not updating.");
-		    }
+		if (Constants.WARNLEVEL > 1) { 
+		    System.out.println ("Not updating.");
 		}
 	    }
 	}

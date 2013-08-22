@@ -28,6 +28,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.*;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple3;
+
 
 
 /**
@@ -68,23 +71,23 @@ public class Hmm<O extends Observation>
      *        pdfs associated to each state.
      */
     public Hmm(int nbStates, OpdfFactory<? extends Opdf<O>> opdfFactory)
-    {
-        if (nbStates <= 0)
-        throw new IllegalArgumentException("Number of states must be " +
-                           "strictly positive");
+	{
+	    if (nbStates <= 0)
+		throw new IllegalArgumentException("Number of states must be " +
+						   "strictly positive");
 
-        pi = new double[nbStates];
-        a = new double[nbStates][nbStates];
-        opdfs = new ArrayList<Opdf<O>>(nbStates);
+	    pi = new double[nbStates];
+	    a = new double[nbStates][nbStates];
+	    opdfs = new ArrayList<Opdf<O>>(nbStates);
 
-        for (int i = 0; i < nbStates; i++) {
-        pi[i] = 1. / ((double) nbStates);
-        opdfs.add(opdfFactory.factor());
+	    for (int i = 0; i < nbStates; i++) {
+		pi[i] = 1. / ((double) nbStates);
+		opdfs.add(opdfFactory.factor());
 
-        for (int j = 0; j < nbStates; j++)
-            a[i][j] = 1. / ((double) nbStates);
-        }
-    }
+		for (int j = 0; j < nbStates; j++)
+		    a[i][j] = 1. / ((double) nbStates);
+	    }
+	}
 
 
     /**
@@ -101,23 +104,23 @@ public class Hmm<O extends Observation>
      *        <code>i</code>.  The distributions are not copied.
      */
     public Hmm(double[] pi, double[][] a, List<? extends Opdf<O>> opdfs)
-    {
-        if (a.length == 0 || pi.length != a.length ||
-        opdfs.size() != a.length)
-        throw new IllegalArgumentException("Wrong parameter");
+	{
+	    if (a.length == 0 || pi.length != a.length ||
+		opdfs.size() != a.length)
+		throw new IllegalArgumentException("Wrong parameter");
 
-        this.pi = pi.clone();
-        this.a = new double[a.length][];
+	    this.pi = pi.clone();
+	    this.a = new double[a.length][];
 
-        for (int i = 0; i < a.length; i++) {
-        if (a[i].length != a.length)
-            throw new IllegalArgumentException("'A' is not a square" +
-                               "matrix");
-        this.a[i] = a[i].clone();
-        }
+	    for (int i = 0; i < a.length; i++) {
+		if (a[i].length != a.length)
+		    throw new IllegalArgumentException("'A' is not a square" +
+						       "matrix");
+		this.a[i] = a[i].clone();
+	    }
 
-        this.opdfs = new ArrayList<Opdf<O>>(opdfs);
-    }
+	    this.opdfs = new ArrayList<Opdf<O>>(opdfs);
+	}
 
 
     /**
@@ -128,18 +131,18 @@ public class Hmm<O extends Observation>
      * @param nbStates The (strictly positive) number of states of the HMM.
      */
     protected Hmm(int nbStates)
-    {
-        if (nbStates <= 0)
-        throw new IllegalArgumentException("Number of states must be " +
-                           "positive");
+	{
+	    if (nbStates <= 0)
+		throw new IllegalArgumentException("Number of states must be " +
+						   "positive");
 
-        pi = new double[nbStates];
-        a = new double[nbStates][nbStates];
-        opdfs = new ArrayList<Opdf<O>>(nbStates);
+	    pi = new double[nbStates];
+	    a = new double[nbStates][nbStates];
+	    opdfs = new ArrayList<Opdf<O>>(nbStates);
 
-        for (int i = 0; i < nbStates; i++)
-        opdfs.add(null);
-    }
+	    for (int i = 0; i < nbStates; i++)
+		opdfs.add(null);
+	}
 
 
     /**
@@ -149,7 +152,7 @@ public class Hmm<O extends Observation>
      */
     public int nbStates()
     {
-    return pi.length;
+	return pi.length;
     }
 
 
@@ -162,7 +165,7 @@ public class Hmm<O extends Observation>
      */
     public double getPi(int stateNb)
     {
-    return pi[stateNb];
+	return pi[stateNb];
     }
 
 
@@ -176,7 +179,7 @@ public class Hmm<O extends Observation>
      */
     public void setPi(int stateNb, double value)
     {
-    pi[stateNb] = value;
+	pi[stateNb] = value;
     }
 
 
@@ -189,7 +192,7 @@ public class Hmm<O extends Observation>
      */
     public Opdf<O> getOpdf(int stateNb)
     {
-    return opdfs.get(stateNb);
+	return opdfs.get(stateNb);
     }
 
 
@@ -202,7 +205,7 @@ public class Hmm<O extends Observation>
      */
     public void setOpdf(int stateNb, Opdf<O> opdf)
     {
-    opdfs.set(stateNb, opdf);
+	opdfs.set(stateNb, opdf);
     }
 
 
@@ -219,7 +222,7 @@ public class Hmm<O extends Observation>
      */
     public double getAij(int i, int j)
     {
-    return a[i][j];
+	return a[i][j];
     }
 
 
@@ -235,7 +238,7 @@ public class Hmm<O extends Observation>
      */
     public void setAij(int i, int j, double value)
     {
-    a[i][j] = value;
+	a[i][j] = value;
     }
 
 
@@ -250,44 +253,47 @@ public class Hmm<O extends Observation>
      * @return An array containing the most likely sequence of state numbers.
      *         This array can be modified.
      */
-    //	public int[] mostLikelyStateSequence(List<? extends O> oseq)
-    //	{
-    //		return (new ViterbiCalculator(oseq, this)).stateSequence();
-    //	}
+    public Tuple<int[],Double> viterbiStateSequence(List<? extends O> oseq)
+    {
+	ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
+	int[] trajectory = vc.stateSequence();
+	double llh = vc.lnProbability();	
+	return (new Tuple<int[],Double>(trajectory, new Double(llh)));
+    }
 
     /**
      * Saves Viterbi calculation to outputfile file.
      * Returns Viterbi log likelihood.
      */
-    public double saveMostLikelyStateSequence(List<? extends O> oseq, String filename) {
-    ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
-    int[] trajectory = vc.stateSequence();
+    // public double saveMostLikelyStateSequence(List<? extends O> oseq, String filename) {
+    // 	ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
+    // 	int[] trajectory = vc.stateSequence();
 
-    String result = "";
-    for (int s : trajectory) {
-        result += Integer.toString(s);
-    }
+    // 	String result = "";
+    // 	for (int s : trajectory) {
+    // 	    result += Integer.toString(s);
+    // 	}
 
-    try {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
-        bw.write(result); bw.newLine();
-        bw.flush();
-        bw.close();
-    }
-    catch (IOException ioe) {
-        System.err.println (ioe);
-        // strict!
-        System.exit(1);
-    }
+    // 	try {
+    // 	    BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+    // 	    bw.write(result); bw.newLine();
+    // 	    bw.flush();
+    // 	    bw.close();
+    // 	}
+    // 	catch (IOException ioe) {
+    // 	    System.err.println (ioe);
+    // 	    // strict!
+    // 	    System.exit(1);
+    // 	}
 
-    // kliu - also output Viterbi log likelihood
-    return (vc.lnProbability());
+    // 	// kliu - also output Viterbi log likelihood
+    // 	return (vc.lnProbability());
 
-    // kliu - switch back to original JAHMM implementation of Viterbi calculation
-    // appears to be a bug with the modified version
-    // ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
-    // vc.printStateSequence(filename);
-    }
+    // 	// kliu - switch back to original JAHMM implementation of Viterbi calculation
+    // 	// appears to be a bug with the modified version
+    // 	// ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
+    // 	// vc.printStateSequence(filename);
+    // }
 
 
     /**
@@ -298,7 +304,7 @@ public class Hmm<O extends Observation>
      */
     public double probability(List<? extends O> oseq)
     {
-    return (new ForwardBackwardCalculator(oseq, this)).probability();
+	return (new ForwardBackwardCalculator(oseq, this)).probability();
     }
 
 
@@ -312,8 +318,8 @@ public class Hmm<O extends Observation>
      */
     public double lnProbability(List<? extends O> oseq)
     {
-    return (new ForwardBackwardScaledCalculator(oseq, this)).
-        lnProbability();
+	return (new ForwardBackwardScaledCalculator(oseq, this)).
+	    lnProbability();
     }
 
 
@@ -329,20 +335,20 @@ public class Hmm<O extends Observation>
      */
     public double probability(List<? extends O> oseq, int[] sseq)
     {
-    if (oseq.size() != sseq.length || oseq.isEmpty())
-        throw new IllegalArgumentException();
+	if (oseq.size() != sseq.length || oseq.isEmpty())
+	    throw new IllegalArgumentException();
 
-    double probability = getPi(sseq[0]);
+	double probability = getPi(sseq[0]);
 
-    Iterator<? extends O> oseqIterator = oseq.iterator();
+	Iterator<? extends O> oseqIterator = oseq.iterator();
 
-    for (int i = 0; i < sseq.length-1; i++)
-        probability *=
-        getOpdf(sseq[i]).probability(oseqIterator.next()) *
-        getAij(sseq[i], sseq[i+1]);
+	for (int i = 0; i < sseq.length-1; i++)
+	    probability *=
+		getOpdf(sseq[i]).probability(oseqIterator.next()) *
+		getAij(sseq[i], sseq[i+1]);
 
-    return probability * getOpdf(sseq[sseq.length-1]).
-        probability(oseq.get(sseq.length-1));
+	return probability * getOpdf(sseq[sseq.length-1]).
+	    probability(oseq.get(sseq.length-1));
     }
 
     /**
@@ -372,21 +378,21 @@ public class Hmm<O extends Observation>
      */
     public String toString(NumberFormat nf)
     {
-    String s = "HMM with " + nbStates() + " state(s)\n";
+	String s = "HMM with " + nbStates() + " state(s)\n";
 
-    for (int i = 0; i < nbStates(); i++) {
-        s += "\nState " + i + "\n";
-        s += "  Pi: " + getPi(i) + "\n";
-        s += "  Aij:";
+	for (int i = 0; i < nbStates(); i++) {
+	    s += "\nState " + i + "\n";
+	    s += "  Pi: " + getPi(i) + "\n";
+	    s += "  Aij:";
 
-        for (int j = 0; j < nbStates(); j++)
-        s += " " + nf.format(getAij(i,j));
-        s += "\n";
+	    for (int j = 0; j < nbStates(); j++)
+		s += " " + nf.format(getAij(i,j));
+	    s += "\n";
 
-        s += "  Opdf: " + ((Opdf<O>) getOpdf(i)).toString(nf) + "\n";
-    }
+	    s += "  Opdf: " + ((Opdf<O>) getOpdf(i)).toString(nf) + "\n";
+	}
 
-    return s;
+	return s;
     }
 
 
@@ -397,25 +403,25 @@ public class Hmm<O extends Observation>
      */
     public String toString()
     {
-    return toString(NumberFormat.getInstance());
+	return toString(NumberFormat.getInstance());
     }
 
 
     public Hmm<O> clone()
-    throws CloneNotSupportedException
+	throws CloneNotSupportedException
     {
-    Hmm<O> hmm = new Hmm<O>(nbStates());
+	Hmm<O> hmm = new Hmm<O>(nbStates());
 
-    hmm.pi = pi.clone();
-    hmm.a = a.clone();
+	hmm.pi = pi.clone();
+	hmm.a = a.clone();
 
-    for (int i = 0; i < a.length; i++)
-        hmm.a[i] = a[i].clone();
+	for (int i = 0; i < a.length; i++)
+	    hmm.a[i] = a[i].clone();
 
-    for (int i = 0; i < hmm.opdfs.size(); i++)
-        hmm.opdfs.set(i, opdfs.get(i).clone());
+	for (int i = 0; i < hmm.opdfs.size(); i++)
+	    hmm.opdfs.set(i, opdfs.get(i).clone());
 
-    return hmm;
+	return hmm;
     }
 
 

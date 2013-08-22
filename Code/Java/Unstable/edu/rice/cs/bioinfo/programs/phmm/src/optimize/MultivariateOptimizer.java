@@ -245,7 +245,10 @@ public class MultivariateOptimizer {
 	    gtrBaseFrequencyParameters.add(new GTRBaseFrequencyParameter(GTRBaseFrequencyParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + Character.toString(gtrSubstitutionModel.getAlphabet().getAlphabet().charAt(i)),
 									 // by convention, first parameter in a constraint-set
 									 // gets set to 1.0
-									 (i == 0) ? 1.0 : currentStationaryProbabilities[i], // is this syntax ok?
+									 //
+									 // need to normalizes into relative weights
+									 // \pi_A weight canonically set to 1.0
+									 (i == 0) ? 1.0 : currentStationaryProbabilities[i] / currentStationaryProbabilities[0], // is this syntax ok?
 									 gtrSubstitutionModel,
 									 i,
 									 gtrBaseFrequencyParameters,

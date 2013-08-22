@@ -8,11 +8,10 @@
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="2699e17a-9b46-4e41-baa7-f8ad9409a080" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/GenealogyBranchLengthParameter.java" afterPath="$PROJECT_DIR$/src/optimize/GenealogyBranchLengthParameter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/autoinput.txt" afterPath="$PROJECT_DIR$/ex/simple2/autoinput.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" afterPath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" afterPath="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/runHmm/runHmm.java" afterPath="$PROJECT_DIR$/src/runHmm/runHmm.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" afterPath="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" afterPath="$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/util/Constants.java" afterPath="$PROJECT_DIR$/src/util/Constants.java" />
     </list>
     <ignored path="phmm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -44,19 +43,6 @@
         <option name="CONDITION" value="&#13;&#13;JAVA" />
         <option name="LOG_MESSAGE" value="&#13;&#13;JAVA" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" line="924" class="optimize.MultivariateOptimizer" package="optimize">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
       <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="1113" class="runHmm.runHmm" package="runHmm">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
@@ -70,7 +56,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java" line="67" class="phylogeny.Felsenstein" package="phylogeny">
+      <breakpoint url="file://$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" line="301" class="optimize.ParentalTreesDecoration" package="optimize">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -141,48 +127,48 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="MultivariateOptimizer.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1107" column="0" selection-start="41949" selection-end="41949" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="runHmm.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1126" column="0" selection-start="39578" selection-end="39578" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Parameter.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="0" selection-start="1301" selection-end="1301" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Felsenstein.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="72" column="0" selection-start="2718" selection-end="2718" vertical-scroll-proportion="0.0">
+            <state line="67" column="0" selection-start="2466" selection-end="2466" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GTRSubstitutionModel.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="GTRSubstitutionModel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.6503497">
+            <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ParentalBranchLengthParameter.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/optimize/ParentalBranchLengthParameter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="17" column="13" selection-start="626" selection-end="626" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ParentalTreesDecoration.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="230" column="0" selection-start="9766" selection-end="9766" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MultivariateOptimizer.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="925" column="0" selection-start="37323" selection-end="37323" vertical-scroll-proportion="0.33333334">
               <folding>
-                <element signature="n#!!doc" expanded="true" />
+                <element signature="imports" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -252,6 +238,7 @@
         <option value="$PROJECT_DIR$/src/optimize/Parameter.java" />
         <option value="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" />
         <option value="$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java" />
+        <option value="$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" />
       </list>
     </option>
   </component>
@@ -285,6 +272,20 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="PackagesPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -439,20 +440,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="phmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Phmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="Scope">
         <subPane subId="Project Files">
           <PATH>
@@ -482,7 +469,7 @@
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="dynamic.classpath" value="false" />
   </component>
-  <component name="RunManager" selected="Application.GTRSubstitutionModel">
+  <component name="RunManager" selected="Application.runHMM">
     <configuration default="false" name="EvoTree" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="phylogeny.EvoTree" />
       <option name="VM_PARAMETERS" value="" />
@@ -787,7 +774,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24928162" sideWeight="0.6707819" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24928162" sideWeight="0.60082304" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -865,19 +852,29 @@
         <state line="29" column="0" selection-start="711" selection-end="711" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1107" column="0" selection-start="41949" selection-end="41949" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1126" column="0" selection-start="39578" selection-end="39578" vertical-scroll-proportion="0.0" />
+        <state line="1126" column="0" selection-start="39461" selection-end="39461" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/optimize/Parameter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="48" column="0" selection-start="1301" selection-end="1301" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="67" column="0" selection-start="2466" selection-end="2466" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/ParentalBranchLengthParameter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="13" selection-start="626" selection-end="626" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
@@ -905,18 +902,18 @@
         <state line="56" column="0" selection-start="1414" selection-end="1414" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
+    <entry file="file://$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="72" column="0" selection-start="2718" selection-end="2718" vertical-scroll-proportion="0.0">
+        <state line="230" column="0" selection-start="9766" selection-end="9766" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
+    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.6503497">
+        <state line="925" column="0" selection-start="37323" selection-end="37323" vertical-scroll-proportion="0.33333334">
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>

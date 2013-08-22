@@ -178,7 +178,7 @@ public class ParentalTreesDecoration {
 
 		String sid = st.nextToken();
 		double value = Double.parseDouble(st.nextToken());
-		ParameterConstraintSet slp = new ParameterConstraintSet(sid, value);
+		ParameterConstraintSet slp = new ParameterConstraintSet(ParameterConstraintSet.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + sid, value);
 		
 		// Disallow duplicate length-parameter-ids in input file.
 		if (setLpMap.containsKey(slp)) {
@@ -187,6 +187,8 @@ public class ParentalTreesDecoration {
 
 		while (st.hasMoreTokens()) {
 		    String lid = st.nextToken();
+		    // bleh - need to append class name prefix due to Parameter object naming convention
+		    lid = ParentalBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + lid;
 		    if (!lidLpMap.containsKey(lid)) {
 			// barf
 			throw (new RuntimeException("ERROR: invalid lid " + lid + " in file " + filename + "."));

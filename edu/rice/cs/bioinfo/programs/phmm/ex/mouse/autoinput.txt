@@ -4,6 +4,7 @@
 /home/kl23/code/phmm-repository/phmm/ex/mouse/parental.tree
 /home/kl23/code/phmm-repository/phmm/ex/mouse/gene.trees
 /home/kl23/code/phmm-repository/phmm/ex/mouse/allele-to-species.mapping
+/home/kl23/code/phmm-repository/phmm/ex/mouse
 0.1
 0.964011 0.192217 0.270592 0.0806232 0.174283
 0.1953 0.3077 0.3008 0.1962
@@ -15,6 +16,7 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameters
 /home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameter-constraint-sets
+
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.model.parameters

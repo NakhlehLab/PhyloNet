@@ -49,6 +49,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple3;
 
 public class runHmm {
 
@@ -218,54 +220,60 @@ public class runHmm {
 	    option = operate(in);
 	    switch(option) {
 	    case 0:
-		    // RUN VITERBI
-			System.out.print("\n");
-			// get name of output file
-			System.out.println("Path to your output file: ");
-			String outputfile = in.readLine();
+		// RUN VITERBI
+		System.out.print("\n");
+		// get name of output file
+		System.out.println("Path to your output file: ");
+		String outputfile = in.readLine();
 					
-			// kliu - only Viterbi algorithm appears to be implemented using Jahmm
-			// don't seem to have forward/backward implementation yet
+		// kliu - only Viterbi algorithm appears to be implemented using Jahmm
+		// don't seem to have forward/backward implementation yet
 
-			// Allow users to read in New Sequence Observation or re-use a
-            // previously read in Sequence
-			ArrayList<ObservationMap> obsSeq;
-			int seqChoice = sequenceChoice(in);
-            if (seqChoice == 1) {
-                obsSeq = getObs(in);
-            } else {
-                obsSeq = fParser.getObs();
-            }
+		// Allow users to read in New Sequence Observation or re-use a
+		// previously read in Sequence
+		ArrayList<ObservationMap> obsSeq;
+		int seqChoice = sequenceChoice(in);
+		if (seqChoice == 1) {
+		    obsSeq = getObs(in);
+		} else {
+		    obsSeq = fParser.getObs();
+		}
 
+		Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSeq);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outputfile));
+		double viterbiLLH = viterbiResult.Item2;
+		for (int index : viterbiResult.Item1) {
+		    bw.write(hiddenStates.get(index).getName()); bw.newLine();
+		}
+		bw.flush();
+		bw.close();
 
-			double viterbiLLH = myhmm.saveMostLikelyStateSequence(obsSeq, outputfile);
+		System.out.println ("Input HMM Viterbi log likelihood: |" + viterbiLLH + "|");
+
+		System.out.println ("Computing input HMM log likelihood for input sequences... ");
+		double llh = myhmm.lnProbability(obsSeq);
+		System.out.println ("Computing input HMM log likelihood for input sequences DONE.");
 			
-			System.out.println ("Input HMM Viterbi log likelihood: |" + viterbiLLH + "|");
-
-			System.out.println ("Computing input HMM log likelihood for input sequences... ");
-			double llh = myhmm.lnProbability(obsSeq);
-			System.out.println ("Computing input HMM log likelihood for input sequences DONE.");
-			
-			System.out.println ("Input HMM log likelihood: |" + llh + "|");
+		System.out.println ("Input HMM log likelihood: |" + llh + "|");
 	
-			break;
+		break;
 	    case 1:
-		    // RUN BAUM WELCH
+		// RUN BAUM WELCH
 	        // Modifies the current Hmm;
 
 	        System.out.println("\n");
 
-			// Testing purposes
-//			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
-//			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
-//			for (int i = 0; i < hiddenStates.size(); i++) {
-//				System.out.println("State : " + i);
-//				System.out.println("Opdf : {");
-//				for (int j = 0; j < oSeq.size(); j++) {
-//					System.out.print(oSeq.get(j) + ":" + myhmm.getOpdf(i).probability(oSeq.get(j)) + " , ");
-//				}
-//				System.out.print("}\n\n");
-//			}
+		// Testing purposes
+		//			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
+		//			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
+		//			for (int i = 0; i < hiddenStates.size(); i++) {
+		//				System.out.println("State : " + i);
+		//				System.out.println("Opdf : {");
+		//				for (int j = 0; j < oSeq.size(); j++) {
+		//					System.out.print(oSeq.get(j) + ":" + myhmm.getOpdf(i).probability(oSeq.get(j)) + " , ");
+		//				}
+		//				System.out.print("}\n\n");
+		//			}
 			
 	    	// END TEST PURPOSES
 
@@ -279,15 +287,15 @@ public class runHmm {
 	            obsSequence = fParser.getObs();
 	        }
 
-			BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
+		BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
 
-			Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm, obsSequence, 9);
-			myhmm = learnedhmm;
-			learnedhmm = null; // for garbage collection
-			System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");
-			System.out.println(myhmm + "\n\n");
+		Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm, obsSequence, 9);
+		myhmm = learnedhmm;
+		learnedhmm = null; // for garbage collection
+		System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");
+		System.out.println(myhmm + "\n\n");
 			
-			break;
+		break;
 		
 		
 	    case 2:
@@ -296,69 +304,69 @@ public class runHmm {
 
 	        System.out.println("\n");
 	        // Allow users to read in New Sequence Observation or re-use a
-            // previously read in Sequence
-            int seqChoice3 = sequenceChoice(in);
-            ArrayList<ObservationMap> seqObs;
-            if (seqChoice3 == 1) {
-                seqObs = getObs(in);
-            } else {
-                seqObs = fParser.getObs();
-            }
+		// previously read in Sequence
+		int seqChoice3 = sequenceChoice(in);
+		ArrayList<ObservationMap> seqObs;
+		if (seqChoice3 == 1) {
+		    seqObs = getObs(in);
+		} else {
+		    seqObs = fParser.getObs();
+		}
 
-            //Get the max and mins and g samples of each parameter
-            try {
-                System.out.println("Input the number of samples for tree branch lengths: ");
-                int gBranchIn = Integer.parseInt(in.readLine());
+		//Get the max and mins and g samples of each parameter
+		try {
+		    System.out.println("Input the number of samples for tree branch lengths: ");
+		    int gBranchIn = Integer.parseInt(in.readLine());
 
-                System.out.println("Input the number of samples for Recombination Frequency: ");
-                int gRecombinationIn = Integer.parseInt(in.readLine());
+		    System.out.println("Input the number of samples for Recombination Frequency: ");
+		    int gRecombinationIn = Integer.parseInt(in.readLine());
 
-                System.out.println("Input the number of samples for Hybridization Frequency: ");
-                int gHybridizationIn = Integer.parseInt(in.readLine());
+		    System.out.println("Input the number of samples for Hybridization Frequency: ");
+		    int gHybridizationIn = Integer.parseInt(in.readLine());
 
-                System.out.println("Input the number of samples for Felsenstein Base Substitution Rate: ");
-                int gBaseSubIn = Integer.parseInt(in.readLine());
+		    System.out.println("Input the number of samples for Felsenstein Base Substitution Rate: ");
+		    int gBaseSubIn = Integer.parseInt(in.readLine());
 
-                System.out.println("Input the minimum double value for all tree branch lengths: ");
-                double branchMinIn = Double.parseDouble(in.readLine());
+		    System.out.println("Input the minimum double value for all tree branch lengths: ");
+		    double branchMinIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the maximum double value for all tree branch lengths: ");
-                double branchMaxIn = Double.parseDouble(in.readLine());
+		    System.out.println("Input the maximum double value for all tree branch lengths: ");
+		    double branchMaxIn = Double.parseDouble(in.readLine());
 
-                // System.out.println("Input the minimum double value for Recombination frequency: ");
-                // double recombinationMinIn = Double.parseDouble(in.readLine());
+		    // System.out.println("Input the minimum double value for Recombination frequency: ");
+		    // double recombinationMinIn = Double.parseDouble(in.readLine());
 
-                // System.out.println("Input the maximum double value for Recombination frequency: ");
-                // double recombinationMaxIn = Double.parseDouble(in.readLine());
+		    // System.out.println("Input the maximum double value for Recombination frequency: ");
+		    // double recombinationMaxIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the minimum double value for Hybridization frequency: ");
-                double hybridizationMinIn = Double.parseDouble(in.readLine());
+		    System.out.println("Input the minimum double value for Hybridization frequency: ");
+		    double hybridizationMinIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the maximum double value for Hybridization frequency: ");
-                double hybridizationMaxIn = Double.parseDouble(in.readLine());
+		    System.out.println("Input the maximum double value for Hybridization frequency: ");
+		    double hybridizationMaxIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the minimum double value for Felsenstein base substitution rate: ");
-                double baseSubMinIn = Double.parseDouble(in.readLine());
+		    System.out.println("Input the minimum double value for Felsenstein base substitution rate: ");
+		    double baseSubMinIn = Double.parseDouble(in.readLine());
 
-                System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
-                double baseSubMaxIn = Double.parseDouble(in.readLine());
+		    System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
+		    double baseSubMaxIn = Double.parseDouble(in.readLine());
 
-		// gRecombinationIn,
-		// recombinationMinIn, recombinationMaxIn, 
-                GridSearchAlgorithm gsa =
+		    // gRecombinationIn,
+		    // recombinationMinIn, recombinationMaxIn, 
+		    GridSearchAlgorithm gsa =
                         new GridSearchAlgorithm(gBranchIn, 
-                        gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
-                        hybridizationMinIn,
+						gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
+						hybridizationMinIn,
 						hybridizationMaxIn, baseSubMinIn, baseSubMaxIn, this);
 
-                gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
-                        hiddenStates, parentalTreeClasses);
+		    gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
+				      hiddenStates, parentalTreeClasses);
 
-            }
-            catch (Exception e) {
-                System.err.println("Input error : " + e);
-                break;
-            }
+		}
+		catch (Exception e) {
+		    System.err.println("Input error : " + e);
+		    break;
+		}
 
 	        break;
 	    case 3:
@@ -367,12 +375,12 @@ public class runHmm {
 		break;
 	    case 4:
 	        // EXIT
-	            keepOperate = false;
-	            System.exit(0);
-	            break;
+		keepOperate = false;
+		System.exit(0);
+		break;
 	    default:
-			keepOperate = false;
-			System.exit(-1);
+		keepOperate = false;
+		System.exit(-1);
 	    }
 	}
     }
@@ -434,7 +442,14 @@ public class runHmm {
 	    System.out.println ("Optimizing PhyloNet-HMM parameters DONE. ");
 
 	    System.out.println ("Saving Viterbi-optimal hidden state sequence... "); 
-	    double viterbiLLH = myhmm.saveMostLikelyStateSequence(obsSequence, viterbiHiddenStateSequenceFilename);
+	    Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSequence);
+	    BufferedWriter bw = new BufferedWriter(new FileWriter(viterbiHiddenStateSequenceFilename));
+	    double viterbiLLH = viterbiResult.Item2;
+	    for (int index : viterbiResult.Item1) {
+		bw.write(hiddenStates.get(index).getName()); bw.newLine();
+	    }
+	    bw.flush();
+	    bw.close();
 	    System.out.println ("Saving Viterbi-optimal hidden state sequence DONE."); 		
 
 	    System.out.println ("Computing final model log likelihood... ");
@@ -445,7 +460,7 @@ public class runHmm {
 	    System.out.println ("Optimized model's Viterbi-optimal log likelihood: |" + viterbiLLH + "|");
 
 	    System.out.println ("Saving log likelihoods... ");
-	    BufferedWriter bw = new BufferedWriter(new FileWriter(modelLikelihoodsFilename));
+	    bw = new BufferedWriter(new FileWriter(modelLikelihoodsFilename));
 	    bw.write(Double.toString(finalLLH)); bw.newLine();
 	    bw.write(Double.toString(viterbiLLH)); bw.newLine();
 	    bw.flush();
@@ -708,17 +723,17 @@ public class runHmm {
      * @return the option
      */
     protected int sequenceChoice(BufferedReader in) {
-    boolean init = true;
-    int option = -1;
-    while (init) {
-        System.out.println("Which observation sequence would you like to use?");
-        System.out.println("0) Reuse previously read sequence.");
-        System.out.println("1) Load a new observation sequence.");
-        System.out.println("Choose an option: ");
-        option = getOption(2, in);
-        if (option != -1) init = false;
-    }
-    return option;
+	boolean init = true;
+	int option = -1;
+	while (init) {
+	    System.out.println("Which observation sequence would you like to use?");
+	    System.out.println("0) Reuse previously read sequence.");
+	    System.out.println("1) Load a new observation sequence.");
+	    System.out.println("Choose an option: ");
+	    option = getOption(2, in);
+	    if (option != -1) init = false;
+	}
+	return option;
     }
 
 
@@ -1028,7 +1043,7 @@ public class runHmm {
 	System.out.println(myhmm);
     }
 
-//(int) Math.pow(fParser.getAlphabet().size(),fParser.getNumSeq()
+    //(int) Math.pow(fParser.getAlphabet().size(),fParser.getNumSeq()
 	
     /**
      * Read and parse basic info file
@@ -1036,12 +1051,12 @@ public class runHmm {
      * @throws Exception 
      */
     protected void buildParser() throws Exception {
-		if(basicFileName == null) {
-			throw new ParserFileException("Cannot read Basic Info File!");
-		}
-	    System.out.println("\nNow reading and saving Basic Info for parser . . .");
-	    fParser = new Parser(basicFileName);
-	    fParser.setTrees(hiddenStates);	
+	if(basicFileName == null) {
+	    throw new ParserFileException("Cannot read Basic Info File!");
+	}
+	System.out.println("\nNow reading and saving Basic Info for parser . . .");
+	fParser = new Parser(basicFileName);
+	fParser.setTrees(hiddenStates);	
     }
 	
     
@@ -1070,11 +1085,11 @@ public class runHmm {
 	}
 
     	//Testing Purposes//
-//    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
-//    	Set<String> keyset = amap.keySet();
-//    	for (String i : keyset) {
-//    		System.out.println(i + " : " + amap.get(i));
-//    	}
+	//    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
+	//    	Set<String> keyset = amap.keySet();
+	//    	for (String i : keyset) {
+	//    		System.out.println(i + " : " + amap.get(i));
+	//    	}
     	// Testing purposes//
     }
 
@@ -1244,7 +1259,7 @@ public class runHmm {
     }
 
     protected void readSubstitutionModelParameters (BufferedReader br) throws Exception {
-	System.out.println("Input substitution model rates in format <AG> <AC> <AT> <GC> <GT>: ");
+	System.out.println("Input non-zero substitution model rates in format <AG> <AC> <AT> <GC> <GT>: ");
 	String line = br.readLine();
 	StringTokenizer st = new StringTokenizer(line);
 	// // Let GTRSubstitutionModel take care of checking number of input rates.
@@ -1258,7 +1273,13 @@ public class runHmm {
 	    i++;
 	}
 	
-	System.out.println("Input substitution model base frequencies in format <A> <G> <C> <T>: ");
+	for (double rate : rates) {
+	    if (rate <= 0.0) {
+		throw (new IOException("ERROR: substitution model rates must be strictly positive."));
+	    }
+	}
+
+	System.out.println("Input non-zero substitution model base frequencies in format <A> <G> <C> <T>: ");
 	line = br.readLine();
 	st = new StringTokenizer(line);
 	if (st.countTokens() != NucleotideAlphabet.getClassInstance().getAlphabet().length()) {
@@ -1269,6 +1290,12 @@ public class runHmm {
 	while (st.hasMoreTokens()) {
 	    baseFrequencies[i] = Double.parseDouble(st.nextToken());
 	    i++;
+	}
+
+	for (double baseFrequency : baseFrequencies) {
+	    if (baseFrequency <= 0.0) {
+		throw (new IOException("ERROR: substitution model base frequencies must be strictly positive."));
+	    }
 	}
 
 	gtrSubstitutionModel = new GTRSubstitutionModel();
@@ -1285,140 +1312,140 @@ public class runHmm {
 
 
 
-    // /**
-    //  * Get Initial Pi Probabilities array
-    //  * @throws IOException - rare
-    //  */
-    // protected static void getPiInfo(BufferedReader in) throws IOException {
-    // 	boolean getPi = true;
+// /**
+//  * Get Initial Pi Probabilities array
+//  * @throws IOException - rare
+//  */
+// protected static void getPiInfo(BufferedReader in) throws IOException {
+// 	boolean getPi = true;
 		
-    // 	while (getPi) {
+// 	while (getPi) {
 			
-    // 	    // Getting pi
-    // 	    System.out.println("\nThe Pi or Initial Probabilities. \n(Note: Make sure pi probabilities correspond to the same order of trees in the trees input file.) \n Sample input for 4 trees/states: .2 .3 .1 .4");
-    // 	    System.out.println("Input Initial Pi probabilities:");
-    // 	    String[] piString;
-    // 	    piString = in.readLine().split(" ");
+// 	    // Getting pi
+// 	    System.out.println("\nThe Pi or Initial Probabilities. \n(Note: Make sure pi probabilities correspond to the same order of trees in the trees input file.) \n Sample input for 4 trees/states: .2 .3 .1 .4");
+// 	    System.out.println("Input Initial Pi probabilities:");
+// 	    String[] piString;
+// 	    piString = in.readLine().split(" ");
 
 				
-    // 	    // Error Check: check to see if number of states and number of pi probabilities are the same
-    // 	    if (numStates == piString.length) {
-    // 		getPi = false;
+// 	    // Error Check: check to see if number of states and number of pi probabilities are the same
+// 	    if (numStates == piString.length) {
+// 		getPi = false;
 					
-    // 		// make pi probabilities array
-    // 		pi = new double[numStates];
-    // 		double sum = 0;
-    // 		for (int i=0; i < piString.length; i++) {
-    // 		    try {
-    // 			pi[i] = Double.parseDouble(piString[i]);
-    // 			sum += pi[i];
-    // 		    } 
-    // 		    catch (NumberFormatException e) { 
-    // 			getPi = true;
-    // 			System.out.println("Number format error: Cannot convert inputed pi number : " + piString[i] + " to a double."); 
-    // 		    }
-    // 		}
-    // 		if (Math.abs(1.0 - sum) > tolerated_error) {
-    // 		    System.out.println("Error: the sum of the pi probabilities did not sum up to 1.0");
-    // 		    getPi = true;
-    // 		}
+// 		// make pi probabilities array
+// 		pi = new double[numStates];
+// 		double sum = 0;
+// 		for (int i=0; i < piString.length; i++) {
+// 		    try {
+// 			pi[i] = Double.parseDouble(piString[i]);
+// 			sum += pi[i];
+// 		    } 
+// 		    catch (NumberFormatException e) { 
+// 			getPi = true;
+// 			System.out.println("Number format error: Cannot convert inputed pi number : " + piString[i] + " to a double."); 
+// 		    }
+// 		}
+// 		if (Math.abs(1.0 - sum) > tolerated_error) {
+// 		    System.out.println("Error: the sum of the pi probabilities did not sum up to 1.0");
+// 		    getPi = true;
+// 		}
 					
-    // 	    } else System.out.println("Error: number of pi probability inputs did not match number of states! ");
+// 	    } else System.out.println("Error: number of pi probability inputs did not match number of states! ");
 
-    // 	}
-    // }
-
-
+// 	}
+// }
 
 
-    // /**
-    //  * Get State Transition Matrix Aij
-    //  * @throws IOException - rare
-    //  */
-    // protected static void getAij(BufferedReader in) throws IOException {
-    // 	boolean getA = true;
-    // 	boolean getChoice = true;
+
+
+// /**
+//  * Get State Transition Matrix Aij
+//  * @throws IOException - rare
+//  */
+// protected static void getAij(BufferedReader in) throws IOException {
+// 	boolean getA = true;
+// 	boolean getChoice = true;
 		
-    // 	while (getA) {			
-    // 	    // Getting transition matrix A
-    // 	    System.out.println("\nThe Transition of States/Trees Matrix Aij. \n(Note: Make sure the order in the matrix correspond to the same order of trees in the given tree input file.");
-    // 	    while (getChoice) {
-    // 		System.out.println("Choose an option: \n(a) Read transition matrix by file.\n(b) Input transition matrix manually.");
-    // 		String choice = in.readLine().toLowerCase();
-    // 		if (choice.equals("a")) {
-    // 		    try {
-    // 			System.out.println("Please see README for .matrix file format.");
-    // 			System.out.println("Input .matrix file path name:");
-    // 			String filename = in.readLine();
-    // 			BufferedReader filebr = new BufferedReader(new FileReader(filename));
-    // 			aij = readAij(numStates, filebr);
-    // 			filebr.close();
-    // 			getChoice = false;
-    // 		    } catch (Exception e) {
-    // 			System.out.println(e);
-    // 			System.out.println("Please try again. \n");
-    // 		    }
-    // 		}
-    // 		else if (choice.equals("b")) {
-    // 		    try {
-    // 			System.out.println("Example transition for 3 trees (inputted 3 times): \n   .3 .2 .5 \n   .2 .4 .4 \n   .5 .4 .1 \n");
-    // 			System.out.println("Input transition Aij matrix:");
-    // 			aij = readAij(numStates, in);
-    // 			getChoice = false;
-    // 		    } catch (Exception e) {
-    // 			System.out.println(e);
-    // 			System.out.println("Please try again.");
-    // 		    }
-    // 		}
-    // 	    }
-    // 	    getA = false;
-    // 	}
-    // }
+// 	while (getA) {			
+// 	    // Getting transition matrix A
+// 	    System.out.println("\nThe Transition of States/Trees Matrix Aij. \n(Note: Make sure the order in the matrix correspond to the same order of trees in the given tree input file.");
+// 	    while (getChoice) {
+// 		System.out.println("Choose an option: \n(a) Read transition matrix by file.\n(b) Input transition matrix manually.");
+// 		String choice = in.readLine().toLowerCase();
+// 		if (choice.equals("a")) {
+// 		    try {
+// 			System.out.println("Please see README for .matrix file format.");
+// 			System.out.println("Input .matrix file path name:");
+// 			String filename = in.readLine();
+// 			BufferedReader filebr = new BufferedReader(new FileReader(filename));
+// 			aij = readAij(numStates, filebr);
+// 			filebr.close();
+// 			getChoice = false;
+// 		    } catch (Exception e) {
+// 			System.out.println(e);
+// 			System.out.println("Please try again. \n");
+// 		    }
+// 		}
+// 		else if (choice.equals("b")) {
+// 		    try {
+// 			System.out.println("Example transition for 3 trees (inputted 3 times): \n   .3 .2 .5 \n   .2 .4 .4 \n   .5 .4 .1 \n");
+// 			System.out.println("Input transition Aij matrix:");
+// 			aij = readAij(numStates, in);
+// 			getChoice = false;
+// 		    } catch (Exception e) {
+// 			System.out.println(e);
+// 			System.out.println("Please try again.");
+// 		    }
+// 		}
+// 	    }
+// 	    getA = false;
+// 	}
+// }
 	
 	
 	
 	
 	
 	
-    // /**
-    //  * Read in Transition matrix
-    //  * @param numStates - the number of states/trees
-    //  * @param br - a buffered reader
-    //  * @returns a double[][] transition of states/trees matrix probabilities
-    //  * @throws Exception - Either an IO exception if an IO error occurred or a ParserFileException that signals an incorrect matrix input.
-    //  */
-    // public static double[][] readAij(int numStates, BufferedReader br) throws Exception {
-    // 	String[] row;
-    // 	double[] newRow;
-    // 	double[][] aij = new double[numStates][numStates];
+// /**
+//  * Read in Transition matrix
+//  * @param numStates - the number of states/trees
+//  * @param br - a buffered reader
+//  * @returns a double[][] transition of states/trees matrix probabilities
+//  * @throws Exception - Either an IO exception if an IO error occurred or a ParserFileException that signals an incorrect matrix input.
+//  */
+// public static double[][] readAij(int numStates, BufferedReader br) throws Exception {
+// 	String[] row;
+// 	double[] newRow;
+// 	double[][] aij = new double[numStates][numStates];
 		
-    // 	for (int i = 0; i < numStates; i++) {
-    // 	    newRow = new double[numStates];
-    // 	    row = br.readLine().split(" ");
-    // 	    double sum = 0;
-    // 	    if (row.length != numStates) throw new ParserFileException("Error: Number of entries in matrix is incorrect!");
-    // 	    for (int j = 0; j < row.length; j++) {
-    // 		newRow[j] = Double.parseDouble(row[j]);
-    // 		sum += newRow[j];
-    // 	    }
+// 	for (int i = 0; i < numStates; i++) {
+// 	    newRow = new double[numStates];
+// 	    row = br.readLine().split(" ");
+// 	    double sum = 0;
+// 	    if (row.length != numStates) throw new ParserFileException("Error: Number of entries in matrix is incorrect!");
+// 	    for (int j = 0; j < row.length; j++) {
+// 		newRow[j] = Double.parseDouble(row[j]);
+// 		sum += newRow[j];
+// 	    }
 			
-    // 	    // Check to make sure the sum of the entire row sums up to 1.0
-    // 	    if (Math.abs(1.0 - sum) > tolerated_error) {
-    // 		throw new ParserFileException("Error: the sum of row " + i + " did not sum up to 1.0.");
-    // 	    }
+// 	    // Check to make sure the sum of the entire row sums up to 1.0
+// 	    if (Math.abs(1.0 - sum) > tolerated_error) {
+// 		throw new ParserFileException("Error: the sum of row " + i + " did not sum up to 1.0.");
+// 	    }
 			
-    // 	    aij[i] = newRow;
-    // 	}
+// 	    aij[i] = newRow;
+// 	}
 		
-    // 	// Check to make sure the sum of each column sums up to 1.0
-    // 	for (int j = 0; j < numStates; j++) {
-    // 	    double sum = 0;
-    // 	    for (int i = 0; i < numStates; i++) {
-    // 		sum+= aij[i][j];
-    // 	    }
-    // 	    if (Math.abs(1.0 - sum) > tolerated_error) {
-    // 		throw new ParserFileException("Error: the sum of col " + j + " did not sum up to 1.0.");
-    // 	    }
-    // 	}
-    // 	return aij;
-    // }
+// 	// Check to make sure the sum of each column sums up to 1.0
+// 	for (int j = 0; j < numStates; j++) {
+// 	    double sum = 0;
+// 	    for (int i = 0; i < numStates; i++) {
+// 		sum+= aij[i][j];
+// 	    }
+// 	    if (Math.abs(1.0 - sum) > tolerated_error) {
+// 		throw new ParserFileException("Error: the sum of col " + j + " did not sum up to 1.0.");
+// 	    }
+// 	}
+// 	return aij;
+// }

@@ -113,8 +113,9 @@ public class MultivariateOptimizer {
     public static final String IDENTIFIER_SET_BRANCH_LENGTH_CONSTRAINTS = "-CONSTRAINT-SET-";
 
     public static final String CHECKPOINT_PARAMETER_STATE_FILENAME = "CHECKPOINT-PARAMETER-STATE";
+    public static final String CHECKPOINT_LIKELIHOOD_FILENAME = "CHECKPOINT-LIKELIHOOD";
     public static final String CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER = "\t";
-    public static final String CHECKPOINT_LATEST_SUFFIX = "LATEST";
+    //public static final String CHECKPOINT_LATEST_SUFFIX = "LATEST";
 
     public static final String FILENAME_SUFFIX_DELIMITER = ".";
 
@@ -228,7 +229,9 @@ public class MultivariateOptimizer {
 	// do restore if necessary
 	if ((inputRestoreCheckpointFilename != null) &&
 	    (!inputRestoreCheckpointFilename.trim().equals(""))) {
+	    if (Constants.WARNLEVEL > 1) { System.out.println ("Restoring from checkpoint file " + inputRestoreCheckpointFilename + "."); }
 	    restoreParameterValuesFromCheckpointWithNoUpdate(inputRestoreCheckpointFilename);
+	    if (Constants.WARNLEVEL > 1) { System.out.println ("Restoring from checkpoint file " + inputRestoreCheckpointFilename + " DONE."); }
 	}
 
 	// finally do update
@@ -319,6 +322,7 @@ public class MultivariateOptimizer {
 	parameters.addAll(gtrRateParameters);
 	parameters.addAll(gtrBaseFrequencyParameters);
 
+	parameterNameMap = new BijectiveHashtable<String,Parameter>();
 	for (Parameter parameter : parameters) {
 	    // strict!
 	    if (parameterNameMap.containsKey(parameter.getName())) {
@@ -790,7 +794,7 @@ public class MultivariateOptimizer {
 	    currLogLikelihood = roundLogLikelihood;
 
 	    // kliu - cache state to disk also
-	    writeCheckpoint(pass, round);
+	    writeCheckpoint(pass, round, currLogLikelihood);
 
 	    if (Constants.WARNLEVEL > 1) { System.out.println ("Processing round " + round + " DONE."); }
 
@@ -1017,16 +1021,28 @@ public class MultivariateOptimizer {
      *
      * Also need to cache pass/round counts. 
      */
-    protected void writeCheckpoint (int pass, int round) {
+    protected void writeCheckpoint (int pass, int round, double likelihood) {
 	try {
 	    // write out Parameter-based state
-	    BufferedWriter bw = new BufferedWriter(new FileWriter(runHmmObject.getWorkingDirectory() + File.pathSeparator + CHECKPOINT_PARAMETER_STATE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round)));
+	    String filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_PARAMETER_STATE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
+	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + "."); }
+	    BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 	    // safe due to guards in createNameMapOfAllParameters()
 	    for (Parameter parameter : parameterNameMap.values()) {
 		bw.write(parameter.getName() + CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER + parameter.getValue()); bw.newLine();
 	    }
 	    bw.flush();
 	    bw.close();
+	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + " DONE."); }
+
+	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_LIKELIHOOD_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
+	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + "."); }
+	    bw = new BufferedWriter(new FileWriter(filename));
+	    // safe due to guards in createNameMapOfAllParameters()
+	    bw.write(Double.toString(likelihood)); bw.newLine();
+	    bw.flush();
+	    bw.close();
+	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + " DONE."); }
 	}
 	catch (IOException ioe) {
 	    System.err.println (ioe);

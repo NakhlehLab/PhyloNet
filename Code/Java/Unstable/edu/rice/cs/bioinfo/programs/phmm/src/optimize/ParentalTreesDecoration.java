@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.File;
 import util.Constants;
 import runHmm.runHmm;
+import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
@@ -253,7 +254,7 @@ public class ParentalTreesDecoration {
 		}
 		String lid = st.nextToken();
 		double value = Double.parseDouble(st.nextToken());
-		ParentalBranchLengthParameter lp = new ParentalBranchLengthParameter(lid, 
+		ParentalBranchLengthParameter lp = new ParentalBranchLengthParameter(ParentalBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + lid, 
 										     value,
 										     runHmmObject,
 										     // meh

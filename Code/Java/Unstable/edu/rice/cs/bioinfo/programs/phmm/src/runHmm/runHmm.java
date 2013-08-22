@@ -60,6 +60,8 @@ public class runHmm {
     protected String geneGenealogiesFileName = null;			/* Gene genealogies file name */
     protected String alleleSpeciesFileName = null;				/* Allele Species Mapping file name */
     
+    // kliu - also need an empty temporary working directory
+    protected String workingDirectory;
 
     
     // information created/built
@@ -120,6 +122,10 @@ public class runHmm {
 	}
     }
 
+    public String getWorkingDirectory() {
+	return (workingDirectory);
+    }
+
     /**
      * @throws Exception
      * 		- will only throw exceptions when basic Info file or Tree file is unable to be parsed correctly
@@ -158,6 +164,9 @@ public class runHmm {
 	    
 	    System.out.println("\nInput the Alleles to Species Mapping file path name: \n (note: see README for file format \n");
 	    alleleSpeciesFileName = in.readLine();
+
+	    System.out.println("Empty working directory: ");
+	    workingDirectory = in.readLine();
 
 	    readTransitionProbabilityParameters(in);
 
@@ -378,11 +387,13 @@ public class runHmm {
 	    else {
 		obsSequence = fParser.getObs();
 	    }
-
+	    
 	    System.out.println("Input length-parameter-to-edge map filename: ");
 	    String inputLengthParameterToEdgeMapFilename = in.readLine();
 	    System.out.println("Input length-parameter-set-constraints filename: ");
 	    String inputLengthParameterSetConstraintsFilename = in.readLine();
+	    System.out.println("Input checkpoint file to restore from, or empty line for no restore: ");
+	    String inputRestoreCheckpointFilename = in.readLine();
 	    System.out.println("Output Viterbi-optimal hidden state sequence file: ");
 	    String viterbiHiddenStateSequenceFilename = in.readLine();
 	    System.out.println("Output model likelihoods file: ");
@@ -414,7 +425,8 @@ public class runHmm {
 										    enableParentalTreeOptimizationFlag,
 										    enableGeneGenealogyOptimizationFlag,
 										    enableSwitchingFrequencyOptimizationFlag,
-										    enableSubstitutionModelOptimizationFlag
+										    enableSubstitutionModelOptimizationFlag,
+										    inputRestoreCheckpointFilename
 										    );
 
 	    System.out.println ("Optimizing PhyloNet-HMM parameters... ");

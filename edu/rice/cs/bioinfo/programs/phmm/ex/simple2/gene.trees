@@ -1,8 +1,3 @@
-#NEXUS
-begin trees;
-tree gtree1 = (gorilla:3,(human:1,chimp:2)anc:4)root;
-tree gtree2 = (chimp:3,(human:1,gorilla:2)anc:5)root;
-tree gtree3 = (human:6,(chimp:7,gorilla:8)anc:9)root;
-end;
-
-
+gtree1 (gorilla:3,(human:1,chimp:2)anc:4)root;
+gtree2 (chimp:3,(human:1,gorilla:2)anc:5)root;
+gtree3 (human:6,(chimp:7,gorilla:8)anc:9)root;

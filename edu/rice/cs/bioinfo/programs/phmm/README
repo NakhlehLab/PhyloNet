@@ -26,53 +26,25 @@ File Formats
 		Human Chimp Gorilla\n
 
 
--> Tree File
-		This .tree file contains all the possible trees or states needed for the 
-		Hmm.
+- Parental trees file
+  - Format: 
+    <tree 0 name> <tree 0 in Newick>
+    <tree 1 name> <tree 1 in Newick>
+    ...
+    <tree t_p name> <tree t_p in Newick>
 
-		name format: treefilename.tree
+  - Duplicate tree IDs are not allowed.
+  - Parental tree IDs cannot appear in the gene genealogies file.
 
-		Format of trees should be in NEWICK format
-		The File itself is in NEXUS format.
-		
-		Format:
-		line 1) #NEXUS
-		line 2) begin trees;
-		line 3) tree nameOfTree1 = Tree in newick format
-		line 4) tree nameOfTree2 = Tree in newick format
-		line 5) tree nameOfTree3 = Tree in newick format
-				.
-				.
-				.
-				.
-		line *) end;
+- Gene genealogies file
+  - Format: 
+    <tree 0 name> <tree 0 in Newick>
+    <tree 1 name> <tree 1 in Newick>
+    ...
+    <tree t_p name> <tree t_p in Newick>
 
-		Example:
-		#NEXUS
-		begin trees;
-		tree one = (human:10,(chimp:20, gorilla:5):2);
-		tree two  = (chimp:10,(human:20, gorilla:5):2);
-		tree three = (gorilla:10,(human:20, chimp:5):2);
-		end;
-
-		Important NOTES: The order of the trees will be used as a mapping to 
-						states in the JAHMM implementation. ie. the first tree
-						will correspond to State 0 in HMM.
-
-
--> Matrix File
-		This .matrix file will contain the state (trees) transition
-		probabilities. Once again, the order of the trees given in the .tree 
-		file will be used as the mapping and indexing of the matrix.
-		ie. matrix[0][1] will be the transition from tree 1 to tree 2.
-
-		Example for a model with 3 trees (3 states):
-		.2 .3 .5
-		.3 .5 .3
-		.5 .2 .2
-
-		Note: sum of probabilities must add up to 1 in each row and in each 
-				column
+  - Duplicate tree IDs are not allowed.
+  - Gene genealogy IDs cannot appear in the parental trees file.
 
 
 -> Sequence File

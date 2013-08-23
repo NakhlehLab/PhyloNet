@@ -21,5 +21,5 @@
 /home/kl23/code/phmm-repository/phmm/ex/simple2/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/simple2/optimized.model.parameters
 CURRENT DEFAULT RANDOM RANDOM RANDOM
-true true true false
+true true true true
 4

@@ -1,0 +1,12 @@
+t1a 0.5 p1,GeorgianDomesticus,XANC
+t1b 0.1 p1,SpanishMainlandDomesticus,XANC
+t1c 0.1 p1,Spretus2,YANC
+t1d 1.0 p1,Spretus1,YANC
+t1e 1.0 p1,XANC,ROOT
+t1f 1.0 p1,YANC,ROOT
+t2a 0.5 p2,GeorgianDomesticus,YANC
+t2b 1.0 p2,Spretus1,YANC
+t2c 0.1 p2,SpanishMainlandDomesticus,XANC
+t2d 0.1 p2,Spretus2,XANC
+t2e 0.1 p2,XANC,ROOT
+t2f 0.5 p2,YANC,ROOT

@@ -1093,41 +1093,45 @@ public class runHmm {
     	// Testing purposes//
     }
 
+    // EvoTree etree
+    // etree.toNewickString(true, true)
     /**
      * Convert an EvoTree into a PhyloNet Network object
      */
-    protected Network<Double> convertPHMMTreeToPhyloNetNetwork (EvoTree etree) {
-	ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(etree.toNewickString(true, true)));
-	// kliu - change this over to a String data member
-	// don't really use it anyways
-	try {
-	    Network<Double> network = enr.readNetwork();
-	    return (network);
-	}
-	catch(IOException ioe) {
-	    System.err.println(ioe);
-	    ioe.printStackTrace();
-	    return (null);
-	}
+    protected Network<Double> convertPHMMTreeToPhyloNetNetwork (String newickString) {
+    	ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(newickString));
+    	// kliu - change this over to a String data member
+    	// don't really use it anyways
+    	try {
+    	    Network<Double> network = enr.readNetwork();
+    	    return (network);
+    	}
+    	catch(IOException ioe) {
+    	    System.err.println(ioe);
+    	    ioe.printStackTrace();
+    	    return (null);
+    	}
     }
 
+    // EvoTree etree
+    // etree.toNewickString(true, true)
     /**
      * Convert an EvoTree into a PhyloNet Tree object.
      */
-    protected Tree convertPHMMTreeToPhyloNetTree (EvoTree etree) {
-	NewickReader nr = new NewickReader(new StringReader(etree.toNewickString(true, true)));
-	// kliu - change this over to a String data member
-	// don't really use it anyways
-	STITree<Double> newtr = new STITree<Double>(true);
-	try {
-	    nr.readTree(newtr);
-	    return (newtr);
-	}
-	catch(Exception e) {
-	    System.err.println(e);
-	    e.printStackTrace();
-	    return (null);
-	}
+    protected Tree convertNewickStringToPhyloNetTree (String newickString) {
+    	NewickReader nr = new NewickReader(new StringReader(newickString));
+    	// kliu - change this over to a String data member
+    	// don't really use it anyways
+    	STITree<Double> newtr = new STITree<Double>(true);
+    	try {
+    	    nr.readTree(newtr);
+    	    return (newtr);
+    	}
+    	catch(Exception e) {
+    	    System.err.println(e);
+    	    e.printStackTrace();
+    	    return (null);
+    	}
     }
     	
     /**
@@ -1135,8 +1139,9 @@ public class runHmm {
      * @throws Exception 
      */
     protected void buildTrees() throws Exception {
-	if (parentalTreesFileName == null) {
-	    throw new ParserFileException("Cannot read Trees file!");
+	if ((parentalTreesFileName == null) ||
+	    (!(new File(parentalTreesFileName)).exists())) {
+	    throw new ParserFileException("ERROR: invalid parental trees file.");
 	}
 
 	hiddenStates = new ArrayList<HiddenState>();
@@ -1150,44 +1155,50 @@ public class runHmm {
 
 	System.out.println("\nNow building trees . . .");
 	BufferedReader ptreesbr = new BufferedReader(new FileReader(parentalTreesFileName));
-	TreeParser ptp = new TreeParser(ptreesbr);
-	ArrayList<EvoTree> eParentalTrees = ptp.nexusFileTreeNames(parentalTreesFileName);
-	ptreesbr.close();
-	for (EvoTree etree : eParentalTrees) {
-	    Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(etree);
+	String line;
+	while ((line = ptreesbr.readLine()) != null) {
+	    StringTokenizer st = new StringTokenizer(line);
+	    if (st.countTokens() != 2) {
+		throw (new RuntimeException("ERROR: invalid parental trees line " + line + " in file " + parentalTreesFileName + "."));
+	    }
+	    String parentalTreeName = st.nextToken();
+	    Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(st.nextToken());
 	    // no duplicate node names allowed!
 	    if (parentalTree.hasDuplicateNames()) {
-		throw (new RuntimeException("ERROR: duplicate node names are present in parental tree " + etree.getName() + ". Check inputs and try again."));
+		throw (new RuntimeException("ERROR: duplicate node names are present in parental tree " + parentalTreeName + ". Check inputs and try again."));
 	    }
 	    // no duplicate parental tree names allowed!
-	    if (parentalTreeNameMap.containsKey(etree.getName())) {
-		throw (new RuntimeException("ERROR: duplicate parental tree name " + etree.getName() + ". Check inputs and try again."));
+	    if (parentalTreeNameMap.containsKey(parentalTreeName)) {
+		throw (new RuntimeException("ERROR: duplicate parental tree name " + parentalTreeName + ". Check inputs and try again."));
 	    }
-	    parentalTreeNameMap.put(etree.getName(), parentalTree);
+	    parentalTreeNameMap.put(parentalTreeName, parentalTree);
 	}
+	ptreesbr.close();
 	
 	BufferedReader ggbr = new BufferedReader(new FileReader(geneGenealogiesFileName));
-	TreeParser gtp = new TreeParser(ggbr);
-	ArrayList<EvoTree> eGeneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
-	ggbr.close();
-
-	for (EvoTree egg : eGeneGenealogies) {
-	    Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(egg);
+	while ((line = ggbr.readLine()) != null) {
+	    StringTokenizer st = new StringTokenizer(line);
+	    if (st.countTokens() != 2) {
+		throw (new RuntimeException("ERROR: invalid gene genealogies line " + line + " in file " + geneGenealogiesFileName + "."));
+	    }
+	    String geneGenealogyName = st.nextToken();
+	    Tree geneGenealogy = convertNewickStringToPhyloNetTree(st.nextToken());
 	    if (hasDuplicateNames(geneGenealogy)) {
-		throw (new RuntimeException("ERROR: duplicate node names are present in gene genealogy " + egg.getName() + ".Check inputs and try again."));
+		throw (new RuntimeException("ERROR: duplicate node names are present in gene genealogy " + geneGenealogyName + ".Check inputs and try again."));
 	    }
 
 	    // really strict
-	    if (parentalTreeNameMap.containsKey(egg.getName())) {
-		throw (new RuntimeException("ERROR: gene genealogy name " + egg.getName() + " appears as a parental tree name. Check inputs and try again."));
+	    if (parentalTreeNameMap.containsKey(geneGenealogyName)) {
+		throw (new RuntimeException("ERROR: gene genealogy name " + geneGenealogyName + " appears as a parental tree name. Check inputs and try again."));
 	    }
 	    
-	    if (geneGenealogyNameMap.containsKey(egg.getName())) {
-		throw (new RuntimeException("ERROR: duplicate gene genealogy name " + egg.getName() + ". Check inputs and try again."));
+	    if (geneGenealogyNameMap.containsKey(geneGenealogyName)) {
+		throw (new RuntimeException("ERROR: duplicate gene genealogy name " + geneGenealogyName + ". Check inputs and try again."));
 	    }
 	    
-	    geneGenealogyNameMap.put(egg.getName(), geneGenealogy);
+	    geneGenealogyNameMap.put(geneGenealogyName, geneGenealogy);	    
 	}
+	ggbr.close();
 
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
 	// kliu - hmm... would be nice to go in alphabetical order according to tree names
@@ -1236,7 +1247,45 @@ public class runHmm {
     }
 
     // parentalTreeEquivalenceClass
+	// TreeParser ptp = new TreeParser(ptreesbr);
+	// ArrayList<EvoTree> eParentalTrees = ptp.nexusFileTreeNames(parentalTreesFileName);
+	// for (EvoTree etree : eParentalTrees) {
+	//     Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(etree);
+	//     // no duplicate node names allowed!
+	//     if (parentalTree.hasDuplicateNames()) {
+	// 	throw (new RuntimeException("ERROR: duplicate node names are present in parental tree " + etree.getName() + ". Check inputs and try again."));
+	//     }
+	//     // no duplicate parental tree names allowed!
+	//     if (parentalTreeNameMap.containsKey(etree.getName())) {
+	// 	throw (new RuntimeException("ERROR: duplicate parental tree name " + etree.getName() + ". Check inputs and try again."));
+	//     }
+	//     parentalTreeNameMap.put(etree.getName(), parentalTree);
+	// }
+	// ptreesbr.close();
     
+	// TreeParser gtp = new TreeParser(ggbr);
+	// ArrayList<EvoTree> eGeneGenealogies = gtp.nexusFileTreeNames(geneGenealogiesFileName);
+	// ggbr.close();
+
+	// for (EvoTree egg : eGeneGenealogies) {
+	//     Tree geneGenealogy = convertPHMMTreeToPhyloNetTree(egg);
+	//     if (hasDuplicateNames(geneGenealogy)) {
+	// 	throw (new RuntimeException("ERROR: duplicate node names are present in gene genealogy " + egg.getName() + ".Check inputs and try again."));
+	//     }
+
+	//     // really strict
+	//     if (parentalTreeNameMap.containsKey(egg.getName())) {
+	// 	throw (new RuntimeException("ERROR: gene genealogy name " + egg.getName() + " appears as a parental tree name. Check inputs and try again."));
+	//     }
+	    
+	//     if (geneGenealogyNameMap.containsKey(egg.getName())) {
+	// 	throw (new RuntimeException("ERROR: duplicate gene genealogy name " + egg.getName() + ". Check inputs and try again."));
+	//     }
+	    
+	//     geneGenealogyNameMap.put(egg.getName(), geneGenealogy);
+	// }
+
+
     /**
      * Read transition probability parameters (other than those related to basic coalescent model calculations, i.e., parental tree
      * branch lengths).

@@ -1,20 +1,15 @@
-#NEXUS
-begin trees;
-tree g1 = ((GeorgianDomesticus:1,SpanishMainlandDomesticus:1)XANC:1,(Spretus2:1,Spretus1:1)YANC:1)ROOT;
-tree g2 = ((GeorgianDomesticus:1,Spretus1:1)YANC:1,(Spretus2:1,SpanishMainlandDomesticus:1)XANC:1)ROOT;
-tree g3 = ((GeorgianDomesticus:1,Spretus2:1)YANC:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)ROOT;
-tree g4 = (GeorgianDomesticus:1,(Spretus2:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
-tree g5 = (GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,(Spretus2:1,Spretus1:1)XANC:1)YANC:1)ROOT;
-tree g6 = (GeorgianDomesticus:1,(Spretus1:1,(SpanishMainlandDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
-tree g7 = (Spretus2:1,(GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
-tree g8 = (Spretus2:1,(SpanishMainlandDomesticus:1,(GeorgianDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
-tree g9 = (Spretus2:1,(Spretus1:1,(SpanishMainlandDomesticus:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
-tree g10 = (Spretus1:1,(Spretus2:1,(SpanishMainlandDomesticus:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
-tree g11 = (Spretus1:1,(SpanishMainlandDomesticus:1,(Spretus2:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
-tree g12 = (Spretus1:1,(GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
-tree g13 = (SpanishMainlandDomesticus:1,(Spretus2:1,(GeorgianDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
-tree g14 = (SpanishMainlandDomesticus:1,(GeorgianDomesticus:1,(Spretus2:1,Spretus1:1)XANC:1)YANC:1)ROOT;
-tree g15 = (SpanishMainlandDomesticus:1,(Spretus1:1,(GeorgianDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
-end;
-
-
+g1 ((GeorgianDomesticus:1,SpanishMainlandDomesticus:1)XANC:1,(Spretus2:1,Spretus1:1)YANC:1)ROOT;
+g2 ((GeorgianDomesticus:1,Spretus1:1)YANC:1,(Spretus2:1,SpanishMainlandDomesticus:1)XANC:1)ROOT;
+g3 ((GeorgianDomesticus:1,Spretus2:1)YANC:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)ROOT;
+g4 (GeorgianDomesticus:1,(Spretus2:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g5 (GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,(Spretus2:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g6 (GeorgianDomesticus:1,(Spretus1:1,(SpanishMainlandDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
+g7 (Spretus2:1,(GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g8 (Spretus2:1,(SpanishMainlandDomesticus:1,(GeorgianDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g9 (Spretus2:1,(Spretus1:1,(SpanishMainlandDomesticus:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
+g10 (Spretus1:1,(Spretus2:1,(SpanishMainlandDomesticus:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
+g11 (Spretus1:1,(SpanishMainlandDomesticus:1,(Spretus2:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
+g12 (Spretus1:1,(GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
+g13 (SpanishMainlandDomesticus:1,(Spretus2:1,(GeorgianDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g14 (SpanishMainlandDomesticus:1,(GeorgianDomesticus:1,(Spretus2:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g15 (SpanishMainlandDomesticus:1,(Spretus1:1,(GeorgianDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;

@@ -2,7 +2,7 @@ t1a 0.5 ptree1,anc,root
 t1b 0.1 ptree1,human,anc
 t1c 0.1 ptree1,chimp,anc
 t1d 1.0 ptree1,gorilla,root
-t2a 0.5 ptree2,anc,root
+t2a 0.51 ptree2,anc,root
 t2b 0.1 ptree2,human,anc
 t2c 0.1 ptree2,gorilla,anc
 t2d 1.0 ptree2,chimp,root

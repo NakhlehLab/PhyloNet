@@ -1,6 +1,7 @@
 package optimize;
 
 import runHmm.runHmm;
+import util.Constants;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -20,6 +21,8 @@ public class ParentalBranchLengthParameter extends Parameter {
     public static final double DEFAULT_INITIAL_BRANCH_LENGTH = MultivariateOptimizer.DEFAULT_INITIAL_BRANCH_LENGTH;
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = MultivariateOptimizer.DEFAULT_MAXIMUM_BRANCH_LENGTH;
 
+    public static final double EPSILON = Constants.ZERO_DELTA;
+
     // Use external BidirectionalMap to
     // switch between ParentalBranchLengthParameter object and
     // edge.
@@ -35,6 +38,9 @@ public class ParentalBranchLengthParameter extends Parameter {
     protected ParentalTreesDecoration parentalTreesDecoration; // works with CalculationCache directly
     protected CalculationCache calculationCache;
 
+    protected double minimumValue;
+    protected double maximumValue;
+
     public ParentalBranchLengthParameter (String inName, 
 					  double inValue, 
 					  runHmm inRunHmmObject,
@@ -43,11 +49,19 @@ public class ParentalBranchLengthParameter extends Parameter {
 					  boolean checkValueMinimumConstraintFlag,
 					  boolean checkValueMaximumConstraintFlag,
 					  boolean updateModelStateFlag) {
-	super(inName, inValue, checkValueMinimumConstraintFlag, checkValueMaximumConstraintFlag, false);
+	// only sets name
+	super(inName);
 	
 	this.runHmmObject = inRunHmmObject;
 	this.parentalTreesDecoration = inParentalTreesDecoration;
 	this.calculationCache = inCalculationCache;
+
+	setMinimumValue(DEFAULT_MINIMUM_BRANCH_LENGTH, false);
+	setMaximumValue(DEFAULT_MAXIMUM_BRANCH_LENGTH, false);
+	
+	// need to delay inequality constraint stuff until after construction
+	//setValue(inValue, checkValueMinimumConstraintFlag, checkValueMaximumConstraintFlag, false);
+	this.value = inValue;
 
 	if (updateModelStateFlag) {
 	    updateModelState();
@@ -55,6 +69,9 @@ public class ParentalBranchLengthParameter extends Parameter {
     }
 
     public void updateModelState () {
+	// absolutely no Parameter.setValue() stuff happening in here
+	// only modify PhyloNet-HMM state external to Parameter objects
+
 	// propagate length-parameter values (under length-parameter-constraint-set constraints, if applicable)
 	// to parental tree branch lengths
 	//
@@ -70,7 +87,7 @@ public class ParentalBranchLengthParameter extends Parameter {
     }
 
     public double getMinimumValue () {
-	return (DEFAULT_MINIMUM_BRANCH_LENGTH);
+	return (minimumValue);
     }
 
     public double getDefaultInitialValue () {
@@ -78,9 +95,48 @@ public class ParentalBranchLengthParameter extends Parameter {
     }
 
     public double getMaximumValue () {
-	return (DEFAULT_MAXIMUM_BRANCH_LENGTH);
+	return (maximumValue);
     }
 
+    // need to call superclass method appropriately
+    public void setValue (double inValue, 
+			  boolean checkValueMinimumConstraintFlag,
+			  boolean checkValueMaximumConstraintFlag,
+			  boolean updateModelStateFlag) {
+	super.setValue(inValue, checkValueMinimumConstraintFlag, checkValueMaximumConstraintFlag, updateModelStateFlag);
+
+	// setValue on this ParentalBranchLengthParameter object 
+	// will affect at most one other ParentalBranchLengthParameter object	
+	// according to constraints in ParentalTreeDecoration parsing
+	if (parentalTreesDecoration.getLpInequalitiesMap().containsKey(this)) {
+	    // this parameter is the lesser parameter
+	    // greater parameter must be lower bounded by this object's value
+	    parentalTreesDecoration.getLpInequalitiesMap().get(this).setMinimumValue(this.getValue() + EPSILON, checkValueMinimumConstraintFlag);
+	}
+	else if (parentalTreesDecoration.getLpInequalitiesMap().containsValue(this)) {
+	    // this parameter is the greater parameter
+	    // lesser parameter must be upper bounded by this object's value
+	    parentalTreesDecoration.getLpInequalitiesMap().rget(this).setMaximumValue(this.getValue() - EPSILON, checkValueMaximumConstraintFlag);
+	}
+    }
+
+    // also add ability to change min/max values
+    // needed for dependency constraints
+    // 
+    // WARNING - checkConstraintsFlag is strict!
+    public void setMinimumValue (double inMinimumValue, boolean checkConstraintsFlag) {
+	this.minimumValue = inMinimumValue;
+	if (checkConstraintsFlag && (getValue() < getMinimumValue())) {
+	    throw (new RuntimeException("ERROR: Parameter.setMinimumValue(...) called with value larger than getValue() amount. " + inMinimumValue + " " + getValue()));
+	}
+    }
+
+    public void setMaximumValue (double inMaximumValue, boolean checkConstraintsFlag) {
+	this.maximumValue = inMaximumValue;
+	if (checkConstraintsFlag && (getValue() > getMaximumValue())) {
+	    throw (new RuntimeException("ERROR: Parameter.setMaximumValue(...) called with value smaller than getValue() amount. " + inMaximumValue + " " + getValue()));
+	}
+    }
 }
 
 

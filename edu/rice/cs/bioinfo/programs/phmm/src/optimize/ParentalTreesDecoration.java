@@ -11,6 +11,7 @@ package optimize;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.util.HashSet;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -50,7 +51,11 @@ public class ParentalTreesDecoration {
     // lid <-> eid
     protected BidirectionalMultimap<ParentalBranchLengthParameter,Tuple<String,String>> lpEidMap;
     // reverse lookup from lid name to length-parameter references
-    protected Hashtable<String,ParentalBranchLengthParameter> lidLpMap;
+    protected BijectiveHashtable<String,ParentalBranchLengthParameter> lidLpMap;
+
+    // Inequality constraints among pairs of ParentalBranchLengthParameter
+    // objects.
+    protected BijectiveHashtable<ParentalBranchLengthParameter,ParentalBranchLengthParameter> lpInequalitiesMap;
 
     // One more layer of indirection.
     // Group length parameters into length-parameter-constraint-sets.
@@ -73,6 +78,7 @@ public class ParentalTreesDecoration {
 
     public ParentalTreesDecoration(BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
 				   String inputParentalBranchLengthParameterToEdgeMapFilename,
+				   String inputParentalBranchLengthParameterInequalitiesFilename,
 				   String inputParentalBranchLengthParameterSetConstraintsFilename,
 				   runHmm inRunHmmObject,
 				   CalculationCache inCalculationCache
@@ -87,7 +93,28 @@ public class ParentalTreesDecoration {
 	// no model update
 	// this creates LengthParameter objects representing parental tree branch length parameters
 	parseInputParentalBranchLengthParameterToEdgeMapFile(inputParentalBranchLengthParameterToEdgeMapFilename);
+	parseInputParentalBranchLengthParameterInequalitiesFile(inputParentalBranchLengthParameterInequalitiesFilename);
 	parseParentalBranchLengthParameterConstraintSetsFile(inputParentalBranchLengthParameterSetConstraintsFilename);
+
+	// need to check inequality constraints separately
+	// strict!
+	verifyParentalBranchLengthParameterInequalityConstraints();
+    }
+
+    /**
+     * Only used during constructor parsing.
+     */
+    protected void verifyParentalBranchLengthParameterInequalityConstraints () {
+	// now that inequality constraint maps are ready, use them via ParentalBranchLengthParameter.setValue(...).
+	for (ParentalBranchLengthParameter lesserParameter : lpInequalitiesMap.keys()) {
+	    // a bit of a hack
+	    lesserParameter.setValue(lesserParameter.getValue(), true, true, false);
+	}
+
+	for (ParentalBranchLengthParameter greaterParameter : lpInequalitiesMap.values()) {
+	    // a bit of a hack
+	    greaterParameter.setValue(greaterParameter.getValue(), true, true, false);
+	}
     }
 
     /**
@@ -225,6 +252,56 @@ public class ParentalTreesDecoration {
 
     /**
      * Input file format:
+     * <lesser parameter ID> <greater parameter id>
+     * ...
+     */
+    protected void parseInputParentalBranchLengthParameterInequalitiesFile (String filename) {
+	lpInequalitiesMap = new BijectiveHashtable<ParentalBranchLengthParameter,ParentalBranchLengthParameter>();
+	HashSet<String> hs = new HashSet<String>();
+
+	try {
+	    BufferedReader br = new BufferedReader(new FileReader(filename));
+	    String line;
+	    while ((line = br.readLine()) != null) {
+		StringTokenizer st = new StringTokenizer(line);
+		if (st.countTokens() != 2) {
+		    throw (new RuntimeException("ERROR: invalid line " + line + " in parseInputParentalBranchLengthParameterInequalitiesFile() with input file " + filename + "."));
+		}
+
+		String lesserID = st.nextToken();
+		// bleh - need to append class name prefix due to Parameter object naming convention
+		lesserID = ParentalBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + lesserID;
+		String greaterID = st.nextToken();
+		greaterID = ParentalBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + greaterID;
+		// constrain each parameter ID to appear at most once
+		if (hs.contains(lesserID) || hs.contains(greaterID)) {
+		    throw (new RuntimeException("ERROR: duplicated parameter IDs in file " + filename + ". Offending line: " + line));
+		}
+
+		if (!lidLpMap.containsKey(lesserID)) {
+		    throw (new RuntimeException("ERROR: invalid lesser parameter ID " + lesserID + " in file " + filename + "."));
+		}
+
+		if (!lidLpMap.containsKey(greaterID)) {
+		    throw (new RuntimeException("ERROR: invalid greater parameter ID " + greaterID + " in file " + filename + "."));
+		}
+
+		lpInequalitiesMap.put(lidLpMap.get(lesserID), lidLpMap.get(greaterID));
+		hs.add(lesserID);
+		hs.add(greaterID);
+	    }
+	    br.close();
+	}
+	catch (IOException ioe) {
+	    // strict!
+	    System.err.println(ioe);
+	    ioe.printStackTrace();
+	    System.exit(1);
+	}
+    }
+
+    /**
+     * Input file format:
      * <length parameter unique ID> <initial value> <branch 1 parental tree name>,<branch 1 child id>,<branch 1 parent id> <branch 2 parental tree name>,<branch 2 child id>,<branch 2 parent id> ...
      */
     protected void parseInputParentalBranchLengthParameterToEdgeMapFile (String filename) {
@@ -238,7 +315,7 @@ public class ParentalTreesDecoration {
 	}
 
 	lpEidMap = new BidirectionalMultimap<ParentalBranchLengthParameter,Tuple<String,String>>();
-	lidLpMap = new Hashtable<String,ParentalBranchLengthParameter>();
+	lidLpMap = new BijectiveHashtable<String,ParentalBranchLengthParameter>();
 
 	try {
 	    BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -270,12 +347,12 @@ public class ParentalTreesDecoration {
 		
 		//if (Constants.WARNLEVEL > 4) { System.out.println ("Parsing " + filename + " lid: |" + lid + "| value: |" + value); }
 
-		lidLpMap.put(lp.getName(), lp);
-
 		// Disallow duplicate length-parameter-ids in input file.
 		if (lpEidMap.containsKey(lp)) {
 		    throw (new RuntimeException ("ERROR: duplicate length-parameter-id in filename " + filename + ": " + lp.toString()));
 		}
+
+		lidLpMap.put(lp.getName(), lp);
 		
 		while (st.hasMoreTokens()) {
 		    Tuple<String,String> eid = parseEid (filename, st.nextToken());
@@ -317,7 +394,7 @@ public class ParentalTreesDecoration {
 		    Tuple<String,String> eid = new Tuple<String,String>(parentalNodeLabelMap.get(node), parentalNodeLabelMap.get(parent));
 		    
 		    // testing
-		    System.out.println ("Edge: |" + eid + "|");
+		    //System.out.println ("Edge: |" + eid + "|");
 		    
 		    if (!lpEidMap.containsValue(eid)) {
 			if (Constants.WARNLEVEL > 1) { System.err.println ("WARNING: no map entry for edge with id " + eid + ". No length optimization will be performed for this edge."); }
@@ -499,6 +576,34 @@ public class ParentalTreesDecoration {
 
 	return (false);
     }
+
+    /**
+     * For ParentalBranchLengthParameter objects to automatically update min/max 
+     * appropriately to satisfy ParentalBranchLengthParameter inequality constraints.
+     */
+    public BijectiveHashtable<ParentalBranchLengthParameter,ParentalBranchLengthParameter> getLpInequalitiesMap () {
+	return (lpInequalitiesMap);
+    }
+
+    // /**
+    //  * WARNING - id must exist in map! Strict!
+    //  */
+    // public ParentalBranchLengthParameter getParentalBranchLengthParameter (String id) {
+    // 	if (!lidLpMap.containsKey(id)) {
+    // 	    throw (new RuntimeException("ERROR: no ParentalBranchLengthParameter corresponds to id " + id + " in getParentalBranchLengthParameter(...)."));
+    // 	}
+    // 	return (lidLpMap.get(id));
+    // }
+
+    // /**
+    //  * WARNING - parameter object must exist in map! Strict!
+    //  */ 
+    // public String getParentalBranchLengthParameterName (ParentalBranchLengthParameter pblp) {
+    // 	if (!lidLpMap.containsValue(pblp)) {
+    // 	    throw (new RuntimeException("ERROR: ParentalBranchLengthParameter object with name " + pblp.getName() + " doesn't exist in lidLpMap in getParentalBranchLengthParameterName(...)."));
+    // 	}
+    // 	return (lidLpMap.rget(pblp));
+    // }
 
     /**
      * Get length-parameter-constraint-set for a length-parameter.

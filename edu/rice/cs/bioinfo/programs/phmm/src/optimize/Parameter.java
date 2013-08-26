@@ -16,9 +16,14 @@ import java.util.Stack;
 public abstract class Parameter extends ParameterConstraintSet {
     protected Stack<Double> cacheValues;
 
-    public Parameter (String inName, double inValue) {
-    	super(inName, inValue);
+    public Parameter (String inName) {
+	super(inName);
+	cacheValues = new Stack<Double>();
     }
+    
+    // public Parameter (String inName, double inValue) {
+    // 	super(inName, inValue);
+    // }
 
     // force user to think carefully about this
     // alternative constructor with relaxed constraints
@@ -52,13 +57,13 @@ public abstract class Parameter extends ParameterConstraintSet {
 			  boolean updateModelStateFlag) {
 	// paranoid
 	if (checkValueMinimumConstraintFlag && (inValue < getMinimumValue())) {
-	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value smaller than getMinimumValue() amount. " + inValue + " " + getMinimumValue()));
+	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value smaller than getMinimumValue() amount. " + getName() + " " + inValue + " " + getMinimumValue()));
 	}
 
 	// kliu - this can cause an issue for FrequencyParameter
 	// constructor
 	if (checkValueMaximumConstraintFlag && (inValue > getMaximumValue())) {
-	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value greater than getMaximumValue() amount. " + inValue + " " + getMaximumValue()));
+	    throw (new RuntimeException("ERROR: Parameter.setValue(...) called with value greater than getMaximumValue() amount. " + getName() + " " + inValue + " " + getMaximumValue()));
 	}
 
 	super.setValue(inValue);

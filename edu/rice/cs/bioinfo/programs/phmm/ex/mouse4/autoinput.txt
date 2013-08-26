@@ -1,0 +1,26 @@
+0
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/SpanishBasicInfo
+30
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/parental.tree
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/gene.trees
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/allele-to-species.mapping
+/home/kl23/code/phmm-repository/phmm/ex/mouse4
+0.1
+0.964011 0.192217 0.270592 0.0806232 0.174283
+0.1953 0.3077 0.3008 0.1962
+0
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/initial.viterbi.sequence
+1
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/spanish-test.seq
+3
+0
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/length-parameters
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/length-parameter-inequality-constraints
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/length-parameter-constraint-sets
+
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/optimized.viterbi.sequence
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/optimized.model.likelihoods
+/home/kl23/code/phmm-repository/phmm/ex/mouse4/optimized.model.parameters
+CURRENT DEFAULT
+true true true false
+4

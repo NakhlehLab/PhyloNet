@@ -15,11 +15,12 @@
 3
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/length-parameters
+/home/kl23/code/phmm-repository/phmm/ex/mouse3/length-parameter-inequality-constraints
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/length-parameter-constraint-sets
 
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/optimized.model.parameters
-CURRENT DEFAULT
+DEFAULT
 true true true false
 4

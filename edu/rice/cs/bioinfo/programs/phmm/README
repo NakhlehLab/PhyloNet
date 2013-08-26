@@ -87,6 +87,26 @@ File Formats
 		willy chimp\n
 		kingkong gorilla\n
 
+- Parental branch length parameters file
+  - Format:
+    <parameter name> <initial weight> <edge ID in <tree ID>,<child node ID>,<parent node ID> format>
+    ...
+
+- Parental branch length parameter strict inequalities file
+  - A parameter name can appear only ONCE in this file.
+  - A dependent parental branch length parameter is constrained to be $\leq$ than another
+    parental branch length parameter + \epsilon, where \epsilon is a small value.
+  - Format:
+    <lesser parameter name> <greater parameter name>
+    ...
+
+    where the constraint is <lesser parameter name> < <greater parameter name>
+
+- Length-parameter constraint sets file
+  - A parental-branch-length-parameter cannot belong to more than one constraint-set.
+  - Format:
+  <set name> <total weight of constraint-set> <parameter 1 name> <parameter 2 name> ...
+  ...
 
 *********************************************************************
 Compilation Requirements and Instructions on how to Use Luay's JAHMM

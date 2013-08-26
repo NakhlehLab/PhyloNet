@@ -396,8 +396,10 @@ public class runHmm {
 		obsSequence = fParser.getObs();
 	    }
 	    
-	    System.out.println("Input length-parameter-to-edge map filename: ");
+	    System.out.println("Input parental-branch-length-parameter-to-edge map filename: ");
 	    String inputLengthParameterToEdgeMapFilename = in.readLine();
+	    System.out.println("Input parental-branch-length-parameter strict inequalities filename: ");
+	    String inputParentalBranchLengthParameterInequalitiesFilename = in.readLine();
 	    System.out.println("Input length-parameter-set-constraints filename: ");
 	    String inputLengthParameterSetConstraintsFilename = in.readLine();
 	    System.out.println("Input checkpoint file to restore from, or empty line for no restore: ");
@@ -428,6 +430,7 @@ public class runHmm {
 										    geneGenealogyNameMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
+										    inputParentalBranchLengthParameterInequalitiesFilename,
 										    inputLengthParameterSetConstraintsFilename,
 										    calculationCache,
 										    enableParentalTreeOptimizationFlag,

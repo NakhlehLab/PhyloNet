@@ -100,12 +100,18 @@ public class MultivariateOptimizer {
     // only go to 80% of max for randomization purposes
     public static final double FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES = 0.8;
 
+    // only for initializing ParentalBranchLengthParameter objects that are subject to 
+    // inequality constraints
+    public static final double INITIALIZATION_RELATIVE_WEIGHT_FOR_INEQUALITY_CONSTRAINTS = 2.0;
+
     // hmm... is GeneTreeProbability able to handle probability == 0 or 1?
     // yes, it handles this fine
     public static final double DEFAULT_MINIMUM_PROBABILITY = 0.0;
     public static final double DEFAULT_INITIAL_PROBABILITY = 1e-2;
     // initial probability always initialized to uniform
-    public static final double DEFAULT_MAXIMUM_PROBABILITY = 1.0;
+    // don't let switching probability get to close to half
+    public static final double DEFAULT_MAXIMUM_PROBABILITY = 0.1;
+    // public static final double DEFAULT_MAXIMUM_PROBABILITY = 1.0;
 
     // hack - to support set branch length constraints
     // PhyloNet's Rich Newick support has some craziness about '_' underscore letter.
@@ -183,6 +189,7 @@ public class MultivariateOptimizer {
 				  BijectiveHashtable<String,Tree> inGeneGenealogyNameMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
+				  String inputParentalBranchLengthParameterInequalitiesFilename,
 				  String inputParentalBranchLengthParameterSetConstraintsFilename,
 				  CalculationCache inCalculationCache,
 				  boolean inEnableParentalTreeOptimizationFlag,
@@ -213,6 +220,7 @@ public class MultivariateOptimizer {
 	// ParentalBranchLengthParameter objects created in here
 	parentalTreesDecoration = new ParentalTreesDecoration(parentalTreeNameMap,
 							      inputParentalBranchLengthParameterToEdgeMapFilename,
+							      inputParentalBranchLengthParameterInequalitiesFilename,
 							      inputParentalBranchLengthParameterSetConstraintsFilename,
 							      runHmmObject,
 							      calculationCache);
@@ -452,14 +460,27 @@ public class MultivariateOptimizer {
 							      double max, 
 							      String debugMessage // for debugging purposes
 							      ) {
+	// To proceed with search-by-halves,
+	// max must be at least 4X the magnitude of min.
+	// If this constraint fails, just do a simple search bounded by min/max, retaining current x.
+	if (max < MINIMUM_FACTOR_WIDTH_FOR_MINIMUM_MAXIMUM_INTERVAL * min) {
+	    // paranoid
+	    if (min > max) {
+		throw (new RuntimeException("ERROR: invalid input min/max in getSearchInterval(...). " + min + " " + max));
+	    }
+
+	    if ((x < min) || (x > max)) {
+		throw (new RuntimeException("ERROR: x out of min/max range in getSearchInterval(...). " + min + " " + x + " " + max));
+	    }
+
+	    return (new Tuple3<Double,Double,Double>(min, x, max));
+	}
+
 	// tweak these and x -> output
 	double l;
 	double u;
 
 	if (Constants.WARNLEVEL > 4) { System.out.println (debugMessage + " search interval min and max: |" + min + " " + max + "|"); }
-
-	// due to constructor checks, guaranteed
-	// that min/max interval width is large enough for search-by-halves to work
 
 	// constraint #0 guaranteed in verifySearchSettings()
 	// in case some set() calls have happened after construction
@@ -837,7 +858,24 @@ public class MultivariateOptimizer {
 		    parentalLengthParameter.setValue(1.0, true, true, false);
 		}
 		else {
-		    parentalLengthParameter.setValue(parentalLengthParameter.getDefaultInitialValue(), true, true, false);
+		    // skip parameters subject to inequality constraints, 
+		    // handle this separately below
+		    if (parentalTreesDecoration.getLpInequalitiesMap().containsKey(parentalLengthParameter)) {
+			parentalLengthParameter.setValue(parentalLengthParameter.getDefaultInitialValue() / INITIALIZATION_RELATIVE_WEIGHT_FOR_INEQUALITY_CONSTRAINTS,
+							 false,
+							 false,
+							 false);
+		    } 
+		    else if (parentalTreesDecoration.getLpInequalitiesMap().containsValue(parentalLengthParameter)) {
+			parentalLengthParameter.setValue(parentalLengthParameter.getDefaultInitialValue(),
+							 false,
+							 false,
+							 false);
+		    }
+		    else {
+			// no inequality constraint
+			parentalLengthParameter.setValue(parentalLengthParameter.getDefaultInitialValue(), true, true, false);
+		    }
 		}
 	    }
 	}
@@ -889,8 +927,37 @@ public class MultivariateOptimizer {
 		else {
 		    double parameterMinimumValue = parentalLengthParameter.getMinimumValue();
 		    double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * parentalLengthParameter.getMaximumValue();
-		    double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
-		    parentalLengthParameter.setValue(randomDistance, true, true, false);
+		    // uninitialized
+		    double randomDistance1 = -1.0;
+		    double randomDistance2 = -1.0;
+		    do {
+			randomDistance1 = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
+			randomDistance2 = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
+		    } while ((randomDistance1 < 0.0) || (randomDistance2 < 0.0) || (randomDistance1 == randomDistance2));
+		    
+		    if (randomDistance2 < randomDistance1) {
+			double tr = randomDistance2;
+			randomDistance2 = randomDistance1;
+			randomDistance1 = tr;
+		    }
+
+		    // meh, just set it twice
+		    // parentalLengthParameter is lesser
+		    if (parentalTreesDecoration.getLpInequalitiesMap().containsKey(parentalLengthParameter)) {
+			parentalLengthParameter.setValue(randomDistance1, false, false, false);
+			parentalTreesDecoration.getLpInequalitiesMap().get(parentalLengthParameter).setValue(randomDistance2, false, false, false);
+		    }
+		    else if (parentalTreesDecoration.getLpInequalitiesMap().containsValue(parentalLengthParameter)) {
+			parentalTreesDecoration.getLpInequalitiesMap().rget(parentalLengthParameter).setValue(randomDistance1, false, false, false);
+			parentalLengthParameter.setValue(randomDistance2, false, false, false);
+
+		    }
+		    else {
+			// double parameterMinimumValue = parentalLengthParameter.getMinimumValue();
+			// double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * parentalLengthParameter.getMaximumValue();
+			// double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
+			parentalLengthParameter.setValue(randomDistance1, true, true, false);
+		    }
 		}
 	    }
 	}
@@ -1055,11 +1122,16 @@ public class MultivariateOptimizer {
 	}
     }
 
-
+    /**
+     * WARNING: don't call this prior to a corresponding
+     * MultivariateOptimizer.pushCacheValues() call!
+     * Otherwise wonky behavior will result.
+     */
     protected void popCacheValues (boolean setValueFlag) {
 	for (Parameter parameter : parameterNameMap.values()) {
 	    // delay Parameter.updateModelState() calls until all parameter values updated
-	    parameter.popCacheValue(true, true, false, setValueFlag);
+	    // no need to check min/max values since all guards satisfied during full cache operation
+	    parameter.popCacheValue(false, false, false, setValueFlag);
 	}
 
 	// finally, update internal state of HMM and propagate through to Jahmm's probability matrices/vectors
@@ -1202,6 +1274,10 @@ public class MultivariateOptimizer {
 
 	    // restore original setting
 	    // use all guards, all set ops
+	    //
+	    // fine to check min/max - only change one Parameter at a time,
+	    // and this Parameter's min/max depends on at most one *other* Parameter
+	    // object's value.
 	    parameter.popCacheValue(true, true, true, true);
 
 	    //parameter.setValue(originalSetting);

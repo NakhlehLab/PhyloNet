@@ -11,7 +11,7 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/initial.viterbi.sequence
 1
-/home/kl23/code/phmm-repository/phmm/ex/simple2/myseq.seq
+/home/kl23/code/phmm-repository/phmm/ex/simple2/myseq.fasta
 3
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/length-parameters

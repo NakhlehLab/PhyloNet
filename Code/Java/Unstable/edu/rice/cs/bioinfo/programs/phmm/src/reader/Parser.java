@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import util.Constants;
 import phylogeny.EvoTree;
 import phylogeny.Node;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
@@ -19,6 +20,8 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 // kliu - pull in additional library support
 
 public class Parser {
+    public static final String TAXON_NAME_LINE_MARKER = ">";
+
     protected ArrayList<String> alphabet;								/* ArrayList of legal characters/symbols */
     protected ArrayList<ObservationMap> sequence;					/* a REUSABLE arraylist that holds the converted and final usable sequence of integers for ONE file */
     protected ArrayList<HiddenState> trees_states;						/* the list of states in the hmm */
@@ -116,6 +119,93 @@ public class Parser {
 
     }
 
+    protected void addSequence (String name, StringBuffer sequenceBuffer, Hashtable<String,StringBuffer> map, String filename) {
+	// strict!
+	if (map.contains(name)) {
+	    throw (new RuntimeException("ERROR: sequence file " + filename + " contains duplicate taxon " + name + "."));
+	}
+
+	map.put(name, sequenceBuffer);
+    }
+
+    protected Hashtable<String,StringBuffer> parseFASTAAlignment (String filename) {
+	Hashtable<String,StringBuffer> map = new Hashtable<String,StringBuffer>();
+	try {
+	    BufferedReader br = new BufferedReader(new FileReader(filename));
+	    String line = "";
+	    String name = "";
+	    StringBuffer sequenceBuffer = null;
+	    
+	    while ((line = br.readLine()) != null) {
+		line = line.trim();
+		if (line.startsWith(TAXON_NAME_LINE_MARKER)) {
+		    // collect accumulated sequence info and store it now
+		    if ((!name.equals("")) && (sequenceBuffer != null)) {
+			addSequence(name, sequenceBuffer, map, filename);
+		    }
+		    
+		    // update name
+		    // sequence name is the rest of the line, omitting whitespace
+		    name = line.substring(1, line.length()).trim();
+		    
+		    // kliu testing
+		    //System.out.println ("name: |" + name + "|");
+
+		    // need a new sequence buffer too
+		    sequenceBuffer = new StringBuffer();
+		}
+		else {
+		    // any other line is a sequence line - append it to current sequence buffer
+		    sequenceBuffer.append(line);
+		}
+	    }
+
+	    // do it once more for final taxon, since it isn't followed by another TAXON_NAME_LINE_MARKER
+	    if ((!name.equals("")) && (sequenceBuffer != null)) {
+		addSequence(name, sequenceBuffer, map, filename);
+	    }
+
+	    br.close();
+	}
+	catch (IOException ioe) {
+	    // strict!
+	    System.err.println (ioe);
+	    ioe.printStackTrace();
+	    System.exit(1);
+	}
+
+	return (map);
+    }
+
+    protected void convertFASTAMapToListOfObservationMap (Hashtable<String,StringBuffer> map) {
+	sequence = new ArrayList<ObservationMap>();
+	// strict!
+	int alignmentLength = -1; // undefined
+	for (String taxon : map.keySet()) {
+	    if ((alignmentLength >= 0) && (map.get(taxon).length() != alignmentLength)) {
+		throw (new RuntimeException("ERROR: input sequences are not all of the same length. " + alignmentLength + " " + map.get(taxon).length()));
+	    }
+	    alignmentLength = map.get(taxon).length();
+	}
+
+	// testing
+	if (Constants.WARNLEVEL > 1) { System.out.println ("Input alignment length: " + alignmentLength); }
+
+	for (int i = 0; i < alignmentLength; i++) {
+	    Hashtable<String,Character> column = new Hashtable<String,Character>();
+	    for (String taxon : map.keySet()) {
+		column.put(taxon, new Character(map.get(taxon).charAt(i)));
+	    }
+	    sequence.add(new ObservationMap(column));
+	}
+    }
+
+    public void parseMe (String filename) {
+	Hashtable<String,StringBuffer> map = parseFASTAAlignment(filename);
+	convertFASTAMapToListOfObservationMap(map);
+    }
+
+    // kliu - switch to FASTA format
     /**
      * This function parses a sequence file to extract the
      * observation sequence. In addition, it inputs the emission
@@ -137,133 +227,133 @@ public class Parser {
      * gorilla ttt </i><br><br>
      *
      */
-    public void parseMe (String filename, Hmm<ObservationMap> myhmm) throws Exception {
-        List<RandomAccessFile> rafList = new ArrayList<RandomAccessFile>();			/* a list of buffered readers for each sequence */
-        String read;
-        int ch;
-        int seqLen;																/* Length of each sequence */
-        sequence = new ArrayList<ObservationMap>();									/* The sequence of observation read from current file */
+    // public void parseMe (String filename, Hmm<ObservationMap> myhmm) throws Exception {
+    //     List<RandomAccessFile> rafList = new ArrayList<RandomAccessFile>();			/* a list of buffered readers for each sequence */
+    //     String read;
+    //     int ch;
+    //     int seqLen;																/* Length of each sequence */
+    //     sequence = new ArrayList<ObservationMap>();									/* The sequence of observation read from current file */
 
 
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    //     BufferedReader br = new BufferedReader(new FileReader(filename));
 
-        // Reads in the length of the sequences
-        if ((read = br.readLine()) != null) {
-            // Save data as variables
-            seqLen = Integer.parseInt(read);
-        }
-        else {
-            br.close();
-            throw new ParserFileException("File is empty.");
-        }
+    //     // Reads in the length of the sequences
+    //     if ((read = br.readLine()) != null) {
+    //         // Save data as variables
+    //         seqLen = Integer.parseInt(read);
+    //     }
+    //     else {
+    //         br.close();
+    //         throw new ParserFileException("File is empty.");
+    //     }
 
-        br.close();
+    //     br.close();
 
-        // Given the number of sequences, initialize the corresponding number of
-        // buffered readers and get them all to the beginning of their assigned sequence
-        // in order to read all the sequences at the same time.
-        long fseekpos = 2;
-        for (int i = 0; i < seqNum; i++) {
+    //     // Given the number of sequences, initialize the corresponding number of
+    //     // buffered readers and get them all to the beginning of their assigned sequence
+    //     // in order to read all the sequences at the same time.
+    //     long fseekpos = 2;
+    //     for (int i = 0; i < seqNum; i++) {
 
-            // create new buffers and add to buffer list
-            rafList.add(new RandomAccessFile(filename, "r"));
+    //         // create new buffers and add to buffer list
+    //         rafList.add(new RandomAccessFile(filename, "r"));
 
-            // set the current buffer
-            RandomAccessFile raf = rafList.get(i);
+    //         // set the current buffer
+    //         RandomAccessFile raf = rafList.get(i);
 
-            // move start of buffer to the appropriate line
-            raf.seek(fseekpos);
+    //         // move start of buffer to the appropriate line
+    //         raf.seek(fseekpos);
 
-            // read in the type of sequence (eg. human, mouse,...etc)
-            // and map it to the appropriate line number
-            //String type = "";		// Uncomment to Test
-            while ((ch = raf.read() ) != -1) {
-		if (ch == ' ') break;
-		//else type += (char)ch;		// Uncomment to Test
-		fseekpos += 1;
-            }
-            if (ch == -1) {
-		multiFileCloser(rafList, i); // Closes current file and any file opened
-		throw new ParserFileException("File Input is incorrectly formatted!");
-            }
+    //         // read in the type of sequence (eg. human, mouse,...etc)
+    //         // and map it to the appropriate line number
+    //         //String type = "";		// Uncomment to Test
+    //         while ((ch = raf.read() ) != -1) {
+    // 		if (ch == ' ') break;
+    // 		//else type += (char)ch;		// Uncomment to Test
+    // 		fseekpos += 1;
+    //         }
+    //         if (ch == -1) {
+    // 		multiFileCloser(rafList, i); // Closes current file and any file opened
+    // 		throw new ParserFileException("File Input is incorrectly formatted!");
+    //         }
 
-            //now RAF is at the correct position
-            //set fseekpos for next RAF
-            fseekpos += (long)seqLen + 1; // add the length of sequence and the \n character
-
-
-            // Testing purposes //
-            //System.out.println("the type is: " + type);
+    //         //now RAF is at the correct position
+    //         //set fseekpos for next RAF
+    //         fseekpos += (long)seqLen + 1; // add the length of sequence and the \n character
 
 
-        }
-
-        System.out.println("Reading Observation Progress :");
-
-        // kliu - looks like order of sequences in sequence file must match
-        // order in basic info file
-        // get students to change this to FASTA or something
-        // remove basic info file
-
-        // Read the observations column by column
-        for (int j = 0; j < seqLen; j++) {
-            //String obs = "";
-            int letter;
-            Hashtable<String,Character> column = new Hashtable<String,Character>();
-            for (int i = 0; i < rafList.size(); i++) {
-                if ((letter = rafList.get(i).read()) != -1) {
-                    //obs += (char)letter;
-                    column.put(taxa.get(i), new Character((char) letter));
-                }
-		else {
-		    multiFileCloser(rafList, rafList.size()-1);
-		    throw new ParserFileException("Error while reading observation sequence!");
-		}
-            }
+    //         // Testing purposes //
+    //         //System.out.println("the type is: " + type);
 
 
-            //convert to corresponding integer sequence
-            //int obsInt = IntTranslator.letterToInt(obs, myHashmap);
+    //     }
 
-            // kliu - bleh - just keep around all columns
+    //     System.out.println("Reading Observation Progress :");
 
+    //     // kliu - looks like order of sequences in sequence file must match
+    //     // order in basic info file
+    //     // get students to change this to FASTA or something
+    //     // remove basic info file
 
-            // add Integer obs to sequence
-            //sequence.add(obsInt);
-            sequence.add(new ObservationMap(column));
-
-            // kliu - no longer necessary - OpdfMap objects created as part of HMM creation in MyHMM.buildMyHMM
-            //input emissions probabilities for observations into every state/tree
-            //inputEmissions(obs, obsInt, trees_states, seqTypes, myhmm);
-
-            //keep a progress report
-            if ((j%10000) == 0) {
-		System.out.print("\r"+ (((double)j/(double)seqLen) * 100.0) + "%");
-            }
-
-            //			if (j % 1000000 == 0) {
-            //				MemoryReport.report();
-            //			}
-
-
-        }
-
-
-        System.out.print("\r 100.0% Done!                     ");
-        System.out.println("\n");
-
-        multiFileCloser(rafList, rafList.size()-1);
+    //     // Read the observations column by column
+    //     for (int j = 0; j < seqLen; j++) {
+    //         //String obs = "";
+    //         int letter;
+    //         Hashtable<String,Character> column = new Hashtable<String,Character>();
+    //         for (int i = 0; i < rafList.size(); i++) {
+    //             if ((letter = rafList.get(i).read()) != -1) {
+    //                 //obs += (char)letter;
+    //                 column.put(taxa.get(i), new Character((char) letter));
+    //             }
+    // 		else {
+    // 		    multiFileCloser(rafList, rafList.size()-1);
+    // 		    throw new ParserFileException("Error while reading observation sequence!");
+    // 		}
+    //         }
 
 
-        /* Testing purposes */
-        //////////////////////
-        //		for (int i = 0; i < sequence.size(); i++) {
-        //			System.out.println("\n " + sequence.get(i));
-        //			System.out.println("\n" + IntTranslator.intToLetter(seqNum,sequence.get(i), myHashmap));
-        //		}
-        /////////////////////
+    //         //convert to corresponding integer sequence
+    //         //int obsInt = IntTranslator.letterToInt(obs, myHashmap);
 
-    }
+    //         // kliu - bleh - just keep around all columns
+
+
+    //         // add Integer obs to sequence
+    //         //sequence.add(obsInt);
+    //         sequence.add(new ObservationMap(column));
+
+    //         // kliu - no longer necessary - OpdfMap objects created as part of HMM creation in MyHMM.buildMyHMM
+    //         //input emissions probabilities for observations into every state/tree
+    //         //inputEmissions(obs, obsInt, trees_states, seqTypes, myhmm);
+
+    //         //keep a progress report
+    //         if ((j%10000) == 0) {
+    // 		System.out.print("\r"+ (((double)j/(double)seqLen) * 100.0) + "%");
+    //         }
+
+    //         //			if (j % 1000000 == 0) {
+    //         //				MemoryReport.report();
+    //         //			}
+
+
+    //     }
+
+
+    //     System.out.print("\r 100.0% Done!                     ");
+    //     System.out.println("\n");
+
+    //     multiFileCloser(rafList, rafList.size()-1);
+
+
+    //     /* Testing purposes */
+    //     //////////////////////
+    //     //		for (int i = 0; i < sequence.size(); i++) {
+    //     //			System.out.println("\n " + sequence.get(i));
+    //     //			System.out.println("\n" + IntTranslator.intToLetter(seqNum,sequence.get(i), myHashmap));
+    //     //		}
+    //     /////////////////////
+
+    // }
 
 
     /**

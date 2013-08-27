@@ -21,6 +21,6 @@
 /home/kl23/code/phmm-repository/phmm/ex/mouse4/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mouse4/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mouse4/optimized.model.parameters
-CURRENT DEFAULT
-true true true false
+CURRENT DEFAULT RANDOM RANDOM
+true true true true
 4

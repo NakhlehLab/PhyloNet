@@ -110,7 +110,7 @@ public class MultivariateOptimizer {
     public static final double DEFAULT_INITIAL_PROBABILITY = 1e-2;
     // initial probability always initialized to uniform
     // don't let switching probability get to close to half
-    public static final double DEFAULT_MAXIMUM_PROBABILITY = 0.1;
+    public static final double DEFAULT_MAXIMUM_PROBABILITY = 0.25;
     // public static final double DEFAULT_MAXIMUM_PROBABILITY = 1.0;
 
     // hack - to support set branch length constraints

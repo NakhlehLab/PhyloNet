@@ -747,7 +747,7 @@ public class runHmm {
 	try {
 	    System.out.println("Input observation sequence file path name : ");
 	    String filename = in.readLine();
-	    fParser.parseMe(filename, myhmm);
+	    fParser.parseMe(filename);
 	    return fParser.getObs();
 	} catch (Exception e) {
 	    e.printStackTrace();

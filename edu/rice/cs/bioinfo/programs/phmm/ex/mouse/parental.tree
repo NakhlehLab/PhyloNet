@@ -1,2 +1,2 @@
-p1 ((GeorgianDomesticus:5,SpanishMainlandDomesticus:6)XANC:7,(Spretus2:8,Spretus1:9)YANC:10)ROOT;
-p2 ((GeorgianDomesticus:4,Spretus1:5)YANC:6,(Spretus2:7,SpanishMainlandDomesticus:8)XANC:9)ROOT;
+p1 (M:7.5,S:7.5)ROOT;
+p2 (M:0.1,S:0.1)ROOT;

@@ -11,15 +11,16 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/initial.viterbi.sequence
 1
-/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish-last-6k.seq
+/home/kl23/code/phmm-repository/phmm/ex/mouse/spanish.fasta
 3
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameters
+/home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameter-inequality-constraints
 /home/kl23/code/phmm-repository/phmm/ex/mouse/length-parameter-constraint-sets
 
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mouse/optimized.model.parameters
-CURRENT
+CURRENT DEFAULT RANDOM
 true true true false
 4

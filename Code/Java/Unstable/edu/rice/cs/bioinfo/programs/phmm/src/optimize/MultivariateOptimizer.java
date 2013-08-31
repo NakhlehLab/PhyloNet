@@ -120,6 +120,7 @@ public class MultivariateOptimizer {
 
     public static final String CHECKPOINT_PARAMETER_STATE_FILENAME = "CHECKPOINT-PARAMETER-STATE";
     public static final String CHECKPOINT_LIKELIHOOD_FILENAME = "CHECKPOINT-LIKELIHOOD";
+    public static final String CHECKPOINT_VITERBI_SEQUENCE_FILENAME = "CHECKPOINT-VITERBI-SEQUENCE";
     public static final String CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER = "\t";
     //public static final String CHECKPOINT_LATEST_SUFFIX = "LATEST";
 
@@ -1105,13 +1106,27 @@ public class MultivariateOptimizer {
 	    bw.close();
 	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + " DONE."); }
 
+	    // write Viterbi-optimal hidden state sequence
+	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_VITERBI_SEQUENCE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
+	    Tuple<int[],Double> viterbiResult = hmm.viterbiStateSequence(observation);
+	    bw = new BufferedWriter(new FileWriter(filename));
+	    double viterbiLLH = viterbiResult.Item2;
+	    for (int index : viterbiResult.Item1) {
+		bw.write(hiddenStates.get(index).getName()); bw.newLine();
+	    }
+	    bw.flush();
+	    bw.close();
+
+	    // write likelihood
 	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_LIKELIHOOD_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
 	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + "."); }
 	    bw = new BufferedWriter(new FileWriter(filename));
 	    // safe due to guards in createNameMapOfAllParameters()
 	    bw.write(Double.toString(likelihood)); bw.newLine();
+	    bw.write(Double.toString(viterbiLLH)); bw.newLine();
 	    bw.flush();
 	    bw.close();
+	    
 	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + " DONE."); }
 	}
 	catch (IOException ioe) {

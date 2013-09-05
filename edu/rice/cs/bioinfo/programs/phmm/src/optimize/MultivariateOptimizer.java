@@ -1080,6 +1080,20 @@ public class MultivariateOptimizer {
 	// then do atomic update
 	for (String name : map.keySet()) {
 	    // kliu - no delay update until the end
+	    // meh... no need to check min/max guards since checkpoints are assumed to be created from
+	    // valid runs.
+	    parameterNameMap.get(name).setValue(map.get(name).doubleValue(), false, false, false);
+	}
+
+	// meh... do it twice
+	// first time on min/max checks
+	// second time add in min/max checks due to inequality constraints - 
+	// really a NOOP in terms of updating values,
+	// just a cheap hack to get min/max guards to work properly for inequality constraints
+	for (String name : map.keySet()) {
+	    // kliu - no delay update until the end
+	    // meh... no need to check min/max guards since checkpoints are assumed to be created from
+	    // valid runs.
 	    parameterNameMap.get(name).setValue(map.get(name).doubleValue(), true, true, false);
 	}
     }

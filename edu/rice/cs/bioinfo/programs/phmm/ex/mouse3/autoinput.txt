@@ -11,7 +11,7 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/initial.viterbi.sequence
 1
-/home/kl23/code/phmm-repository/phmm/ex/mouse3/spanish-test.seq
+/home/kl23/code/phmm-repository/phmm/ex/mouse3/spanish-test.fasta
 3
 0
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/length-parameters
@@ -21,6 +21,6 @@
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mouse3/optimized.model.parameters
-DEFAULT
-true true true false
+CURRENT
+true true true true
 4

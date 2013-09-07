@@ -153,7 +153,8 @@ public class Felsenstein {
 
     // looks good
     protected static void test () {
-	NewickReader nr = new NewickReader(new StringReader("((human:1.0,chimp:2.0)anc:10.0,gorilla:3.0)root"));
+	NewickReader nr = new NewickReader(new StringReader("((SA:1.0,SB:1.0)SAB:0.5,(SC:1.0,SD:1.0)SCD:0.5)root"));
+	//NewickReader nr = new NewickReader(new StringReader("(((SA:1.0,SB:1.0)SAB:1.0,SC:1.0)SABC:0.5,SD:0.5)root"));
 	// kliu - change this over to a String data member
 	// don't really use it anyways
 	STITree<Double> tree = new STITree<Double>(true);
@@ -167,9 +168,10 @@ public class Felsenstein {
 	}
 
 	Map<String,Character> omap = new Hashtable<String,Character>();
-	omap.put("human", 'A');
-	omap.put("chimp", 'A');
-	omap.put("gorilla", 'T');
+	omap.put("SA", 'A');
+	omap.put("SB", 'A');
+	omap.put("SC", 'T');
+	omap.put("SD", 'A');
 	ObservationMap observationMap = new ObservationMap(omap);
 
 	GTRSubstitutionModel gtrsm = new GTRSubstitutionModel();

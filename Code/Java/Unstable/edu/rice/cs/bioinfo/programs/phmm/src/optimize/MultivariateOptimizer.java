@@ -6,33 +6,12 @@
  * Use this approach in lieu of Baum-Welch.
  */
 
-// TODO:
-// 1. Cache/restore HMM parameter values.
-
-// 2. Organize HMM parameters, enter them into a queue. 
-//    Single iteration == exhaust queue once.
-
-// 3. Add in llh evaluator.
-
-// 4. Alternative initializations: process queue
-//    and give either initial, default, or random choices.
-
-// 5. Pull in rest: search interval calculator,
-//    brent optimization calls. For both distances and probabilities.
-
-// Argh - need to optimize branch lengths for both parental tree and
-// gene genealogy. But parental tree is Network<Double> object and
-// gene genealogy is Tree<Double> object.
-// Just care about getParentDistance() and setParentDistance(...) methods.
-// Push into LengthParameter object?
-// How to specify in config file?
-
 // Hmm... don't permit any sort of constraints on gene genealogies.
 // Simpler that way.
 
 // Only allow parameter sharing and parameter constraints on
 // parental trees.
-// Force different internal node names on parental trees
+// Force different internal node names on parental trees.
 // 
 //
 // Easiest to do it this way.

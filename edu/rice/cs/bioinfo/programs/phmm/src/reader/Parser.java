@@ -215,6 +215,11 @@ public class Parser {
 
 	// eh, informative in the sense of parsimony
 	// must be at least two letters each with at least two exhibiting taxa
+	//
+	// AAAA is not parsimony-informative,
+	// but MLE on this column prefers "point" star tree with degenerate zero-length branches
+	// to all other trees. In this sense, AAAA is likelihood informative.
+	// Meh.
 	int numDistinguishingStates = 0;
 	for (Character c : counts.keySet()) {
 	    if (counts.get(c).get() >= 2) {

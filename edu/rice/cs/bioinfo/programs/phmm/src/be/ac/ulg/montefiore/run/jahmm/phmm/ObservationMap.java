@@ -14,6 +14,7 @@ package be.ac.ulg.montefiore.run.jahmm.phmm;
 
 import java.text.NumberFormat;
 import java.util.Map;
+import java.util.Set;
 import java.util.Hashtable;
 import be.ac.ulg.montefiore.run.jahmm.Observation;
 
@@ -43,6 +44,13 @@ public class ObservationMap extends Observation
      */
     public char get (String k) {
 	return (map.get(k).charValue());
+    }
+
+    /**
+     * Also expose this method.
+     */
+    public Set<String> keySet () {
+	return (map.keySet());
     }
 
     public String toString () {

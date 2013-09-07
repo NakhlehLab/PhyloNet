@@ -177,7 +177,7 @@ public class Parser {
 	return (map);
     }
 
-    protected void convertFASTAMapToListOfObservationMap (Hashtable<String,StringBuffer> map) {
+    protected void convertFASTAMapToListOfObservationMap (Hashtable<String,StringBuffer> map, boolean keepUninformativeSitesFlag) {
 	sequence = new ArrayList<ObservationMap>();
 	// strict!
 	int alignmentLength = -1; // undefined
@@ -196,13 +196,38 @@ public class Parser {
 	    for (String taxon : map.keySet()) {
 		column.put(taxon, new Character(map.get(taxon).charAt(i)));
 	    }
-	    sequence.add(new ObservationMap(column));
+	    ObservationMap omap = new ObservationMap(column);
+	    if (!keepUninformativeSitesFlag && !checkUninformativeSite(omap)) {
+		sequence.add(omap);
+	    }
 	}
     }
 
-    public void parseMe (String filename) {
+    protected boolean checkUninformativeSite (ObservationMap omap) {
+	Hashtable<Character,Counter> counts = new Hashtable<Character,Counter>();
+	for (String key : omap.keySet()) {
+	    Character c = omap.get(key);
+	    if (!counts.containsKey(c)) {
+		counts.put(c, new Counter());
+	    }
+	    counts.get(c).increment();
+	}
+
+	// eh, informative in the sense of parsimony
+	// must be at least two letters each with at least two exhibiting taxa
+	int numDistinguishingStates = 0;
+	for (Character c : counts.keySet()) {
+	    if (counts.get(c).get() >= 2) {
+		numDistinguishingStates++;
+	    }
+	}
+	
+	return (numDistinguishingStates >= 2);
+    }
+
+    public void parseMe (String filename, boolean keepUninformativeSitesFlag) {
 	Hashtable<String,StringBuffer> map = parseFASTAAlignment(filename);
-	convertFASTAMapToListOfObservationMap(map);
+	convertFASTAMapToListOfObservationMap(map, keepUninformativeSitesFlag);
     }
 
     // kliu - switch to FASTA format
@@ -502,5 +527,19 @@ public class Parser {
     // }
 
 
+    // bleh
+    public class Counter {
+	protected int i;
+	public Counter () {
+	    i = 0;
+	}
 
+	public void increment () {
+	    i++;
+	}
+
+	public int get () {
+	    return (i);
+	}
+    }
 }

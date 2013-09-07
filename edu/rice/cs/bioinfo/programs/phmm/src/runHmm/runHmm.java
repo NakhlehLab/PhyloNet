@@ -745,9 +745,11 @@ public class runHmm {
      */
     protected ArrayList<ObservationMap> getObs(BufferedReader in) {
 	try {
+	    System.out.println("Keep or discard uninformative sites? 1 for keep, 0 for discard: ");
+	    boolean keepUninformativeSitesFlag = Boolean.parseBoolean(in.readLine());
 	    System.out.println("Input observation sequence file path name : ");
 	    String filename = in.readLine();
-	    fParser.parseMe(filename);
+	    fParser.parseMe(filename, keepUninformativeSitesFlag);
 	    return fParser.getObs();
 	} catch (Exception e) {
 	    e.printStackTrace();

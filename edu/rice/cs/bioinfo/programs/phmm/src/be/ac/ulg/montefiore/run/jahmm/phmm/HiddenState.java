@@ -45,15 +45,28 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
+import util.TreeUtils;
 
 public class HiddenState
 {
     public static final String HIDDEN_STATE_NAME_DELIMITER = ",";
+    public static final String EQUIVALENCE_CLASS_NAME_DELIMITER = "!";
 
     // why not give it a unique name
     protected String name;
     protected Network<Double> parentalTree;
-    protected Tree geneGenealogy;
+    // For coalescent model calculations. 
+    // Current model disregards gene genealogy branch lengths.
+    protected Tree rootedGeneGenealogy; 
+    // For substitution model calculations.
+    // Shared among hidden states whose rootedGeneGenealogy
+    // objects are equivalent after unrooting.
+    //
+    // Rooting of this object has no meaning.
+    protected Tree unrootedGeneGenealogy; 
+
+    // add a check to ensure that unrooted and rooted phylogeny
+    // have Robinson-Foulds distance zero.
    
     // hmm, why not keep caches in HiddenState?
     // keep substitution probability cache in OpdfMap
@@ -88,14 +101,15 @@ public class HiddenState
 
     public HiddenState (String inName, 
 			Network<Double> inParentalTree, 
-			Tree inGeneGenealogy, 
+			Tree inRootedGeneGenealogy, 
+			Tree inUnrootedGeneGenealogy, 
 			Map<String,String> inputAlleleToSpeciesMapping, 
 			//Set<HiddenState> inParentalTreeEquivalenceClass, 
 			SubstitutionModel inSubstitutionModel,
 			CalculationCache inCalculationCache) {
 	setName(inName);
 	setParentalTree(inParentalTree);
-	setGeneGenealogy(inGeneGenealogy);
+	setRootedAndUnrootedGeneGenealogy(inRootedGeneGenealogy, inUnrootedGeneGenealogy);
 	setAlleleToSpeciesMapping(inputAlleleToSpeciesMapping);
 	//this.parentalTreeEquivalenceClass = inParentalTreeEquivalenceClass;
 	setSubstitutionModel(inSubstitutionModel);
@@ -107,11 +121,6 @@ public class HiddenState
 	rnNewickPrinter = new RnNewickPrinter<Double>();
     }
     
-    // For test
-    // public HiddenState (EvoTree inGeneGenealogy) {
-    // 	setGeneGenealogy(inGeneGenealogy);
-    // }
-
     public void setName (String inName) {
 	this.name = inName;
     }
@@ -124,8 +133,12 @@ public class HiddenState
     	return (parentalTree);
     }
 
-    public Tree getGeneGenealogy () {
-    	return (geneGenealogy);
+    public Tree getRootedGeneGenealogy () {
+    	return (rootedGeneGenealogy);
+    }
+
+    public Tree getUnrootedGeneGenealogy () {
+    	return (unrootedGeneGenealogy);
     }
 
     public Map<String,String> getAlleleToSpeciesMapping () {
@@ -140,8 +153,21 @@ public class HiddenState
     	this.parentalTree = inParentalTree;
     }
 
-    public void setGeneGenealogy (Tree inGeneGenealogy) {
-    	this.geneGenealogy = inGeneGenealogy;
+    public void setRootedAndUnrootedGeneGenealogy (Tree inRootedGeneGenealogy, Tree inUnrootedGeneGenealogy) {
+	this.rootedGeneGenealogy = inRootedGeneGenealogy;
+    	this.unrootedGeneGenealogy = inUnrootedGeneGenealogy;
+	// strict!
+	if (!verifyRootedAndUnrootedGeneGenealogy()) {
+	    throw (new RuntimeException ("ERROR: called HiddenState.setRootedAndUnrootedGeneGenealogy(...) with rooted phylogeny and unrooted phylogeny that had non-zero Robinson-Foulds distance."));
+	}
+    }
+
+    /**
+     * Make sure that Robinson-Foulds distance between rooted phylogeny and its unrooted
+     * version is zero.
+     */
+    protected boolean verifyRootedAndUnrootedGeneGenealogy () {
+	return (TreeUtils.calculateRobinsonFouldsDistance(rootedGeneGenealogy, unrootedGeneGenealogy) == 0);
     }
 
     public void setAlleleToSpeciesMapping (Map<String,String> map) {
@@ -181,8 +207,12 @@ public class HiddenState
     public String toString () {
 		return ("Parental tree:\n" +
 			getParentalTreeString() + "\n" +
-			"Gene genealogy:\n" +
-			geneGenealogy.toNewickWD() + "\n");
+			"Rooted gene genealogy:\n" +
+			// kliu - was toNewickWD - I don't think that was correct
+			rootedGeneGenealogy.toNewick() + "\n" +
+			"Unrooted gene genealogy:\n" +
+			// kliu - was toNewickWD - I don't think that was correct
+			unrootedGeneGenealogy.toNewick() + "\n");
     }
     
 
@@ -190,8 +220,8 @@ public class HiddenState
      * Expose this method to other classes, since transition probability calculation will need to access this.
      * Default to no debug messages.
      */
-    public double calculateProbabilityOfGeneGenealogyInParentalTree () {
-	return (calculateProbabilityOfGeneGenealogyInParentalTree(false));
+    public double calculateProbabilityOfRootedGeneGenealogyInParentalTree () {
+	return (calculateProbabilityOfRootedGeneGenealogyInParentalTree(false));
     }
 
     /**
@@ -206,18 +236,18 @@ public class HiddenState
      * WARNING - returns likelihood, *NOT* log likelihood!
      *
      */
-    protected double calculateProbabilityOfGeneGenealogyInParentalTree (boolean debugFlag) {
+    protected double calculateProbabilityOfRootedGeneGenealogyInParentalTree (boolean debugFlag) {
 	// use cache if it exists
-	if (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.contains(getParentalTree(), getGeneGenealogy())) {
-	    return (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.get(getParentalTree(), getGeneGenealogy()).doubleValue());
+	if (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.contains(getParentalTree(), getRootedGeneGenealogy())) {
+	    return (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.get(getParentalTree(), getRootedGeneGenealogy()).doubleValue());
 	}
 
 	// otherwise compute and cache
 
 	Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
 	// A list with one element. Inefficient - consider doing a one-shot approach later.
-	Vector<Tree> geneGenealogies = new Vector<Tree>();
-	geneGenealogies.add(geneGenealogy);
+	Vector<Tree> rootedGeneGenealogies = new Vector<Tree>();
+	rootedGeneGenealogies.add(getRootedGeneGenealogy());
 
 	gtp.emptyState();
 	
@@ -226,7 +256,7 @@ public class HiddenState
 	// calculation under model from Yu et al. 2012
 	// this method requires Network<Double>
 	// Yun uses Double to store hybridization probabilities during calculation
-        List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
+        List<Double> probList = gtp.calculateGTDistribution(parentalTree, rootedGeneGenealogies, alleleToSpeciesMapping, debugFlag);
 
 	// should only be a single entry
 	if (probList.size() != 1) {
@@ -238,18 +268,18 @@ public class HiddenState
 	// not quite right - while parental tree objects are unique by topology, gene genealogies aren't
 	// under the current model
 	// meh
-	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getGeneGenealogy(), new Double(result));
+	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getRootedGeneGenealogy(), new Double(result));
         return (result);
     }
 
     public double calculateEmissionProbability (ObservationMap o) {
 	// if cache entry exists, use it
-	if (calculationCache.cacheSubstitutionProbability.contains(getGeneGenealogy(), o)) {
-	    return (calculationCache.cacheSubstitutionProbability.get(getGeneGenealogy(), o));
+	if (calculationCache.cacheSubstitutionProbability.contains(getUnrootedGeneGenealogy(), o)) {
+	    return (calculationCache.cacheSubstitutionProbability.get(getUnrootedGeneGenealogy(), o));
 	}
 	
-	double result = felsensteinCalculator.getLikelihoodtree(getGeneGenealogy(), o);
-	calculationCache.cacheSubstitutionProbability.put(getGeneGenealogy(), o, new Double(result));
+	double result = felsensteinCalculator.getLikelihoodtree(getUnrootedGeneGenealogy(), o);
+	calculationCache.cacheSubstitutionProbability.put(getUnrootedGeneGenealogy(), o, new Double(result));
 	return (result);
     }
     

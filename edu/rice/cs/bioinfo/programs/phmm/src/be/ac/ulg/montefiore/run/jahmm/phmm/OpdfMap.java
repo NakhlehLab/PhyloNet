@@ -102,7 +102,7 @@ public class OpdfMap
 
 	// kliu - moved this from emission probability to transition probability
 	// see revised writeup
-	//double coalescentModelProbability = hiddenState.calculateProbabilityOfGeneGenealogyInParentalTree(DEBUG_FLAG);
+	//double coalescentModelProbability = hiddenState.calculateProbabilityOfRootedGeneGenealogyInParentalTree(DEBUG_FLAG);
 
 	// looks good
 	//

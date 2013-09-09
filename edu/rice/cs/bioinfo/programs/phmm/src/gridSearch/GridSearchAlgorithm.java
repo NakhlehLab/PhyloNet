@@ -111,7 +111,7 @@ public class GridSearchAlgorithm {
 
     	// ditto for all gene genealogies
     	for (HiddenState hiddenState : trees_states) {
-    	    for (TNode node : hiddenState.getGeneGenealogy().postTraverse()) {
+    	    for (TNode node : hiddenState.getRootedGeneGenealogy().postTraverse()) {
     		// root has no incoming edge to optimize
     		if (node.isRoot()) {
     		    continue;

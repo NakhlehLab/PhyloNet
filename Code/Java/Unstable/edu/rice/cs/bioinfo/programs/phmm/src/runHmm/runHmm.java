@@ -24,6 +24,7 @@ import java.util.Collections;
 
 import util.Constants;
 import util.Matrix;
+import util.TreeUtils;
 import substitutionModel.SubstitutionModel;
 import substitutionModel.GTRSubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
@@ -49,6 +50,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
+import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 
@@ -75,11 +77,16 @@ public class runHmm {
     // Maintain equivalence classes among hidden states based on shared parental tree.
     protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
     // ditto for gene genealogy
-    protected Map<Tree,Set<HiddenState>> geneGenealogyClasses;
+    protected Map<Tree,Set<HiddenState>> rootedGeneGenealogyClasses;
+    protected Map<Tree,Set<HiddenState>> unrootedGeneGenealogyClasses;
     // Since it's bijective, make it reversible
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
     // ditto for gene genealogies
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
+    // only topologies matter for rootedGeneGenealogies,
+    // and unrooted representative of a topological equivalence class
+    // has its branch lengths optimized.
+    protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
 
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     
@@ -427,6 +434,7 @@ public class runHmm {
 										    gtrSubstitutionModel,
 										    parentalTreeNameMap,
 										    geneGenealogyNameMap,
+										    rootedToUnrootedGeneGenealogyMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
 										    inputParentalBranchLengthParameterInequalitiesFilename,
@@ -511,8 +519,14 @@ public class runHmm {
 	    }
 	    bw.newLine();
 	    for (HiddenState hiddenState : hiddenStates) {
-		bw.write("Gene genealogy associated with hidden state " + hiddenState.getName() + ":"); bw.newLine();
-		bw.write(hiddenState.getGeneGenealogy().toNewick()); bw.newLine();
+		bw.write("Rooted gene genealogy associated with hidden state " + hiddenState.getName() + ":"); bw.newLine();
+		bw.write(hiddenState.getRootedGeneGenealogy().toNewick()); bw.newLine();
+		bw.newLine();
+	    }
+	    bw.newLine();
+	    for (HiddenState hiddenState : hiddenStates) {
+		bw.write("Unrooted gene genealogy associated with hidden state " + hiddenState.getName() + ":"); bw.newLine();
+		bw.write(hiddenState.getUnrootedGeneGenealogy().toNewick()); bw.newLine();
 		bw.newLine();
 	    }
 	    bw.newLine();
@@ -622,13 +636,15 @@ public class runHmm {
     }
 
     /** 
-     * Set geneGenealogyTaxaFlag to true to check gene genealogy taxa, set to false
+     * Set geneGenealogyTaxaFlag to true to check rooted gene genealogy taxa, set to false
      * to check parental tree taxa.
+     *
+     * Unrooted gene genealogy taxa match rooted gene genealogy taxa by construction.
      */
     protected boolean verifyTaxa (String[] sortedReferenceTaxa, boolean geneGenealogyTaxaFlag) {
 	for (HiddenState hiddenState : hiddenStates) {
 	    String[] sortedCheckTaxa = geneGenealogyTaxaFlag ? 
-		hiddenState.getGeneGenealogy().getLeaves() : 
+		hiddenState.getRootedGeneGenealogy().getLeaves() : 
 		getTaxa(hiddenState.getParentalTree());
 	    Arrays.sort(sortedCheckTaxa);
 	    if (!Arrays.equals(sortedReferenceTaxa, sortedCheckTaxa)) {
@@ -825,7 +841,7 @@ public class runHmm {
 	double norm = 0.0;
 	for (int i = 0; i < hiddenStates.size(); i++) {
 	    HiddenState hiddenState = hiddenStates.get(i);
-	    pi[i] = hiddenState.calculateProbabilityOfGeneGenealogyInParentalTree();
+	    pi[i] = hiddenState.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
 	    norm += pi[i];
 	}
 	
@@ -856,8 +872,13 @@ public class runHmm {
      * Do two hidden states share the same gene genealogy object?
      * (Same column in the HMM hidden state space?)
      */
-    protected boolean checkSameGeneGenealogyClass (HiddenState si, HiddenState sj) {
-	Set<HiddenState> sic = geneGenealogyClasses.get(si.getGeneGenealogy());
+    protected boolean checkSameGeneRootedGenealogyClass (HiddenState si, HiddenState sj) {
+	Set<HiddenState> sic = rootedGeneGenealogyClasses.get(si.getRootedGeneGenealogy());
+	return (sic.contains(sj));
+    }
+
+    protected boolean checkSameGeneUnrootedGenealogyClass (HiddenState si, HiddenState sj) {
+	Set<HiddenState> sic = unrootedGeneGenealogyClasses.get(si.getUnrootedGeneGenealogy());
 	return (sic.contains(sj));
     }
 
@@ -881,7 +902,7 @@ public class runHmm {
 		// }
 		
 		HiddenState sj = hiddenStates.get(j);
-		a[i][j] = sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+		a[i][j] = sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
 		//check += a[i][j];
 		//System.out.println ("inner loop in calculateAij(): " + a[i][j]);
 		if (checkSameParentalTreeClass(si, sj)) {
@@ -942,10 +963,10 @@ public class runHmm {
 		
     // 		HiddenState sj = hiddenStates.get(j);
     // 		if (checkSameParentalClass(si, sj)) {
-    // 		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+    // 		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
     // 		}
     // 		else {
-    // 		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfGeneGenealogyInParentalTree();
+    // 		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
     // 		}
     // 	    }
 
@@ -1151,7 +1172,8 @@ public class runHmm {
 	hiddenStates = new ArrayList<HiddenState>();
 	// also maintain equivalence classes among hidden states based on shared parental trees
 	parentalTreeClasses = new Hashtable<Network<Double>,Set<HiddenState>>();
-	geneGenealogyClasses = new Hashtable<Tree,Set<HiddenState>>();
+	rootedGeneGenealogyClasses = new Hashtable<Tree,Set<HiddenState>>();
+	unrootedGeneGenealogyClasses = new Hashtable<Tree,Set<HiddenState>>();
 	// also retain parental tree names
 	// to facilitate parameter inputs/constraints on parental tree branches
 	parentalTreeNameMap = new BijectiveHashtable<String,Network<Double>>();
@@ -1204,6 +1226,13 @@ public class runHmm {
 	}
 	ggbr.close();
 
+	// Now create equivalence classes among rooted gene genealogies based on 
+	// unrooted topological equality.
+	//
+	// Only optimize branch lengths of unrooted member from each topological equivalence
+	// class. To prevent overfitting.
+	rootedToUnrootedGeneGenealogyMap = createRootedToUnrootedGeneGenealogyMap();
+
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
 	// kliu - hmm... would be nice to go in alphabetical order according to tree names
 	ArrayList<String> parentalTreeNames = new ArrayList<String>(parentalTreeNameMap.keys());
@@ -1213,10 +1242,16 @@ public class runHmm {
 	for (String parentalTreeName : parentalTreeNames) {
 	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
 	    for (String geneGenealogyName : geneGenealogyNames) {
-		Tree geneGenealogy = geneGenealogyNameMap.get(geneGenealogyName);
-		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(geneGenealogy);
+		Tree rootedGeneGenealogy = geneGenealogyNameMap.get(geneGenealogyName);
+		// paranoid
+		if (!rootedToUnrootedGeneGenealogyMap.containsKey(rootedGeneGenealogy) || 
+		    rootedToUnrootedGeneGenealogyMap.get(rootedGeneGenealogy).size() != 1) {
+		    throw (new RuntimeException("ERROR: invalid entry for rooted gene genealogy " + geneGenealogyName + " in rootedToUnrootedGeneGenealogyMap in runHmm.buildTrees(...)."));
+		}
+		Tree unrootedGeneGenealogy = rootedToUnrootedGeneGenealogyMap.get(rootedGeneGenealogy).iterator().next();
+		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(rootedGeneGenealogy);
 		// kliu - meh - parse allele-to-species mapping later and add in references here
-		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, geneGenealogy, null, gtrSubstitutionModel, calculationCache);
+		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, rootedGeneGenealogy, unrootedGeneGenealogy, null, gtrSubstitutionModel, calculationCache);
 		hiddenStates.add(hiddenState);
 
 		// maintain equivalence class maps
@@ -1224,12 +1259,17 @@ public class runHmm {
 		    parentalTreeClasses.put(parentalTree, new HashSet<HiddenState>());
 		}
 		
-		if (!geneGenealogyClasses.containsKey(geneGenealogy)) {
-		    geneGenealogyClasses.put(geneGenealogy, new HashSet<HiddenState>());
+		if (!rootedGeneGenealogyClasses.containsKey(rootedGeneGenealogy)) {
+		    rootedGeneGenealogyClasses.put(rootedGeneGenealogy, new HashSet<HiddenState>());
+		}
+
+		if (!unrootedGeneGenealogyClasses.containsKey(unrootedGeneGenealogy)) {
+		    unrootedGeneGenealogyClasses.put(unrootedGeneGenealogy, new HashSet<HiddenState>());
 		}
 
 		parentalTreeClasses.get(parentalTree).add(hiddenState);
-		geneGenealogyClasses.get(geneGenealogy).add(hiddenState);
+		rootedGeneGenealogyClasses.get(rootedGeneGenealogy).add(hiddenState);
+		unrootedGeneGenealogyClasses.get(unrootedGeneGenealogy).add(hiddenState);
 	    }
 	}
 	
@@ -1248,6 +1288,132 @@ public class runHmm {
 	if (hiddenStates.size() < 2) {
 	    throw (new ParserFileException("ERROR: must be at least two hidden states in PhyloNet-HMM."));
 	}
+    }
+
+    /**
+     * Inefficient O(n^3) code. Bleh.
+     * But this function only gets run once during an analysis.
+     * Don't spend time being clever about this function.
+     *
+     * We optimize only the unrooted representative (whose rooting has no meaning) of a topological equivalence class.
+     */
+    protected BidirectionalMultimap<Tree,Tree> createRootedToUnrootedGeneGenealogyMap () {
+	// paranoid
+	if ((geneGenealogyNameMap == null) || (geneGenealogyNameMap.sizeKeys() <= 0)) {
+	    System.err.println ("ERROR: called runHmm.createRootedToUnrootedGeneGenealogyMap() with null or empty geneGenealogyNameMap. Returning null to signal error.");
+	    return (null);
+	}
+
+	Tree[] geneGenealogies = new Tree[geneGenealogyNameMap.values().size()];
+	geneGenealogies = geneGenealogyNameMap.values().toArray(geneGenealogies);
+
+	// bleh
+	// geneGenealogies index -> equivalence class
+	// weird Vector behavior
+	// need to call setSize() to force Vector to take on a fixed size - bleh
+	Vector<Set<Tree>> equivalenceClassMap = new Vector<Set<Tree>>();
+	// weird Vector behavior with initial capacity
+	// ArrayList doesn't even support setSize()
+	equivalenceClassMap.setSize(geneGenealogies.length); 
+	
+
+	// not the most efficient way to compute pairwise R-F distance matrix
+	// Day's algorithm gives a linear time algo for a set of trees
+	// meh, still need to read/write n^2 trees just for matrix itself
+	for (int i = 0; i < geneGenealogies.length; i++) {
+	    for (int j = i + 1; j < geneGenealogies.length; j++) {
+		// same class
+		if (TreeUtils.calculateRobinsonFouldsDistance(geneGenealogies[i], geneGenealogies[j]) == 0) {
+		    if ((equivalenceClassMap.get(i) != null) &&
+			(equivalenceClassMap.get(j) == null)) {
+			equivalenceClassMap.get(i).add(geneGenealogies[j]);
+		    }
+		    else if ((equivalenceClassMap.get(i) == null) &&
+			     (equivalenceClassMap.get(j) != null)) {
+			equivalenceClassMap.get(j).add(geneGenealogies[i]);
+		    }
+		    else if ((equivalenceClassMap.get(i) == null) &&
+			     (equivalenceClassMap.get(j) == null)) {
+			Set<Tree> st = new HashSet<Tree>();
+			st.add(geneGenealogies[i]);
+			st.add(geneGenealogies[j]);
+			equivalenceClassMap.set(i, st);
+			equivalenceClassMap.set(j, st);
+		    }
+		    else { // both sets exist
+			// coalesce
+			// expensive op
+			// makes this function O(n^3)
+			// bleh
+			// later, spend time to make this n^2?
+			Set<Tree> smallerSet = equivalenceClassMap.get(i);
+			Set<Tree> largerSet = equivalenceClassMap.get(j);
+			if (equivalenceClassMap.get(j).size() < equivalenceClassMap.get(i).size()) {
+			    smallerSet = equivalenceClassMap.get(j);
+			    largerSet = equivalenceClassMap.get(i);
+			}
+			largerSet.addAll(smallerSet);
+			// rather than keep track of i vs. j
+			// just do a repeated set
+			// it's fine
+			equivalenceClassMap.set(i, largerSet);
+			equivalenceClassMap.set(j, largerSet);
+		    }
+		}
+		else { // different class
+		    if (equivalenceClassMap.get(i) == null) {
+			Set<Tree> st = new HashSet<Tree>();
+			st.add(geneGenealogies[i]);
+			equivalenceClassMap.set(i, st);
+		    }
+
+		    if (equivalenceClassMap.get(j) == null) {
+			Set<Tree> st = new HashSet<Tree>();
+			st.add(geneGenealogies[j]);
+			equivalenceClassMap.set(j, st);
+		    }
+		}
+	    }
+	}
+
+	// now get unique classes from map
+	Set<Set<Tree>> uniqueEquivalenceClasses = new HashSet<Set<Tree>>();
+	for (Set<Tree> equivalenceClass : equivalenceClassMap) {
+	    if (!uniqueEquivalenceClasses.contains(equivalenceClass)) {
+		uniqueEquivalenceClasses.add(equivalenceClass);
+	    }
+	}
+
+	BidirectionalMultimap<Tree,Tree> result = new BidirectionalMultimap<Tree,Tree>();
+
+	for (Set<Tree> equivalenceClass : uniqueEquivalenceClasses) {
+	    Tree canonicalRepresentative = computeCanonicalRepresentativeOfTopologicalEquivalenceClass(equivalenceClass);
+	    // create a new copy
+	    // looks a little nicer if input rooted gene genealogies are left intact
+	    Tree canonicalRepresentativeCopy = new STITree<Double>(canonicalRepresentative);
+	    for (Tree member : equivalenceClass) {
+		result.put(member, canonicalRepresentativeCopy);
+	    }
+	}
+
+	return (result);
+    }
+
+    /**
+     * The rooting of the canonical representative is totally irrelevant,
+     * since we're using reversible substitution models.
+     * The branch lengths shouldn't make a difference if the optimization heuristic
+     * is decent.
+     * Only do it this way since Felsenstein code uses a rooted tree data structure.
+     *
+     * Just want to optimize a single representative of a topological equivalence class,
+     * to prevent over-fitting.
+     */
+    protected Tree computeCanonicalRepresentativeOfTopologicalEquivalenceClass (Set<Tree> equivalenceClass) {
+	if (equivalenceClass.size() <= 0) {
+	    throw (new RuntimeException ("ERROR: empty equivalence class in runHmm.computeCanonicalRepresentativeOfTopologicalEquivalenceClass(...)."));
+	}
+	return (equivalenceClass.iterator().next());
     }
 
     // parentalTreeEquivalenceClass

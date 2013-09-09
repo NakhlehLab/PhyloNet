@@ -50,6 +50,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
@@ -128,6 +129,7 @@ public class MultivariateOptimizer {
     //protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
+    protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
     protected List<ObservationMap> observation;
     protected CalculationCache calculationCache;
 
@@ -167,6 +169,7 @@ public class MultivariateOptimizer {
 				  //Map<Network<Double>,Set<HiddenState>> inParentalTreeClasses,
 				  BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
 				  BijectiveHashtable<String,Tree> inGeneGenealogyNameMap,
+				  BidirectionalMultimap<Tree,Tree> inRootedToUnrootedGeneGenealogyMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
 				  String inputParentalBranchLengthParameterInequalitiesFilename,
@@ -186,6 +189,7 @@ public class MultivariateOptimizer {
 	//this.parentalTreeClasses = inParentalTreeClasses;
 	this.parentalTreeNameMap = inParentalTreeNameMap;
 	this.geneGenealogyNameMap = inGeneGenealogyNameMap;
+	this.rootedToUnrootedGeneGenealogyMap = inRootedToUnrootedGeneGenealogyMap;
 	this.observation = inObservation;
 	this.calculationCache = inCalculationCache;
 	this.enableParentalTreeOptimizationFlag = inEnableParentalTreeOptimizationFlag;
@@ -279,20 +283,42 @@ public class MultivariateOptimizer {
 	}
     }
 
+    protected String getTopologicalEquivalenceClassName (Tree unrootedGeneGenealogy) {
+	String result = "";
+	int i = 0;
+	for (Tree rootedMember : rootedToUnrootedGeneGenealogyMap.rget(unrootedGeneGenealogy)) {
+	    if (i > 0) {
+		result += HiddenState.EQUIVALENCE_CLASS_NAME_DELIMITER;
+	    }
+	    result += geneGenealogyNameMap.rget(rootedMember);
+	    i++;
+	}
+	return (result);
+    }
+    
     /**
      * In current model, hidden states share both parental trees and
      * gene genealogies. Gene genealogy parameterization done
-     * per object only.
+     * per object only. Only optimize a single canonical representative
+     * of each topological equivalence class (whose rooting doesn't matter
+     * since we use reversible substitution models).
      */
     protected void createGenealogyBranchLengthParameters () {
 	genealogyBranchLengthParameters = new Vector<GenealogyBranchLengthParameter>();
-	for (Tree geneGenealogy : geneGenealogyNameMap.values()) {
-	    for (TNode node : geneGenealogy.postTraverse()) {
+	// removed this:
+	// geneGenealogyNameMap.values()
+	// 
+	// was causing over-fitting issues
+	for (Tree unrootedGeneGenealogy : rootedToUnrootedGeneGenealogyMap.values()) {
+	    for (TNode node : unrootedGeneGenealogy.postTraverse()) {
 		if (node.isRoot() || node.getParent() == null) {
 		    continue;
 		}
 		
-		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(GenealogyBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(geneGenealogy) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
+		// get name topological equivalence class
+		String topologicalEquivalenceClassName = getTopologicalEquivalenceClassName(unrootedGeneGenealogy);
+
+		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(GenealogyBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + topologicalEquivalenceClassName + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
 											 node.getParentDistance(),
 											 node,
 											 calculationCache,

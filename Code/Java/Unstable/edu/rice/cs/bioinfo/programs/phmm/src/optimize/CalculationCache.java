@@ -2,7 +2,7 @@
  * Heaviest calculations go in here: 
  * - P[g|T] probability of gene genealogy given parental tree
  *   - parental tree -> gene genealogy -> double
- *     - get/set: HiddenState.calculateProbabilityOfGeneGenealogyInParentalTree(...) DONE
+ *     - get/set: HiddenState.calculateProbabilityOfRootedGeneGenealogyInParentalTree(...) DONE
  *     - clear:
  *       - Change one parental tree's branch length -> clear its entry DONE
  * - Conversion from GTR (rate matrix, base frequency vector, length of time) to 

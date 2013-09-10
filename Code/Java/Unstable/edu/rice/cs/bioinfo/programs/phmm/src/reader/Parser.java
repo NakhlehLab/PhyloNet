@@ -197,7 +197,7 @@ public class Parser {
 		column.put(taxon, new Character(map.get(taxon).charAt(i)));
 	    }
 	    ObservationMap omap = new ObservationMap(column);
-	    if (!keepUninformativeSitesFlag && !checkUninformativeSite(omap)) {
+	    if (keepUninformativeSitesFlag || !checkUninformativeSite(omap)) {
 		sequence.add(omap);
 	    }
 	}
@@ -226,13 +226,19 @@ public class Parser {
 		numDistinguishingStates++;
 	    }
 	}
-	
-	return (numDistinguishingStates >= 2);
+
+    boolean flag = (numDistinguishingStates < 2);
+	return (flag);
     }
 
     public void parseMe (String filename, boolean keepUninformativeSitesFlag) {
 	Hashtable<String,StringBuffer> map = parseFASTAAlignment(filename);
 	convertFASTAMapToListOfObservationMap(map, keepUninformativeSitesFlag);
+
+	// check if no sites left after optional step of discarding uninformative sites
+	if (sequence.size() <= 0) {
+	    throw (new RuntimeException("ERROR: no columns left after parsing/filtering input file " + filename + "."));
+	}
     }
 
     // kliu - switch to FASTA format

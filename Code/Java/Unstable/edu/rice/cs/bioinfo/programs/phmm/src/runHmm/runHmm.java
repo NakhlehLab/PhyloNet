@@ -88,6 +88,8 @@ public class runHmm {
     // has its branch lengths optimized.
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
 
+    protected boolean collapseGeneGenealogiesByTopologicalEquivalenceClassFlag;
+
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     
     // need to assume GTR substitution model due to parameterization differences
@@ -136,6 +138,13 @@ public class runHmm {
     }
 
     /**
+     * Since some construction performed by MultivariateOptimizer.
+     */
+    public boolean getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag () {
+	return (collapseGeneGenealogiesByTopologicalEquivalenceClassFlag);
+    }
+
+    /**
      * @throws Exception
      * 		- will only throw exceptions when basic Info file or Tree file is unable to be parsed correctly
      * 			since these files are essential to building an hmm and the parser
@@ -164,6 +173,9 @@ public class runHmm {
 		    System.out.println( e + "\nError: Not a number! Try again!");
 		}
 	    }
+	    
+	    System.out.println ("Collapse gene genealogies according to topological equivalence classes? Enter true for yes or anything else for no:" );
+	    collapseGeneGenealogiesByTopologicalEquivalenceClassFlag = Boolean.parseBoolean(in.readLine());
 			
 	    System.out.println("\nInput the parental trees file path name:\n (note: see README for file format) \n");
 	    parentalTreesFileName = in.readLine();
@@ -760,7 +772,7 @@ public class runHmm {
      */
     protected ArrayList<ObservationMap> getObs(BufferedReader in) {
 	try {
-	    System.out.println("Keep or discard parsimony-uninformative sites? 1 for keep, 0 for discard: ");
+	    System.out.println("Keep or discard parsimony-uninformative sites? true for keep, false for discard: ");
 	    boolean keepUninformativeSitesFlag = Boolean.parseBoolean(in.readLine());
 	    System.out.println("Input observation sequence file path name : ");
 	    String filename = in.readLine();
@@ -1158,7 +1170,29 @@ public class runHmm {
     	    return (null);
     	}
     }
-    	
+    
+    /**
+     * Expose this so other classes can access the class name for an unrooted gene genealogy.
+     */
+    public String getTopologicalEquivalenceClassName (Tree unrootedGeneGenealogy) {
+	Vector<String> names = new Vector<String>();
+	for (Tree rootedMember : rootedToUnrootedGeneGenealogyMap.rget(unrootedGeneGenealogy)) {
+	    names.add(geneGenealogyNameMap.rget(rootedMember));
+	}
+
+	Collections.sort(names);
+
+	String result = "";
+	for (int i = 0; i < names.size(); i++) {
+	    if (i > 0) {
+		result += HiddenState.EQUIVALENCE_CLASS_NAME_DELIMITER;
+	    }
+	    result += names.get(i);
+	}
+
+	return (result);
+    }
+
     /**
      * Read and parse trees file
      * @throws Exception 
@@ -1233,6 +1267,10 @@ public class runHmm {
 	// class. To prevent overfitting.
 	rootedToUnrootedGeneGenealogyMap = createRootedToUnrootedGeneGenealogyMap();
 
+	// testing
+	if (Constants.WARNLEVEL > 2) { System.out.println ("Collapse gene genealogies by topological equivalence class? " + collapseGeneGenealogiesByTopologicalEquivalenceClassFlag); System.out.println(); }
+	if (Constants.WARNLEVEL > 2) { debugRootedToUnrootedGeneGenealogyMap(); }
+
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
 	// kliu - hmm... would be nice to go in alphabetical order according to tree names
 	ArrayList<String> parentalTreeNames = new ArrayList<String>(parentalTreeNameMap.keys());
@@ -1250,8 +1288,17 @@ public class runHmm {
 		}
 		Tree unrootedGeneGenealogy = rootedToUnrootedGeneGenealogyMap.get(rootedGeneGenealogy).iterator().next();
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(rootedGeneGenealogy);
+		if (collapseGeneGenealogiesByTopologicalEquivalenceClassFlag) {
+		    hiddenStateName += HiddenState.HIDDEN_STATE_NAME_DELIMITER + getTopologicalEquivalenceClassName(unrootedGeneGenealogy);
+		}
 		// kliu - meh - parse allele-to-species mapping later and add in references here
-		HiddenState hiddenState = new HiddenState(hiddenStateName, parentalTree, rootedGeneGenealogy, unrootedGeneGenealogy, null, gtrSubstitutionModel, calculationCache);
+		HiddenState hiddenState = new HiddenState(hiddenStateName, 
+							  parentalTree, 
+							  rootedGeneGenealogy, 
+							  collapseGeneGenealogiesByTopologicalEquivalenceClassFlag ? unrootedGeneGenealogy : rootedGeneGenealogy, 
+							  null, 
+							  gtrSubstitutionModel, 
+							  calculationCache);
 		hiddenStates.add(hiddenState);
 
 		// maintain equivalence class maps
@@ -1291,6 +1338,21 @@ public class runHmm {
     }
 
     /**
+     * Print out equivalence classes.
+     */
+    protected void debugRootedToUnrootedGeneGenealogyMap () {
+	System.out.println ("Gene genealogy topological equivalence classes: ");
+	for (Tree unrootedGeneGenealogy : rootedToUnrootedGeneGenealogyMap.values()) {
+	    System.out.println ("Unrooted gene genealogy " + unrootedGeneGenealogy.toNewick() + " topological equivalence class members: ");
+	    for (Tree rootedGeneGenealogy : rootedToUnrootedGeneGenealogyMap.rget(unrootedGeneGenealogy)) {
+		System.out.println (rootedGeneGenealogy.toNewick());
+	    }
+	    System.out.println();
+	}
+	System.out.println();
+    }
+
+    /**
      * Inefficient O(n^3) code. Bleh.
      * But this function only gets run once during an analysis.
      * Don't spend time being clever about this function.
@@ -1327,10 +1389,12 @@ public class runHmm {
 		    if ((equivalenceClassMap.get(i) != null) &&
 			(equivalenceClassMap.get(j) == null)) {
 			equivalenceClassMap.get(i).add(geneGenealogies[j]);
+			equivalenceClassMap.set(j, equivalenceClassMap.get(i));
 		    }
 		    else if ((equivalenceClassMap.get(i) == null) &&
 			     (equivalenceClassMap.get(j) != null)) {
 			equivalenceClassMap.get(j).add(geneGenealogies[i]);
+			equivalenceClassMap.set(i, equivalenceClassMap.get(j));
 		    }
 		    else if ((equivalenceClassMap.get(i) == null) &&
 			     (equivalenceClassMap.get(j) == null)) {

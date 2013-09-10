@@ -20,6 +20,7 @@
 
 package optimize;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
@@ -282,19 +283,6 @@ public class MultivariateOptimizer {
 	    switchingFrequencyParameters.add(sfp);
 	}
     }
-
-    protected String getTopologicalEquivalenceClassName (Tree unrootedGeneGenealogy) {
-	String result = "";
-	int i = 0;
-	for (Tree rootedMember : rootedToUnrootedGeneGenealogyMap.rget(unrootedGeneGenealogy)) {
-	    if (i > 0) {
-		result += HiddenState.EQUIVALENCE_CLASS_NAME_DELIMITER;
-	    }
-	    result += geneGenealogyNameMap.rget(rootedMember);
-	    i++;
-	}
-	return (result);
-    }
     
     /**
      * In current model, hidden states share both parental trees and
@@ -309,16 +297,25 @@ public class MultivariateOptimizer {
 	// geneGenealogyNameMap.values()
 	// 
 	// was causing over-fitting issues
-	for (Tree unrootedGeneGenealogy : rootedToUnrootedGeneGenealogyMap.values()) {
-	    for (TNode node : unrootedGeneGenealogy.postTraverse()) {
+
+	Iterable<Tree> geneGenealogiesToOptimize = 
+	    runHmmObject.getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag() ? 
+	    rootedToUnrootedGeneGenealogyMap.values() : 
+	    geneGenealogyNameMap.values() ;
+
+	for (Tree geneGenealogy : geneGenealogiesToOptimize) {
+	    for (TNode node : geneGenealogy.postTraverse()) {
 		if (node.isRoot() || node.getParent() == null) {
 		    continue;
 		}
 		
 		// get name topological equivalence class
-		String topologicalEquivalenceClassName = getTopologicalEquivalenceClassName(unrootedGeneGenealogy);
+		String genealogyObjectName = 
+		    runHmmObject.getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag() ? 
+		    runHmmObject.getTopologicalEquivalenceClassName(geneGenealogy) :
+		    geneGenealogyNameMap.rget(geneGenealogy) ;
 
-		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(GenealogyBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + topologicalEquivalenceClassName + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
+		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(GenealogyBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + genealogyObjectName + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
 											 node.getParentDistance(),
 											 node,
 											 calculationCache,

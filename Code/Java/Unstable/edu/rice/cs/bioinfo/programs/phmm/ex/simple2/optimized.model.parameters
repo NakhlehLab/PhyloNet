@@ -13,22 +13,41 @@ Parental tree ptree2:
 ((gorilla:0.1,human:0.3909090915642069)anc:3.9090909084357928,chimp:0.1)root;
 
 
-Gene genealogy associated with hidden state ptree1,gtree1:
+Rooted gene genealogy associated with hidden state ptree1,gtree1:
 (gorilla:0.10021720576980071,(human:0.001000010325006129,chimp:0.001000010325006129)anc:1.3035834327432518)root;
 
-Gene genealogy associated with hidden state ptree1,gtree2:
+Rooted gene genealogy associated with hidden state ptree1,gtree2:
 (chimp:0.7020207436151791,(human:0.001000010918649872,gorilla:0.0010000152506113435)anc:8.479008873057301)root;
 
-Gene genealogy associated with hidden state ptree1,gtree3:
+Rooted gene genealogy associated with hidden state ptree1,gtree3:
 (human:0.002032568492718626,(chimp:8.499546460314795,gorilla:0.4687249344788179)anc:0.001000010325006129)root;
 
-Gene genealogy associated with hidden state ptree2,gtree1:
+Rooted gene genealogy associated with hidden state ptree2,gtree1:
 (gorilla:0.10021720576980071,(human:0.001000010325006129,chimp:0.001000010325006129)anc:1.3035834327432518)root;
 
-Gene genealogy associated with hidden state ptree2,gtree2:
+Rooted gene genealogy associated with hidden state ptree2,gtree2:
 (chimp:0.7020207436151791,(human:0.001000010918649872,gorilla:0.0010000152506113435)anc:8.479008873057301)root;
 
-Gene genealogy associated with hidden state ptree2,gtree3:
+Rooted gene genealogy associated with hidden state ptree2,gtree3:
+(human:0.002032568492718626,(chimp:8.499546460314795,gorilla:0.4687249344788179)anc:0.001000010325006129)root;
+
+
+Unrooted gene genealogy associated with hidden state ptree1,gtree1:
+(gorilla:0.10021720576980071,(human:0.001000010325006129,chimp:0.001000010325006129)anc:1.3035834327432518)root;
+
+Unrooted gene genealogy associated with hidden state ptree1,gtree2:
+(chimp:0.7020207436151791,(human:0.001000010918649872,gorilla:0.0010000152506113435)anc:8.479008873057301)root;
+
+Unrooted gene genealogy associated with hidden state ptree1,gtree3:
+(human:0.002032568492718626,(chimp:8.499546460314795,gorilla:0.4687249344788179)anc:0.001000010325006129)root;
+
+Unrooted gene genealogy associated with hidden state ptree2,gtree1:
+(gorilla:0.10021720576980071,(human:0.001000010325006129,chimp:0.001000010325006129)anc:1.3035834327432518)root;
+
+Unrooted gene genealogy associated with hidden state ptree2,gtree2:
+(chimp:0.7020207436151791,(human:0.001000010918649872,gorilla:0.0010000152506113435)anc:8.479008873057301)root;
+
+Unrooted gene genealogy associated with hidden state ptree2,gtree3:
 (human:0.002032568492718626,(chimp:8.499546460314795,gorilla:0.4687249344788179)anc:0.001000010325006129)root;
 
 

@@ -1,6 +1,7 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/basicInfo.txt
 6
+false
 /home/kl23/code/phmm-repository/phmm/ex/simple2/parental.trees
 /home/kl23/code/phmm-repository/phmm/ex/simple2/gene.trees
 /home/kl23/code/phmm-repository/phmm/ex/simple2/allele-to-species.mapping
@@ -11,6 +12,7 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/simple2/initial.viterbi.sequence
 1
+true
 /home/kl23/code/phmm-repository/phmm/ex/simple2/myseq.fasta
 3
 0

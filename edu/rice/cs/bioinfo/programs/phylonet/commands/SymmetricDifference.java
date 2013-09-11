@@ -213,9 +213,12 @@ public class SymmetricDifference extends CommandBaseFileOut {
         sd.computeDifference(experamentalTree, modelTree);
 
 
+        //String result = String.format("\nFalse Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s",sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2());
         String result =
-                String.format("\nFalse Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s",
-                        sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2());
+                String.format("\n# False Negative Edges: %s\n# False Positive Edges: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s" +
+                        "\nWeighted False Negatives: %s\nWeighted False Positives: %s\nWeighted RF-Distance: %s",
+                        sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2(),
+                        sd.getWeightedFalseNegative(), sd.getWeightedFalsePositive(), sd.getWeightedAverage());
 
         return result;
     }

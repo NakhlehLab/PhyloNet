@@ -1,2 +1,2 @@
-ptree1 (gorilla:3,(human:1,chimp:2)anc:4)root;
-ptree2 (chimp:3,(human:1,gorilla:2)anc:5)root;
+ptree1 (gorilla:3,(human:1,chimp:2)anc:4)root; human:human,chimp:chimp,gorilla:gorilla
+ptree2 (chimp:3,(human:1,gorilla:2)anc:5)root; human:human,chimp:chimp,gorilla:gorilla

@@ -4,7 +4,6 @@
 false
 /home/kl23/code/phmm-repository/phmm/ex/simple2/parental.trees
 /home/kl23/code/phmm-repository/phmm/ex/simple2/gene.trees
-/home/kl23/code/phmm-repository/phmm/ex/simple2/allele-to-species.mapping
 /home/kl23/code/phmm-repository/phmm/ex/simple2
 0.1
 2.0 2.5 3.0 4.0 5.0

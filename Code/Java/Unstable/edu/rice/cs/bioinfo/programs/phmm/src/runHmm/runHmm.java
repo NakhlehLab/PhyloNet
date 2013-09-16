@@ -86,7 +86,10 @@ public class runHmm {
     protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
     // bleh, need to keep track of allele-to-species mapping for
     // each parental tree
-    protected BijectiveHashtable<String,Map<String,String>> parentalTreeAlleleToSpeciesMapMap;
+    //
+    // Hmm... Map.equals() function may be too clever here.
+    // Just use a Map.
+    protected Map<String,Map<String,String>> parentalTreeAlleleToSpeciesMapMap;
     // ditto for gene genealogies
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
     // only topologies matter for rootedGeneGenealogies,
@@ -615,12 +618,14 @@ public class runHmm {
 
     /**
      * Use allele-to-species mapping.
-     * Set keyFlag to true to get keys (allele taxa), or false to get values (species taxa).
+     * Set geneGenealogyTaxonFlag to true to get gene-genealogy taxa, or false to get parental-tree taxa.
      * Warning - constructs a new array each time.
+     *
+     * Gene-genealogy-taxon -> parental-tree-taxon mapping.
      */
-    protected String[] getSortedTaxaFromAlleleSpeciesMapping (Map<String,String> alleleSpeciesMap, boolean keyFlag) {
+    protected String[] getSortedTaxaFromAlleleSpeciesMapping (Map<String,String> alleleSpeciesMap, boolean geneGenealogyTaxonFlag) {
 	// no official list of species names - meh
-        Set<String> set = keyFlag ? new HashSet<String>(alleleSpeciesMap.keySet()) : new HashSet<String>(alleleSpeciesMap.values());
+        Set<String> set = geneGenealogyTaxonFlag ? new HashSet<String>(alleleSpeciesMap.keySet()) : new HashSet<String>(alleleSpeciesMap.values());
 	String[] sortedTaxa = new String[set.size()];
 	sortedTaxa = set.toArray(sortedTaxa);
 	Arrays.sort(sortedTaxa);
@@ -633,19 +638,24 @@ public class runHmm {
 	String[] sortedBasicInfoGeneGenealogyTaxa = getSortedGeneGenealogyTaxa();
 	for (HiddenState hiddenState : hiddenStates) {
 	    String[] sortedCheckTaxa = hiddenState.getRootedGeneGenealogy().getLeaves();
+	    Arrays.sort(sortedCheckTaxa);
 	    if (!Arrays.equals(sortedBasicInfoGeneGenealogyTaxa, sortedCheckTaxa)) {
 		System.err.println ("ERROR: list of taxa in basic-info-file is not consistent with gene genealogies.");
+		System.err.println (Arrays.toString(sortedBasicInfoGeneGenealogyTaxa) + "\n");
+		System.err.println (Arrays.toString(sortedCheckTaxa) + "\n");
 		return (false);
 	    }
 	}
 
 	for (Map<String,String> alleleToSpeciesMap : parentalTreeAlleleToSpeciesMapMap.values()) {
 	    for (HiddenState hiddenState : hiddenStates) {
-		String[] sortedReferenceTaxa = getSortedTaxaFromAlleleSpeciesMapping(hiddenState.getAlleleToSpeciesMapping(), false);
+		String[] sortedReferenceTaxa = getSortedTaxaFromAlleleSpeciesMapping(hiddenState.getAlleleToSpeciesMapping(), true);
 		String[] sortedCheckTaxa = hiddenState.getRootedGeneGenealogy().getLeaves();
 		Arrays.sort(sortedCheckTaxa);
 		if (!Arrays.equals(sortedReferenceTaxa, sortedCheckTaxa)) {
 		    System.err.println ("ERROR: list of taxa in allele-species-mapping is not consistent with gene genealogies.");
+		    System.err.println (Arrays.toString(sortedReferenceTaxa) + "\n");
+		    System.err.println (Arrays.toString(sortedCheckTaxa) + "\n");
 		    return (false);
 		}
 	    }
@@ -656,11 +666,13 @@ public class runHmm {
 
     protected boolean verifyParentalTreeTaxa () {
 	for (HiddenState hiddenState : hiddenStates) {
-	    String[] sortedReferenceTaxa = getSortedTaxaFromAlleleSpeciesMapping(hiddenState.getAlleleToSpeciesMapping(), true);
+	    String[] sortedReferenceTaxa = getSortedTaxaFromAlleleSpeciesMapping(hiddenState.getAlleleToSpeciesMapping(), false);
 	    String[] sortedCheckTaxa = getTaxa(hiddenState.getParentalTree());
 	    Arrays.sort(sortedCheckTaxa);
 	    if (!Arrays.equals(sortedReferenceTaxa, sortedCheckTaxa)) {
 		System.err.println ("ERROR: list of taxa in basic-info-file is not consistent with parental trees.");
+		System.err.println (Arrays.toString(sortedReferenceTaxa) + "\n");
+		System.err.println (Arrays.toString(sortedCheckTaxa) + "\n");
 		return (false);
 	    }
 	}
@@ -1242,7 +1254,7 @@ public class runHmm {
 	parentalTreeNameMap = new BijectiveHashtable<String,Network<Double>>();
 	geneGenealogyNameMap = new BijectiveHashtable<String,Tree>();
 	// retain for construction of HiddenState objects
-	parentalTreeAlleleToSpeciesMapMap = new BijectiveHashtable<String,Map<String,String>>();
+	parentalTreeAlleleToSpeciesMapMap = new Hashtable<String,Map<String,String>>();
 
 	System.out.println("\nNow building trees . . .");
 	BufferedReader ptreesbr = new BufferedReader(new FileReader(parentalTreesFileName));

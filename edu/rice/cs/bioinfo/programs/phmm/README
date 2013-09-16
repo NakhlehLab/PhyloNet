@@ -28,13 +28,15 @@ File Formats
 
 - Parental trees file
   - Format: 
-    <tree 0 name> <tree 0 in Newick>
-    <tree 1 name> <tree 1 in Newick>
+    <tree 0 name> <tree 0 in Newick> <gene-genealogy-taxon-to-species-tree-taxon-mapping>
+    <tree 1 name> <tree 1 in Newick> <gene-genealogy-taxon-to-species-tree-taxon-mapping>
     ...
     <tree t_p name> <tree t_p in Newick>
 
   - Duplicate tree IDs are not allowed.
   - Parental tree IDs cannot appear in the gene genealogies file.
+  - <gene-genealogy-taxon-to-species-tree-taxon-mapping> is in the following format:
+    <gene-genealogy taxon>:<species-tree taxon>,<gene-genealogy taxon>:<species-tree taxon>...
 
 - Gene genealogies file
   - Format: 
@@ -70,23 +72,6 @@ File Formats
 						in the basic info file.
 		****A Newline character is important to terminate every sequence line
 		
---> Allele Species Mapping File
-		This is file that will contain the alleles to species mapping
-		
-		Format:
-		line 1) number of mappings
-		line 2) Allele1 Species1
-		line 3) Allele2 Species2
-				.
-				.
-				.
-		
-		Example:
-		3\n
-		kathy human\n
-		willy chimp\n
-		kingkong gorilla\n
-
 - Parental branch length parameters file
   - Format:
     <parameter name> <initial weight> <edge ID in <tree ID>,<child node ID>,<parent node ID> format>

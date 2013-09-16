@@ -28,7 +28,7 @@ public class Parser {
     protected HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
     protected HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
     protected Vector<String> taxa; //  reverse the above map
-    protected HashMap<String, String> alleleSpeciesMap;					/* Allele to Species Mapping */
+    //protected HashMap<String, String> alleleSpeciesMap;					/* Allele to Species Mapping */
     protected int seqNum;												/* Number of sequences */
 
     /**
@@ -188,7 +188,6 @@ public class Parser {
 	    alignmentLength = map.get(taxon).length();
 	}
 
-	// testing
 	if (Constants.WARNLEVEL > 1) { System.out.println ("Input alignment length: " + alignmentLength); }
 
 	for (int i = 0; i < alignmentLength; i++) {
@@ -239,6 +238,8 @@ public class Parser {
 	if (sequence.size() <= 0) {
 	    throw (new RuntimeException("ERROR: no columns left after parsing/filtering input file " + filename + "."));
 	}
+
+	if (Constants.WARNLEVEL > 1) { System.out.println ("Alignment length after optional filter step: " + sequence.size()); }
     }
 
     // kliu - switch to FASTA format
@@ -396,23 +397,23 @@ public class Parser {
      * Function to parse Allele to Species Mapping
      * @param filename - filename path of file to be parse
      */
-    public void parseAlleleSpecies (String filename) throws Exception {
-        alleleSpeciesMap = new HashMap<String,String>();
-        int numLines;
-        String[] line;
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    // public void parseAlleleSpecies (String filename) throws Exception {
+    //     alleleSpeciesMap = new HashMap<String,String>();
+    //     int numLines;
+    //     String[] line;
+    //     BufferedReader br = new BufferedReader(new FileReader(filename));
 
-        //Read in the number of lines
-        numLines = Integer.parseInt(br.readLine());
+    //     //Read in the number of lines
+    //     numLines = Integer.parseInt(br.readLine());
 
-        // Reads in mapping
-        for (int i = 0; i < numLines; i++) {
-            line = br.readLine().split(" ");
-            alleleSpeciesMap.put(line[0], line[1]);
-        }
+    //     // Reads in mapping
+    //     for (int i = 0; i < numLines; i++) {
+    //         line = br.readLine().split(" ");
+    //         alleleSpeciesMap.put(line[0], line[1]);
+    //     }
 
-        br.close();
-    }
+    //     br.close();
+    // }
 
     /**
      * Function to set the list of trees/states of the hmm model
@@ -425,9 +426,9 @@ public class Parser {
     /**
      * @return the Allele to Species Mapping
      */
-    public HashMap<String,String> getAlleleSpeciesMap() {
-        return alleleSpeciesMap;
-    }
+    // public HashMap<String,String> getAlleleSpeciesMap() {
+    //     return alleleSpeciesMap;
+    // }
 
     /**
      * @return Number of Taxa or types of sequences

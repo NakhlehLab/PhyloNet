@@ -244,7 +244,6 @@ public class HiddenState
 
 	// otherwise compute and cache
 
-	Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
 	// A list with one element. Inefficient - consider doing a one-shot approach later.
 	Vector<Tree> rootedGeneGenealogies = new Vector<Tree>();
 	rootedGeneGenealogies.add(getRootedGeneGenealogy());
@@ -256,7 +255,7 @@ public class HiddenState
 	// calculation under model from Yu et al. 2012
 	// this method requires Network<Double>
 	// Yun uses Double to store hybridization probabilities during calculation
-        List<Double> probList = gtp.calculateGTDistribution(parentalTree, rootedGeneGenealogies, alleleToSpeciesMapping, debugFlag);
+        List<Double> probList = gtp.calculateGTDistribution(parentalTree, rootedGeneGenealogies, getAlleleToSpeciesMapping(), debugFlag);
 
 	// should only be a single entry
 	if (probList.size() != 1) {

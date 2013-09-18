@@ -1,0 +1,2 @@
+p1 (M:7.5,S:7.5)ROOT; GeorgianDomesticus:M,SpanishMainlandDomesticus:M,Spretus2:S,Spretus1:S
+p2 (M1:0.1,(M2:0.1,S:0.1)ANC:0.1)ROOT; GeorgianDomesticus:M1,SpanishMainlandDomesticus:M2,Spretus2:S,Spretus1:S

@@ -1,0 +1,27 @@
+0
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/SpanishBasicInfo
+30
+true
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/parental.trees
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/gene.trees
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained
+0.1
+0.964011 0.192217 0.270592 0.0806232 0.174283
+0.1953 0.3077 0.3008 0.1962
+0
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/initial.viterbi.sequence
+1
+false
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/chr7.fasta
+3
+0
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/length-parameters
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/length-parameter-inequality-constraints
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/length-parameter-constraint-sets
+
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/optimized.viterbi.sequence
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/optimized.model.likelihoods
+/home/kl23/code/phmm-repository/phmm/ex/mouse-full-informative-only-unconstrained/optimized.model.parameters
+CURRENT DEFAULT RANDOM
+true true true true
+4

@@ -1,0 +1,27 @@
+0
+/home/kl23/code/phmm-repository/phmm/ex/control3/SpanishBasicInfo
+30
+true
+/home/kl23/code/phmm-repository/phmm/ex/control3/parental.trees
+/home/kl23/code/phmm-repository/phmm/ex/control3/gene.trees
+/home/kl23/code/phmm-repository/phmm/ex/control3
+0.0000001
+0.964011 0.192217 0.270592 0.0806232 0.174283
+0.1953 0.3077 0.3008 0.1962
+0
+/home/kl23/code/phmm-repository/phmm/ex/control3/initial.viterbi.sequence
+1
+false
+/home/kl23/code/phmm-repository/phmm/ex/control3/control-scan-C57BL-chr7.fasta
+3
+0
+/home/kl23/code/phmm-repository/phmm/ex/control3/length-parameters
+/home/kl23/code/phmm-repository/phmm/ex/control3/length-parameter-inequality-constraints
+/home/kl23/code/phmm-repository/phmm/ex/control3/length-parameter-constraint-sets
+
+/home/kl23/code/phmm-repository/phmm/ex/control3/optimized.viterbi.sequence
+/home/kl23/code/phmm-repository/phmm/ex/control3/optimized.model.likelihoods
+/home/kl23/code/phmm-repository/phmm/ex/control3/optimized.model.parameters
+CURRENT DEFAULT RANDOM
+true true true true
+4

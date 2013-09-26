@@ -27,6 +27,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,6 +49,8 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     private NetworkNonEmpty _experimentalNetwork;
 
+    private boolean _rooted = false;
+
     public SymmetricDifference(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
                                Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
@@ -60,12 +63,22 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     protected int getMaxNumParams()
     {
-        return 3;
+        return 4;
     }
 
     public boolean checkParamsForCommand() {
 
         boolean noError = true;
+
+        ParamExtractor rParam = new ParamExtractor("r", this.params, this.errorDetected);
+        if(rParam.ContainsSwitch)
+        {
+            _rooted = true;
+        }
+
+
+        noError = noError && checkForUnknownSwitches("r");
+        checkAndSetOutFile(rParam);
 
         if(noError)
         {
@@ -93,7 +106,11 @@ public class SymmetricDifference extends CommandBaseFileOut {
         String experimentalTreeParamValue = _experimentalNetwork == null ? null : experimentalTreeParam.execute(GetSimpleParamValue.Singleton, null);
 
 
-        if(params.size() == 3)
+        if(params.size() == 4)
+        {
+            noError = this.checkOutFileContext(3);
+        }
+        if(params.size() == 3 && _rooted == false)
         {
             noError = this.checkOutFileContext(2);
         }
@@ -202,23 +219,20 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
 
         Tree modelTree = NetworkTransformer.toTree(_modelNetwork);
-        Tree experamentalTree = NetworkTransformer.toTree(_experimentalNetwork);
-
-        String m = modelTree.toStringWD();
-        String e = experamentalTree.toStringWD();
+        Tree experimentalTree = NetworkTransformer.toTree(_experimentalNetwork);
 
         final edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference sd =
                 new edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference();
 
-        sd.computeDifference(experamentalTree, modelTree);
-
+        sd.computeDifference(experimentalTree, modelTree, _rooted);
 
         //String result = String.format("\nFalse Negatives: %s\nFalse Positives: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s",sd.getFalseNegativeCount(), sd.getFalsePositiveCount(), sd.getNumInternalEdges1(), sd.getNumInternalEdges2());
         String result =
                 String.format("\n# False Positive Edges: %s\n# False Negative Edges: %s\n# Internal Edges Model: %s\n# Internal Edges Experimental: %s" +
-                        "\nWeighted False Positive: %s\nWeighted False Negative: %s\nWeighted RF-Distance: %s",
+                        "\nNormalized False Positive: %s\nNormalized False Negative: %s\nNormalized RF-Distance: %s",
                         sd.getFalsePositiveCount(), sd.getFalseNegativeCount(), sd.getNumInternalEdges2(), sd.getNumInternalEdges1(),
                         sd.getWeightedFalsePositive(), sd.getWeightedFalseNegative(), sd.getWeightedAverage());
+
 
         return result;
     }

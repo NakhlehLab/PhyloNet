@@ -22,10 +22,12 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.BitVector;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Bipartitions;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,6 +49,16 @@ public class SymmetricDifference {
 	protected int _num_iedges1 = -1;
 	protected int _num_iedges2 = -1;
 
+
+    public void computeDifference(Tree t1, Tree t2, boolean rooted) {
+        if(rooted){
+            computeRootedDifference(t1, t2);
+        }
+        else{
+            computeUnrootedDifference(t1, t2);
+        }
+    }
+
 	// methods
 	/**
 	 * Compute the symmetric difference between two trees.  The false positives
@@ -55,7 +67,7 @@ public class SymmetricDifference {
 	 *
 	 * @throws RuntimeException if the trees do not have identical leaf sets
 	 */
-	public void computeDifference(Tree t1, Tree t2) {
+	public void computeUnrootedDifference(Tree t1, Tree t2) {
 
 		if(!Trees.leafSetsAgree(t1, t2)) {
 			throw new RuntimeException("Trees must have identical leaf sets");
@@ -122,6 +134,53 @@ public class SymmetricDifference {
 		// done
 		return;
 	}
+
+
+    public void computeRootedDifference(Tree t1, Tree t2) {
+
+        if(!Trees.leafSetsAgree(t1, t2)) {
+            throw new RuntimeException("Trees must have identical leaf sets");
+        }
+
+        String[] taxa = t1.getLeaves();
+        List<STITreeCluster> clusters1 = t1.getClusters(taxa, false);
+        List<STITreeCluster> clusters2 = t2.getClusters(taxa, false);
+
+        _num_iedges1 = 0;
+        _num_iedges2 = 0;
+
+        for(STITreeCluster cl1: clusters1){
+            _num_iedges1++;
+            if(!clusters2.contains(cl1)){
+                _fp++;
+            }
+        }
+
+        for(STITreeCluster cl2: clusters2){
+            _num_iedges2++;
+            if(!clusters1.contains(cl2)){
+                _fn++;
+            }
+        }
+
+
+        if (_num_iedges1 == 0) {
+            _wfp = 0;
+        }
+        else {
+            _wfp = ((double) _fp) / ((double) _num_iedges1);
+        }
+
+        if (_num_iedges2 == 0) {
+            _wfn = 0;
+        }
+        else {
+            _wfn = ((double) _fn) / ((double) _num_iedges2);
+        }
+
+        // done
+        return;
+    }
 
 	/**
 	 * @return the number of internal edges in the first input tree.

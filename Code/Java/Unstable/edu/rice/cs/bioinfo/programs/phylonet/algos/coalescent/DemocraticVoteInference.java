@@ -63,7 +63,7 @@ public class DemocraticVoteInference {
 		for (Tree tr : trees){
 			boolean found=false;
 			for (Tree treeKey : treeCounter.keySet()){
-				sd.computeDifference(tr, treeKey);
+				sd.computeDifference(tr, treeKey, true);
 				if(sd.getFalseNegativeCount()==0 && sd.getFalsePositiveCount()==0){
 					treeCounter.get(treeKey).increase();
 					found=true;

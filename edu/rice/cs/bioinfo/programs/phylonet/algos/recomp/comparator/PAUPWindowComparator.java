@@ -101,7 +101,7 @@ public abstract class PAUPWindowComparator implements WindowComparator {
 	 */
 	protected double computeDistance(Tree t1, Tree t2) {
 		if(_measure == DistanceMeasure.RF) {
-			_sd.computeDifference(t1,t2);
+			_sd.computeDifference(t1,t2,false);
 
 			return _sd.getWeightedAverage();
 		} else {

@@ -60,7 +60,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
     private NetworkNonEmpty _startSpeciesNetwork = null;
     private int _maxReticulations;
     private Long _maxExaminations = null;
-    private long _maxFailure = 30; // change from 100 to 50
+    private long _maxFailure = 100; // change from 100 to 50
     private int _maxDiameter = 0;
     private int _returnNetworks = 1;
     private int _maxRounds = 100;

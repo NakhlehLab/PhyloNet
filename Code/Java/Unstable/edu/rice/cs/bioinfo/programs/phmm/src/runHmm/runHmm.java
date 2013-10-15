@@ -468,6 +468,21 @@ public class runHmm {
 										    inputRestoreCheckpointFilename
 										    );
 
+	    // temp hack
+	    // make this better later
+	    //
+	    // indexed by [observation index][hidden state index]
+	    // double[][] posteriorDecodingProbabilities = multivariateOptimizer.computeHMMPosteriorDecodingProbabilities();
+	    // System.err.println ("Printing posterior decoding probabilities.");
+	    // for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
+	    // 	for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
+	    // 	    System.err.println (i + " " + j + " " + posteriorDecodingProbabilities[i][j]);
+	    // 	}
+	    // }
+	    // System.err.println ("Printing posterior decoding probabilities DONE.");
+
+	    // System.exit(1);
+
 	    System.out.println ("Optimizing PhyloNet-HMM parameters... ");
 	    multivariateOptimizer.optimize(initialSearchSettings);
 	    System.out.println ("Optimizing PhyloNet-HMM parameters DONE. ");
@@ -868,7 +883,7 @@ public class runHmm {
 	// kliu - needs to not be cached - just need to map back from Opdf
 	// to the hidden state that's associated with it -> 
 	Hmm<ObservationMap> newHmm = new Hmm<ObservationMap>(pi, a, opdfs);
-		
+	
 	return newHmm;		
     }
 	

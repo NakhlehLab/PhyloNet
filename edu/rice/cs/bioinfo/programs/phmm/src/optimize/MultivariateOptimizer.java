@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.util.EnumSet;
 import java.io.StringWriter;
 import java.io.File;
 import java.io.BufferedReader;
@@ -35,6 +36,9 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
+import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardCalculator;
+import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardCalculator.Computation;
+import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardScaledCalculator;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
@@ -849,8 +853,45 @@ public class MultivariateOptimizer {
      * Hmm... this is the only place that we actually compute a model likelihood,
      * and it's a log likelihood.
      */
-    protected double computeHMMLikelihood () {
+    public double computeHMMLikelihood () {
 	return (hmm.lnProbability(observation));
+    }
+
+    /**
+     * An alternative to the Viterbi-optimal path.
+     * Of all paths, what fraction pass through a particular hidden state?
+     *
+     * indexed by (observation index, hidden state index)
+     */
+    public double[][] computeHMMPosteriorDecodingProbabilities () {
+	EnumSet<ForwardBackwardCalculator.Computation> flags = EnumSet.allOf(ForwardBackwardCalculator.Computation.class);
+	ForwardBackwardScaledCalculator fbsc = new ForwardBackwardScaledCalculator(observation, hmm, flags);
+	double[][] result = new double[observation.size()][hiddenStates.size()];
+	for (int i = 0; i < observation.size(); i++) {
+	    for (int j = 0; j < hiddenStates.size(); j++) {
+		result[i][j] = fbsc.alphaElement(i, j) * fbsc.betaElement(i, j); // [t][i]
+	    }
+	}
+
+	// normalize by \sum_{i=1}^n \alpha_t(i) \beta_t(i)
+	for (int i = 0; i < result.length; i++) {
+	    double norm = 0.0;
+	    for (int j = 0; j < result[i].length; j++) {
+		norm += result[i][j];
+	    }
+
+	    // barf if norm is zero
+	    if (norm <= 0.0) {
+		System.err.println ("ERROR: invalid norm for observation index " + i + ". Returning null to signal error.");
+		return (null);
+	    }
+
+	    for (int j = 0; j < result[i].length; j++) {
+		result[i][j] /= norm;
+	    }	    
+	}
+
+	return (result);
     }
 
     protected void initializeDefault () {

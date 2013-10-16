@@ -432,6 +432,8 @@ public class runHmm {
 	    String inputLengthParameterSetConstraintsFilename = in.readLine();
 	    System.out.println("Input checkpoint file to restore from, or empty line for no restore: ");
 	    String inputRestoreCheckpointFilename = in.readLine();
+	    System.out.println("Output posterior decoding probabilities file: ");
+	    String posteriorDecodingProbabilitiesFilename = in.readLine();
 	    System.out.println("Output Viterbi-optimal hidden state sequence file: ");
 	    String viterbiHiddenStateSequenceFilename = in.readLine();
 	    System.out.println("Output model likelihoods file: ");
@@ -468,24 +470,22 @@ public class runHmm {
 										    inputRestoreCheckpointFilename
 										    );
 
-	    // temp hack
-	    // make this better later
-	    //
-	    // indexed by [observation index][hidden state index]
-	    // double[][] posteriorDecodingProbabilities = multivariateOptimizer.computeHMMPosteriorDecodingProbabilities();
-	    // System.err.println ("Printing posterior decoding probabilities.");
-	    // for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
-	    // 	for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
-	    // 	    System.err.println (i + " " + j + " " + posteriorDecodingProbabilities[i][j]);
-	    // 	}
-	    // }
-	    // System.err.println ("Printing posterior decoding probabilities DONE.");
-
-	    // System.exit(1);
-
 	    System.out.println ("Optimizing PhyloNet-HMM parameters... ");
 	    multivariateOptimizer.optimize(initialSearchSettings);
 	    System.out.println ("Optimizing PhyloNet-HMM parameters DONE. ");
+
+	    System.out.println ("Saving posterior decoding probabilities... "); 
+	    BufferedWriter pdpbw = new BufferedWriter(new FileWriter(posteriorDecodingProbabilitiesFilename));
+	    // indexed by [observation index][hidden state index]
+	    double[][] posteriorDecodingProbabilities = multivariateOptimizer.computeHMMPosteriorDecodingProbabilities();
+	    for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
+		for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
+		    pdpbw.write (i + " " + j + " " + posteriorDecodingProbabilities[i][j]); pdpbw.newLine();
+		}
+	    }
+	    pdpbw.flush();
+	    pdpbw.close();
+	    System.out.println ("Saving posterior decoding probabilities DONE."); 
 
 	    System.out.println ("Saving Viterbi-optimal hidden state sequence... "); 
 	    Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSequence);

@@ -1,4 +1,4 @@
-Processing /work/nakhleh/kl23/code/phmm-repository/phmm/ex/simple2/autoinput.txt...Initial mode:
+Initial mode:
 0) Build a new model.
 1) Load a pre-existing model.
 2) Exit.
@@ -7,6 +7,7 @@ Input the basic file info path name:
  (note: see README for file format) 
  
 Input the number of trees or states for this HMM:
+Collapse gene genealogies according to topological equivalence classes? Enter true for yes or anything else for no:
 
 Input the parental trees file path name:
  (note: see README for file format) 
@@ -15,16 +16,21 @@ Input the parental trees file path name:
 Input the gene genealogies file path name:
  (note: see README for file format) 
 
-
-Input the Alleles to Species Mapping file path name: 
- (note: see README for file format 
-
 Empty working directory: 
 Input transition probability parameters in format <hybridization frequency parameter $v$>: 
 Input non-zero substitution model rates in format <AG> <AC> <AT> <GC> <GT>: 
 Input non-zero substitution model base frequencies in format <A> <G> <C> <T>: 
 
 Now building trees . . .
+Collapse gene genealogies by topological equivalence class? false
+
+Gene genealogy topological equivalence classes: 
+Unrooted gene genealogy (chimp:3.0,(human:1.0,gorilla:2.0)anc:5.0)root; topological equivalence class members: 
+(chimp:3.0,(human:1.0,gorilla:2.0)anc:5.0)root;
+(gorilla:3.0,(human:1.0,chimp:2.0)anc:4.0)root;
+(human:6.0,(chimp:7.0,gorilla:8.0)anc:9.0)root;
+
+
 
 Now reading and saving Basic Info for parser . . .
 The legal alphabet symbols: [A, C, T, G]
@@ -50,8 +56,10 @@ State 0
   Opdf: OpdfMap's hiddenState:
 Parental tree:
 ((chimp:2.0,human:1.0)anc:4.0,gorilla:3.0)root;
-Gene genealogy:
-(gorilla:0.0,(human:0.0,chimp:0.0)anc:0.0)root;
+Rooted gene genealogy:
+(gorilla:3.0,(human:1.0,chimp:2.0)anc:4.0)root;
+Unrooted gene genealogy:
+(gorilla:3.0,(human:1.0,chimp:2.0)anc:4.0)root;
 
 
 
@@ -61,8 +69,10 @@ State 1
   Opdf: OpdfMap's hiddenState:
 Parental tree:
 ((chimp:2.0,human:1.0)anc:4.0,gorilla:3.0)root;
-Gene genealogy:
-(chimp:0.0,(human:0.0,gorilla:0.0)anc:0.0)root;
+Rooted gene genealogy:
+(chimp:3.0,(human:1.0,gorilla:2.0)anc:5.0)root;
+Unrooted gene genealogy:
+(chimp:3.0,(human:1.0,gorilla:2.0)anc:5.0)root;
 
 
 
@@ -72,8 +82,10 @@ State 2
   Opdf: OpdfMap's hiddenState:
 Parental tree:
 ((chimp:2.0,human:1.0)anc:4.0,gorilla:3.0)root;
-Gene genealogy:
-(human:0.0,(chimp:0.0,gorilla:0.0)anc:0.0)root;
+Rooted gene genealogy:
+(human:6.0,(chimp:7.0,gorilla:8.0)anc:9.0)root;
+Unrooted gene genealogy:
+(human:6.0,(chimp:7.0,gorilla:8.0)anc:9.0)root;
 
 
 
@@ -83,8 +95,10 @@ State 3
   Opdf: OpdfMap's hiddenState:
 Parental tree:
 ((gorilla:2.0,human:1.0)anc:5.0,chimp:3.0)root;
-Gene genealogy:
-(gorilla:0.0,(human:0.0,chimp:0.0)anc:0.0)root;
+Rooted gene genealogy:
+(gorilla:3.0,(human:1.0,chimp:2.0)anc:4.0)root;
+Unrooted gene genealogy:
+(gorilla:3.0,(human:1.0,chimp:2.0)anc:4.0)root;
 
 
 
@@ -94,8 +108,10 @@ State 4
   Opdf: OpdfMap's hiddenState:
 Parental tree:
 ((gorilla:2.0,human:1.0)anc:5.0,chimp:3.0)root;
-Gene genealogy:
-(chimp:0.0,(human:0.0,gorilla:0.0)anc:0.0)root;
+Rooted gene genealogy:
+(chimp:3.0,(human:1.0,gorilla:2.0)anc:5.0)root;
+Unrooted gene genealogy:
+(chimp:3.0,(human:1.0,gorilla:2.0)anc:5.0)root;
 
 
 
@@ -105,8 +121,10 @@ State 5
   Opdf: OpdfMap's hiddenState:
 Parental tree:
 ((gorilla:2.0,human:1.0)anc:5.0,chimp:3.0)root;
-Gene genealogy:
-(human:0.0,(chimp:0.0,gorilla:0.0)anc:0.0)root;
+Rooted gene genealogy:
+(human:6.0,(chimp:7.0,gorilla:8.0)anc:9.0)root;
+Unrooted gene genealogy:
+(human:6.0,(chimp:7.0,gorilla:8.0)anc:9.0)root;
 
 
 
@@ -123,13 +141,15 @@ Which observation sequence would you like to use?
 0) Reuse previously read sequence.
 1) Load a new observation sequence.
 Choose an option: 
+Keep or discard parsimony-uninformative sites? true for keep, false for discard: 
 Input observation sequence file path name : 
 Input alignment length: 40
+Alignment length after optional filter step: 40
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 245 MiB; Free: 242 MiB; --> Used: 3 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1440 MiB; --> Used: 8 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -157,6 +177,7 @@ Input parental-branch-length-parameter-to-edge map filename:
 Input parental-branch-length-parameter strict inequalities filename: 
 Input length-parameter-set-constraints filename: 
 Input checkpoint file to restore from, or empty line for no restore: 
+Output posterior decoding probabilities file: 
 Output Viterbi-optimal hidden state sequence file: 
 Output model likelihoods file: 
 Output file with optimized model parameter values: 
@@ -305,8 +326,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 299 MiB; Free: 185 MiB; --> Used: 114 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1085 MiB; --> Used: 363 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -453,8 +474,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 285 MiB; Free: 172 MiB; --> Used: 113 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1220 MiB; --> Used: 228 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -601,8 +622,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 274 MiB; Free: 272 MiB; --> Used: 2 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1379 MiB; --> Used: 69 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -749,8 +770,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 268 MiB; Free: 252 MiB; --> Used: 16 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1154 MiB; --> Used: 294 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -905,8 +926,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 260 MiB; Free: 182 MiB; --> Used: 78 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1190 MiB; --> Used: 258 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1053,8 +1074,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 295 MiB; Free: 231 MiB; --> Used: 64 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1318 MiB; --> Used: 130 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1201,8 +1222,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 287 MiB; Free: 225 MiB; --> Used: 62 MiB.
-Max: 14563 MiB.
+Total: 1448 MiB; Free: 1082 MiB; --> Used: 366 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1349,8 +1370,8 @@ Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBra
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 279 MiB; Free: 226 MiB; --> Used: 53 MiB.
-Max: 14563 MiB.
+Total: 1376 MiB; Free: 1160 MiB; --> Used: 216 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1365,147 +1386,148 @@ Processing pass 1 with initial search setting DEFAULT DONE.
 Updating with likelihood -90.16259378136363.
 Processing pass 2 with initial search setting RANDOM.
 Input log likelihood: |-90.16259378136363|
-Initial log likelihood: |-178.4299870020507|
+Initial log likelihood: |-204.82143564363525|
 Processing round 0.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 1.4805383299792976 2.961076659958595 -176.9226639984868 -178.4299870020507 -178.45821633862323|
-Brent optimization point: |0.010000016824649266| likelihood: |-176.9226640581691|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.337504778586472 4.675009557172944 10.0 -204.8234850556195 -204.82143564363525 -204.82017621895432|
+Brent optimization point: |9.99999998849151| likelihood: |-204.8201762189552|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 1.3481862483404263 2.6963724966808527 -165.65286086594375 -176.9226640581691 -177.496880421098|
-Brent optimization point: |0.010000014772720233| likelihood: |-165.65286119829457|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -204.8203798577693 -204.82025598223802 -204.82013823876815|
+Brent optimization point: |9.99999994279425| likelihood: |-204.82013823876838|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.04982267562356488 0.797162809977038 1.594325619954076 -170.67303536834996 -165.65286119829457 -168.34644099144253|
-Brent optimization point: |0.24193620721989154| likelihood: |-160.9240714281831|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -204.82016004198377 -204.82014469098849 -204.8201190019135|
+Brent optimization point: |9.999999861921342| likelihood: |-204.82011900191372|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.5819640634856803 1.1639281269713606 -159.89707206272104 -160.9240714281831 -161.4504645418747|
-Brent optimization point: |0.0010000174018018925| likelihood: |-159.8970721070165|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -204.8200920608627 -204.82011900035266 -204.82011900219814|
+Brent optimization point: |0.0010000118462805655| likelihood: |-204.82009206086332|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.66881594223429 9.33763188446858 -155.46235160262225 -159.8970721070165 -163.6782538951125|
-Brent optimization point: |0.0010000103989630668| likelihood: |-155.46235161324495|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -204.88842987889046 -204.82045529768286 -204.81988597052504|
+Brent optimization point: |9.999991324514747| likelihood: |-204.8198859705253|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.9037391333301638 1.8074782666603275 3.614956533320655 -157.36333309312855 -155.46235161324495 -164.66210836566685|
-Brent optimization point: |1.4816252252483353| likelihood: |-155.02845067476872|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3125 5.0 10.0 -202.91633767175693 -198.09088403856296 -221.75422417628127|
+Brent optimization point: |1.723776826541751| likelihood: |-186.36766339656378|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.3930724187539902 2.7861448375079805 5.572289675015961 -158.29565124062216 -155.02845067476872 -162.87625732778014|
-Brent optimization point: |2.4808189484525776| likelihood: |-154.87405608945747|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.625 5.0 10.0 -196.1452009085778 -183.99121366761722 -205.7598147250897|
+Brent optimization point: |2.3969678784457367| likelihood: |-176.32696593446815|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.16736827165896054 0.3347365433179211 2.6778923465433686 -154.90568539591075 -154.87405608945747 -154.91340049824353|
-Brent optimization point: |1.1477462167098709| likelihood: |-154.81629860786398|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.2127719631184233 4.425543926236847 10.0 -176.32696593757484 -176.32696593446815 -176.32696593445516|
+Brent optimization point: |7.21882107511406| likelihood: |-176.32696593445505|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.2094908588988242 4.4189817177976485 10.0 -154.85295116872012 -154.81629860786398 -154.74560087501078|
-Brent optimization point: |9.99999998562022| likelihood: |-154.74560087516167|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -176.32696656982216 -176.3269659347581 -176.32696593344113|
+Brent optimization point: |9.120650137154817| likelihood: |-176.32696593344113|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8 DONE.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |9.765625E-4 0.125 0.25 -154.07683418870965 -153.75945499047316 -155.90011279829554|
-Brent optimization point: |0.029772092155688542| likelihood: |-152.39808724865478|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0 0.125 0.25 -176.32696593343655 -176.326965933441 -176.32696593344198|
+Brent optimization point: |0.0016444629487638081| likelihood: |-176.32696593343667|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -152.31527880446706 -152.3743105926223 -152.42274373327623|
-Brent optimization point: |0.0010000118462805655| likelihood: |-152.31527880456613|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.3345971460555104 2.6691942921110208 10.0 -176.3269659510106 -176.32696593343667 -176.32696593276324|
+Brent optimization point: |7.199881400419078| likelihood: |-176.32696593276324|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.970077596329955 1.94015519265991 -152.31122889575317 -152.31527880456613 -152.32539789461057|
-Brent optimization point: |0.10386899408159546| likelihood: |-152.3111503984307|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.7571888528521369 3.5143777057042738 10.0 -176.32696593276398 -176.32696593276324 -176.32696593276324|
+Brent optimization point: |9.999999982483054| likelihood: |-176.32696593276324|
+INFO: Round 0 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -176.32696593276324 which isn't better than current log likelihood -176.32696593276324. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.553757050536828 10.0 -152.3111503984307 -152.3111503984307 -152.3111503984307|
-Brent optimization point: |9.999999989898523| likelihood: |-152.3111503984307|
-INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -152.3111503984307 which isn't better than current log likelihood -152.3111503984307. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.792775417201352 10.0 -176.32696593276324 -176.32696593276324 -176.32696593276324|
+Brent optimization point: |9.999999987843198| likelihood: |-176.32696593276324|
+INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -176.32696593276324 which isn't better than current log likelihood -176.32696593276324. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -152.3111503984307 -152.3111503984307 -152.3111503984307|
-Brent optimization point: |9.999999988159347| likelihood: |-152.3111503984307|
-INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -152.3111503984307 which isn't better than current log likelihood -152.3111503984307. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -176.32696593276324 -176.32696593276324 -176.32696593276324|
+Brent optimization point: |9.999999988159347| likelihood: |-176.32696593276324|
+INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -176.32696593276324 which isn't better than current log likelihood -176.32696593276324. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.5261383394501749 3.0522766789003497 6.537471402157847 -152.38544742986903 -152.3111503984307 -152.28001411730165|
-Brent optimization point: |6.537471388193331| likelihood: |-152.28001411735295|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.7414893422113678 5.4829786844227355 -176.32696462966845 -176.32696591842793 -176.32696593825187|
+Brent optimization point: |0.00100001937805337| likelihood: |-176.3269646296686|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -155.77828591243076 -152.78969324815998 -148.8488296287632|
-Brent optimization point: |9.999999988159347| likelihood: |-148.84882963592156|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -176.32919691809732 -176.3269691044672 -176.3269644798966|
+Brent optimization point: |9.99425722049425| likelihood: |-176.32696447989667|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.4140668119447852 2.8281336238895705 -135.43400315603176 -148.84882963592156 -150.9120929782662|
-Brent optimization point: |0.0010000161589308958| likelihood: |-135.4340034718909|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -168.88022541402927 -176.32692813892646 -176.3269686396275|
+Brent optimization point: |0.175920689845183| likelihood: |-166.9075023768389|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -137.76618307708117 -135.87717004285508 -133.22359172120488|
-Brent optimization point: |9.999999988159347| likelihood: |-133.22359172618962|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.19354396930225676 0.3870879386045135 10.0 -166.90750237683935 -166.9075023768389 -166.9075023768381|
+Brent optimization point: |5.089892185363079| likelihood: |-166.90750237683804|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.124955201098753 2.249910402197506 4.499820804395012 -133.22876974223078 -133.22359172618962 -133.23293874040237|
-Brent optimization point: |2.171825259086438| likelihood: |-133.2235720227549|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.8786477470538864 1.7572954941077727 3.5145909882155455 -166.90750237683815 -166.90750237683804 -166.90750237683807|
+Brent optimization point: |1.7605705248756094| likelihood: |-166.90750237683804|
+INFO: Round 0 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,anc resulted in log likelihood -166.90750237683804 which isn't better than current log likelihood -166.90750237683804. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5650703982931702 2.2602815931726807 4.5205631863453615 -138.56693174342684 -133.2235720227549 -142.37097220778335|
-Brent optimization point: |1.5558918455244015| likelihood: |-132.0763265468573|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5175394313290415 2.070157725316166 4.140315450632332 -170.79773375102428 -166.90750237683804 -177.68669369164016|
+Brent optimization point: |1.3156649678283117| likelihood: |-165.148435929326|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.8691700660537804 3.738340132107561 7.476680264215122 -132.8857722877759 -132.0763265468573 -132.38320234512295|
-Brent optimization point: |4.122016325333027| likelihood: |-132.0649371044074|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -165.1484359295502 -165.14843592932633 -165.1484359293259|
+Brent optimization point: |7.639326529037094| likelihood: |-165.14843592932564|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -132.0649371044074 -132.0649371044074 -132.0649371044074|
-Brent optimization point: |9.999999988159347| likelihood: |-132.0649371044074|
-INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -132.0649371044074 which isn't better than current log likelihood -132.0649371044074. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 3.8459965901433355 10.0 -165.14843592932564 -165.14843592932564 -165.14843592932564|
+Brent optimization point: |9.99999998337872| likelihood: |-165.14843592932564|
+INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -165.14843592932564 which isn't better than current log likelihood -165.14843592932564. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.741868015218467 10.0 -132.0649371044074 -132.0649371044074 -132.0649371044074|
-Brent optimization point: |9.999999987031279| likelihood: |-132.0649371044074|
-INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -132.0649371044074 which isn't better than current log likelihood -132.0649371044074. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.3070468598723286 10.0 -165.14843592932564 -165.14843592932564 -165.14843592932564|
+Brent optimization point: |9.999999986531298| likelihood: |-165.14843592932564|
+INFO: Round 0 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -165.14843592932564 which isn't better than current log likelihood -165.14843592932564. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5827432066399849 1.1654864132799698 2.3309728265599396 -132.1436337051209 -132.0649371044074 -132.10344591317133|
-Brent optimization point: |1.3223468293947307| likelihood: |-132.06272625227382|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 1.6473168220848056 3.294633644169611 -165.14159323115118 -165.14843592932564 -165.15485906354456|
+Brent optimization point: |0.010000018732786971| likelihood: |-165.14159323123152|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -123.5054049439617 -128.75106298050224 -134.18703022074038|
-Brent optimization point: |0.0010000118462805655| likelihood: |-123.50540495333799|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.09252189967235089 0.18504379934470178 10.0 -165.1415932312768 -165.14159323123152 -165.1415932310127|
+Brent optimization point: |5.469906323886765| likelihood: |-165.14159323101273|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 3.5072408647095115 7.014481729419023 -121.07916210318076 -123.50540495333799 -123.70638389318893|
-Brent optimization point: |0.010000014729048086| likelihood: |-121.07916219315452|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 4.724345667892599 9.448691335785197 -161.6677164440578 -165.14159323101273 -167.4637847500763|
+Brent optimization point: |0.010000010602295033| likelihood: |-161.667716453351|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26.
-Brent optimization point: |9.999999985526394| likelihood: |-121.0381822035044|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -161.76062184514106 -161.67439164434552 -161.6387486447962|
+Brent optimization point: |9.999999988159347| likelihood: |-161.63874864483506|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26 DONE.
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 270 MiB; Free: 219 MiB; --> Used: 51 MiB.
-Max: 14563 MiB.
+Total: 1367 MiB; Free: 1149 MiB; --> Used: 218 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1513,147 +1535,148 @@ Enlarging... capacity = 10000
 Begin computing Viterbi's algorithm : BACKWARD PART 
 0.0% 100% DONE!                                   
 Processing round 0 DONE.
-Checking convergence for previous log likelihood -178.4299870020507 and current log likelihood -121.0381822035044
+Checking convergence for previous log likelihood -204.82143564363525 and current log likelihood -161.63874864483506
 Processing round 1.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 1.28 -121.03818239977475 -120.92702097444318 -121.69350687200021|
-Brent optimization point: |0.22890305802752697| likelihood: |-120.1114251449779|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 5.0 10.0 -159.04237507978934 -160.4534767666265 -161.63874864729902|
+Brent optimization point: |0.010000011806940393| likelihood: |-159.04237508311917|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -120.11142509573705 -120.14463938146474 -120.2103457408331|
-Brent optimization point: |0.010000012768452944| likelihood: |-120.11142513829732|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 5.0 10.0 -120.00439214279089 -154.88545570458388 -159.04237512488797|
+Brent optimization point: |0.010000011806940393| likelihood: |-120.00439324534528|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.12096810360994577 0.24193620721989154 7.741958631036529 -121.6108353367124 -120.11142513829732 -120.23928102194466|
-Brent optimization point: |0.5773595903222397| likelihood: |-119.37304322682951|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -123.41764834896186 -122.03144831475967 -120.0043931976061|
+Brent optimization point: |9.999999988159347| likelihood: |-120.00439320169983|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -119.37304314464556 -119.37776498455929 -119.3872033553757|
-Brent optimization point: |0.0010000152506113435| likelihood: |-119.37304321667001|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 8.192 -120.00439339637587 -119.98797602083972 -120.30896297882116|
+Brent optimization point: |0.604183781438418| likelihood: |-114.24578099172736|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -119.37304318190024 -119.37638676847901 -119.38307392010674|
-Brent optimization point: |0.0010000152506113435| likelihood: |-119.37304323289202|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,human resulted in log likelihood -119.37304323289202 which isn't better than current log likelihood -119.37304321667001. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -114.22637450775561 -114.23313576420989 -114.24578101253077|
+Brent optimization point: |0.865934978164972| likelihood: |-114.22559527288689|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.7408126126241676 1.4816252252483353 2.9632504504966706 -122.87906058191297 -119.37304321667001 -122.80066276948264|
-Brent optimization point: |1.547913847030057| likelihood: |-119.35897223634326|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.21547210331771888 1.723776826541751 3.447553653083502 -115.75627177056619 -114.22559527288689 -128.53888140284914|
+Brent optimization point: |0.6957029448517038| likelihood: |-107.88911496604787|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.6202047371131444 2.4808189484525776 4.961637896905155 -120.73681634079308 -119.35897223634326 -129.34845708327262|
-Brent optimization point: |1.3759785744769393| likelihood: |-116.68500550867185|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.2996209848057171 2.3969678784457367 4.793935756891473 -114.77589002568763 -107.88911496604787 -118.9962673468927|
+Brent optimization point: |1.1940594668898146| likelihood: |-104.27520615196622|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5738731083549354 1.1477462167098709 2.2954924334197417 -116.74427586392217 -116.68500550867185 -116.71184103381256|
-Brent optimization point: |1.4730689664228234| likelihood: |-116.67768498971648|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -103.13797719823191 -103.87688364740447 -104.7743320799483|
+Brent optimization point: |0.0010000118462805655| likelihood: |-103.1379771990188|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -116.7015325389715 -116.68071062832006 -116.67768498972288|
-Brent optimization point: |7.940128874619148| likelihood: |-116.67710894991035|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -103.1180773226383 -103.13067394297013 -103.13943538379334|
+Brent optimization point: |0.0010000118462805655| likelihood: |-103.11807732268532|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8 DONE.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.014886046077844271 0.029772092155688542 0.059544184311377084 -116.79223732666786 -116.67710894991035 -117.16648531372753|
-Brent optimization point: |0.02566795404682113| likelihood: |-116.66521327407725|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0 0.0016444629487638081 0.0032889258975276163 -103.09406781068016 -103.11807732268532 -103.1418629378383|
+Brent optimization point: |1.5663055733729857E-8| likelihood: |-103.09406804043802|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -116.66521327397945 -116.66522153706066 -116.66523807280342|
-Brent optimization point: |0.0010000152506113435| likelihood: |-116.66521327410547|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp resulted in log likelihood -116.66521327410547 which isn't better than current log likelihood -116.66521327407725. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -103.10746300706535 -103.0948013393191 -103.09636210257135|
+Brent optimization point: |6.391702428965628| likelihood: |-103.09386903446025|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.10386899408159546 0.20773798816319092 -116.66390156395435 -116.66521327407725 -116.66652730305516|
-Brent optimization point: |0.001000011119322617| likelihood: |-116.6639015640966|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 3.5143777057042738 7.0287554114085475 -103.05489789370193 -103.09386903446025 -103.10141604040096|
+Brent optimization point: |0.0010000148431610011| likelihood: |-103.05489789415294|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.553757050536828 10.0 -116.6639015640966 -116.6639015640966 -116.6639015640966|
-Brent optimization point: |9.999999989898523| likelihood: |-116.6639015640966|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -116.6639015640966 which isn't better than current log likelihood -116.6639015640966. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.792775417201352 10.0 -103.05489789415294 -103.05489789415294 -103.05489789415294|
+Brent optimization point: |9.999999987843198| likelihood: |-103.05489789415294|
+INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -103.05489789415294 which isn't better than current log likelihood -103.05489789415294. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -116.6639015640966 -116.6639015640966 -116.6639015640966|
-Brent optimization point: |9.999999988159347| likelihood: |-116.6639015640966|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -116.6639015640966 which isn't better than current log likelihood -116.6639015640966. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -103.05489789415294 -103.05489789415294 -103.05489789415294|
+Brent optimization point: |9.999999988159347| likelihood: |-103.05489789415294|
+INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -103.05489789415294 which isn't better than current log likelihood -103.05489789415294. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4999999963565984 4.999999992713197 9.999999985426394 -116.83728195610212 -116.69270927216216 -116.63409090661096|
-Brent optimization point: |9.999999967543145| likelihood: |-116.6340909067068|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -103.05489788844461 -103.05518742743018 -103.05573742153513|
+Brent optimization point: |0.0010000152506113435| likelihood: |-103.05489789293713|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -116.12967878368441 -116.4533538699242 -116.63409090696754|
-Brent optimization point: |0.0010000118462805655| likelihood: |-116.12967878434294|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -103.03214956365234 -103.04651586386133 -103.05490667539661|
+Brent optimization point: |0.0010000118462805655| likelihood: |-103.03214956371565|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -116.12967869515558 -116.13519741377443 -116.14623084348167|
-Brent optimization point: |0.0010000152506113435| likelihood: |-116.12967877932958|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.010995043115323937 0.175920689845183 0.351841379690366 -103.03649796630198 -103.03214956371565 -103.43711871678826|
+Brent optimization point: |0.08922614469584883| likelihood: |-102.96608127007404|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -121.52343358305374 -116.9593631698995 -116.12967877998781|
-Brent optimization point: |8.539167391154844| likelihood: |-116.08199859105632|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -102.65874498413126 -102.96559583120704 -102.98023352667877|
+Brent optimization point: |0.0010000118462805655| likelihood: |-102.65874498660371|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.171825259086438 4.343650518172876 -116.07103151837939 -116.08199859105632 -116.10077402552851|
-Brent optimization point: |0.388092036437487| likelihood: |-116.0696708084594|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.2196619367634716 1.7572954941077727 3.5145909882155455 -102.79010566907313 -102.65874498660371 -102.86218170968849|
+Brent optimization point: |0.685304508260302| likelihood: |-102.28202582031165|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3889729613811004 1.5558918455244015 3.111783691048803 -121.0705786203301 -116.0696708084594 -123.5991390872604|
-Brent optimization point: |1.088815130513052| likelihood: |-115.18823472564054|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3289162419570779 1.3156649678283117 2.6313299356566233 -106.3194988052286 -102.28202582031165 -111.03164784055764|
+Brent optimization point: |0.8506461683432064| likelihood: |-100.86390147330896|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.0610081626665133 4.122016325333027 8.244032650666053 -115.74540885089428 -115.18823472564054 -115.55618380678546|
-Brent optimization point: |4.265861350059234| likelihood: |-115.18701510837954|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -102.98522354279696 -101.2036765341073 -101.01737783381661|
+Brent optimization point: |7.409702239551303| likelihood: |-100.86206247866811|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -115.18701510837954 -115.18701510837954 -115.18701510837954|
-Brent optimization point: |9.999999988159347| likelihood: |-115.18701510837954|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -115.18701510837954 which isn't better than current log likelihood -115.18701510837954. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 3.8459965901433355 10.0 -100.86206247866811 -100.86206247866811 -100.86206247866811|
+Brent optimization point: |9.99999998337872| likelihood: |-100.86206247866811|
+INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -100.86206247866811 which isn't better than current log likelihood -100.86206247866811. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.741868015218467 10.0 -115.18701510837954 -115.18701510837954 -115.18701510837954|
-Brent optimization point: |9.999999987031279| likelihood: |-115.18701510837954|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -115.18701510837954 which isn't better than current log likelihood -115.18701510837954. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.3070468598723286 10.0 -100.86206247866811 -100.86206247866811 -100.86206247866811|
+Brent optimization point: |9.999999986531298| likelihood: |-100.86206247866811|
+INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -100.86206247866811 which isn't better than current log likelihood -100.86206247866811. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 1.3223468293947307 2.6446936587894614 -99.59186156854445 -115.18701510837954 -117.84027303683139|
-Brent optimization point: |0.010000014294376537| likelihood: |-99.59186197655754|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -100.86206200196246 -101.11535033885667 -101.61486420317637|
+Brent optimization point: |0.010000012768452944| likelihood: |-100.86206232688973|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.59186192635457 -99.59609962054562 -99.60457391565129|
-Brent optimization point: |0.0010000152506113435| likelihood: |-99.59186199098474|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp resulted in log likelihood -99.59186199098474 which isn't better than current log likelihood -99.59186197655754. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -101.2804331443379 -100.8944343726683 -100.85343730082346|
+Brent optimization point: |7.385804431469283| likelihood: |-100.8156531968175|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.59186140976769 -99.9728930000248 -100.71262280814241|
-Brent optimization point: |0.010000012768452944| likelihood: |-99.59186190111183|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -100.81565280232758 -101.18588072604021 -101.91529448182474|
+Brent optimization point: |0.010000012768452944| likelihood: |-100.81565327741599|
+INFO: Round 1 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -100.81565327741599 which isn't better than current log likelihood -100.8156531968175. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26.
-Brent optimization point: |9.999999985526394| likelihood: |-99.59186190111183|
-INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -99.59186190111183 which isn't better than current log likelihood -99.59186190111183. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -100.81663061612262 -100.81594020666216 -100.81565319681722|
+Brent optimization point: |9.999999988159347| likelihood: |-100.8156531968175|
+INFO: Round 1 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -100.8156531968175 which isn't better than current log likelihood -100.8156531968175. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26 DONE.
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 261 MiB; Free: 255 MiB; --> Used: 6 MiB.
-Max: 14563 MiB.
+Total: 1358 MiB; Free: 1174 MiB; --> Used: 184 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1661,147 +1684,148 @@ Enlarging... capacity = 10000
 Begin computing Viterbi's algorithm : BACKWARD PART 
 0.0% 100% DONE!                                   
 Processing round 1 DONE.
-Checking convergence for previous log likelihood -121.0381822035044 and current log likelihood -99.59186190111183
+Checking convergence for previous log likelihood -161.63874864483506 and current log likelihood -100.8156531968175
 Processing round 2.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.22890305802752697 0.45780611605505395 -94.44234302952252 -99.59186190111183 -103.65838937456039|
-Brent optimization point: |0.01000001716611668| likelihood: |-94.44234349020782|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -100.81565275418595 -101.18820429707306 -101.91939010988061|
+Brent optimization point: |0.010000012768452944| likelihood: |-100.81565323286375|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -94.44234307896267 -94.76215838042938 -95.38834678895735|
-Brent optimization point: |0.010000012768452944| likelihood: |-94.44234349020782|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -94.44234349020782 which isn't better than current log likelihood -94.44234349020782. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -100.81565260906937 -101.34030132832736 -102.36770104898044|
+Brent optimization point: |0.010000012768452944| likelihood: |-100.81565328366335|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -100.81565328366335 which isn't better than current log likelihood -100.81565323286375. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.28867979516111986 0.5773595903222397 10.0 -99.4564340292883 -94.44234349020782 -92.90636353205373|
-Brent optimization point: |1.9116509671885442| likelihood: |-92.7760249459237|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -111.64254039054498 -104.38140591131429 -100.81565322974866|
+Brent optimization point: |9.999999984188074| likelihood: |-100.81565323390853|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GTRRateParameter,0 resulted in log likelihood -100.81565323390853 which isn't better than current log likelihood -100.81565323286375. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -92.77602488496626 -92.7800214772891 -92.78801191148507|
-Brent optimization point: |0.0010000152506113435| likelihood: |-92.7760249459237|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,human resulted in log likelihood -92.7760249459237 which isn't better than current log likelihood -92.7760249459237. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.302091890719209 0.604183781438418 1.208367562876836 -101.72577320282141 -100.81565323286375 -101.54982669914094|
+Brent optimization point: |0.6210775211876621| likelihood: |-100.81405037016575|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -92.77602482627317 -92.7875286244699 -92.810522912398|
-Brent optimization point: |0.0010000152506113435| likelihood: |-92.77602500174694|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,human resulted in log likelihood -92.77602500174694 which isn't better than current log likelihood -92.7760249459237. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.432967489082486 0.865934978164972 1.731869956329944 -100.94474921450792 -100.81405037016575 -101.10196802856142|
+Brent optimization point: |0.7087062059212402| likelihood: |-100.78910780368558|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.38697846175751427 1.547913847030057 3.095827694060114 -97.19367831045578 -92.7760249459237 -100.36171791300225|
-Brent optimization point: |1.0387044178843046| likelihood: |-91.69493979309249|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3478514724258519 0.6957029448517038 1.3914058897034076 -102.10502300366211 -100.78910780368558 -107.05646592221973|
+Brent optimization point: |0.5689141270076312| likelihood: |-100.485653093102|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.6879892872384696 1.3759785744769393 2.7519571489538786 -92.88690522656981 -91.69493979309249 -97.06177495014688|
-Brent optimization point: |1.121571401105225| likelihood: |-91.41622220592775|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5970297334449073 1.1940594668898146 2.388118933779629 -100.82958372803434 -100.485653093102 -107.35311188115362|
+Brent optimization point: |0.8833089248302977| likelihood: |-99.84442891196466|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.7365344832114117 1.4730689664228234 10.0 -91.85025565753624 -91.41622220592775 -91.16782228143012|
-Brent optimization point: |4.850926022198179| likelihood: |-90.86680775932139|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.512 -99.84442891215903 -99.84441254086494 -99.84516454653834|
+Brent optimization point: |0.22909804067866138| likelihood: |-99.84259603992543|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -90.8775553769725 -90.86687545188421 -90.8677648014802|
-Brent optimization point: |6.247867022888286| likelihood: |-90.8664056761663|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.84259603883075 -99.84268979796458 -99.84288537865696|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.84259604024004|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla resulted in log likelihood -99.84259604024004 which isn't better than current log likelihood -99.84259603992543. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8 DONE.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.012833977023410565 0.02566795404682113 0.05133590809364226 -91.0627439429642 -90.8664056761663 -91.18638088675037|
-Brent optimization point: |0.02566770615872832| likelihood: |-90.86640567611855|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |7.831527866864928E-9 1.5663055733729857E-8 0.13139123463241215 -99.84259603998237 -99.84259603992543 -99.84259734330321|
+Brent optimization point: |0.031902276239165785| likelihood: |-99.84251279859375|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.86640567603234 -90.86641293493146 -90.86642739578537|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.86640567614329|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp resulted in log likelihood -90.86640567614329 which isn't better than current log likelihood -90.86640567611855. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -100.3880865052814 -99.92446921222214 -99.85658301235952|
+Brent optimization point: |7.666164552831264| likelihood: |-99.82513063828569|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.8664056760078 -90.86641562877047 -90.86643547298632|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.86640567615969|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -90.86640567615969 which isn't better than current log likelihood -90.86640567611855. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.82513063652812 -99.82525025273159 -99.82549666905416|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.82513063833399|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -99.82513063833399 which isn't better than current log likelihood -99.82513063828569. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.553757050536828 10.0 -90.86640567611855 -90.86640567611855 -90.86640567611855|
-Brent optimization point: |9.999999989898523| likelihood: |-90.86640567611855|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -90.86640567611855 which isn't better than current log likelihood -90.86640567611855. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.792775417201352 10.0 -99.82513063828569 -99.82513063828569 -99.82513063828569|
+Brent optimization point: |9.999999987843198| likelihood: |-99.82513063828569|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -99.82513063828569 which isn't better than current log likelihood -99.82513063828569. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.86640567611855 -90.86640567611855 -90.86640567611855|
-Brent optimization point: |9.999999988159347| likelihood: |-90.86640567611855|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -90.86640567611855 which isn't better than current log likelihood -90.86640567611855. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -99.82513063828569 -99.82513063828569 -99.82513063828569|
+Brent optimization point: |9.999999988159347| likelihood: |-99.82513063828569|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -99.82513063828569 which isn't better than current log likelihood -99.82513063828569. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4999999963565984 4.999999992713197 9.999999985426394 -91.03851111333168 -90.91608505709414 -90.86640567603726|
-Brent optimization point: |9.999999967588192| likelihood: |-90.86640567611835|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.82513063792918 -99.82515393656985 -99.8252000631928|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.82513063828569|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1a resulted in log likelihood -99.82513063828569 which isn't better than current log likelihood -99.82513063828569. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.86640567502815 -90.86649770902541 -90.86668179540868|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.86640567643167|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -90.86640567643167 which isn't better than current log likelihood -90.86640567611835. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.82513063627461 -99.82530147476628 -99.82564956156456|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.82513063886361|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -99.82513063886361 which isn't better than current log likelihood -99.82513063828569. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.86640560446776 -90.87110327221927 -90.8804953369448|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.86640567611835|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla resulted in log likelihood -90.86640567611835 which isn't better than current log likelihood -90.86640567611835. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.08922614469584883 0.17845228939169766 -99.80886622239659 -99.82513063828569 -99.91171381897287|
+Brent optimization point: |0.027638201402853023| likelihood: |-99.80435179594731|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -92.36512756637599 -90.70770393082027 -91.00506060399721|
-Brent optimization point: |5.67399609105396| likelihood: |-90.68153071117746|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.80435179444936 -99.8044793687437 -99.80474120600459|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.80435179637784|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla resulted in log likelihood -99.80435179637784 which isn't better than current log likelihood -99.80435179594731. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.388092036437487 0.776184072874974 -90.67604233121335 -90.68153071117746 -90.68395675715564|
-Brent optimization point: |0.0010000187606045003| likelihood: |-90.67604233157954|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.342652254130151 0.685304508260302 1.370609016520604 -100.0378447400427 -99.80435179594731 -100.05561828050801|
+Brent optimization point: |0.6582104388394056| likelihood: |-99.80333782780713|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.544407565256526 1.088815130513052 2.177630261026104 -93.54668551220945 -90.67604233157954 -93.99140507578802|
-Brent optimization point: |1.0912473376817493| likelihood: |-90.67600999803479|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.4253230841716032 0.8506461683432064 1.7012923366864128 -101.11460837052667 -99.80333782780713 -105.64336340222151|
+Brent optimization point: |0.698195469997108| likelihood: |-99.52414230812349|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.132930675029617 4.265861350059234 8.531722700118468 -90.83999045551167 -90.67600999803479 -90.90564675056845|
-Brent optimization point: |4.263168422376022| likelihood: |-90.67600982589221|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -101.69924882297583 -99.90287485074491 -99.63682342629966|
+Brent optimization point: |7.708336899528158| likelihood: |-99.5211656151055|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.67600982589221 -90.67600982589221 -90.67600982589221|
-Brent optimization point: |9.999999988159347| likelihood: |-90.67600982589221|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -90.67600982589221 which isn't better than current log likelihood -90.67600982589221. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 3.8459965901433355 10.0 -99.5211656151055 -99.5211656151055 -99.5211656151055|
+Brent optimization point: |9.99999998337872| likelihood: |-99.5211656151055|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -99.5211656151055 which isn't better than current log likelihood -99.5211656151055. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.741868015218467 10.0 -90.67600982589221 -90.67600982589221 -90.67600982589221|
-Brent optimization point: |9.999999987031279| likelihood: |-90.67600982589221|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -90.67600982589221 which isn't better than current log likelihood -90.67600982589221. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.3070468598723286 10.0 -99.5211656151055 -99.5211656151055 -99.5211656151055|
+Brent optimization point: |9.999999986531298| likelihood: |-99.5211656151055|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -99.5211656151055 which isn't better than current log likelihood -99.5211656151055. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.67600932022185 -91.02718482070507 -91.71422005684393|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.676009771912|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.52116528051934 -99.78203439149601 -100.29678262395151|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.5211656151055|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GTRRateParameter,4 resulted in log likelihood -99.5211656151055 which isn't better than current log likelihood -99.5211656151055. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.6760096647275 -90.6850555598979 -90.70313501794752|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.6760098027142|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp resulted in log likelihood -90.6760098027142 which isn't better than current log likelihood -90.676009771912. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -100.08956868126141 -99.63146470823123 -99.54555478529332|
+Brent optimization point: |7.870072706254091| likelihood: |-99.51908068278539|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.67600931060666 -91.03462205663993 -91.73598049098852|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.676009771912|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -90.676009771912 which isn't better than current log likelihood -90.676009771912. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.5190803211481 -99.85853812769894 -100.52769915358493|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.51908075667176|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -99.51908075667176 which isn't better than current log likelihood -99.51908068278539. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26.
-Brent optimization point: |9.999999985526394| likelihood: |-90.676009771912|
-INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -90.676009771912 which isn't better than current log likelihood -90.676009771912. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.51921261409268 -99.51911953166368 -99.51908068278534|
+Brent optimization point: |9.999999988159347| likelihood: |-99.51908068278539|
+INFO: Round 2 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -99.51908068278539 which isn't better than current log likelihood -99.51908068278539. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26 DONE.
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 256 MiB; Free: 172 MiB; --> Used: 84 MiB.
-Max: 14563 MiB.
+Total: 1349 MiB; Free: 1294 MiB; --> Used: 55 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1809,147 +1833,148 @@ Enlarging... capacity = 10000
 Begin computing Viterbi's algorithm : BACKWARD PART 
 0.0% 100% DONE!                                   
 Processing round 2 DONE.
-Checking convergence for previous log likelihood -99.59186190111183 and current log likelihood -90.676009771912
+Checking convergence for previous log likelihood -100.8156531968175 and current log likelihood -99.51908068278539
 Processing round 3.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.67600918369942 -91.01623739841352 -91.68225792778789|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.67600962122205|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.51908010314293 -99.96959106578714 -100.85008638503842|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.51908068278539|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.6760091743687 -91.0234569986218 -91.70339501616102|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.67600962122205|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -90.67600962122205 which isn't better than current log likelihood -90.67600962122205. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.51907999128274 -100.10004988226444 -101.23401538829157|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.51908073909881|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -99.51908073909881 which isn't better than current log likelihood -99.51908068278539. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.9558254835942721 1.9116509671885442 10.0 -92.09599259966141 -90.67600962122205 -90.64067023761355|
-Brent optimization point: |3.188200836337853| likelihood: |-90.58114733990972|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -110.31099897220504 -103.0420663736208 -99.51908067977126|
+Brent optimization point: |9.999999982863947| likelihood: |-99.51908068413341|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,0 resulted in log likelihood -99.51908068413341 which isn't better than current log likelihood -99.51908068278539. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.58114727314333 -90.58552490377565 -90.5942782672553|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.58114733990972|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,human resulted in log likelihood -90.58114733990972 which isn't better than current log likelihood -90.58114733990972. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.31053876059383106 0.6210775211876621 1.2421550423753243 -100.50048574335278 -99.51908068278539 -100.31733313159243|
+Brent optimization point: |0.6310993003799943| likelihood: |-99.5185113886316|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.58114718116312 -90.59640699889115 -90.62689184857211|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.58114741397314|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,human resulted in log likelihood -90.58114741397314 which isn't better than current log likelihood -90.58114733990972. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3543531029606201 0.7087062059212402 1.4174124118424805 -99.73090042332146 -99.5185113886316 -99.76804609576088|
+Brent optimization point: |0.6611521126173342| likelihood: |-99.51564862542944|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5193522089421523 1.0387044178843046 2.077408835768609 -93.21549654958365 -90.58114733990972 -94.05417240790077|
-Brent optimization point: |1.017243332870408| likelihood: |-90.57837116367745|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.2844570635038156 0.5689141270076312 1.1378282540152624 -102.00599210888679 -99.51564862542944 -104.31745508889867|
+Brent optimization point: |0.5283380197226977| likelihood: |-99.47488297562856|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5607857005526125 1.121571401105225 2.24314280221045 -93.123318296477 -90.57837116367745 -94.1638089183194|
-Brent optimization point: |1.082401742908932| likelihood: |-90.57027129584618|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.44165446241514883 0.8833089248302977 1.7666178496605953 -101.2336209655467 -99.47488297562856 -104.44982563145865|
+Brent optimization point: |0.767611698267174| likelihood: |-99.34050191575716|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4254630110990893 4.850926022198179 9.701852044396357 -90.80108593404776 -90.57027129584618 -90.84606424035323|
-Brent optimization point: |4.868729891268047| likelihood: |-90.57026373991344|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.11454902033933069 0.22909804067866138 0.9163921627146455 -99.34192855518299 -99.34050191575716 -99.3485458855152|
+Brent optimization point: |0.36366487157363725| likelihood: |-99.33992991221024|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -90.57059115165305 -90.56956223826045 -90.57245480847602|
-Brent optimization point: |3.7240964026821994| likelihood: |-90.56912861170102|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.33992991147382 -99.33999339612565 -99.34012823364924|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.3399299124219|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla resulted in log likelihood -99.3399299124219 which isn't better than current log likelihood -99.33992991221024. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8 DONE.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01283385307936416 0.02566770615872832 0.05133541231745664 -90.76549762246535 -90.56912861170102 -90.88901661520815|
-Brent optimization point: |0.02566920165200622| likelihood: |-90.56912860996194|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.015951138119582892 0.031902276239165785 0.06380455247833157 -99.33994738147726 -99.33992991221024 -99.33993052017303|
+Brent optimization point: |0.04465538789317238| likelihood: |-99.33992710877929|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.56912860937105 -90.5691784258847 -90.56927770097363|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.56912861013174|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp resulted in log likelihood -90.56912861013174 which isn't better than current log likelihood -90.56912860996194. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.95979572904466 -99.46583609808717 -99.36039463089128|
+Brent optimization point: |8.066088306001893| likelihood: |-99.33857904267145|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.56912860928527 -90.56918940775762 -90.56931062926105|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.56912861021338|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -90.56912861021338 which isn't better than current log likelihood -90.56912860996194. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.33857904158204 -99.33865374407948 -99.33881093547275|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.33857904270143|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -99.33857904270143 which isn't better than current log likelihood -99.33857904267145. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.553757050536828 10.0 -90.56912860996194 -90.56912860996194 -90.56912860996194|
-Brent optimization point: |9.999999989898523| likelihood: |-90.56912860996194|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -90.56912860996194 which isn't better than current log likelihood -90.56912860996194. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.792775417201352 10.0 -99.33857904267145 -99.33857904267145 -99.33857904267145|
+Brent optimization point: |9.999999987843198| likelihood: |-99.33857904267145|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -99.33857904267145 which isn't better than current log likelihood -99.33857904267145. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.56912860996194 -90.56912860996194 -90.56912860996194|
-Brent optimization point: |9.999999988159347| likelihood: |-90.56912860996194|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -90.56912860996194 which isn't better than current log likelihood -90.56912860996194. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -99.33857904267145 -99.33857904267145 -99.33857904267145|
+Brent optimization point: |9.999999988159347| likelihood: |-99.33857904267145|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -99.33857904267145 which isn't better than current log likelihood -99.33857904267145. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4999999963565984 4.999999992713197 9.999999985426394 -90.7175105198736 -90.61197907513558 -90.56912860989206|
-Brent optimization point: |9.999999967622689| likelihood: |-90.56912860996181|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.33857904258383 -99.33858477287676 -99.33859611855205|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.33857904267145|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1a resulted in log likelihood -99.33857904267145 which isn't better than current log likelihood -99.33857904267145. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.56912860883345 -90.56922386267479 -90.56941439200149|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.56912861028609|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -90.56912861028609 which isn't better than current log likelihood -90.56912860996181. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.33857904177673 -99.33865587706903 -99.33881732211374|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.33857904292861|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -99.33857904292861 which isn't better than current log likelihood -99.33857904267145. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.56912854224406 -90.57356856743694 -90.58244676804038|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.56912860996181|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla resulted in log likelihood -90.56912860996181 which isn't better than current log likelihood -90.56912860996181. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.027638201402853023 0.055276402805706046 -99.33543230333443 -99.33857904267145 -99.34984039889304|
+Brent optimization point: |0.004160212132486952| likelihood: |-99.33537131348567|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -90.67776853186447 -90.50737403754815 -90.99501234757886|
-Brent optimization point: |3.7206057923984477| likelihood: |-90.43486741458719|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.33537131278094 -99.33543212938054 -99.3355616631055|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.3353713136882|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla resulted in log likelihood -99.3353713136882 which isn't better than current log likelihood -99.33537131348567. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.43486741345708 -90.43492758903567 -90.4350475675992|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.43486741437592|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3291052194197028 0.6582104388394056 1.316420877678811 -99.57505602323806 -99.33537131348567 -99.57509459513878|
+Brent optimization point: |0.6378000590855832| likelihood: |-99.33477500779242|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5456236688408747 1.0912473376817493 2.1824946753634986 -93.14278250092799 -90.43486741437592 -93.90404050199693|
-Brent optimization point: |1.0730371533067469| likelihood: |-90.4330372035932|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.349097734998554 0.698195469997108 1.396390939994216 -101.60740915390406 -99.33477500779242 -103.88995871791535|
+Brent optimization point: |0.6401014233484471| likelihood: |-99.2818934510463|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.131584211188011 4.263168422376022 8.526336844752043 -90.60084114904635 -90.4330372035932 -90.66166030916821|
-Brent optimization point: |4.284008680492638| likelihood: |-90.43302684253155|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -101.4813578209218 -99.68547595926194 -99.38220097903438|
+Brent optimization point: |7.846698570884851| likelihood: |-99.28130151094045|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.43302684253155 -90.43302684253155 -90.43302684253155|
-Brent optimization point: |9.999999988159347| likelihood: |-90.43302684253155|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -90.43302684253155 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 3.8459965901433355 10.0 -99.28130151094045 -99.28130151094045 -99.28130151094045|
+Brent optimization point: |9.99999998337872| likelihood: |-99.28130151094045|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -99.28130151094045 which isn't better than current log likelihood -99.28130151094045. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.741868015218467 10.0 -90.43302684253155 -90.43302684253155 -90.43302684253155|
-Brent optimization point: |9.999999987031279| likelihood: |-90.43302684253155|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -90.43302684253155 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.3070468598723286 10.0 -99.28130151094045 -99.28130151094045 -99.28130151094045|
+Brent optimization point: |9.999999986531298| likelihood: |-99.28130151094045|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -99.28130151094045 which isn't better than current log likelihood -99.28130151094045. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.43302645121307 -90.7374482689411 -91.33409836503762|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.43302684253155|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,4 resulted in log likelihood -90.43302684253155 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.28130117198678 -99.54555334460072 -100.06684527561733|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.28130151094045|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,4 resulted in log likelihood -99.28130151094045 which isn't better than current log likelihood -99.28130151094045. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.43302666281132 -90.44819179385256 -90.47848669102626|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.43302689417881|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp resulted in log likelihood -90.43302689417881 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.91405922581023 -99.41686274050515 -99.30018280783713|
+Brent optimization point: |8.17659094680712| likelihood: |-99.28052925043268|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.43302644863742 -90.73944351975402 -91.33995393325218|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.43302684253155|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -90.43302684253155 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.28052890090868 -99.6086366628449 -100.25554732862516|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.2805293218443|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -99.2805293218443 which isn't better than current log likelihood -99.28052925043268. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26.
-Brent optimization point: |9.999999985526394| likelihood: |-90.43302684253155|
-INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -90.43302684253155 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.28055955572223 -99.28053817313403 -99.28052925043269|
+Brent optimization point: |9.999999988159347| likelihood: |-99.28052925043268|
+INFO: Round 3 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -99.28052925043268 which isn't better than current log likelihood -99.28052925043268. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26 DONE.
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 288 MiB; Free: 178 MiB; --> Used: 110 MiB.
-Max: 14563 MiB.
+Total: 1349 MiB; Free: 1066 MiB; --> Used: 283 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -1957,147 +1982,148 @@ Enlarging... capacity = 10000
 Begin computing Viterbi's algorithm : BACKWARD PART 
 0.0% 100% DONE!                                   
 Processing round 3 DONE.
-Checking convergence for previous log likelihood -90.676009771912 and current log likelihood -90.43302684253155
+Checking convergence for previous log likelihood -99.51908068278539 and current log likelihood -99.28052925043268
 Processing round 4.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.43302645701304 -90.73296486725845 -91.32099873691908|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.43302684253155|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.28052862235164 -99.76835076221738 -100.71977472648318|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.28052925043268|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.43302645447383 -90.73493222162895 -91.32677418305697|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.43302684253155|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -90.43302684253155 which isn't better than current log likelihood -90.43302684253155. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.28052853273854 -99.88321734881852 -101.05788957184589|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.28052930887915|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -99.28052930887915 which isn't better than current log likelihood -99.28052925043268. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.5941004181689264 3.188200836337853 10.0 -91.5231294209876 -90.43302684253155 -90.43113973359817|
-Brent optimization point: |4.596157217987689| likelihood: |-90.38650792121817|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -109.9492086660454 -102.73671340621854 -99.28052924751623|
+Brent optimization point: |9.999999982052458| likelihood: |-99.28052925193687|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,0 resulted in log likelihood -99.28052925193687 which isn't better than current log likelihood -99.28052925043268. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.3865078601707 -90.39051090467821 -90.39851754620042|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.38650792121817|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,human resulted in log likelihood -90.38650792121817 which isn't better than current log likelihood -90.38650792121817. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.31554965018999714 0.6310993003799943 1.2621986007599886 -100.34680533308462 -99.28052925043268 -100.13446748508014|
+Brent optimization point: |0.6350713258241815| likelihood: |-99.28043630416126|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.3865076918203 -90.40855508204893 -90.45257606634246|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.38650802824404|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,human resulted in log likelihood -90.38650802824404 which isn't better than current log likelihood -90.38650792121817. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3305760563086671 0.6611521126173342 1.3223042252346684 -99.51884739082966 -99.28043630416126 -99.5156493513484|
+Brent optimization point: |0.6393274243899497| likelihood: |-99.27976906632438|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.508621666435204 1.017243332870408 2.034486665740816 -93.07058868986199 -90.38650792121817 -93.82237220736488|
-Brent optimization point: |1.001475385290011| likelihood: |-90.38494840534445|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.26416900986134884 0.5283380197226977 1.0566760394453953 -102.14473645825767 -99.27976906632438 -103.61004738524662|
+Brent optimization point: |0.5115483816279551| likelihood: |-99.27201451807768|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.541200871454466 1.082401742908932 2.164803485817864 -93.13288520327379 -90.38494840534445 -93.71859316485352|
-Brent optimization point: |1.0723124703422484| likelihood: |-90.38438814963419|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.383805849133587 0.767611698267174 1.535223396534348 -101.69094342145033 -99.27201451807768 -103.35675092653571|
+Brent optimization point: |0.7229673050052522| likelihood: |-99.24792685925637|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4343649456340235 4.868729891268047 9.737459782536094 -90.61097104800962 -90.38438814963419 -90.66423821573383|
-Brent optimization point: |4.8608131308194515| likelihood: |-90.38438666218573|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.18183243578681862 0.36366487157363725 0.7273297431472745 -99.2496366554985 -99.24792685925637 -99.25044108219949|
+Brent optimization point: |0.42373213149235517| likelihood: |-99.24781800296812|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.8620482013410997 3.7240964026821994 7.448192805364399 -90.38515831644374 -90.38438666218573 -90.38656302169944|
-Brent optimization point: |2.742370859144661| likelihood: |-90.38403536187302|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.24781800271388 -99.2478408918652 -99.24789517850553|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.2478180030412|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla resulted in log likelihood -99.2478180030412 which isn't better than current log likelihood -99.24781800296812. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8 DONE.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01283460082600311 0.02566920165200622 0.05133840330401244 -90.58038976838117 -90.38403536187302 -90.70394030734538|
-Brent optimization point: |0.025670052777130324| likelihood: |-90.38403536129671|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.02232769394658619 0.04465538789317238 0.08931077578634476 -99.24782023638812 -99.24781800296812 -99.24782040580028|
+Brent optimization point: |0.04518321123855991| likelihood: |-99.24781800222917|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.38403536028441 -90.38412068066056 -90.38429051870361|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.3840353615876|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp resulted in log likelihood -90.3840353615876 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.8921726149286 -99.38990320952855 -99.26513020194578|
+Brent optimization point: |8.266321798411512| likelihood: |-99.24750172031679|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.3840353601421 -90.38413906279531 -90.38434563617247|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.38403536172571|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -90.38403536172571 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.24750171988204 -99.24753243121516 -99.24760232987171|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.24750172032876|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -99.24750172032876 which isn't better than current log likelihood -99.24750172031679. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.553757050536828 10.0 -90.38403536129671 -90.38403536129671 -90.38403536129671|
-Brent optimization point: |9.999999989898523| likelihood: |-90.38403536129671|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -90.38403536129671 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.792775417201352 10.0 -99.24750172031679 -99.24750172031679 -99.24750172031679|
+Brent optimization point: |9.999999987843198| likelihood: |-99.24750172031679|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -99.24750172031679 which isn't better than current log likelihood -99.24750172031679. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.38403536129671 -90.38403536129671 -90.38403536129671|
-Brent optimization point: |9.999999988159347| likelihood: |-90.38403536129671|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -90.38403536129671 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -99.24750172031679 -99.24750172031679 -99.24750172031679|
+Brent optimization point: |9.999999988159347| likelihood: |-99.24750172031679|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -99.24750172031679 which isn't better than current log likelihood -99.24750172031679. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4999999963565984 4.999999992713197 9.999999985426394 -90.53297113476825 -90.42704532556412 -90.38403536122664|
-Brent optimization point: |9.99999996762188| likelihood: |-90.38403536129671|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1a resulted in log likelihood -90.38403536129671 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.24750172030058 -99.24750278049036 -99.24750487952112|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.24750172031679|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1a resulted in log likelihood -99.24750172031679 which isn't better than current log likelihood -99.24750172031679. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.384035360236 -90.38412491164209 -90.38430408898935|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.38403536160155|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -90.38403536160155 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.24750171997893 -99.24753166853209 -99.24760008758722|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.24750172041391|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -99.24750172041391 which isn't better than current log likelihood -99.24750172031679. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.38403529988008 -90.38806254637399 -90.39611757134728|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.38403536129671|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla resulted in log likelihood -90.38403536129671 which isn't better than current log likelihood -90.38403536129671. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.004160212132486952 0.008320424264973904 -99.24725773887616 -99.24750172031679 -99.24799820334796|
+Brent optimization point: |0.0010000188375852098| likelihood: |-99.24725773998307|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.8603028961992238 3.7206057923984477 7.441211584796895 -90.5127330022433 -90.38403536129671 -90.75117335316249|
-Brent optimization point: |2.738197870309331| likelihood: |-90.32510730401897|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -99.2472577396701 -99.2472855915535 -99.24734983488176|
+Brent optimization point: |0.0010000152506113435| likelihood: |-99.24725774007304|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla resulted in log likelihood -99.24725774007304 which isn't better than current log likelihood -99.24725773998307. Not updating branch length nor best round log likelihood.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.3251073024413 -90.32521061515385 -90.3254164112258|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.32510730401897|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,anc resulted in log likelihood -90.32510730401897 which isn't better than current log likelihood -90.32510730401897. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.3189000295427916 0.6378000590855832 1.2756001181711665 -99.49584977792453 -99.24725773998307 -99.4740972352523|
+Brent optimization point: |0.6285067980884327| likelihood: |-99.24713026123155|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18 DONE.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5365185766533734 1.0730371533067469 2.1460743066134937 -93.1220201747513 -90.32510730401897 -93.65972204936276|
-Brent optimization point: |1.0679888908095072| likelihood: |-90.32496421809597|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.32005071167422355 0.6401014233484471 1.2802028466968942 -101.931787225911 -99.24713026123155 -103.24138577760344|
+Brent optimization point: |0.6167690721205009| likelihood: |-99.23756422536049|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.142004340246319 4.284008680492638 8.568017360985277 -90.49192942165443 -90.32496421809597 -90.55641459855157|
-Brent optimization point: |4.289859270211789| likelihood: |-90.32496340409716|
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -101.41459540538959 -99.64880825318683 -99.33249617078185|
+Brent optimization point: |7.903027462544508| likelihood: |-99.2374694403593|
 INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.32496340409716 -90.32496340409716 -90.32496340409716|
-Brent optimization point: |9.999999988159347| likelihood: |-90.32496340409716|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -90.32496340409716 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 3.8459965901433355 10.0 -99.2374694403593 -99.2374694403593 -99.2374694403593|
+Brent optimization point: |9.99999998337872| likelihood: |-99.2374694403593|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -99.2374694403593 which isn't better than current log likelihood -99.2374694403593. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.741868015218467 10.0 -90.32496340409716 -90.32496340409716 -90.32496340409716|
-Brent optimization point: |9.999999987031279| likelihood: |-90.32496340409716|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -90.32496340409716 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 1.3070468598723286 10.0 -99.2374694403593 -99.2374694403593 -99.2374694403593|
+Brent optimization point: |9.999999986531298| likelihood: |-99.2374694403593|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -99.2374694403593 which isn't better than current log likelihood -99.2374694403593. Not updating branch length nor best round log likelihood.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.32496304630082 -90.60336279187094 -91.14934051286872|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.32496340409716|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,4 resulted in log likelihood -90.32496340409716 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.23746909929385 -99.50335857723753 -100.02782495099393|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.2374694403593|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,4 resulted in log likelihood -99.2374694403593 which isn't better than current log likelihood -99.2374694403593. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23 DONE.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.3249631463775 -90.34670619014108 -90.39011855733371|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.32496347815966|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp resulted in log likelihood -90.32496347815966 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.89409766920845 -99.38583673259346 -99.25403255326798|
+Brent optimization point: |8.322962701670733| likelihood: |-99.23730127029712|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24 DONE.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.32496304517075 -90.60423906447689 -91.15191694744803|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.32496340409716|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -90.32496340409716 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -99.23730092587648 -99.56062988162147 -100.19818981707837|
+Brent optimization point: |0.010000012768452944| likelihood: |-99.237301340666|
+INFO: Round 4 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -99.237301340666 which isn't better than current log likelihood -99.23730127029712. Not updating branch length nor best round log likelihood.
 Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25 DONE.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26.
-Brent optimization point: |9.999999985526394| likelihood: |-90.32496340409716|
-INFO: Round 4 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -90.32496340409716 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
+optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.5 5.0 10.0 -99.23730414392196 -99.2373021144145 -99.23730127029714|
+Brent optimization point: |9.999999925793935| likelihood: |-99.23730127029711|
+INFO: Brent's method resulted in strict improvement in likelihood. Updating.
 Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26 DONE.
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 281 MiB; Free: 175 MiB; --> Used: 106 MiB.
-Max: 14563 MiB.
+Total: 1341 MiB; Free: 1172 MiB; --> Used: 169 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -2105,166 +2131,20 @@ Enlarging... capacity = 10000
 Begin computing Viterbi's algorithm : BACKWARD PART 
 0.0% 100% DONE!                                   
 Processing round 4 DONE.
-Checking convergence for previous log likelihood -90.43302684253155 and current log likelihood -90.32496340409716
-Processing round 5.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.32496304664986 -90.60309421345104 -91.14856296754952|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.32496340409716|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,2 count 0 DONE.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.32496304552068 -90.60396976894987 -91.15113738184125|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.32496340409716|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GTRRateParameter,1 resulted in log likelihood -90.32496340409716 which isn't better than current log likelihood -90.32496340409716. Not updating branch length nor best round log likelihood.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,1 count 1 DONE.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.2980786089938445 4.596157217987689 9.596157217987688 -91.2365237463912 -90.32496340409716 -90.3250359914166|
-Brent optimization point: |6.0226246476443235| likelihood: |-90.29926853120298|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,0 count 2 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.29926847584387 -90.30289907021222 -90.31016405466205|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.29926853120298|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,human resulted in log likelihood -90.29926853120298 which isn't better than current log likelihood -90.29926853120298. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,human count 3 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.29926823246049 -90.32797521994502 -90.38526240489256|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.29926867058174|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,human resulted in log likelihood -90.29926867058174 which isn't better than current log likelihood -90.29926853120298. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,human count 4 DONE.
-Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5007376926450054 1.001475385290011 2.002950770580022 -93.06518560035917 -90.29926853120298 -93.6423410559691|
-Brent optimization point: |0.9959200561897739| likelihood: |-90.29907070610764|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,G count 5 DONE.
-Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5361562351711242 1.0723124703422484 2.144624940684497 -93.10439159916498 -90.29907070610764 -93.56327654319745|
-Brent optimization point: |1.0702325949123745| likelihood: |-90.29904664344274|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,C count 6 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4304065654097258 4.8608131308194515 9.721626261638903 -90.52547127311858 -90.29904664344274 -90.57803163925001|
-Brent optimization point: |4.856243309803357| likelihood: |-90.2990461475154|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,anc count 7 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.3711854295723305 2.742370859144661 5.484741718289322 -90.30039876668432 -90.2990461475154 -90.30064193317845|
-Brent optimization point: |2.185207536874215| likelihood: |-90.2988763735203|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,gorilla count 8 DONE.
-Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.012835026388565162 0.025670052777130324 0.05134010555426065 -90.49522925544557 -90.2988763735203 -90.6187707342784|
-Brent optimization point: |0.025670945329919117| likelihood: |-90.298876372901|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.SwitchingFrequencyParameter parameter optimize.SwitchingFrequencyParameter,HYBRIDIZATION_FREQUENCY count 9 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.29887637145275 -90.29899838604692 -90.29924099915843|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.2988763733172|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp resulted in log likelihood -90.2988763733172 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,chimp count 10 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.29887637126814 -90.29902297616268 -90.2993147308075|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.29887637350762|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,human resulted in log likelihood -90.29887637350762 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,human count 11 DONE.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 2.553757050536828 10.0 -90.298876372901 -90.298876372901 -90.298876372901|
-Brent optimization point: |9.999999989898523| likelihood: |-90.298876372901|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1d resulted in log likelihood -90.298876372901 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1d count 12 DONE.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.298876372901 -90.298876372901 -90.298876372901|
-Brent optimization point: |9.999999988159347| likelihood: |-90.298876372901|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1c resulted in log likelihood -90.298876372901 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1c count 13 DONE.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.4999999963565984 4.999999992713197 9.999999985426394 -90.44800358986406 -90.34194146746194 -90.29887637283086|
-Brent optimization point: |9.9999999676216| likelihood: |-90.298876372901|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t1a resulted in log likelihood -90.298876372901 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t1a count 14 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.29887637193718 -90.2989577611787 -90.29912071281277|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.29887637317798|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,anc resulted in log likelihood -90.29887637317798 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,anc count 15 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.29887631744369 -90.30251334788048 -90.30979118688802|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.298876372901|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla resulted in log likelihood -90.298876372901 which isn't better than current log likelihood -90.298876372901. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,gorilla count 16 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |1.3690989351546654 2.738197870309331 5.476395740618662 -90.52609792792107 -90.298876372901 -90.56789273713781|
-Brent optimization point: |2.1808579560304975| likelihood: |-90.27030227026854|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,gorilla count 17 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.27030226803284 -90.27044862665855 -90.27073989089669|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.27030227026854|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree3,anc resulted in log likelihood -90.27030227026854 which isn't better than current log likelihood -90.27030227026854. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree3,anc count 18 DONE.
-Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.5339944454047536 1.0679888908095072 2.1359777816190144 -93.1016913533594 -90.27030227026854 -93.54814623372776|
-Brent optimization point: |1.068144107511273| likelihood: |-90.27030213465471|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GTRBaseFrequencyParameter parameter optimize.GTRBaseFrequencyParameter,T count 19 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |2.1449296351058944 4.289859270211789 8.579718540423578 -90.43673161019004 -90.27030213465471 -90.50258311117501|
-Brent optimization point: |4.289679594061521| likelihood: |-90.270302133888|
-INFO: Brent's method resulted in strict improvement in likelihood. Updating.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree2,chimp count 20 DONE.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 5.0 10.0 -90.270302133888 -90.270302133888 -90.270302133888|
-Brent optimization point: |9.999999988159347| likelihood: |-90.270302133888|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2d resulted in log likelihood -90.270302133888 which isn't better than current log likelihood -90.270302133888. Not updating branch length nor best round log likelihood.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2d count 21 DONE.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 4.741868015218467 10.0 -90.270302133888 -90.270302133888 -90.270302133888|
-Brent optimization point: |9.999999987031279| likelihood: |-90.270302133888|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2c resulted in log likelihood -90.270302133888 which isn't better than current log likelihood -90.270302133888. Not updating branch length nor best round log likelihood.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2c count 22 DONE.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.27030179498365 -90.53401426788908 -91.05125990727494|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.270302133888|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GTRRateParameter,4 resulted in log likelihood -90.270302133888 which isn't better than current log likelihood -90.270302133888. Not updating branch length nor best round log likelihood.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,4 count 23 DONE.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.0010 0.0020 0.0040 -90.2703017969676 -90.29872175066967 -90.35543514077793|
-Brent optimization point: |0.0010000152506113435| likelihood: |-90.2703022307108|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp resulted in log likelihood -90.2703022307108 which isn't better than current log likelihood -90.270302133888. Not updating branch length nor best round log likelihood.
-Processing optimize.GenealogyBranchLengthParameter parameter optimize.GenealogyBranchLengthParameter,gtree1,chimp count 24 DONE.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25.
-optimizeSingleParameter:  l x u fx fl fu log likelihoods at end of getSearchInterval() : |0.01 0.02 0.04 -90.27030179440916 -90.53446028640123 -91.05257445103305|
-Brent optimization point: |0.010000012768452944| likelihood: |-90.270302133888|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.GTRRateParameter,3 resulted in log likelihood -90.270302133888 which isn't better than current log likelihood -90.270302133888. Not updating branch length nor best round log likelihood.
-Processing optimize.GTRRateParameter parameter optimize.GTRRateParameter,3 count 25 DONE.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26.
-Brent optimization point: |9.999999985526394| likelihood: |-90.270302133888|
-INFO: Round 5 optimized point and log likelihood for length parameter optimize.ParentalBranchLengthParameter,t2a resulted in log likelihood -90.270302133888 which isn't better than current log likelihood -90.270302133888. Not updating branch length nor best round log likelihood.
-Processing optimize.ParentalBranchLengthParameter parameter optimize.ParentalBranchLengthParameter,t2a count 26 DONE.
-Building Psy Array
-0.0%100% Done!                             
-
-Total: 274 MiB; Free: 175 MiB; --> Used: 99 MiB.
-Max: 14563 MiB.
-
-Begin computing Viterbi's algorithm : FORWARD PART 
- 100% DONE!                                
-Enlarging... capacity = 10000
-Begin computing Viterbi's algorithm : BACKWARD PART 
-0.0% 100% DONE!                                   
-Processing round 5 DONE.
-Checking convergence for previous log likelihood -90.32496340409716 and current log likelihood -90.270302133888
-Converged in checkConvergence(): log likelihood delta smaller than cutoff. 0.054661270209166446 0.1
-Pass log likelihood: |-90.270302133888|
+Checking convergence for previous log likelihood -99.28052925043268 and current log likelihood -99.23730127029711
+Converged in checkConvergence(): log likelihood delta smaller than cutoff. 0.043227980135569055 0.1
+Pass log likelihood: |-99.23730127029711|
 Processing pass 2 with initial search setting RANDOM DONE.
 Not updating.
 Optimizing PhyloNet-HMM parameters DONE. 
+Saving posterior decoding probabilities... 
+Saving posterior decoding probabilities DONE.
 Saving Viterbi-optimal hidden state sequence... 
 Building Psy Array
 0.0%100% Done!                             
 
-Total: 274 MiB; Free: 173 MiB; --> Used: 101 MiB.
-Max: 14563 MiB.
+Total: 1341 MiB; Free: 1172 MiB; --> Used: 169 MiB.
+Max: 21489 MiB.
 
 Begin computing Viterbi's algorithm : FORWARD PART 
  100% DONE!                                
@@ -2285,4 +2165,3 @@ Operate mode:
 3) Learn Model using a multivariate optimization heuristic that incorporates Brent's method
 4) Exit
 Choose an option: 
-done.

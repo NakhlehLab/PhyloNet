@@ -106,6 +106,7 @@ public class MultivariateOptimizer {
     public static final String CHECKPOINT_PARAMETER_STATE_FILENAME = "CHECKPOINT-PARAMETER-STATE";
     public static final String CHECKPOINT_LIKELIHOOD_FILENAME = "CHECKPOINT-LIKELIHOOD";
     public static final String CHECKPOINT_VITERBI_SEQUENCE_FILENAME = "CHECKPOINT-VITERBI-SEQUENCE";
+    public static final String CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME = "CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME";
     public static final String CHECKPOINT_ENTRY_PAIR_DELIMITER_CHARACTER = "\t";
     //public static final String CHECKPOINT_LATEST_SUFFIX = "LATEST";
 
@@ -1162,6 +1163,18 @@ public class MultivariateOptimizer {
 	    bw.flush();
 	    bw.close();
 	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + " DONE."); }
+
+	    // write out posterior decoding probabilities
+	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
+	    bw = new BufferedWriter(new FileWriter(filename));
+	    double[][] posteriorDecodingProbabilities = this.computeHMMPosteriorDecodingProbabilities();
+	    for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
+		for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
+		    bw.write (i + " " + j + " " + posteriorDecodingProbabilities[i][j]); bw.newLine();
+		}
+	    }
+	    bw.flush();
+	    bw.close();
 
 	    // write Viterbi-optimal hidden state sequence
 	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_VITERBI_SEQUENCE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);

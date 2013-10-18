@@ -55,8 +55,8 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     private double _bootstrap = 100;
 
     public CalGTProbInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                      Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
-                      RichNewickReader<Networks> rnReader){
+                              Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
+                              RichNewickReader<Networks> rnReader){
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
@@ -152,7 +152,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        
+
         List<Tree> nbGeneTrees = new ArrayList<Tree>();
         List<Double> nbCounter = new ArrayList<Double>();
         for(NetworkNonEmpty geneTree : _geneTrees){
@@ -180,7 +180,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             try
             {
                 nr.readTree(newtr);
-                    }
+            }
             catch(Exception e)
             {
                 errorDetected.execute(e.getMessage(),
@@ -220,7 +220,11 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                     index++;
                 }
                 if(index==bGeneTrees.size()){
-                    bGeneTrees.add(bgt);
+                    try{
+                        NewickReader nr = new NewickReader(new StringReader(bgt.toString()));
+                        bGeneTrees.add(nr.readTree());
+                    }catch (Exception e){}
+
                 }
                 bTrees.add(index);
             }

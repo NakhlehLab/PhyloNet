@@ -181,7 +181,13 @@ public class BniNetNode<T> implements NetNode<T> {
 	 * This function returns the number of parent of a node.
 	 */
 	public int getParentNumber(){
-		return _parents.size();
+	    // kliu - this should be guarded appropriately
+	    if (_parents == null) {
+		return (0);
+	    }
+	    else {
+		return (_parents.size());
+	    }
 	}
 
 	/**

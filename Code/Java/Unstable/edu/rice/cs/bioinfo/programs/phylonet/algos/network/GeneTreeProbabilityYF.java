@@ -50,7 +50,17 @@ public class GeneTreeProbabilityYF {
     boolean _parallel = false;
     //double t1, t2, t3, t4, t5, t6;
 
-
+    public void emptyState () {
+	_totalCoverNodes = null;
+	_R = null;
+	_printDetails = false;
+	_netNodeNum = 0;
+	_gtClusters = null;
+	_M = null;
+	_node2ID = null;
+	_parallel = false;
+    }
+    
     public void setParallel(boolean parallel){
         _parallel = parallel;
     }
@@ -76,7 +86,7 @@ public class GeneTreeProbabilityYF {
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
             Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
-            processGT(gt, gtTaxa, child2parent);
+            processGT(gt, gtTaxa, child2parent); 
             computeR();
 
             HashSet<String> gtTaxaSet = new HashSet<String>();
@@ -86,6 +96,15 @@ public class GeneTreeProbabilityYF {
 
             int netNodeIndex = 0;
 
+	    // kliu 
+	    // fubar'd for computeACMinus()
+	    // on M node of (NQ,(QI,ZA),OG); tree (second one in list)
+	    //
+	    // hmm.. some data structure problem - unable to handle polytomy at root
+	    // STITree??
+	    //
+	    // Weird - CalGTProb never calls with a Tree gt that has a polytomy at the root
+	    // why? - this is the key
             for(NetNode<CoalescePattern[]> node: Networks.postTraversal(network)){
                 //long start = System.currentTimeMillis();
                 CoalescePattern cp = new CoalescePattern();

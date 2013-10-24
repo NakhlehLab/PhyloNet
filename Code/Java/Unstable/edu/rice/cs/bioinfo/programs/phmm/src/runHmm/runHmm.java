@@ -49,14 +49,15 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 
 public class runHmm {
-    protected static final String ALLELE_TO_SPECIES_MAPPING_ENTRY_DELIMITER = ",";
-    protected static final String ALLELE_TO_SPECIES_MAPPING_KEY_VALUE_DELIMITER = ":";
+    protected static final String SPECIES_TO_ALLELES_MAPPING_ENTRY_DELIMITER = ",";
+    protected static final String SPECIES_TO_ALLELES_MAPPING_KEY_VALUE_DELIMITER = ":";
 
 
     protected static final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
@@ -65,7 +66,6 @@ public class runHmm {
     protected String basicFileName = null;						/* Basic Info file name */
     protected String parentalTreesFileName = null;				/* Parental trees file name */
     protected String geneGenealogiesFileName = null;			/* Gene genealogies file name */
-    //protected String alleleSpeciesFileName = null;				/* Allele Species Mapping file name */
     
     // kliu - also need an empty temporary working directory
     protected String workingDirectory;
@@ -78,18 +78,18 @@ public class runHmm {
 
     // argh - in lieu of worrying about EvoTree.equals() method
     // Maintain equivalence classes among hidden states based on shared parental tree.
-    protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
+    protected Map<Network<CoalescePattern[]>,Set<HiddenState>> parentalTreeClasses;
     // ditto for gene genealogy
     protected Map<Tree,Set<HiddenState>> rootedGeneGenealogyClasses;
     protected Map<Tree,Set<HiddenState>> unrootedGeneGenealogyClasses;
     // Since it's bijective, make it reversible
-    protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
+    protected BijectiveHashtable<String,Network<CoalescePattern[]>> parentalTreeNameMap;
     // bleh, need to keep track of allele-to-species mapping for
     // each parental tree
     //
     // Hmm... Map.equals() function may be too clever here.
     // Just use a Map.
-    protected Map<String,Map<String,String>> parentalTreeAlleleToSpeciesMapMap;
+    protected Map<String,Map<String,List<String>>> parentalTreeSpeciesToAllelesMapMap;
     // ditto for gene genealogies
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
     // only topologies matter for rootedGeneGenealogies,
@@ -192,9 +192,6 @@ public class runHmm {
 	    System.out.println("\nInput the gene genealogies file path name:\n (note: see README for file format) \n");
 	    geneGenealogiesFileName = in.readLine();
 	    
-	    // System.out.println("\nInput the Alleles to Species Mapping file path name: \n (note: see README for file format \n");
-	    // alleleSpeciesFileName = in.readLine();
-
 	    System.out.println("Empty working directory: ");
 	    workingDirectory = in.readLine();
 
@@ -215,9 +212,6 @@ public class runHmm {
 	    //Reading in Basic Info file and store information
 	    buildParser();
 			
-	    // Building Allele to Species map
-	    //buildAlleleSpeciesMap();
-	    
 	    //Build HMM
 	    buildInitialHMM();
 		
@@ -536,7 +530,7 @@ public class runHmm {
     protected void outputOptimizedModelParameterValues (String filename) {
 	try {
 	    // bleh
-	    RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
+	    RnNewickPrinter<CoalescePattern[]> rnNewickPrinter = new RnNewickPrinter<CoalescePattern[]>();
 	    BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 	    bw.write("Hidden state order: "); bw.newLine();
 	    for (int i = 0 ; i < hiddenStates.size(); i++) {
@@ -638,9 +632,21 @@ public class runHmm {
      *
      * Gene-genealogy-taxon -> parental-tree-taxon mapping.
      */
-    protected String[] getSortedTaxaFromAlleleSpeciesMapping (Map<String,String> alleleSpeciesMap, boolean geneGenealogyTaxonFlag) {
+    protected String[] getSortedTaxaFromSpeciesToAllelesMapping (Map<String,List<String>> speciesToAllelesMap, boolean geneGenealogyTaxonFlag) {
 	// no official list of species names - meh
-        Set<String> set = geneGenealogyTaxonFlag ? new HashSet<String>(alleleSpeciesMap.keySet()) : new HashSet<String>(alleleSpeciesMap.values());
+	Set<String> set;
+	if (geneGenealogyTaxonFlag) {
+	    set = new HashSet<String>();
+	    for (String species : speciesToAllelesMap.keySet()) {
+		for (String allele : speciesToAllelesMap.get(species)) {
+		    set.add(allele);
+		}
+	    }
+	}
+	else {
+	    set = new HashSet<String>(speciesToAllelesMap.keySet());
+	}
+
 	String[] sortedTaxa = new String[set.size()];
 	sortedTaxa = set.toArray(sortedTaxa);
 	Arrays.sort(sortedTaxa);
@@ -662,9 +668,9 @@ public class runHmm {
 	    }
 	}
 
-	for (Map<String,String> alleleToSpeciesMap : parentalTreeAlleleToSpeciesMapMap.values()) {
+	for (Map<String,List<String>> speciesToAllelesMap : parentalTreeSpeciesToAllelesMapMap.values()) {
 	    for (HiddenState hiddenState : hiddenStates) {
-		String[] sortedReferenceTaxa = getSortedTaxaFromAlleleSpeciesMapping(hiddenState.getAlleleToSpeciesMapping(), true);
+		String[] sortedReferenceTaxa = getSortedTaxaFromSpeciesToAllelesMapping(hiddenState.getSpeciesToAllelesMapping(), true);
 		String[] sortedCheckTaxa = hiddenState.getRootedGeneGenealogy().getLeaves();
 		Arrays.sort(sortedCheckTaxa);
 		if (!Arrays.equals(sortedReferenceTaxa, sortedCheckTaxa)) {
@@ -681,7 +687,7 @@ public class runHmm {
 
     protected boolean verifyParentalTreeTaxa () {
 	for (HiddenState hiddenState : hiddenStates) {
-	    String[] sortedReferenceTaxa = getSortedTaxaFromAlleleSpeciesMapping(hiddenState.getAlleleToSpeciesMapping(), false);
+	    String[] sortedReferenceTaxa = getSortedTaxaFromSpeciesToAllelesMapping(hiddenState.getSpeciesToAllelesMapping(), false);
 	    String[] sortedCheckTaxa = getTaxa(hiddenState.getParentalTree());
 	    Arrays.sort(sortedCheckTaxa);
 	    if (!Arrays.equals(sortedReferenceTaxa, sortedCheckTaxa)) {
@@ -733,9 +739,9 @@ public class runHmm {
     /**
      * Get names of taxa from a PhyloNet network object.
      */
-    protected String[] getTaxa (Network<Double> network) {
+    protected String[] getTaxa (Network<CoalescePattern[]> network) {
 	Vector<String> names = new Vector<String>();
-	for (NetNode<Double> leaf : network.getLeaves()) {
+	for (NetNode<CoalescePattern[]> leaf : network.getLeaves()) {
 	    names.add(leaf.getName());
 	}
 	String[] result = new String[names.size()];
@@ -1113,6 +1119,7 @@ public class runHmm {
      */
     protected void buildInitialHMM () {
 	System.out.println("\n\nNow building initialHMM . . .");
+	// kliu - gene genealogy branch lengths are getting lost in here
 	double[] pi = calculatePi();
 	double[][] a = calculateAij();
 
@@ -1153,50 +1160,18 @@ public class runHmm {
     }
 	
     
-    /**
-     * Reads in and parse the alleles to species map
-     * @throws Exception
-     */
-    // protected void buildAlleleSpeciesMap() throws Exception {
-    // 	if (alleleSpeciesFileName == null) {
-    // 	    throw new ParserFileException("Cannot read Trees file!");
-    // 	}
-    	
-    // 	fParser.parseAlleleSpecies (alleleSpeciesFileName);
-	
-    // 	// kliu - paranoid
-    // 	if ((fParser.getAlleleSpeciesMap() == null) ||
-    // 	    fParser.getAlleleSpeciesMap().isEmpty()) {
-    // 	    // strict!
-    // 	    System.err.println ("ERROR: allele-to-species map empty or incorrectly formatted. Aborting.");
-    // 	    System.exit(1);
-    // 	}
-
-    // 	// now set references in all hidden states
-    // 	for (HiddenState hiddenState : hiddenStates) {
-    // 	    hiddenState.setAlleleToSpeciesMapping(fParser.getAlleleSpeciesMap());
-    // 	}
-
-    // 	//Testing Purposes//
-    // 	//    	HashMap<String,String> amap = fParser.getAlleleSpeciesMap();
-    // 	//    	Set<String> keyset = amap.keySet();
-    // 	//    	for (String i : keyset) {
-    // 	//    		System.out.println(i + " : " + amap.get(i));
-    // 	//    	}
-    // 	// Testing purposes//
-    // }
 
     // EvoTree etree
     // etree.toNewickString(true, true)
     /**
      * Convert an EvoTree into a PhyloNet Network object
      */
-    protected Network<Double> convertPHMMTreeToPhyloNetNetwork (String newickString) {
-    	ExNewickReader<Double> enr = new ExNewickReader<Double>(new StringReader(newickString));
+    protected Network<CoalescePattern[]> convertPHMMTreeToPhyloNetNetwork (String newickString) {
+    	ExNewickReader<CoalescePattern[]> enr = new ExNewickReader<CoalescePattern[]>(new StringReader(newickString));
     	// kliu - change this over to a String data member
     	// don't really use it anyways
     	try {
-    	    Network<Double> network = enr.readNetwork();
+    	    Network<CoalescePattern[]> network = enr.readNetwork();
     	    return (network);
     	}
     	catch(IOException ioe) {
@@ -1212,6 +1187,7 @@ public class runHmm {
      * Convert an EvoTree into a PhyloNet Tree object.
      */
     protected Tree convertNewickStringToPhyloNetTree (String newickString) {
+	// kliu - weird - this is losing the branch length information?
     	NewickReader nr = new NewickReader(new StringReader(newickString));
     	// kliu - change this over to a String data member
     	// don't really use it anyways
@@ -1261,15 +1237,15 @@ public class runHmm {
 
 	hiddenStates = new ArrayList<HiddenState>();
 	// also maintain equivalence classes among hidden states based on shared parental trees
-	parentalTreeClasses = new Hashtable<Network<Double>,Set<HiddenState>>();
+	parentalTreeClasses = new Hashtable<Network<CoalescePattern[]>,Set<HiddenState>>();
 	rootedGeneGenealogyClasses = new Hashtable<Tree,Set<HiddenState>>();
 	unrootedGeneGenealogyClasses = new Hashtable<Tree,Set<HiddenState>>();
 	// also retain parental tree names
 	// to facilitate parameter inputs/constraints on parental tree branches
-	parentalTreeNameMap = new BijectiveHashtable<String,Network<Double>>();
+	parentalTreeNameMap = new BijectiveHashtable<String,Network<CoalescePattern[]>>();
 	geneGenealogyNameMap = new BijectiveHashtable<String,Tree>();
 	// retain for construction of HiddenState objects
-	parentalTreeAlleleToSpeciesMapMap = new Hashtable<String,Map<String,String>>();
+	parentalTreeSpeciesToAllelesMapMap = new Hashtable<String,Map<String,List<String>>>();
 
 	System.out.println("\nNow building trees . . .");
 	BufferedReader ptreesbr = new BufferedReader(new FileReader(parentalTreesFileName));
@@ -1280,8 +1256,8 @@ public class runHmm {
 		throw (new RuntimeException("ERROR: invalid parental trees line " + line + " in file " + parentalTreesFileName + "."));
 	    }
 	    String parentalTreeName = st.nextToken();
-	    Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(st.nextToken());
-	    Map<String,String> alleleToSpeciesMap = parseAlleleToSpeciesMap(st.nextToken());
+	    Network<CoalescePattern[]> parentalTree = convertPHMMTreeToPhyloNetNetwork(st.nextToken());
+	    Map<String,List<String>> speciesToAllelesMap = parseSpeciesToAllelesMap(st.nextToken());
 	    // no duplicate node names allowed!
 	    if (parentalTree.hasDuplicateNames()) {
 		throw (new RuntimeException("ERROR: duplicate node names are present in parental tree " + parentalTreeName + ". Check inputs and try again."));
@@ -1291,7 +1267,7 @@ public class runHmm {
 		throw (new RuntimeException("ERROR: duplicate parental tree name " + parentalTreeName + ". Check inputs and try again."));
 	    }
 	    parentalTreeNameMap.put(parentalTreeName, parentalTree);
-	    parentalTreeAlleleToSpeciesMapMap.put(parentalTreeName, alleleToSpeciesMap);
+	    parentalTreeSpeciesToAllelesMapMap.put(parentalTreeName, speciesToAllelesMap);
 	}
 	ptreesbr.close();
 	
@@ -1338,7 +1314,7 @@ public class runHmm {
 	ArrayList<String> geneGenealogyNames = new ArrayList<String>(geneGenealogyNameMap.keys());
 	Collections.sort(geneGenealogyNames);
 	for (String parentalTreeName : parentalTreeNames) {
-	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
+	    Network<CoalescePattern[]> parentalTree = parentalTreeNameMap.get(parentalTreeName);
 	    for (String geneGenealogyName : geneGenealogyNames) {
 		Tree rootedGeneGenealogy = geneGenealogyNameMap.get(geneGenealogyName);
 		// paranoid
@@ -1356,7 +1332,7 @@ public class runHmm {
 							  parentalTree, 
 							  rootedGeneGenealogy, 
 							  collapseGeneGenealogiesByTopologicalEquivalenceClassFlag ? unrootedGeneGenealogy : rootedGeneGenealogy, 
-							  parentalTreeAlleleToSpeciesMapMap.get(parentalTreeName), 
+							  parentalTreeSpeciesToAllelesMapMap.get(parentalTreeName), 
 							  gtrSubstitutionModel, 
 							  calculationCache);
 		hiddenStates.add(hiddenState);
@@ -1397,16 +1373,26 @@ public class runHmm {
 	}
     }
 
-    protected Map<String,String> parseAlleleToSpeciesMap (String mapString) {
-	Map<String,String> map = new Hashtable<String,String>();
-	StringTokenizer st1 = new StringTokenizer(mapString, ALLELE_TO_SPECIES_MAPPING_ENTRY_DELIMITER);
+    /**
+     * kliu - reverse the mapping per the latest PhyloNet changes.
+     */
+    protected Map<String,List<String>> parseSpeciesToAllelesMap (String mapString) {
+	Map<String,List<String>> map = new Hashtable<String,List<String>>();
+	StringTokenizer st1 = new StringTokenizer(mapString, SPECIES_TO_ALLELES_MAPPING_ENTRY_DELIMITER);
 	while (st1.hasMoreTokens()) {
-	    StringTokenizer st2 = new StringTokenizer(st1.nextToken(), ALLELE_TO_SPECIES_MAPPING_KEY_VALUE_DELIMITER);
+	    StringTokenizer st2 = new StringTokenizer(st1.nextToken(), SPECIES_TO_ALLELES_MAPPING_KEY_VALUE_DELIMITER);
 	    if (st2.countTokens() != 2) {
 		// strict!
 		throw (new RuntimeException("ERROR: incorrectly formatted allele-to-species map. " + mapString));
 	    }
-	    map.put(st2.nextToken(), st2.nextToken());
+
+	    String allele = st2.nextToken();
+	    String species = st2.nextToken();
+	    if (!map.containsKey(species)) {
+		map.put(species, new Vector<String>());
+	    }
+
+	    map.get(species).add(allele);
 	}
 	return (map);
     }
@@ -1458,6 +1444,7 @@ public class runHmm {
 	// meh, still need to read/write n^2 trees just for matrix itself
 	for (int i = 0; i < geneGenealogies.length; i++) {
 	    for (int j = i + 1; j < geneGenealogies.length; j++) {
+		// kliu - seems to be failing for trees that lack internal edges
 		// same class
 		if (TreeUtils.calculateRobinsonFouldsDistance(geneGenealogies[i], geneGenealogies[j]) == 0) {
 		    if ((equivalenceClassMap.get(i) != null) &&
@@ -1558,7 +1545,7 @@ public class runHmm {
 	// TreeParser ptp = new TreeParser(ptreesbr);
 	// ArrayList<EvoTree> eParentalTrees = ptp.nexusFileTreeNames(parentalTreesFileName);
 	// for (EvoTree etree : eParentalTrees) {
-	//     Network<Double> parentalTree = convertPHMMTreeToPhyloNetNetwork(etree);
+	//     Network<CoalescePattern[]> parentalTree = convertPHMMTreeToPhyloNetNetwork(etree);
 	//     // no duplicate node names allowed!
 	//     if (parentalTree.hasDuplicateNames()) {
 	// 	throw (new RuntimeException("ERROR: duplicate node names are present in parental tree " + etree.getName() + ". Check inputs and try again."));

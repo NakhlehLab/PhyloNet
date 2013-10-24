@@ -6,6 +6,7 @@ import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+//import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 import java.util.Hashtable;
 
 /**
@@ -149,7 +150,7 @@ public class ParentalBranchLengthParameter extends Parameter {
     // Four maps needed to properly update model state for a length-parameter, depending
     // on if it belongs to a length-parameter-constraint-set.
     // Annoying detail of layers of indirection between length-parameters and parental tree branches.
-    // protected BijectiveHashtable<NetNode<Double>,String> parentalNodeLabelMap;
+    // protected BijectiveHashtable<NetNode<CoalescePattern[]>,String> parentalNodeLabelMap;
     // protected BidirectionalMultimap<ParentalBranchLengthParameter,Tuple<String,String>> lpEidMap;
     // protected BidirectionalMultimap<ParameterConstraintSet,ParentalBranchLengthParameter> setLpMap;
     // protected Hashtable<ParameterConstraintSet,ParentalBranchLengthParameter> setFirstLpMap;

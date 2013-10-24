@@ -28,7 +28,6 @@ public class Parser {
     protected HashMap<String, Integer> myHashmap;						/* mapping from the alphabet to Integers */
     protected HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
     protected Vector<String> taxa; //  reverse the above map
-    //protected HashMap<String, String> alleleSpeciesMap;					/* Allele to Species Mapping */
     protected int seqNum;												/* Number of sequences */
 
     /**
@@ -393,27 +392,6 @@ public class Parser {
     // }
 
 
-    /**
-     * Function to parse Allele to Species Mapping
-     * @param filename - filename path of file to be parse
-     */
-    // public void parseAlleleSpecies (String filename) throws Exception {
-    //     alleleSpeciesMap = new HashMap<String,String>();
-    //     int numLines;
-    //     String[] line;
-    //     BufferedReader br = new BufferedReader(new FileReader(filename));
-
-    //     //Read in the number of lines
-    //     numLines = Integer.parseInt(br.readLine());
-
-    //     // Reads in mapping
-    //     for (int i = 0; i < numLines; i++) {
-    //         line = br.readLine().split(" ");
-    //         alleleSpeciesMap.put(line[0], line[1]);
-    //     }
-
-    //     br.close();
-    // }
 
     /**
      * Function to set the list of trees/states of the hmm model
@@ -423,12 +401,6 @@ public class Parser {
         this.trees_states = trees;
     }
 
-    /**
-     * @return the Allele to Species Mapping
-     */
-    // public HashMap<String,String> getAlleleSpeciesMap() {
-    //     return alleleSpeciesMap;
-    // }
 
     /**
      * @return Number of Taxa or types of sequences

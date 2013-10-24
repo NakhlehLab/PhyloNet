@@ -30,7 +30,9 @@ package be.ac.ulg.montefiore.run.jahmm.phmm;
 import java.util.Map;
 import java.util.Vector;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.Iterator;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.IOException;
@@ -42,9 +44,13 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
+//import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import util.TreeUtils;
 
 public class HiddenState
@@ -54,7 +60,7 @@ public class HiddenState
 
     // why not give it a unique name
     protected String name;
-    protected Network<Double> parentalTree;
+    protected Network<CoalescePattern[]> parentalTree;
     // For coalescent model calculations. 
     // Current model disregards gene genealogy branch lengths.
     protected Tree rootedGeneGenealogy; 
@@ -74,9 +80,13 @@ public class HiddenState
 
     // maintain mapping between taxa in parentalTree and geneGenealogy
     // only store reference to a shared object
-    protected Map<String,String> alleleToSpeciesMapping;    
+    //
+    // maps from species-name to list of allele-names
+    // e.g. M -> AAAAAAAAQI,AAAAAAAAOG,AAAAAAAANQ
+    // etc.
+    protected Map<String,List<String>> alleleToSpeciesMapping;    
 
-    // kliu - provide functionality to check if two HiddenState objects share a parental tree (Network<Double> object)
+    // kliu - provide functionality to check if two HiddenState objects share a parental tree (Network<CoalescePattern[]> object)
     //protected Set<HiddenState> parentalTreeEquivalenceClass;
 
     // for emission probability calculation
@@ -94,31 +104,32 @@ public class HiddenState
     /**
      * For coalescent model calculations.
      */
-    protected GeneTreeProbability gtp;
+    protected GeneTreeProbabilityYF gtpyf;
+    //protected GeneTreeProbability gtp;
 
     // cache it
-    protected RnNewickPrinter<Double> rnNewickPrinter;
+    protected RnNewickPrinter<CoalescePattern[]> rnNewickPrinter;
 
     public HiddenState (String inName, 
-			Network<Double> inParentalTree, 
+			Network<CoalescePattern[]> inParentalTree, 
 			Tree inRootedGeneGenealogy, 
 			Tree inUnrootedGeneGenealogy, 
-			Map<String,String> inputAlleleToSpeciesMapping, 
+			Map<String,List<String>> inputSpeciesToAllelesMapping, 
 			//Set<HiddenState> inParentalTreeEquivalenceClass, 
 			SubstitutionModel inSubstitutionModel,
 			CalculationCache inCalculationCache) {
 	setName(inName);
 	setParentalTree(inParentalTree);
 	setRootedAndUnrootedGeneGenealogy(inRootedGeneGenealogy, inUnrootedGeneGenealogy);
-	setAlleleToSpeciesMapping(inputAlleleToSpeciesMapping);
+	setSpeciesToAllelesMapping(inputSpeciesToAllelesMapping);
 	//this.parentalTreeEquivalenceClass = inParentalTreeEquivalenceClass;
 	setSubstitutionModel(inSubstitutionModel);
 	this.calculationCache = inCalculationCache;
 	// keep our own Felsenstein calculator
 	// everything shares the same inCalculationCache anyways
 	felsensteinCalculator = new Felsenstein(getSubstitutionModel(), calculationCache);
-	gtp = new GeneTreeProbability();
-	rnNewickPrinter = new RnNewickPrinter<Double>();
+	gtpyf = new GeneTreeProbabilityYF();
+	rnNewickPrinter = new RnNewickPrinter<CoalescePattern[]>();
     }
     
     public void setName (String inName) {
@@ -129,7 +140,7 @@ public class HiddenState
 	return (name);
     }
 
-    public Network<Double> getParentalTree () {
+    public Network<CoalescePattern[]> getParentalTree () {
     	return (parentalTree);
     }
 
@@ -141,7 +152,7 @@ public class HiddenState
     	return (unrootedGeneGenealogy);
     }
 
-    public Map<String,String> getAlleleToSpeciesMapping () {
+    public Map<String,List<String>> getSpeciesToAllelesMapping () {
     	return (alleleToSpeciesMapping);
     }
 
@@ -149,7 +160,7 @@ public class HiddenState
 	return (substitutionModel);
     }
 
-    public void setParentalTree (Network<Double> inParentalTree) {
+    public void setParentalTree (Network<CoalescePattern[]> inParentalTree) {
     	this.parentalTree = inParentalTree;
     }
 
@@ -170,7 +181,7 @@ public class HiddenState
 	return (TreeUtils.calculateRobinsonFouldsDistance(rootedGeneGenealogy, unrootedGeneGenealogy) == 0);
     }
 
-    public void setAlleleToSpeciesMapping (Map<String,String> map) {
+    public void setSpeciesToAllelesMapping (Map<String,List<String>> map) {
     	this.alleleToSpeciesMapping = map;
     }
 
@@ -243,33 +254,155 @@ public class HiddenState
 	}
 
 	// otherwise compute and cache
+	double result = computeGTProb();
 
-	// A list with one element. Inefficient - consider doing a one-shot approach later.
-	Vector<Tree> rootedGeneGenealogies = new Vector<Tree>();
-	rootedGeneGenealogies.add(getRootedGeneGenealogy());
-
-	gtp.emptyState();
-	
-	// look like the calculation is proceeding OK
-	//
-	// calculation under model from Yu et al. 2012
-	// this method requires Network<Double>
-	// Yun uses Double to store hybridization probabilities during calculation
-        List<Double> probList = gtp.calculateGTDistribution(parentalTree, rootedGeneGenealogies, getAlleleToSpeciesMapping(), debugFlag);
-
-	// should only be a single entry
-	if (probList.size() != 1) {
-	    System.err.println ("ERROR: GeneTreeProbability.calculateGTDistribution(...) didn't return exactly one probability. Returning -1 to signal error.");
-	    return (-1.0);
-	}
-
-	double result = probList.get(0).doubleValue();
 	// not quite right - while parental tree objects are unique by topology, gene genealogies aren't
 	// under the current model
 	// meh
 	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getRootedGeneGenealogy(), new Double(result));
         return (result);
     }
+
+    protected double computeGTProb () {
+	return (computeGTProb(false));
+    }
+
+    /**
+     * No real need to support non-binary trees or more than one tree.
+     * Doesn't make sense in the PhyloNet-HMM model.
+     * Eh, just leave it be.
+     * Try to make as few changes to PhyloNet code as possible.
+     */
+    protected double computeGTProb (boolean debugFlag) {
+	gtpyf.emptyState();
+
+	// A list with one element.
+	Vector<Tree> rootedGeneGenealogies = new Vector<Tree>();
+	rootedGeneGenealogies.add(getRootedGeneGenealogy());
+
+	// need to use these!
+	List<Tree> bGeneTrees = new ArrayList<Tree>();
+        List<List<Integer>> nbTree2bTrees = new ArrayList<List<Integer>>();
+        for(Tree nbgt: rootedGeneGenealogies){
+            List<Integer> bTrees = new ArrayList<Integer>();
+            for(Tree bgt: Trees.getAllBinaryResolution(nbgt)){
+                int index = 0;
+                for(Tree exBgt: bGeneTrees){
+                    if(Trees.haveSameRootedTopology(bgt,exBgt)){
+                        break;
+                    }
+                    index++;
+                }
+		// bTrees is a list of all trees with identical rooted topology
+		// *AND* multiplexed among all possible binary resolutions of nbgt
+                if(index==bGeneTrees.size()){
+                    bGeneTrees.add(bgt);
+                }
+                bTrees.add(index);
+            }
+	    // kliu
+	    // nbTree2bTrees is a list of all possible resolutions of nbgt into binary trees
+	    // bTrees is a list of indices
+	    // add a whole list
+            nbTree2bTrees.add(bTrees);
+        }
+
+        List<Double> probList;
+	probList = gtpyf.calculateGTDistribution(parentalTree, bGeneTrees, getSpeciesToAllelesMapping(), 0);
+
+	// look like the calculation is proceeding OK
+	//
+	// calculation under model from Yu et al. 2012
+	// this method requires Network<CoalescePattern[]>
+	// Yun uses Double to store hybridization probabilities during calculation
+	// should only be a single entry
+	if (probList.size() != bGeneTrees.size()) {
+	    System.err.println ("ERROR: GeneTreeProbabilityYF.calculateGTDistribution(...) didn't return the same number of probabilities as the cardinality of the input set of gene trees. Returning -1 to signal error. " + probList.size() + " " + bGeneTrees.size());
+	    return (-1.0);
+	}
+
+	    //}
+
+	// only a single tree
+	Vector<Double> geneTreeCountsVec = new Vector<Double>();
+	geneTreeCountsVec.add(1.0);
+	Iterator<Double> nbCounterIt = geneTreeCountsVec.iterator();
+        //Iterator<Double> nbCounterIt = _geneTreeCounts.iterator();
+        Iterator<List<Integer>> bGTIDs = nbTree2bTrees.iterator();
+        double total = 0;
+        for(Tree nbgt: rootedGeneGenealogies){
+            // for(TNode node: nbgt.getNodes()){
+	    // 	// kliu - hrm
+	    // 	// this is no good
+            //     node.setParentDistance(TNode.NO_DISTANCE);
+            // }
+            double maxProb = 0;
+            for(int id: bGTIDs.next()){
+                maxProb = Math.max(maxProb, probList.get(id));
+            }
+            double weight = nbCounterIt.next();
+            total += Math.log(maxProb)*weight;
+            if (debugFlag) {
+		System.out.println("\n[x" + weight + "] " + nbgt.toString() + " : " + maxProb);
+	    }
+        }
+
+	// bleh - make as few changes to computeGTProb(...) as possible
+	return (Math.exp(total));
+        //result.append("\n" + "Total log probability: " + total);
+    }
+
+
+    // /**
+    //  * Perform standard coalescent model calculation to obtain
+    //  * probability P[g(s_i) | T(s_i), c_{T(s_i)}] of observing a gene genealogy given a parental tree.
+    //  *
+    //  * See writeup for details.
+    //  *
+    //  * Might move this later to HiddenState.
+    //  *
+    //  * Use code from ComputeGTProb.
+    //  * WARNING - returns likelihood, *NOT* log likelihood!
+    //  *
+    //  */
+    // protected double calculateProbabilityOfGeneGenealogyInParentalTree (boolean debugFlag) {
+    // 	// use cache if it exists
+    // 	if (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.contains(getParentalTree(), getGeneGenealogy())) {
+    // 	    return (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.get(getParentalTree(), getGeneGenealogy()).doubleValue());
+    // 	}
+
+    // 	// otherwise compute and cache
+
+    // 	Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
+    // 	// A list with one element. Inefficient - consider doing a one-shot approach later.
+    // 	Vector<Tree> geneGenealogies = new Vector<Tree>();
+    // 	geneGenealogies.add(geneGenealogy);
+
+    // 	gtp.emptyState();
+	
+    // 	// look like the calculation is proceeding OK
+    // 	//
+    // 	// calculation under model from Yu et al. 2012
+    // 	// this method requires Network<Double>
+    // 	// Yun uses Double to store hybridization probabilities during calculation
+    //     List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
+
+    // 	// should only be a single entry
+    // 	if (probList.size() != 1) {
+    // 	    System.err.println ("ERROR: GeneTreeProbability.calculateGTDistribution(...) didn't return exactly one probability. Returning -1 to signal error.");
+    // 	    return (-1.0);
+    // 	}
+
+    // 	double result = probList.get(0).doubleValue();
+    // 	// not quite right - while parental tree objects are unique by topology, gene genealogies aren't
+    // 	// under the current model
+    // 	// meh
+    // 	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getGeneGenealogy(), new Double(result));
+    //     return (result);
+    // }
+
+
+
 
     public double calculateEmissionProbability (ObservationMap o) {
 	// if cache entry exists, use it

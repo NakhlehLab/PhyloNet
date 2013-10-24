@@ -7,6 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="2699e17a-9b46-4e41-baa7-f8ad9409a080" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dependencies/PhyloNet_Unstable.jar" afterPath="$PROJECT_DIR$/dependencies/PhyloNet_Unstable.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.10" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.10" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.11" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.11" />
@@ -115,8 +116,50 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.likelihoods" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.likelihoods" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.parameters" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.parameters" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.viterbi.sequence" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.0.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.1.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-LIKELIHOOD.2.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.0.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.1.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-PARAMETER-STATE.2.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.0" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.1" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.2" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.3" afterPath="$PROJECT_DIR$/ex/simple2/CHECKPOINT-VITERBI-SEQUENCE.2.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/optimized.model.likelihoods" afterPath="$PROJECT_DIR$/ex/simple2/optimized.model.likelihoods" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/simple2/optimized.model.parameters" afterPath="$PROJECT_DIR$/ex/simple2/optimized.model.parameters" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/autoinput.txt" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/autoinput.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/autoinput.txt" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/autoinput.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java" afterPath="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/gridSearch/GridSearchAlgorithm.java" afterPath="$PROJECT_DIR$/src/gridSearch/GridSearchAlgorithm.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/gridSearch/HybridizationFreqNob.java" afterPath="$PROJECT_DIR$/src/gridSearch/HybridizationFreqNob.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/gridSearch/ParentalTreeNob.java" afterPath="$PROJECT_DIR$/src/gridSearch/ParentalTreeNob.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/CalculationCache.java" afterPath="$PROJECT_DIR$/src/optimize/CalculationCache.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" afterPath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/ParentalBranchLengthParameter.java" afterPath="$PROJECT_DIR$/src/optimize/ParentalBranchLengthParameter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" afterPath="$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/reader/Parser.java" afterPath="$PROJECT_DIR$/src/reader/Parser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/runHmm/runHmm.java" afterPath="$PROJECT_DIR$/src/runHmm/runHmm.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/util/TreeUtils.java" afterPath="$PROJECT_DIR$/src/util/TreeUtils.java" />
     </list>
     <ignored path="phmm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -148,7 +191,7 @@
         <option name="CONDITION" value="&#13;&#13;JAVA" />
         <option name="LOG_MESSAGE" value="&#13;&#13;JAVA" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="1144" class="runHmm.runHmm" package="runHmm">
+      <breakpoint url="file://$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" line="379" class="optimize.ParentalTreesDecoration" package="optimize">
         <option name="ENABLED" value="false" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -161,8 +204,8 @@
         <option name="CONDITION" value="&#13;&#13;JAVA" />
         <option name="LOG_MESSAGE" value="&#13;&#13;JAVA" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" line="378" class="optimize.ParentalTreesDecoration" package="optimize">
-        <option name="ENABLED" value="false" />
+      <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="262" class="runHmm.runHmm" package="runHmm">
+        <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
         <option name="SUSPEND_POLICY" value="SuspendAll" />
@@ -171,8 +214,47 @@
         <option name="CONDITION_ENABLED" value="false" />
         <option name="CLASS_FILTERS_ENABLED" value="false" />
         <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="&#13;&#13;JAVA" />
-        <option name="LOG_MESSAGE" value="&#13;&#13;JAVA" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java" line="325" class="be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState" package="be.ac.ulg.montefiore.run.jahmm.phmm">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java" line="304" class="be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState" package="be.ac.ulg.montefiore.run.jahmm.phmm">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/util/TreeUtils.java" line="26" class="util.TreeUtils" package="util">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </line_breakpoints>
     <exception_breakpoints>
@@ -239,8 +321,8 @@
       <property name="field_breakpoints_groupByClasses" value="true" />
       <property name="method_breakpoints_groupByClasses" value="true" />
       <property name="exception_breakpoints_viewId" value="TABLE" />
-      <property name="exception_breakpoints_groupByClasses" value="true" />
       <property name="field_breakpoints_viewId" value="TABLE" />
+      <property name="exception_breakpoints_groupByClasses" value="true" />
       <property name="method_breakpoints_groupByMethods" value="false" />
     </ui_properties>
   </component>
@@ -249,19 +331,44 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="URLClassLoader.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../java/jdk1.6.0_33_64bit/src.zip!/java/net/URLClassLoader.java">
+      <file leaf-file-name="runHmm.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="201" column="0" selection-start="7685" selection-end="7685" vertical-scroll-proportion="0.0">
+            <state line="878" column="0" selection-start="33089" selection-end="33089" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#43711#43719#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="HiddenState.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="344" column="0" selection-start="13078" selection-end="13078" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#10343#10349#0" expanded="true" />
+                <element signature="e#10469#10475#0" expanded="true" />
+                <element signature="e#10536#10551#0" expanded="true" />
+                <element signature="e#10650#10659#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TreeUtils.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/util/TreeUtils.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="48" column="0" selection-start="1358" selection-end="1358" vertical-scroll-proportion="0.62025315">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MultivariateOptimizer.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+      <file leaf-file-name="GTRSubstitutionModel.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="949" column="0" selection-start="38929" selection-end="38929" vertical-scroll-proportion="0.022421524">
+            <state line="142" column="25" selection-start="4507" selection-end="4507" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -270,70 +377,7 @@
       <file leaf-file-name="Felsenstein.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="155" column="105" selection-start="5750" selection-end="5750" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TreeUtils.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/util/TreeUtils.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="34" column="0" selection-start="1005" selection-end="1005" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="runHmm.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1274" column="0" selection-start="46620" selection-end="46620" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Parser.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/reader/Parser.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="230" column="0" selection-start="7809" selection-end="7809" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="NewickReader.class" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/dependencies/PhyloNet_Unstable.jar!/edu/rice/cs/bioinfo/programs/phylonet/structs/tree/io/NewickReader.class">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="11" selection-start="874" selection-end="874" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ViterbiCalculator.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/ViterbiCalculator.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="0" selection-start="3056" selection-end="3056" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Hmm.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/Hmm.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="264" column="0" selection-start="8544" selection-end="8544" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ObservationMap.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/ObservationMap.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="0" selection-start="1421" selection-end="1421" vertical-scroll-proportion="0.0">
+            <state line="67" column="0" selection-start="2466" selection-end="2466" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -357,10 +401,11 @@
         <option value="$PROJECT_DIR$/src/optimize/ParentalTreesDecoration.java" />
         <option value="$PROJECT_DIR$/src/optimize/Parameter.java" />
         <option value="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" />
-        <option value="$PROJECT_DIR$/src/util/TreeUtils.java" />
         <option value="$PROJECT_DIR$/src/reader/Parser.java" />
-        <option value="$PROJECT_DIR$/src/runHmm/runHmm.java" />
         <option value="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
+        <option value="$PROJECT_DIR$/src/runHmm/runHmm.java" />
+        <option value="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java" />
+        <option value="$PROJECT_DIR$/src/util/TreeUtils.java" />
       </list>
     </option>
   </component>
@@ -394,6 +439,30 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="PackagesPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -431,6 +500,24 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="util" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -563,29 +650,31 @@
               <option name="myItemId" value="run" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jahmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
           </PATH>
-        </subPane>
-      </pane>
-      <pane id="PackagesPane">
-        <subPane>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="phmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Phmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="run" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -605,11 +694,11 @@
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.searchVisible" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
-  <component name="RunManager" selected="Application.runHMM simple2">
+  <component name="RunManager" selected="Application.runHMM mouse6-star">
     <configuration default="false" name="EvoTree" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="phylogeny.EvoTree" />
       <option name="VM_PARAMETERS" value="" />
@@ -655,24 +744,6 @@
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="true" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -698,6 +769,24 @@
       <envs />
       <properties />
       <listeners />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
@@ -857,12 +946,33 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <list size="5">
+    <configuration default="false" name="runHMM mouse6-star" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="runHmm.runHmm" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/ex/mouse6-star/autoinput.txt" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="Phmm" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <ConfigurationWrapper RunnerId="Debug" />
+      <method />
+    </configuration>
+    <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Application.EvoTree" />
       <item index="1" class="java.lang.String" itemvalue="Application.runHMM simple2" />
       <item index="2" class="java.lang.String" itemvalue="Application.runHMM mouse5" />
       <item index="3" class="java.lang.String" itemvalue="Application.Felsenstein" />
       <item index="4" class="java.lang.String" itemvalue="Application.GTRSubstitutionModel" />
+      <item index="5" class="java.lang.String" itemvalue="Application.runHMM mouse6-star" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -958,7 +1068,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="871" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1041,21 +1151,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/optimize/ParameterConstraintSet.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="711" selection-end="711" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="177" column="0" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="145" column="0" selection-start="5333" selection-end="5333" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/optimize/ParentalBranchLengthParameter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="105" column="0" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.0" />
@@ -1076,26 +1171,9 @@
         <state line="201" column="0" selection-start="7685" selection-end="7685" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="155" column="105" selection-start="5750" selection-end="5750" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/util/TreeUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="0" selection-start="1005" selection-end="1005" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1274" column="0" selection-start="46620" selection-end="46620" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/reader/Parser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="230" column="0" selection-start="7809" selection-end="7809" vertical-scroll-proportion="0.0" />
+        <state line="230" column="0" selection-start="7721" selection-end="7721" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="jar://$PROJECT_DIR$/dependencies/PhyloNet_Unstable.jar!/edu/rice/cs/bioinfo/programs/phylonet/structs/tree/io/NewickReader.class">
@@ -1108,19 +1186,62 @@
         <state line="93" column="0" selection-start="3056" selection-end="3056" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="949" column="0" selection-start="39003" selection-end="39003" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/reader/IntTranslator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="13" selection-start="218" selection-end="218" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/Hmm.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="264" column="0" selection-start="8544" selection-end="8544" vertical-scroll-proportion="0.0" />
+        <state line="264" column="0" selection-start="8544" selection-end="8544" vertical-scroll-proportion="0.021337127" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/ObservationMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="0" selection-start="1421" selection-end="1421" vertical-scroll-proportion="0.0" />
+        <state line="56" column="0" selection-start="1421" selection-end="1421" vertical-scroll-proportion="0.70128024" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="949" column="0" selection-start="38929" selection-end="38929" vertical-scroll-proportion="0.022421524">
+        <state line="142" column="25" selection-start="4507" selection-end="4507" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="878" column="0" selection-start="33089" selection-end="33089" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#43711#43719#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="67" column="0" selection-start="2466" selection-end="2466" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="344" column="0" selection-start="13078" selection-end="13078" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#10343#10349#0" expanded="true" />
+            <element signature="e#10469#10475#0" expanded="true" />
+            <element signature="e#10536#10551#0" expanded="true" />
+            <element signature="e#10650#10659#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/util/TreeUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="0" selection-start="1358" selection-end="1358" vertical-scroll-proportion="0.62025315">
           <folding />
         </state>
       </provider>

@@ -25,16 +25,25 @@ public class TreeUtils {
 	// kliu - was toNewickWD - I don't think that was correct
 	ut1.parseTreeString(t1.toNewick());
 	ut2.parseTreeString(t2.toNewick());
+
 	// work with unrooted versions for Robinson-Foulds calculation
 	ut1.unroot();
 	ut2.unroot();
+
+	int numInternalEdges1 = ut1.getInternalEdges().length;
+	int numInternalEdges2 = ut2.getInternalEdges().length;
+
 	// warning - Robinson-Foulds calculation only works for unrooted
 	// trees with at least one internal edge
 	// 
 	// fails for less than four taxa
-	if ((ut1.getNumTaxa() < 4) && (ut2.getNumTaxa() < 4)) {
-	    // empty sets are identical by definition
-	    return (0);
+	//
+	// add guards for these cases
+	if ((ut1.getNumTaxa() < 4) || (numInternalEdges1 <= 0)) {
+	    return (numInternalEdges2);
+	}
+	else if ((ut2.getNumTaxa() < 4) || (numInternalEdges2 <= 0)) {
+	    return (numInternalEdges1);
 	}
 	else {
 	    return (ut1.computeRobinsonFouldsDistance(ut2));

@@ -2,15 +2,16 @@ package gridSearch;
 
 import runHmm.runHmm;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 
 public class ParentalTreeNob extends Nob {
     // an annoying detail about using Network class to represent trees
-    protected NetNode<Double> parentNode;
-    private NetNode<Double> childNode;
+    protected NetNode<CoalescePattern[]> parentNode;
+    private NetNode<CoalescePattern[]> childNode;
 
     protected runHmm runHmmObject;
 
-    public ParentalTreeNob(int gIn, double minIn, double maxIn, NetNode<Double> childNodeIn, runHmm inRunHmmObject)  {
+    public ParentalTreeNob(int gIn, double minIn, double maxIn, NetNode<CoalescePattern[]> childNodeIn, runHmm inRunHmmObject)  {
         super (gIn, minIn, maxIn);
         this.childNode = childNodeIn;
 

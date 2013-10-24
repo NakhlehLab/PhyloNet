@@ -13,6 +13,7 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 
 
 
@@ -80,7 +81,7 @@ public class GridSearchAlgorithm {
     private void initializeGridSearch(Hmm<ObservationMap> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
-            Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
+            Map<Network<CoalescePattern[]>,Set<HiddenState>> parentalTreeClasses) {
         // Initialize Nobs array
         nobs = new ArrayList<Nob>();
 
@@ -97,8 +98,8 @@ public class GridSearchAlgorithm {
 
     	// kliu - need to use PhyloNet tree/network structures
     	// walk through unique parental tree objects
-    	for (Network<Double> parentalTree : parentalTreeClasses.keySet()) {
-    	    for (NetNode<Double> node : parentalTree.dfs()) {
+    	for (Network<CoalescePattern[]> parentalTree : parentalTreeClasses.keySet()) {
+    	    for (NetNode<CoalescePattern[]> node : parentalTree.dfs()) {
     		// root has no incoming edge to optimize
     		if (node.isRoot()) {
     		    continue;
@@ -129,7 +130,7 @@ public class GridSearchAlgorithm {
     public void runGridSearch(List<ObservationMap> observation, Hmm<ObservationMap> hmm,
             TransitionProbabilityParameters tpp,
             ArrayList<HiddenState> trees_states,
-            Map<Network<Double>,Set<HiddenState>> parentalTreeClasses) {
+            Map<Network<CoalescePattern[]>,Set<HiddenState>> parentalTreeClasses) {
 
 
         initializeGridSearch(hmm, tpp, trees_states, parentalTreeClasses);

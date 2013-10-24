@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
+
 import runHmm.runHmm;
 //import runHmm.AllInformation;
 import be.ac.ulg.montefiore.run.jahmm.Hmm;
@@ -11,6 +12,7 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 
 /**
  * This knob is used for the hybridization frequency parameter from
@@ -26,14 +28,14 @@ public class HybridizationFreqNob extends Nob {
 
     private TransitionProbabilityParameters probsParam;
     private ArrayList<HiddenState> trees_states;
-    private Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
+    private Map<Network<CoalescePattern[]>,Set<HiddenState>> parentalTreeClasses;
 
     protected runHmm runHmmObject;
 
     public HybridizationFreqNob(int gIn, double minIn, double maxIn,
             Hmm<ObservationMap> hmmIn, TransitionProbabilityParameters probsParamIn,
             ArrayList<HiddenState> treeStatesIn,
-				Map<Network<Double>, Set<HiddenState>> parentalTreeIn, runHmm inRunHmmObject) {
+				Map<Network<CoalescePattern[]>, Set<HiddenState>> parentalTreeIn, runHmm inRunHmmObject) {
         super(gIn, minIn, maxIn);
         this.thisHmm = hmmIn;
         this.probsParam = probsParamIn;

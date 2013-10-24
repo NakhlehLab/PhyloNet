@@ -55,6 +55,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
@@ -132,8 +133,8 @@ public class MultivariateOptimizer {
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     // bleh - need to assume a GTR model here due to specific parameterization
     protected GTRSubstitutionModel gtrSubstitutionModel;
-    //protected Map<Network<Double>,Set<HiddenState>> parentalTreeClasses;
-    protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
+    //protected Map<Network<CoalescePattern[]>,Set<HiddenState>> parentalTreeClasses;
+    protected BijectiveHashtable<String,Network<CoalescePattern[]>> parentalTreeNameMap;
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
     protected List<ObservationMap> observation;
@@ -172,8 +173,8 @@ public class MultivariateOptimizer {
 				  List<HiddenState> inHiddenStates,
 				  TransitionProbabilityParameters inTransitionProbabilityParameters,
 				  GTRSubstitutionModel inGTRSubstitutionModel,
-				  //Map<Network<Double>,Set<HiddenState>> inParentalTreeClasses,
-				  BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
+				  //Map<Network<CoalescePattern[]>,Set<HiddenState>> inParentalTreeClasses,
+				  BijectiveHashtable<String,Network<CoalescePattern[]>> inParentalTreeNameMap,
 				  BijectiveHashtable<String,Tree> inGeneGenealogyNameMap,
 				  BidirectionalMultimap<Tree,Tree> inRootedToUnrootedGeneGenealogyMap,
 				  List<ObservationMap> inObservation,

@@ -40,15 +40,16 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 
 public class CalculationCache {
     // for convenience, just provide full external access
-    public MapOfMap<Network<Double>,Tree,Double> cacheProbabilityOfGeneGenealogyInParentalTree;
+    public MapOfMap<Network<CoalescePattern[]>,Tree,Double> cacheProbabilityOfGeneGenealogyInParentalTree;
     public Hashtable<TNode,double[][]> cacheSubstitutionProbabilityMatrix;
     public MapOfMap<Tree,ObservationMap,Double> cacheSubstitutionProbability;
 
     public CalculationCache () {
-    	cacheProbabilityOfGeneGenealogyInParentalTree = new MapOfMap<Network<Double>,Tree,Double>();
+    	cacheProbabilityOfGeneGenealogyInParentalTree = new MapOfMap<Network<CoalescePattern[]>,Tree,Double>();
     	cacheSubstitutionProbabilityMatrix = new Hashtable<TNode,double[][]>();
     	cacheSubstitutionProbability = new MapOfMap<Tree,ObservationMap,Double>();
     }

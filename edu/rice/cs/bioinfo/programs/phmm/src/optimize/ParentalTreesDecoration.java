@@ -1,6 +1,6 @@
 /**
  * Container class for decoration/annotation of
- * parental tree object (represented using Network<Double> objects)
+ * parental tree object (represented using Network<CoalescePattern[]> objects)
  * and their branch length parameters.
  *
  * For convenience.
@@ -24,6 +24,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
@@ -33,17 +34,17 @@ public class ParentalTreesDecoration {
     public static final String PARENTAL_NODE_LABEL_DELIMITER = ",";
 
     // indirection between parental tree name and parental tree objects themselves
-    protected BijectiveHashtable<String,Network<Double>> parentalTreeNameMap;
+    protected BijectiveHashtable<String,Network<CoalescePattern[]>> parentalTreeNameMap;
 
     // for convenience, map from a parental tree node back to the parental tree that contains it
     // no similar method in PhyloNet's network structure
     // although one exists in PhyloNet's tree structure 
-    protected Hashtable<NetNode<Double>,Network<Double>> parentalNodeTreeMap;
+    protected Hashtable<NetNode<CoalescePattern[]>,Network<CoalescePattern[]>> parentalNodeTreeMap;
 
     // bijective map between parental tree node objects and their names
     // naming convention:
     // "<tree name>,<node name>"
-    protected BijectiveHashtable<NetNode<Double>,String> parentalNodeLabelMap;
+    protected BijectiveHashtable<NetNode<CoalescePattern[]>,String> parentalNodeLabelMap;
 
     // Use a single BidirectionalMultimap to capture many-to-many 
     // relationship between
@@ -76,7 +77,7 @@ public class ParentalTreesDecoration {
 
     protected CalculationCache calculationCache;
 
-    public ParentalTreesDecoration(BijectiveHashtable<String,Network<Double>> inParentalTreeNameMap,
+    public ParentalTreesDecoration(BijectiveHashtable<String,Network<CoalescePattern[]>> inParentalTreeNameMap,
 				   String inputParentalBranchLengthParameterToEdgeMapFilename,
 				   String inputParentalBranchLengthParameterInequalitiesFilename,
 				   String inputParentalBranchLengthParameterSetConstraintsFilename,
@@ -126,9 +127,9 @@ public class ParentalTreesDecoration {
     }
 
     protected void createParentalNodeTreeMap () {
-	parentalNodeTreeMap = new Hashtable<NetNode<Double>,Network<Double>>();
-	for (Network<Double> parentalTree : parentalTreeNameMap.values()) {
-	    for (NetNode<Double> node : parentalTree.dfs()) {
+	parentalNodeTreeMap = new Hashtable<NetNode<CoalescePattern[]>,Network<CoalescePattern[]>>();
+	for (Network<CoalescePattern[]> parentalTree : parentalTreeNameMap.values()) {
+	    for (NetNode<CoalescePattern[]> node : parentalTree.dfs()) {
 		parentalNodeTreeMap.put(node, parentalTree);
 	    }
 	}
@@ -139,10 +140,10 @@ public class ParentalTreesDecoration {
      * Also create a map between parental node and the tree that contains it.
      */
     protected void createParentalNodeLabelMap () {
-	parentalNodeLabelMap = new BijectiveHashtable<NetNode<Double>,String>();
+	parentalNodeLabelMap = new BijectiveHashtable<NetNode<CoalescePattern[]>,String>();
 	for (String parentalTreeName : parentalTreeNameMap.keys()) {
-	    Network<Double> parentalTree = parentalTreeNameMap.get(parentalTreeName);
-	    for (NetNode<Double> node : parentalTree.dfs()) {
+	    Network<CoalescePattern[]> parentalTree = parentalTreeNameMap.get(parentalTreeName);
+	    for (NetNode<CoalescePattern[]> node : parentalTree.dfs()) {
 		String label = parentalTreeName + PARENTAL_NODE_LABEL_DELIMITER + node.getName();
 		// strict!
 		if (parentalNodeLabelMap.containsKey(label)) {
@@ -388,9 +389,9 @@ public class ParentalTreesDecoration {
 	// excluded edges -> not optimized
 	//
 	// Just warn.
-	for (Network<Double> parentalTree : parentalTreeNameMap.values()) {
-	    for(NetNode<Double> node : parentalTree.dfs()) {
-		for(NetNode<Double> parent : node.getParents()) {
+	for (Network<CoalescePattern[]> parentalTree : parentalTreeNameMap.values()) {
+	    for(NetNode<CoalescePattern[]> node : parentalTree.dfs()) {
+		for(NetNode<CoalescePattern[]> parent : node.getParents()) {
 		    Tuple<String,String> eid = new Tuple<String,String>(parentalNodeLabelMap.get(node), parentalNodeLabelMap.get(parent));
 		    
 		    // testing
@@ -423,11 +424,11 @@ public class ParentalTreesDecoration {
 	}
 
 	// guaranteed bijective by guard in constructor
-	NetNode<Double> c = parentalNodeLabelMap.rget(eid.Item1);
-	NetNode<Double> p = parentalNodeLabelMap.rget(eid.Item2);
+	NetNode<CoalescePattern[]> c = parentalNodeLabelMap.rget(eid.Item1);
+	NetNode<CoalescePattern[]> p = parentalNodeLabelMap.rget(eid.Item2);
 
 	// argh
-	for (NetNode<Double> cp : c.getParents()) {
+	for (NetNode<CoalescePattern[]> cp : c.getParents()) {
 	    if (checkNodesEqual(p, cp)) {
 		return (true);
 	    }
@@ -441,7 +442,7 @@ public class ParentalTreesDecoration {
      * kludged equals() function.
      * Warning - throws RuntimeException if node<->label map lookup fails.
      */
-    protected boolean checkNodesEqual (NetNode<Double> x, NetNode<Double> y) {
+    protected boolean checkNodesEqual (NetNode<CoalescePattern[]> x, NetNode<CoalescePattern[]> y) {
 	if (parentalNodeLabelMap == null) {
 	    throw (new NodeEqualityTestException("ERROR: node<->label map not initialized in checkNodesEqual()."));
 	}
@@ -496,8 +497,8 @@ public class ParentalTreesDecoration {
 		throw (new RuntimeException("ERROR: unknown node labels in eid " + eid + " in updateNetworkBranchLengths()."));
 	    } 
 
-	    NetNode<Double> child = parentalNodeLabelMap.rget(eid.Item1);
-	    NetNode<Double> parent = parentalNodeLabelMap.rget(eid.Item2);
+	    NetNode<CoalescePattern[]> child = parentalNodeLabelMap.rget(eid.Item1);
+	    NetNode<CoalescePattern[]> parent = parentalNodeLabelMap.rget(eid.Item2);
 	    double length = 0.0;
 	    // simple addition, nothing fancy
 	    for (ParentalBranchLengthParameter lp : lpEidMap.rget(eid)) {

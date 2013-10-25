@@ -1,0 +1,15 @@
+g01 ((GeorgianDomesticus:1,SpanishMainlandDomesticus:1)XANC:1,(Spretus2:1,Spretus1:1)YANC:1)ROOT;
+g02 ((GeorgianDomesticus:1,Spretus1:1)YANC:1,(Spretus2:1,SpanishMainlandDomesticus:1)XANC:1)ROOT;
+g03 ((GeorgianDomesticus:1,Spretus2:1)YANC:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)ROOT;
+g04 (GeorgianDomesticus:1,(Spretus2:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g05 (GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,(Spretus2:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g06 (GeorgianDomesticus:1,(Spretus1:1,(SpanishMainlandDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
+g07 (Spretus2:1,(GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g08 (Spretus2:1,(SpanishMainlandDomesticus:1,(GeorgianDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g09 (Spretus2:1,(Spretus1:1,(SpanishMainlandDomesticus:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
+g10 (Spretus1:1,(Spretus2:1,(SpanishMainlandDomesticus:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
+g11 (Spretus1:1,(SpanishMainlandDomesticus:1,(Spretus2:1,GeorgianDomesticus:1)XANC:1)YANC:1)ROOT;
+g12 (Spretus1:1,(GeorgianDomesticus:1,(SpanishMainlandDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;
+g13 (SpanishMainlandDomesticus:1,(Spretus2:1,(GeorgianDomesticus:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g14 (SpanishMainlandDomesticus:1,(GeorgianDomesticus:1,(Spretus2:1,Spretus1:1)XANC:1)YANC:1)ROOT;
+g15 (SpanishMainlandDomesticus:1,(Spretus1:1,(GeorgianDomesticus:1,Spretus2:1)XANC:1)YANC:1)ROOT;

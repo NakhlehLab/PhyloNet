@@ -27,6 +27,7 @@
 
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.List;
@@ -47,6 +48,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
@@ -57,6 +59,10 @@ public class HiddenState
 {
     public static final String HIDDEN_STATE_NAME_DELIMITER = ",";
     public static final String EQUIVALENCE_CLASS_NAME_DELIMITER = "!";
+
+    // doesn't really matter for calculateGTDistribution(...) call
+    public static final boolean DISPLAY_BRANCH_LENGTHS_FLAG = false;
+    public static final boolean DISPLAY_INTERNAL_NODE_NAMES_FLAG = false;
 
     // why not give it a unique name
     protected String name;
@@ -70,6 +76,17 @@ public class HiddenState
     //
     // Rooting of this object has no meaning.
     protected Tree unrootedGeneGenealogy; 
+    // Bleh.
+    // To support outgroup rooting.
+    //
+    // If an outgroup is available, create a copy of rootedGeneGenealogy,
+    // strip branch lengths,
+    // root at the outgroup,
+    // and delete the outgroup.
+    //
+    // If no outgroup is available,
+    // this will just be a reference to rootedGeneGenealogy.
+    protected Tree processedRootedGeneGenealogy;
 
     // add a check to ensure that unrooted and rooted phylogeny
     // have Robinson-Foulds distance zero.
@@ -84,7 +101,11 @@ public class HiddenState
     // maps from species-name to list of allele-names
     // e.g. M -> AAAAAAAAQI,AAAAAAAAOG,AAAAAAAANQ
     // etc.
-    protected Map<String,List<String>> alleleToSpeciesMapping;    
+    protected Map<String,List<String>> speciesToAllelesMapping;    
+
+    // similarly process speciesToAllelesMapping
+    // to omit outgroup as needed
+    protected Map<String,List<String>> processedSpeciesToAllelesMapping;
 
     // kliu - provide functionality to check if two HiddenState objects share a parental tree (Network<CoalescePattern[]> object)
     //protected Set<HiddenState> parentalTreeEquivalenceClass;
@@ -110,14 +131,18 @@ public class HiddenState
     // cache it
     protected RnNewickPrinter<CoalescePattern[]> rnNewickPrinter;
 
+    protected String outgroupTaxonName;
+
     public HiddenState (String inName, 
 			Network<CoalescePattern[]> inParentalTree, 
 			Tree inRootedGeneGenealogy, 
 			Tree inUnrootedGeneGenealogy, 
+			String inOutgroupTaxonName,
 			Map<String,List<String>> inputSpeciesToAllelesMapping, 
 			//Set<HiddenState> inParentalTreeEquivalenceClass, 
 			SubstitutionModel inSubstitutionModel,
 			CalculationCache inCalculationCache) {
+	this.outgroupTaxonName = inOutgroupTaxonName;
 	setName(inName);
 	setParentalTree(inParentalTree);
 	setRootedAndUnrootedGeneGenealogy(inRootedGeneGenealogy, inUnrootedGeneGenealogy);
@@ -152,8 +177,13 @@ public class HiddenState
     	return (unrootedGeneGenealogy);
     }
 
+    // crufty, but for completeness
+    public Tree getProcessedRootedGeneGenealogy () {
+	return (processedRootedGeneGenealogy);
+    }
+
     public Map<String,List<String>> getSpeciesToAllelesMapping () {
-    	return (alleleToSpeciesMapping);
+    	return (speciesToAllelesMapping);
     }
 
     public SubstitutionModel getSubstitutionModel () {
@@ -164,12 +194,83 @@ public class HiddenState
     	this.parentalTree = inParentalTree;
     }
 
+    /**
+     * WARNING - assumes that outgroup taxon exists.
+     */
+    protected Tree constructProcessedRootedGeneGenealogy () {
+	// paranoid
+	if ((this.outgroupTaxonName == null) || (this.outgroupTaxonName.equals(""))) {
+	    System.err.println("ERROR: no outgroup taxon name set in HiddenState.constructProcessedRootedGeneGenealogy().");
+	    System.exit(1);
+	}
+
+	// also create an edited version of the rooted gene genealogy
+	// strip branch lengths and remove outgroup taxon
+	gsp.ra.Tree atree = new gsp.ra.Tree();
+	atree.parseTreeString(getRootedGeneGenealogy().toNewick());
+	// no degree two nodes exist after this call
+	atree.unroot();
+	gsp.ra.Edge outgroupEdge = null;
+	gsp.ra.Node internalNodeNeighborOfOutgroupTaxon = null;
+	for (gsp.ra.Edge leafEdge : atree.getLeafEdges()) {
+	    if (leafEdge.e1().getName().equals(this.outgroupTaxonName) ||
+		leafEdge.e2().getName().equals(this.outgroupTaxonName)) {
+		if (outgroupEdge == null) {
+		    outgroupEdge = leafEdge;
+		    internalNodeNeighborOfOutgroupTaxon = (leafEdge.e1().getName().equals(this.outgroupTaxonName)) ? leafEdge.e2() : leafEdge.e1();
+		}
+		else {
+		    // strict!
+		    System.err.println ("ERROR: more than one leaf edge incident on taxon " + this.outgroupTaxonName + ". Aborting!");
+		    System.exit(1);
+		}
+	    }
+	}
+
+	// strict!
+	if (outgroupEdge == null) {
+	    System.err.println ("ERROR: unable to find a leaf edge incident upon taxon " + this.outgroupTaxonName + ". Aborting.");
+	    System.exit(1);
+	}
+	
+	atree.remove(outgroupEdge);
+	gsp.ra.Edge newRootEdge = atree.removeTrivialNodeAndIncidentEdges(internalNodeNeighborOfOutgroupTaxon);
+	
+	// strict!
+	if (newRootEdge == null) {
+	    System.err.println ("ERROR: failed to remove outgroup edge properly on rooted gene genealogy. " + this.getRootedGeneGenealogy().toNewick());
+	}
+
+	String processedRootedGeneGenealogyString = atree.toNewickString(newRootEdge, DISPLAY_BRANCH_LENGTHS_FLAG, DISPLAY_INTERNAL_NODE_NAMES_FLAG);
+    	NewickReader nr = new NewickReader(new StringReader(processedRootedGeneGenealogyString));
+    	STITree<Double> newtr = new STITree<Double>(true);
+    	try {
+    	    nr.readTree(newtr);
+    	}
+    	catch(Exception e) {
+	    // strict!
+    	    System.err.println(e);
+    	    e.printStackTrace();
+	    System.exit(1);
+    	}
+	
+	return (newtr);
+    }
+
     public void setRootedAndUnrootedGeneGenealogy (Tree inRootedGeneGenealogy, Tree inUnrootedGeneGenealogy) {
 	this.rootedGeneGenealogy = inRootedGeneGenealogy;
     	this.unrootedGeneGenealogy = inUnrootedGeneGenealogy;
 	// strict!
 	if (!verifyRootedAndUnrootedGeneGenealogy()) {
 	    throw (new RuntimeException ("ERROR: called HiddenState.setRootedAndUnrootedGeneGenealogy(...) with rooted phylogeny and unrooted phylogeny that had non-zero Robinson-Foulds distance."));
+	}
+
+	if ((this.outgroupTaxonName != null) && (!this.outgroupTaxonName.equals(""))) {
+	    processedRootedGeneGenealogy = constructProcessedRootedGeneGenealogy();
+	}
+	else {
+	    // duplicate reference to the same object
+	    processedRootedGeneGenealogy = getRootedGeneGenealogy();
 	}
     }
 
@@ -182,7 +283,33 @@ public class HiddenState
     }
 
     public void setSpeciesToAllelesMapping (Map<String,List<String>> map) {
-    	this.alleleToSpeciesMapping = map;
+    	this.speciesToAllelesMapping = map;
+
+	// also create processedSpeciesToAllelesMapping
+	if ((this.outgroupTaxonName != null) && (!this.outgroupTaxonName.equals(""))) {
+	    processedSpeciesToAllelesMapping = constructProcessedSpeciesToAllelesMapping();
+	}
+	else {
+	    processedSpeciesToAllelesMapping = speciesToAllelesMapping;
+	}
+    }
+
+    protected Map<String,List<String>> constructProcessedSpeciesToAllelesMapping () {
+	// paranoid
+	if ((this.outgroupTaxonName == null) || (this.outgroupTaxonName.equals(""))) {
+	    System.err.println("ERROR: no outgroup taxon name set in HiddenState.constructProcessedRootedGeneGenealogy().");
+	    System.exit(1);
+	}
+
+	Map<String,List<String>> processedCopy = new HashMap<String,List<String>>();
+	for (String k : speciesToAllelesMapping.keySet()) {
+	    List<String> v = new ArrayList<String>(speciesToAllelesMapping.get(k));
+	    // expensive, but meh
+	    while (v.remove(this.outgroupTaxonName)) { /* NOOP */ }
+	    processedCopy.put(k, v);
+	}
+	
+	return (processedCopy);
     }
 
     public void setSubstitutionModel (SubstitutionModel inSubstitutionModel) {
@@ -249,8 +376,10 @@ public class HiddenState
      */
     protected double calculateProbabilityOfRootedGeneGenealogyInParentalTree (boolean debugFlag) {
 	// use cache if it exists
-	if (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.contains(getParentalTree(), getRootedGeneGenealogy())) {
-	    return (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.get(getParentalTree(), getRootedGeneGenealogy()).doubleValue());
+	// was getRootedGeneGenealogy()
+	if (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.contains(getParentalTree(), getProcessedRootedGeneGenealogy())) {
+	    // was getRootedGeneGenealogy()
+	    return (calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.get(getParentalTree(), getProcessedRootedGeneGenealogy()).doubleValue());
 	}
 
 	// otherwise compute and cache
@@ -259,7 +388,9 @@ public class HiddenState
 	// not quite right - while parental tree objects are unique by topology, gene genealogies aren't
 	// under the current model
 	// meh
-	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getRootedGeneGenealogy(), new Double(result));
+	//
+	// was getRootedGeneGenealogy()
+	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getProcessedRootedGeneGenealogy(), new Double(result));
         return (result);
     }
 
@@ -278,7 +409,8 @@ public class HiddenState
 
 	// A list with one element.
 	Vector<Tree> rootedGeneGenealogies = new Vector<Tree>();
-	rootedGeneGenealogies.add(getRootedGeneGenealogy());
+	// was getRootedGeneGenealogy()
+	rootedGeneGenealogies.add(getProcessedRootedGeneGenealogy());
 
 	// need to use these!
 	List<Tree> bGeneTrees = new ArrayList<Tree>();
@@ -373,7 +505,7 @@ public class HiddenState
 
     // 	// otherwise compute and cache
 
-    // 	Map<String,String> alleleToSpeciesMapping = getAlleleToSpeciesMapping();
+    // 	Map<String,String> speciesToAllelesMapping = getAlleleToSpeciesMapping();
     // 	// A list with one element. Inefficient - consider doing a one-shot approach later.
     // 	Vector<Tree> geneGenealogies = new Vector<Tree>();
     // 	geneGenealogies.add(geneGenealogy);
@@ -385,7 +517,7 @@ public class HiddenState
     // 	// calculation under model from Yu et al. 2012
     // 	// this method requires Network<Double>
     // 	// Yun uses Double to store hybridization probabilities during calculation
-    //     List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, alleleToSpeciesMapping, debugFlag);
+    //     List<Double> probList = gtp.calculateGTDistribution(parentalTree, geneGenealogies, speciesToAllelesMapping, debugFlag);
 
     // 	// should only be a single entry
     // 	if (probList.size() != 1) {

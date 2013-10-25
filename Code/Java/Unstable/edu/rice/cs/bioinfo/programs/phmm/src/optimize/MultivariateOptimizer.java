@@ -305,9 +305,10 @@ public class MultivariateOptimizer {
 	// was causing over-fitting issues
 
 	Iterable<Tree> geneGenealogiesToOptimize = 
-	    runHmmObject.getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag() ? 
-	    rootedToUnrootedGeneGenealogyMap.values() : 
-	    geneGenealogyNameMap.values() ;
+	    //runHmmObject.getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag() ? 
+	    rootedToUnrootedGeneGenealogyMap.values(); 
+	    //: 
+	    //geneGenealogyNameMap.values() ;
 
 	for (Tree geneGenealogy : geneGenealogiesToOptimize) {
 	    for (TNode node : geneGenealogy.postTraverse()) {
@@ -317,9 +318,10 @@ public class MultivariateOptimizer {
 		
 		// get name topological equivalence class
 		String genealogyObjectName = 
-		    runHmmObject.getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag() ? 
-		    runHmmObject.getTopologicalEquivalenceClassName(geneGenealogy) :
-		    geneGenealogyNameMap.rget(geneGenealogy) ;
+		    //runHmmObject.getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag() ? 
+		    runHmmObject.getTopologicalEquivalenceClassName(geneGenealogy);
+		    //:
+		    //geneGenealogyNameMap.rget(geneGenealogy) ;
 
 		GenealogyBranchLengthParameter gblp = new GenealogyBranchLengthParameter(GenealogyBranchLengthParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + genealogyObjectName + HiddenState.HIDDEN_STATE_NAME_DELIMITER + node.getName(),
 											 node.getParentDistance(),

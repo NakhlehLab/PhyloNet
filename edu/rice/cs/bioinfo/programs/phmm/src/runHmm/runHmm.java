@@ -96,8 +96,10 @@ public class runHmm {
     // and unrooted representative of a topological equivalence class
     // has its branch lengths optimized.
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
+    // name of outgroup taxon
+    protected String outgroupTaxonName;
 
-    protected boolean collapseGeneGenealogiesByTopologicalEquivalenceClassFlag;
+    //protected boolean collapseGeneGenealogiesByTopologicalEquivalenceClassFlag;
 
     protected TransitionProbabilityParameters transitionProbabilityParameters;
     
@@ -142,16 +144,23 @@ public class runHmm {
 	}
     }
 
-    public String getWorkingDirectory() {
+    public String getWorkingDirectory () {
 	return (workingDirectory);
+    }
+
+    /**
+     * WARNING: returns null to indicate no outgroup taxon available.
+     */
+    public String getOutgroupTaxonName () {
+	return (outgroupTaxonName);
     }
 
     /**
      * Since some construction performed by MultivariateOptimizer.
      */
-    public boolean getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag () {
-	return (collapseGeneGenealogiesByTopologicalEquivalenceClassFlag);
-    }
+    // public boolean getCollapseGeneGenealogiesByTopologicalEquivalenceClassFlag () {
+    // 	return (collapseGeneGenealogiesByTopologicalEquivalenceClassFlag);
+    // }
 
     /**
      * @throws Exception
@@ -183,14 +192,20 @@ public class runHmm {
 		}
 	    }
 	    
-	    System.out.println ("Collapse gene genealogies according to topological equivalence classes? Enter true for yes or anything else for no:" );
-	    collapseGeneGenealogiesByTopologicalEquivalenceClassFlag = Boolean.parseBoolean(in.readLine());
+	    // System.out.println ("Collapse gene genealogies according to topological equivalence classes? Enter true for yes or anything else for no:" );
+	    // collapseGeneGenealogiesByTopologicalEquivalenceClassFlag = Boolean.parseBoolean(in.readLine());
 			
 	    System.out.println("\nInput the parental trees file path name:\n (note: see README for file format) \n");
 	    parentalTreesFileName = in.readLine();
 			
 	    System.out.println("\nInput the gene genealogies file path name:\n (note: see README for file format) \n");
 	    geneGenealogiesFileName = in.readLine();
+
+	    System.out.println("\nInput outgroup taxon name, or empty string for no outgroup taxon: \n");
+	    outgroupTaxonName = in.readLine().trim();
+	    if (outgroupTaxonName.equals("")) {
+		outgroupTaxonName = null;
+	    }
 	    
 	    System.out.println("Empty working directory: ");
 	    workingDirectory = in.readLine();
@@ -560,6 +575,12 @@ public class runHmm {
 		bw.newLine();
 	    }
 	    bw.newLine();
+	    for (HiddenState hiddenState : hiddenStates) {
+		bw.write("Processed rooted gene genealogy associated with hidden state " + hiddenState.getName() + ":"); bw.newLine();
+		bw.write(hiddenState.getProcessedRootedGeneGenealogy().toNewick()); bw.newLine();
+		bw.newLine();
+	    }
+	    bw.newLine();
 	    for (TransitionProbabilityParameters.ParameterChoice parameterChoice : TransitionProbabilityParameters.ParameterChoice.values()) {
 		bw.write (parameterChoice.toString() + ": "); bw.newLine();
 		bw.write (Double.toString(transitionProbabilityParameters.get(parameterChoice))); bw.newLine();
@@ -645,6 +666,12 @@ public class runHmm {
 	}
 	else {
 	    set = new HashSet<String>(speciesToAllelesMap.keySet());
+	    // special case for outgroup taxon
+	    // sort of a hack
+	    // meh
+	    if ((getOutgroupTaxonName() != null) && (set.contains(getOutgroupTaxonName()))) {
+		set.remove(getOutgroupTaxonName());
+	    }
 	}
 
 	String[] sortedTaxa = new String[set.size()];
@@ -654,9 +681,13 @@ public class runHmm {
     }
 
     protected boolean verifyGeneGenealogyTaxa () {
-	// list of taxa in allele-species-mapping and in basic-info-file must be consistent with 
+	// unique values in species-alleles-mapping and in basic-info-file must be consistent with 
 	// gene genealogies
+
+	// basic info taxa
 	String[] sortedBasicInfoGeneGenealogyTaxa = getSortedGeneGenealogyTaxa();
+
+	// check (rooted) gene genealogy taxa against basic info taxa
 	for (HiddenState hiddenState : hiddenStates) {
 	    String[] sortedCheckTaxa = hiddenState.getRootedGeneGenealogy().getLeaves();
 	    Arrays.sort(sortedCheckTaxa);
@@ -668,6 +699,7 @@ public class runHmm {
 	    }
 	}
 
+	// check species-alleles-mapping against basic info taxa
 	for (Map<String,List<String>> speciesToAllelesMap : parentalTreeSpeciesToAllelesMapMap.values()) {
 	    for (HiddenState hiddenState : hiddenStates) {
 		String[] sortedReferenceTaxa = getSortedTaxaFromSpeciesToAllelesMapping(hiddenState.getSpeciesToAllelesMapping(), true);
@@ -685,7 +717,11 @@ public class runHmm {
 	return (true);
     }
 
+    // bleh - special case for outgroup taxon
+    // always mapped to same name for species
+    // ignore this
     protected boolean verifyParentalTreeTaxa () {
+	// check parental tree taxa vs. species-alleles-mapping keys
 	for (HiddenState hiddenState : hiddenStates) {
 	    String[] sortedReferenceTaxa = getSortedTaxaFromSpeciesToAllelesMapping(hiddenState.getSpeciesToAllelesMapping(), false);
 	    String[] sortedCheckTaxa = getTaxa(hiddenState.getParentalTree());
@@ -1304,7 +1340,7 @@ public class runHmm {
 	rootedToUnrootedGeneGenealogyMap = createRootedToUnrootedGeneGenealogyMap();
 
 	// testing
-	if (Constants.WARNLEVEL > 2) { System.out.println ("Collapse gene genealogies by topological equivalence class? " + collapseGeneGenealogiesByTopologicalEquivalenceClassFlag); System.out.println(); }
+	// if (Constants.WARNLEVEL > 2) { System.out.println ("Collapse gene genealogies by topological equivalence class? " + collapseGeneGenealogiesByTopologicalEquivalenceClassFlag); System.out.println(); }
 	if (Constants.WARNLEVEL > 2) { debugRootedToUnrootedGeneGenealogyMap(); }
 
 	// kliu - indexing is by (parentalTree, geneGenealogy) appearance order according to the following:
@@ -1324,14 +1360,16 @@ public class runHmm {
 		}
 		Tree unrootedGeneGenealogy = rootedToUnrootedGeneGenealogyMap.get(rootedGeneGenealogy).iterator().next();
 		String hiddenStateName = parentalTreeNameMap.rget(parentalTree) + HiddenState.HIDDEN_STATE_NAME_DELIMITER + geneGenealogyNameMap.rget(rootedGeneGenealogy);
-		if (collapseGeneGenealogiesByTopologicalEquivalenceClassFlag) {
+		//if (collapseGeneGenealogiesByTopologicalEquivalenceClassFlag) {
 		    hiddenStateName += HiddenState.HIDDEN_STATE_NAME_DELIMITER + getTopologicalEquivalenceClassName(unrootedGeneGenealogy);
-		}
+		    //}
 		// kliu - meh - parse allele-to-species mapping later and add in references here
 		HiddenState hiddenState = new HiddenState(hiddenStateName, 
 							  parentalTree, 
 							  rootedGeneGenealogy, 
-							  collapseGeneGenealogiesByTopologicalEquivalenceClassFlag ? unrootedGeneGenealogy : rootedGeneGenealogy, 
+							  //collapseGeneGenealogiesByTopologicalEquivalenceClassFlag ? unrootedGeneGenealogy : rootedGeneGenealogy, 
+							  unrootedGeneGenealogy,
+							  outgroupTaxonName,
 							  parentalTreeSpeciesToAllelesMapMap.get(parentalTreeName), 
 							  gtrSubstitutionModel, 
 							  calculationCache);

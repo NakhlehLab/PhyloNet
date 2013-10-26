@@ -20,6 +20,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 /**
  * Simple Felsenstein calculator class.
+ *
+ * WARNING: no support for ambiguous nucleotides yet.
+ * TODO: add this feature in? Nah.
  */
 
 public class Felsenstein {

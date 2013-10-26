@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import substitutionModel.NucleotideAlphabet;
 import util.Constants;
 import phylogeny.EvoTree;
 import phylogeny.Node;
@@ -29,6 +30,12 @@ public class Parser {
     protected HashMap<String, Integer> seqTypes;						/* mapping from types of sequences to integers */
     protected Vector<String> taxa; //  reverse the above map
     protected int seqNum;												/* Number of sequences */
+
+    // only support nucleotide alphabet
+    protected NucleotideAlphabet nucleotideAlphabet;
+    // and no support for indels or wildcard
+    public static final boolean INDEL_LETTER_PERMISSIBLE_FLAG = false;
+    public static final boolean WILDCARD_LETTER_PERMISSIBLE_FLAG = false;
 
     /**
      * Constructor For the Parser
@@ -51,6 +58,7 @@ public class Parser {
      */
 
     public Parser(String basicFileName) throws Exception {
+	nucleotideAlphabet = NucleotideAlphabet.getClassInstance();
 	alphabet = new ArrayList<String>();
 	myHashmap = new HashMap<String, Integer>();
 	seqTypes = new HashMap<String, Integer>();
@@ -122,6 +130,12 @@ public class Parser {
 	// strict!
 	if (map.contains(name)) {
 	    throw (new RuntimeException("ERROR: sequence file " + filename + " contains duplicate taxon " + name + "."));
+	}
+
+	// also be strict about permissible alphabet
+	// ambiguous nucleotides not currently supported!!!
+	if (!nucleotideAlphabet.verify(sequenceBuffer.toString(), INDEL_LETTER_PERMISSIBLE_FLAG, WILDCARD_LETTER_PERMISSIBLE_FLAG)) {
+	    throw (new RuntimeException("ERROR: sequence file " + filename + " includes a sequence with an illegal letter. Check taxon " + name + "."));
 	}
 
 	map.put(name, sequenceBuffer);

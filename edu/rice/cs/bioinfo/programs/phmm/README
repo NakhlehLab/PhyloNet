@@ -1,9 +1,5 @@
 README FILE FOR LUAY'S JAHMM
 
-/**
-* Luay's JaHmm implemented by Jingxuan Dai and Kathy Truong
-*/
-
 ******************
 File Formats
 ******************
@@ -38,6 +34,39 @@ File Formats
   - <gene-genealogy-taxon-to-species-tree-taxon-mapping> is in the following format:
     <gene-genealogy taxon>:<species-tree taxon>,<gene-genealogy taxon>:<species-tree taxon>...
 
+- Parental tree switching parameters
+  - Format:
+    <parameter name> <initial weight> <tree x_1 name>|<tree y_1 name> <tree x_2 name>|<tree y_2 name> ...
+
+  - Duplicate parameter names are not allowed.
+  - All possible ordered pairs of parental trees must be specified, 
+    *except* for ordered pairs where both members are the same parental tree 
+    (corresponding to transitions
+    where the parental tree remains unchanged).
+  - Switching parameters are ratios, where the self-transition parameter
+    is canonically assigned to be 1.
+    Ratios of all parameters therefore specify the switching probability,
+    s.t. transitions sum to one.
+    For example, let T = {T_1, T_2} and 
+    ratios be
+    ratio(T_1, T_2) = 4
+    ratio(T_2, T_1) = 2
+    .
+    (Recall that
+    ratio(T_1, T_1) = 1
+    and 
+    ratio(T_2, T_2) = 1
+    .)
+    Then,
+    solving for transitions away from T_1,
+    4x + 1x = 1
+    and therefore 
+    P[T_1 -> T_2] = 4/5
+    P[T_1 -> T_1] = 1/5
+    
+    Similarly, solving for transitions away from T_2,
+    P[T_2 -> T_1] = 2/3
+    P[T_2 -> T_2] = 1/3
 - Gene genealogies file
   - Format: 
     <tree 0 name> <tree 0 in Newick>
@@ -48,8 +77,22 @@ File Formats
   - Duplicate tree IDs are not allowed.
   - Gene genealogy IDs cannot appear in the parental trees file.
 
+- Gene genealogy switching parameters
+  - Format:
+    <parameter name> <tree x_1 name>|<tree y_1 name> <tree x_2 name>|<tree y_2 name> ...
 
--> Sequence File
+  - Duplicate parameter names are not allowed.
+  - All possible ordered pairs of gene genealogies must be specified, 
+    *except* for ordered pairs where both members are the same gene genealogy 
+    (corresponding to transitions
+    where the gene genealogy remains unchanged).
+  - Switching parameters are ratios, where the self-transition parameter
+    is canonically assigned to be 1.
+    Ratios of all parameters therefore specify the switching probability,
+    s.t. transitions sum to one.
+    See above example in parental tree switching parameter section.
+
+- Sequence File
 		This .seq file will contain all the observations sequence of the given
 		genomes.
 

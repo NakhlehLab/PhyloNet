@@ -210,6 +210,13 @@ public class runHmm {
 	    System.out.println("Empty working directory: ");
 	    workingDirectory = in.readLine();
 
+	    // Bleh - need to read in and construct TransitionProbabilityParameter objects here.
+	    // Specified according to parental-tree-switching-parameter and gene-genealogy-switching-parameter
+	    // file discussed in README.
+	    // Then, in MultivariateOptimizer, add SwitchingFrequencyParameter for each perform actual optimization
+	    // for each TransitionProbabilityParameter.
+	    // add map to parameter
+
 	    readTransitionProbabilityParameters(in);
 
 	    readSubstitutionModelParameters(in);
@@ -992,6 +999,12 @@ public class runHmm {
      * any other parameters related to the transition probabilities.
      */
     protected double[][] calculateAij () {
+	// may want to just pre-calculate
+	// parental-tree-switching and gene-genealogy-switching probabilities
+	// from ratio parameters up front
+	// use them directly below
+	// straightforward calculation anyways
+
 	double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
 	for (int i = 0; i < a.length; i++) {
 	    HiddenState si = hiddenStates.get(i);
@@ -1031,6 +1044,10 @@ public class runHmm {
 	    // now set self-transition probability
 	    //a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
 	}
+
+	// bleh - post new model extensions,
+	// need to re-normalize after (parental-tree-switching parameter) x (gene-genealogy-switching parameter) x
+	// (ILS calculation from Degnan and Salter 2005) contributions all factored in
 	
 	// strict!
 	if (!verifyAij(a)) {
@@ -1625,6 +1642,11 @@ public class runHmm {
      *
      * Current model uses two parameters: a hybridization frequency $v$, and a recombination frequency $u$.
      * See writeup for details.
+     *
+     * Need to change this into a file.
+     *
+     * To support ratio-solving quickly, need to look-up from (source tree name, sink tree name) pair to
+     * corresponding ratio parameter quickly. Add a map for this.
      */
     protected void readTransitionProbabilityParameters (BufferedReader br) throws Exception {
 	// <recombination frequency parameter $u$>

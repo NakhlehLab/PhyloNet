@@ -30,7 +30,7 @@ import substitutionModel.GTRSubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
 import optimize.MultivariateOptimizer;
 import optimize.CalculationCache;
-import gridSearch.GridSearchAlgorithm;
+//import gridSearch.GridSearchAlgorithm;
 import phylogeny.EvoTree;
 import phylogeny.TreeParser;
 import reader.Parser;
@@ -40,6 +40,7 @@ import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -101,7 +102,13 @@ public class runHmm {
 
     //protected boolean collapseGeneGenealogiesByTopologicalEquivalenceClassFlag;
 
-    protected TransitionProbabilityParameters transitionProbabilityParameters;
+    // External state to map
+    // (Gene genealogy name 1, gene genealogy name 2)->SwitchingFrequencyRatioTerm object for gene genealogy pairs.
+    protected BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap;
+    protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToGeneGenealogySwitchingFrequencyRatioTermMap;
+    // Similarly for parental tree pairs.
+    protected BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap;
+    protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToParentalTreeSwitchingFrequencyRatioTermMap;
     
     // need to assume GTR substitution model due to parameterization differences
     protected GTRSubstitutionModel gtrSubstitutionModel;
@@ -217,7 +224,7 @@ public class runHmm {
 	    // for each TransitionProbabilityParameter.
 	    // add map to parameter
 
-	    readTransitionProbabilityParameters(in);
+	    readSwitchingFrequencyRatioTermFiles(in);
 
 	    readSubstitutionModelParameters(in);
 
@@ -233,7 +240,13 @@ public class runHmm {
 	    
 	    //Reading in Basic Info file and store information
 	    buildParser();
-			
+		
+	    // verify switching frequency ratio terms
+	    if (!verifySwitchingFrequencyRatioTerms()) {
+		System.err.println ("ERROR: unable to verify switching frequency ratio terms. Please correct and try again.");
+		System.exit(1);
+	    }
+
 	    //Build HMM
 	    buildInitialHMM();
 		
@@ -342,77 +355,77 @@ public class runHmm {
 		break;
 		
 		
-	    case 2:
-	        // RUN GRID SEARCH
-	        // Modifies the current hmm;
+	    // case 2:
+	    //     // RUN GRID SEARCH
+	    //     // Modifies the current hmm;
 
-	        System.out.println("\n");
-	        // Allow users to read in New Sequence Observation or re-use a
-		// previously read in Sequence
-		int seqChoice3 = sequenceChoice(in);
-		ArrayList<ObservationMap> seqObs;
-		if (seqChoice3 == 1) {
-		    seqObs = getObs(in);
-		} else {
-		    seqObs = fParser.getObs();
-		}
+	    //     System.out.println("\n");
+	    //     // Allow users to read in New Sequence Observation or re-use a
+	    // 	// previously read in Sequence
+	    // 	int seqChoice3 = sequenceChoice(in);
+	    // 	ArrayList<ObservationMap> seqObs;
+	    // 	if (seqChoice3 == 1) {
+	    // 	    seqObs = getObs(in);
+	    // 	} else {
+	    // 	    seqObs = fParser.getObs();
+	    // 	}
 
-		//Get the max and mins and g samples of each parameter
-		try {
-		    System.out.println("Input the number of samples for tree branch lengths: ");
-		    int gBranchIn = Integer.parseInt(in.readLine());
+	    // 	//Get the max and mins and g samples of each parameter
+	    // 	try {
+	    // 	    System.out.println("Input the number of samples for tree branch lengths: ");
+	    // 	    int gBranchIn = Integer.parseInt(in.readLine());
 
-		    System.out.println("Input the number of samples for Recombination Frequency: ");
-		    int gRecombinationIn = Integer.parseInt(in.readLine());
+	    // 	    System.out.println("Input the number of samples for Recombination Frequency: ");
+	    // 	    int gRecombinationIn = Integer.parseInt(in.readLine());
 
-		    System.out.println("Input the number of samples for Hybridization Frequency: ");
-		    int gHybridizationIn = Integer.parseInt(in.readLine());
+	    // 	    System.out.println("Input the number of samples for Hybridization Frequency: ");
+	    // 	    int gHybridizationIn = Integer.parseInt(in.readLine());
 
-		    System.out.println("Input the number of samples for Felsenstein Base Substitution Rate: ");
-		    int gBaseSubIn = Integer.parseInt(in.readLine());
+	    // 	    System.out.println("Input the number of samples for Felsenstein Base Substitution Rate: ");
+	    // 	    int gBaseSubIn = Integer.parseInt(in.readLine());
 
-		    System.out.println("Input the minimum double value for all tree branch lengths: ");
-		    double branchMinIn = Double.parseDouble(in.readLine());
+	    // 	    System.out.println("Input the minimum double value for all tree branch lengths: ");
+	    // 	    double branchMinIn = Double.parseDouble(in.readLine());
 
-		    System.out.println("Input the maximum double value for all tree branch lengths: ");
-		    double branchMaxIn = Double.parseDouble(in.readLine());
+	    // 	    System.out.println("Input the maximum double value for all tree branch lengths: ");
+	    // 	    double branchMaxIn = Double.parseDouble(in.readLine());
 
-		    // System.out.println("Input the minimum double value for Recombination frequency: ");
-		    // double recombinationMinIn = Double.parseDouble(in.readLine());
+	    // 	    // System.out.println("Input the minimum double value for Recombination frequency: ");
+	    // 	    // double recombinationMinIn = Double.parseDouble(in.readLine());
 
-		    // System.out.println("Input the maximum double value for Recombination frequency: ");
-		    // double recombinationMaxIn = Double.parseDouble(in.readLine());
+	    // 	    // System.out.println("Input the maximum double value for Recombination frequency: ");
+	    // 	    // double recombinationMaxIn = Double.parseDouble(in.readLine());
 
-		    System.out.println("Input the minimum double value for Hybridization frequency: ");
-		    double hybridizationMinIn = Double.parseDouble(in.readLine());
+	    // 	    System.out.println("Input the minimum double value for Hybridization frequency: ");
+	    // 	    double hybridizationMinIn = Double.parseDouble(in.readLine());
 
-		    System.out.println("Input the maximum double value for Hybridization frequency: ");
-		    double hybridizationMaxIn = Double.parseDouble(in.readLine());
+	    // 	    System.out.println("Input the maximum double value for Hybridization frequency: ");
+	    // 	    double hybridizationMaxIn = Double.parseDouble(in.readLine());
 
-		    System.out.println("Input the minimum double value for Felsenstein base substitution rate: ");
-		    double baseSubMinIn = Double.parseDouble(in.readLine());
+	    // 	    System.out.println("Input the minimum double value for Felsenstein base substitution rate: ");
+	    // 	    double baseSubMinIn = Double.parseDouble(in.readLine());
 
-		    System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
-		    double baseSubMaxIn = Double.parseDouble(in.readLine());
+	    // 	    System.out.println("Input the maximum double value for Felsenstein base substitution rate: ");
+	    // 	    double baseSubMaxIn = Double.parseDouble(in.readLine());
 
-		    // gRecombinationIn,
-		    // recombinationMinIn, recombinationMaxIn, 
-		    GridSearchAlgorithm gsa =
-                        new GridSearchAlgorithm(gBranchIn, 
-						gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
-						hybridizationMinIn,
-						hybridizationMaxIn, baseSubMinIn, baseSubMaxIn, this);
+	    // 	    // gRecombinationIn,
+	    // 	    // recombinationMinIn, recombinationMaxIn, 
+	    // 	    GridSearchAlgorithm gsa =
+            //             new GridSearchAlgorithm(gBranchIn, 
+	    // 					gHybridizationIn, gBaseSubIn, branchMinIn, branchMaxIn,
+	    // 					hybridizationMinIn,
+	    // 					hybridizationMaxIn, baseSubMinIn, baseSubMaxIn, this);
 
-		    gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
-				      hiddenStates, parentalTreeClasses);
+	    // 	    gsa.runGridSearch(seqObs, myhmm, transitionProbabilityParameters,
+	    // 			      hiddenStates, parentalTreeClasses);
 
-		}
-		catch (Exception e) {
-		    System.err.println("Input error : " + e);
-		    break;
-		}
+	    // 	}
+	    // 	catch (Exception e) {
+	    // 	    System.err.println("Input error : " + e);
+	    // 	    break;
+	    // 	}
 
-	        break;
+	    //     break;
 	    case 3:
 		System.out.println("\n");
 		runMultivariateOptimizer(in);
@@ -466,10 +479,14 @@ public class runHmm {
 	    boolean enableSwitchingFrequencyOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
 	    boolean enableSubstitutionModelOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
 
+	    // dummy for now
+	    // remove this later after re-factor MultivariateOptimizer
+	    TransitionProbabilityParameters dummyTransitionProbabilityParameters = new TransitionProbabilityParameters(MultivariateOptimizer.DEFAULT_INITIAL_PROBABILITY);
+
 	    MultivariateOptimizer multivariateOptimizer = new MultivariateOptimizer(myhmm,
 										    this,
 										    hiddenStates,
-										    transitionProbabilityParameters,
+										    dummyTransitionProbabilityParameters,
 										    gtrSubstitutionModel,
 										    parentalTreeNameMap,
 										    geneGenealogyNameMap,
@@ -588,10 +605,12 @@ public class runHmm {
 		bw.newLine();
 	    }
 	    bw.newLine();
-	    for (TransitionProbabilityParameters.ParameterChoice parameterChoice : TransitionProbabilityParameters.ParameterChoice.values()) {
-		bw.write (parameterChoice.toString() + ": "); bw.newLine();
-		bw.write (Double.toString(transitionProbabilityParameters.get(parameterChoice))); bw.newLine();
-		bw.newLine();
+	    for (String name : nameToParentalTreeSwitchingFrequencyRatioTermMap.keys()) {
+		bw.write("Parental-tree-switching frequency ratio term parameter with name " + name + ": " + nameToParentalTreeSwitchingFrequencyRatioTermMap.get(name).getValue());
+	    }
+	    bw.newLine();
+	    for (String name : nameToGeneGenealogySwitchingFrequencyRatioTermMap.keys()) {
+		bw.write("Gene-genealogy-switching frequency ratio term parameter with name " + name + ": " + nameToGeneGenealogySwitchingFrequencyRatioTermMap.get(name).getValue());
 	    }
 	    bw.newLine();
 	    bw.write("GTR base frequencies: "); bw.newLine();
@@ -831,7 +850,7 @@ public class runHmm {
 	    System.out.println("Operate mode:");
 	    System.out.println("0) Run Viterbi");
 	    System.out.println("1) Learn Model using Baum Welch.");
-	    System.out.println("2) Learn Model using Grid Search");
+	    //System.out.println("2) Learn Model using Grid Search");
 	    System.out.println("3) Learn Model using a multivariate optimization heuristic that incorporates Brent's method");
 	    System.out.println("4) Exit");
 	    System.out.println("Choose an option: ");
@@ -944,6 +963,8 @@ public class runHmm {
      * See writeup for details.
      * 
      * Also call this after changing parental tree branch lengths.
+     * 
+     * No switching frequency ratio term contribution.
      */
     protected double[] calculatePi () {
 	double[] pi = new double[hiddenStates.size()];
@@ -992,6 +1013,63 @@ public class runHmm {
     }
 
     /**
+     * Solve for switching frequencies based on switching frequency ratio terms.
+     * Set parentalTreeFlag to true to calculate for parental-tree-switching,
+     * or false to calculate for gene-genealogy-switching.
+     */
+    protected double[][] calculateSwitchingFrequencies (boolean parentalTreeFlag) {
+	double[][] result = new double[hiddenStates.size()][hiddenStates.size()];
+	for (int i = 0; i < result.length; i++) {
+	    String si = parentalTreeFlag ? 
+		parentalTreeNameMap.rget(hiddenStates.get(i).getParentalTree()) : 
+		geneGenealogyNameMap.rget(hiddenStates.get(i).getRootedGeneGenealogy())
+		;
+	    double totalWeight = 0.0;
+	    for (int j = 0; j < result[i].length; j++) {
+		if (i == j) {
+		    // canonically, self-switching frequency has ratio term 1.0
+		    result[i][j] = 1.0;
+		    totalWeight += 1.0;
+		    continue;
+		}
+
+		String sj = parentalTreeFlag ? 
+		    parentalTreeNameMap.rget(hiddenStates.get(j).getParentalTree()) : 
+		    geneGenealogyNameMap.rget(hiddenStates.get(j).getRootedGeneGenealogy())
+		    ;
+
+		// bleh - final
+		Tuple<String,String> pair = new Tuple<String,String>(si, sj);
+		Set<SwitchingFrequencyRatioTerm> terms = parentalTreeFlag ?
+		    parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap.get(pair) :
+		    geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap.get(pair)
+		    ;
+		// paranoid
+		if (terms.size() != 1) {
+		    throw (new RuntimeException("ERROR: incorrect number of switching frequency ratio terms for pair " + pair + " in runHmm.calculateSwitchingFrequencies()."));
+		}
+		
+		SwitchingFrequencyRatioTerm term = terms.iterator().next();
+		// normalize by total weight
+		result[i][j] = term.getValue();
+		totalWeight += term.getValue();
+	    }
+
+	    // paranoid
+	    if (totalWeight <= 0.0) {
+		throw (new RuntimeException("ERROR: totalWeight is non-positive in runHmm.calculateSwitchingFrequencies(). " + si + " " + totalWeight));
+	    }
+
+	    // now normalize
+	    for (int j = 0; j < result[i].length; j++) {
+		result[i][j] /= totalWeight;
+	    }
+	}
+
+	return (result);
+    }
+
+    /**
      * Calculate initial transition probability matrix a_{ij}.
      * See revised writeup for details.
      *
@@ -1004,51 +1082,44 @@ public class runHmm {
 	// from ratio parameters up front
 	// use them directly below
 	// straightforward calculation anyways
+	//
+	// Don't get too fancy. Just base switching on names of parental trees and gene genealogies.
+	//
+	// parental-tree-switching frequencies, computed using parental-tree-switching frequency ratio terms
+	double[][] gamma = calculateSwitchingFrequencies(true);
+	// gene-genealogy-switching frequencies, computed using gene-genealogy-switching frequency ratio terms
+	double[][] lambda = calculateSwitchingFrequencies(false);
+
+	// strict!
+	if (!verifyAij(gamma)) {
+	    System.err.println ("ERROR: gamma matrix is not a valid switching frequency matrix in runHmm.calculateAij.");
+	    return (null);
+	}
+
+	// strict!
+	if (!verifyAij(lambda)) {
+	    System.err.println ("ERROR: lambda matrix is not a valid switching frequency matrix in runHmm.calculateAij.");
+	    return (null);
+	}
 
 	double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
 	for (int i = 0; i < a.length; i++) {
 	    HiddenState si = hiddenStates.get(i);
-	    //double totalNonSelfTransitionProbabilities = 0.0;
-	    //double check = 0.0;
 	    for (int j = 0 ; j < a[i].length; j++) {
-		// set self-transition probability at the end
-		// if (i == j) {
-		//     continue;
-		// }
-		
 		HiddenState sj = hiddenStates.get(j);
-		a[i][j] = sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
-		//check += a[i][j];
-		//System.out.println ("inner loop in calculateAij(): " + a[i][j]);
-		if (checkSameParentalTreeClass(si, sj)) {
-		    a[i][j] *= (1.0 - transitionProbabilityParameters.getHybridizationFrequency());
-		}
-		else {
-		    // need to divide by the number of parental tree classes other than the current parental tree class
-		    int numParentalTreeClasses = parentalTreeClasses.keySet().size();
-		    // shouldn't come through in this case, 
-		    // but paranoid
-		    if (numParentalTreeClasses <= 1) {
-			throw (new RuntimeException("ERROR: different parental classes in calculateAij() but number of parental classes is less than two."));
-		    }
-		    
-		    a[i][j] *= transitionProbabilityParameters.getHybridizationFrequency() / (numParentalTreeClasses - 1);
-		}
-
-
-		//totalNonSelfTransitionProbabilities += a[i][j];
+		a[i][j] = 
+		    gamma[i][j] *
+		    lambda[i][j] *
+		    sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree()
+		    ;
 	    }
-	    
-	    //System.out.println ("check in calculateAij(): " + check);
-	    
-	    // now set self-transition probability
-	    //a[i][i] = 1.0 - totalNonSelfTransitionProbabilities;
 	}
 
 	// bleh - post new model extensions,
 	// need to re-normalize after (parental-tree-switching parameter) x (gene-genealogy-switching parameter) x
 	// (ILS calculation from Degnan and Salter 2005) contributions all factored in
-	
+	rowNormalize(a);
+
 	// strict!
 	if (!verifyAij(a)) {
 	    System.err.println ("ERROR: verifyAij() failed. Returning null to signal error.");
@@ -1056,67 +1127,26 @@ public class runHmm {
 	}
 
 	return (a);
+    }    
+
+    protected void rowNormalize (double[][] a) {
+	double norm;
+	for (int i = 0; i < a.length; i++) {
+	    norm = 0.0;
+	    for (int j = 0; j < a[i].length; j++) {
+		norm += a[i][j];
+	    }
+
+	    // paranoid
+	    if (norm <= 0.0) {
+		throw (new RuntimeException ("ERROR: norm is non-positive in rowNormalize()."));
+	    }
+
+	    for (int j = 0; j < a[i].length; j++) {
+		a[i][j] /= norm;
+	    }
+	}
     }
-
-    // kliu - no longer needed
-    /**
-     * Given the current model parameter values, 
-     * calculate the maximum possible value for a frequency parameter.
-     * Anything greater will cause a self-transition probability to go negative.
-     *
-     * Hmm... need to expose this externally.
-     */
-    // public double calculateMaximumFrequencyParameter (TransitionProbabilityParameters.ParameterChoice parameterChoice) {
-    // 	double minmax = -1.0;
-    // 	boolean initializedFlag = false; // bleh
-
-    // 	// strict!
-    // 	if (hiddenStates.size() <= 1) {
-    // 	    throw (new RuntimeException("ERROR: not enough hidden states in runHmm.calculateMaximumFrequencyParameter(...)."));
-    // 	}
-
-    // 	// take min max value over all states
-    // 	for (int i = 0; i < hiddenStates.size(); i++) {
-    // 	    HiddenState si = hiddenStates.get(i);
-    // 	    double sumCoalescentContributionRecombination = 0.0;
-    // 	    double sumCoalescentContributionHybridization = 0.0;
-
-    // 	    // compute max for a state si
-    // 	    for (int j = 0 ; j < hiddenStates.size(); j++) {
-    // 		// set self-transition probability at the end
-    // 		if (i == j) {
-    // 		    continue;
-    // 		}
-		
-    // 		HiddenState sj = hiddenStates.get(j);
-    // 		if (checkSameParentalClass(si, sj)) {
-    // 		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
-    // 		}
-    // 		else {
-    // 		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
-    // 		}
-    // 	    }
-
-    // 	    double max;
-    // 	    switch (parameterChoice) {
-    // 	    case RECOMBINATION_FREQUENCY:
-    // 		max = (1 - sumCoalescentContributionHybridization * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.HYBRIDIZATION_FREQUENCY)) / sumCoalescentContributionRecombination;
-    // 		break;
-    // 	    case HYBRIDIZATION_FREQUENCY:
-    // 	    default:
-    // 		max = (1 - sumCoalescentContributionRecombination * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.RECOMBINATION_FREQUENCY)) / sumCoalescentContributionHybridization;
-    // 		break;
-    // 	    }
-
-    // 	    // update appropriately
-    // 	    if (!initializedFlag || (max < minmax)) {
-    // 		minmax = max;
-    // 		initializedFlag = true;
-    // 	    }
-    // 	}
-
-    // 	return (minmax);
-    // }
 
     /**
      * Verify that each entry is a probability. 
@@ -1648,18 +1678,93 @@ public class runHmm {
      * To support ratio-solving quickly, need to look-up from (source tree name, sink tree name) pair to
      * corresponding ratio parameter quickly. Add a map for this.
      */
-    protected void readTransitionProbabilityParameters (BufferedReader br) throws Exception {
+    protected void readSwitchingFrequencyRatioTermFiles (BufferedReader br) throws Exception {
 	// <recombination frequency parameter $u$>
-	System.out.println("Input transition probability parameters in format <hybridization frequency parameter $v$>: ");
-	String line = br.readLine();
-	StringTokenizer st = new StringTokenizer(line);
-	if (st.countTokens() != 1) {
-	    throw (new IOException("ERROR: invalid transition probability parameters."));
+	System.out.println("Parental tree switching frequency ratio term input file: ");
+	String parentalTreeSwitchingFrequencyRatioTermFilename = br.readLine().trim();
+	nameToParentalTreeSwitchingFrequencyRatioTermMap = new BijectiveHashtable<String,SwitchingFrequencyRatioTerm>();
+	parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm>();
+	parseSwitchingFrequencyRatioTermFile(parentalTreeSwitchingFrequencyRatioTermFilename,
+					     nameToParentalTreeSwitchingFrequencyRatioTermMap,
+					     parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap);
+	
+	System.out.println("Gene genealogy switching frequency ratio term input file: ");
+	String geneGenealogySwitchingFrequencyRatioTermFilename = br.readLine().trim();
+	nameToGeneGenealogySwitchingFrequencyRatioTermMap = new BijectiveHashtable<String,SwitchingFrequencyRatioTerm>();
+	geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm>();
+	parseSwitchingFrequencyRatioTermFile(geneGenealogySwitchingFrequencyRatioTermFilename,
+					     nameToGeneGenealogySwitchingFrequencyRatioTermMap,
+					     geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap);
+    }
+
+    protected void parseSwitchingFrequencyRatioTermFile (String filename, 
+							 BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToTermMap,
+							 BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> transitionToTermMap) throws Exception {
+	BufferedReader br = new BufferedReader(new FileReader(filename));
+	String line = "";
+	while ((line = br.readLine()) != null) {
+	    StringTokenizer st = new StringTokenizer(line);
+	    if (st.countTokens() < 3) {
+		throw (new IOException("ERROR: incorrect number of fields in input line from file " + filename + ": " + line));
+	    }
+	    String name = st.nextToken();
+	    double initialWeight = Double.parseDouble(st.nextToken());
+	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight);
+	    if (nameToTermMap.containsKey(name)) {
+		throw (new IOException("ERROR: duplicate switching frequency ratio term in file " + filename + ": " + name));
+	    }
+
+	    nameToTermMap.put(name, sfrt);
+
+	    while (st.hasMoreTokens()) {
+		String pairString = st.nextToken();
+		StringTokenizer pairTok = new StringTokenizer(pairString);
+		if (pairTok.countTokens() != 2) {
+		    throw (new IOException("ERROR: incorrect number of tree names in transition from file " + filename + ": " + pairString));
+		}
+		Tuple<String,String> pair = new Tuple<String,String>(pairTok.nextToken(), pairTok.nextToken());
+		if (transitionToTermMap.containsKey(pair) && (transitionToTermMap.get(pair).equals(sfrt))) {
+		    throw (new IOException("ERROR: duplicate transition for a switching frequency ratio term in file " + filename + ": " + sfrt.getName() + " " + pair.toString()));
+		}
+		transitionToTermMap.put(pair, sfrt);
+	    }
 	}
-	// double recombinationFrequency = Double.parseDouble(st.nextToken());
-	double hybridizationFrequency = Double.parseDouble(st.nextToken());
-	// recombinationFrequency, 
-	transitionProbabilityParameters = new TransitionProbabilityParameters(hybridizationFrequency);
+    }
+
+    /**
+     * Strict!
+     * Only call after both switching frequency ratio terms and trees have been built.
+     */
+    protected boolean verifySwitchingFrequencyRatioTerms () {
+	// All possible ordered pairs of parental trees must be specified, 
+	// *except* for ordered pairs where both members are the same parental tree 
+	// (corresponding to transitions
+	// where the parental tree remains unchanged).
+	for (String si : parentalTreeNameMap.keys()) {
+	    for (String sj : parentalTreeNameMap.keys()) {
+		if (!si.equals(sj)) {
+		    Tuple<String,String> pair = new Tuple<String,String>(si, sj);
+		    if (!parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap.containsKey(pair)) {
+			System.err.println ("ERROR: parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap is missing an entry for parental tree pair " + pair);
+			return (false);
+		    }
+		}
+	    }
+	}
+
+	for (String si : geneGenealogyNameMap.keys()) {
+	    for (String sj : geneGenealogyNameMap.keys()) {
+		if (!si.equals(sj)) {
+		    Tuple<String,String> pair = new Tuple<String,String>(si, sj);
+		    if (!geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap.containsKey(pair)) {
+			System.err.println ("ERROR: geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap is missing an entry for parental tree pair " + pair);
+			return (false);
+		    }
+		}
+	    }
+	}
+
+	return (true);
     }
 
     protected void readSubstitutionModelParameters (BufferedReader br) throws Exception {
@@ -1853,3 +1958,81 @@ public class runHmm {
 // 	}
 // 	return aij;
 // }
+
+		// //check += a[i][j];
+		// //System.out.println ("inner loop in calculateAij(): " + a[i][j]);
+		// if (checkSameParentalTreeClass(si, sj)) {
+		//     a[i][j] *= (1.0 - transitionProbabilityParameters.getHybridizationFrequency());
+		// }
+		// else {
+		//     // need to divide by the number of parental tree classes other than the current parental tree class
+		//     int numParentalTreeClasses = parentalTreeClasses.keySet().size();
+		//     // shouldn't come through in this case, 
+		//     // but paranoid
+		//     if (numParentalTreeClasses <= 1) {
+		// 	throw (new RuntimeException("ERROR: different parental classes in calculateAij() but number of parental classes is less than two."));
+		//     }
+		    
+		//     a[i][j] *= transitionProbabilityParameters.getHybridizationFrequency() / (numParentalTreeClasses - 1);
+		// }
+
+    // kliu - no longer needed
+    /**
+     * Given the current model parameter values, 
+     * calculate the maximum possible value for a frequency parameter.
+     * Anything greater will cause a self-transition probability to go negative.
+     *
+     * Hmm... need to expose this externally.
+     */
+    // public double calculateMaximumFrequencyParameter (TransitionProbabilityParameters.ParameterChoice parameterChoice) {
+    // 	double minmax = -1.0;
+    // 	boolean initializedFlag = false; // bleh
+
+    // 	// strict!
+    // 	if (hiddenStates.size() <= 1) {
+    // 	    throw (new RuntimeException("ERROR: not enough hidden states in runHmm.calculateMaximumFrequencyParameter(...)."));
+    // 	}
+
+    // 	// take min max value over all states
+    // 	for (int i = 0; i < hiddenStates.size(); i++) {
+    // 	    HiddenState si = hiddenStates.get(i);
+    // 	    double sumCoalescentContributionRecombination = 0.0;
+    // 	    double sumCoalescentContributionHybridization = 0.0;
+
+    // 	    // compute max for a state si
+    // 	    for (int j = 0 ; j < hiddenStates.size(); j++) {
+    // 		// set self-transition probability at the end
+    // 		if (i == j) {
+    // 		    continue;
+    // 		}
+		
+    // 		HiddenState sj = hiddenStates.get(j);
+    // 		if (checkSameParentalClass(si, sj)) {
+    // 		    sumCoalescentContributionRecombination += sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
+    // 		}
+    // 		else {
+    // 		    sumCoalescentContributionHybridization += sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree();
+    // 		}
+    // 	    }
+
+    // 	    double max;
+    // 	    switch (parameterChoice) {
+    // 	    case RECOMBINATION_FREQUENCY:
+    // 		max = (1 - sumCoalescentContributionHybridization * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.HYBRIDIZATION_FREQUENCY)) / sumCoalescentContributionRecombination;
+    // 		break;
+    // 	    case HYBRIDIZATION_FREQUENCY:
+    // 	    default:
+    // 		max = (1 - sumCoalescentContributionRecombination * transitionProbabilityParameters.get(TransitionProbabilityParameters.ParameterChoice.RECOMBINATION_FREQUENCY)) / sumCoalescentContributionHybridization;
+    // 		break;
+    // 	    }
+
+    // 	    // update appropriately
+    // 	    if (!initializedFlag || (max < minmax)) {
+    // 		minmax = max;
+    // 		initializedFlag = true;
+    // 	    }
+    // 	}
+
+    // 	return (minmax);
+    // }
+

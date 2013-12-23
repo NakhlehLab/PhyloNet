@@ -2,6 +2,7 @@ package optimize;
 
 /**
  * Directly handle model manipulation in here.
+ * Lightweight. Fiddles with SwitchingFrequencyRatio as a simple positive rate (member of a ratio).
  */
 
 import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;

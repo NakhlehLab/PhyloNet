@@ -1090,11 +1090,8 @@ public class runHmm {
      * any other parameters related to the transition probabilities.
      */
     protected double[][] calculateAij () {
-	// may want to just pre-calculate
+	// may want to cache 
 	// parental-tree-switching and gene-genealogy-switching probabilities
-	// from ratio parameters up front
-	// use them directly below
-	// straightforward calculation anyways
 	//
 	// Don't get too fancy. Just base switching on names of parental trees and gene genealogies.
 	//

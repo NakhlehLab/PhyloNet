@@ -4,7 +4,7 @@
  * hidden state transition probabilities.
  *
  * No storage of which trees (parental tree or gene genealogy)
- * this corresponds to. Maintained externally using a BidirectionalMap.
+ * this corresponds to. Maintained externally using a BidirectionalMultimap.
  *
  * See writeup for details.
  */
@@ -12,22 +12,52 @@
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
 public class SwitchingFrequencyRatioTerm {
-    protected double term;
+    protected String name;
+    protected double value;
     
-    public SwitchingFrequencyRatioTerm (double inTerm) {
-	set(inTerm);
+    public SwitchingFrequencyRatioTerm (String inName, double inValue) {
+	setName(inName);
+	setValue(inValue);
     }
     
-    public double get () {
-	return (term);
+    public String getName () {
+	return (name);
+    }
+    
+    public double getValue () {
+	return (value);
     }
 
-    public void set (double inTerm) {
-	if (inTerm > 0.0) {
-	    term = inTerm;
+    public void setName (String inName) {
+	name = inName;
+    }
+
+    public void setValue (double inValue) {
+	if (inValue > 0.0) {
+	    value = inValue;
 	}
 	else {
-	    throw (new RuntimeException("ERROR: SwitchingFrequencyRatioTerm.term(double) called with non-positive number."));
+	    throw (new RuntimeException("ERROR: SwitchingFrequencyRatioTerm.setValue(double) called with non-positive number."));
 	}
+    }
+
+    /**
+     * For map support.
+     */
+    public boolean equals (Object obj) {
+	if (!(obj instanceof SwitchingFrequencyRatioTerm)) {
+	    return (false);
+	}
+
+	SwitchingFrequencyRatioTerm so = (SwitchingFrequencyRatioTerm) obj;
+	return (this.getName().equals(so.getName()));
+    }
+
+    public int hashCode() {
+	return (this.getName().hashCode());
+    }
+
+    public String toString () {
+	return (getName() + ": " + getValue());
     }
 }

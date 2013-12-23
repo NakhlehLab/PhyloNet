@@ -25,6 +25,7 @@ import java.util.Collections;
 import util.Constants;
 import util.Matrix;
 import util.TreeUtils;
+import util.MapOfMap;
 import substitutionModel.SubstitutionModel;
 import substitutionModel.GTRSubstitutionModel;
 import substitutionModel.NucleotideAlphabet;
@@ -59,7 +60,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple3;
 public class runHmm {
     protected static final String SPECIES_TO_ALLELES_MAPPING_ENTRY_DELIMITER = ",";
     protected static final String SPECIES_TO_ALLELES_MAPPING_KEY_VALUE_DELIMITER = ":";
-
+    protected static final String SWITCHING_FREQUENCY_RATIO_TERM_TRANSITION_NAMES_DELIMITER = ",";
 
     protected static final double tolerated_error = 1e-5;		/* Sum of probabilities margin of error allowed */
 	
@@ -1017,52 +1018,64 @@ public class runHmm {
      * Set parentalTreeFlag to true to calculate for parental-tree-switching,
      * or false to calculate for gene-genealogy-switching.
      */
-    protected double[][] calculateSwitchingFrequencies (boolean parentalTreeFlag) {
-	double[][] result = new double[hiddenStates.size()][hiddenStates.size()];
-	for (int i = 0; i < result.length; i++) {
-	    String si = parentalTreeFlag ? 
-		parentalTreeNameMap.rget(hiddenStates.get(i).getParentalTree()) : 
-		geneGenealogyNameMap.rget(hiddenStates.get(i).getRootedGeneGenealogy())
-		;
+    protected MapOfMap<String,String,Double> calculateSwitchingFrequencies (Set<String> namesSet, BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> namePairToSwitchingFrequencyRatioTermMap, boolean verifyFlag) {
+	MapOfMap<String,String,Double> result = new MapOfMap<String,String,Double>();
+	String[] names = new String[namesSet.size()];
+	names = namesSet.toArray(names);
+	for (int i = 0; i < names.length; i++) {
 	    double totalWeight = 0.0;
-	    for (int j = 0; j < result[i].length; j++) {
+	    for (int j = 0; j < names.length; j++) {
 		if (i == j) {
 		    // canonically, self-switching frequency has ratio term 1.0
-		    result[i][j] = 1.0;
+		    result.put(names[i], names[j], new Double(1.0));
 		    totalWeight += 1.0;
 		    continue;
 		}
 
-		String sj = parentalTreeFlag ? 
-		    parentalTreeNameMap.rget(hiddenStates.get(j).getParentalTree()) : 
-		    geneGenealogyNameMap.rget(hiddenStates.get(j).getRootedGeneGenealogy())
-		    ;
-
 		// bleh - final
-		Tuple<String,String> pair = new Tuple<String,String>(si, sj);
-		Set<SwitchingFrequencyRatioTerm> terms = parentalTreeFlag ?
-		    parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap.get(pair) :
-		    geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap.get(pair)
-		    ;
+		Tuple<String,String> pair = new Tuple<String,String>(names[i], names[j]);
+		Set<SwitchingFrequencyRatioTerm> terms = namePairToSwitchingFrequencyRatioTermMap.get(pair);
 		// paranoid
-		if (terms.size() != 1) {
-		    throw (new RuntimeException("ERROR: incorrect number of switching frequency ratio terms for pair " + pair + " in runHmm.calculateSwitchingFrequencies()."));
+		if ((terms == null) || (terms.size() <= 0) || (terms.size() > 1)) {
+		    System.err.println("ERROR: unable to retrieve switching-frequency-ratio-term for named pair " + pair + ".");
+		    return (null);
 		}
 		
 		SwitchingFrequencyRatioTerm term = terms.iterator().next();
+
 		// normalize by total weight
-		result[i][j] = term.getValue();
+		result.put(names[i], names[j], new Double(term.getValue()));
 		totalWeight += term.getValue();
 	    }
 
 	    // paranoid
 	    if (totalWeight <= 0.0) {
-		throw (new RuntimeException("ERROR: totalWeight is non-positive in runHmm.calculateSwitchingFrequencies(). " + si + " " + totalWeight));
+		throw (new RuntimeException("ERROR: totalWeight is non-positive in runHmm.calculateSwitchingFrequencies(). " + names[i] + " " + totalWeight));
 	    }
 
 	    // now normalize
-	    for (int j = 0; j < result[i].length; j++) {
-		result[i][j] /= totalWeight;
+	    for (int j = 0; j < names.length; j++) {
+		double originalWeight = result.get(names[i], names[j]).doubleValue();
+		result.put(names[i], names[j], new Double(originalWeight / totalWeight));
+	    }
+	}
+
+	// paranoid
+	if (verifyFlag) {
+	    for (int i = 0; i < names.length; i++) {
+		double totalWeight = 0.0;
+		for (int j = 0; j < names.length; j++) {
+		    double fij = result.get(names[i], names[j]);
+		    if ((fij < 0.0) || (fij > 1.0)) {
+			System.err.println ("ERROR: switching-frequency for named pair " + names[i] + " " + names[j] + " isn't a probability. Returning null to signal error.");
+			return (null);
+		    }
+		    totalWeight += fij;
+		}
+		if (Math.abs(totalWeight - 1.0) > Constants.ZERO_DELTA) {
+		    System.err.println ("ERROR: row-summed-switching-frequencies for row named " + names[i] + " doesn't sum to one. Returning null to signal error.");
+		    return (null);
+		}
 	    }
 	}
 
@@ -1086,30 +1099,22 @@ public class runHmm {
 	// Don't get too fancy. Just base switching on names of parental trees and gene genealogies.
 	//
 	// parental-tree-switching frequencies, computed using parental-tree-switching frequency ratio terms
-	double[][] gamma = calculateSwitchingFrequencies(true);
+	MapOfMap<String,String,Double> parentalTreeSwitchingFrequencyMap = calculateSwitchingFrequencies(parentalTreeNameMap.keys(), parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap, true);
 	// gene-genealogy-switching frequencies, computed using gene-genealogy-switching frequency ratio terms
-	double[][] lambda = calculateSwitchingFrequencies(false);
-
-	// strict!
-	if (!verifyAij(gamma)) {
-	    System.err.println ("ERROR: gamma matrix is not a valid switching frequency matrix in runHmm.calculateAij.");
-	    return (null);
-	}
-
-	// strict!
-	if (!verifyAij(lambda)) {
-	    System.err.println ("ERROR: lambda matrix is not a valid switching frequency matrix in runHmm.calculateAij.");
-	    return (null);
-	}
+	MapOfMap<String,String,Double> geneGenealogySwitchingFrequencyMap = calculateSwitchingFrequencies(geneGenealogyNameMap.keys(), geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap, true);
 
 	double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
 	for (int i = 0; i < a.length; i++) {
 	    HiddenState si = hiddenStates.get(i);
+	    String pi = parentalTreeNameMap.rget(si.getParentalTree());
+	    String gi = geneGenealogyNameMap.rget(si.getRootedGeneGenealogy());
 	    for (int j = 0 ; j < a[i].length; j++) {
 		HiddenState sj = hiddenStates.get(j);
+		String pj = parentalTreeNameMap.rget(sj.getParentalTree());
+		String gj = geneGenealogyNameMap.rget(sj.getRootedGeneGenealogy());
 		a[i][j] = 
-		    gamma[i][j] *
-		    lambda[i][j] *
+		    parentalTreeSwitchingFrequencyMap.get(pi, pj).doubleValue() *
+		    geneGenealogySwitchingFrequencyMap.get(gi, gj).doubleValue() *
 		    sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree()
 		    ;
 	    }
@@ -1718,7 +1723,7 @@ public class runHmm {
 
 	    while (st.hasMoreTokens()) {
 		String pairString = st.nextToken();
-		StringTokenizer pairTok = new StringTokenizer(pairString);
+		StringTokenizer pairTok = new StringTokenizer(pairString, SWITCHING_FREQUENCY_RATIO_TERM_TRANSITION_NAMES_DELIMITER);
 		if (pairTok.countTokens() != 2) {
 		    throw (new IOException("ERROR: incorrect number of tree names in transition from file " + filename + ": " + pairString));
 		}

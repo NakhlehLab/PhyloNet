@@ -53,10 +53,15 @@ public class MapOfMap<K1,K2,V> {
 
     public V get (K1 k1, K2 k2) {
     	if (!contains(k1, k2)) {
-    	    System.err.println("ERROR: keys " + k1 + " and " + k2 + " are unknown in MapOfMap object. Returning null to signal error");
+    	    System.err.println ("ERROR: keys " + k1 + " and " + k2 + " are unknown in MapOfMap object. Returning null to signal error.");
 	    return (null);
     	}
 	
     	return (mmap.get(k1).get(k2));
+    }
+
+    public Map<K2,V> get (K1 k1) {
+	// returns null if k1 unknown in MapOfMap object
+	return (mmap.get(k1));
     }
 }

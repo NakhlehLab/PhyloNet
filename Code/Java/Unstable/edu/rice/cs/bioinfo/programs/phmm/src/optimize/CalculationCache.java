@@ -47,11 +47,20 @@ public class CalculationCache {
     public MapOfMap<Network<CoalescePattern[]>,Tree,Double> cacheProbabilityOfGeneGenealogyInParentalTree;
     public Hashtable<TNode,double[][]> cacheSubstitutionProbabilityMatrix;
     public MapOfMap<Tree,ObservationMap,Double> cacheSubstitutionProbability;
+    // check non-null and non-empty to check cache ready state
+    public MapOfMap<String,String,Double> cacheParentalTreeSwitchingFrequencyMap;
+    // check non-null and non-empty to check cache ready state
+    public MapOfMap<String,String,Double> cacheGeneGenealogySwitchingFrequencyMap;
 
     public CalculationCache () {
     	cacheProbabilityOfGeneGenealogyInParentalTree = new MapOfMap<Network<CoalescePattern[]>,Tree,Double>();
     	cacheSubstitutionProbabilityMatrix = new Hashtable<TNode,double[][]>();
     	cacheSubstitutionProbability = new MapOfMap<Tree,ObservationMap,Double>();
+	// special case, since we use null-ness (as well as 
+	// empty-ness) to signal cached quantities not ready for
+	// switching frequencies
+	cacheParentalTreeSwitchingFrequencyMap = null;
+	cacheGeneGenealogySwitchingFrequencyMap = null;
     }
 
 }

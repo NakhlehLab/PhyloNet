@@ -19,6 +19,10 @@ public class MapOfMap<K1,K2,V> {
 	mmap = new Hashtable<K1,Map<K2,V>>();
     }
 
+    public boolean isEmpty () {
+	return (mmap.isEmpty());
+    }
+
     public void clear () {
 	for (K1 k1 : mmap.keySet()) {
 	    if (mmap.get(k1) != null) {

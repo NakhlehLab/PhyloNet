@@ -42,7 +42,6 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
-import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
@@ -480,18 +479,15 @@ public class runHmm {
 	    boolean enableSwitchingFrequencyOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
 	    boolean enableSubstitutionModelOptimizationFlag = Boolean.parseBoolean(flagTokens.nextToken());
 
-	    // dummy for now
-	    // remove this later after re-factor MultivariateOptimizer
-	    TransitionProbabilityParameters dummyTransitionProbabilityParameters = new TransitionProbabilityParameters(MultivariateOptimizer.DEFAULT_INITIAL_PROBABILITY);
-
 	    MultivariateOptimizer multivariateOptimizer = new MultivariateOptimizer(myhmm,
 										    this,
 										    hiddenStates,
-										    dummyTransitionProbabilityParameters,
 										    gtrSubstitutionModel,
 										    parentalTreeNameMap,
 										    geneGenealogyNameMap,
 										    rootedToUnrootedGeneGenealogyMap,
+										    nameToParentalTreeSwitchingFrequencyRatioTermMap,
+										    nameToGeneGenealogySwitchingFrequencyRatioTermMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
 										    inputParentalBranchLengthParameterInequalitiesFilename,
@@ -1096,9 +1092,21 @@ public class runHmm {
 	// Don't get too fancy. Just base switching on names of parental trees and gene genealogies.
 	//
 	// parental-tree-switching frequencies, computed using parental-tree-switching frequency ratio terms
-	MapOfMap<String,String,Double> parentalTreeSwitchingFrequencyMap = calculateSwitchingFrequencies(parentalTreeNameMap.keys(), parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap, true);
+	//
+	// if no cache entry, re-calculate
+	if ((calculationCache.cacheParentalTreeSwitchingFrequencyMap == null) || calculationCache.cacheParentalTreeSwitchingFrequencyMap.isEmpty()) {
+	    MapOfMap<String,String,Double> parentalTreeSwitchingFrequencyMap = calculateSwitchingFrequencies(parentalTreeNameMap.keys(), parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap, true);
+	    calculationCache.cacheParentalTreeSwitchingFrequencyMap = parentalTreeSwitchingFrequencyMap;
+	}
+	MapOfMap<String,String,Double> parentalTreeSwitchingFrequencyMap = calculationCache.cacheParentalTreeSwitchingFrequencyMap;
 	// gene-genealogy-switching frequencies, computed using gene-genealogy-switching frequency ratio terms
-	MapOfMap<String,String,Double> geneGenealogySwitchingFrequencyMap = calculateSwitchingFrequencies(geneGenealogyNameMap.keys(), geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap, true);
+	//
+	// if no cache entry, re-calculate
+	if ((calculationCache.cacheGeneGenealogySwitchingFrequencyMap == null) || calculationCache.cacheGeneGenealogySwitchingFrequencyMap.isEmpty()) {
+	    MapOfMap<String,String,Double> geneGenealogySwitchingFrequencyMap = calculateSwitchingFrequencies(geneGenealogyNameMap.keys(), geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap, true);
+	    calculationCache.cacheGeneGenealogySwitchingFrequencyMap = geneGenealogySwitchingFrequencyMap;
+	}
+	MapOfMap<String,String,Double> geneGenealogySwitchingFrequencyMap = calculationCache.cacheGeneGenealogySwitchingFrequencyMap;
 
 	double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
 	for (int i = 0; i < a.length; i++) {
@@ -1688,7 +1696,8 @@ public class runHmm {
 	parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm>();
 	parseSwitchingFrequencyRatioTermFile(parentalTreeSwitchingFrequencyRatioTermFilename,
 					     nameToParentalTreeSwitchingFrequencyRatioTermMap,
-					     parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap);
+					     parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap,
+					     true);
 	
 	System.out.println("Gene genealogy switching frequency ratio term input file: ");
 	String geneGenealogySwitchingFrequencyRatioTermFilename = br.readLine().trim();
@@ -1696,12 +1705,14 @@ public class runHmm {
 	geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm>();
 	parseSwitchingFrequencyRatioTermFile(geneGenealogySwitchingFrequencyRatioTermFilename,
 					     nameToGeneGenealogySwitchingFrequencyRatioTermMap,
-					     geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap);
+					     geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap,
+					     false);
     }
 
     protected void parseSwitchingFrequencyRatioTermFile (String filename, 
 							 BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToTermMap,
-							 BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> transitionToTermMap) throws Exception {
+							 BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> transitionToTermMap,
+							 boolean invalidateParentalTreeSwitchingFrequencyMapFlag) throws Exception {
 	BufferedReader br = new BufferedReader(new FileReader(filename));
 	String line = "";
 	while ((line = br.readLine()) != null) {
@@ -1711,7 +1722,7 @@ public class runHmm {
 	    }
 	    String name = st.nextToken();
 	    double initialWeight = Double.parseDouble(st.nextToken());
-	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight);
+	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight, calculationCache, invalidateParentalTreeSwitchingFrequencyMapFlag);
 	    if (nameToTermMap.containsKey(name)) {
 		throw (new IOException("ERROR: duplicate switching frequency ratio term in file " + filename + ": " + name));
 	    }

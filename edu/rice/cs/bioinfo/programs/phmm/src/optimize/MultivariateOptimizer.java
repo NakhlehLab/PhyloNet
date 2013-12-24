@@ -69,6 +69,9 @@ public class MultivariateOptimizer {
     public static final int BRENT_METHOD_SINGLE_ROUND_MAXIMUM_ITERATIONS = 100;
     public static final int MAXIMUM_NUM_ROUNDS = 10000;
     public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-1;
+    // don't go too small with this - takes too long otherwise
+    // log likelihood calculations unlikely to have that much precision anyways
+    public static final double MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL = 1e-5;
     public static final double MINIMUM_FACTOR_WIDTH_FOR_MINIMUM_MAXIMUM_INTERVAL = 4.0;
 
     // search defaults
@@ -641,7 +644,9 @@ public class MultivariateOptimizer {
 
 	double brentOptimizedLogLikelihood = upvp.getValue();
 	// see function comments
-	if (brentOptimizedLogLikelihood > logLikelihood) {
+	//
+	// only accept strict improvements within a certain delta
+	if (brentOptimizedLogLikelihood - logLikelihood > MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL) {
 	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Brent's method resulted in strict improvement in likelihood. Updating."); }
 
 	    // update 
@@ -651,7 +656,7 @@ public class MultivariateOptimizer {
 	}
 	else {
 	    // no update - info instead
-	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + ". Not updating branch length nor best round log likelihood."); }
+	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + " by at least " + MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL + ". Not updating branch length nor best round log likelihood."); }
 	}
 
 	return (logLikelihood);

@@ -11,13 +11,22 @@
 
 package be.ac.ulg.montefiore.run.jahmm.phmm;
 
+import optimize.CalculationCache;
+
 public class SwitchingFrequencyRatioTerm {
     protected String name;
     protected double value;
+    // perform cache invalidation in here
+    protected CalculationCache calculationCache;
+    // set to true to invalidate cacheParentalTreeSwitchingFrequencyMap
+    // otherwise invalidates cacheGeneGenealogySwitchingFrequencyMap
+    protected boolean invalidateParentalTreeSwitchingFrequencyMapFlag;
     
-    public SwitchingFrequencyRatioTerm (String inName, double inValue) {
+    public SwitchingFrequencyRatioTerm (String inName, double inValue, CalculationCache inCalculationCache, boolean inInvalidateParentalTreeSwitchingFrequencyMapFlag) {
 	setName(inName);
 	setValue(inValue);
+	this.calculationCache = inCalculationCache;
+	this.invalidateParentalTreeSwitchingFrequencyMapFlag = inInvalidateParentalTreeSwitchingFrequencyMapFlag;
     }
     
     public String getName () {
@@ -35,6 +44,13 @@ public class SwitchingFrequencyRatioTerm {
     public void setValue (double inValue) {
 	if (inValue > 0.0) {
 	    value = inValue;
+	    // wipe cache
+	    if (invalidateParentalTreeSwitchingFrequencyMapFlag) {
+		calculationCache.cacheParentalTreeSwitchingFrequencyMap = null;
+	    }
+	    else {
+		calculationCache.cacheGeneGenealogySwitchingFrequencyMap = null;
+	    }
 	}
 	else {
 	    throw (new RuntimeException("ERROR: SwitchingFrequencyRatioTerm.setValue(double) called with non-positive number."));

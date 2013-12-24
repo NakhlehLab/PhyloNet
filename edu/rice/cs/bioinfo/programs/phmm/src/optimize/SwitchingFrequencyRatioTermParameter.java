@@ -5,33 +5,25 @@ package optimize;
  * Lightweight. Fiddles with SwitchingFrequencyRatio as a simple positive rate (member of a ratio).
  */
 
-import be.ac.ulg.montefiore.run.jahmm.phmm.TransitionProbabilityParameters;
+import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import runHmm.runHmm;
 
-public class SwitchingFrequencyParameter extends Parameter {
-    public static final double DEFAULT_MINIMUM_PROBABILITY = MultivariateOptimizer.DEFAULT_MINIMUM_PROBABILITY;
-    public static final double DEFAULT_INITIAL_PROBABILITY = MultivariateOptimizer.DEFAULT_INITIAL_PROBABILITY;
-    // need to calculate it on the basis of the current HMM parameter values
-    public static final double DEFAULT_MAXIMUM_PROBABILITY = MultivariateOptimizer.DEFAULT_MAXIMUM_PROBABILITY;
+public class SwitchingFrequencyRatioTermParameter extends Parameter {
+    public static final double DEFAULT_MINIMUM_RATE = MultivariateOptimizer.DEFAULT_MINIMUM_RATE;
+    public static final double DEFAULT_INITIAL_RATE = MultivariateOptimizer.DEFAULT_INITIAL_RATE;
+    public static final double DEFAULT_MAXIMUM_RATE = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
 
     protected runHmm runHmmObject; // for pushing updated transition probabilities
-    protected TransitionProbabilityParameters transitionProbabilityParameters;
-    protected TransitionProbabilityParameters.ParameterChoice parameterChoice;
-
-    // need to access rest of HMM state to figure out maximum possible frequency parameter value
-    //protected runHmm runHmmObject;
+    protected SwitchingFrequencyRatioTerm sfrt;
 
     /**
      * User must explicitly request whether or not an update is requested 
      * during construction.
-     *
-     * Don't really need access to HMM state anymore.
      */
-    public SwitchingFrequencyParameter (String inName, 
+    public SwitchingFrequencyRatioTermParameter (String inName, 
 					double inValue, 
 					runHmm inRunHmmObject,
-					TransitionProbabilityParameters inTransitionProbabilityParameters, 
-					TransitionProbabilityParameters.ParameterChoice inParameterChoice, 
+					SwitchingFrequencyRatioTerm inSfrt,
 					boolean checkValueMinimumConstraintFlag,
 					boolean checkValueMaximumConstraintFlag,
 					boolean updateModelStateFlag) {
@@ -40,8 +32,7 @@ public class SwitchingFrequencyParameter extends Parameter {
 	super(inName, inValue, checkValueMinimumConstraintFlag, checkValueMinimumConstraintFlag, false);
 
 	this.runHmmObject = inRunHmmObject;
-	this.transitionProbabilityParameters = inTransitionProbabilityParameters;
-	this.parameterChoice = inParameterChoice;
+	this.sfrt = inSfrt;
 
 	if (updateModelStateFlag) {
 	    updateModelState();
@@ -49,55 +40,31 @@ public class SwitchingFrequencyParameter extends Parameter {
     }
 
     public double getMinimumValue () {
-	return (DEFAULT_MINIMUM_PROBABILITY);
+	return (DEFAULT_MINIMUM_RATE);
     }
 
     public double getDefaultInitialValue () {
-	return (DEFAULT_INITIAL_PROBABILITY);
+	return (DEFAULT_INITIAL_RATE);
     }
 
     public double getMaximumValue () {
-	// need to refer to current HMM parameter value settings to figure 
-	// out maximum possible frequency parameter setting
-	return (DEFAULT_MAXIMUM_PROBABILITY);
+	return (DEFAULT_MAXIMUM_RATE);
     }
 
     public void updateModelState () {
-	transitionProbabilityParameters.set(parameterChoice, getValue());
+	// invalidate caches
+	// caches re-populated in updateTransitionProbabilities call below
+	//
+	// push to SwitchingFrequencyRatioTerm.setValue()
+	sfrt.setValue(getValue());
 
 	// propagate hybridization/etc. frequency parameters on to
 	// HMM transition probability matrix
+	//
+	// Throw in caching into runHmm?
+	// If parental branch lengths change, no need to 
+	// re-calculate switching frequencies from switching-frequency-ratio-terms.
 	runHmmObject.updateTransitionProbabilities();
     }
 
-    public TransitionProbabilityParameters.ParameterChoice getParameterChoice () {
-	return (parameterChoice);
-    }
-
-
 }
-
-// runHmm inRunHmmObject, 
-
-	//this.runHmmObject = inRunHmmObject;
-
-	// retry the setValue now
-	// since runHmmObject reference finally ready
-	//setValue(inValue, updateFlag);
-
-	//return (runHmmObject.calculateMaximumFrequencyParameter(getParameterChoice()));
-
-    /**
-     * WARNING: doesn't update attached TransitionProbabilityParameters object by default!
-     * Issue with constructor and super().
-     */
-    // public void setValue (double inValue) {
-    // 	this.setValue(inValue, false);
-    // }
-
-    // public void setValue (double inValue, boolean updateFlag) {
-    // 	super.setValue(inValue);
-    // 	if (updateFlag) {
-    // 	    updateModelState();
-    // 	}
-    // }

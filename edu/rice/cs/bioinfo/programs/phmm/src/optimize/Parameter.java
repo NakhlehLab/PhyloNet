@@ -50,6 +50,10 @@ public abstract class Parameter extends ParameterConstraintSet {
 
     /**
      * WARNING - don't set updateModelStateFlag to false unless you know what you're doing.
+     *
+     * Parameter object's value is now coupled to 
+     * HMM state only by updateModelState(), as controlled
+     * by updateModelStateFlag.
      */
     public void setValue (double inValue, 
 			  boolean checkValueMinimumConstraintFlag,

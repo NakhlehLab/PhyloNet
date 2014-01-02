@@ -64,8 +64,31 @@ public class MapOfMap<K1,K2,V> {
     	return (mmap.get(k1).get(k2));
     }
 
+    /**
+     * Returns all values for first parameter of MapOfMap
+     */ 
+    public Set<K1> firstKeySet () {
+	return (mmap.keySet());
+    }
+    
     public Map<K2,V> get (K1 k1) {
 	// returns null if k1 unknown in MapOfMap object
 	return (mmap.get(k1));
+    }
+
+    public String toString () {
+	StringBuffer sb = new StringBuffer();
+	for (K1 k1 : mmap.keySet()) {
+	    if (mmap.get(k1) == null) {
+		System.err.println ("ERROR: value " + k1 + " for first argument in MapOfMap maps to null entry. Returning empty string to signal error.");
+		return ("");
+	    }
+
+	    for (K2 k2 : mmap.get(k1).keySet()) {
+		sb.append(k1.toString() + " -> " + k2.toString() + " -> " + this.get(k1, k2).toString() + "\n");
+	    }
+	}
+	
+	return (sb.toString());
     }
 }

@@ -23,10 +23,11 @@ public class SwitchingFrequencyRatioTerm {
     protected boolean invalidateParentalTreeSwitchingFrequencyMapFlag;
     
     public SwitchingFrequencyRatioTerm (String inName, double inValue, CalculationCache inCalculationCache, boolean inInvalidateParentalTreeSwitchingFrequencyMapFlag) {
-	setName(inName);
-	setValue(inValue);
 	this.calculationCache = inCalculationCache;
 	this.invalidateParentalTreeSwitchingFrequencyMapFlag = inInvalidateParentalTreeSwitchingFrequencyMapFlag;
+
+	setName(inName);
+	setValue(inValue);
     }
     
     public String getName () {

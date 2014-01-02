@@ -603,13 +603,20 @@ public class runHmm {
 	    }
 	    bw.newLine();
 	    for (String name : nameToParentalTreeSwitchingFrequencyRatioTermMap.keys()) {
-		bw.write("Parental-tree-switching frequency ratio term parameter with name " + name + ": " + nameToParentalTreeSwitchingFrequencyRatioTermMap.get(name).getValue());
+		bw.write("Parental-tree-switching frequency ratio term parameter with name " + name + ": " + nameToParentalTreeSwitchingFrequencyRatioTermMap.get(name).getValue()); bw.newLine();
 	    }
 	    bw.newLine();
 	    for (String name : nameToGeneGenealogySwitchingFrequencyRatioTermMap.keys()) {
-		bw.write("Gene-genealogy-switching frequency ratio term parameter with name " + name + ": " + nameToGeneGenealogySwitchingFrequencyRatioTermMap.get(name).getValue());
+		bw.write("Gene-genealogy-switching frequency ratio term parameter with name " + name + ": " + nameToGeneGenealogySwitchingFrequencyRatioTermMap.get(name).getValue()); bw.newLine();
 	    }
 	    bw.newLine();
+	    // for readability, also output corresponding switching frequencies
+	    MapOfMap<String,String,Double> parentalTreeSwitchingFrequencyMap = calculateSwitchingFrequencies(parentalTreeNameMap.keys(), parentalTreePairToParentalTreeSwitchingFrequencyRatioTermMap, true);
+	    bw.write (parentalTreeSwitchingFrequencyMap.toString()); bw.newLine();
+
+	    MapOfMap<String,String,Double> geneGenealogySwitchingFrequencyMap = calculateSwitchingFrequencies(geneGenealogyNameMap.keys(), geneGenealogyPairToGeneGenealogySwitchingFrequencyRatioTermMap, true);
+	    bw.write (geneGenealogySwitchingFrequencyMap.toString()); bw.newLine();
+
 	    bw.write("GTR base frequencies: "); bw.newLine();
 	    bw.write(Matrix.toString(gtrSubstitutionModel.getStationaryProbabilities())); bw.newLine();
 	    bw.newLine();

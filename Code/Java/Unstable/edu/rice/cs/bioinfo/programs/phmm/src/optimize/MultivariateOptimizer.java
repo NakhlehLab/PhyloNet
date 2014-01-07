@@ -286,14 +286,26 @@ public class MultivariateOptimizer {
 	sfrts.addAll(nameToParentalTreeSwitchingFrequencyRatioTermMap.values());
 	sfrts.addAll(nameToGeneGenealogySwitchingFrequencyRatioTermMap.values());
 	for (SwitchingFrequencyRatioTerm sfrt : sfrts) {
-	    switchingFrequencyRatioTermParameters.add(new SwitchingFrequencyRatioTermParameter(SwitchingFrequencyRatioTermParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + sfrt.getName(),
-											       sfrt.getValue(),
-											       runHmmObject,
-											       sfrt,
-											       true,
-											       true,
-											       false // no need to update
-											       ));
+	    SwitchingFrequencyRatioTermParameter sfrtp = new SwitchingFrequencyRatioTermParameter(SwitchingFrequencyRatioTermParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + sfrt.getName(),
+												  sfrt.getValue(),
+												  runHmmObject,
+												  sfrt,
+												  false,
+												  false,
+												  false // no need to update
+												  );
+	    // bleh - need to check min/max after instantiation, due to need to call super() at the
+	    // very start of class constructor
+	    sfrtp.setValue(sfrt.getValue(),
+			   true,
+			   true,
+			   false // no need to update
+			   );
+
+	    // testing
+	    if (Constants.WARNLEVEL > 3) { System.out.println ("Bounds for SwitchingFrequencyRatioTermParameter named " + sfrtp.getName() + ": " + sfrtp.getMinimumValue() + ", " + sfrtp.getDefaultInitialValue() + ", " + sfrtp.getMaximumValue()); }
+
+	    switchingFrequencyRatioTermParameters.add(sfrtp);	    
 	}
     }
     

@@ -217,15 +217,6 @@ public class runHmm {
 	    System.out.println("Empty working directory: ");
 	    workingDirectory = in.readLine();
 
-	    // Bleh - need to read in and construct TransitionProbabilityParameter objects here.
-	    // Specified according to parental-tree-switching-parameter and gene-genealogy-switching-parameter
-	    // file discussed in README.
-	    // Then, in MultivariateOptimizer, add SwitchingFrequencyParameter for each perform actual optimization
-	    // for each TransitionProbabilityParameter.
-	    // add map to parameter
-
-	    readSwitchingFrequencyRatioTermFiles(in);
-
 	    readSubstitutionModelParameters(in);
 
 	    // Get the Pi probabilities array
@@ -241,6 +232,18 @@ public class runHmm {
 	    //Reading in Basic Info file and store information
 	    buildParser();
 		
+	    // Bleh - need to read in and construct TransitionProbabilityParameter objects here.
+	    // Specified according to parental-tree-switching-parameter and gene-genealogy-switching-parameter
+	    // file discussed in README.
+	    // Then, in MultivariateOptimizer, add SwitchingFrequencyParameter for each perform actual optimization
+	    // for each TransitionProbabilityParameter.
+	    // add map to parameter
+
+	    // need to push this to after the trees are read in
+	    // since term maximums depend on the number of 
+	    // parental/gene trees
+	    readSwitchingFrequencyRatioTermFiles(in);
+
 	    // verify switching frequency ratio terms
 	    if (!verifySwitchingFrequencyRatioTerms()) {
 		System.err.println ("ERROR: unable to verify switching frequency ratio terms. Please correct and try again.");
@@ -1719,7 +1722,12 @@ public class runHmm {
     protected void parseSwitchingFrequencyRatioTermFile (String filename, 
 							 BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToTermMap,
 							 BidirectionalMultimap<Tuple<String,String>,SwitchingFrequencyRatioTerm> transitionToTermMap,
-							 boolean invalidateParentalTreeSwitchingFrequencyMapFlag) throws Exception {
+							 boolean parentalTreeSwitchingFrequencyRatioTermFlag) throws Exception {
+	// to cap switching frequencies
+	// so that self-transition frequency never gets too small
+	// otherwise model exhibits degenerate behavior
+	int numAlternatives = parentalTreeSwitchingFrequencyRatioTermFlag ? parentalTreeNameMap.sizeKeys() : geneGenealogyNameMap.sizeKeys() ;
+
 	BufferedReader br = new BufferedReader(new FileReader(filename));
 	String line = "";
 	while ((line = br.readLine()) != null) {
@@ -1729,7 +1737,7 @@ public class runHmm {
 	    }
 	    String name = st.nextToken();
 	    double initialWeight = Double.parseDouble(st.nextToken());
-	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight, calculationCache, invalidateParentalTreeSwitchingFrequencyMapFlag);
+	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight, calculationCache, parentalTreeSwitchingFrequencyRatioTermFlag, numAlternatives);
 	    if (nameToTermMap.containsKey(name)) {
 		throw (new IOException("ERROR: duplicate switching frequency ratio term in file " + filename + ": " + name));
 	    }

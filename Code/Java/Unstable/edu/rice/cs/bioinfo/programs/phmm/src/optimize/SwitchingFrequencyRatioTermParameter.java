@@ -9,9 +9,33 @@ import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import runHmm.runHmm;
 
 public class SwitchingFrequencyRatioTermParameter extends Parameter {
-    public static final double DEFAULT_MINIMUM_RATE = MultivariateOptimizer.DEFAULT_MINIMUM_RATE;
-    public static final double DEFAULT_INITIAL_RATE = MultivariateOptimizer.DEFAULT_INITIAL_RATE;
-    public static final double DEFAULT_MAXIMUM_RATE = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
+    // allow this to get basically to zero
+    // divide the max by 10^10
+    //public static final double DEFAULT_MINIMUM_RATE = MultivariateOptimizer.ABSOLUTE_ACCURACY;
+    // careful - max depends on SwitchingFrequencyRatioTerm.getNumAlternatives()
+    // eh - just go an order of magnitude below max
+    //public static final double DEFAULT_INITIAL_RATE = MultivariateOptimizer.DEFAULT_INITIAL_RATE;
+    // Like in original algorithm,
+    // switching frequency approaching half or more can cause a degenerate corner case.
+    // Lots of switching artifacts.
+    //
+    // Cap this so that maximum switching frequency is 0.25 .
+    //
+    // For two parental tree case, term is maximum  1/3 .
+    //
+    // Without any complicated structure to the ratio, the maximum is 1/(3(k-1)) where k is 
+    // the number of alternative "states" (number of parental trees, or gene genealogies, or whatever).
+    //
+    // Conservatively set any non-self-transition probability to be at most 1/(3(k-1)),
+    // ensuring that the self-transition probability is at least 3/4.
+    //public static final double DEFAULT_MAXIMUM_RATE = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
+
+    // corresponds to maximum total non-self-transition switching frequency of 0.25
+    public static final double DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT = 1.0 / 3.0;
+
+    // rest calculated off of maximum
+    public static final double DEFAULT_MAXIMUM_TO_MINIMUM_VALUE_RATIO = 1e8;
+    public static final double DEFAULT_MAXIMUM_TO_INITIAL_VALUE_RATIO = 1e4;
 
     protected runHmm runHmmObject; // for pushing updated transition probabilities
     protected SwitchingFrequencyRatioTerm sfrt;
@@ -39,16 +63,17 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
 	}
     }
 
+    // really, can go to zero
     public double getMinimumValue () {
-	return (DEFAULT_MINIMUM_RATE);
+	return (getMaximumValue() / DEFAULT_MAXIMUM_TO_MINIMUM_VALUE_RATIO);
     }
 
     public double getDefaultInitialValue () {
-	return (DEFAULT_INITIAL_RATE);
+	return (getMaximumValue() / DEFAULT_MAXIMUM_TO_INITIAL_VALUE_RATIO);
     }
 
     public double getMaximumValue () {
-	return (DEFAULT_MAXIMUM_RATE);
+	return (DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT / ((double) (sfrt.getNumAlternatives() - 1)));
     }
 
     public void updateModelState () {

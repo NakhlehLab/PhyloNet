@@ -7,7 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="2699e17a-9b46-4e41-baa7-f8ad9409a080" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.10" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.10" />
@@ -22,52 +22,30 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.17" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.17" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.18" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.18" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.19" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.19" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.1" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.1" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.20" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.20" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.2" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.2" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.2" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.2" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.3" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.3" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.4" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-LIKELIHOOD.0.4" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.4" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.4" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.4" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.5" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.5" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.5" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.5" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.6" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.6" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.6" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.6" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.7" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.7" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.8" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.8" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.8" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.8" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.9" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.9" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.9" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-LIKELIHOOD.0.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.1.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.10" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.10" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.11" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.11" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.12" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.12" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.13" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.13" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.7" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.8" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.8" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.9" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-LIKELIHOOD.2.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.10" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.10" />
@@ -82,52 +60,30 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.17" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.17" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.18" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.18" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.19" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.19" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.1" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.1" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.20" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.20" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.2" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.2" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.2" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.2" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.3" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.3" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.4" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-PARAMETER-STATE.0.4" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.4" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.4" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.4" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.5" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.5" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.5" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.5" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.6" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.6" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.6" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.6" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.7" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.7" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.8" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.8" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.8" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.8" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.9" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.9" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.9" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-PARAMETER-STATE.0.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.1.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.10" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.10" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.11" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.11" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.12" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.12" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.13" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.13" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.7" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.8" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.8" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.9" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-PARAMETER-STATE.2.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.0" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.0" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.10" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.10" />
@@ -142,97 +98,53 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.17" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.17" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.18" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.18" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.19" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.19" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.1" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.1" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.1" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.20" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.20" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.2" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.2" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.2" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.2" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.3" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.3" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.4" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT-VITERBI-SEQUENCE.0.4" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.4" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.4" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.4" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.5" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.5" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.5" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.5" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.6" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.6" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.6" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.6" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.7" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.7" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.7" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.8" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.8" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.8" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.8" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.9" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.9" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.9" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/CHECKPOINT-VITERBI-SEQUENCE.0.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.1.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.10" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.10" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.11" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.11" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.12" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.12" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.13" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.13" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.7" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.8" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.8" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.9" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT-VITERBI-SEQUENCE.2.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.7" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.1.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.0" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.10" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.10" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.11" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.11" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.12" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.12" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.13" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.13" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.1" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.2" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.5" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.5" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.6" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.6" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.7" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.7" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.8" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.8" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.9" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.2.9" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/ant.xml" afterPath="$PROJECT_DIR$/.idea/ant.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.0" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.0" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.1" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.1" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.2" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.3" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.4" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME.0.4" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" afterPath="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/SwitchingFrequencyRatioTerm.java" afterPath="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/SwitchingFrequencyRatioTerm.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/optimize/SwitchingFrequencyRatioTermParameter.java" afterPath="$PROJECT_DIR$/src/optimize/SwitchingFrequencyRatioTermParameter.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/autoinput.txt" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/autoinput.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/autoinput.txt" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/autoinput.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/autoinput.txt" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/autoinput.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/autoinput.txt" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/autoinput.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/initial.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/initial.viterbi.sequence" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/initial.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs-control/initial.viterbi.sequence" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/initial.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/initial.viterbi.sequence" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/initial.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/initial.viterbi.sequence" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/length-parameter-constraint-sets" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/length-parameter-constraint-sets" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.model.likelihoods" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.model.likelihoods" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/optimized.model.likelihoods" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/optimized.model.likelihoods" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.likelihoods" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.likelihoods" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.model.parameters" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.model.parameters" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/optimized.model.parameters" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/optimized.model.parameters" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.parameters" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.model.parameters" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.posterior.decoding.probabilities" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.posterior.decoding.probabilities" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmd-array-spretus-wgs/optimized.viterbi.sequence" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/optimized.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmm-control-constrained-parental-trees/optimized.viterbi.sequence" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.viterbi.sequence" afterPath="$PROJECT_DIR$/ex/mmm-control-unconstrained-parental-trees/optimized.viterbi.sequence" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/runHmm/runHmm.java" afterPath="$PROJECT_DIR$/src/runHmm/runHmm.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="phmm.iws" />
@@ -338,7 +250,7 @@
         <option name="CONDITION" value="&#13;&#13;JAVA" />
         <option name="LOG_MESSAGE" value="&#13;&#13;JAVA" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="262" class="runHmm.runHmm" package="runHmm">
+      <breakpoint url="file://$PROJECT_DIR$/src/runHmm/runHmm.java" line="265" class="runHmm.runHmm" package="runHmm">
         <option name="ENABLED" value="false" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -393,28 +305,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="IntArrayFactory.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/containers/IntArrayFactory.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="0" selection-start="545" selection-end="545" vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="495">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ViterbiCalculator.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/ViterbiCalculator.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="124" column="0" selection-start="3954" selection-end="3954" vertical-scroll-proportion="0.0" vertical-offset="1860" max-vertical-offset="3825">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="runHmm.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="runHmm.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="30045">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="30270">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SwitchingFrequencyRatioTermParameter.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/optimize/SwitchingFrequencyRatioTermParameter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="10" column="13" selection-start="283" selection-end="283" vertical-scroll-proportion="0.0" vertical-offset="585" max-vertical-offset="1500">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MultivariateOptimizer.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="306" column="21" selection-start="15296" selection-end="15296" vertical-scroll-proportion="0.6495132" vertical-offset="3253" max-vertical-offset="21105">
               <folding />
             </state>
           </provider>
@@ -502,11 +414,11 @@
         <option value="$PROJECT_DIR$/src/optimize/Parameter.java" />
         <option value="$PROJECT_DIR$/src/phylogeny/Felsenstein.java" />
         <option value="$PROJECT_DIR$/src/reader/Parser.java" />
-        <option value="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
         <option value="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/HiddenState.java" />
         <option value="$PROJECT_DIR$/src/util/TreeUtils.java" />
         <option value="$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/ViterbiCalculator.java" />
         <option value="$PROJECT_DIR$/src/runHmm/runHmm.java" />
+        <option value="$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java" />
       </list>
     </option>
   </component>
@@ -541,20 +453,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="PackagesPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="phmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Phmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -799,6 +697,20 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="PackagesPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Phmm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -856,19 +768,6 @@
       <option name="PORT" value="5005" />
       <method />
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method />
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -894,6 +793,19 @@
       <envs />
       <properties />
       <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -1202,7 +1114,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-4" y="0" width="1448" height="875" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1220,14 +1132,14 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22777778" sideWeight="0.57750344" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22777778" sideWeight="0.57750344" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3277849" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -1251,6 +1163,76 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/containers/IntArrayFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="0" selection-start="545" selection-end="545" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="495">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/ViterbiCalculator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="124" column="0" selection-start="3954" selection-end="3954" vertical-scroll-proportion="0.0" vertical-offset="1860" max-vertical-offset="3825">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="30045">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../java/jdk1.6.0_33_64bit/src.zip!/java/net/URLClassLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="201" column="0" selection-start="7685" selection-end="7685" vertical-scroll-proportion="0.0" vertical-offset="3015" max-vertical-offset="9525">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/phmm/OpdfMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="51" column="0" selection-start="1814" selection-end="1814" vertical-scroll-proportion="0.0" vertical-offset="765" max-vertical-offset="5115">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/be/ac/ulg/montefiore/run/jahmm/Hmm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="194" column="0" selection-start="6298" selection-end="6298" vertical-scroll-proportion="0.0" vertical-offset="2910" max-vertical-offset="6525">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/containers/IArray.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="17" selection-start="38" selection-end="38" vertical-scroll-proportion="0.0" vertical-offset="30" max-vertical-offset="195">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/containers/IArrayFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="17" selection-start="38" selection-end="38" vertical-scroll-proportion="0.0" vertical-offset="30" max-vertical-offset="165">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/substitutionModel/GTRSubstitutionModel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="142" column="25" selection-start="4507" selection-end="4507" vertical-scroll-proportion="0.0" vertical-offset="2130" max-vertical-offset="2805">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/phylogeny/Felsenstein.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="67" column="0" selection-start="2369" selection-end="2369" vertical-scroll-proportion="0.0" vertical-offset="1005" max-vertical-offset="3120">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/containers/IntArrayFactory.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="22" column="0" selection-start="545" selection-end="545" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="495">
@@ -1487,6 +1469,20 @@
     <entry file="file://$PROJECT_DIR$/src/runHmm/runHmm.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="29910">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/SwitchingFrequencyRatioTermParameter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="13" selection-start="283" selection-end="283" vertical-scroll-proportion="0.0" vertical-offset="585" max-vertical-offset="1500">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/optimize/MultivariateOptimizer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="306" column="21" selection-start="15296" selection-end="15296" vertical-scroll-proportion="0.6495132" vertical-offset="3253" max-vertical-offset="21105">
           <folding />
         </state>
       </provider>

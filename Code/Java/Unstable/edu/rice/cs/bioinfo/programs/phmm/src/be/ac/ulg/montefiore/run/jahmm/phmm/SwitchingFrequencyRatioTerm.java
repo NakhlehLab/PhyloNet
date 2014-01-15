@@ -20,15 +20,17 @@ public class SwitchingFrequencyRatioTerm {
     protected CalculationCache calculationCache;
     // set to true to invalidate cacheParentalTreeSwitchingFrequencyMap
     // otherwise invalidates cacheGeneGenealogySwitchingFrequencyMap
-    protected boolean invalidateParentalTreeSwitchingFrequencyMapFlag;
+    //protected boolean invalidateParentalTreeSwitchingFrequencyMapFlag;
     // bleh, also need to store the maximum number of alternatives
     // (parental trees, gene genealogies, or whatever)
     // to help cap the switching frequencies
     protected int numAlternatives;
     
-    public SwitchingFrequencyRatioTerm (String inName, double inValue, CalculationCache inCalculationCache, boolean inInvalidateParentalTreeSwitchingFrequencyMapFlag, int inNumAlternatives) {
+    // boolean inInvalidateParentalTreeSwitchingFrequencyMapFlag, 
+    
+    public SwitchingFrequencyRatioTerm (String inName, double inValue, CalculationCache inCalculationCache, int inNumAlternatives) {
 	this.calculationCache = inCalculationCache;
-	this.invalidateParentalTreeSwitchingFrequencyMapFlag = inInvalidateParentalTreeSwitchingFrequencyMapFlag;
+	//this.invalidateParentalTreeSwitchingFrequencyMapFlag = inInvalidateParentalTreeSwitchingFrequencyMapFlag;
 	this.numAlternatives = inNumAlternatives;
 
 	setName(inName);
@@ -51,12 +53,14 @@ public class SwitchingFrequencyRatioTerm {
 	if (inValue > 0.0) {
 	    value = inValue;
 	    // wipe cache
-	    if (invalidateParentalTreeSwitchingFrequencyMapFlag) {
-		calculationCache.cacheParentalTreeSwitchingFrequencyMap = null;
-	    }
-	    else {
-		calculationCache.cacheGeneGenealogySwitchingFrequencyMap = null;
-	    }
+	    calculationCache.cacheSwitchingFrequencyMap = null;
+
+	    // if (invalidateParentalTreeSwitchingFrequencyMapFlag) {
+	    // 	calculationCache.cacheParentalTreeSwitchingFrequencyMap = null;
+	    // }
+	    // else {
+	    // 	calculationCache.cacheGeneGenealogySwitchingFrequencyMap = null;
+	    // }
 	}
 	else {
 	    throw (new RuntimeException("ERROR: SwitchingFrequencyRatioTerm.setValue(double) called with non-positive number."));

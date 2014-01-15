@@ -37,6 +37,7 @@ package optimize;
 import java.util.Hashtable;
 import util.MapOfMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -48,9 +49,7 @@ public class CalculationCache {
     public Hashtable<TNode,double[][]> cacheSubstitutionProbabilityMatrix;
     public MapOfMap<Tree,ObservationMap,Double> cacheSubstitutionProbability;
     // check non-null and non-empty to check cache ready state
-    public MapOfMap<String,String,Double> cacheParentalTreeSwitchingFrequencyMap;
-    // check non-null and non-empty to check cache ready state
-    public MapOfMap<String,String,Double> cacheGeneGenealogySwitchingFrequencyMap;
+    public MapOfMap<HiddenState,HiddenState,Double> cacheSwitchingFrequencyMap;
 
     public CalculationCache () {
     	cacheProbabilityOfGeneGenealogyInParentalTree = new MapOfMap<Network<CoalescePattern[]>,Tree,Double>();
@@ -59,8 +58,7 @@ public class CalculationCache {
 	// special case, since we use null-ness (as well as 
 	// empty-ness) to signal cached quantities not ready for
 	// switching frequencies
-	cacheParentalTreeSwitchingFrequencyMap = null;
-	cacheGeneGenealogySwitchingFrequencyMap = null;
+	cacheSwitchingFrequencyMap = null;
     }
 
 }

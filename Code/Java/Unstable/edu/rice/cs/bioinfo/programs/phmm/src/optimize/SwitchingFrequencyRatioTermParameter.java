@@ -30,12 +30,16 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
     // ensuring that the self-transition probability is at least 3/4.
     //public static final double DEFAULT_MAXIMUM_RATE = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
 
-    // corresponds to maximum total non-self-transition switching frequency of 0.25
-    public static final double DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT = 1.0 / 3.0;
+    // corresponds to maximum total non-self-transition switching frequency of 1/3
+    //
+    // actual constraint is applied in runHmm.calculateSwitchingFrequencies(...)
+    public static final double DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT = 1.0 / 2.0;
 
     // rest calculated off of maximum
-    public static final double DEFAULT_MAXIMUM_TO_MINIMUM_VALUE_RATIO = 1e8;
-    public static final double DEFAULT_MAXIMUM_TO_INITIAL_VALUE_RATIO = 1e4;
+    public static final double DEFAULT_MINIMUM_RATIO_TERM = 1e-6;
+    public static final double DEFAULT_INITIAL_RATIO_TERM = 1e-3;
+    // any more than this will certainly cause normalization+rescaling in runHmm.calculateSwitchingFrequencies(...)
+    public static final double DEFAULT_MAXIMUM_RATIO_TERM = DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT;
 
     protected runHmm runHmmObject; // for pushing updated transition probabilities
     protected SwitchingFrequencyRatioTerm sfrt;
@@ -65,15 +69,15 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
 
     // really, can go to zero
     public double getMinimumValue () {
-	return (getMaximumValue() / DEFAULT_MAXIMUM_TO_MINIMUM_VALUE_RATIO);
+	return (DEFAULT_MINIMUM_RATIO_TERM);
     }
 
     public double getDefaultInitialValue () {
-	return (getMaximumValue() / DEFAULT_MAXIMUM_TO_INITIAL_VALUE_RATIO);
+	return (DEFAULT_INITIAL_RATIO_TERM);
     }
 
     public double getMaximumValue () {
-	return (DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT / ((double) (sfrt.getNumAlternatives() - 1)));
+	return (DEFAULT_MAXIMUM_RATIO_TERM);
     }
 
     public void updateModelState () {

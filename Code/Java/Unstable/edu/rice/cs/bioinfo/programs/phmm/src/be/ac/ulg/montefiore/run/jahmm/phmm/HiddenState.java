@@ -23,6 +23,9 @@
  * Expensive to optimize substitution model parameters?
  * 
  * Perform caching for each parameter globally. Each HiddenState will have access to a global cache object.
+ * 
+ * Warning - equals() and hashCode() identity are compared on the basis of the name! Name uniqueness
+ * is crucial!
  */
 
 package be.ac.ulg.montefiore.run.jahmm.phmm;
@@ -545,6 +548,20 @@ public class HiddenState
 	double result = felsensteinCalculator.getLikelihoodtree(getUnrootedGeneGenealogy(), o);
 	calculationCache.cacheSubstitutionProbability.put(getUnrootedGeneGenealogy(), o, new Double(result));
 	return (result);
+    }
+    
+    public boolean equals (Object o) {
+	if (!(o instanceof HiddenState)) {
+	    return (false);
+	}
+
+	HiddenState hs = (HiddenState) o;
+
+	return (hs.getName().equals(this.getName()));
+    }
+
+    public int hashCode () {
+	return (getName().hashCode());
     }
     
 }

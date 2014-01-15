@@ -98,10 +98,10 @@ public class MultivariateOptimizer {
     // yes, it handles this fine
     public static final double DEFAULT_MINIMUM_PROBABILITY = 0.0;
     public static final double DEFAULT_INITIAL_PROBABILITY = 1e-2;
-    // initial probability always initialized to uniform
-    // don't let switching probability get to close to half
-    public static final double DEFAULT_MAXIMUM_PROBABILITY = 0.25;
-    // public static final double DEFAULT_MAXIMUM_PROBABILITY = 1.0;
+    // switching probability maximum is controlled in SwitchingFrequencyRatioTerm
+    // this isn't really used
+    //public static final double DEFAULT_MAXIMUM_PROBABILITY = 0.25;
+    public static final double DEFAULT_MAXIMUM_PROBABILITY = 1.0;
 
     // hack - to support set branch length constraints
     // PhyloNet's Rich Newick support has some craziness about '_' underscore letter.
@@ -140,8 +140,7 @@ public class MultivariateOptimizer {
     protected BijectiveHashtable<String,Network<CoalescePattern[]>> parentalTreeNameMap;
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
-    protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToParentalTreeSwitchingFrequencyRatioTermMap;
-    protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToGeneGenealogySwitchingFrequencyRatioTermMap;
+    protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
     protected List<ObservationMap> observation;
     protected CalculationCache calculationCache;
 
@@ -181,8 +180,7 @@ public class MultivariateOptimizer {
 				  BijectiveHashtable<String,Network<CoalescePattern[]>> inParentalTreeNameMap,
 				  BijectiveHashtable<String,Tree> inGeneGenealogyNameMap,
 				  BidirectionalMultimap<Tree,Tree> inRootedToUnrootedGeneGenealogyMap,
-				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToParentalTreeSwitchingFrequencyRatioTermMap,
-				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToGeneGenealogySwitchingFrequencyRatioTermMap,
+				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToSwitchingFrequencyRatioTermMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
 				  String inputParentalBranchLengthParameterInequalitiesFilename,
@@ -202,8 +200,7 @@ public class MultivariateOptimizer {
 	this.parentalTreeNameMap = inParentalTreeNameMap;
 	this.geneGenealogyNameMap = inGeneGenealogyNameMap;
 	this.rootedToUnrootedGeneGenealogyMap = inRootedToUnrootedGeneGenealogyMap;
-	this.nameToParentalTreeSwitchingFrequencyRatioTermMap = inNameToParentalTreeSwitchingFrequencyRatioTermMap;
-	this.nameToGeneGenealogySwitchingFrequencyRatioTermMap = inNameToGeneGenealogySwitchingFrequencyRatioTermMap;
+	this.nameToSwitchingFrequencyRatioTermMap = inNameToSwitchingFrequencyRatioTermMap;
 	this.observation = inObservation;
 	this.calculationCache = inCalculationCache;
 	this.enableParentalTreeOptimizationFlag = inEnableParentalTreeOptimizationFlag;
@@ -283,8 +280,7 @@ public class MultivariateOptimizer {
     protected void createSwitchingFrequencyRatioTermParameters () {
 	switchingFrequencyRatioTermParameters = new Vector<SwitchingFrequencyRatioTermParameter>();
 	HashSet<SwitchingFrequencyRatioTerm> sfrts = new HashSet<SwitchingFrequencyRatioTerm>();
-	sfrts.addAll(nameToParentalTreeSwitchingFrequencyRatioTermMap.values());
-	sfrts.addAll(nameToGeneGenealogySwitchingFrequencyRatioTermMap.values());
+	sfrts.addAll(nameToSwitchingFrequencyRatioTermMap.values());
 	for (SwitchingFrequencyRatioTerm sfrt : sfrts) {
 	    SwitchingFrequencyRatioTermParameter sfrtp = new SwitchingFrequencyRatioTermParameter(SwitchingFrequencyRatioTermParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + sfrt.getName(),
 												  sfrt.getValue(),

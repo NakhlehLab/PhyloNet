@@ -244,7 +244,7 @@ public class runHmm {
 	    // need to push this to after the trees are read in
 	    // since term maximums depend on the number of 
 	    // parental/gene trees
-	    readSwitchingFrequencyRatioTermFiles(in);
+	    readSwitchingFrequencyRatioTermFile(in);
 
 	    // verify switching frequency ratio terms
 	    if (!verifySwitchingFrequencyRatioTerms()) {
@@ -610,10 +610,24 @@ public class runHmm {
 		bw.write("Hidden-state-switching frequency ratio term parameter with name " + name + ": " + nameToSwitchingFrequencyRatioTermMap.get(name).getValue()); bw.newLine();
 	    }
 	    bw.newLine();
+	    bw.write("Hidden-state-switching frequencies: "); bw.newLine();
 	    // for readability, also output corresponding switching frequencies
 	    MapOfMap<HiddenState,HiddenState,Double> hiddenStateSwitchingFrequencyMap = calculateSwitchingFrequencies(true);
-	    bw.write (hiddenStateSwitchingFrequencyMap.toString()); bw.newLine();
-
+	    //bw.write (hiddenStateSwitchingFrequencyMap.toString()); bw.newLine();
+	    // for readability, proceed according to above hidden state order
+	    for (HiddenState h1 : hiddenStates) {
+		for (HiddenState h2 : hiddenStates) {
+		    // unnecessary by verifySwitchingFrequencyRatioTerms(),
+		    // but paranoid
+		    if (!hiddenStateSwitchingFrequencyMap.contains(h1, h2)) {
+			System.err.println ("ERROR: in runHmm.outputOptimizedModelParameterValues(), missing transition for pair of hidden states named " + h1.getName() + " " + h2.getName() + ". Skipping.");
+			continue;
+		    }
+		    bw.write(h1.getName() + " -> " + h2.getName() + " : " + hiddenStateSwitchingFrequencyMap.get(h1, h2)); bw.newLine();
+		}
+	    }
+	    bw.newLine();
+	    
 	    bw.write("GTR base frequencies: "); bw.newLine();
 	    bw.write(Matrix.toString(gtrSubstitutionModel.getStationaryProbabilities())); bw.newLine();
 	    bw.newLine();
@@ -1064,11 +1078,22 @@ public class runHmm {
 	    // if total weight on non-self-transitions is too much, 
 	    // normalize+rescale non-self-transitions' switching-frequency-ratio-terms
 	    if (totalWeight - 1.0 >= optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT) {
-		for (int j = 0; j < hiddenStates.size(); j++) {
-		    double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
-		    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(originalWeight / ((totalWeight - 1.0) / optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT)));
+		if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: total weight of non-self-transitions away from hidden state " + hiddenStates.get(i).getName() + " is larger than " + optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT + ". Normalizing and re-scaling non-self-transitions for this hidden state."); }
 
+		double updatedTotalWeight = 1.0;
+		for (int j = 0; j < hiddenStates.size(); j++) {
+		    if (i == j) {
+			continue;
+		    }
+
+		    // wonky - doesn't update the SwitchingFrequencyRatioTerm itself
+		    // bizarre behavior - same parameter can "saturate" for one row but not another
+		    double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
+		    double newWeight = originalWeight / ((totalWeight - 1.0) / optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT);
+		    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(newWeight));
+		    updatedTotalWeight += newWeight;
 		}
+		totalWeight = updatedTotalWeight;
 	    }
 
 	    // now normalize all transitions away from hidden state i
@@ -1083,16 +1108,20 @@ public class runHmm {
 	if (verifyFlag) {
 	    for (int i = 0; i < hiddenStates.size(); i++) {
 		double totalWeight = 0.0;
+		//double[] row = new double[hiddenStates.size()];
 		for (int j = 0; j < hiddenStates.size(); j++) {
 		    double fij = result.get(hiddenStates.get(i), hiddenStates.get(j));
 		    if ((fij < 0.0) || (fij > 1.0)) {
-			System.err.println ("ERROR: switching-frequency for named pair " + hiddenStates.get(i) + " " + hiddenStates.get(j) + " isn't a probability. Returning null to signal error.");
+			System.err.println ("ERROR: switching-frequency for named pair " + hiddenStates.get(i).getName() + " " + hiddenStates.get(j).getName() + " isn't a probability. Returning null to signal error.");
 			return (null);
 		    }
 		    totalWeight += fij;
+		    //row[j] = fij;
 		}
 		if (Math.abs(totalWeight - 1.0) > Constants.ZERO_DELTA) {
-		    System.err.println ("ERROR: row-summed-switching-frequencies for row named " + hiddenStates.get(i) + " doesn't sum to one. Returning null to signal error.");
+		    //System.out.println ("offending row: |" + Arrays.toString(row) + "|");
+
+		    System.err.println ("ERROR: row-summed-switching-frequencies for row named " + hiddenStates.get(i).getName() + " doesn't sum to one. Returning null to signal error. " + totalWeight);
 		    return (null);
 		}
 	    }
@@ -1710,9 +1739,12 @@ public class runHmm {
      * To support ratio-solving quickly, need to look-up from (source parental-tree/gene-genealogy names, sink parental-tree/gene-genealogy names) pair to
      * corresponding ratio parameter quickly. Add a map for this.
      */
-    protected void readSwitchingFrequencyRatioTermFiles (BufferedReader inbr) throws Exception {
+    protected void readSwitchingFrequencyRatioTermFile (BufferedReader inbr) throws Exception {
 	System.out.println("Hidden state switching frequency ratio term input file: ");
 	String switchingFrequencyRatioTermFilename = inbr.readLine().trim();
+
+	hiddenStatePairToSwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<HiddenState,HiddenState>,SwitchingFrequencyRatioTerm>();
+	nameToSwitchingFrequencyRatioTermMap = new BijectiveHashtable<String,SwitchingFrequencyRatioTerm>();
 
 	// for now, not used
 	// cap on non-self-transition frequencies is part of runHmm.calculateSwitchingFrequencies(...) 

@@ -5,9 +5,10 @@
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/gene.trees
 OUTGROUP
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs
+/home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/parental-tree-switching-frequency-ratio-terms
+/home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/gene-genealogy-switching-frequency-ratio-terms
 0.964011 0.192217 0.270592 0.0806232 0.174283
 0.1953 0.3077 0.3008 0.1962
-/home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/switching-frequency-ratio-terms
 0
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/initial.viterbi.sequence
 1
@@ -23,6 +24,6 @@ true
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs/optimized.model.parameters
-DEFAULT
+CURRENT DEFAULT
 true true true true
 4

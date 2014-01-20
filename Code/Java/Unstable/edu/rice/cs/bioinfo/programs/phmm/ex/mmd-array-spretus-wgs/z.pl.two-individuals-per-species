@@ -1,0 +1,92 @@
+#!/usr/bin/env perl
+
+
+my %choices = 
+    (
+     "sf" => "p1,p1",
+     "st" => "p2,p2",
+     "sft" => "p1,p2",
+     "stf" => "p2,p1"
+    );
+foreach my $key (keys(%choices)) {
+    print "$key 0.01";
+    my @pa = split(",", $choices{$key});
+    for (my $i = 2; $i <= 15; $i++) {
+	my $si = $i;
+	if ($i < 10) {
+	    $si = "0" . $si;
+	}
+	
+	print " $pa[0],g01|$pa[1],g$si";
+    }
+    print "\n";
+}
+
+my %choices2 = 
+    (
+     "uf" => "p1,p1",
+     "ut" => "p2,p2",
+     "uft" => "p1,p2",
+     "utf" => "p2,p1"
+    );
+foreach my $key (keys(%choices2)) {
+    print "$key 0.01";
+    my @pa = split(",", $choices2{$key});
+    for (my $i = 2; $i <= 15; $i++) {
+	my $si = $i;
+	if ($i < 10) {
+	    $si = "0" . $si;
+	}
+	
+	print " $pa[0],g$si|$pa[1],g01";
+    }
+    print "\n";
+}
+
+my %choices3 = 
+    (
+     "vf" => "p1,p1",
+     "vt" => "p2,p2",
+     "vft" => "p1,p2",
+     "vtf" => "p2,p1"
+    );
+foreach my $key (keys(%choices3)) {
+    print "$key 0.01";
+    my @pa = split(",", $choices3{$key});
+    for (my $i = 2; $i <= 15; $i++) {
+	for (my $j = 2; $j <= 15; $j++) {
+	    if ($i != $j) {
+		my $si = $i;
+		my $sj = $j;
+		if ($i < 10) {
+		    $si = "0" . $si;
+		}
+		if ($sj < 10) {
+		    $sj = "0" . $sj;
+		}
+		print " $pa[0],g$si|$pa[1],g$sj";
+	    }
+	}
+    }
+    print "\n";
+}
+
+my %choices4 = 
+    (
+     "nft" => "p1,p2",
+     "ntf" => "p2,p1"
+    );
+foreach my $key (keys(%choices4)) {
+    print "$key 0.01";
+    my @pa = split(",", $choices4{$key});
+    for (my $i = 1; $i <= 15; $i++) {
+	my $si = $i;
+	if ($i < 10) {
+	    $si = "0" . $si;
+	}
+	
+	print " $pa[0],g$si|$pa[1],g$si";
+    }
+    print "\n";
+}
+

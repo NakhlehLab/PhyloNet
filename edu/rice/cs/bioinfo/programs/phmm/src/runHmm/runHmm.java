@@ -1078,7 +1078,7 @@ public class runHmm {
 	    // if total weight on non-self-transitions is too much, 
 	    // normalize+rescale non-self-transitions' switching-frequency-ratio-terms
 	    if (totalWeight - 1.0 >= optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT) {
-		if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: total weight of non-self-transitions away from hidden state " + hiddenStates.get(i).getName() + " is larger than " + optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT + ". Normalizing and re-scaling non-self-transitions for this hidden state."); }
+		if (Constants.WARNLEVEL > 4) { System.out.println ("INFO: total weight of non-self-transitions away from hidden state " + hiddenStates.get(i).getName() + " is larger than " + optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT + ". Normalizing and re-scaling non-self-transitions for this hidden state."); }
 
 		double updatedTotalWeight = 1.0;
 		for (int j = 0; j < hiddenStates.size(); j++) {

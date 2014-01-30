@@ -43,6 +43,7 @@ import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardScaledCalculator;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
 import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
@@ -140,6 +141,7 @@ public class MultivariateOptimizer {
     protected BijectiveHashtable<String,Network<CoalescePattern[]>> parentalTreeNameMap;
     protected BijectiveHashtable<String,Tree> geneGenealogyNameMap;
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
+    protected SwitchingFrequency gamma;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
     protected List<ObservationMap> observation;
     protected CalculationCache calculationCache;
@@ -158,6 +160,7 @@ public class MultivariateOptimizer {
     
     protected Vector<ParentalBranchLengthParameter> parentalBranchLengthParameters;
     protected Vector<GenealogyBranchLengthParameter> genealogyBranchLengthParameters;
+    protected Vector<SwitchingFrequencyParameter> switchingFrequencyParameters;
     protected Vector<SwitchingFrequencyRatioTermParameter> switchingFrequencyRatioTermParameters;
     protected Vector<GTRRateParameter> gtrRateParameters;
     protected Vector<GTRBaseFrequencyParameter> gtrBaseFrequencyParameters;
@@ -180,6 +183,7 @@ public class MultivariateOptimizer {
 				  BijectiveHashtable<String,Network<CoalescePattern[]>> inParentalTreeNameMap,
 				  BijectiveHashtable<String,Tree> inGeneGenealogyNameMap,
 				  BidirectionalMultimap<Tree,Tree> inRootedToUnrootedGeneGenealogyMap,
+				  SwitchingFrequency inGamma,
 				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToSwitchingFrequencyRatioTermMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
@@ -200,6 +204,7 @@ public class MultivariateOptimizer {
 	this.parentalTreeNameMap = inParentalTreeNameMap;
 	this.geneGenealogyNameMap = inGeneGenealogyNameMap;
 	this.rootedToUnrootedGeneGenealogyMap = inRootedToUnrootedGeneGenealogyMap;
+	this.gamma = inGamma;
 	this.nameToSwitchingFrequencyRatioTermMap = inNameToSwitchingFrequencyRatioTermMap;
 	this.observation = inObservation;
 	this.calculationCache = inCalculationCache;
@@ -223,6 +228,7 @@ public class MultivariateOptimizer {
 
 	// no model update
 	createGenealogyBranchLengthParameters();
+	createSwitchingFrequencyParameters();
 	createSwitchingFrequencyRatioTermParameters();
 	createSubstitutionModelParameters();	
 
@@ -275,6 +281,19 @@ public class MultivariateOptimizer {
 						       false // no need to update
 						       ));
 	}
+    }
+
+    protected void createSwitchingFrequencyParameters () {
+	switchingFrequencyParameters = new Vector<SwitchingFrequencyParameter>();
+	SwitchingFrequencyParameter sfp = new SwitchingFrequencyParameter(SwitchingFrequencyParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + gamma.getName(),
+									  gamma.getValue(),
+									  runHmmObject,
+									  gamma,
+									  false,
+									  false,
+									  false // no need to update
+									  );
+	switchingFrequencyParameters.add(sfp);
     }
 
     protected void createSwitchingFrequencyRatioTermParameters () {
@@ -355,6 +374,7 @@ public class MultivariateOptimizer {
 	Vector<Parameter> parameters = new Vector<Parameter>();
 	parameters.addAll(parentalBranchLengthParameters); // parental tree branch length parameters
 	parameters.addAll(genealogyBranchLengthParameters);
+	parameters.addAll(switchingFrequencyParameters);
 	parameters.addAll(switchingFrequencyRatioTermParameters);
 	parameters.addAll(gtrRateParameters);
 	parameters.addAll(gtrBaseFrequencyParameters);
@@ -952,6 +972,10 @@ public class MultivariateOptimizer {
 	}	    
 
 	if (enableSwitchingFrequencyOptimizationFlag) {
+	    for (SwitchingFrequencyParameter sfp : switchingFrequencyParameters) {
+		sfp.setValue(sfp.getDefaultInitialValue(), true, true, false);
+	    }
+
 	    for (SwitchingFrequencyRatioTermParameter sfrtp : switchingFrequencyRatioTermParameters) {
 		sfrtp.setValue(sfrtp.getDefaultInitialValue(), true, true, false);
 	    }
@@ -1037,6 +1061,13 @@ public class MultivariateOptimizer {
 	}	    
 
 	if (enableSwitchingFrequencyOptimizationFlag) {
+	    for (SwitchingFrequencyParameter sfp : switchingFrequencyParameters) {
+		double parameterMinimumValue = sfp.getMinimumValue();
+		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * sfp.getMaximumValue();
+		double randomDistance = Math.random() * (parameterMaximumValue - parameterMinimumValue) + parameterMinimumValue;
+		sfp.setValue(randomDistance, true, true, false);
+	    }
+
 	    for (SwitchingFrequencyRatioTermParameter sfrtp : switchingFrequencyRatioTermParameters) {
 		double parameterMinimumValue = sfrtp.getMinimumValue();
 		double parameterMaximumValue = FRACTION_OF_MAXIMUM_FOR_RANDOMIZATION_PURPOSES * sfrtp.getMaximumValue();

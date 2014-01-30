@@ -33,13 +33,14 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
     // corresponds to maximum total non-self-transition switching frequency of 1/3
     //
     // actual constraint is applied in runHmm.calculateSwitchingFrequencies(...)
-    public static final double DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT = 1.0 / 2.0;
+    //public static final double DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT = 1.0 / 2.0;
 
     // rest calculated off of maximum
     public static final double DEFAULT_MINIMUM_RATIO_TERM = 1e-6;
     public static final double DEFAULT_INITIAL_RATIO_TERM = 1e-3;
     // any more than this will certainly cause normalization+rescaling in runHmm.calculateSwitchingFrequencies(...)
-    public static final double DEFAULT_MAXIMUM_RATIO_TERM = DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT;
+    //public static final double DEFAULT_MAXIMUM_RATIO_TERM = DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT;
+    public static final double DEFAULT_MAXIMUM_RATIO_TERM = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
 
     protected runHmm runHmmObject; // for pushing updated transition probabilities
     protected SwitchingFrequencyRatioTerm sfrt;

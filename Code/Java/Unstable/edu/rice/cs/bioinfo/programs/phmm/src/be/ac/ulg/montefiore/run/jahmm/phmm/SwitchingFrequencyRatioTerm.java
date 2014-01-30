@@ -53,7 +53,7 @@ public class SwitchingFrequencyRatioTerm {
 	if (inValue > 0.0) {
 	    value = inValue;
 	    // wipe cache
-	    calculationCache.cacheSwitchingFrequencyMap = null;
+	    //calculationCache.cacheSwitchingFrequencyMap = null;
 
 	    // if (invalidateParentalTreeSwitchingFrequencyMapFlag) {
 	    // 	calculationCache.cacheParentalTreeSwitchingFrequencyMap = null;

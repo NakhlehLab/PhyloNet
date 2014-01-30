@@ -41,6 +41,7 @@ import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
 import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
+import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
 import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -111,6 +112,8 @@ public class runHmm {
     // (Gene genealogy name 1, gene genealogy name 2)->SwitchingFrequencyRatioTerm object for gene genealogy pairs.
     protected BidirectionalMultimap<Tuple<HiddenState,HiddenState>,SwitchingFrequencyRatioTerm> hiddenStatePairToSwitchingFrequencyRatioTermMap;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
+
+    protected SwitchingFrequency gamma;
     
     // need to assume GTR substitution model due to parameterization differences
     protected GTRSubstitutionModel gtrSubstitutionModel;
@@ -240,6 +243,7 @@ public class runHmm {
 	    // Then, in MultivariateOptimizer, add SwitchingFrequencyParameter for each perform actual optimization
 	    // for each TransitionProbabilityParameter.
 	    // add map to parameter
+	    readSwitchingFrequency(in);
 
 	    // need to push this to after the trees are read in
 	    // since term maximums depend on the number of 
@@ -491,6 +495,7 @@ public class runHmm {
 										    parentalTreeNameMap,
 										    geneGenealogyNameMap,
 										    rootedToUnrootedGeneGenealogyMap,
+										    gamma,
 										    nameToSwitchingFrequencyRatioTermMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
@@ -610,20 +615,30 @@ public class runHmm {
 		bw.write("Hidden-state-switching frequency ratio term parameter with name " + name + ": " + nameToSwitchingFrequencyRatioTermMap.get(name).getValue()); bw.newLine();
 	    }
 	    bw.newLine();
-	    bw.write("Hidden-state-switching frequencies: "); bw.newLine();
+	    bw.write("Hidden-state-switching frequency with name " + gamma.getName() + ": " + gamma.getValue()); bw.newLine();
+	    bw.newLine();
+	    bw.write("Normalized within-row hidden-state-switching frequencies f'_{ijk}: "); bw.newLine();
 	    // for readability, also output corresponding switching frequencies
-	    MapOfMap<HiddenState,HiddenState,Double> hiddenStateSwitchingFrequencyMap = calculateSwitchingFrequencies(true);
+	    // just need to multiply through by (1-\gamma) or \gamma / (num-parental-trees - 1), as appropriate
+	    MapOfMap<HiddenState,HiddenState,Double> hiddenStateSwitchingFrequencyMap = calculateSwitchingFrequencies();
 	    //bw.write (hiddenStateSwitchingFrequencyMap.toString()); bw.newLine();
 	    // for readability, proceed according to above hidden state order
 	    for (HiddenState h1 : hiddenStates) {
 		for (HiddenState h2 : hiddenStates) {
+		    // later, if adding across-row switching frequency
+		    // parameterization, remove this
+		    double correctionFactor = gamma.getValue() / ((gamma.getNumAlternatives() - 1) * 1.0);
+		    if (checkSameParentalTreeClass(h1, h2)) {
+			correctionFactor = (1.0 - gamma.getValue());
+		    }
+
 		    // unnecessary by verifySwitchingFrequencyRatioTerms(),
 		    // but paranoid
 		    if (!hiddenStateSwitchingFrequencyMap.contains(h1, h2)) {
 			System.err.println ("ERROR: in runHmm.outputOptimizedModelParameterValues(), missing transition for pair of hidden states named " + h1.getName() + " " + h2.getName() + ". Skipping.");
 			continue;
 		    }
-		    bw.write(h1.getName() + " -> " + h2.getName() + " : " + hiddenStateSwitchingFrequencyMap.get(h1, h2)); bw.newLine();
+		    bw.write(h1.getName() + " -> " + h2.getName() + " : " + (hiddenStateSwitchingFrequencyMap.get(h1, h2).doubleValue() / correctionFactor)); bw.newLine();
 		}
 	    }
 	    bw.newLine();
@@ -1042,93 +1057,187 @@ public class runHmm {
      * (leaving self-transition-frequency-ratio-term as 1).
      * Kind of weird non-linear behavior, but oh well. We expect funky optimization landscape anyways.
      */
-    protected MapOfMap<HiddenState,HiddenState,Double> calculateSwitchingFrequencies (boolean verifyFlag) {
-	MapOfMap<HiddenState,HiddenState,Double> result = new MapOfMap<HiddenState,HiddenState,Double>();
-	for (int i = 0; i < hiddenStates.size(); i++) {
-	    double totalWeight = 0.0;
-	    for (int j = 0; j < hiddenStates.size(); j++) {
-		if (i == j) {
-		    // canonically, self-switching frequency has ratio term 1.0
-		    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(1.0));
-		    totalWeight += 1.0;
-		    continue;
-		}
+    // protected MapOfMap<HiddenState,HiddenState,Double> calculateSwitchingFrequencies (boolean verifyFlag) {
+    // 	MapOfMap<HiddenState,HiddenState,Double> result = new MapOfMap<HiddenState,HiddenState,Double>();
+    // 	for (int i = 0; i < hiddenStates.size(); i++) {
+    // 	    double totalWeight = 0.0;
+    // 	    for (int j = 0; j < hiddenStates.size(); j++) {
+    // 		if (i == j) {
+    // 		    // canonically, self-switching frequency has ratio term 1.0
+    // 		    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(1.0));
+    // 		    totalWeight += 1.0;
+    // 		    continue;
+    // 		}
 
-		// bleh - final
-		Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(hiddenStates.get(i), hiddenStates.get(j));
-		Set<SwitchingFrequencyRatioTerm> terms = hiddenStatePairToSwitchingFrequencyRatioTermMap.get(pair);
-		// paranoid
-		if ((terms == null) || (terms.size() <= 0) || (terms.size() > 1)) {
-		    System.err.println("ERROR: unable to retrieve switching-frequency-ratio-term for named pair " + pair + ".");
-		    return (null);
-		}
+    // 		// bleh - final
+    // 		Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(hiddenStates.get(i), hiddenStates.get(j));
+    // 		Set<SwitchingFrequencyRatioTerm> terms = hiddenStatePairToSwitchingFrequencyRatioTermMap.get(pair);
+    // 		// paranoid
+    // 		if ((terms == null) || (terms.size() <= 0) || (terms.size() > 1)) {
+    // 		    System.err.println("ERROR: unable to retrieve switching-frequency-ratio-term for named pair " + pair + ".");
+    // 		    return (null);
+    // 		}
 		
-		SwitchingFrequencyRatioTerm term = terms.iterator().next();
+    // 		SwitchingFrequencyRatioTerm term = terms.iterator().next();
 
-		// normalize by total weight
-		result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(term.getValue()));
-		totalWeight += term.getValue();
-	    }
+    // 		// normalize by total weight
+    // 		result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(term.getValue()));
+    // 		totalWeight += term.getValue();
+    // 	    }
 
-	    // paranoid
-	    if (totalWeight <= 0.0) {
-		throw (new RuntimeException("ERROR: totalWeight is non-positive in runHmm.calculateSwitchingFrequencies(). " + hiddenStates.get(i).getName() + " " + totalWeight));
-	    }
+    // 	    // paranoid
+    // 	    if (totalWeight <= 0.0) {
+    // 		throw (new RuntimeException("ERROR: totalWeight is non-positive in runHmm.calculateSwitchingFrequencies(). " + hiddenStates.get(i).getName() + " " + totalWeight));
+    // 	    }
 
-	    // if total weight on non-self-transitions is too much, 
-	    // normalize+rescale non-self-transitions' switching-frequency-ratio-terms
-	    if (totalWeight - 1.0 >= optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT) {
-		if (Constants.WARNLEVEL > 4) { System.out.println ("INFO: total weight of non-self-transitions away from hidden state " + hiddenStates.get(i).getName() + " is larger than " + optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT + ". Normalizing and re-scaling non-self-transitions for this hidden state."); }
+    // 	    // no - causes seriously broken behavior
+    // 	    // forces any self-transition to have minimum 2/3 probability
+    // 	    // even for a gene genealogy that is incongruent within its containing parental tree
 
-		double updatedTotalWeight = 1.0;
-		for (int j = 0; j < hiddenStates.size(); j++) {
-		    if (i == j) {
-			continue;
+    // 	    // // if total weight on non-self-transitions is too much, 
+    // 	    // // normalize+rescale non-self-transitions' switching-frequency-ratio-terms
+    // 	    // if (totalWeight - 1.0 >= optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT) {
+    // 	    // 	if (Constants.WARNLEVEL > 4) { System.out.println ("INFO: total weight of non-self-transitions away from hidden state " + hiddenStates.get(i).getName() + " is larger than " + optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT + ". Normalizing and re-scaling non-self-transitions for this hidden state."); }
+
+    // 	    // 	double updatedTotalWeight = 1.0;
+    // 	    // 	for (int j = 0; j < hiddenStates.size(); j++) {
+    // 	    // 	    if (i == j) {
+    // 	    // 		continue;
+    // 	    // 	    }
+
+    // 	    // 	    // wonky - doesn't update the SwitchingFrequencyRatioTerm itself
+    // 	    // 	    // bizarre behavior - same parameter can "saturate" for one row but not another
+    // 	    // 	    double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
+    // 	    // 	    double newWeight = originalWeight / ((totalWeight - 1.0) / optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT);
+    // 	    // 	    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(newWeight));
+    // 	    // 	    updatedTotalWeight += newWeight;
+    // 	    // 	}
+    // 	    // 	totalWeight = updatedTotalWeight;
+    // 	    // }
+
+    // 	    // now normalize all transitions away from hidden state i
+    // 	    // to get probabilities
+    // 	    for (int j = 0; j < hiddenStates.size(); j++) {
+    // 		double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
+    // 		result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(originalWeight / totalWeight));
+    // 	    }
+    // 	}
+
+    // 	// paranoid
+    // 	if (verifyFlag) {
+    // 	    for (int i = 0; i < hiddenStates.size(); i++) {
+    // 		double totalWeight = 0.0;
+    // 		//double[] row = new double[hiddenStates.size()];
+    // 		for (int j = 0; j < hiddenStates.size(); j++) {
+    // 		    double fij = result.get(hiddenStates.get(i), hiddenStates.get(j));
+    // 		    if ((fij < 0.0) || (fij > 1.0)) {
+    // 			System.err.println ("ERROR: switching-frequency for named pair " + hiddenStates.get(i).getName() + " " + hiddenStates.get(j).getName() + " isn't a probability. Returning null to signal error.");
+    // 			return (null);
+    // 		    }
+    // 		    totalWeight += fij;
+    // 		    //row[j] = fij;
+    // 		}
+    // 		if (Math.abs(totalWeight - 1.0) > Constants.ZERO_DELTA) {
+    // 		    //System.out.println ("offending row: |" + Arrays.toString(row) + "|");
+
+    // 		    System.err.println ("ERROR: row-summed-switching-frequencies for row named " + hiddenStates.get(i).getName() + " doesn't sum to one. Returning null to signal error. " + totalWeight);
+    // 		    return (null);
+    // 		}
+    // 	    }
+    // 	}
+
+    // 	return (result);
+    // }
+
+    // boolean verifyFlag
+    
+    // for now - only within-row switching frequencies
+    // one-shot it
+    protected MapOfMap<HiddenState,HiddenState,Double> calculateSwitchingFrequencies () {
+	MapOfMap<HiddenState,HiddenState,Double> result = new MapOfMap<HiddenState,HiddenState,Double>();
+
+	// calculate within-row switching frequencies
+	for (String p1name : parentalTreeNameMap.keys()) {
+	    for (String g1name : geneGenealogyNameMap.keys()) {
+		HiddenState h1 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g1name);
+		double totalWeight = 0.0;
+		for (String g2name : geneGenealogyNameMap.keys()) {
+		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
+		    if (g1name.equals(g2name)) {
+			result.put(h1, h2, new Double(1.0));
+			totalWeight += 1.0;
 		    }
-
-		    // wonky - doesn't update the SwitchingFrequencyRatioTerm itself
-		    // bizarre behavior - same parameter can "saturate" for one row but not another
-		    double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
-		    double newWeight = originalWeight / ((totalWeight - 1.0) / optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT);
-		    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(newWeight));
-		    updatedTotalWeight += newWeight;
+		    else {
+			Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(h1, h2);
+			Set<SwitchingFrequencyRatioTerm> terms = hiddenStatePairToSwitchingFrequencyRatioTermMap.get(pair);
+			// paranoid
+			if ((terms == null) || (terms.size() <= 0) || (terms.size() > 1)) {
+			    System.err.println("ERROR: unable to retrieve switching-frequency-ratio-term for named pair " + pair + ".");
+			    return (null);
+			}
+		
+			SwitchingFrequencyRatioTerm term = terms.iterator().next();
+			result.put(h1, h2, new Double(term.getValue()));
+			totalWeight += term.getValue();
+		    }
 		}
-		totalWeight = updatedTotalWeight;
-	    }
 
-	    // now normalize all transitions away from hidden state i
-	    // to get probabilities
-	    for (int j = 0; j < hiddenStates.size(); j++) {
-		double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
-		result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(originalWeight / totalWeight));
+		// convert ratios to frequencies 
+		for (String g2name : geneGenealogyNameMap.keys()) {
+		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
+		    double originalWeight = result.get(h1, h2).doubleValue();
+		    result.put(h1, h2, new Double(originalWeight / totalWeight));
+		}
+
+		double totalWeight2 = 0.0;
+		for (String g2name : geneGenealogyNameMap.keys()) {
+		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
+		    result.put (h1, h2, new Double(
+						   result.get(h1, h2).doubleValue() * 
+						   h2.calculateProbabilityOfRootedGeneGenealogyInParentalTree()
+						   )
+				);
+		    // order is critical
+		    totalWeight2 += result.get(h1, h2).doubleValue();
+		}
+
+		// now normalize within-row, and also scale by (1-\gamma)
+		for (String g2name : geneGenealogyNameMap.keys()) {
+		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
+		    double originalWeight = result.get(h1, h2).doubleValue();
+		    result.put(h1, h2, new Double((originalWeight / totalWeight2) * (1.0 - gamma.getValue())));
+		}
 	    }
 	}
 
-	// paranoid
-	if (verifyFlag) {
-	    for (int i = 0; i < hiddenStates.size(); i++) {
-		double totalWeight = 0.0;
-		//double[] row = new double[hiddenStates.size()];
-		for (int j = 0; j < hiddenStates.size(); j++) {
-		    double fij = result.get(hiddenStates.get(i), hiddenStates.get(j));
-		    if ((fij < 0.0) || (fij > 1.0)) {
-			System.err.println ("ERROR: switching-frequency for named pair " + hiddenStates.get(i).getName() + " " + hiddenStates.get(j).getName() + " isn't a probability. Returning null to signal error.");
-			return (null);
-		    }
-		    totalWeight += fij;
-		    //row[j] = fij;
+	for (String p1name : parentalTreeNameMap.keys()) {
+	    for (String p2name : parentalTreeNameMap.keys()) {
+		if (p1name.equals(p2name)) {
+		    continue;
 		}
-		if (Math.abs(totalWeight - 1.0) > Constants.ZERO_DELTA) {
-		    //System.out.println ("offending row: |" + Arrays.toString(row) + "|");
 
-		    System.err.println ("ERROR: row-summed-switching-frequencies for row named " + hiddenStates.get(i).getName() + " doesn't sum to one. Returning null to signal error. " + totalWeight);
-		    return (null);
+		for (String g1name : geneGenealogyNameMap.keys()) {
+		    HiddenState h1 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g1name);
+		    for (String g2name : geneGenealogyNameMap.keys()) {
+			HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p2name, g2name);
+
+			// only \gamma and P[g|T] ILS contribution for across-row switching
+			// keep it simple for now
+			//
+			// if this looks promising, can try adding more 
+			// parameterization here, as needed
+			result.put(h1, h2, new Double(
+						      h2.calculateProbabilityOfRootedGeneGenealogyInParentalTree() *
+						      gamma.getValue() / ((gamma.getNumAlternatives() - 1) * 1.0)
+						      ));
+		    }
 		}
 	    }
 	}
 
 	return (result);
     }
+
 
     /**
      * Calculate initial transition probability matrix a_{ij}.
@@ -1146,11 +1255,13 @@ public class runHmm {
 	// parental-tree-switching frequencies, computed using parental-tree-switching frequency ratio terms
 	//
 	// if no cache entry, re-calculate
-	if ((calculationCache.cacheSwitchingFrequencyMap == null) || calculationCache.cacheSwitchingFrequencyMap.isEmpty()) {
-	    MapOfMap<HiddenState,HiddenState,Double> switchingFrequencyMap = calculateSwitchingFrequencies(true);
-	    calculationCache.cacheSwitchingFrequencyMap = switchingFrequencyMap;
-	}
-	MapOfMap<HiddenState,HiddenState,Double> switchingFrequencyMap = calculationCache.cacheSwitchingFrequencyMap;
+	// if ((calculationCache.cacheSwitchingFrequencyMap == null) || calculationCache.cacheSwitchingFrequencyMap.isEmpty()) {
+	//     MapOfMap<HiddenState,HiddenState,Double> switchingFrequencyMap = calculateSwitchingFrequencies(true);
+	//     calculationCache.cacheSwitchingFrequencyMap = switchingFrequencyMap;
+	// }
+	// MapOfMap<HiddenState,HiddenState,Double> switchingFrequencyMap = calculationCache.cacheSwitchingFrequencyMap;
+
+	MapOfMap<HiddenState,HiddenState,Double> switchingFrequencyMap = calculateSwitchingFrequencies();
 
 	double[][] a = new double[hiddenStates.size()][hiddenStates.size()];
 	for (int i = 0; i < a.length; i++) {
@@ -1162,8 +1273,7 @@ public class runHmm {
 		//String pj = parentalTreeNameMap.rget(sj.getParentalTree());
 		//String gj = geneGenealogyNameMap.rget(sj.getRootedGeneGenealogy());
 		a[i][j] = 
-		    switchingFrequencyMap.get(si, sj).doubleValue() *
-		    sj.calculateProbabilityOfRootedGeneGenealogyInParentalTree()
+		    switchingFrequencyMap.get(si, sj).doubleValue()
 		    ;
 	    }
 	}
@@ -1171,7 +1281,7 @@ public class runHmm {
 	// bleh - post new model extensions,
 	// need to re-normalize after (parental-tree-switching parameter) x (gene-genealogy-switching parameter) x
 	// (ILS calculation from Degnan and Salter 2005) contributions all factored in
-	rowNormalize(a);
+	//rowNormalize(a);
 
 	// strict!
 	if (!verifyAij(a)) {
@@ -1726,6 +1836,11 @@ public class runHmm {
 	//     geneGenealogyNameMap.put(egg.getName(), geneGenealogy);
 	// }
 
+    protected void readSwitchingFrequency (BufferedReader inbr) throws Exception {
+	System.out.println("Across-row switching frequency gamma: ");
+	double inGamma = Double.parseDouble(inbr.readLine().trim());
+	gamma = new SwitchingFrequency(SwitchingFrequency.GAMMA, inGamma, calculationCache, parentalTreeNameMap.keys().size());
+    }
 
     /**
      * Read transition probability parameters (other than those related to basic coalescent model calculations, i.e., parental tree
@@ -1806,6 +1921,9 @@ public class runHmm {
      * Only call after both switching frequency ratio terms and trees have been built.
      */
     protected boolean verifySwitchingFrequencyRatioTerms () {
+	// With new, simpler model,
+	// only require terms for within-row switching frequencies.
+	//
 	// All possible ordered pairs of hidden states must be specified, 
 	// *except* for ordered pairs where both members are the same parental tree 
 	// (corresponding to transitions
@@ -1815,9 +1933,16 @@ public class runHmm {
 	    for (int j = 0; j < hiddenStates.size(); j++) {
 		if (i != j) {
 		    HiddenState hj = hiddenStates.get(j);
+
+		    // comment this out later if adding 
+		    // across-row switching frequency parameterization
+		    if (!checkSameParentalTreeClass(hi, hj)) {
+			continue;
+		    }
+
 		    Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(hi, hj);
 		    if (!hiddenStatePairToSwitchingFrequencyRatioTermMap.containsKey(pair)) {
-			System.err.println ("ERROR:hiddenStatePairToSwitchingFrequencyRatioTermMap  is missing an entry for hidden state pair " + pair);
+			System.err.println ("ERROR: hiddenStatePairToSwitchingFrequencyRatioTermMap is missing an entry for hidden state pair " + pair);
 			return (false);
 		    }
 		}

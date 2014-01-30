@@ -112,6 +112,7 @@ public class runHmm {
     // (Gene genealogy name 1, gene genealogy name 2)->SwitchingFrequencyRatioTerm object for gene genealogy pairs.
     protected BidirectionalMultimap<Tuple<HiddenState,HiddenState>,SwitchingFrequencyRatioTerm> hiddenStatePairToSwitchingFrequencyRatioTermMap;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
+    protected Hashtable<String,Boolean> switchingFrequencyRatioTermNameToOptimizeFlagMap;
 
     protected SwitchingFrequency gamma;
     
@@ -497,6 +498,7 @@ public class runHmm {
 										    rootedToUnrootedGeneGenealogyMap,
 										    gamma,
 										    nameToSwitchingFrequencyRatioTermMap,
+										    switchingFrequencyRatioTermNameToOptimizeFlagMap,
 										    obsSequence,
 										    inputLengthParameterToEdgeMapFilename,
 										    inputParentalBranchLengthParameterInequalitiesFilename,
@@ -1151,35 +1153,35 @@ public class runHmm {
 
     // boolean verifyFlag
     
-    // for now - only within-row switching frequencies
     // one-shot it
+    // function should be renamed - really calculating full transition probabilities in one shot
     protected MapOfMap<HiddenState,HiddenState,Double> calculateSwitchingFrequencies () {
 	MapOfMap<HiddenState,HiddenState,Double> result = new MapOfMap<HiddenState,HiddenState,Double>();
 
-	// calculate within-row switching frequencies
+	// calculate within-row transition probabilities
 	for (String p1name : parentalTreeNameMap.keys()) {
 	    for (String g1name : geneGenealogyNameMap.keys()) {
 		HiddenState h1 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g1name);
 		double totalWeight = 0.0;
 		for (String g2name : geneGenealogyNameMap.keys()) {
 		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
-		    if (g1name.equals(g2name)) {
-			result.put(h1, h2, new Double(1.0));
-			totalWeight += 1.0;
+		    // if (g1name.equals(g2name)) {
+		    // 	result.put(h1, h2, new Double(1.0));
+		    // 	totalWeight += 1.0;
+		    // }
+		    // else {
+		    Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(h1, h2);
+		    Set<SwitchingFrequencyRatioTerm> terms = hiddenStatePairToSwitchingFrequencyRatioTermMap.get(pair);
+		    // paranoid
+		    if ((terms == null) || (terms.size() <= 0) || (terms.size() > 1)) {
+			System.err.println("ERROR: unable to retrieve switching-frequency-ratio-term for named pair " + pair + ".");
+			return (null);
 		    }
-		    else {
-			Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(h1, h2);
-			Set<SwitchingFrequencyRatioTerm> terms = hiddenStatePairToSwitchingFrequencyRatioTermMap.get(pair);
-			// paranoid
-			if ((terms == null) || (terms.size() <= 0) || (terms.size() > 1)) {
-			    System.err.println("ERROR: unable to retrieve switching-frequency-ratio-term for named pair " + pair + ".");
-			    return (null);
-			}
 		
-			SwitchingFrequencyRatioTerm term = terms.iterator().next();
-			result.put(h1, h2, new Double(term.getValue()));
-			totalWeight += term.getValue();
-		    }
+		    SwitchingFrequencyRatioTerm term = terms.iterator().next();
+		    result.put(h1, h2, new Double(term.getValue()));
+		    totalWeight += term.getValue();
+			//}
 		}
 
 		// convert ratios to frequencies 
@@ -1210,6 +1212,7 @@ public class runHmm {
 	    }
 	}
 
+	// now calculate across-row switching frequencies
 	for (String p1name : parentalTreeNameMap.keys()) {
 	    for (String p2name : parentalTreeNameMap.keys()) {
 		if (p1name.equals(p2name)) {
@@ -1860,6 +1863,7 @@ public class runHmm {
 
 	hiddenStatePairToSwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<HiddenState,HiddenState>,SwitchingFrequencyRatioTerm>();
 	nameToSwitchingFrequencyRatioTermMap = new BijectiveHashtable<String,SwitchingFrequencyRatioTerm>();
+	switchingFrequencyRatioTermNameToOptimizeFlagMap = new Hashtable<String,Boolean>();
 
 	// for now, not used
 	// cap on non-self-transition frequencies is part of runHmm.calculateSwitchingFrequencies(...) 
@@ -1873,16 +1877,18 @@ public class runHmm {
 	String line = "";
 	while ((line = br.readLine()) != null) {
 	    StringTokenizer st = new StringTokenizer(line);
-	    if (st.countTokens() < 3) {
+	    if (st.countTokens() < 4) {
 		throw (new IOException("ERROR: incorrect number of fields in input line from file " + switchingFrequencyRatioTermFilename + ": " + line));
 	    }
 	    String name = st.nextToken();
 	    double initialWeight = Double.parseDouble(st.nextToken());
+	    Boolean optimizeFlag = new Boolean(st.nextToken());
 	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight, calculationCache, numAlternatives);
 	    if (nameToSwitchingFrequencyRatioTermMap.containsKey(name)) {
 		throw (new IOException("ERROR: duplicate switching frequency ratio term in file " + switchingFrequencyRatioTermFilename + ": " + name));
 	    }
 	    nameToSwitchingFrequencyRatioTermMap.put(name, sfrt);
+	    switchingFrequencyRatioTermNameToOptimizeFlagMap.put(name, optimizeFlag);
 
 	    while (st.hasMoreTokens()) {
 		String pairString = st.nextToken();
@@ -1931,26 +1937,26 @@ public class runHmm {
 	for (int i = 0; i < hiddenStates.size(); i++) {
 	    HiddenState hi = hiddenStates.get(i);
 	    for (int j = 0; j < hiddenStates.size(); j++) {
-		if (i != j) {
-		    HiddenState hj = hiddenStates.get(j);
-
-		    // comment this out later if adding 
-		    // across-row switching frequency parameterization
-		    if (!checkSameParentalTreeClass(hi, hj)) {
-			continue;
-		    }
-
-		    Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(hi, hj);
-		    if (!hiddenStatePairToSwitchingFrequencyRatioTermMap.containsKey(pair)) {
-			System.err.println ("ERROR: hiddenStatePairToSwitchingFrequencyRatioTermMap is missing an entry for hidden state pair " + pair);
-			return (false);
-		    }
+		HiddenState hj = hiddenStates.get(j);
+		
+		// comment this out later if adding 
+		// across-row switching frequency parameterization
+		if (!checkSameParentalTreeClass(hi, hj)) {
+		    continue;
+		}
+		
+		Tuple<HiddenState,HiddenState> pair = new Tuple<HiddenState,HiddenState>(hi, hj);
+		if (!hiddenStatePairToSwitchingFrequencyRatioTermMap.containsKey(pair)) {
+		    System.err.println ("ERROR: hiddenStatePairToSwitchingFrequencyRatioTermMap is missing an entry for hidden state pair " + pair);
+		    return (false);
 		}
 	    }
 	}
 
 	return (true);
     }
+
+//		if (i != j) {
 
     protected void readSubstitutionModelParameters (BufferedReader br) throws Exception {
 	System.out.println("Input non-zero substitution model rates in format <AG> <AC> <AT> <GC> <GT>: ");

@@ -143,6 +143,7 @@ public class MultivariateOptimizer {
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
     protected SwitchingFrequency gamma;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
+    protected Hashtable<String,Boolean> switchingFrequencyRatioTermNameToOptimizeFlagMap;
     protected List<ObservationMap> observation;
     protected CalculationCache calculationCache;
 
@@ -185,6 +186,7 @@ public class MultivariateOptimizer {
 				  BidirectionalMultimap<Tree,Tree> inRootedToUnrootedGeneGenealogyMap,
 				  SwitchingFrequency inGamma,
 				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToSwitchingFrequencyRatioTermMap,
+				  Hashtable<String,Boolean> inSwitchingFrequencyRatioTermNameToOptimizeFlagMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
 				  String inputParentalBranchLengthParameterInequalitiesFilename,
@@ -206,6 +208,7 @@ public class MultivariateOptimizer {
 	this.rootedToUnrootedGeneGenealogyMap = inRootedToUnrootedGeneGenealogyMap;
 	this.gamma = inGamma;
 	this.nameToSwitchingFrequencyRatioTermMap = inNameToSwitchingFrequencyRatioTermMap;
+	this.switchingFrequencyRatioTermNameToOptimizeFlagMap = inSwitchingFrequencyRatioTermNameToOptimizeFlagMap;
 	this.observation = inObservation;
 	this.calculationCache = inCalculationCache;
 	this.enableParentalTreeOptimizationFlag = inEnableParentalTreeOptimizationFlag;
@@ -301,6 +304,11 @@ public class MultivariateOptimizer {
 	HashSet<SwitchingFrequencyRatioTerm> sfrts = new HashSet<SwitchingFrequencyRatioTerm>();
 	sfrts.addAll(nameToSwitchingFrequencyRatioTermMap.values());
 	for (SwitchingFrequencyRatioTerm sfrt : sfrts) {
+	    // if optimization disabled for this SwitchingFrequencyRatioTerm, don't create a parameter for it
+	    if (!switchingFrequencyRatioTermNameToOptimizeFlagMap.get(nameToSwitchingFrequencyRatioTermMap.rget(sfrt)).booleanValue()) {
+		continue;
+	    }
+
 	    SwitchingFrequencyRatioTermParameter sfrtp = new SwitchingFrequencyRatioTermParameter(SwitchingFrequencyRatioTermParameter.class.getName() + HiddenState.HIDDEN_STATE_NAME_DELIMITER + sfrt.getName(),
 												  sfrt.getValue(),
 												  runHmmObject,

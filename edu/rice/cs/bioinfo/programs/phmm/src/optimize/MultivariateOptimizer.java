@@ -69,7 +69,8 @@ public class MultivariateOptimizer {
     public static final double SEARCH_INTERVAL_MINIMUM_WIDTH = 1e-4;
     public static final int BRENT_METHOD_SINGLE_ROUND_MAXIMUM_ITERATIONS = 100;
     public static final int MAXIMUM_NUM_ROUNDS = 10000;
-    public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-1;
+    //public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-1;
+    public static final double MINIMUM_LOG_LIKELIHOOD_DELTA_FOR_CONVERGENCE = 1e-2;
     // don't go too small with this - takes too long otherwise
     // log likelihood calculations unlikely to have that much precision anyways
     public static final double MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL = 1e-5;
@@ -98,7 +99,7 @@ public class MultivariateOptimizer {
     // hmm... is GeneTreeProbability able to handle probability == 0 or 1?
     // yes, it handles this fine
     public static final double DEFAULT_MINIMUM_PROBABILITY = 0.0;
-    public static final double DEFAULT_INITIAL_PROBABILITY = 1e-2;
+    public static final double DEFAULT_INITIAL_PROBABILITY = 1e-3;
     // switching probability maximum is controlled in SwitchingFrequencyRatioTerm
     // this isn't really used
     //public static final double DEFAULT_MAXIMUM_PROBABILITY = 0.25;
@@ -682,7 +683,14 @@ public class MultivariateOptimizer {
 	// see function comments
 	//
 	// only accept strict improvements within a certain delta
-	if (brentOptimizedLogLikelihood - logLikelihood > MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL) {
+	//
+	// kliu - this isn't exhaustive enough
+	// go back to old strategy
+	// 
+	// seems to be causing poor local optima on simple test-cases
+	// compared to old search heuristic, which accepted any improvement (up to floating-point precision's difference)
+	//if (brentOptimizedLogLikelihood - logLikelihood > MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL) {
+	if (brentOptimizedLogLikelihood > logLikelihood) {
 	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Brent's method resulted in strict improvement in likelihood. Updating."); }
 
 	    // update 
@@ -692,7 +700,10 @@ public class MultivariateOptimizer {
 	}
 	else {
 	    // no update - info instead
-	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + " by at least " + MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL + ". Not updating branch length nor best round log likelihood."); }
+	    // see above
+	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + ". Not updating branch length nor best round log likelihood."); }
+	    
+	    //if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Round " + round + " optimized point and log likelihood for length parameter " + p.getName() + " resulted in log likelihood " + brentOptimizedLogLikelihood + " which isn't better than current log likelihood " + logLikelihood + " by at least " + MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL + ". Not updating branch length nor best round log likelihood."); }
 	}
 
 	return (logLikelihood);
@@ -827,7 +838,9 @@ public class MultivariateOptimizer {
 
 		// skip frequency optimization if disabled
 		if (!enableSwitchingFrequencyOptimizationFlag &&
-		    (p instanceof SwitchingFrequencyRatioTermParameter)) {
+		    ((p instanceof SwitchingFrequencyRatioTermParameter) ||
+		     (p instanceof SwitchingFrequencyParameter)
+		     )) {
 		    continue;
 		}
 

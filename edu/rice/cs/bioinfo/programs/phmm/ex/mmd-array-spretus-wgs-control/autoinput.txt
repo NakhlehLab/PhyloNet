@@ -7,7 +7,7 @@ OUTGROUP
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control
 0.964011 0.192217 0.270592 0.0806232 0.174283
 0.1953 0.3077 0.3008 0.1962
-0.0001
+0.1
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/switching-frequency-ratio-terms
 0
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/initial.viterbi.sequence
@@ -24,6 +24,6 @@ true
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/optimized.model.parameters
-DEFAULT
+CURRENT DEFAULT RANDOM
 true true true true
 4

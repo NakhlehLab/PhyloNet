@@ -1,4 +1,4 @@
-README FILE FOR LUAY'S JAHMM
+README
 
 ******************
 File Formats
@@ -46,10 +46,13 @@ File Formats
 
 - Hidden state switching parameters
   - Format:
-    <parameter name> <initial weight> <hidden state x_1 parental tree name>,<hidden state x_1 gene genealogy name>|<hidden state y_1 parental tree name>,<hidden state y_1 gene genealogy name> <hidden state x_2 parental tree name>,<hidden state x_2 gene genealogy name>|<hidden state y_2 parental tree name>,<hidden state y_2 gene genealogy name> ...
+    <parameter name> <initial weight> <optimize flag> <hidden state x_1 parental tree name>,<hidden state x_1 gene genealogy name>|<hidden state y_1 parental tree name>,<hidden state y_1 gene genealogy name> <hidden state x_2 parental tree name>,<hidden state x_2 gene genealogy name>|<hidden state y_2 parental tree name>,<hidden state y_2 gene genealogy name> ...
 
   - Duplicate parameter names are not allowed.
-  - All possible ordered pairs of hidden states must be specified, 
+  - Set <optimize flag> to true to enable optimization for the parameter, or set to false
+    to disable optimization and leave the parameter value fixed for the entire analysis.
+  - All possible ordered pairs of hidden states must be specified for each row of hidden states
+    (where all hidden states in a row share the same parental tree), 
     *except* for ordered pairs where both members are the same hidden state 
     (corresponding to self-transitions).
   - Switching parameters are ratios, where the self-transition parameter

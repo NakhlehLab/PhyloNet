@@ -112,7 +112,7 @@ public class runHmm {
     // (Gene genealogy name 1, gene genealogy name 2)->SwitchingFrequencyRatioTerm object for gene genealogy pairs.
     protected BidirectionalMultimap<Tuple<HiddenState,HiddenState>,SwitchingFrequencyRatioTerm> hiddenStatePairToSwitchingFrequencyRatioTermMap;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
-    protected Hashtable<String,Boolean> switchingFrequencyRatioTermNameToOptimizeFlagMap;
+    protected Hashtable<String,Tuple3<Double,Double,Boolean>> switchingFrequencyRatioTermNameToOptimizeFlagMap;
 
     protected SwitchingFrequency gamma;
     
@@ -1863,7 +1863,7 @@ public class runHmm {
 
 	hiddenStatePairToSwitchingFrequencyRatioTermMap = new BidirectionalMultimap<Tuple<HiddenState,HiddenState>,SwitchingFrequencyRatioTerm>();
 	nameToSwitchingFrequencyRatioTermMap = new BijectiveHashtable<String,SwitchingFrequencyRatioTerm>();
-	switchingFrequencyRatioTermNameToOptimizeFlagMap = new Hashtable<String,Boolean>();
+	switchingFrequencyRatioTermNameToOptimizeFlagMap = new Hashtable<String,Tuple3<Double,Double,Boolean>>();
 
 	// for now, not used
 	// cap on non-self-transition frequencies is part of runHmm.calculateSwitchingFrequencies(...) 
@@ -1877,18 +1877,20 @@ public class runHmm {
 	String line = "";
 	while ((line = br.readLine()) != null) {
 	    StringTokenizer st = new StringTokenizer(line);
-	    if (st.countTokens() < 4) {
+	    if (st.countTokens() < 6) {
 		throw (new IOException("ERROR: incorrect number of fields in input line from file " + switchingFrequencyRatioTermFilename + ": " + line));
 	    }
 	    String name = st.nextToken();
+	    Double minimumWeight = new Double(st.nextToken());
 	    double initialWeight = Double.parseDouble(st.nextToken());
+	    Double maximumWeight = new Double(st.nextToken());
 	    Boolean optimizeFlag = new Boolean(st.nextToken());
 	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight, calculationCache, numAlternatives);
 	    if (nameToSwitchingFrequencyRatioTermMap.containsKey(name)) {
 		throw (new IOException("ERROR: duplicate switching frequency ratio term in file " + switchingFrequencyRatioTermFilename + ": " + name));
 	    }
 	    nameToSwitchingFrequencyRatioTermMap.put(name, sfrt);
-	    switchingFrequencyRatioTermNameToOptimizeFlagMap.put(name, optimizeFlag);
+	    switchingFrequencyRatioTermNameToOptimizeFlagMap.put(name, new Tuple3<Double,Double,Boolean>(minimumWeight, maximumWeight, optimizeFlag));
 
 	    while (st.hasMoreTokens()) {
 		String pairString = st.nextToken();

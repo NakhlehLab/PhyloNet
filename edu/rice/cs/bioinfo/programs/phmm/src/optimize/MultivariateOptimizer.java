@@ -144,7 +144,7 @@ public class MultivariateOptimizer {
     protected BidirectionalMultimap<Tree,Tree> rootedToUnrootedGeneGenealogyMap;
     protected SwitchingFrequency gamma;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
-    protected Hashtable<String,Boolean> switchingFrequencyRatioTermNameToOptimizeFlagMap;
+    protected Hashtable<String,Tuple3<Double,Double,Boolean>> switchingFrequencyRatioTermNameToOptimizeFlagMap;
     protected List<ObservationMap> observation;
     protected CalculationCache calculationCache;
 
@@ -187,7 +187,7 @@ public class MultivariateOptimizer {
 				  BidirectionalMultimap<Tree,Tree> inRootedToUnrootedGeneGenealogyMap,
 				  SwitchingFrequency inGamma,
 				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToSwitchingFrequencyRatioTermMap,
-				  Hashtable<String,Boolean> inSwitchingFrequencyRatioTermNameToOptimizeFlagMap,
+				  Hashtable<String,Tuple3<Double,Double,Boolean>> inSwitchingFrequencyRatioTermNameToOptimizeFlagMap,
 				  List<ObservationMap> inObservation,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
 				  String inputParentalBranchLengthParameterInequalitiesFilename,
@@ -305,8 +305,9 @@ public class MultivariateOptimizer {
 	HashSet<SwitchingFrequencyRatioTerm> sfrts = new HashSet<SwitchingFrequencyRatioTerm>();
 	sfrts.addAll(nameToSwitchingFrequencyRatioTermMap.values());
 	for (SwitchingFrequencyRatioTerm sfrt : sfrts) {
+	    Tuple3<Double,Double,Boolean> sfrtOptimizationConfigTuple = switchingFrequencyRatioTermNameToOptimizeFlagMap.get(nameToSwitchingFrequencyRatioTermMap.rget(sfrt));
 	    // if optimization disabled for this SwitchingFrequencyRatioTerm, don't create a parameter for it
-	    if (!switchingFrequencyRatioTermNameToOptimizeFlagMap.get(nameToSwitchingFrequencyRatioTermMap.rget(sfrt)).booleanValue()) {
+	    if (!sfrtOptimizationConfigTuple.Item3.booleanValue()) {
 		continue;
 	    }
 
@@ -316,7 +317,9 @@ public class MultivariateOptimizer {
 												  sfrt,
 												  false,
 												  false,
-												  false // no need to update
+												  false, // no need to update
+												  sfrtOptimizationConfigTuple.Item1.doubleValue(),
+												  sfrtOptimizationConfigTuple.Item2.doubleValue()
 												  );
 	    // bleh - need to check min/max after instantiation, due to need to call super() at the
 	    // very start of class constructor

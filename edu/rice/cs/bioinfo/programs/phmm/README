@@ -46,7 +46,7 @@ File Formats
 
 - Hidden state switching parameters
   - Format:
-    <parameter name> <initial weight> <optimize flag> <hidden state x_1 parental tree name>,<hidden state x_1 gene genealogy name>|<hidden state y_1 parental tree name>,<hidden state y_1 gene genealogy name> <hidden state x_2 parental tree name>,<hidden state x_2 gene genealogy name>|<hidden state y_2 parental tree name>,<hidden state y_2 gene genealogy name> ...
+    <parameter name> <minimum weight during optimization> <initial weight> <maximum weight during optimization> <optimize flag> <hidden state x_1 parental tree name>,<hidden state x_1 gene genealogy name>|<hidden state y_1 parental tree name>,<hidden state y_1 gene genealogy name> <hidden state x_2 parental tree name>,<hidden state x_2 gene genealogy name>|<hidden state y_2 parental tree name>,<hidden state y_2 gene genealogy name> ...
 
   - Duplicate parameter names are not allowed.
   - Set <optimize flag> to true to enable optimization for the parameter, or set to false

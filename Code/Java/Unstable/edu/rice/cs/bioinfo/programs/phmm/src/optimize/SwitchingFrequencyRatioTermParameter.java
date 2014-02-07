@@ -36,26 +36,32 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
     //public static final double DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT = 1.0 / 2.0;
 
     // rest calculated off of maximum
-    public static final double DEFAULT_MINIMUM_RATIO_TERM = 1e-6;
-    public static final double DEFAULT_INITIAL_RATIO_TERM = 1e-3;
+    //public static final double DEFAULT_MINIMUM_RATIO_TERM = 1e-6;
+    public static final double DEFAULT_INITIAL_RATIO_TERM = 1.0;
     // any more than this will certainly cause normalization+rescaling in runHmm.calculateSwitchingFrequencies(...)
     //public static final double DEFAULT_MAXIMUM_RATIO_TERM = DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT;
-    public static final double DEFAULT_MAXIMUM_RATIO_TERM = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
+    //public static final double DEFAULT_MAXIMUM_RATIO_TERM = MultivariateOptimizer.DEFAULT_MAXIMUM_RATE;
 
     protected runHmm runHmmObject; // for pushing updated transition probabilities
     protected SwitchingFrequencyRatioTerm sfrt;
+
+    protected double minimumRatioTerm;
+    protected double maximumRatioTerm;
 
     /**
      * User must explicitly request whether or not an update is requested 
      * during construction.
      */
     public SwitchingFrequencyRatioTermParameter (String inName, 
-					double inValue, 
-					runHmm inRunHmmObject,
-					SwitchingFrequencyRatioTerm inSfrt,
-					boolean checkValueMinimumConstraintFlag,
-					boolean checkValueMaximumConstraintFlag,
-					boolean updateModelStateFlag) {
+						 double inValue, 
+						 runHmm inRunHmmObject,
+						 SwitchingFrequencyRatioTerm inSfrt,
+						 boolean checkValueMinimumConstraintFlag,
+						 boolean checkValueMaximumConstraintFlag,
+						 boolean updateModelStateFlag,
+						 double inMinimumRatioTerm,
+						 double inMaximumRatioTerm
+						 ) {
 	// order forced by Java language constraints
 	// need to delay the setValue() check until after runHmmObject reference ready
 	super(inName, inValue, checkValueMinimumConstraintFlag, checkValueMinimumConstraintFlag, false);
@@ -66,11 +72,14 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
 	if (updateModelStateFlag) {
 	    updateModelState();
 	}
+
+        setMinimumValue(inMinimumRatioTerm);
+	setMaximumValue(inMaximumRatioTerm);
     }
 
     // really, can go to zero
     public double getMinimumValue () {
-	return (DEFAULT_MINIMUM_RATIO_TERM);
+	return (minimumRatioTerm);
     }
 
     public double getDefaultInitialValue () {
@@ -78,7 +87,15 @@ public class SwitchingFrequencyRatioTermParameter extends Parameter {
     }
 
     public double getMaximumValue () {
-	return (DEFAULT_MAXIMUM_RATIO_TERM);
+	return (maximumRatioTerm);
+    }
+
+    public void setMinimumValue (double inMinimumRatioTerm) {
+	minimumRatioTerm = inMinimumRatioTerm;
+    }
+
+    public void setMaximumValue (double inMaximumRatioTerm) {
+	maximumRatioTerm = inMaximumRatioTerm;
     }
 
     public void updateModelState () {

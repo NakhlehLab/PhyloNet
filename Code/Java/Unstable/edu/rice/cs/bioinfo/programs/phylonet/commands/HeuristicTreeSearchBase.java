@@ -24,10 +24,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.IsRooted
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
-import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.Func2;
-import edu.rice.cs.bioinfo.library.programming.Predicate1;
-import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.DeepCoalescencesCounter;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -104,7 +101,11 @@ public abstract class HeuristicTreeSearchBase extends CommandBaseFileOut
 
         public Double execute(Graph<NetworkToJUNG.Label, NetworkToJUNG.Label[]> tree) {
             Tree network = toTree(tree);
-            return (double) DeepCoalescencesCounter.countExtraCoal(_geneTrees, network, false, _bootstrap);
+            List<MutableTuple<Tree,Double>> _gtWithWeight = new ArrayList<MutableTuple<Tree, Double>>();
+            for(Tree tr: _geneTrees){
+                _gtWithWeight.add(new MutableTuple<Tree, Double>(tr, 1.0));
+            }
+            return (double) DeepCoalescencesCounter.countExtraCoal(_gtWithWeight, network, false, _bootstrap);
         }
     };
 

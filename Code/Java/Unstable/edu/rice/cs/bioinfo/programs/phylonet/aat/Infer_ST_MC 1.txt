@@ -2,20 +2,22 @@
 
 BEGIN NETWORKS;
 
-Network g1 = ((((a,b),c),d),e);
-Network g2 = ((a,b),((c,e),d));
-Network g3 = ((a,c),((b,e),d));
+Network g1 = ((((a,b),c),e),d);
+Network g2 = (((a,b),(c,e)),d);
+Network g3 = ((a,b),((c,e),d));
+Network g4 = (((a,b),(c,e)),d);
+Network g5 = ((a,c),((b,e),d));
 
 END;
 
 
 BEGIN PHYLONET;
 
-Infer_ST_MC (g1, g2, g3);
+Infer_ST_MC (g1, g2, g3, g4, g5);
 
 END;
 ===
 
-Infer_ST_MC (g1, g2, g3)
-(e,(d,(c,(a,b))));
+Infer_ST_MC (g1, g2, g3, g4, g5)
+(d,((b,a),(e,c)));
 ===

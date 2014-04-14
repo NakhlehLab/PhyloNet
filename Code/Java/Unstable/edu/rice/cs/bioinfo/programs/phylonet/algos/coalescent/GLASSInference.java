@@ -24,7 +24,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.BufferedReader;
@@ -427,10 +427,10 @@ public class GLASSInference
 	 * @return  maps from taxon pairs to distance
 	 */
 	private Map<STITreeCluster,Double> computeTaxonPairTime(List<Tree> trees, String[] stTaxa, String[] gtTaxa, Map<String,String> taxonMap){
-		LinkedList<STITreeClusterWD<Double>> clusters = new LinkedList<STITreeClusterWD<Double>>();
+		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
 		//Add the cluster containing all taxa to the end of the list.
-		STITreeClusterWD<Double> all = new STITreeClusterWD<Double>(stTaxa);
+		STITreeCluster<Double> all = new STITreeCluster<Double>(stTaxa);
 		for (String t : stTaxa) {
 			all.addLeaf(t);
 		}
@@ -447,8 +447,8 @@ public class GLASSInference
 
 
 		for (Tree tr : trees) {
-			for (STITreeClusterWD<Double> tc : tr.getClustersWD(gtTaxa, true)) {
-				STITreeClusterWD<Double> stCluster = new STITreeClusterWD<Double>(stTaxa);
+			for (STITreeCluster<Double> tc : tr.getClusters(gtTaxa, true)) {
+				STITreeCluster<Double> stCluster = new STITreeCluster<Double>(stTaxa);
 				for (String s : tc.getClusterLeaves()) {
 					stCluster.addLeaf(taxonMap.get(s));
 				}
@@ -471,9 +471,9 @@ public class GLASSInference
 
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl2.getClusterSize() < cl1.getClusterSize()){
 					clusters.remove(cl1);
 					clusters.add(j,cl1);
@@ -485,9 +485,9 @@ public class GLASSInference
 
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=i+1;j<clusters.size();j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData() < cl2.getData()){
 						cl2.setData(cl1.getData());
@@ -498,11 +498,11 @@ public class GLASSInference
 
 
 		Map<STITreeCluster,Double> taxonPairTime = new HashMap<STITreeCluster, Double>();
-		ArrayList<STITreeClusterWD<Double>> taxonPairs = new ArrayList<STITreeClusterWD<Double>>();
+		ArrayList<STITreeCluster<Double>> taxonPairs = new ArrayList<STITreeCluster<Double>>();
 
 		for(int i=0;i<stTaxa.length;i++){
 			for(int j=i+1;j<stTaxa.length;j++){
-				STITreeClusterWD<Double> cl = new STITreeClusterWD<Double>(stTaxa);
+				STITreeCluster<Double> cl = new STITreeCluster<Double>(stTaxa);
 				BitSet bs = new BitSet(stTaxa.length);
 				bs.set(i);
 				bs.set(j);
@@ -514,8 +514,8 @@ public class GLASSInference
 
 		//System.out.println(clusters);
 
-		for(STITreeClusterWD<Double> cl1: clusters){
-			for(STITreeClusterWD<Double> cl2 : taxonPairs){
+		for(STITreeCluster<Double> cl1: clusters){
+			for(STITreeCluster<Double> cl2 : taxonPairs){
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData()<cl2.getData() || cl2.getData()==-1){
 						cl2.setData(cl1.getData());
@@ -524,7 +524,7 @@ public class GLASSInference
 			}
 		}
 
-		for(STITreeClusterWD<Double> clwt : taxonPairs){
+		for(STITreeCluster<Double> clwt : taxonPairs){
 			STITreeCluster cl = new STITreeCluster(stTaxa);
 			cl.setCluster(clwt.getCluster());
 			taxonPairTime.put(cl, clwt.getData());
@@ -542,10 +542,10 @@ public class GLASSInference
 	 * @return  maps from taxon pairs to distance
 	 */
 	private Map<STITreeCluster,Double> computeTaxonPairTime(List<Tree> trees, String[] taxa){
-		LinkedList<STITreeClusterWD<Double>> clusters = new LinkedList<STITreeClusterWD<Double>>();
+		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
 		//Add the cluster containing all taxa to the first of the list.
-		STITreeClusterWD<Double> all = new STITreeClusterWD<Double>(taxa);
+		STITreeCluster<Double> all = new STITreeCluster<Double>(taxa);
 		for (String t : taxa) {
 			all.addLeaf(t);
 		}
@@ -562,8 +562,8 @@ public class GLASSInference
 
 
 		for (Tree tr : trees) {
-			for (STITreeClusterWD<Double> tc : tr.getClustersWD(taxa, true)) {
-				STITreeClusterWD<Double> stCluster = new STITreeClusterWD<Double>(tc);
+			for (STITreeCluster<Double> tc : tr.getClusters(taxa, true)) {
+				STITreeCluster<Double> stCluster = new STITreeCluster<Double>(tc);
 				stCluster.setData(tc.getData());
 
 				if(!clusters.contains(stCluster)){
@@ -581,9 +581,9 @@ public class GLASSInference
 
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl2.getClusterSize() < cl1.getClusterSize()){
 					clusters.remove(cl1);
 					clusters.add(j,cl1);
@@ -595,9 +595,9 @@ public class GLASSInference
 
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=i+1;j<clusters.size();j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData() < cl2.getData()){
 						cl2.setData(cl1.getData());
@@ -608,11 +608,11 @@ public class GLASSInference
 
 
 		Map<STITreeCluster,Double> taxonPairTime = new HashMap<STITreeCluster, Double>();
-		ArrayList<STITreeClusterWD<Double>> taxonPairs = new ArrayList<STITreeClusterWD<Double>>();
+		ArrayList<STITreeCluster<Double>> taxonPairs = new ArrayList<STITreeCluster<Double>>();
 
 		for(int i=0;i<taxa.length;i++){
 			for(int j=i+1;j<taxa.length;j++){
-				STITreeClusterWD<Double> cl = new STITreeClusterWD<Double>(taxa);
+				STITreeCluster<Double> cl = new STITreeCluster<Double>(taxa);
 				BitSet bs = new BitSet(taxa.length);
 				bs.set(i);
 				bs.set(j);
@@ -624,8 +624,8 @@ public class GLASSInference
 
 		//System.out.println(clusters);
 
-		for(STITreeClusterWD<Double> cl1: clusters){
-			for(STITreeClusterWD<Double> cl2 : taxonPairs){
+		for(STITreeCluster<Double> cl1: clusters){
+			for(STITreeCluster<Double> cl2 : taxonPairs){
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData()<cl2.getData() || cl2.getData()==-1){
 						cl2.setData(cl1.getData());
@@ -634,7 +634,7 @@ public class GLASSInference
 			}
 		}
 
-		for(STITreeClusterWD<Double> clwt : taxonPairs){
+		for(STITreeCluster<Double> clwt : taxonPairs){
 			STITreeCluster cl = new STITreeCluster(taxa);
 			cl.setCluster(clwt.getCluster());
 			taxonPairTime.put(cl, clwt.getData());
@@ -799,7 +799,7 @@ public class GLASSInference
 
 
 	private Map<STITreeCluster,Double> computeSequencePairDistance2(List<SequenceAlignment> sequences,String[] stTaxa,Map<String,String> taxonMap,double percentage){
-		ArrayList<STITreeClusterWD<Double>> allPairDistance = new ArrayList<STITreeClusterWD<Double>>();
+		ArrayList<STITreeCluster<Double>> allPairDistance = new ArrayList<STITreeCluster<Double>>();
 		for(SequenceAlignment sa : sequences){
 			String[] gtTaxa = sa.getTaxa();
 			for(int i=0;i<gtTaxa.length;i++){
@@ -812,7 +812,7 @@ public class GLASSInference
 					}
 					String seq2 = sa.getSequences()[j];
 					Double distance = computeHammingDistance(seq1,seq2);
-					STITreeClusterWD<Double> cluster = new STITreeClusterWD<Double>(stTaxa);
+					STITreeCluster<Double> cluster = new STITreeCluster<Double>(stTaxa);
 					cluster.addLeaf(s1);
 					cluster.addLeaf(s2);
 					cluster.setData(distance);
@@ -823,11 +823,11 @@ public class GLASSInference
 		return doEliminating(allPairDistance,stTaxa,percentage);
 	}
 
-	private Map<STITreeCluster,Double> doEliminating(ArrayList<STITreeClusterWD<Double>> allPairDistance,String[] stTaxa,double percentage){
+	private Map<STITreeCluster,Double> doEliminating(ArrayList<STITreeCluster<Double>> allPairDistance,String[] stTaxa,double percentage){
 		for(int i=1;i<allPairDistance.size();i++){
-			STITreeClusterWD<Double> clwd1 = allPairDistance.get(i);
+			STITreeCluster<Double> clwd1 = allPairDistance.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> clwd2 = allPairDistance.get(j);
+				STITreeCluster<Double> clwd2 = allPairDistance.get(j);
 				if(clwd1.getData() < clwd2.getData()){
 					allPairDistance.remove(i);
 					allPairDistance.add(j,clwd1);

@@ -2,9 +2,9 @@
 
 BEGIN NETWORKS;
 
-Network g1 = ((((a:5,b:5):4,c:9):3,d:12):3,e:15);
-Network g2 = ((a:6,b:6):11,((c:12,e:12):2,d:14):3);
-Network g3 = ((a:8,c:8):7,((b:14,e:14):1,d:15));
+Network g1 = [&W 2]((((a:5,b:5):4,c:9):3,d:12):3,e:15);
+Network g2 = [&W 1]((a:6,b:6):11,((c:12,e:12):2,d:14):3);
+Network g3 = [&W 1]((a:8,c:8):7,((b:14,e:14):1,d:15));
 
 END;
 
@@ -17,5 +17,5 @@ END;
 ===
 
 Infer_ST_MDC_Time (g1, g2, g3)
-(e:0,(d:0,(c:0,(a:0,b:0):1):2):5):0; 8 extra lineages in total
+(e:0.0,(d:0.0,(c:0.0,(a:0.0,b:0.0):1.0):2.0):6.0):0.0; 9.0 extra lineages in total
 ===

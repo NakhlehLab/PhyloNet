@@ -228,7 +228,7 @@ public class STITree<D extends Object> implements MutableTree {
 			}
 		};
 	}
-	
+
 	protected void removeNodeRecord(STINode<D> node) {
 		_nodes.remove(node.getID());
 		_node_set.remove(node);
@@ -535,6 +535,7 @@ public class STITree<D extends Object> implements MutableTree {
 								 }			
 								tc.setCluster(tcbs);
 								clusters.add(tc);
+                                tc.setData(((STINode)node).getData());
 							}
 						}
 					}
@@ -545,7 +546,8 @@ public class STITree<D extends Object> implements MutableTree {
 			if (bs.cardinality() > 1 && bs.cardinality() < leaves.length) {
 				STITreeCluster tc = new STITreeCluster(leaves);
 				tc.setCluster(bs);
-				clusters.add(tc);
+                tc.setData(((STINode)node).getData());
+                clusters.add(tc);
 			}
 		}
 		
@@ -601,86 +603,7 @@ public class STITree<D extends Object> implements MutableTree {
 	}
 	*/
 	
-	public List<STITreeClusterWD> getClustersWD(String leaves[], boolean gen) {
-		PostTraversal<D> traversal = new PostTraversal<D>(_root);
-		List<STITreeClusterWD> clusters = new LinkedList<STITreeClusterWD>();
-		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
-		
-		if (leaves == null) {
-			int i = 0;
-			leaves = new String[getLeafCount()];
-			for (TNode node : getNodes()) {
-				if (node.isLeaf()) {
-					leaves[i++] = node.getName();
-				}
-			}
-		}
-		
-		for (TNode node : traversal) {
-			BitSet bs = new BitSet();
-			
-			if (node.isLeaf()) {
-				for (int i = 0; i < leaves.length; i++) {
-					if (node.getName().equals(leaves[i])) {
-						bs.set(i);
-						break;
-					}
-				}
-				
-				map.put(node, bs);
-			}
-			else {
-				int childCount = node.getChildCount();
-				BitSet[] childbslist = new BitSet[childCount];
-				int index = 0;
-				for (TNode child : node.getChildren()) {
-					BitSet childCluster = map.get(child);
-					bs.or(childCluster);
-					childbslist[index++] = childCluster;
-				}
-				if(childCount>2 && gen){
-					BitSet counter = new BitSet(childCount);
-					boolean done = false;
-					
-					while (!done) {	// Repeat until all 2^n - 1 binary strings are generated.
-						int i = 0;
-						while (i < childCount && counter.get(i)) {
-							counter.clear(i);
-							i++;
-						}
-						if (i >= childCount) {
-							done = true;	// Already generated all binary strings.
-						}
-						else {
-							counter.set(i, true);
-							if(counter.cardinality() > 1 && counter.cardinality() < childCount) {
-								STITreeClusterWD tc = new STITreeClusterWD(leaves);
-								BitSet tcbs = new BitSet(leaves.length);
-								for (int j = counter.nextSetBit(0); j >= 0; j = counter.nextSetBit(j+1)) {
-								     tcbs.or(childbslist[j]);
-								 }			
-								tc.setCluster(tcbs);
-								tc.setData(((STINode)node).getData());
-								clusters.add(tc);
-							}
-						}
-					}
-				}
-				map.put(node, bs);
-			}
-			
-			if (bs.cardinality() > 1 && bs.cardinality() < leaves.length) {
-				STITreeClusterWD tc = new STITreeClusterWD(leaves);
-				tc.setCluster(bs);
-				tc.setData(((STINode)node).getData());
-				clusters.add(tc);
-			}
-		}
-		
-		return clusters;
-	}
-		
-	/**
+		/**
 	 * Compute all bipartitions in the tree.
 	 * 
 	 * @param leaves: A list of leaves in the tree. If this is null, then the function will create a list of 

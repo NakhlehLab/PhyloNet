@@ -283,7 +283,7 @@ public class STINode<D extends Object> implements TMutableNode {
 				((STINode) i.next()).removeSelf();
 			}
 		}
-		
+
 		_tree.removeNodeRecord(this);
 		_tree._leaf_count = STITree.UNCOUNTED;
 		_valid = false;
@@ -519,6 +519,8 @@ protected void removeSelf2(boolean iterator) {
 		
 		return false;
 	}
+
+
 	
 	public Iterable<TNode> getLeaves() {
 		PostTraversal<D> traversal = new PostTraversal<D>(this);
@@ -536,4 +538,42 @@ protected void removeSelf2(boolean iterator) {
 	public Iterable<TNode> postTraverse() {
 		return new PostTraversal<D>(this);
 	}
+
+    public boolean switchChildren(STINode<D> child1, STINode<D> child2){
+        int id1 = _children.indexOf(child1);
+        int id2 = _children.indexOf(child2);
+        if(id1!=-1 && id2!=-1 && id1!=id2){
+            if(id1 < id2){
+                _children.remove(id2);
+                _children.add(id1, child2);
+                _children.remove(id1+1);
+                _children.add(id2, child1);
+            }
+            else{
+                _children.remove(id1);
+                _children.add(id2, child1);
+                _children.remove(id2+1);
+                _children.add(id1, child2);
+            }
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    /*
+    Sort the child list. Use it with caution! Make sure than the orderedChildren contains the same children
+    */
+
+    public boolean sortChildren(List<STINode<D>> orderedChildren){
+        if(orderedChildren.size()!=_children.size()){
+            return false;
+        }
+        _children.clear();
+        for(STINode<D> child: orderedChildren){
+            _children.add(child);
+        }
+        return true;
+    }
 }

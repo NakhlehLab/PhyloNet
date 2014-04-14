@@ -22,8 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentSet;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.GeneTreeRefinement;
@@ -48,7 +47,7 @@ public class ProcessGT extends CommandBaseFileOut
 
     LinkedList<NetworkNonEmpty> _geneTrees = new LinkedList<NetworkNonEmpty>();
 
-    private  double _bootstrap = 1;
+    private  double _bootstrap = 100;
 
     private HashMap<String, List<String>> _taxonMap = null;
 
@@ -136,12 +135,13 @@ public class ProcessGT extends CommandBaseFileOut
     @Override
     protected String produceResult()
     {
-        List<Tree> speciesTrees = null;
+        List<Tree> speciesTrees;
 		List<Tree> geneTrees = new ArrayList<Tree>();
-		Map<String,List<String>> taxonMap = null;
+		//Map<String,List<String>> taxonMap = null;
 
         for(NetworkNonEmpty geneTree : _geneTrees)
         {
+
             String eNewickString = NetworkTransformer.toENewick(geneTree);
 		    NewickReader nr = new NewickReader(new StringReader(eNewickString));
             STITree<Double> gt = new STITree<Double>(true);
@@ -173,15 +173,16 @@ public class ProcessGT extends CommandBaseFileOut
 
         StringBuffer result = new StringBuffer();
         int index = 1;
+
 		for(Tree st: speciesTrees){
-			GeneTreeRefinement.processGeneTrees(geneTrees, st, taxonMap, _geneTreesRooted, _bootstrap, null);
+			GeneTreeRefinement.processGeneTrees(geneTrees, st, _taxonMap, _geneTreesRooted, _bootstrap);
             String stString = st.toString();
             this.richNewickGenerated(stString);
 			result.append("\nSpecies_Tree#" + (index++ ) + " = " + stString + "\n");
 			result.append("Resulting gene trees:");
 			for(Tree gt: geneTrees){
                 String geneTreeString = gt.toString();
-				result.append("\n" + geneTreeString);
+				result.append("\n"+geneTreeString);
                 this.richNewickGenerated(geneTreeString);
 			}
 		}

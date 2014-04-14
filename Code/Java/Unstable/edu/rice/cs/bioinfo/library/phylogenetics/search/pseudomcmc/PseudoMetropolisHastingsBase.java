@@ -16,7 +16,7 @@ import java.util.Random;
  */
 public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> extends ObservableGenerationalScoringSearcherBase<T,S> implements PseudoMetropolisHastings<T,S>
 {
-    private boolean _continueSearch = true;
+    protected boolean _continueSearch = true;
 
     private void concludeSearch()
     {
@@ -28,23 +28,23 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
         return _continueSearch;
     }
 
-    private Long _maxExaminations = null;
+    protected Long _maxExaminations = null;
 
-    private Long _maxGenerations = null;
+    protected Long _maxGenerations = null;
 
-    private T _bestSeenSolution;
+    protected T _bestSeenSolution;
 
-    private S _bestSeenSolutionScore;
+    protected S _bestSeenSolutionScore;
 
-    private Func1<T,S> _getScore;
+    protected Func1<T,S> _getScore;
 
-    private Func2<S,S,Double> _divideScore;
+    protected Func2<S,S,Double> _divideScore;
 
-    private  boolean _maximize;
+    protected  boolean _maximize;
 
-    private S _searchParentScore;
+    protected S _searchParentScore;
 
-    private Random _rand;
+    protected Random _rand;
 
       @Override
       public PseudoMetropolisHastingsResult<T, S> search(T solution, Func1<T,S> getScore, Func2<S,S,Double> divideScore, boolean maximize, Random randomSource, long maxExaminations, long maxGeneration)
@@ -95,17 +95,19 @@ public abstract class PseudoMetropolisHastingsBase<T extends DeepCopyable<T>,S> 
         double acceptProb = _maximize ? _divideScore.execute(solutionScore, _searchParentScore):
                                         _divideScore.execute(_searchParentScore, solutionScore);
 
+        boolean solutionIsNewBestSeen = (_maximize ? _divideScore.execute(solutionScore, _bestSeenSolutionScore):
+                _divideScore.execute(_bestSeenSolutionScore, solutionScore)) > 1.0;
+
+        if(solutionIsNewBestSeen)
+        {
+            _bestSeenSolution = solution.DeepCopy();
+            _bestSeenSolutionScore = solutionScore;
+            this.fireBetterSolutionFoundEvent(solution, solutionScore);
+        }
+
         if(_rand.nextDouble() <= acceptProb)
         {
-            boolean solutionIsNewBestSeen = (_maximize ? _divideScore.execute(solutionScore, _bestSeenSolutionScore):
-                                                         _divideScore.execute(_bestSeenSolutionScore, solutionScore)) > 1.0;
 
-            if(solutionIsNewBestSeen)
-            {
-                _bestSeenSolution = solution.DeepCopy();
-                _bestSeenSolutionScore = solutionScore;
-                this.fireBetterSolutionFoundEvent(solution, solutionScore);
-            }
             _searchParentScore = solutionScore;
             return false;
         }

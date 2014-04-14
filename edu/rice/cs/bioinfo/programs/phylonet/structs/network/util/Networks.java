@@ -80,6 +80,7 @@ public class Networks
 		// Find all binary nodes.
 		List<NetNode<T>> binary_nodes = new LinkedList<NetNode<T>>();
 		for (NetNode<T> node : net.bfs()) {
+            //System.out.println(node.getName() + " " + node.getIndeg() + " " + node.getOutdeg());
 			if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
 				binary_nodes.add(node);
 			}
@@ -90,10 +91,12 @@ public class Networks
 			NetNode<T> parent = node.getParents().iterator().next();	// Node's only parent.
 			NetNode<T> child = node.getChildren().iterator().next();	// Node's only child.
 			double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-			//double gamma = node.getGamma(0) * parent.getGamma(node);
+			//double gamma = node.getParentProbability(parent) * child.getParentProbability(node);
+            //System.out.println("removing " + node.getName());
 			parent.removeChild(node);
+            //System.out.println("removing " + child.getName());
 			node.removeChild(child);
-		//	parent.adoptChild(child, distance, gamma);
+			parent.adoptChild(child, distance);
 		}
 	}
 
@@ -309,7 +312,7 @@ public class Networks
 				int ncount, pcount;
 				double avg;
 
-				sd.computeDifference(trees1.get(l), trees2.get(r));
+				sd.computeDifference(trees1.get(l), trees2.get(r), false);
 				fn = sd.getFalseNegativeCount();	// Number of disagreement edges in a left tree.
 				fp = sd.getFalseNegativeCount();	// Number of disagreement edges in a right tree.
 
@@ -379,7 +382,7 @@ public class Networks
 				int ncount, pcount;
 				double avg;
 
-				sd.computeDifference(trees1.get(l), trees2.get(r));
+				sd.computeDifference(trees1.get(l), trees2.get(r), false);
 				fn = sd.getFalseNegativeCount();	// Number of disagreement edges in a left tree.
 				fp = sd.getFalseNegativeCount();	// Number of disagreement edges in a right tree.
 

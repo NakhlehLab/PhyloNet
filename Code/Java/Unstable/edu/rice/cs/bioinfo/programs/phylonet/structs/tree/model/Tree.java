@@ -20,7 +20,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
 
 import java.util.List;
 
@@ -130,10 +129,6 @@ public interface Tree  {
 	 */
 	public List<STITreeCluster> getBipartitionClusters(String leaves[], boolean gen);
 
-	/**
-	 * @return the clusters with data of a given tree
-	 */
-	public List<STITreeClusterWD> getClustersWD(String leaves[], boolean gen);
 
 	/**
 	 * @return all possible rooting trees

@@ -63,7 +63,7 @@ public class SymmetricDifference extends CommandBaseFileOut {
 
     protected int getMaxNumParams()
     {
-        return 4;
+        return 3;
     }
 
     public boolean checkParamsForCommand() {

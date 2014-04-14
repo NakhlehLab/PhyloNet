@@ -24,6 +24,7 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.MDCOnNetworkYF;
@@ -48,7 +49,8 @@ import java.util.*;
  */
 @CommandName("deepcoalcount_network")
 public class CountXLInNetwork extends CommandBaseFileOut{
-    private HashMap _taxonMap = null;
+    private HashMap<String,String> _allele2species = null;
+    private HashMap<String,List<String>> _species2alleles = null;
     private boolean _multree = false;
     private NetworkNonEmpty _speciesNetwork;
     private List<NetworkNonEmpty> _geneTrees;
@@ -111,19 +113,15 @@ public class CountXLInNetwork extends CommandBaseFileOut{
 
             ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
             if(aParam.ContainsSwitch){
-                if(_multree){
-                    ParamExtractorAllelMap aaParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
-                    noError = noError && aaParam.IsValidMap;
-                    if(aaParam.IsValidMap){
-                        _taxonMap = aaParam.ValueMap;
-                    }
+                ParamExtractorAllelListMap alParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
+                noError = noError && alParam.IsValidMap;
+                if(alParam.IsValidMap){
+                    _species2alleles = alParam.ValueMap;
                 }
-                else{
-                    ParamExtractorAllelListMap aaParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
-                    noError = noError && aaParam.IsValidMap;
-                    if(aaParam.IsValidMap){
-                        _taxonMap = aaParam.ValueMap;
-                    }
+
+                ParamExtractorAllelMap aaParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+                if(aaParam.IsValidMap){
+                    _allele2species = aaParam.ValueMap;
                 }
             }
 
@@ -160,10 +158,9 @@ public class CountXLInNetwork extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
 
-        List<Tree> geneTrees = new ArrayList<Tree>();
-        List<Double> counter = new ArrayList<Double>();
+        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
         for(NetworkNonEmpty geneTree : _geneTrees){
-            double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+            double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                 @Override
                 public Double forEmpty(TreeProbabilityEmpty empty) {
                     return 1.0;
@@ -194,51 +191,49 @@ public class CountXLInNetwork extends CommandBaseFileOut{
                 }
 
             }
-
-            boolean found = false;
-            int index = 0;
-            for(Tree tr: geneTrees){
-                if(Trees.haveSameRootedTopology(tr, newtr)){
-                    found = true;
-                    break;
-                }
-                index++;
+            for(TNode node: newtr.getNodes()){
+                node.setParentDistance(TNode.NO_DISTANCE);
             }
-            if(found){
-                counter.set(index, counter.get(index)+prob);
+
+            String exp = Trees.getLexicographicNewickString(newtr, _allele2species);
+            MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
+            if(existingTuple==null){
+                existingTuple = new MutableTuple<Tree, Double>(newtr, weight);
+                exp2tree.put(exp, existingTuple);
             }
             else{
-                geneTrees.add(newtr);
-                counter.add(prob);
+                existingTuple.Item2 += weight;
             }
         }
+
+        List<MutableTuple<Tree,Double>> geneTrees = new ArrayList<MutableTuple<Tree, Double>>();
+        geneTrees.addAll(exp2tree.values());
 
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-        Iterator<Integer> xlList;
+        int[] xlArray = new int[geneTrees.size()];
         if(_multree){
             MDCOnNetwork mdc = new MDCOnNetwork();
-            xlList = mdc.countExtraCoal(speciesNetwork, geneTrees, _taxonMap).iterator();
+            int index = 0;
+            for(int xl: mdc.countExtraCoal(speciesNetwork, geneTrees, _allele2species)){
+                xlArray[index++] = xl;
+            }
         }
         else{
             MDCOnNetworkYF mdc = new MDCOnNetworkYF();
-            xlList = mdc.countExtraCoal(speciesNetwork, geneTrees, _taxonMap).iterator();
+            mdc.countExtraCoal(speciesNetwork, geneTrees, _species2alleles, xlArray);
         }
-        Iterator<Double> counterIt = counter.iterator();
+
         double total = 0;
-        for(Tree gt: geneTrees){
-            for(TNode node: gt.getNodes()){
-                node.setParentDistance(TNode.NO_DISTANCE);
-            }
-            int xl = xlList.next();
-            double weight = counterIt.next();;
-            total += xl * weight;
-            result.append("\n[x" + weight + "] " + gt.toString() + ": " + xl);
+        Iterator<MutableTuple<Tree,Double>> gtIt = geneTrees.iterator();
+        for(int xl: xlArray){
+            MutableTuple<Tree,Double> gt = gtIt.next();
+            total += xl * gt.Item2;
+            //result.append("\n[x" + gt.Item2 + "] " + gt.Item1.toString() + ": " + xl);
         }
         result.append("\n" + "Total number of extra lineages: " + total);
 
         return result.toString();
-
     }
 }

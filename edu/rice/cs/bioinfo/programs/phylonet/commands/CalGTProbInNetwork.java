@@ -27,15 +27,22 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.ScoreGivenNetworkProbabilisticallyParallel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.ScoreGivenNetworkProbabilisticallyParallelBackup1;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
+import sun.nio.cs.ext.MacHebrew;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
 
 
@@ -52,7 +59,16 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     private boolean  _multree = false;
     private NetworkNonEmpty _speciesNetwork;
     private List<NetworkNonEmpty> _geneTrees;
+    private int _maxRounds = 100;
+    private int _maxTryPerBranch = 100;
+    private double _maxBranchLength = 6;
+    private double _improvementThreshold = 0.001;
+    private double _Brent1 = 0.01;
+    private double _Brent2 = 0.001;
+    private int _parallel = 1;
     private double _bootstrap = 100;
+    private boolean _inferBL = false;
+    private int _numRuns = 10;
 
     public CalGTProbInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                               Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
@@ -67,7 +83,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 10;
+        return 21;
     }
 
     @Override
@@ -143,8 +159,190 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
         }
 
-        noError = noError && checkForUnknownSwitches("m", "a", "b");
-        checkAndSetOutFile(aParam, mParam, bParam);
+        ParamExtractor rParam = new ParamExtractor("r", this.params, this.errorDetected);
+        if(rParam.ContainsSwitch)
+        {
+            if(rParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _maxRounds = Integer.parseInt(rParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized value after -r " + rParam.PostSwitchValue, rParam.PostSwitchParam.getLine(), rParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -r.", rParam.SwitchParam.getLine(), rParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor tParam = new ParamExtractor("t", this.params, this.errorDetected);
+        if(tParam.ContainsSwitch)
+        {
+            if(tParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _maxTryPerBranch = Integer.parseInt(tParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized value after -t " + tParam.PostSwitchValue, tParam.PostSwitchParam.getLine(), tParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -t.", tParam.SwitchParam.getLine(), tParam.SwitchParam.getColumn());
+            }
+        }
+
+
+        ParamExtractor lParam = new ParamExtractor("l", this.params, this.errorDetected);
+        if(lParam.ContainsSwitch)
+        {
+            if(lParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _maxBranchLength = Double.parseDouble(lParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized value of maximum branch length " + lParam.PostSwitchValue, lParam.PostSwitchParam.getLine(), lParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -l.", lParam.SwitchParam.getLine(), lParam.SwitchParam.getColumn());
+            }
+        }
+
+
+        ParamExtractor iParam = new ParamExtractor("i", this.params, this.errorDetected);
+        if(iParam.ContainsSwitch)
+        {
+            if(iParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _improvementThreshold = Double.parseDouble(iParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized value after -i " + iParam.PostSwitchValue, iParam.PostSwitchParam.getLine(), iParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -i.", iParam.SwitchParam.getLine(), iParam.SwitchParam.getColumn());
+            }
+        }
+
+
+        ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
+        if(pParam.ContainsSwitch)
+        {
+            if(pParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    if(!(pParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    ParameterIdentList brent = (ParameterIdentList)pParam.PostSwitchParam;
+                    int index = 0;
+                    for(String value: brent.Elements){
+                        if(index==0){
+                            _Brent1 = Double.parseDouble(value.trim());
+                        }else if(index==1){
+                            _Brent2 = Double.parseDouble(value.trim());
+                        }
+                        else{
+                            throw new RuntimeException();
+                        }
+                        index++;
+                    }
+                    if(_Brent1==0 || _Brent2==0){
+                        throw new RuntimeException();
+                    }
+                    //ParameterIdentList brent = this.assertParameterIdentList(pParam.PostSwitchValue);
+                    /*
+                    String brentPrecision = pParam.PostSwitchValue;
+                    if(!brentPrecision.contains("~")){
+                        throw new NumberFormatException();
+                    }
+                    String[] splitValues = brentPrecision.split("~");
+
+                    _Brent1 = Double.parseDouble(splitValues[0].trim());
+                    _Brent2 = Double.parseDouble(splitValues[1].trim());
+                    assert(_Brent1 > _Brent2);
+                    */
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized value after switch -p.", pParam.PostSwitchParam.getLine(), pParam.PostSwitchParam.getColumn());
+                }
+
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -p.", pParam.SwitchParam.getLine(), pParam.SwitchParam.getColumn());
+            }
+        }
+
+
+        ParamExtractor plParam = new ParamExtractor("pl", this.params, this.errorDetected);
+        if(plParam.ContainsSwitch){
+            if(plParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _parallel = Integer.parseInt(plParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized maximum number of networks for search " + plParam.PostSwitchValue, plParam.PostSwitchParam.getLine(), plParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -pl.", plParam.SwitchParam.getLine(), plParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor xParam = new ParamExtractor("x", this.params, this.errorDetected);
+        if(xParam.ContainsSwitch)
+        {
+            if(xParam.PostSwitchParam != null)
+            {
+                try
+                {
+                    _numRuns = Integer.parseInt(xParam.PostSwitchValue);
+                }
+                catch(NumberFormatException e)
+                {
+                    errorDetected.execute("Unrecognized value after -x " + xParam.PostSwitchValue, xParam.PostSwitchParam.getLine(), xParam.PostSwitchParam.getColumn());
+                }
+            }
+            else
+            {
+                errorDetected.execute("Expected value after switch -x.", xParam.SwitchParam.getLine(), xParam.SwitchParam.getColumn());
+            }
+        }
+
+
+        ParamExtractor blParam = new ParamExtractor("bl", this.params, this.errorDetected);
+        if(blParam.ContainsSwitch)
+        {
+            _inferBL = true;
+        }
+
+
+        noError = noError && checkForUnknownSwitches("m", "a", "b", "r", "t", "l", "i", "p", "pl", "x", "bl");
+        checkAndSetOutFile(aParam, mParam, bParam, rParam, tParam, lParam, iParam, pParam, plParam, xParam, blParam);
 
         return  noError;
     }
@@ -153,8 +351,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
 
-        List<Tree> nbGeneTrees = new ArrayList<Tree>();
-        List<Double> nbCounter = new ArrayList<Double>();
+        List<Tree> gts = new ArrayList<Tree>();
         for(NetworkNonEmpty geneTree : _geneTrees){
             double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                 @Override
@@ -171,12 +368,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
             NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
             STITree<Double> newtr = new STITree<Double>(true);
-            if(_bootstrap<100){
-                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
-                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
-                }
 
-            }
             try
             {
                 nr.readTree(newtr);
@@ -186,76 +378,94 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                 errorDetected.execute(e.getMessage(),
                         this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
             }
-            boolean found = false;
-            int index = 0;
-            for(Tree tr: nbGeneTrees){
-                if(Trees.haveSameRootedTopology(tr, newtr)){
-                    found = true;
-                    break;
+            Trees.removeBinaryNodes(newtr);
+            if(_bootstrap<100){
+                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
+                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
                 }
-                index++;
+
             }
-            if(found){
-                nbCounter.set(index, nbCounter.get(index)+prob);
-            }
-            else{
-                nbGeneTrees.add(newtr);
-                nbCounter.add(prob);
-            }
+            ((STINode<Double>)newtr.getRoot()).setData(prob);
+            gts.add(newtr);
         }
 
-        NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
-        Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
 
-        List<Tree> bGeneTrees = new ArrayList<Tree>();
-        List<List<Integer>> nbTree2bTrees = new ArrayList<List<Integer>>();
-        for(Tree nbgt: nbGeneTrees){
-            List<Integer> bTrees = new ArrayList<Integer>();
-            for(Tree bgt: Trees.getAllBinaryResolution(nbgt)){
-                int index = 0;
-                for(Tree exBgt: bGeneTrees){
-                    if(Trees.haveSameRootedTopology(bgt,exBgt)){
-                        break;
-                    }
-                    index++;
-                }
-                if(index==bGeneTrees.size()){
-                    try{
-                        NewickReader nr = new NewickReader(new StringReader(bgt.toString()));
-                        bGeneTrees.add(nr.readTree());
-                    }catch (Exception e){}
-
-                }
-                bTrees.add(index);
-            }
-            nbTree2bTrees.add(bTrees);
-        }
-
-        List<Double> probList;
+        double optimalScore = Double.NEGATIVE_INFINITY;
+        Network optimalNetwork = null;
         if(_multree){
+            NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
+            optimalNetwork = transformer.makeNetwork(_speciesNetwork);
+            List<Tree> bGeneTrees = new ArrayList<Tree>();
+            List<List<Integer>> nbTree2bTrees = new ArrayList<List<Integer>>();
+            for(Tree nbgt: gts){
+                List<Integer> bTrees = new ArrayList<Integer>();
+                for(Tree bgt: Trees.getAllBinaryResolution(nbgt)){
+                    int index = 0;
+                    for(Tree exBgt: bGeneTrees){
+                        if(Trees.haveSameRootedTopology(bgt,exBgt)){
+                            break;
+                        }
+                        index++;
+                    }
+                    if(index==bGeneTrees.size()){
+                        try{
+                            NewickReader nr = new NewickReader(new StringReader(bgt.toString()));
+                            bGeneTrees.add(nr.readTree());
+                        }catch (Exception e){}
+
+                    }
+                    bTrees.add(index);
+                }
+                nbTree2bTrees.add(bTrees);
+            }
             GeneTreeProbability gtp = new GeneTreeProbability();
-            probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap, false);
+            List<Double> scores = gtp.calculateGTDistribution(optimalNetwork, bGeneTrees, _taxonMap, false);
+
+            optimalScore = 0;
+            for(List<Integer> bIDs: nbTree2bTrees){
+                for(int id: bIDs){
+                    optimalScore += Math.log(scores.get(id));
+                }
+            }
+
         }
+
         else{
-            GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-            probList = gtp.calculateGTDistribution(speciesNetwork, bGeneTrees, _taxonMap, 0);
-        }
-        Iterator<Double> nbCounterIt = nbCounter.iterator();
-        Iterator<List<Integer>> bGTIDs = nbTree2bTrees.iterator();
-        double total = 0;
-        for(Tree nbgt: nbGeneTrees){
-            for(TNode node: nbgt.getNodes()){
-                node.setParentDistance(TNode.NO_DISTANCE);
+
+            if(!_inferBL){
+                _numRuns = 1;
             }
-            double maxProb = 0;
-            for(int id: bGTIDs.next()){
-                maxProb = Math.max(maxProb, probList.get(id));
+            for(int i=0; i<_numRuns; i++){
+                //_parallel = 32;
+                NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
+                Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
+                ScoreGivenNetworkProbabilisticallyParallel scoring = new ScoreGivenNetworkProbabilisticallyParallel();
+                scoring.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _parallel);
+                double score = scoring.calMLOfNetwork(speciesNetwork, gts, _taxonMap, _inferBL);
+
+                if(optimalScore < score){
+                    optimalScore = score;
+                    optimalNetwork = speciesNetwork;
+                }
+
             }
-            double weight = nbCounterIt.next();
-            total += Math.log(maxProb)*weight;
-            result.append("\n[x" + weight + "] " + nbgt.toString() + " : " + maxProb);
         }
-        result.append("\n" + "Total log probability: " + total);
+        result.append("\nSpecies Network:");
+        for(Object node : optimalNetwork.bfs())
+        {
+            NetNode netNode = (NetNode)node;
+            if(!netNode.isLeaf())
+            {
+                netNode.setName(NetNode.NO_NAME);
+            }
+        }
+
+        StringWriter writer = new StringWriter();
+        RnNewickPrinter printer = new RnNewickPrinter();
+        printer.print(optimalNetwork, writer);
+        result.append("\n" + writer.toString());
+        result.append("\n" + "Total log probability: " + optimalScore);
+        //result.append(totalScore + " ");
 
         return result.toString();
 

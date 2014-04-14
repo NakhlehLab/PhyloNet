@@ -24,6 +24,7 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYF;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -144,7 +145,7 @@ public class CalGTProbInNetworkUsingBL extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
         
-        List<Tree> gts = new ArrayList<Tree>();
+        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
         for(NetworkNonEmpty geneTree : _geneTrees){
             double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                 @Override
@@ -176,7 +177,7 @@ public class CalGTProbInNetworkUsingBL extends CommandBaseFileOut{
                 errorDetected.execute(e.getMessage(),
                         this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
             }
-            gts.add(newtr);
+            gts.add(new MutableTuple<Tree, Double>(newtr,1.0));
         }
 
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
@@ -197,10 +198,10 @@ public class CalGTProbInNetworkUsingBL extends CommandBaseFileOut{
 
 
         double total = 0;
-        for(Tree gt: gts){
+        for(MutableTuple<Tree,Double> gt: gts){
             double prob = probList.next();
-            total += Math.log(prob);
-            result.append("\n"+gt.toString() + " : " + prob);
+            total += Math.log(prob) * gt.Item2;
+            result.append("\n"+gt.Item1.toString() + " : " + prob);
         }
         result.append("\n" + "Total log probability: " + total);
 

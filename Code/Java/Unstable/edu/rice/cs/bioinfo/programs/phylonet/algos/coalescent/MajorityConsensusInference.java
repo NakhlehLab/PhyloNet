@@ -19,11 +19,12 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.BufferedReader;
@@ -74,7 +75,7 @@ public class MajorityConsensusInference
 		return taxonMap;
 	}
 
-	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted, int percentage){
+	public Tree inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean rooted, int percentage){
 		if(rooted){
 			return inferSpeciesTreeRooted(trees, percentage);
 		}
@@ -83,7 +84,7 @@ public class MajorityConsensusInference
 		}
 	}
 
-	public Tree inferSpeciesTree(List<Tree> trees, boolean rooted, Map<String, String> taxonMap, int percentage){
+	public Tree inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean rooted, Map<String, String> taxonMap, int percentage){
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
@@ -104,23 +105,16 @@ public class MajorityConsensusInference
 	 *
 	 * @return	inferred species tree
 	 */
-    public Tree inferSpeciesTreeRooted(List<Tree> trees, int percentage){
-
-		// make sure that all binary nodes are removed (to avoid double counting edges)
-		// make sure that trees have the same leaf set
-
-		for(Tree tr : trees) {
-			Trees.removeBinaryNodes(new STITree<Object>(tr));
-		}
-
-
-		List<String> taxalist = new ArrayList<String>();
-		for(Tree tr: trees){
-			for (TNode node : tr.postTraverse()) {
-				if (node.isLeaf() && !taxalist.contains(node.getName())) {
+    public Tree inferSpeciesTreeRooted(List<MutableTuple<Tree,Double>> trees, int percentage){
+        double size = 0;
+		Set<String> taxalist = new HashSet<String>();
+		for(MutableTuple<Tree,Double> tr: trees){
+			for (TNode node : tr.Item1.postTraverse()) {
+				if (node.isLeaf()) {
 					taxalist.add(node.getName());
 				}
 			}
+            size += tr.Item2;
 		}
 
 		String[] taxa = new String[taxalist.size()];
@@ -130,18 +124,20 @@ public class MajorityConsensusInference
 		}
 
 
-		LinkedList<STITreeClusterWD<Integer>> cls = new LinkedList<STITreeClusterWD<Integer>>();
+		LinkedList<STITreeCluster<Double>> cls = new LinkedList<STITreeCluster<Double>>();
 
-		for(Tree tr: trees){
-			for(STITreeClusterWD<Integer> cl : tr.getClustersWD(taxa,true)){
+        for(MutableTuple<Tree,Double> tuple: trees){
+            Tree tr = tuple.Item1;
+            double weight = tuple.Item2;
+			for(STITreeCluster<Double> cl : tr.getClusters(taxa,false)){
 				index = cls.indexOf(cl);
 				if(index!=-1){
-					STITreeClusterWD<Integer> clwd = cls.get(index);
-					clwd.setData(clwd.getData()+1);
+					STITreeCluster<Double> clwd = cls.get(index);
+					clwd.setData(clwd.getData()+weight);
 				}
 				else{
-					STITreeClusterWD<Integer> clwd = cl.duplicate();
-					clwd.setData(1);
+					STITreeCluster<Double> clwd = cl.duplicate();
+					clwd.setData(weight);
 					cls.add(clwd);
 				}
 			}
@@ -149,9 +145,9 @@ public class MajorityConsensusInference
 
 		//order the clusters by its frequency
 		for(int i=1;i<cls.size();i++){
-			STITreeClusterWD<Integer> cl1 = cls.get(i);
+			STITreeCluster<Double> cl1 = cls.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Integer> cl2 = cls.get(j);
+				STITreeCluster<Double> cl2 = cls.get(j);
 				if(cl2.getData() < cl1.getData()){
 					cls.remove(cl1);
 					cls.add(j,cl1);
@@ -163,9 +159,8 @@ public class MajorityConsensusInference
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 
-		int size = trees.size();
         if(percentage == 0){
-            for(STITreeClusterWD<Integer> cl: cls){
+            for(STITreeCluster<Double> cl: cls){
                 if(cl.getData()/(double)size > 0.5){
                     minClusters.add(cl);
                 }
@@ -187,8 +182,8 @@ public class MajorityConsensusInference
             }
         }
         else{
-            for(STITreeClusterWD<Integer> cl: cls){
-                if(cl.getData()/(double)size > percentage/100.0){
+            for(STITreeCluster<Double> cl: cls){
+                if(cl.getData()/size > percentage/100.0){
                     minClusters.add(cl);
                 }
             }
@@ -207,14 +202,7 @@ public class MajorityConsensusInference
 	 *
 	 * @return	inferred species tree
 	 */
-    public Tree inferSpeciesTreeRooted(List<Tree> trees, Map<String,String> taxonMap, int percentage){
-
-		// make sure that all binary nodes are removed (to avoid double counting edges)
-		// make sure that trees have the same leaf set
-
-		for(Tree tr : trees) {
-			Trees.removeBinaryNodes(new STITree<Object>(tr));
-		}
+    public Tree inferSpeciesTreeRooted(List<MutableTuple<Tree,Double>> trees, Map<String,String> taxonMap, int percentage){
 
 
 		List<String> temp1 = new LinkedList<String>();
@@ -236,9 +224,13 @@ public class MajorityConsensusInference
 			stTaxa[i] = temp2.get(i);
 		}
 
-		LinkedList<STITreeClusterWD<Double>> cls = new LinkedList<STITreeClusterWD<Double>>();
+		LinkedList<STITreeCluster<Double>> cls = new LinkedList<STITreeCluster<Double>>();
 
-		for(Tree tr: trees){
+        double size = 0;
+        for(MutableTuple<Tree,Double> tuple: trees){
+            Tree tr = tuple.Item1;
+            double weight = tuple.Item2;
+            size += weight;
 			Map<STITreeCluster, LinkedList<STITreeCluster>> cmap = new HashMap<STITreeCluster, LinkedList<STITreeCluster>>();
 			//get all clusters
 			for(STITreeCluster cl : tr.getClusters(gtTaxa, true)){
@@ -325,11 +317,11 @@ public class MajorityConsensusInference
 
 
 				if(cls.contains(stcl)){
-					STITreeClusterWD<Double> cl_ex = cls.get(cls.indexOf(stcl));
+					STITreeCluster<Double> cl_ex = cls.get(cls.indexOf(stcl));
 					cl_ex.setData(cl_ex.getData()+frequency);
 				}
 				else{
-					STITreeClusterWD<Double> newcl = new STITreeClusterWD<Double>(stcl);
+					STITreeCluster<Double> newcl = new STITreeCluster<Double>(stcl);
 					newcl.setData(frequency);
 					cls.add(newcl);
 				}
@@ -340,9 +332,9 @@ public class MajorityConsensusInference
 
 		//order the clusters by its frequency decreasing
 		for(int i=1;i<cls.size();i++){
-			STITreeClusterWD<Double> cl1 = cls.get(i);
+			STITreeCluster<Double> cl1 = cls.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> cl2 = cls.get(j);
+				STITreeCluster<Double> cl2 = cls.get(j);
 //				if((cl2.getData().equals(cl1.getData()) && cl2.getClusterSize() > cl1.getClusterSize())
 				if(cl2.getData() < cl1.getData()){
 					cls.remove(cl1);
@@ -357,7 +349,7 @@ public class MajorityConsensusInference
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 
 		if(percentage == 0){
-            for(STITreeClusterWD<Double> cl: cls){
+            for(STITreeCluster<Double> cl: cls){
                 boolean compatible = true;
                 for(STITreeCluster c_ex : minClusters){
                     if(!c_ex.isCompatible(cl)){
@@ -375,8 +367,8 @@ public class MajorityConsensusInference
         }
 
         else{
-            for(STITreeClusterWD<Double> cl: cls){
-                if(cl.getData()/(double)trees.size() > percentage/100.0){
+            for(STITreeCluster<Double> cl: cls){
+                if(cl.getData()/size > percentage/100.0){
                     minClusters.add(cl);
                 }
             }
@@ -393,27 +385,18 @@ public class MajorityConsensusInference
 	 *
 	 * @return	inferred species tree
 	 */
-    public Tree inferSpeciesTreeUnrooted(List<Tree> trees, int percentage){
-		if(trees.size()==1){
-			return trees.get(0);
-		}
+    public Tree inferSpeciesTreeUnrooted(List<MutableTuple<Tree,Double>> trees, int percentage){
 
-		// make sure that all binary nodes are removed (to avoid double counting edges)
-		// make sure that trees have the same leaf set
-
-		for(Tree tr : trees) {
-			Trees.removeBinaryNodes(new STITree<Object>(tr));
-		}
-
-
-		List<String> taxalist = new ArrayList<String>();
-		for(Tree tr: trees){
-			for (TNode node : tr.postTraverse()) {
-				if (node.isLeaf() && !taxalist.contains(node.getName())) {
-					taxalist.add(node.getName());
-				}
-			}
-		}
+        double size = 0;
+        Set<String> taxalist = new HashSet<String>();
+        for(MutableTuple<Tree,Double> tr: trees){
+            for (TNode node : tr.Item1.postTraverse()) {
+                if (node.isLeaf()) {
+                    taxalist.add(node.getName());
+                }
+            }
+            size += tr.Item2;
+        }
 
 		String[] taxa = new String[taxalist.size()];
 		int index = 0;
@@ -421,22 +404,24 @@ public class MajorityConsensusInference
 			taxa[index++] = taxon;
 		}
 
-		List<STITreeClusterWD<Integer>> clusters = new LinkedList<STITreeClusterWD<Integer>>();
+		List<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
-		for(Tree tr: trees){
+        for(MutableTuple<Tree,Double> tuple: trees){
+            Tree tr = tuple.Item1;
+            double weight = tuple.Item2;
 			for(STITreeCluster cl : tr.getBipartitionClusters(taxa, false)){
 				if(cl.getClusterSize()<=1 || cl.getClusterSize()>taxa.length-1){
 					continue;
 				}
 				int pos = clusters.indexOf(cl);
 				if(pos == -1){
-					STITreeClusterWD<Integer> nc = new STITreeClusterWD<Integer>(cl);
-					nc.setData(1);
+					STITreeCluster<Double> nc = new STITreeCluster<Double>(cl);
+					nc.setData(weight);
 					clusters.add(nc);
 				}
 				else{
-					STITreeClusterWD<Integer> nc = clusters.get(pos);
-					nc.setData(nc.getData()+1);
+					STITreeCluster<Double> nc = clusters.get(pos);
+					nc.setData(nc.getData()+weight);
 				}
 			}
 		}
@@ -444,9 +429,9 @@ public class MajorityConsensusInference
 
 		//order the clusters by its frequency
 		for(int i=1;i<clusters.size();i++){
-			STITreeClusterWD<Integer> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Integer> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl2.getData() < cl1.getData()){
 					clusters.remove(cl1);
 					clusters.add(j,cl1);
@@ -455,7 +440,7 @@ public class MajorityConsensusInference
 			}
 		}
 	/*
-		for(STITreeClusterWD<Integer> c: clusters){
+		for(STITreeCluster<Integer> c: clusters){
 			System.out.println(c);
 		}
 	 */
@@ -481,8 +466,8 @@ public class MajorityConsensusInference
             }
         }
         else{
-            for(STITreeClusterWD<Integer> cl: clusters){
-                if(cl.getData()/(double)trees.size() > percentage/100.0){
+            for(STITreeCluster<Double> cl: clusters){
+                if(cl.getData()/size > percentage/100.0){
                     minClusters.add(cl);
                 }
             }
@@ -502,15 +487,8 @@ public class MajorityConsensusInference
 	 * @return	inferred species tree
 	 */
 
-    public Tree inferSpeciesTreeUnrooted(List<Tree> trees, Map<String,String> taxonMap, int percentage){
-
-		// make sure that all binary nodes are removed (to avoid double counting edges)
-		// make sure that trees have the same leaf set
-		for(Tree tr : trees) {
-			Trees.removeBinaryNodes(new STITree<Object>(tr));
-		}
-
-		List<String> temp1 = new LinkedList<String>();
+    public Tree inferSpeciesTreeUnrooted(List<MutableTuple<Tree,Double>> trees, Map<String,String> taxonMap, int percentage){
+        List<String> temp1 = new LinkedList<String>();
 		List<String> temp2 = new LinkedList<String>();
 		for (String s : taxonMap.keySet()) {
 			temp1.add(s);	// Gene tree taxa.
@@ -529,9 +507,13 @@ public class MajorityConsensusInference
 			stTaxa[i] = temp2.get(i);
 		}
 
-		List<STITreeClusterWD<Double>> clusters = new LinkedList<STITreeClusterWD<Double>>();
+		List<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
-		for(Tree tr: trees){
+        double size = 0;
+        for(MutableTuple<Tree,Double> tuple: trees){
+            Tree tr = tuple.Item1;
+            double weight = tuple.Item2;
+            size += weight;
 			Map<STITreeCluster, List<STITreeCluster>> cmap = new HashMap<STITreeCluster, List<STITreeCluster>>();
 
 			for(STITreeCluster gtcl: tr.getBipartitionClusters(gtTaxa, false)){
@@ -590,12 +572,12 @@ public class MajorityConsensusInference
 				frequency = frequency/stcl.getClusterSize();
 				int pos = clusters.indexOf(stcl);
 				if(pos == -1){
-					STITreeClusterWD<Double> cd = new STITreeClusterWD<Double>(stcl);
+					STITreeCluster<Double> cd = new STITreeCluster<Double>(stcl);
 					cd.setData(frequency);
 					clusters.add(cd);
 				}
 				else{
-					STITreeClusterWD<Double> cd = clusters.get(pos);
+					STITreeCluster<Double> cd = clusters.get(pos);
 					cd.setData(frequency + cd.getData());
 				}
 			}
@@ -609,7 +591,7 @@ public class MajorityConsensusInference
 		int num_trees = trees.size();
 		for(int i=0;i<clusters.size();i++){
 			if(changed[i]==1)continue;
-			STITreeClusterWD<Double> cd = clusters.get(i);
+			STITreeCluster<Double> cd = clusters.get(i);
 			changed[i] = 1;
 			if(cd.getClusterSize() == stTaxa.length-1){
 				cd.setData(cd.getData()+num_trees);
@@ -618,7 +600,7 @@ public class MajorityConsensusInference
 
 				int pos = clusters.indexOf(cd.complementaryCluster());
 				if(pos != -1){
-					STITreeClusterWD<Double> cc = clusters.get(pos);
+					STITreeCluster<Double> cc = clusters.get(pos);
 					cd.setData(cd.getData()+cc.getData());
 					cc.setData(cd.getData());
 					changed[pos] = 1;
@@ -629,9 +611,9 @@ public class MajorityConsensusInference
 
 		//order the clusters by its frequency
 		for(int i=1;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl2.getData() < cl1.getData()){
 					clusters.remove(cl1);
 					clusters.add(j,cl1);
@@ -640,7 +622,7 @@ public class MajorityConsensusInference
 			}
 		}
 /*
-		for(STITreeClusterWD<Double> c: clusters){
+		for(STITreeCluster<Double> c: clusters){
 			System.out.println(c);
 		}
 */
@@ -666,8 +648,8 @@ public class MajorityConsensusInference
 
         }
         else{
-            for(STITreeClusterWD<Double> cl: clusters){
-                if(cl.getData()/(double)trees.size() > percentage/100.0){
+            for(STITreeCluster<Double> cl: clusters){
+                if(cl.getData()/size> percentage/100.0){
                     minClusters.add(cl);
                 }
             }

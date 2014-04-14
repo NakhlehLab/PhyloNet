@@ -21,15 +21,21 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCWithTime;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -96,16 +102,65 @@ public class InferST_MDC_Time extends InferSTBase
 
         StringBuffer result = new StringBuffer();
 
-        List<Tree> trees = GetGeneTreesAsSTIDoubleTreeList();
+        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
+
+        for(NetworkNonEmpty geneTree : _geneTrees)
+        {
+            double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                @Override
+                public Double forEmpty(TreeProbabilityEmpty empty) {
+                    return 1.0;
+                }
+
+                @Override
+                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                    return Double.parseDouble(nonEmpty.ProbString);
+                }
+            });
+
+            String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
+            NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
+            STITree<Double> newtr = new STITree<Double>(true);
+            try
+            {
+                nr.readTree(newtr);
+            }
+            catch(Exception e)
+            {
+                errorDetected.execute(e.getMessage(),
+                        this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
+            }
+            Trees.removeBinaryNodes(newtr);
+            if(_bootstrap<100){
+                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
+                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
+                }
+
+            }
+
+            String exp = Trees.getLexicographicNewickString(newtr, _taxonMap);
+            MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
+            if(existingTuple==null){
+                existingTuple = new MutableTuple<Tree, Double>(newtr, weight);
+                exp2tree.put(exp, existingTuple);
+            }
+            else{
+                existingTuple.Item2 += weight;
+            }
+        }
+
+        List<MutableTuple<Tree,Double>> tuples = new ArrayList<MutableTuple<Tree, Double>>();
+        tuples.addAll(exp2tree.values());
+
 
         MDCWithTime inference = new MDCWithTime();
 
 		Solution s;
 		if(_taxonMap == null){
-			s = inference.inferSpeciesTree(trees, _bootstrap);
+			s = inference.inferSpeciesTree(tuples, _bootstrap);
 		}
 		else{
-			s = inference.inferSpeciesTree(trees,_taxonMap, _bootstrap);
+			s = inference.inferSpeciesTree(tuples,_taxonMap, _bootstrap);
 		}
 
         String tree = s._st.toStringWD();

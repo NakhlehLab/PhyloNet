@@ -19,13 +19,14 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
@@ -45,27 +46,20 @@ public class MDCWithTime {
 	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 */
-	public Solution inferSpeciesTree(List<Tree> trees, double bootstrap){
+	public Solution inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, double bootstrap){
 		if (trees == null || trees.size() == 0) {
 			System.err.println("Empty list of trees. The function returns a null tree.");
 			return null;
 		}
 
-		if(bootstrap<100){
-			for(Tree tr: trees){
-				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
-					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
-				}
-			}
-		}
-
 		List<String> taxalist = new ArrayList<String>();
-		for(Tree tr: trees){
-			for (TNode node : tr.postTraverse()) {
+		for(MutableTuple<Tree,Double> tr: trees){
+			for (TNode node : tr.Item1.postTraverse()) {
 				if (node.isLeaf() && taxalist.indexOf(node.getName())==-1) {
 					taxalist.add(node.getName());
 				}
 			}
+            setNodeData(tr.Item1);
 		}
 
 		String[] taxa = new String[taxalist.size()];
@@ -74,11 +68,8 @@ public class MDCWithTime {
 			taxa[index++] = taxon;
 		}
 
-		for(Tree tr:trees){
-			setNodeData(tr);
-		}
 		Map<Integer, List<Branch>> branches = new HashMap<Integer, List<Branch>>();
-		int maxEL = computeBranchInGraph(trees,taxa,branches);
+		double maxEL = computeBranchInGraph(trees,taxa,branches);
 		return findTreesByDP(branches,taxa,maxEL);
 	}
 
@@ -91,7 +82,7 @@ public class MDCWithTime {
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
-	public Solution inferSpeciesTree(List<Tree> trees,Map<String,String> taxonMap, double bootstrap){
+	public Solution inferSpeciesTree(List<MutableTuple<Tree,Double>> trees,Map<String,String> taxonMap, double bootstrap){
 		if (trees == null || trees.size() == 0) {
 			System.err.println("Empty list of trees. The function returns a null tree.");
 			return null;
@@ -102,14 +93,6 @@ public class MDCWithTime {
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
-
-		if(bootstrap<100){
-			for(Tree tr: trees){
-				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
-					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
-				}
-			}
-		}
 
 		List<String> temp1 = new LinkedList<String>();
 		List<String> temp2 = new LinkedList<String>();
@@ -131,11 +114,11 @@ public class MDCWithTime {
 		}
 
 
-		for(Tree tr:trees){
-			setNodeData(tr);
+		for(MutableTuple<Tree,Double> tr:trees){
+			setNodeData(tr.Item1);
 		}
 		Map<Integer, List<Branch>> branches = new HashMap<Integer, List<Branch>>();
-		int maxEL = computeBranchInGraph(trees,stTaxa,gtTaxa,taxonMap,branches);
+		double maxEL = computeBranchInGraph(trees,stTaxa,gtTaxa,taxonMap,branches);
 
 		return findTreesByDP(branches,stTaxa,maxEL);
 	}
@@ -150,13 +133,13 @@ public class MDCWithTime {
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
-	private Solution findTreesByDP(Map<Integer, List<Branch>> branches, String[] stTaxa, int maxEL){
+	private Solution findTreesByDP(Map<Integer, List<Branch>> branches, String[] stTaxa, double maxEL){
 		Branch all = branches.get(stTaxa.length).get(0);
 		computeMinCost(all,branches,maxEL);
 
 		// Build the minimum tree.
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
-		List<Integer> coals = new LinkedList<Integer>();
+		List<Double> coals = new ArrayList<Double>();
 		Stack<Branch> minBranches = new Stack<Branch>();
 
 		if (all.getMinRightBranch() != null) {
@@ -222,11 +205,11 @@ public class MDCWithTime {
 			STITreeCluster c = new STITreeCluster(stTaxa);
 			c.setCluster(bs);
 			if(c.getClusterSize()==stTaxa.length){
-				((STINode<Integer>)node).setData(0);
+				((STINode<Double>)node).setData(0.0);
 			}
 			else{
 				int pos = minClusters.indexOf(c);
-				((STINode<Integer>)node).setData(coals.get(pos));
+				((STINode<Double>)node).setData(coals.get(pos));
 			}
 		}
 
@@ -466,13 +449,13 @@ public class MDCWithTime {
 	 * @param	maxEL  the maximal number of extra lineages
 	 * @return
 	 */
-	private int computeMinCost(Branch br,Map<Integer, List<Branch>> branches, int maxEL){
+	private double computeMinCost(Branch br,Map<Integer, List<Branch>> branches, double maxEL){
 		if (br.getMaxScore() != -1) {
 			return br.getMaxScore();
 		}
 
-		STITreeClusterWD<Double> cl = br.getChildCluster();
-		//STITreeClusterWD<Double> p_cl = br.getParentCluster();
+		STITreeCluster<Double> cl = br.getChildCluster();
+		//STITreeCluster<Double> p_cl = br.getParentCluster();
 		int vsize = cl.getClusterSize();
 
 		if (vsize <= 1) {
@@ -491,16 +474,16 @@ public class MDCWithTime {
 					if (cl.containsCluster(lb.getChildCluster())
 							&& lb.getParentBitSet().equals(cl.getCluster())
 							&& lb.getParentCluster().getData()<=cl.getData()) {
-						int lscore = computeMinCost(lb,branches,maxEL);
-						int lcost = lb.getMinCost();
+						double lscore = computeMinCost(lb,branches,maxEL);
+						double lcost = lb.getMinCost();
 
 						List<Branch> rightList = branches.get(vsize - i);
 						if (rightList != null) {
 							for (Branch rb : rightList) {
 								if (lb.getChildCluster().isDisjoint(rb.getChildCluster()) && cl.containsCluster(rb.getChildCluster())
 										&& rb.getParentBitSet().equals(cl.getCluster()) && rb.getParentCluster().getData()<=cl.getData()) {
-									int rscore = computeMinCost(rb,branches,maxEL);
-									int rcost = rb.getMinCost();
+									double rscore = computeMinCost(rb,branches,maxEL);
+									double rcost = rb.getMinCost();
 									if ((br.getMaxScore() == -1) || (lscore + rscore + maxEL - br.getExtraLineage() > br.getMaxScore())) {
 										br.setMaxScore(lscore + rscore + maxEL - br.getExtraLineage());
 										br.setMinCost(lcost + rcost + br.getExtraLineage());
@@ -675,12 +658,12 @@ public class MDCWithTime {
 	 *
 	 * @return	maximal number of extra lineages
 	 */
-	private int computeBranchInGraph(List<Tree> trees,String[] taxa, Map<Integer, List<Branch>> branches){
-		List<STITreeClusterWD<Double>> clusters1 = computeTreeClustersWithTime(trees,taxa);
+	private double computeBranchInGraph(List<MutableTuple<Tree,Double>> trees,String[] taxa, Map<Integer, List<Branch>> branches){
+		List<STITreeCluster<Double>> clusters1 = computeTreeClustersWithTime(trees,taxa);
 		HashMap<STITreeCluster,Double> taxonPairTime = computeTaxonPairTime(clusters1,taxa);
 
-		LinkedList<STITreeClusterWD<Double>> clusters2 = new LinkedList<STITreeClusterWD<Double>>();
-		for(STITreeClusterWD<Double> cl:clusters1){
+		LinkedList<STITreeCluster<Double>> clusters2 = new LinkedList<STITreeCluster<Double>>();
+		for(STITreeCluster<Double> cl:clusters1){
 			if(cl.getClusterSize()>1)
 				clusters2.add(cl);
 		}
@@ -692,8 +675,8 @@ public class MDCWithTime {
 		l.add(root_branch);
 		branches.put(taxa.length, l);
 
-		int maxEL = 0;
-		for(STITreeClusterWD<Double> c1:clusters1){
+		double maxEL = 0;
+		for(STITreeCluster<Double> c1:clusters1){
 			int c1_size = c1.getClusterSize();
 			l = branches.get(c1_size);
 			if(l == null){
@@ -701,7 +684,7 @@ public class MDCWithTime {
 				branches.put(c1_size, l);
 			}
 
-			for(STITreeClusterWD<Double> c2:clusters2){
+			for(STITreeCluster<Double> c2:clusters2){
 				int c2_size = c2.getClusterSize();
 				if(c2_size == c1_size){
 					break;
@@ -711,7 +694,7 @@ public class MDCWithTime {
 					List<Branch> ex_l = branches.get(c2_size);
 					List<Double> time_l = new LinkedList<Double>();
 					for(Branch b:ex_l){
-						STITreeClusterWD<Double> ex_c1 = b.getChildCluster();
+						STITreeCluster<Double> ex_c1 = b.getChildCluster();
 						if(ex_c1.getCluster().equals(c2.getCluster())
 								&& (!time_l.contains(ex_c1.getData()))){
 							time_l.add(ex_c1.getData());
@@ -721,7 +704,7 @@ public class MDCWithTime {
 						Branch newBranch = new Branch(c1.duplicate(),c2.duplicate());
 						reviseTime(newBranch,taxonPairTime);
 						if(c1_size>1){
-							int el = getBranchCoalNum(newBranch,trees);
+							double el = getBranchCoalNum(newBranch,trees);
 							newBranch.setExtraLineage(el);
 							if(el > maxEL){
 								maxEL = el;
@@ -737,7 +720,7 @@ public class MDCWithTime {
 							l.add(newBranch);
 						}else{
 							double time = newBranch.getParentCluster().getData();
-							int el = newBranch.getExtraLineage();
+							double el = newBranch.getExtraLineage();
 							while(pos != l.size()){
 								Branch ex_b = l.get(pos);
 								if(!ex_b.equals(newBranch)){
@@ -778,7 +761,7 @@ public class MDCWithTime {
 							}
 							else{
 								if(c1_size>1){
-									int el = getBranchCoalNum(newBranch,trees);
+									double el = getBranchCoalNum(newBranch,trees);
 									newBranch.setExtraLineage(el);
 									if(el > maxEL){
 										maxEL = el;
@@ -794,7 +777,7 @@ public class MDCWithTime {
 									l.add(newBranch);
 								}else{
 									double time = newBranch.getParentCluster().getData();
-									int el = newBranch.getExtraLineage();
+									double el = newBranch.getExtraLineage();
 									while(pos != l.size()){
 										Branch ex_b = l.get(pos);
 										if(!ex_b.equals(newBranch)){
@@ -836,12 +819,12 @@ public class MDCWithTime {
 	 *
 	 * @return	maximal number of extra lineages
 	 */
-	private int computeBranchInGraph(List<Tree> trees,String stTaxa[],String gtTaxa[],Map<String,String> taxonMap, Map<Integer, List<Branch>> branches){
-		List<STITreeClusterWD<Double>> clusters1 = computeTreeClustersWithTime(trees,stTaxa,gtTaxa,taxonMap);
+	private double computeBranchInGraph(List<MutableTuple<Tree,Double>> trees,String stTaxa[],String gtTaxa[],Map<String,String> taxonMap, Map<Integer, List<Branch>> branches){
+		List<STITreeCluster<Double>> clusters1 = computeTreeClustersWithTime(trees,stTaxa,gtTaxa,taxonMap);
 		HashMap<STITreeCluster,Double> taxonPairTime = computeTaxonPairTime(clusters1,stTaxa);
 
-		LinkedList<STITreeClusterWD<Double>> clusters2 = new LinkedList<STITreeClusterWD<Double>>();
-		for(STITreeClusterWD<Double> cl:clusters1){
+		LinkedList<STITreeCluster<Double>> clusters2 = new LinkedList<STITreeCluster<Double>>();
+		for(STITreeCluster<Double> cl:clusters1){
 			if(cl.getClusterSize()>1)
 				clusters2.add(cl);
 		}
@@ -852,9 +835,9 @@ public class MDCWithTime {
 		root_branch.setMinCost(-1);
 		l.add(root_branch);
 		branches.put(stTaxa.length, l);
-		int maxEL = 0;
-		LinkedList<STITreeClusterWD<Double>> uselessClusters = new LinkedList<STITreeClusterWD<Double>>();
-		for(STITreeClusterWD<Double> c1:clusters1){
+		double maxEL = 0;
+		LinkedList<STITreeCluster<Double>> uselessClusters = new LinkedList<STITreeCluster<Double>>();
+		for(STITreeCluster<Double> c1:clusters1){
 			boolean added = false;
 			int c1_size = c1.getClusterSize();
 			l = branches.get(c1_size);
@@ -863,7 +846,7 @@ public class MDCWithTime {
 				branches.put(c1_size, l);
 			}
 
-			for(STITreeClusterWD<Double> c2:clusters2){
+			for(STITreeCluster<Double> c2:clusters2){
 				int c2_size = c2.getClusterSize();
 				if(c2_size == c1_size){
 					break;
@@ -874,7 +857,7 @@ public class MDCWithTime {
 					List<Branch> ex_l = branches.get(c2_size);
 					List<Double> time_l = new LinkedList<Double>();
 					for(Branch b:ex_l){
-						STITreeClusterWD<Double> ex_c1 = b.getChildCluster();
+						STITreeCluster<Double> ex_c1 = b.getChildCluster();
 						if(ex_c1.getCluster().equals(c2.getCluster())
 								&& (!time_l.contains(ex_c1.getData()))){
 							time_l.add(ex_c1.getData());
@@ -883,7 +866,7 @@ public class MDCWithTime {
 					if(time_l.size()==0){
 						Branch newBranch = new Branch(c1.duplicate(),c2.duplicate());
 						reviseTime(newBranch,taxonPairTime);
-						int el = getBranchCoalNum(newBranch,trees,taxonMap);
+						double el = getBranchCoalNum(newBranch,trees,taxonMap);
 						newBranch.setExtraLineage(el);
 						if(el > maxEL){
 							maxEL = el;
@@ -925,7 +908,7 @@ public class MDCWithTime {
 								continue;
 							}
 							else{
-								int el = getBranchCoalNum(newBranch,trees,taxonMap);
+								double el = getBranchCoalNum(newBranch,trees,taxonMap);
 								newBranch.setExtraLineage(el);
 								if(el > maxEL){
 									maxEL = el;
@@ -989,8 +972,8 @@ public class MDCWithTime {
 	 */
 	private void reviseTime(Branch br, HashMap<STITreeCluster,Double> taxonPairTime){
 		double epsilon =0.0;
-		STITreeClusterWD<Double> child = br.getChildCluster();
-		STITreeClusterWD<Double> parent = br.getParentCluster();
+		STITreeCluster<Double> child = br.getChildCluster();
+		STITreeCluster<Double> parent = br.getParentCluster();
 		String[] leaves1 = child.getClusterLeaves();
 		String[] leaves2 = new String[parent.getClusterSize()-child.getClusterSize()];
 		BitSet bs2 = (BitSet)(parent.getCluster().clone());
@@ -1032,16 +1015,16 @@ public class MDCWithTime {
 	 *
 	 * @return the number of extra lineage
 	 */
-	private int getBranchCoalNum(Branch br,List<Tree> trees){
-		int coalNum = 0;
+	private double getBranchCoalNum(Branch br,List<MutableTuple<Tree,Double>> trees){
+		double coalNum = 0;
 
 		if(br.getChildCluster().getClusterSize()==1
 				&& br.getParentCluster().getClusterSize()==2){
 			coalNum = 0;
 		}
 		else{
-			for (Tree tr : trees) {
-				coalNum += getBranchCoalNum(br,tr);
+			for (MutableTuple<Tree,Double> tr : trees) {
+				coalNum += getBranchCoalNum(br,tr.Item1) * tr.Item2;
 			}
 		}
 		return coalNum;
@@ -1058,8 +1041,8 @@ public class MDCWithTime {
 	 */
 	private int getBranchCoalNum(Branch br,Tree tr){
 		int coalNum = 0;
-		STITreeClusterWD<Double> child = br.getChildCluster();
-		STITreeClusterWD<Double> parent =  br.getParentCluster();
+		STITreeCluster<Double> child = br.getChildCluster();
+		STITreeCluster<Double> parent =  br.getParentCluster();
 
 		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 		List<String> taxa = new LinkedList<String>();
@@ -1109,11 +1092,11 @@ public class MDCWithTime {
 	 *
 	 * @return the number of extra lineage
 	 */
-	private int getBranchCoalNum(Branch br,List<Tree> trees,Map<String,String> taxonMap){
-		int coalNum = 0;
+	private double getBranchCoalNum(Branch br,List<MutableTuple<Tree,Double>> trees,Map<String,String> taxonMap){
+		double coalNum = 0;
 
-		for (Tree tr : trees) {
-			coalNum += getBranchCoalNum(br,tr,taxonMap);
+		for (MutableTuple<Tree,Double> tr : trees) {
+			coalNum += getBranchCoalNum(br,tr.Item1,taxonMap) * tr.Item2;
 		}
 
 		return coalNum;
@@ -1131,8 +1114,8 @@ public class MDCWithTime {
 	 */
 	private int getBranchCoalNum(Branch br,Tree tr,Map<String,String> taxonMap){
 		int coalNum = 0;
-		STITreeClusterWD<Double> child = br.getChildCluster();
-		STITreeClusterWD<Double> parent =  br.getParentCluster();
+		STITreeCluster<Double> child = br.getChildCluster();
+		STITreeCluster<Double> parent =  br.getParentCluster();
 
 		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 		List<String> taxa = new LinkedList<String>();
@@ -1184,13 +1167,13 @@ public class MDCWithTime {
 	 *
 	 * @return  maps from taxon pairs to distance
 	 */
-	private HashMap<STITreeCluster,Double> computeTaxonPairTime(List<STITreeClusterWD<Double>> clusters, String[] stTaxa){
+	private HashMap<STITreeCluster,Double> computeTaxonPairTime(List<STITreeCluster<Double>> clusters, String[] stTaxa){
 		HashMap<STITreeCluster,Double> taxonPairTime = new HashMap<STITreeCluster, Double>();
-		ArrayList<STITreeClusterWD<Double>> taxonPairs = new ArrayList<STITreeClusterWD<Double>>();
+		ArrayList<STITreeCluster<Double>> taxonPairs = new ArrayList<STITreeCluster<Double>>();
 
 		for(int i=0;i<stTaxa.length;i++){
 			for(int j=i+1;j<stTaxa.length;j++){
-				STITreeClusterWD<Double> cl = new STITreeClusterWD<Double>(stTaxa);
+				STITreeCluster<Double> cl = new STITreeCluster<Double>(stTaxa);
 				BitSet bs = new BitSet(stTaxa.length);
 				bs.set(i);
 				bs.set(j);
@@ -1200,10 +1183,10 @@ public class MDCWithTime {
 			}
 		}
 
-		for(STITreeClusterWD<Double> cl1: clusters){
+		for(STITreeCluster<Double> cl1: clusters){
 			if(cl1.getClusterSize()==1)break;
 
-			for(STITreeClusterWD<Double> cl2 : taxonPairs){
+			for(STITreeCluster<Double> cl2 : taxonPairs){
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData()<cl2.getData() || cl2.getData()==-1){
 						cl2.setData(cl1.getData());
@@ -1212,7 +1195,7 @@ public class MDCWithTime {
 			}
 		}
 
-		for(STITreeClusterWD<Double> clwt : taxonPairs){
+		for(STITreeCluster<Double> clwt : taxonPairs){
 			STITreeCluster cl = new STITreeCluster(stTaxa);
 			cl.setCluster(clwt.getCluster());
 			taxonPairTime.put(cl, clwt.getData());
@@ -1221,7 +1204,7 @@ public class MDCWithTime {
 		return taxonPairTime;
 	}
 
-	/*private void setMinCoalTime(STITreeClusterWD<Double> tc, List<Tree> trees){
+	/*private void setMinCoalTime(STITreeCluster<Double> tc, List<Tree> trees){
 		double minCoalTime = 0;
 		String leaves[] = tc.getClusterLeaves();
 
@@ -1243,18 +1226,18 @@ public class MDCWithTime {
 	 *
 	 * @return  clusters with the number of extra lineages
 	 */
-	private List<STITreeClusterWD<Double>> computeTreeClustersWithTime(List<Tree> trees,String taxa[]) {
-		LinkedList<STITreeClusterWD<Double>> clusters = new LinkedList<STITreeClusterWD<Double>>();
+	private List<STITreeCluster<Double>> computeTreeClustersWithTime(List<MutableTuple<Tree,Double>> trees,String taxa[]) {
+		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
 
 		//Add the cluster containing all taxa to the end of the list.
-		STITreeClusterWD<Double> all = new STITreeClusterWD<Double>(taxa);
+		STITreeCluster<Double> all = new STITreeCluster<Double>(taxa);
 		for (String t : taxa) {
 			all.addLeaf(t);
 		}
 		double minTime = -1;
-		for(Tree tr:trees){
-			TNode root = tr.getRoot();
+		for(MutableTuple<Tree,Double> tr:trees){
+			TNode root = tr.Item1.getRoot();
 			if(((STINode<Double>)root).getData() < minTime || minTime == -1){
 				minTime = ((STINode<Double>)root).getData();
 			}
@@ -1264,8 +1247,8 @@ public class MDCWithTime {
 		clusters.add(all);
 
 
-		for (Tree tr : trees) {
-			for (STITreeClusterWD<Double> tc : tr.getClustersWD(taxa, true)) {
+        for(MutableTuple<Tree,Double> tr:trees){
+			for (STITreeCluster<Double> tc : tr.Item1.getClusters(taxa, true)) {
 				if(!clusters.contains(tc)){
 					clusters.add(tc.duplicate());
 				}
@@ -1282,9 +1265,9 @@ public class MDCWithTime {
 
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl2.getClusterSize() < cl1.getClusterSize()){
 					clusters.remove(cl1);
 					clusters.add(j,cl1);
@@ -1296,9 +1279,9 @@ public class MDCWithTime {
 
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=i+1;j<clusters.size();j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData() < cl2.getData()){
 						cl2.setData(cl1.getData());
@@ -1310,7 +1293,7 @@ public class MDCWithTime {
 
 		 //Add clusters of size 1.
 		for (String t : taxa) {
-			STITreeClusterWD<Double> c = new STITreeClusterWD<Double>(taxa);
+			STITreeCluster<Double> c = new STITreeCluster<Double>(taxa);
 			c.addLeaf(t);
 			c.setData(0.0);
 			clusters.add(c);
@@ -1332,17 +1315,17 @@ public class MDCWithTime {
 	 *
 	 * @return	clusters with the number of extra lineages
 	 */
-	private List<STITreeClusterWD<Double>> computeTreeClustersWithTime(List<Tree> trees,String stTaxa[],String gtTaxa[],Map<String,String> taxonMap) {
-		LinkedList<STITreeClusterWD<Double>> clusters = new LinkedList<STITreeClusterWD<Double>>();
+	private List<STITreeCluster<Double>> computeTreeClustersWithTime(List<MutableTuple<Tree,Double>> trees,String stTaxa[],String gtTaxa[],Map<String,String> taxonMap) {
+		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
 		//Add the cluster containing all taxa to the end of the list.
-		STITreeClusterWD<Double> all = new STITreeClusterWD<Double>(stTaxa);
+		STITreeCluster<Double> all = new STITreeCluster<Double>(stTaxa);
 		for (String t : stTaxa) {
 			all.addLeaf(t);
 		}
 		double minTime = -1;
-		for(Tree tr:trees){
-			TNode root = tr.getRoot();
+        for(MutableTuple<Tree,Double> tr:trees){
+			TNode root = tr.Item1.getRoot();
 			if(((STINode<Double>)root).getData() < minTime || minTime == -1){
 				minTime = ((STINode<Double>)root).getData();
 			}
@@ -1352,9 +1335,9 @@ public class MDCWithTime {
 		clusters.add(all);
 
 		// Compute the list of branches in the graph, which correspond to the induced clusters.
-		for (Tree tr : trees) {
-			for (STITreeClusterWD<Double> tc : tr.getClustersWD(gtTaxa, true)) {
-				STITreeClusterWD<Double> stCluster = new STITreeClusterWD<Double>(stTaxa);
+        for(MutableTuple<Tree,Double> tr:trees){
+			for (STITreeCluster<Double> tc : tr.Item1.getClusters(gtTaxa, true)) {
+				STITreeCluster<Double> stCluster = new STITreeCluster<Double>(stTaxa);
 				for (String s : tc.getClusterLeaves()) {
 					stCluster.addLeaf(taxonMap.get(s));
 				}
@@ -1376,9 +1359,9 @@ public class MDCWithTime {
 
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=0;j<i;j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl2.getClusterSize() < cl1.getClusterSize()){
 					clusters.remove(cl1);
 					clusters.add(j,cl1);
@@ -1390,9 +1373,9 @@ public class MDCWithTime {
 
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
-			STITreeClusterWD<Double> cl1 = clusters.get(i);
+			STITreeCluster<Double> cl1 = clusters.get(i);
 			for(int j=i+1;j<clusters.size();j++){
-				STITreeClusterWD<Double> cl2 = clusters.get(j);
+				STITreeCluster<Double> cl2 = clusters.get(j);
 				if(cl1.containsCluster(cl2)){
 					if(cl1.getData() < cl2.getData()){
 						cl2.setData(cl1.getData());
@@ -1404,7 +1387,7 @@ public class MDCWithTime {
 
 		//Add clusters of size 1.
 		for (String t : stTaxa) {
-			STITreeClusterWD<Double> c = new STITreeClusterWD<Double>(stTaxa);
+			STITreeCluster<Double> c = new STITreeCluster<Double>(stTaxa);
 			c.addLeaf(t);
 			c.setData(0.0);
 			clusters.add(c);
@@ -1438,17 +1421,17 @@ public class MDCWithTime {
 	}
 
 	class Branch{
-		STITreeClusterWD<Double> _child;
-		STITreeClusterWD<Double> _parent;
-		int _el;
-		int _min_cost;
-		int _max_score;
+		STITreeCluster<Double> _child;
+		STITreeCluster<Double> _parent;
+		double _el;
+		double _min_cost;
+		double _max_score;
 		Branch _min_lb;			// Left cluster for the min tree.
 		Branch _min_rb;			// Right cluster for the min tree.
 		List<Branch> _subBrs;
 
 
-		public Branch(STITreeClusterWD<Double> child,STITreeClusterWD<Double> parent){
+		public Branch(STITreeCluster<Double> child,STITreeCluster<Double> parent){
 			_child = child;
 			_parent = parent;
 			_el = 0;
@@ -1458,11 +1441,11 @@ public class MDCWithTime {
 			_min_rb = null;
 		}
 
-		public STITreeClusterWD<Double> getChildCluster(){
+		public STITreeCluster<Double> getChildCluster(){
 			return _child;
 		}
 
-		public STITreeClusterWD<Double> getParentCluster(){
+		public STITreeCluster<Double> getParentCluster(){
 			return _parent;
 		}
 
@@ -1474,27 +1457,27 @@ public class MDCWithTime {
 			return _parent.getCluster();
 		}
 
-		public void setExtraLineage(int num){
+		public void setExtraLineage(double num){
 			_el = num;
 		}
 
-		public void setMinCost(int cost){
+		public void setMinCost(double cost){
 			_min_cost = cost;
 		}
 
-		public int getExtraLineage(){
+		public double getExtraLineage(){
 			return _el;
 		}
 
-		public int getMinCost(){
+		public double getMinCost(){
 			return _min_cost;
 		}
 
-		public void setMaxScore(int score){
+		public void setMaxScore(double score){
 			_max_score = score;
 		}
 
-		public int getMaxScore(){
+		public double getMaxScore(){
 			return _max_score;
 		}
 

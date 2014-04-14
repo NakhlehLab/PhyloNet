@@ -18,9 +18,5 @@ END;
 ===
 
 DeepCoalCount_Network speceiesNetwork (geneTree1, geneTree2, geneTree3, geneTree4) -m ac
-[x1.0] ((1,3),(2,4));: 1
-[x1.0] (4,(3,(1,2)));: 1
-[x1.0] (2,(4,(1,3)));: 1
-[x1.0] ((1,2),(3,4));: 0
 Total number of extra lineages: 3.0
 ===

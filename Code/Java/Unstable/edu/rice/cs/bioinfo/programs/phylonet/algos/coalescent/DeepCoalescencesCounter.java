@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
@@ -52,13 +53,13 @@ public class DeepCoalescencesCounter {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static int countExtraCoal(List<Tree> gts,Tree st, boolean rooted, double bootstrap){
-		int sum = 0;
+	public static double countExtraCoal(List<MutableTuple<Tree,Double>> gts,Tree st, boolean rooted, double bootstrap){
+		double sum = 0;
 		String[] taxa = st.getLeaves();
 
 		if(bootstrap<100){
-			for(Tree tr: gts){
-				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
+			for(MutableTuple<Tree,Double> tr: gts){
+				if(Trees.handleBootStrapInTree(tr.Item1, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
 				}
 			}
@@ -75,7 +76,7 @@ public class DeepCoalescencesCounter {
 					}
 				}
 				map.put(node, bs);
-				((STINode<Integer>)node).setData(0);
+				((STINode<Double>)node).setData(0.0);
 			}
 			else {
 				for (TNode child : node.getChildren()) {
@@ -86,11 +87,11 @@ public class DeepCoalescencesCounter {
 				STITreeCluster c = new STITreeCluster(taxa);
 				c.setCluster(bs);
 				if(c.getClusterSize()==taxa.length){
-					((STINode<Integer>)node).setData(0);
+					((STINode<Double>)node).setData(0.0);
 				}
 				else{
-					int el = getClusterCoalNum(gts, c, rooted);
-					((STINode<Integer>)node).setData(el);
+					double el = getClusterCoalNum(gts, c, rooted);
+					((STINode<Double>)node).setData(el);
 					sum += el;
 				}
 			}
@@ -109,7 +110,7 @@ public class DeepCoalescencesCounter {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static int countExtraCoal(List<Tree> gts,Tree st, Map<String, String> taxonMap, boolean rooted, double bootstrap){
+	public static double countExtraCoal(List<MutableTuple<Tree,Double>> gts,Tree st, Map<String, String> taxonMap, boolean rooted, double bootstrap){
 		String error = Trees.checkMapping(gts, taxonMap);
 		if(error!=null){
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
@@ -119,8 +120,8 @@ public class DeepCoalescencesCounter {
 		String[] stTaxa = st.getLeaves();
 
 			if(bootstrap<1){
-				for(Tree tr: gts){
-					if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
+				for(MutableTuple<Tree,Double> tr: gts){
+					if(Trees.handleBootStrapInTree(tr.Item1, bootstrap)==-1){
 						throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
 					}
 				}
@@ -149,11 +150,11 @@ public class DeepCoalescencesCounter {
 				STITreeCluster c = new STITreeCluster(stTaxa);
 				c.setCluster(bs);
 				if(c.getClusterSize()==stTaxa.length){
-					((STINode<Integer>)node).setData(0);
+					((STINode<Double>)node).setData(0.0);
 				}
 				else{
-					int el = getClusterCoalNum(gts, c, taxonMap, rooted);
-					((STINode<Integer>)node).setData(el);
+					double el = getClusterCoalNum(gts, c, taxonMap, rooted);
+					((STINode<Double>)node).setData(el);
 					sum += el;
 				}
 			}
@@ -163,14 +164,15 @@ public class DeepCoalescencesCounter {
 	}
 
 
-	public static int countExtraCoal(List<Tree> gts, Network net, Map<String, String> taxonMap){
+    /*
+	public static int countExtraCoal(List<MutableTuple<Tree,Double>> gts, Network net, Map<String, String> taxonMap){
 
-		int coal_sum = 0;
+		double coal_sum = 0;
 		Map<String,Integer> nname2tamount = new HashMap<String,Integer>();
 		Tree superst = networkToTree(net, nname2tamount);
 		System.out.println(superst);
-		for(Tree gt: gts){
-			List<String> gt_taxa = Arrays.asList(gt.getLeaves());
+		for(MutableTuple<Tree,Double> gt: gts){
+			List<String> gt_taxa = Arrays.asList(gt.Item1.getLeaves());
 			if(taxonMap == null){
 				taxonMap = new HashMap<String,String>();
 				for(String taxon: gt_taxa){
@@ -212,6 +214,7 @@ public class DeepCoalescencesCounter {
 		}
 		return coal_sum;
 	}
+	*/
 
 	/**
 	 * Compute the number of extra lineages contributed by a cluster in a set of rooted gene trees when single allele is contained
@@ -221,20 +224,20 @@ public class DeepCoalescencesCounter {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static int getClusterCoalNum(List<Tree> trees, STITreeCluster cluster, boolean rooted) {
-		int weight = 0;
+	public static double getClusterCoalNum(List<MutableTuple<Tree,Double>> trees, STITreeCluster cluster, boolean rooted) {
+		double xl = 0;
 
-		for (Tree tr : trees) {
+        for(MutableTuple<Tree,Double> tr: trees){
 			if(rooted){
-				weight += getClusterCoalNum_rooted(tr, cluster);
+				xl += getClusterCoalNum_rooted(tr.Item1, cluster) * tr.Item2;
 
 			}
 			else{
-				weight += getClusterCoalNum_unrooted(tr, cluster);
+				xl += getClusterCoalNum_unrooted(tr.Item1, cluster) * tr.Item2;
 			}
 		}
 
-		return weight;
+		return xl;
 	}
 
 	/**
@@ -246,19 +249,19 @@ public class DeepCoalescencesCounter {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static int getClusterCoalNum(List<Tree> trees, STITreeCluster cluster, Map<String, String> taxonMap, boolean rooted) {
-		int weight = 0;
+	public static double getClusterCoalNum(List<MutableTuple<Tree,Double>> trees, STITreeCluster cluster, Map<String, String> taxonMap, boolean rooted) {
+		double xl = 0;
 
-		for (Tree tr : trees) {
+		for (MutableTuple<Tree,Double> tr : trees) {
 			if(rooted){
-				weight += getClusterCoalNum_rooted(tr, cluster, taxonMap);
+                xl += getClusterCoalNum_rooted(tr.Item1, cluster, taxonMap) * tr.Item2;
 			}
 			else{
-				weight += getClusterCoalNum_unrooted(tr, cluster, taxonMap);
+                xl += getClusterCoalNum_unrooted(tr.Item1, cluster, taxonMap) * tr.Item2;
 			}
 		}
 
-		return weight;
+		return xl;
 	}
 
 	/**
@@ -561,6 +564,7 @@ public class DeepCoalescencesCounter {
 		return Math.max(0,coveragelist.size()-1);
 	}
 
+    /*
 	private static Tree networkToTree(Network net, Map<String,Integer> nname2tamount){
 		MutableTree tree = new STITree<Double>();
 		Queue<NetNode<Double>> source = new LinkedList<NetNode<Double>>();
@@ -607,7 +611,7 @@ public class DeepCoalescencesCounter {
 		Trees.removeBinaryNodes(tree);
 		return tree;
 	}
-
+*/
 
 
 

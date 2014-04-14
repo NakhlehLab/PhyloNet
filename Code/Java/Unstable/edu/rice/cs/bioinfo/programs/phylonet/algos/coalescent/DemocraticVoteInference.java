@@ -58,11 +58,10 @@ public class DemocraticVoteInference {
 	private Map<Tree,Counter> countGeneTrees(List<Tree> trees){
 		Map<Tree,Counter> treeCounter = new HashMap<Tree,Counter>();
 
-		SymmetricDifference sd = new SymmetricDifference();
-
 		for (Tree tr : trees){
 			boolean found=false;
 			for (Tree treeKey : treeCounter.keySet()){
+                SymmetricDifference sd = new SymmetricDifference();
 				sd.computeDifference(tr, treeKey, true);
 				if(sd.getFalseNegativeCount()==0 && sd.getFalsePositiveCount()==0){
 					treeCounter.get(treeKey).increase();

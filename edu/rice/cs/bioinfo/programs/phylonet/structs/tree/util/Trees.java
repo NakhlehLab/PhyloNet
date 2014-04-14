@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.lca.SchieberVishkinLCA;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.BitVector;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
@@ -913,9 +914,19 @@ public class Trees {
 		return alltrees;
 	}
 
-	public static String checkMapping(List<Tree> trees, Map<String,String> taxonMap){
+	public static String checkMapping(List trees, Map<String,String> taxonMap){
 		String error = null;
-		for(Tree tr: trees){
+		for(Object o: trees){
+            Tree tr = null;
+            if(o instanceof Tree){
+                tr = (Tree)o;
+            }
+            else if(o instanceof MutableTuple){
+                tr = (Tree)(((MutableTuple) o).Item1);
+            }
+            else{
+                throw new RuntimeException();
+            }
 			for(String leaf: tr.getLeaves()){
 				if(!taxonMap.containsKey(leaf)){
 					error = leaf;
@@ -964,19 +975,15 @@ public class Trees {
         String[] taxa = t1.getLeaves();
         List<STITreeCluster> clusters1 = t1.getClusters(taxa, false);
         List<STITreeCluster> clusters2 = t2.getClusters(taxa, false);
-        int fp= 0;
+        if(clusters1.size()!=clusters2.size()){
+            return false;
+        }
         for(STITreeCluster cl1: clusters1){
             if(!clusters2.contains(cl1)){
-                fp++;
+                return false;
             }
         }
-        int fn = 0;
-        for(STITreeCluster cl2: clusters2){
-            if(!clusters1.contains(cl2)){
-                fn++;
-            }
-        }
-        return fp==0 && fn==0;
+        return true;
     }
 
     public static Tree generateRandomSPRNeighbor(Tree tree, int numMoves){
@@ -1014,6 +1021,104 @@ public class Trees {
         }
         return neighbor;
     }
+
+
+    public static void convertToLexicographicTree(Tree tree){
+        Map<TNode, String> node2minLeaf = new HashMap<TNode, String>();
+        for(TNode node: tree.postTraverse()){
+            if(node.isLeaf()){
+                node2minLeaf.put(node, node.getName());
+            }
+            else{
+                List<TNode> children = new ArrayList<TNode>();
+                for(TNode child: node.getChildren()){
+                    String minLeaf = node2minLeaf.get(child);
+                    int i = 0;
+                    for(; i<children.size(); i++){
+                        if(minLeaf.compareTo(node2minLeaf.get(children.get(i)))<0){
+                            break;
+                        }
+                    }
+                    children.add(i, child);
+                }
+                //System.out.println(node);
+                ((STINode)node).sortChildren(children);
+                //System.out.println(node);
+                node2minLeaf.put(node, node2minLeaf.get(children.get(0)));
+            }
+        }
+    }
+
+    public static void convertToLexicographicTree(Tree tree, Map<String,String> allele2Species){
+        Map<TNode, String> node2leaves = new HashMap<TNode, String>();
+        for(TNode node: tree.postTraverse()){
+            if(node.isLeaf()){
+                if(allele2Species == null){
+                    node2leaves.put(node, node.getName());
+                }
+                else{
+                    node2leaves.put(node, allele2Species.get(node.getName()));
+                }
+
+            }
+            else{
+                List<TNode> children = new ArrayList<TNode>();
+                for(TNode child: node.getChildren()){
+                    String minLeaf = node2leaves.get(child);
+                    int i = 0;
+                    for(; i<children.size(); i++){
+                        if(minLeaf.compareTo(node2leaves.get(children.get(i)))<0){
+                            break;
+                        }
+                    }
+                    children.add(i, child);
+                }
+                String leaves = "";
+                for(TNode child: children){
+                    if(leaves == ""){
+                        leaves = node2leaves.get(child);
+                    }
+                    else{
+                        leaves = leaves + "/" + node2leaves.get(child);
+                    }
+                }
+                //System.out.println(node);
+                ((STINode)node).sortChildren(children);
+                //System.out.println(node);
+                node2leaves.put(node, leaves);
+            }
+        }
+    }
+
+    //For topology only
+    public static String getLexicographicNewickString(Tree tree, Map<String,String> allele2Species){
+        convertToLexicographicTree(tree, allele2Species);
+        String treeExp = tree.toString();
+        if(allele2Species!=null){
+            for(Map.Entry<String,String> entry: allele2Species.entrySet()){
+                String allele = entry.getKey();
+                String species = entry.getValue();
+                if(treeExp.contains("("+allele+",")){
+                    treeExp = treeExp.replace("("+allele+",", "("+species+",");
+                }
+                else if(treeExp.contains("("+allele+":")){
+                    treeExp = treeExp.replace("("+allele+":", "("+species+":");
+                }
+                else if(treeExp.contains(","+allele+":")){
+                    treeExp = treeExp.replace(","+allele+":", ","+species+":");
+                }
+                else if(treeExp.contains(","+allele+",")){
+                    treeExp = treeExp.replace(","+allele+",", ","+species+",");
+                }
+                else if(treeExp.contains(","+allele+")")){
+                    treeExp = treeExp.replace(","+allele+")", ","+species+")");
+                }
+            }
+        }
+        return treeExp;
+    }
+
+
 
 }
 

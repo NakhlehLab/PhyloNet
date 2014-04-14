@@ -15,8 +15,11 @@ END;
 ===
 
 SymmetricDifference model exp
-False Negatives: 2
-False Positives: 2
+# False Positive Edges: 2
+# False Negative Edges: 2
 # Internal Edges Model: 4
 # Internal Edges Experimental: 4
+Normalized False Positive: 0.5
+Normalized False Negative: 0.5
+Normalized RF-Distance: 0.5
 ===

@@ -19,6 +19,8 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MaxClique;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
@@ -28,7 +30,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Collapse;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
@@ -97,22 +99,14 @@ public class MDCURInference_DP
 	 * 					  true if clusters all all possible clusters
 	 * @return	tree(s) inferred from the supplied gene trees with the total number of extra lineages
 	 */
-	public List<Solution> inferSpeciesTree(List<Tree> trees, boolean explore, double proportion, boolean exhaust, double bootstrap, boolean unresolved, double time) {
+	public List<Solution> inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean explore, double proportion, boolean exhaust, boolean unresolved, double time) {
 		if (trees == null || trees.size() == 0) {
 			throw new IllegalArgumentException("empty or null list of trees");
-		}
-
-		if(bootstrap<100){
-			for(Tree tr: trees){
-				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
-					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
-				}
-			}
-		}
+        }
 
 		List<String> taxalist = new ArrayList<String>();
-		for(Tree tr: trees){
-			for (TNode node : tr.postTraverse()) {
+		for(MutableTuple<Tree,Double> tr: trees){
+			for (TNode node : tr.Item1.postTraverse()) {
 				if (node.isLeaf() && taxalist.indexOf(node.getName())==-1) {
 					taxalist.add(node.getName());
 				}
@@ -127,7 +121,7 @@ public class MDCURInference_DP
 
 		// Find the tree with minimum score over all taxa.
 		Map<Integer, List<Vertex>> clusters = new HashMap<Integer, List<Vertex>>();
-		int maxXL;
+		double maxXL;
 		if(!exhaust){
 			maxXL = computeTreeClusters(trees, taxa, clusters);
 		}
@@ -170,7 +164,7 @@ public class MDCURInference_DP
 	 * 					  true if clusters all all possible clusters
 	 * @return	tree(s) inferred from the supplied gene trees with the total number of extra lineages
 	 */
-	public List<Solution> inferSpeciesTree(List<Tree> trees, Map<String, String> taxonMap, boolean explore, double proportion, boolean exhaust, double bootstrap, boolean unresolved, double time) {
+	public List<Solution> inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, Map<String, String> taxonMap, boolean explore, double proportion, boolean exhaust, boolean unresolved, double time) {
 		if (trees == null || trees.size() == 0) {
 			System.err.println("Empty list of trees. The function returns a null tree.");
 			return null;
@@ -181,13 +175,6 @@ public class MDCURInference_DP
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
 
-		if(bootstrap<100){
-			for(Tree tr: trees){
-				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
-					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
-				}
-			}
-		}
 
 		List<String> temp1 = new LinkedList<String>();
 		List<String> temp2 = new LinkedList<String>();
@@ -210,7 +197,7 @@ public class MDCURInference_DP
 
 		// Find the tree with the minimum score.
 		Map<Integer, List<Vertex>> clusters = new HashMap<Integer, List<Vertex>>();
-		int maxXL;
+		double maxXL;
 		if(!exhaust){
 			maxXL = computeTreeClusters(trees, stTaxa, gtTaxa, taxonMap, clusters);
 		}
@@ -247,13 +234,13 @@ public class MDCURInference_DP
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
-	private List<Solution> findTreesByDP(Map<Integer, List<Vertex>> clusters, String[] stTaxa, int maxXL){
+	private List<Solution> findTreesByDP(Map<Integer, List<Vertex>> clusters, String[] stTaxa, double maxXL){
 		List<Solution> solutions = new ArrayList<Solution>();
 		Vertex all = clusters.get(stTaxa.length).get(0);
 		computeMinCost(clusters,all,maxXL);
 		// Build the minimum tree.
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
-		List<Integer> coals = new LinkedList<Integer>();
+		List<Double> coals = new LinkedList<Double>();
 		Stack<Vertex> minVertices = new Stack<Vertex>();
 		if (all._min_rc != null) {
 			minVertices.push(all._min_rc);
@@ -319,11 +306,11 @@ public class MDCURInference_DP
 			STITreeCluster c = new STITreeCluster(stTaxa);
 			c.setCluster(bs);
 			if(c.getClusterSize()==stTaxa.length){
-				((STINode<Integer>)node).setData(0);
+				((STINode<Double>)node).setData(0.0);
 			}
 			else{
 				int pos = minClusters.indexOf(c);
-				((STINode<Integer>)node).setData(coals.get(pos));
+				((STINode<Double>)node).setData(coals.get(pos));
 			}
 		}
 
@@ -347,20 +334,20 @@ public class MDCURInference_DP
 	private List<Solution> findTreesByClique(Map<Integer, List<Vertex>> cmap, String[] stTaxa, double proportion){
 		List<Solution> solutions = new LinkedList<Solution>();
 
-		List<STITreeClusterWD<Integer>> clusters = new LinkedList<STITreeClusterWD<Integer>>();
-		int addEL = 0;
+		List<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
+		double addEL = 0;
 
 		for(Map.Entry<Integer, List<Vertex>> entry: cmap.entrySet()){
-			if(entry.getKey()==1 || entry.getKey()==stTaxa.length-1){
+			if(entry.getKey()==1){
 				List<Vertex> l = entry.getValue();
 				for(Vertex v: l){
 					addEL += v._el_num;
 				}
 			}
-			if(entry.getKey() < stTaxa.length && entry.getKey()>1){
+			else if (entry.getKey()!=stTaxa.length){
 				List<Vertex> l = entry.getValue();
 				for(Vertex v: l){
-					STITreeClusterWD<Integer> c = new STITreeClusterWD<Integer>(v._cluster);
+					STITreeCluster<Double> c = new STITreeCluster<Double>(v._cluster);
 					c.setData(v._el_num);
 					clusters.add(c);
 				}
@@ -395,15 +382,14 @@ public class MDCURInference_DP
 				int sum = 0;
 				List<Integer> cls = new ArrayList<Integer>();
 				for(int id: nodes){
-					STITreeClusterWD<Integer> c = clusters.get(id);
+					STITreeCluster<Double> c = clusters.get(id);
 					if(c.getClusterSize()!=stTaxa.length-1 && !cls.contains(id)){
-
 						sum += c.getData();
-						STITreeCluster cc = c.complementaryCluster();
-						int ccID= clusters.indexOf(cc);
-						sum += clusters.get(ccID).getData();
-						cls.add(id);
-						cls.add(ccID);
+						//STITreeCluster cc = c.complementaryCluster();
+						//int ccID= clusters.indexOf(cc);
+						//sum += clusters.get(ccID).getData();
+						//cls.add(id);
+						//cls.add(ccID);
 					}
 				}
 
@@ -431,8 +417,8 @@ public class MDCURInference_DP
 		}
 
 		//get the result
-		int minCoal = maxCliques.get(0)._totalCoals;
-		int maxCoal = (int)(( 1 + proportion / 100 ) * minCoal);
+		double minCoal = maxCliques.get(0)._totalCoals;
+		double maxCoal = (int)(( 1 + proportion / 100 ) * minCoal);
 		SymmetricDifference sd = new SymmetricDifference();
 		for(Solution s: maxCliques){
 			if(s._totalCoals <= maxCoal){
@@ -443,7 +429,7 @@ public class MDCURInference_DP
 				s._st = Trees.buildTreeFromClusters(minClusters);
 				boolean dup = false;
 				for(Solution ex_s: solutions){
-					sd.computeDifference(s._st, ex_s._st);
+					sd.computeDifference(s._st, ex_s._st, true);
 					if(sd.getWeightedAverage()==0){
 						dup = true;
 						break;
@@ -457,6 +443,8 @@ public class MDCURInference_DP
 				break;
 			}
 		}
+
+
 		return solutions;
 	}
 
@@ -473,10 +461,11 @@ public class MDCURInference_DP
 	 *
 	 * @return  clusters with the number of extra lineages
 	 */
-	private  int computeTreeClusters(List<Tree> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
+	private  double computeTreeClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
 		// Compute the list of vertices in the graph, which correspond to the induced clusters.
-		int maxEL = 0;
-		for (Tree tr : trees) {
+		double maxEL = 0;
+		for (MutableTuple<Tree,Double> tuple : trees) {
+            Tree tr = tuple.Item1;
 			for (STITreeCluster tc : tr.getBipartitionClusters(gtTaxa, false)) {
 				STITreeCluster stCluster = new STITreeCluster(stTaxa);
 				for (String s : tc.getClusterLeaves()) {
@@ -567,10 +556,11 @@ public class MDCURInference_DP
 	 *
 	 * @return  clusters with the number of extra lineages
 	 */
-	private int computeTreeClusters(List<Tree> trees, String taxa[], Map<Integer, List<Vertex>> clusters) {
+	private double computeTreeClusters(List<MutableTuple<Tree,Double>> trees, String taxa[], Map<Integer, List<Vertex>> clusters) {
 		// Compute the list of vertices in the graph, which correspond to the induced clusters.
-		int maxEL = 0;
-		for (Tree tr : trees) {
+		double maxEL = 0;
+		for (MutableTuple<Tree,Double> tuple : trees) {
+            Tree tr = tuple.Item1;
 			for (STITreeCluster tc : tr.getBipartitionClusters(taxa, false)) {
 				int tc_size = tc.getClusterSize();
 
@@ -656,7 +646,7 @@ public class MDCURInference_DP
 	 *
 	 * @return resulting clusters
 	 */
-	private int computeAllClusters(List<Tree> trees, String stTaxa[], Map<Integer, List<Vertex>> clusters) {
+	private double computeAllClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], Map<Integer, List<Vertex>> clusters) {
 		return computeAllClusters(trees, stTaxa, null, null, clusters);
 	}
 
@@ -670,13 +660,13 @@ public class MDCURInference_DP
 	 *
 	 * @return resulting clusters
 	 */
-	private int computeAllClusters(List<Tree> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
+	private double computeAllClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
 		int n = stTaxa.length;
 		if (n <= 0) {
 			System.err.println("Empty list of taxa.");
 			return -1;
 		}
-		int maxXL = 0;
+		double maxXL = 0;
 
 		BitSet counter = new BitSet(n);
 		boolean done = false;
@@ -758,7 +748,7 @@ public class MDCURInference_DP
 	 * @param	maxEL  the maximal number of extra lineages
 	 * @return
 	 */
-	private int computeMinCost(Map<Integer, List<Vertex>> clusters, Vertex v, int maxEL) {
+	private double computeMinCost(Map<Integer, List<Vertex>> clusters, Vertex v, double maxEL) {
 		if (v._max_score != -1) {
 			return v._max_score;
 		}
@@ -777,12 +767,12 @@ public class MDCURInference_DP
 			if (leftList != null) {
 				for (Vertex lv : leftList) {
 					if (v._cluster.containsCluster(lv._cluster)) {
-						int lscore = computeMinCost(clusters, lv, maxEL);
+						double lscore = computeMinCost(clusters, lv, maxEL);
 						List<Vertex> rightList = clusters.get(vsize - i);
 						if (rightList != null) {
 							for (Vertex rv : rightList) {
 								if (lv._cluster.isDisjoint(rv._cluster) && v._cluster.containsCluster(rv._cluster)) {
-									int rscore = computeMinCost(clusters, rv, maxEL);
+									double rscore = computeMinCost(clusters, rv, maxEL);
 
 									if ((v._max_score == -1) || (lscore + rscore + maxEL - v._el_num > v._max_score)) {
 										v._min_cost = lv._min_cost + rv._min_cost + v._el_num;
@@ -942,7 +932,7 @@ public class MDCURInference_DP
 		return total;
 	}
 
-	private int tryBinaryResolutions(Tree tr, double time, String[] taxa, List<Tree> gts, Map<String,String> taxonMap){
+	private double tryBinaryResolutions(Tree tr, double time, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap){
 		List<TNode> nodelist = new ArrayList<TNode>();
 		List<Integer> degreelist = new ArrayList<Integer>();
 		int totalResolutions = 0;
@@ -955,7 +945,7 @@ public class MDCURInference_DP
 				totalResolutions = totalResolutions + resolutionsNumber;
 			}
 		}
-		int addedxl = 0;
+		double addedxl = 0;
 		for(int i=0; i<nodelist.size(); i++){
 			TNode unresolvedNode = nodelist.get(i);
 			Map<Integer, TNode> id2node = new HashMap<Integer, TNode>();
@@ -963,7 +953,7 @@ public class MDCURInference_DP
 				id2node.put(child.getID(), child);
 			}
 			Integer[] childIDs = id2node.keySet().toArray(new Integer[0]);
-			Map<BitSet, Integer> cluster2xl = new HashMap<BitSet,Integer>();
+			Map<BitSet, Double> cluster2xl = new HashMap<BitSet,Double>();
 			double endtime;
 			if(time == -1){
 				endtime = -1;
@@ -973,15 +963,15 @@ public class MDCURInference_DP
 			}
 			Solution sol = addMoreLeaves(null , childIDs, 0, id2node, taxa, gts, taxonMap, endtime , cluster2xl);
 			TNode parent = unresolvedNode.getParent();
-			int xl = ((STINode<Integer>)unresolvedNode).getData();
+			double xl = ((STINode<Double>)unresolvedNode).getData();
 			((STINode)unresolvedNode).removeNode();
 			if(parent!=null){
 				TNode newnode = ((STINode)parent).createChild(sol.getTree().getRoot());
-				((STINode<Integer>)newnode).setData(xl);
+				((STINode<Double>)newnode).setData(xl);
 			}
 			else{
 				for(TNode child: sol.getTree().getRoot().getChildren()){
-					((STINode<Integer>)tr.getRoot()).createChild(child);
+					((STINode)tr.getRoot()).createChild(child);
 				}
 			}
 			addedxl = addedxl + sol.getCoalNum();
@@ -991,7 +981,7 @@ public class MDCURInference_DP
 	}
 
 
-	private Solution addMoreLeaves(STITree<Integer> preTree, Integer[] leavesid, int index, Map<Integer, TNode> id2node, String[] taxa, List<Tree> gts, Map<String,String> taxonMap, double endTime, Map<BitSet, Integer> cluster2xl){
+	private Solution addMoreLeaves(STITree<Integer> preTree, Integer[] leavesid, int index, Map<Integer, TNode> id2node, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap, double endTime, Map<BitSet, Double> cluster2xl){
 		if(preTree == null){
 			preTree = new STITree<Integer>(false);
 			STINode<Integer> root = preTree.getRoot();
@@ -1005,7 +995,7 @@ public class MDCURInference_DP
 		}
 		Solution sol = null;
 		if(index == leavesid.length){
-			sol = tryAllRootings(preTree, id2node, taxa, gts, taxonMap, endTime, cluster2xl);
+			sol = tryAllRootings(preTree, id2node, taxa, gts, taxonMap, cluster2xl);
 		}
 		else{
 			int id = leavesid[index++];
@@ -1042,7 +1032,7 @@ public class MDCURInference_DP
 		return sol;
 	}
 
-	private Solution tryAllRootings(Tree subtree, Map<Integer, TNode> id2node, String[] taxa, List<Tree> gts, Map<String,String> taxonMap, double endTime, Map<BitSet, Integer> cluster2xl){
+	private Solution tryAllRootings(Tree subtree, Map<Integer, TNode> id2node, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap, Map<BitSet, Double> cluster2xl){
 		Solution sol = new Solution();
 		sol._totalCoals = -1;
 		for(Tree rootedsubtree: subtree.getAllRootingTrees()){
@@ -1067,7 +1057,7 @@ public class MDCURInference_DP
 			}
 			//Trees.removeBinaryNodes((MutableTree)rootedsubtree);
 			//System.out.println(rootedsubtree.toStringWD());
-			int xl = 0;
+			double xl = 0;
 			Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 			for (TNode node : new PostTraversal<Integer>(rootedsubtree.getRoot())) {
 				BitSet bs = new BitSet();
@@ -1088,7 +1078,7 @@ public class MDCURInference_DP
 					map.put(node, bs);
 				}
 				if(!node.isRoot()){
-					Integer el = ((STINode<Integer>)node).getData();
+					Double el = ((STINode<Double>)node).getData();
 					if(el == null){
 						el = cluster2xl.get(bs);
 						if(el == null){
@@ -1102,7 +1092,7 @@ public class MDCURInference_DP
 							}
 							cluster2xl.put(bs, el);
 						}
-						((STINode<Integer>)node).setData(el);
+						((STINode<Double>)node).setData(el);
 						xl = xl + el;
 					}
 				}
@@ -1118,9 +1108,9 @@ public class MDCURInference_DP
 
 	class Vertex {
 		public STITreeCluster _cluster;	// The cluster associated with this class.
-		public int _el_num;				// Number of extra lineages for this cluster.
-		public int _min_cost;			// Minimum cost in all trees whose leaf set is _cluster.
-		public int _max_score;			// The number of score being used for finding the optimal tree in dynamic programming
+		public double _el_num;				// Number of extra lineages for this cluster.
+		public double _min_cost;			// Minimum cost in all trees whose leaf set is _cluster.
+		public double _max_score;			// The number of score being used for finding the optimal tree in dynamic programming
 		public Vertex _min_lc;			// Left cluster for the min tree.
 		public Vertex _min_rc;			// Right cluster for the min tree.
 		public List<Vertex> _subcl;		// The list of child clusters which is used when this cannot be solved as a binary node

@@ -26,7 +26,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
@@ -287,7 +287,7 @@ public class MDCURInference
 	private List<Solution> findTreesByClique(Map<Integer, List<Vertex>> cmap, String[] stTaxa, double proportion){
 		List<Solution> solutions = new LinkedList<Solution>();
 
-		List<STITreeClusterWD<Integer>> clusters = new LinkedList<STITreeClusterWD<Integer>>();
+		List<STITreeCluster<Integer>> clusters = new LinkedList<STITreeCluster<Integer>>();
 		int addEL = 0;
 
 		for(Map.Entry<Integer, List<Vertex>> entry: cmap.entrySet()){
@@ -300,7 +300,7 @@ public class MDCURInference
 			if(entry.getKey() < stTaxa.length && entry.getKey()>1){
 				List<Vertex> l = entry.getValue();
 				for(Vertex v: l){
-					STITreeClusterWD<Integer> c = new STITreeClusterWD<Integer>(v._cluster);
+					STITreeCluster<Integer> c = new STITreeCluster<Integer>(v._cluster);
 					c.setData(v._el_num);
 					clusters.add(c);
 				}
@@ -335,7 +335,7 @@ public class MDCURInference
 				int sum = 0;
 				List<Integer> cls = new ArrayList<Integer>();
 				for(int id: nodes){
-					STITreeClusterWD<Integer> c = clusters.get(id);
+					STITreeCluster<Integer> c = clusters.get(id);
 					if(c.getClusterSize()!=stTaxa.length-1 && !cls.contains(id)){
 
 						sum += c.getData();
@@ -371,8 +371,8 @@ public class MDCURInference
 		}
 
 		//get the result
-		int minCoal = maxCliques.get(0)._totalCoals;
-		int maxCoal = (int)(( 1 + proportion / 100 ) * minCoal);
+		double minCoal = maxCliques.get(0)._totalCoals;
+		double maxCoal = (int)(( 1 + proportion / 100 ) * minCoal);
 		SymmetricDifference sd = new SymmetricDifference();
 		for(Solution s: maxCliques){
 			if(s._totalCoals <= maxCoal){
@@ -383,7 +383,7 @@ public class MDCURInference
 				s._st = Trees.buildTreeFromClusters(minClusters);
 				boolean dup = false;
 				for(Solution ex_s: solutions){
-					sd.computeDifference(s._st, ex_s._st);
+					sd.computeDifference(s._st, ex_s._st, true);
 					if(sd.getWeightedAverage()==0){
 						dup = true;
 						break;

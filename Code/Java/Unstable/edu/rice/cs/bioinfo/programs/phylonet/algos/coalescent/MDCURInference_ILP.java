@@ -19,13 +19,13 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.*;
@@ -68,7 +68,7 @@ public class MDCURInference_ILP {
 		for(int i=0;i<treeNumVector.length;i++){
 			treeNumVector[i]=0;
 		}
-	    List<STITreeClusterWD<int[]>> allClusters = new ArrayList<STITreeClusterWD<int[]>>();
+	    List<STITreeCluster<int[]>> allClusters = new ArrayList<STITreeCluster<int[]>>();
 	    index=0;
 		for(Tree tr : trees){
 				//TODO
@@ -81,7 +81,7 @@ public class MDCURInference_ILP {
 					allTrees.add(t);
 					for(STITreeCluster c:t.getClusters(taxa, true)){
 						if(!allClusters.contains(c)){
-							allClusters.add(new STITreeClusterWD<int[]>(c));
+							allClusters.add(new STITreeCluster<int[]>(c));
 						}
 					}
 				}
@@ -92,7 +92,7 @@ public class MDCURInference_ILP {
 		int max_coal = 0;
 		int totalTreeNum = allTrees.size();
 
-		for(STITreeClusterWD<int[]> cl : allClusters){
+		for(STITreeCluster<int[]> cl : allClusters){
 			index = 0;
 			int[] coalVector = new int[totalTreeNum];
 			for(Tree tr: allTrees){
@@ -107,7 +107,7 @@ public class MDCURInference_ILP {
 
 		max_coal++;
 
-		for(STITreeClusterWD<int[]> cl : allClusters){
+		for(STITreeCluster<int[]> cl : allClusters){
 			int[] coalVector = cl.getData();
 			for(int i=0;i<coalVector.length;i++){
 				coalVector[i] = max_coal - coalVector[i];
@@ -156,7 +156,7 @@ public class MDCURInference_ILP {
 		for(int i=0;i<treeNumVector.length;i++){
 			treeNumVector[i]=0;
 		}
-	    List<STITreeClusterWD<int[]>> allClusters = new ArrayList<STITreeClusterWD<int[]>>();
+	    List<STITreeCluster<int[]>> allClusters = new ArrayList<STITreeCluster<int[]>>();
 
 	    int index = 0;
 		for(Tree tr : trees){
@@ -165,7 +165,7 @@ public class MDCURInference_ILP {
 				allTrees.add(tr);
 				treeNumVector[index++] = 1;
 				for(STITreeCluster gtCluster:tr.getClusters(gtTaxa, true)){
-					STITreeClusterWD<int[]> stCluster = new STITreeClusterWD<int[]>(stTaxa);
+					STITreeCluster<int[]> stCluster = new STITreeCluster<int[]>(stTaxa);
 					for (String s : gtCluster.getClusterLeaves()) {
 						stCluster.addLeaf(taxonMap.get(s));
 					}
@@ -186,7 +186,7 @@ public class MDCURInference_ILP {
 					tree_num++;
 					allTrees.add(t);
 					for(STITreeCluster gtCluster:tr.getClusters(gtTaxa, true)){
-						STITreeClusterWD<int[]> stCluster = new STITreeClusterWD<int[]>(stTaxa);
+						STITreeCluster<int[]> stCluster = new STITreeCluster<int[]>(stTaxa);
 						for (String s : gtCluster.getClusterLeaves()) {
 							stCluster.addLeaf(taxonMap.get(s));
 						}
@@ -203,7 +203,7 @@ public class MDCURInference_ILP {
 
 		int max_coal = 0;
 		int totalTreeNum = allTrees.size();
-		for(STITreeClusterWD<int[]> cl : allClusters){
+		for(STITreeCluster<int[]> cl : allClusters){
 			index = 0;
 			int[] coalVector = new int[totalTreeNum];
 			for(Tree tr: allTrees){
@@ -218,7 +218,7 @@ public class MDCURInference_ILP {
 
 		max_coal++;
 
-		for(STITreeClusterWD<int[]> cl : allClusters){
+		for(STITreeCluster<int[]> cl : allClusters){
 			int[] coalVector = cl.getData();
 			for(int i=0;i<coalVector.length;i++){
 				coalVector[i] = max_coal - coalVector[i];
@@ -242,7 +242,7 @@ public class MDCURInference_ILP {
 		_outputPath = path;
 	}
 
-	private Solution solveQP (String gurobi_path,int[] treeNumVector, List<STITreeClusterWD<int[]>> allClusters, List<Tree> allTrees) throws IOException{
+	private Solution solveQP (String gurobi_path,int[] treeNumVector, List<STITreeCluster<int[]>> allClusters, List<Tree> allTrees) throws IOException{
 
 		File gurobiInput =  File.createTempFile("gurobiInput", ".lp");
         gurobiInput.deleteOnExit();
@@ -363,9 +363,9 @@ public class MDCURInference_ILP {
 			}
 			Solution sol = new Solution();
 			sol._st = Trees.buildTreeFromClusters(minClusters);
-			List<Tree> selectedgts = new ArrayList<Tree>();
+			List<MutableTuple<Tree,Double>> selectedgts = new ArrayList<MutableTuple<Tree,Double>>();
 			for(int i:geneTrees){
-				selectedgts.add(allTrees.get(i));
+				selectedgts.add(new MutableTuple<Tree, Double>(allTrees.get(i),1.0));
 			}
 			sol._totalCoals = DeepCoalescencesCounter.countExtraCoal(selectedgts, sol._st, true, 1);
 			return sol;
@@ -438,7 +438,7 @@ public class MDCURInference_ILP {
 	}
 	*/
 
-	private StringBuffer generateGurobiInput(int[] treeNumVector, List<STITreeClusterWD<int[]>> allClusters) {
+	private StringBuffer generateGurobiInput(int[] treeNumVector, List<STITreeCluster<int[]>> allClusters) {
 		StringBuffer objective = new StringBuffer();
 		StringBuffer constraint = new StringBuffer();
 		StringBuffer variable = new StringBuffer();
@@ -450,7 +450,7 @@ public class MDCURInference_ILP {
 		int i=0;
 		int index = 0;
 		int totalTree = 0;
-		for (STITreeClusterWD<int[]> cl : allClusters) {
+		for (STITreeCluster<int[]> cl : allClusters) {
 			int[] cv = cl.getData();
 			for(int j=0;j<cv.length;j++){
 				if (count > 0) {

@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -9,7 +10,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClusterWD;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
@@ -27,22 +27,23 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     //String[] _netTaxa;
     boolean[][] _R;
     Set<NetNode> _totalCoverNodes;
-    boolean _printDetail = false;
+    boolean _printDetail = true;
     int _netNodeNum;
     int _totalNodeNum;
-    List<STITreeClusterWD<Double>> _gtClusters;
+    List<STITreeCluster<Double>> _gtClusters;
 
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
 
-    public List<Double> calculateGTDistribution(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
+    public List<Double> calculateGTDistribution(Network<Integer> network, List<MutableTuple<Tree, Double>> gts, Map<String, List<String>> species2alleles){
         List<Double> probList = new ArrayList<Double>();
         processNetwork(network);
         //System.out.println(gts.size());
         //System.exit(0);
 
-        for(Tree gt: gts){
+        for(MutableTuple<Tree,Double> tuple: gts){
+            Tree gt = tuple.Item1;
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
             processGT(gt, gtTaxa);
@@ -301,7 +302,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         }
         double prob = 1;
         int index = 0;
-        for(STITreeClusterWD<Double> gtCl: _gtClusters){
+        for(STITreeCluster<Double> gtCl: _gtClusters){
             double coalTime = gtCl.getData();
             if(coalTime>=highTau){
                 break;
@@ -363,7 +364,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
      * The function is to calculate the _R matrix for the given tree.
      * Read the paper "Gene tree distributions under the coalescent process." by James Degnan to for details.
      */
-    private void computeR(List<STITreeClusterWD<Double>> gtClusters){
+    private void computeR(List<STITreeCluster<Double>> gtClusters){
         _R = new boolean[gtClusters.size()][gtClusters.size()];
         for(int i=0; i<gtClusters.size(); i++){
             STITreeCluster cl1 = gtClusters.get(i);
@@ -412,7 +413,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
 
     private void processGT(Tree gt, String[] gtTaxa){
         Trees.removeBinaryNodes((MutableTree)gt);
-        _gtClusters = new ArrayList<STITreeClusterWD<Double>>();
+        _gtClusters = new ArrayList<STITreeCluster<Double>>();
         Map<TNode, STITreeCluster> map = new HashMap<TNode, STITreeCluster>();
         for (TNode node : gt.postTraverse()) {
             STITreeCluster cl = new STITreeCluster(gtTaxa);
@@ -439,7 +440,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
             }
             map.put(node, cl);
 
-            STITreeClusterWD<Double> newCl = new STITreeClusterWD<Double>(cl);
+            STITreeCluster<Double> newCl = new STITreeCluster<Double>(cl);
             newCl.setData(maxTime);
             if(index == -1){
                 _gtClusters.add(newCl);

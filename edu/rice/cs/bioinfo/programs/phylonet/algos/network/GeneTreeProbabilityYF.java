@@ -41,53 +41,65 @@ import java.util.*;
  */
 public class GeneTreeProbabilityYF {
     Set<NetNode> _totalCoverNodes;
-    boolean[][] _R;
     boolean _printDetails = false;
     int _netNodeNum;
-    List<STITreeCluster> _gtClusters;
     boolean[][] _M;
     Map<NetNode, Integer> _node2ID;
     boolean _parallel = false;
+    int _currentTreeID = -1;
+    int _totalTree;
+    boolean _preProcessed = false;
     //double t1, t2, t3, t4, t5, t6;
 
-    public void emptyState () {
-	_totalCoverNodes = null;
-	_R = null;
-	_printDetails = false;
-	_netNodeNum = 0;
-	_gtClusters = null;
-	_M = null;
-	_node2ID = null;
-	_parallel = false;
-    }
-    
-    public void setParallel(boolean parallel){
-        _parallel = parallel;
-    }
-
-    public void setTotalNodes(Set<NetNode> totalCoverNodes){
-        _totalCoverNodes = totalCoverNodes;
-    }
 
     public void setPrintDetails(boolean p){
         _printDetails = p;
     }
 
 
+    public void setTotalNodes(Set<NetNode> totalCoverNodes){
+        _totalCoverNodes = totalCoverNodes;
+    }
 
-    public List<Double> calculateGTDistribution(Network<CoalescePattern[]> network, List<Tree> gts, Map<String, List<String>> species2alleles, int startingIndex){
-        List<Double> probList = new ArrayList<Double>();
-        processNetwork(network, gts.size(), true);
-        //System.out.println("\ngts:" + gts.size());
+    public void setParallel(boolean parallel){
+        _parallel = parallel;
+    }
 
 
-        int gtIndex = 0;
-        for(Tree gt: gts){
+    public synchronized int getNextTreeID(){
+        _currentTreeID ++;
+        return _currentTreeID;
+    }
+
+
+    public void preProcess(Network network, List<Tree> gts, boolean fromScratch){
+        _totalTree = gts.size();
+        processNetwork(network, _totalTree, fromScratch);
+        _preProcessed = true;
+    }
+
+
+    public void calculateGTDistribution(Network<CoalescePattern[]> network, List<Tree> gts, Map<String, List<String>> species2alleles, double resultProbs[]){
+        if(!_preProcessed){
+            preProcess(network, gts, true);
+        }
+
+        int treeID = 0;
+        /*
+        if(_parallel){
+            treeID = getNextTreeID();
+        }
+        */
+
+        while(treeID < _totalTree){
+            //System.out.println(Thread.currentThread().getId() + " starts #" + treeID);
+            Tree gt = gts.get(treeID);
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
             Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
-            processGT(gt, gtTaxa, child2parent); 
-            computeR();
+            List<STITreeCluster> gtClusters = new ArrayList<STITreeCluster>();
+            processGT(gt, gtTaxa, child2parent, gtClusters);
+            boolean[][] R = computeR(gtClusters);
 
             HashSet<String> gtTaxaSet = new HashSet<String>();
             for(String taxon: gtTaxa){
@@ -96,19 +108,10 @@ public class GeneTreeProbabilityYF {
 
             int netNodeIndex = 0;
 
-	    // kliu 
-	    // fubar'd for computeACMinus()
-	    // on M node of (NQ,(QI,ZA),OG); tree (second one in list)
-	    //
-	    // hmm.. some data structure problem - unable to handle polytomy at root
-	    // STITree??
-	    //
-	    // Weird - CalGTProb never calls with a Tree gt that has a polytomy at the root
-	    // why? - this is the key
             for(NetNode<CoalescePattern[]> node: Networks.postTraversal(network)){
                 //long start = System.currentTimeMillis();
                 CoalescePattern cp = new CoalescePattern();
-                node.getData()[startingIndex] = cp;
+                node.getData()[treeID] = cp;
                 //t6 += (System.currentTimeMillis()-start)/1000.0;
                 if(_printDetails){
                     System.out.println();
@@ -124,7 +127,7 @@ public class GeneTreeProbabilityYF {
                         if(gtTaxaSet.contains(node.getName())){
                             STITreeCluster cl = new STITreeCluster(gtTaxa);
                             cl.addLeaf(node.getName());
-                            config.addLineage(_gtClusters.indexOf(cl));
+                            config.addLineage(gtClusters.indexOf(cl));
                         }
                     }
                     else{
@@ -132,7 +135,7 @@ public class GeneTreeProbabilityYF {
                             if(gtTaxaSet.contains(allele)){
                                 STITreeCluster cl = new STITreeCluster(gtTaxa);
                                 cl.addLeaf(allele);
-                                config.addLineage(_gtClusters.indexOf(cl));
+                                config.addLineage(gtClusters.indexOf(cl));
                             }
                         }
                     }
@@ -147,7 +150,7 @@ public class GeneTreeProbabilityYF {
                 }
                 else{
                     if(node.isNetworkNode()){
-                        CoalescePattern childCP = ((NetNode<CoalescePattern[]>)(node.getChildren().iterator().next())).getData()[startingIndex];
+                        CoalescePattern childCP = ((NetNode<CoalescePattern[]>)(node.getChildren().iterator().next())).getData()[treeID];
                         Map<Set<Integer>,List<Configuration>> temp = new HashMap<Set<Integer>, List<Configuration>>();
                         List<Configuration> ACMinus = childCP._ACMinuss.get(node);
                         temp.put(null,ACMinus);
@@ -189,8 +192,8 @@ public class GeneTreeProbabilityYF {
                     }
                     else{
                         Iterator<NetNode<CoalescePattern[]>> childNode = node.getChildren().iterator();
-                        List<Configuration> AC1 = childNode.next().getData()[startingIndex].getACMinuss(node);
-                        List<Configuration> AC2 = childNode.next().getData()[startingIndex].getACMinuss(node);
+                        List<Configuration> AC1 = childNode.next().getData()[treeID].getACMinuss(node);
+                        List<Configuration> AC2 = childNode.next().getData()[treeID].getACMinuss(node);
                         //TODO
                         //System.out.println("AC1: " + AC1.size() + " & AC2:" + AC2.size());
                         //System.out.println("total");
@@ -277,7 +280,7 @@ public class GeneTreeProbabilityYF {
                     for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
                         for(List<Configuration> configList: lineages2configs.values()){
                             for(Configuration config: configList){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                         }
                     }
@@ -288,7 +291,7 @@ public class GeneTreeProbabilityYF {
                 //set AC- for a node
                 if(node.isRoot()){
                     Configuration rootConfig = new Configuration();
-                    rootConfig.addLineage(_gtClusters.size()-1);
+                    rootConfig.addLineage(gtClusters.size()-1);
                     for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
                         for(List<Configuration> configList: lineages2configs.values()){
                             for(Configuration preConfig: configList){
@@ -299,7 +302,7 @@ public class GeneTreeProbabilityYF {
                                     //t1 += (System.currentTimeMillis()-start)/1000.0;
                                 }else{
                                     Set<Integer> events = new HashSet<Integer>();
-                                    events.add(_gtClusters.size()-1);
+                                    events.add(gtClusters.size()-1);
                                     for (int i: preConfig._lineages) {
                                         int p = child2parent.get(i);
 
@@ -308,8 +311,8 @@ public class GeneTreeProbabilityYF {
                                             p = child2parent.get(p);
                                         }
                                     }
-                                    double weight = calculateW(events);
-                                    double prob = Math.max(0, computeProbability(preConfig, rootConfig, weight, -1, 1));
+                                    double weight = calculateW(events, R);
+                                    double prob = Math.max(0, computeProbability(preConfig, rootConfig, weight, -1, 1, gtClusters));
                                     gtProb += Math.max(0, prob*preConfig._totalProb);
                                     //start = System.currentTimeMillis();
                                     rootConfig.addUncoalescedConfiguration(preConfig, weight, prob);
@@ -320,7 +323,6 @@ public class GeneTreeProbabilityYF {
                         }
 
                     }
-                    probList.add(gtProb);
                     List<Configuration> temp = new ArrayList<Configuration>();
                     temp.add(rootConfig);
                     //start = System.currentTimeMillis();
@@ -330,7 +332,7 @@ public class GeneTreeProbabilityYF {
                 else if(node.isTreeNode()){
                     double distance = node.getParentDistance(node.getParents().iterator().next());
                     List<Configuration> ACminus = new ArrayList<Configuration>();
-                    computeACMinus(CACs, distance, 1, child2parent, ACminus);
+                    computeACMinus(CACs, distance, 1, child2parent, R, gtClusters, ACminus);
                     //start = System.currentTimeMillis();
                     cp.addACMinuss(node.getParents().iterator().next(),ACminus);
                     //t4 += (System.currentTimeMillis()-start)/1000.0;
@@ -339,7 +341,7 @@ public class GeneTreeProbabilityYF {
                     if(_printDetails){
                         System.out.print("ACminus: {");
                         for(Configuration config: ACminus){
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                     }
@@ -470,7 +472,7 @@ public class GeneTreeProbabilityYF {
                         for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
                             for(List<Configuration> configList: lineages2configs.values()){
                                 for(Configuration config: configList){
-                                    System.out.print(config.toString()+"  ");
+                                    System.out.print(config.toString(gtClusters)+"  ");
                                 }
                             }
                         }
@@ -479,7 +481,7 @@ public class GeneTreeProbabilityYF {
                         for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs2){
                             for(List<Configuration> configList: lineages2configs.values()){
                                 for(Configuration config: configList){
-                                    System.out.print(config.toString()+"  ");
+                                    System.out.print(config.toString(gtClusters)+"  ");
                                 }
                             }
                         }
@@ -514,14 +516,14 @@ public class GeneTreeProbabilityYF {
                     //t5 += (System.currentTimeMillis()-start)/1000.0;
                     List<Configuration> ACminus1 = new ArrayList<Configuration>();
                     List<Configuration> ACminus2 = new ArrayList<Configuration>();
-                    computeTwoACMinus(newCACs1, distance1, hybridProb1, newCACs2, distance2, hybridProb2,child2parent, ACminus1, ACminus2);
+                    computeTwoACMinus(newCACs1, distance1, hybridProb1, newCACs2, distance2, hybridProb2,child2parent, R, gtClusters, ACminus1, ACminus2);
                     //start = System.currentTimeMillis();
                     cp.addACMinuss(parentNode1, ACminus1);
                     //t4 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("ACminus to " + parentNode1.getName()+ ":  {");
                         for(Configuration config: ACminus1){
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                     }
@@ -531,7 +533,7 @@ public class GeneTreeProbabilityYF {
                     if(_printDetails){
                         System.out.print("ACminus to " + parentNode2.getName()+ ":  {");
                         for(Configuration config: ACminus2){
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                     }
@@ -540,20 +542,28 @@ public class GeneTreeProbabilityYF {
 
 
             }
+            resultProbs[treeID] = gtProb;
             if(_printDetails){
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
-            gtIndex++;
-            startingIndex++;
+            //System.out.println(Thread.currentThread().getId() + " ends #" + treeID);
+            if(_parallel){
+                treeID = getNextTreeID();
+            }
+            else{
+                treeID++;
+            }
+
         }
         //System.out.println(t1 + " " + t2 + " " + t3+ " " + t4+ " " + t5+ " " + t6);
-        return probList;
+
     }
 
 
-    public List<Double> calculateGTDistribution(Network<CoalescePattern[]> network, Set<NetNode> editedChilds, Set<NetNode> editedParents, int startingIndex, int endIndex){
-        List<Double> probList = new ArrayList<Double>();
-        processNetwork(network, -1, false);
+    public void calculateGTDistribution(Network<CoalescePattern[]> network, List<Tree> gts, Set<NetNode> editedChilds, Set<NetNode> editedParents, double[] probs){
+        if(!_preProcessed){
+            preProcess(network, gts, false);
+        }
 
         //int childID = _node2ID.get(editedChild);
         //int parentID = editedParent==null ? childID : _node2ID.get(editedParent);
@@ -567,9 +577,12 @@ public class GeneTreeProbabilityYF {
         }
 
 
-        //int gtIndex = 0;
+        int treeID = 0;
+        if(_parallel){
+            treeID = getNextTreeID();
+        }
 
-        for(;startingIndex<endIndex;startingIndex++){
+        while(treeID < _totalTree){
             double gtProb = 0;
             /*
 
@@ -578,9 +591,14 @@ public class GeneTreeProbabilityYF {
             processGT(gt, gtTaxa, child2parent);
             computeR();
             */
-
+            List<STITreeCluster> gtClusters = null;
+            if(_printDetails){
+                Tree gt = gts.get(treeID);
+                String[] gtTaxa = gt.getLeaves();
+                gt.getClusters(gtTaxa, false);
+            }
             for(NetNode<CoalescePattern[]> node: Networks.postTraversal(network)){
-                CoalescePattern cp = node.getData()[startingIndex];
+                CoalescePattern cp = node.getData()[treeID];
                 if(_printDetails){
                     System.out.println();
                     System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
@@ -605,7 +623,7 @@ public class GeneTreeProbabilityYF {
                         for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
                             System.out.println("To " + node2configList.getKey().getName());
                             for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println();
                         }
@@ -615,7 +633,7 @@ public class GeneTreeProbabilityYF {
                         for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
                             System.out.println("To " + node2configList.getKey().getName());
                             for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println();
                         }
@@ -659,7 +677,7 @@ public class GeneTreeProbabilityYF {
                             if(node2configList.getKey()!=null)
                                 System.out.println("To " + node2configList.getKey().getName());
                             for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println();
                         }
@@ -685,7 +703,7 @@ public class GeneTreeProbabilityYF {
                             if(node2configList.getKey()!=null)
                                 System.out.println("To " + node2configList.getKey().getName());
                             for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println();
                         }
@@ -698,7 +716,7 @@ public class GeneTreeProbabilityYF {
                         for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACs.entrySet()){
                             System.out.println("To " + node2configList.getKey().getName());
                             for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println();
                         }
@@ -713,7 +731,7 @@ public class GeneTreeProbabilityYF {
                                 CoalescingInfo info = coalescedInfos.next();
                                 double inheritanceProb = node.getParentProbability(parent);
                                 inheritanceProb = Double.isNaN(inheritanceProb)?1:inheritanceProb;
-                                double prob = Math.max(0,computeProbability(info._uncoalescedConfig, coalescedConfig, info._coalWeight, node.getParentDistance(parent), inheritanceProb));
+                                double prob = Math.max(0,computeProbability(info._uncoalescedConfig, coalescedConfig, info._coalWeight, node.getParentDistance(parent), inheritanceProb, gtClusters));
                                 info._coalProb = prob;
                                 coalescedConfig.addTotalProbability(Math.max(0, prob*info._uncoalescedConfig._totalProb));
                             }
@@ -724,7 +742,7 @@ public class GeneTreeProbabilityYF {
                         for(Map.Entry<NetNode, List<Configuration>> node2configList: cp._ACMinuss.entrySet()){
                             System.out.println("To " + node2configList.getKey().getName());
                             for(Configuration config: node2configList.getValue()){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println();
                         }
@@ -742,25 +760,28 @@ public class GeneTreeProbabilityYF {
                         CoalescingInfo info = coalescedInfos.next();
                         gtProb += Math.max(0, info._uncoalescedConfig._totalProb*info._coalProb);
                     }
-                    probList.add(gtProb);
                 }
             }
+            probs[treeID] = gtProb;
             if(_printDetails){
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
-        }
 
-        return probList;
+            if(_parallel){
+                treeID = getNextTreeID();
+            }
+            else{
+                treeID++;
+            }
+        }
     }
 
 
-    private void computeACMinus(List<Map<Set<Integer>,List<Configuration>>> CACs, double distance, double hybridProb, Map<Integer, Integer> child2parent, List<Configuration> ACminus){
+    private void computeACMinus(List<Map<Set<Integer>,List<Configuration>>> CACs, double distance, double hybridProb, Map<Integer, Integer> child2parent, boolean[][] R, List<STITreeCluster> gtClusters, List<Configuration> ACminus){
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus = new HashMap<Integer, Map<Configuration, Configuration>>();
         for (Map<Set<Integer>, List<Configuration>> lineages2configs : CACs) {
             for (List<Configuration> sameLineageConfigs : lineages2configs.values()) {
-
                 Configuration origConfig = sameLineageConfigs.get(0);
-
                 Stack<Configuration> configStack = new Stack<Configuration>();
                 Configuration configCopy = new Configuration(origConfig);
                 configCopy.clearCoalEvents();
@@ -770,8 +791,8 @@ public class GeneTreeProbabilityYF {
                 while (!configStack.empty()) {
                     Configuration cconfig = configStack.pop();
                     //boolean allNegative = true;
-                    double weight = calculateW(cconfig._coalEvents);
-                    double prob = Math.max(0, computeProbability(origConfig, cconfig, weight, distance, hybridProb));
+                    double weight = calculateW(cconfig._coalEvents, R);
+                    double prob = Math.max(0, computeProbability(origConfig, cconfig, weight, distance, hybridProb, gtClusters));
                     /*
                     cconfig._prob = prob * origConfig._prob;
                     if (cconfig._prob > 0) {
@@ -887,7 +908,7 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private void computeTwoACMinus(List<Map<Set<Integer>,List<Configuration>>>CACs1, double distance1, double hybridProb1, List<Map<Set<Integer>,List<Configuration>>>CACs2, double distance2, double hybridProb2,Map<Integer, Integer> child2parent, List<Configuration> ACminus1, List<Configuration> ACminus2){
+    private void computeTwoACMinus(List<Map<Set<Integer>,List<Configuration>>>CACs1, double distance1, double hybridProb1, List<Map<Set<Integer>,List<Configuration>>>CACs2, double distance2, double hybridProb2,Map<Integer, Integer> child2parent, boolean[][] R, List<STITreeCluster> gtClusters, List<Configuration> ACminus1, List<Configuration> ACminus2){
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus1 = new HashMap<Integer, Map<Configuration, Configuration>>();
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus2 = new HashMap<Integer, Map<Configuration, Configuration>>();
         Iterator<Map<Set<Integer>,List<Configuration>>> cacListIt1 = CACs1.iterator();
@@ -918,8 +939,8 @@ public class GeneTreeProbabilityYF {
                     //boolean allNegative = true;
                     //double prob = computeProbability(origConfig1, cconfig, distance1, hybridProb1);
                     String[] forPrint = new String[2];
-                    double weight = calculateW(cconfig._coalEvents);
-                    double probCommon = computeProbabilityPart1(origConfig1, cconfig, weight, forPrint);
+                    double weight = calculateW(cconfig._coalEvents, R);
+                    double probCommon = computeProbabilityPart1(origConfig1, cconfig, weight, forPrint, gtClusters);
                     double prob = Math.max(0, computeProbabilityPart2(probCommon, origConfig1.getLineageCount(), cconfig.getLineageCount(), distance1, hybridProb1, forPrint));
 
                     boolean ffirst = true;
@@ -1071,8 +1092,9 @@ public class GeneTreeProbabilityYF {
     }
 
     private void processNetwork(Network<CoalescePattern[]> net, int totalNumGTs, boolean fromScratch){
-        if(fromScratch && !_parallel){
+        if(fromScratch){
             removeBinaryNodes(net);
+
         }
         _netNodeNum = 0;
         int totalNode = 0;
@@ -1086,12 +1108,11 @@ public class GeneTreeProbabilityYF {
                 _netNodeNum++;
             }
         }
-        if(fromScratch && !_parallel){
+        if(fromScratch){
             _totalCoverNodes = computeNodeCoverage(net);
             for(NetNode<CoalescePattern[]> node: Networks.postTraversal(net)){
                 node.setData(new CoalescePattern[totalNumGTs]);
             }
-
         }
         else{
             computeM(net, totalNode);
@@ -1103,6 +1124,7 @@ public class GeneTreeProbabilityYF {
     private void computeM(Network<CoalescePattern[]> net, int numEdge){
         _M = new boolean[numEdge][numEdge];
         for(NetNode<CoalescePattern[]> node: Networks.postTraversal(net)){
+
             int pID = _node2ID.get(node);
             _M[pID][pID] = true;
             for(NetNode child: node.getChildren()){
@@ -1118,8 +1140,7 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private void processGT(Tree gt, String[] gtTaxa, Map<Integer,Integer> child2parent){
-        _gtClusters = new ArrayList<STITreeCluster>();
+    private void processGT(Tree gt, String[] gtTaxa, Map<Integer,Integer> child2parent,List<STITreeCluster> gtClusters){
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         int index = 0;
         for (TNode node : gt.postTraverse()) {
@@ -1142,10 +1163,11 @@ public class GeneTreeProbabilityYF {
             map.put(node, bs);
             STITreeCluster cl = new STITreeCluster(gtTaxa);
             cl.setCluster(bs);
-            _gtClusters.add(cl);
+            gtClusters.add(cl);
             index++;
         }
     }
+
 
     public static void removeBinaryNodes(Network net)
     {
@@ -1211,7 +1233,7 @@ public class GeneTreeProbabilityYF {
             else if(node.isRoot()){
                 boolean ftotal = true;
                 for(NetNode child: node.getChildren()){
-                    if(!allTotalNodes.contains(child.getData())){
+                    if(!allTotalNodes.contains(child)){
                         ftotal = false;
                         break;
                     }
@@ -1224,7 +1246,7 @@ public class GeneTreeProbabilityYF {
             else if(node.isTreeNode()){
                 boolean ftotal = true;
                 for(NetNode child: node.getChildren()){
-                    if(!allTotalNodes.contains(child.getData())){
+                    if(!allTotalNodes.contains(child)){
                         ftotal = false;
                         break;
                     }
@@ -1235,7 +1257,7 @@ public class GeneTreeProbabilityYF {
                     NetNode parent = node.getParents().iterator().next();
                     double distance = node.getParentDistance(parent);
                     parent.removeChild(node);
-                    boolean disconnect = isValidNetwork(net);
+                    boolean disconnect = isValidNetwork(net, parent);
                     parent.adoptChild(node, distance);
                     if (disconnect) {
                         totalCoverNodes.add(node);
@@ -1248,11 +1270,13 @@ public class GeneTreeProbabilityYF {
         return totalCoverNodes;
     }
 
-    private static boolean isValidNetwork(Network<Object> net){
+    private static boolean isValidNetwork(Network<Object> net, NetNode ignoreNode){
         Set<NetNode> visited = new HashSet<NetNode>();
         Set<NetNode> seen = new HashSet<NetNode>();
         for(NetNode<Object> node: net.bfs()){
-            if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
+            if(node.getIndeg()==1 && node.getOutdeg()==1 && node!=ignoreNode){
+                return false;
+            }
             visited.add(node);
             for(NetNode parent: node.getParents()){
                 seen.add(parent);
@@ -1265,48 +1289,50 @@ public class GeneTreeProbabilityYF {
     }
 
 
-
-
     /**
      * The function is to calculate the _R matrix for the given tree.
      * Read the paper "Gene tree distributions under the coalescent process." by James Degnan to for details.
      */
-    private void computeR(){
-        _R = new boolean[_gtClusters.size()][_gtClusters.size()];
-        for(int i=0; i<_gtClusters.size(); i++){
-            STITreeCluster cl1 = _gtClusters.get(i);
-            for(int j=i+1; j<_gtClusters.size(); j++){
-                STITreeCluster cl2 = _gtClusters.get(j);
+    private boolean[][] computeR(List<STITreeCluster> gtClusters){
+        boolean[][] R = new boolean[gtClusters.size()][gtClusters.size()];
+        for(int i=0; i<gtClusters.size(); i++){
+            STITreeCluster cl1 = gtClusters.get(i);
+            for(int j=i+1; j<gtClusters.size(); j++){
+                STITreeCluster cl2 = gtClusters.get(j);
                 if(cl1.containsCluster(cl2)){
-                    _R[i][j] = true;
+                    R[i][j] = true;
                 }
                 else if(cl2.containsCluster(cl1)){
-                    _R[j][i] = true;
+                    R[j][i] = true;
                 }
             }
         }
+        return R;
     }
 
 
 
-    private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion){
+
+
+
+    private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion, List<STITreeCluster> gtClusters){
         double prob;
         int u = preConfig.getLineageCount();
         int v = coalescedConfig.getLineageCount();
         prob = Math.pow(portion, u);
         if(distance == 0 && u != v){
             if(_printDetails){
-                System.out.println(preConfig.toString()+"->"+coalescedConfig.toString()+ ": g"+u+v+"(0)=0");
+                System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"(0)=0");
             }
             return 0;
         }
         if(u == v && (u == 1 || u == 0)){
             if(_printDetails){
                 if(portion==1 || u==0){
-                    System.out.println(preConfig.toString()+"->"+coalescedConfig.toString()+ ": g"+u+v+"("+distance+")=1");
+                    System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"("+distance+")=1");
                 }
                 else{
-                    System.out.println(preConfig.toString()+"->"+coalescedConfig.toString()+ ": g"+u+v+"("+distance+")*"+portion+"="+portion);
+                    System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"("+distance+")*"+portion+"="+portion);
                 }
             }
             return prob;
@@ -1319,10 +1345,10 @@ public class GeneTreeProbabilityYF {
 
         if(_printDetails){
             if(portion!=1){
-                System.out.println(preConfig.toString()+"->"+coalescedConfig.toString()+ ": g"+u+v+"("+distance+")*"+w+"/"+d+"*"+portion+"^"+u+"=" + gij*w/d*Math.pow(portion, u));
+                System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"("+distance+")*"+w+"/"+d+"*"+portion+"^"+u+"=" + gij*w/d*Math.pow(portion, u));
             }
             else{
-                System.out.println(preConfig.toString()+"->"+coalescedConfig.toString()+ ": g"+u+v+"("+distance+")*"+w+"/"+d+"=" + gij*w/d);
+                System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"("+distance+")*"+w+"/"+d+"=" + gij*w/d);
             }
         }
         prob *= gij*w/d;
@@ -1330,9 +1356,9 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private double computeProbabilityPart1(Configuration preConfig, Configuration coalescedConfig, double w, String[] forPrint){
+    private double computeProbabilityPart1(Configuration preConfig, Configuration coalescedConfig, double w, String[] forPrint, List<STITreeCluster> gtClusters){
         double prob;
-        forPrint[0] = preConfig.toString()+"->"+coalescedConfig.toString()+ ": ";
+        forPrint[0] = preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": ";
         int u = preConfig.getLineageCount();
         int v = coalescedConfig.getLineageCount();
         if(u == v && (u == 1 || u == 0)){
@@ -1431,7 +1457,7 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private double calculateW(Set<Integer> coalEvents){
+    private double calculateW(Set<Integer> coalEvents, boolean[][] R){
         //System.out.println(coalEvents);
         double w = 1.0;
         w = w*fact(1, coalEvents.size());
@@ -1439,7 +1465,7 @@ public class GeneTreeProbabilityYF {
         for (int i: coalEvents) {
             int a = 0;
             for (int j: coalEvents) {
-                if(i!=j && _R[i][j])
+                if(i!=j && R[i][j])
                     a++;
             }
             //System.out.print(" * " + 1.0/(1 + a));
@@ -1450,14 +1476,14 @@ public class GeneTreeProbabilityYF {
     }
 
 
-    private double calculateD(Set<Integer> coalEvents){
+    private double calculateD(Set<Integer> coalEvents, boolean[][] R){
         double w = 1.0;
         w = w*fact(1, coalEvents.size());
         //System.out.print(fact(1, coalEvents.cardinality()));
         for (int i: coalEvents) {
             int a = 0;
             for (int j: coalEvents) {
-                if(i!=j && _R[i][j])
+                if(i!=j && R[i][j])
                     a++;
             }
             //System.out.print(" * " + 1.0/(1 + a));
@@ -1652,10 +1678,10 @@ public class GeneTreeProbabilityYF {
             _totalProb += adds;
         }
 
-        public String toString(){
+        public String toString(List<STITreeCluster> gtClusters){
             String exp = "";
             for(int id: _lineages) {
-                exp = exp + _gtClusters.get(id);
+                exp = exp + gtClusters.get(id);
             }
             exp = exp + "/[";
             for(int i=0; i<_netNodeIndex.length; i++){
@@ -1744,6 +1770,7 @@ public class GeneTreeProbabilityYF {
         public int hashCode(){
             return _lineages.hashCode()+Arrays.hashCode(_netNodeIndex);
         }
-
     }
+
+
 }

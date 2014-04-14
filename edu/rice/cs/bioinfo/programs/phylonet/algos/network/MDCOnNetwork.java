@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
@@ -30,7 +31,7 @@ public class MDCOnNetwork {
      * @param	alleles2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
      * @return	a list of probabilities corresponding to the list of gene trees.
      */
-    public List<Integer> countExtraCoal(Network net, List<Tree> gts, Map<String, String> alleles2species){
+    public List<Integer> countExtraCoal(Network net, List<MutableTuple<Tree,Double>> gts, Map<String, String> alleles2species){
         List<Integer> xlList = new ArrayList<Integer>();
         Map<String,Integer> nname2tamount = new HashMap<String,Integer>();
         Tree superst = networkToTree(net, nname2tamount);
@@ -45,7 +46,8 @@ public class MDCOnNetwork {
             }
         }
 
-        for(Tree gt: gts){
+        for(MutableTuple<Tree,Double> tuple: gts){
+            Tree gt = tuple.Item1;
             List<String> gtTaxa = Arrays.asList(gt.getLeaves());
             if(alleles2species == null){
                 alleles2species = new HashMap<String,String>();

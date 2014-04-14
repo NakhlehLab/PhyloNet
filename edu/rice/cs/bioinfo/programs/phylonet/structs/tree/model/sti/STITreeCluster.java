@@ -27,9 +27,10 @@ import java.util.BitSet;
  * @author cvthan
  *
  */
-public class STITreeCluster {
-	protected String _taxa[];		// Set of taxa of a tree.
-	protected BitSet _cluster;	// The cluster.
+public class STITreeCluster<D extends Object> {
+    private String _taxa[];		// Set of taxa of a tree.
+    private BitSet _cluster;	// The cluster.
+    private D _data;
 
 
 	//protected STITreeCluster(){}
@@ -58,12 +59,13 @@ public class STITreeCluster {
 	 *
 	 * @param tc
 	 */
-	public STITreeCluster(STITreeCluster tc) {
+	public STITreeCluster(STITreeCluster<D> tc) {
 		assert(tc._taxa != null && tc._taxa.length > 0);
 
 		_taxa = tc._taxa;
 		_cluster = new BitSet(_taxa.length);
 		_cluster.or(tc._cluster);
+        _data = tc._data;
 	}
 
 	public String[] getTaxa() {
@@ -91,6 +93,13 @@ public class STITreeCluster {
 	public int getClusterSize() {
 		return _cluster.cardinality();
 	}
+
+    public STITreeCluster<D> duplicate(){
+        STITreeCluster<D> newCluster = new STITreeCluster<D>(_taxa);
+        newCluster.setCluster(_cluster);
+        newCluster.setData(_data);
+        return newCluster;
+    }
 
 	/**
 	 * Get the set of leaves in this cluster.
@@ -324,6 +333,14 @@ public class STITreeCluster {
 		cc.setCluster(bs);
 		return cc;
 	}
+
+    public void setData(D data){
+        _data = data;
+    }
+
+    public D getData(){
+        return _data;
+    }
 
 	/**
 	 * Returns the string representation of this cluster.

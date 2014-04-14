@@ -29,14 +29,14 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
  */
 public class Solution{
 	public Tree _st;
-	public int _totalCoals;
+	public double _totalCoals;
 	int[] _clusterIDs;
 
 	public Tree getTree(){
 		return _st;
 	}
 
-	public int getCoalNum(){
+	public double getCoalNum(){
 		return _totalCoals;
 	}
 }

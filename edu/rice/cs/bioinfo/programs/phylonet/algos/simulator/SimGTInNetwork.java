@@ -46,16 +46,22 @@ import java.util.*;
  */
 public class SimGTInNetwork
 {
-    private Map<NetNode, Map<Integer, double[]>> _node2gij;
+    private Map<NetNode, Map<Integer, double[]>> _node2gij = new HashMap<NetNode, Map<Integer, double[]>>();
     private boolean _printDetails = false;
+    private Random _random;
+    private long _seed = 0;
 
-
-    public SimGTInNetwork(){
-        _node2gij = new HashMap<NetNode, Map<Integer, double[]>>();
+    public void setSeed(long seed){
+        _seed = seed;
     }
 
-
     public List<Tree> generateGTs(Network network, Map<String, List<String>> species2alleles, int numGTs){
+        if(_seed == 0){
+            _random = new Random();
+        }
+        else{
+            _random = new Random(_seed);
+        }
         List<Tree> gts = new ArrayList<Tree>();
         if(species2alleles==null){
             species2alleles = new HashMap<String, List<String>>();
@@ -125,7 +131,7 @@ public class SimGTInNetwork
                     List<TNode> geneLineages1 = new ArrayList<TNode>();
                     List<TNode> geneLineages2 = new ArrayList<TNode>();
                     for(TNode gl: geneLineages){
-                        double random = Math.random();
+                        double random = _random.nextDouble();
                         if(random < inheritanceProb){
                             geneLineages1.add(gl);
                         }
@@ -155,6 +161,8 @@ public class SimGTInNetwork
                 }
 
             }
+            Trees.removeBinaryNodes(gt);
+            //System.out.println();
             gts.add(gt);
         }
 
@@ -175,11 +183,14 @@ public class SimGTInNetwork
 }
 
     private void randomlyCoalGeneLineages(List<TNode> geneLineages, int glInNum, int glOutNum, STINode root){
+        if(glInNum < glOutNum){
+            return;
+        }
         for(int k=glInNum; k>glOutNum; k--){
-            int coal1 = (int)(Math.random()*k);
+            int coal1 = (int)(_random.nextDouble()*k);
             int coal2 = coal1;
             while(coal1==coal2){
-                coal2 = (int)(Math.random()*k);
+                coal2 = (int)(_random.nextDouble()*k);
             }
             STINode newNode = root.createChild();
             if(coal1 > coal2){
@@ -197,7 +208,7 @@ public class SimGTInNetwork
 
 
     private int getRandomNumber(double[] cache){
-        double random = Math.random();
+        double random = _random.nextDouble();
         int coalNum = -1;
         for(int i=0; i<cache.length; i++){
             if(random<cache[i]){

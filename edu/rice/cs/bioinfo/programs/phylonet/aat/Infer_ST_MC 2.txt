@@ -4,7 +4,7 @@ BEGIN NETWORKS;
 
 Network g1 = ((((a,b),c),d),e);
 Network g2 = ((a,b),((c,e),d));
-Network g3 = ((a,c),((b,e),d));
+Network g3 = ((a,c),((d,e),b));
 
 END;
 

@@ -1,10 +1,10 @@
 #NEXUS
 
-BEGIN NETWORKS;
+BEGIN TREES;
 
-Network g1 = ((((a1::.5,b1::.5)::.5,c::.5)::.5,d::.5)::.5,e::.5)::.5;
-Network g2 = ((a2::.5,b2::.5)::.5,((c::.5,e::.5)::.5,d::.5)::.5)::.5;
-Network g3 = ((a::.5,c::.5)::.5,((b::.5,e::.5)::.5,d::.5)::.5)::.5;
+Tree g1 = ((((a1::.5,b1::.5)::.5,c::.5)::.5,d::.5)::.5,e::.5)::.5;
+Tree g2 = ((a2::.5,b2::.5)::.5,((c::.5,e::.5)::.5,d::.5)::.5)::.5;
+Tree g3 = ((a::.5,c::.5)::.5,((b::.5,e::.5)::.5,d::.5)::.5)::.5;
 
 END;
 
@@ -17,5 +17,8 @@ END;
 ===
 
 Infer_ST_MDC_UR (g1, g2, g3) -b .5 -e .2 -x -ur -t 1 -a <z:a1,a2,a; y:b1,b2,b; c:c; d:d; e:e>
-((y,z),(c,(d,e))); 7 extra lineages in total
+(e,(d,(c,(y,z)))); 3.0 extra lineages in total
+(d,(e,(c,(y,z)))); 3.0 extra lineages in total
+(c,((d,e),(y,z))); 3.0 extra lineages in total
+(d,((e,c),(y,z))); 3.0 extra lineages in total
 ===

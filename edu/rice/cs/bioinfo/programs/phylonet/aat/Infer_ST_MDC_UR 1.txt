@@ -17,5 +17,5 @@ END;
 ===
 
 Infer_ST_MDC_UR (g1, g2, g3)
-(c,((a,b),(d,e))); 3 extra lineages in total
+(c:0.0,((a:0.0,b:0.0):1.0,(e:0.0,d:0.0):2.0):0.0):0.0; 3.0 extra lineages in total
 ===

@@ -48,7 +48,7 @@ public class GeneTreeRefinement {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static void processGeneTrees(List<Tree> gts,Tree st, Map<String, List<String>> species2alleles, boolean rooted, double bootstrap,String path){
+	public static void processGeneTrees(List<Tree> gts,Tree st, Map<String, List<String>> species2alleles, boolean rooted, double bootstrap){
 		if(bootstrap<1){
 			for(Tree tr: gts){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){

@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -25,18 +26,32 @@ public class MDCOnNetworkYF {
     boolean _printDetail = false;
     int _netNodeNum;
     int _totalNodeNum;
-    int[][] _totalNetNodeLinNum;
-    List<STITreeCluster> _gtClusters;
+    double[][] _totalNetNodeLinNum;
+    boolean _parallel = false;
+    int _currentTreeID = -1;
+    boolean _preProcessed = false;
 
 
-    public int[][] getNetNodeLinNum(){
+
+    public void setParallel(boolean parallel){
+        _parallel = parallel;
+    }
+
+    public void setIndependentNodes(Set<Integer> firstIndependentNodes, Set<Integer> allIndependentNodes){
+        _firstIndependentNodes = firstIndependentNodes;
+        _allIndependentNodes = allIndependentNodes;
+
+    }
+
+
+    public double[][] getNetNodeLinNum(){
         return _totalNetNodeLinNum;
     }
 
     public double[] getHybridProbabilities(){
         double[] probabilities = new double[_totalNetNodeLinNum.length];
         int index = 0;
-        for(int[] lineageNum: _totalNetNodeLinNum){
+        for(double[] lineageNum: _totalNetNodeLinNum){
             double total = lineageNum[0]+lineageNum[1];
             //System.out.println(lineageNum[0]+"/"+total);
             if(total == 0){
@@ -50,42 +65,35 @@ public class MDCOnNetworkYF {
         return probabilities;
     }
 
-    public void computeInheritanceProb(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
-        countExtraCoal(network,gts,species2alleles);
-        double[] probs = getHybridProbabilities();
-        int index = 0;
-        for(NetNode<Integer> node: Networks.postTraversal(network)){
-            if(node.isNetworkNode()){
-                for(NetNode parent: node.getParents()){
-                    node.setParentProbability(parent,probs[index]);
-                    probs[index] = 1 - probs[index];
-                }
-                index++;
-            }
+    public synchronized int getNextTreeID(){
+        //System.out.println("In calculation:" + Thread.currentThread().getId() + ":");
+        _currentTreeID ++;
+        //System.out.println("In calculation:" + Thread.currentThread().getId() + ":" + _currentTreeID);
+        return _currentTreeID;
+    }
+
+
+    public void countExtraCoal(Network<Integer> network, List<MutableTuple<Tree,Double>> gts, Map<String, List<String>> species2alleles, int[] xls){
+        if(!_preProcessed){
+            processNetwork(network);
         }
-    }
-    /*
-    public void setWeights(List<Double> weights){
-        _weights = new ArrayList<Double>();
-        _weights.addAll(weights);
-    }
-    */
 
-    public List<Integer> countExtraCoal(Network<Integer> network, List<Tree> gts, Map<String, List<String>> species2alleles){
-        List<Integer> xlList = new ArrayList<Integer>();
-        processNetwork(network);
+        int treeID = 0;
+        if(_parallel){
+            treeID = getNextTreeID();
+        }
 
-
-        for(Tree gt: gts){
-            //System.out.println(gt);
-
-            //Trees.removeBinaryNodes((MutableTree) gt);
+        while(treeID < gts.size()){
+            MutableTuple<Tree,Double> tuple = gts.get(treeID);
+            Tree gt = tuple.Item1;
+            double weight = tuple.Item2;
             String[] gtTaxa = gt.getLeaves();
             Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
             Map<Integer,Integer> node2outdegree = new HashMap<Integer, Integer>();
-            processGT(gt, gtTaxa, child2parent, node2outdegree);
+            List<STITreeCluster> gtClusters = new ArrayList<STITreeCluster>();
+            processGT(gt, gtTaxa, child2parent, node2outdegree, gtClusters);
             Map<Integer,Integer> addedNode2resolvedDegree = new HashMap<Integer, Integer>();
-            int numGTNode = _gtClusters.size();
+            int numGTNode = gtClusters.size();
 
             if(!checkLeafAgreement(species2alleles, gtTaxa)){
                 throw new RuntimeException("Gene tree " + gt + " has leaf that the network doesn't have.");
@@ -113,7 +121,7 @@ public class MDCOnNetworkYF {
                         if(gtTaxaSet.contains(node.getName())){
                             STITreeCluster cl = new STITreeCluster(gtTaxa);
                             cl.addLeaf(node.getName());
-                            config.addLineage(_gtClusters.indexOf(cl));
+                            config.addLineage(gtClusters.indexOf(cl));
                         }
                     }
                     else{
@@ -121,7 +129,7 @@ public class MDCOnNetworkYF {
                             if(gtTaxaSet.contains(allele)){
                                 STITreeCluster cl = new STITreeCluster(gtTaxa);
                                 cl.addLeaf(allele);
-                                config.addLineage(_gtClusters.indexOf(cl));
+                                config.addLineage(gtClusters.indexOf(cl));
                             }
                         }
                     }
@@ -169,17 +177,18 @@ public class MDCOnNetworkYF {
                         if(_printDetail){
                             System.out.print("AC1: {");
                             for(Configuration config: AC1){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println("}");
                             System.out.print("AC2: {");
                             for(Configuration config: AC2){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println("}");
                         }
 
                         Configuration optimalOne = null;
+                        int xl1=0,xl2=0;
 
                         for(Configuration config1: AC1){
                             for(Configuration config2: AC2){
@@ -188,7 +197,8 @@ public class MDCOnNetworkYF {
                                     if(firstIndependent){
                                         if(optimalOne==null || optimalOne._xl>mergedConfig._xl){
                                             optimalOne = mergedConfig;
-
+                                            xl1 = Math.max(config1.getLineageCount() - 1, 0);
+                                            xl2 = Math.max(config2.getLineageCount() - 1, 0);
                                             for(int i=0; i<_netNodeNum; i++){
                                                 for(int j=0; j<2; j++){
                                                     netNodeLineages[i][j] = (BitSet)(mergedConfig._netNodeLineages[i][j].clone());
@@ -213,6 +223,8 @@ public class MDCOnNetworkYF {
 
                                     }
                                     else if(independent){
+                                        xl1 = Math.max(config1.getLineageCount() - 1, 0);
+                                        xl2 = Math.max(config2.getLineageCount() - 1, 0);
                                         List<Configuration> sameLineageConfigs = new ArrayList<Configuration>();
                                         sameLineageConfigs.add(mergedConfig);
                                         CACs.put(mergedConfig._lineages, sameLineageConfigs);
@@ -227,19 +239,17 @@ public class MDCOnNetworkYF {
                                         sameLineageConfigs.add(mergedConfig);
                                     }
 
-
                                 }
 
                             }
                         }
 
+
                         if(firstIndependent){
                             optimalOne.setNetNodeLineageNum(netNodeLineages);
-
                             List<Configuration> tempList = new ArrayList<Configuration>();
                             tempList.add(optimalOne);
                             CACs.put(optimalOne._lineages, tempList);
-
                         }
 
                     }
@@ -251,7 +261,7 @@ public class MDCOnNetworkYF {
                     System.out.print("AC: {");
                     for(List<Configuration> configList: CACs.values()){
                         for(Configuration config: configList)
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                     }
                     System.out.println("}");
                 }
@@ -264,13 +274,12 @@ public class MDCOnNetworkYF {
                     }
                     Configuration optimalConfig = CACs.values().iterator().next().get(0);
                     xl = optimalConfig._xl;
-                    xlList.add(xl);
-
 
                     for(int i=0; i< _netNodeNum; i++){
                         //System.out._printDetail(optimalConfig._netNodeLineages[i][0].cardinality() + "/" + optimalConfig._netNodeLineages[i][1].cardinality() + "   ");
-                        _totalNetNodeLinNum[i][0] += optimalConfig._netNodeLineages[i][0].cardinality();
-                        _totalNetNodeLinNum[i][1] += optimalConfig._netNodeLineages[i][1].cardinality();
+                        //System.out.print("\n"+optimalConfig._netNodeLineages[i][0].cardinality() + " " + optimalConfig._netNodeLineages[i][1].cardinality());
+                        _totalNetNodeLinNum[i][0] += optimalConfig._netNodeLineages[i][0].cardinality() * weight;
+                        _totalNetNodeLinNum[i][1] += optimalConfig._netNodeLineages[i][1].cardinality() * weight;
                     }
 
 
@@ -323,8 +332,8 @@ public class MDCOnNetworkYF {
                                             config.mergeCluster(newVirtualNode, sibling, lineage);
                                             newLineageList.add(newVirtualNode);
                                             parent2child.remove(parent);
-                                            STITreeCluster newCluster = _gtClusters.get(lineage).merge(_gtClusters.get(sibling));
-                                            _gtClusters.add(newCluster);
+                                            STITreeCluster newCluster = gtClusters.get(lineage).merge(gtClusters.get(sibling));
+                                            gtClusters.add(newCluster);
                                         }
                                     }
                                 }
@@ -353,7 +362,7 @@ public class MDCOnNetworkYF {
                     if(_printDetail){
                         System.out.print("ACminus: {");
                         for(Configuration config: ACminus){
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                     }
@@ -448,12 +457,12 @@ public class MDCOnNetworkYF {
                     if(_printDetail){
                         System.out.print("CAC after 1: {");
                         for(Configuration config: ACminus1){
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                         System.out.print("CAC after 2: {");
                         for(Configuration config: ACminus2){
-                            System.out.print(config.toString()+"  ");
+                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                     }
@@ -480,7 +489,7 @@ public class MDCOnNetworkYF {
                         if(_printDetail){
                             System.out.print("ACminus to " + parentNode.getName()+ ": {");
                             for(Configuration config: ACminus){
-                                System.out.print(config.toString()+"  ");
+                                System.out.print(config.toString(gtClusters)+"  ");
                             }
                             System.out.println("}");
 
@@ -491,9 +500,32 @@ public class MDCOnNetworkYF {
 
             }
 
+            xls[treeID] = xl;
+            if(_parallel){
+                treeID = getNextTreeID();
+            }
+            else{
+                treeID++;
+            }
+
+
         }
 
-        return xlList;
+        if(!_parallel){
+            double[] probs = getHybridProbabilities();
+            int index = 0;
+            for(NetNode<Integer> node: Networks.postTraversal(network)){
+                if(node.isNetworkNode()){
+                    for(NetNode parent: node.getParents()){
+                        node.setParentProbability(parent,probs[index]);
+                        probs[index] = 1 - probs[index];
+                    }
+                    index++;
+                }
+            }
+        }
+
+
     }
 
     public void setPrint(boolean toPrint){
@@ -541,7 +573,7 @@ public class MDCOnNetworkYF {
     }
 
 
-    private void processNetwork(Network<Integer> net){
+    public void processNetwork(Network<Integer> net){
         removeBinaryNodes(net);
         _netNodeNum = 0;
         _totalNodeNum = 0;
@@ -555,13 +587,15 @@ public class MDCOnNetworkYF {
             }
         }
         _netTaxa = taxa.toArray(new String[0]);
-        _totalNetNodeLinNum = new int[_netNodeNum][2];
-        computeNodeCoverage(net);
+        _totalNetNodeLinNum = new double[_netNodeNum][2];
+        _firstIndependentNodes = new HashSet<Integer>();
+        _allIndependentNodes = new HashSet<Integer>();
+        computeNodeCoverage(net, _netTaxa, _firstIndependentNodes, _allIndependentNodes);
+        _preProcessed = true;
     }
 
 
-    private void processGT(Tree gt, String[] gtTaxa, Map<Integer,Integer> child2parent, Map<Integer, Integer> node2outdegree){
-        _gtClusters = new ArrayList<STITreeCluster>();
+    private void processGT(Tree gt, String[] gtTaxa, Map<Integer,Integer> child2parent, Map<Integer, Integer> node2outdegree, List<STITreeCluster> gtClusters){
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         int index = 0;
         for (TNode node : gt.postTraverse()) {
@@ -589,12 +623,12 @@ public class MDCOnNetworkYF {
             map.put(node, bs);
             STITreeCluster cl = new STITreeCluster(gtTaxa);
             cl.setCluster(bs);
-            _gtClusters.add(cl);
+            gtClusters.add(cl);
             index++;
         }
     }
 
-    private void removeBinaryNodes(Network<Integer> net)
+    public static void removeBinaryNodes(Network<Integer> net)
     {
         // Find all binary nodes.
         List<NetNode> binaryNodes = new LinkedList<NetNode>();
@@ -622,91 +656,73 @@ public class MDCOnNetworkYF {
 
 
 
-    private void computeNodeCoverage(Network<Integer> net){
+    public static void computeNodeCoverage(Network<Integer> net, String[] netTaxa, Set<Integer> firstIndependentNodes, Set<Integer> allIndependentNodes){
         //List<Integer> leaves = new ArrayList<Integer>();
-        _allIndependentNodes = new HashSet<Integer>();
-        _firstIndependentNodes = new HashSet<Integer>();
+
         //_node2Coverage = new HashMap<Integer, STITreeCluster>();
-        HashMap<NetNode<Integer>, STITreeCluster> node2Cluster = new HashMap<NetNode<Integer>, STITreeCluster>();
+        //HashMap<NetNode<Integer>, STITreeCluster> node2Cluster = new HashMap<NetNode<Integer>, STITreeCluster>();
         for(NetNode<Integer> node: Networks.postTraversal(net)){
             int id = node.getData();
-            STITreeCluster cl = new STITreeCluster(_netTaxa);
+            STITreeCluster cl = new STITreeCluster(netTaxa);
             //System.out.println(cl);
             if(node.isLeaf()){
-                _allIndependentNodes.add(id);
+                allIndependentNodes.add(id);
+                //System.out.println("all:" + node.getName());
                 cl.addLeaf(node.getName());
             }
             else if(node.isRoot()){
                 boolean ftotal = true;
                 for(NetNode<Integer> child: node.getChildren()){
-                    cl = cl.merge(node2Cluster.get(child));
-                    if(!_allIndependentNodes.contains(child.getData())){
+                    //cl = cl.merge(node2Cluster.get(child));
+                    if(!allIndependentNodes.contains(child.getData())){
                         ftotal = false;
                     }
                 }
                 if(!ftotal){
-                    _firstIndependentNodes.add(id);
+                    firstIndependentNodes.add(id);
+                    //System.out.println("first:" + node.getName());
                 }
-                _allIndependentNodes.add(id);
+                allIndependentNodes.add(id);
+                //System.out.println("all:" + node.getName());
             }
             else if(node.isTreeNode()){
                 boolean ftotal = true;
                 for(NetNode<Integer> child: node.getChildren()){
-                    cl = cl.merge(node2Cluster.get(child));
-                    if(!_allIndependentNodes.contains(child.getData())){
+                    //cl = cl.merge(node2Cluster.get(child));
+                    if(!allIndependentNodes.contains(child.getData())){
                         ftotal = false;
                     }
                 }
                 if(ftotal){
-                    _allIndependentNodes.add(id);
+                    allIndependentNodes.add(id);
+                    //System.out.println("all:" + node.getName());
                 }else{
                     NetNode parent = node.getParents().iterator().next();
                     double distance = node.getParentDistance(parent);
                     parent.removeChild(node);
-                    boolean disconnect = isValidNetwork(net);
+                    boolean disconnect = isValidNetwork(net, parent);
                     parent.adoptChild(node, distance);
                     if (disconnect) {
-                        _firstIndependentNodes.add(id);
-                        _allIndependentNodes.add(id);
+                        firstIndependentNodes.add(id);
+                        //System.out.println("first:" + node.getName());
+                        allIndependentNodes.add(id);
+                        //System.out.println("all:" + node.getName());
                     }
                 }
 
             }
+            /*
             else{
                 for(NetNode<Integer> child: node.getChildren()){
                     cl = cl.merge(node2Cluster.get(child));
                 }
             }
             node2Cluster.put(node, cl);
-        }
+            */
 
-        List<NetNode<Integer>> temp = new ArrayList<NetNode<Integer>>();
-        temp.addAll(node2Cluster.keySet());
-        for(NetNode<Integer> node: temp){
-            if(_allIndependentNodes.contains(node.getData())){
-                node2Cluster.remove(node);
-            }
         }
+        //System.out.println(firstIndependentNodes.size() + " " + allIndependentNodes.size());
 
-        for(Map.Entry<NetNode<Integer>, STITreeCluster> entry1: node2Cluster.entrySet()){
-            STITreeCluster cl1 = entry1.getValue();
-            int id1 = entry1.getKey().getData();
-            boolean fadd = true;
-            for(Map.Entry<NetNode<Integer>, STITreeCluster> entry2: node2Cluster.entrySet()){
-                if(id1 == entry2.getKey().getData()){
-                    continue;
-                }
-                if(!cl1.isCompatible(entry2.getValue())){
-                    fadd = false;
-                    break;
-                }
-            }
-            if(fadd){
-                if(entry1.getKey().isNetworkNode() && entry1.getKey().getOutdeg()==1)continue;
-               // _node2Coverage.put(id1, cl1);
-                //System.out.println(id1 + ":" + entry1.getKey().getName());
-            }
-        }
     }
 
     private List<boolean[]> getSelected(int n, int m){
@@ -746,21 +762,25 @@ public class MDCOnNetworkYF {
     }
 
 
-    private boolean isValidNetwork(Network<Integer> net){
-        BitSet visited = new BitSet();
-        BitSet seen = new BitSet();
+    private static boolean isValidNetwork(Network<Integer> net, NetNode ignoreNode){
+        Set<NetNode> visited = new HashSet<NetNode>();
+        Set<NetNode> seen = new HashSet<NetNode>();
         for(NetNode<Integer> node: net.bfs()){
-            if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
-            visited.set(node.getData(), true);
-            for(NetNode<Integer> parent: node.getParents()){
-                seen.set(parent.getData(), true);
+            if(node.getIndeg()==1 && node.getOutdeg()==1 && node!=ignoreNode){
+                return false;
             }
-            for(NetNode<Integer> child: node.getChildren()){
-                seen.set(child.getData(), true);
+            visited.add(node);
+            for(NetNode parent: node.getParents()){
+                seen.add(parent);
+            }
+            for(NetNode child: node.getChildren()){
+                seen.add(child);
             }
         }
-        return visited.cardinality()==seen.cardinality();
+        return visited.size()==seen.size();
     }
+
+
 
     private class Configuration{
         private HashSet<Integer> _lineages;
@@ -899,10 +919,10 @@ public class MDCOnNetworkYF {
         }
 
 
-        public String toString(){
+        public String toString(List<STITreeCluster> gtClusters){
             String exp = "";
             for(int id: _lineages) {
-                exp = exp + _gtClusters.get(id);
+                exp = exp + gtClusters.get(id);
             }
             exp = exp + "/[";
 

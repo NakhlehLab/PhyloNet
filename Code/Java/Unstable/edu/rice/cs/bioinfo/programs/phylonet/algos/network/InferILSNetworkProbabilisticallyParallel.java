@@ -31,9 +31,11 @@ import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkNeighbourhoodRandomWalkGenerator;
+import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkWholeNeighbourhoodGenerator;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
+import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
@@ -77,14 +79,17 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     protected int _diameterLimit;
     protected Network<Object> _startNetwork;
     protected Set<String> _fixedHybrid;
-    protected int _numThread = 1;
+    protected double[] _operationWeight;
+    protected int _numThread;
+    protected int _numRuns;
+    protected Long _seed;
 
 
     public InferILSNetworkProbabilisticallyParallel(){
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, Long maxFailure, int diameterLimit, int parallel, Network startNetwork, Set<String> fixedHybrid){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, Long maxFailure, int diameterLimit, int parallel, Network startNetwork, Set<String> fixedHybrid, double[] operationWeight, int numRuns, Long seed){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
@@ -98,8 +103,9 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         _maxFailure = maxFailure;
         _numThread = parallel;
         _fixedHybrid = fixedHybrid;
-
-
+        _operationWeight = operationWeight;
+        _numRuns = numRuns;
+        _seed = seed;
     }
 
     private void checkNetworkWithHybrids(Network<Object> startNetwork){
@@ -115,56 +121,64 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
                 }
             }
         }
-
     }
 
-    public List<Tuple<Network,Double>> inferNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, int hasTried){
+    public List<Tuple<Network,Double>> inferNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol){
         _optimalNetworks = new Network[numSol];
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Double.NEGATIVE_INFINITY);
 
-        List<Tree> distinctTrees = new ArrayList<Tree>();
-        List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList = new ArrayList<Tuple3<Tree, Double, List<Integer>>>();
-        summarizeGeneTrees(gts, distinctTrees, nbTreeAndCountAndBinaryIDList);
-        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles, _fixedHybrid, _startNetwork);
-        //NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        //AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
-
-        //TODO
-        double[] operationProb = new double[4];
-        if(_fixedHybrid.size()==0){
-            operationProb[0] = 0.15;
-            operationProb[1] = 0.15;
-            operationProb[2] = 0.2;
-            operationProb[3] = 0.5;
-        }
-        else{
-            operationProb[0] = 0;
-            operationProb[1] = 0;
-            operationProb[2] = 0;
-            operationProb[3] = 1.0;
+        Map<String,String> allele2species = null;
+        if(species2alleles!=null){
+            allele2species = new HashMap<String, String>();
+            for(Map.Entry<String,List<String>> entry: species2alleles.entrySet()){
+                for(String allele: entry.getValue()){
+                    allele2species.put(allele, entry.getKey());
+                }
+            }
         }
 
-        NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(operationProb, makeNode, makeEdge);
-        AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+        List<MutableTuple<Tree,Double>> distinctNonBinaryTrees = new ArrayList<MutableTuple<Tree, Double>>();
+        summarizeGeneTrees1(gts, allele2species, distinctNonBinaryTrees);
 
-        Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
-        Comparator<Double> comparator = getDoubleScoreComparator();
-        //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
-        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit, hasTried); // search starts here
-        //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations,  _diameterLimit); // search starts here
-        //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, maxExaminations, maxReticulations, new Long(100)); // search starts here
+        String startingNetwork = getStartNetwork(distinctNonBinaryTrees, species2alleles, _fixedHybrid, _startNetwork);
+        //System.out.println(startingNetwork);
+        List<Tree> distinctBinaryTrees = new ArrayList<Tree>();
+        List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList = new ArrayList<Tuple<MutableTuple<Tree,Double>, Set<Integer>>>();
+        summarizeGeneTrees2(distinctNonBinaryTrees, allele2species, distinctBinaryTrees, nbTreeAndCountAndBinaryIDList);
+        //System.out.println("\nDone reading gene trees:" + distinctBinaryTrees.size());
 
+
+        for(int i=1; i<=_numRuns; i++){
+            DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = makeNetwork(startingNetwork);
+            //NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
+            //AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+
+            NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(_operationWeight, makeNode, makeEdge, _seed);
+            AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+
+            Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(distinctBinaryTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
+            Comparator<Double> comparator = getDoubleScoreComparator();
+            //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,startNetwork);
+            HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
+            //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations,  _diameterLimit); // search starts here
+/*
+            System.out.println("Results after run #" + i);
+            for(int j=0; j<_optimalNetworks.length; j++){
+                System.out.println(_optimalScores[j] + ": " + network2String(_optimalNetworks[j]));
+            }
+            System.out.println("===============================\n\n");
+*/
+        }
         List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
         for(int i=0; i<numSol; i++){
             resultList.add(new Tuple<Network, Double>(_optimalNetworks[i], _optimalScores[i]));
         }
-        //System.out.println("\n #Networks " + result.ExaminationsCount);
         return resultList;
     }
 
 
-    protected DirectedGraphToGraphAdapter<String,PhyloEdge<String>> getStartNetwork(List<Tree> gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
+    protected String getStartNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
         checkNetworkWithHybrids(startingNetwork);
 
         if(startingNetwork == null){
@@ -178,15 +192,15 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
                     }
                 }
             }
+
             MDCInference_DP mdc = new MDCInference_DP();
             Solution sol;
             if(allele2species==null){
-                sol = mdc.inferSpeciesTree(gts, false, 1, false, 100, true, -1).get(0);
+                sol = mdc.inferSpeciesTree(gts, false, 1, true, true, -1).get(0);
             }
             else{
-                sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, 100, true, -1).get(0);
+                sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, true, true, -1).get(0);
             }
-
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = string2Network(startingTree.toString());
         }
@@ -214,8 +228,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         }
 
         String newNetwork = network2String(startingNetwork);
-        //System.out.println("\n" + newNetwork);
-        return makeNetwork(newNetwork);
+        return newNetwork;
 
     }
 
@@ -250,48 +263,55 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         insertedSourceNode.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
     }
 
-    protected void summarizeGeneTrees(List<Tree> originalGTs, List<Tree> distinctGTs, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
-        for(Tree tr: originalGTs){
-            Double weight = ((STINode<Double>)tr.getRoot()).getData();
-            if(weight == null){
-                weight = 1.0;
+
+
+    protected void summarizeGeneTrees1(List<MutableTuple<Tree,Double>> originalGTs, Map<String,String> allele2species, List<MutableTuple<Tree,Double>> distinctGTs){
+        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
+        for(MutableTuple<Tree,Double> gtTuple: originalGTs){
+            for(TNode node: gtTuple.Item1.getNodes()){
+                node.setParentDistance(TNode.NO_DISTANCE);
             }
-            int index = 0;
-            Tuple3<Tree, Double, List<Integer>> newTuple = null;
-            for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
-                if(Trees.haveSameRootedTopology(tr, triple.Item1)){
-                    newTuple = new Tuple3<Tree, Double, List<Integer>>(tr, triple.Item2 + weight, triple.Item3);
-                    break;
-                }
-                index++;
-            }
-            if(newTuple!=null){
-                nbTreeAndCountAndBinaryIDList.set(index, newTuple);
+            String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
+            MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
+            if(existingTuple==null){
+                existingTuple = gtTuple;
+                exp2tree.put(exp, existingTuple);
             }
             else{
-                List<Integer> binaryIDs = new ArrayList<Integer>();
-                for(Tree btr: Trees.getAllBinaryResolution(tr)){
-                    index = 0;
-                    boolean exist = false;
-                    for(Tree exTr: distinctGTs){
-                        if(Trees.haveSameRootedTopology(btr, exTr)){
-                            binaryIDs.add(index);
-                            exist = true;
-                            break;
-                        }
-                        index++;
-                    }
-
-                    if(!exist){
-                        distinctGTs.add(btr);
-                        binaryIDs.add(index);
-                    }
-                }
-                newTuple = new Tuple3<Tree, Double, List<Integer>>(tr, weight, binaryIDs);
-                nbTreeAndCountAndBinaryIDList.add(newTuple);
+                existingTuple.Item2 += gtTuple.Item2;
             }
         }
+
+        distinctGTs.addAll(exp2tree.values());
+        originalGTs.clear();
     }
+
+
+    protected void summarizeGeneTrees2(List<MutableTuple<Tree,Double>> originalGTs, Map<String,String> allele2species, List<Tree> distinctGTs, List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList){
+        Map<String,Integer> exp2ID = new HashMap<String, Integer>();
+        //int temp=0;
+        for(MutableTuple<Tree,Double> gt: originalGTs){
+            //System.out.println(temp + " :" + distinctGTs.size());
+            //temp++;
+            Set<Integer> binaryIDs = new HashSet<Integer>();
+            for(Tree btr: Trees.getAllBinaryResolution(gt.Item1)){
+                String btrExp = Trees.getLexicographicNewickString(btr, allele2species);
+                Integer index = exp2ID.get(btrExp);
+                if(index==null){
+                    index = distinctGTs.size();
+                    distinctGTs.add(btr);
+                    binaryIDs.add(index);
+                    exp2ID.put(btrExp, index);
+                }
+                else{
+                    binaryIDs.add(index);
+                }
+            }
+            nbTreeAndCountAndBinaryIDList.add(new Tuple<MutableTuple<Tree,Double>, Set<Integer>>(gt, binaryIDs));
+
+        }
+    }
+
 
     protected Comparator<Double> getDoubleScoreComparator(){
         return new Comparator<Double>() {
@@ -303,29 +323,26 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     }
 
 
-    protected Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    protected Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList){
         return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
             public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
-                //System.out.println("Start scoring ...");
-                //System.out.println(network2String(network));
-                //long start = System.currentTimeMillis();
                 Network<Object> speciesNetwork = networkNew2Old(network);
-                //double score = findUltrametricOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
                 double score = findNonUltrametricOptimalBranchLength(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
-
-
+                boolean optimalChanged = false;
+                int originalIndex  = -1;
                 if(score > _optimalScores[_optimalNetworks.length-1]){
-                    boolean exist = false;
+
                     for(int i=0; i<_optimalNetworks.length; i++){
                         if(_optimalNetworks[i]==null)break;
 
                         if(edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.computeClusterDistance(speciesNetwork, _optimalNetworks[i])[2]<0.000001 &&
                                 edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.computeTripartitionDistance(speciesNetwork, _optimalNetworks[i])[2]<0.000001){
-                            exist = true;
+                            originalIndex = i;
                             break;
                         }
                     }
-                    if(!exist){
+                    if(originalIndex == -1 || score>_optimalScores[originalIndex]){
+                        optimalChanged = true;
                         int index = -1;
                         for(int i=0; i<_optimalScores.length; i++){
                             if(score > _optimalScores[i]){
@@ -333,32 +350,38 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
                                 break;
                             }
                         }
-                        for(int i=_optimalScores.length-1; i>index; i--){
+                        int startingMovingPoint = originalIndex == -1? _optimalScores.length-1:originalIndex;
+                        for(int i=startingMovingPoint; i>index; i--){
                             _optimalNetworks[i] = _optimalNetworks[i-1];
                             _optimalScores[i] = _optimalScores[i-1];
                         }
                         _optimalScores[index] = score;
                         _optimalNetworks[index] = string2Network(network2String(speciesNetwork));
-                        //System.out.println(network2String(speciesNetwork) + ": "+score);
                     }
                 }
+
+                System.gc();
+
                 /*
-                System.out.println(score + ": "+network2String(speciesNetwork));
-                System.out.println(_optimalScores[0] + ":" + network2String(_optimalNetworks[0]));
+                System.out.println(score +  ": "+ network2String(speciesNetwork));
+                if(optimalChanged){
+                    System.out.println("Optimal ones:");
+                    for(int i=0; i<_optimalNetworks.length; i++){
+                        if(_optimalNetworks[i]!=null){
+                            System.out.println(_optimalScores[i]+": " + network2String(_optimalNetworks[i]));
+                        }
+                    }
+                }
+
                 System.out.println();
                 */
-                //System.out.println();
-                //System.out.println(network2String(speciesNetwork) + ": "+score);
-                //System.out.println();
-                //System.out.println("End scoring ..." + (System.currentTimeMillis()-start)/1000.0);
-                //System.exit(0);
                 return score;
             }
         };
     }
 
 
-    protected double findUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    protected double findUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList){
         boolean continueRounds = true; // keep trying to improve network
 
         Map<NetNode<Object>, Double> node2height = new Hashtable<NetNode<Object>, Double>();
@@ -394,6 +417,8 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         for(; roundIndex <_maxRounds && continueRounds; roundIndex++)
         {
             double lnGtProbLastRound = lnGtProbOfSpeciesNetwork.getContents();
+            List<Proc> assigmentActions = new ArrayList<Proc>();
+
             for(final NetNode<Object> node : edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork))
             {
                 if(node.isLeaf()){
@@ -420,100 +445,118 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
                     maxHeight.setContents(minHeight.getContents() + _maxBranchLength);
                 }
 
-                UnivariateFunction functionToOptimize = new UnivariateFunction() {
+                assigmentActions.add(new Proc()
+                {
+                    public void execute()
+                    {
+                        UnivariateFunction functionToOptimize = new UnivariateFunction() {
 
-                    public double value(double suggestedHeight) {  // brent suggests a new branch length
-                        double incumbentHeight = node2heightContainer.getContents().get(node);
+                            public double value(double suggestedHeight) {  // brent suggests a new branch length
+                                double incumbentHeight = node2heightContainer.getContents().get(node);
 
 
-                        for(NetNode<Object> child: node.getChildren()){
-                            child.setParentDistance(node, suggestedHeight - node2heightContainer.getContents().get(child));
-                        }
-
-                        if(!node.isRoot()){
-                            for(NetNode<Object> parent: node.getParents()){
-                                node.setParentDistance(parent, node2heightContainer.getContents().get(parent) - suggestedHeight);
-                            }
-                        }
-
-                        double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, node, true);
-                        if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
-                        {
-                            lnGtProbOfSpeciesNetwork.setContents(lnProb);
-                            node2heightContainer.getContents().put(node, suggestedHeight);
-
-                        }
-                        else  // didn't improve, roll back change
-                        {
-                            for(NetNode<Object> child: node.getChildren()){
-                                child.setParentDistance(node, incumbentHeight - node2heightContainer.getContents().get(child));
-                            }
-                            if(!node.isRoot()){
-                                for(NetNode<Object> parent: node.getParents()){
-                                    node.setParentDistance(parent, node2heightContainer.getContents().get(parent) - incumbentHeight);
+                                for(NetNode<Object> child: node.getChildren()){
+                                    child.setParentDistance(node, suggestedHeight - node2heightContainer.getContents().get(child));
                                 }
+
+                                if(!node.isRoot()){
+                                    for(NetNode<Object> parent: node.getParents()){
+                                        node.setParentDistance(parent, node2heightContainer.getContents().get(parent) - suggestedHeight);
+                                    }
+                                }
+
+                                double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, node, true);
+                                if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
+                                {
+                                    lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                                    node2heightContainer.getContents().put(node, suggestedHeight);
+
+                                }
+                                else  // didn't improve, roll back change
+                                {
+                                    for(NetNode<Object> child: node.getChildren()){
+                                        child.setParentDistance(node, incumbentHeight - node2heightContainer.getContents().get(child));
+                                    }
+                                    if(!node.isRoot()){
+                                        for(NetNode<Object> parent: node.getParents()){
+                                            node.setParentDistance(parent, node2heightContainer.getContents().get(parent) - incumbentHeight);
+                                        }
+                                    }
+                                }
+                                return lnProb;
                             }
+                        };
+                        BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+
+                        try
+                        {
+                            optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, minHeight.getContents(), maxHeight.getContents());
                         }
-                        return lnProb;
+                        catch(TooManyEvaluationsException e) // _maxAssigmentAttemptsPerBranchParam exceeded
+                        {
+                        }
+
+                        computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, node, true);
+
                     }
-                };
-                BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
-
-                try
-                {
-                    optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, minHeight.getContents(), maxHeight.getContents());
-                }
-                catch(TooManyEvaluationsException e) // _maxAssigmentAttemptsPerBranchParam exceeded
-                {
-                }
-
-                computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, node, true);
-
+                });
             }
 
             for(final NetNode<Object> child : speciesNetwork.getNetworkNodes()) // find every hybrid node
             {
 
-
                 Iterator<NetNode<Object>> hybridParents = child.getParents().iterator();
                 final NetNode hybridParent1 = hybridParents.next();
                 final NetNode hybridParent2 = hybridParents.next();
 
-                UnivariateFunction functionToOptimize = new UnivariateFunction() {
-                    public double value(double suggestedProb) {
-                        double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
-                        child.setParentProbability(hybridParent1, suggestedProb);
-                        child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
+                assigmentActions.add(new Proc()
+                {
+                    public void execute()
+                    {
+                        UnivariateFunction functionToOptimize = new UnivariateFunction() {
+                            public double value(double suggestedProb) {
+                                double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
+                                child.setParentProbability(hybridParent1, suggestedProb);
+                                child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                        double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+                                double lnProb = computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
 
-                        if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
+                                if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
+                                {
+
+                                    lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                                }
+                                else // change did not improve, roll back
+                                {
+
+                                    child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
+                                    child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
+                                }
+                                return lnProb;
+                            }
+                        };
+                        BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+
+                        try
                         {
-
-                            lnGtProbOfSpeciesNetwork.setContents(lnProb);
+                            optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
                         }
-                        else // change did not improve, roll back
+                        catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
                         {
-
-                            child.setParentProbability(hybridParent1, incumbentHybridProbParent1);
-                            child.setParentProbability(hybridParent2, 1.0 - incumbentHybridProbParent1);
                         }
-                        return lnProb;
+                        computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+
                     }
-                };
-                BrentOptimizer optimizer = new BrentOptimizer(_Brent1, _Brent2); // very small numbers so we control when brent stops, not brent.
+                });
+            }
 
-                try
-                {
-                    optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
-                }
-                catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
-                {
-                }
-                computeProbability(speciesNetwork, distinctTrees, nbTreeAndCountAndBinaryIDList, child, false);
+            if(_seed==null) {
+                Collections.shuffle(assigmentActions);
+            }
 
-
-
+            for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
+            {
+                assigment.execute();
             }
 
             if( ((double)lnGtProbOfSpeciesNetwork.getContents()) == lnGtProbLastRound)  // if no improvement was made wrt to last around, stop trying to find a better assignment
@@ -550,7 +593,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
 
 
-    protected double findNonUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList){
+    protected double findNonUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final List<Tree> distinctTrees, final Map<String, List<String>> species2alleles, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList){
         boolean continueRounds = true; // keep trying to improve network
 
 
@@ -564,6 +607,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
             }
         }
 
+
         //long start = System.currentTimeMillis();
         double initalProb;
         if(_numThread > 1){
@@ -572,13 +616,14 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         else{
             initalProb = computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
         }
+        //System.out.println(initalProb);
         //System.out.print("\n"+(System.currentTimeMillis()-start));
         //computeProbability(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
 
         //System.out.println();
         //System.out.println(network2String(speciesNetwork));
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(initalProb);  // records the GTProb of the network at all times
-        final Container<Integer> callCount = new Container<Integer>(0);
+        //final Container<Integer> callCount = new Container<Integer>(0);
 
 
         int roundIndex = 0;
@@ -587,11 +632,8 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
             /*
             * Prepare a random ordering of network edge examinations each of which attempts to change a branch length or hybrid prob to improve the GTProb score.
             */
-
             double lnGtProbLastRound = lnGtProbOfSpeciesNetwork.getContents();
             List<Proc> assigmentActions = new ArrayList<Proc>(); // store adjustment commands here.  Will execute them one by one later.
-
-
 
 
             for(final NetNode<Object> parent : edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork))
@@ -612,7 +654,8 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
                             UnivariateFunction functionToOptimize = new UnivariateFunction() {
                                 public double value(double suggestedBranchLength) {
-                                    callCount.setContents(callCount.getContents()+1);
+                                    //System.out.print(" l/"+child.getName()+" ");
+                                    //callCount.setContents(callCount.getContents()+1);
                                     double incumbentBranchLength = child.getParentDistance(parent);
 
                                     child.setParentDistance(parent, suggestedBranchLength);
@@ -663,7 +706,8 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
                     {
                         UnivariateFunction functionToOptimize = new UnivariateFunction() {
                             public double value(double suggestedProb) {
-                                callCount.setContents(callCount.getContents()+1);
+                                //callCount.setContents(callCount.getContents()+1);
+                                //System.out.print(" p/"+child.getName()+" ");
                                 double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
 
                                 child.setParentProbability(hybridParent1, suggestedProb);
@@ -706,8 +750,9 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
 
             // add hybrid probs to hybrid edges
-
-
+            if(_seed==null) {
+                Collections.shuffle(assigmentActions);
+            }
             for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
             {
                 assigment.execute();
@@ -737,101 +782,28 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
-/*
-    public Set<NetNode> computeNodeCoverage(Network<Object> net){
-        //List<Integer> leaves = new ArrayList<Integer>();
-        List<NetNode> allTotalNodes = new ArrayList<NetNode>();
-        Set<NetNode> totalCoverNodes = new HashSet<NetNode>();
-        for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(net)){
-            if(node.isLeaf()){
-                //leaves.add(id);
-                allTotalNodes.add(node);
-            }
 
-            else if(node.isRoot()){
-                boolean ftotal = true;
-                for(NetNode child: node.getChildren()){
-                    if(!allTotalNodes.contains(child.getData())){
-                        ftotal = false;
-                        break;
-                    }
-                }
-                if(!ftotal){
-                    totalCoverNodes.add(node);
-                }
-
-            }
-            else if(node.isTreeNode()){
-                boolean ftotal = true;
-                for(NetNode child: node.getChildren()){
-                    if(!allTotalNodes.contains(child.getData())){
-                        ftotal = false;
-                        break;
-                    }
-                }
-                if(ftotal){
-                    allTotalNodes.add(node);
-                }else{
-                    NetNode parent = node.getParents().iterator().next();
-                    double distance = node.getParentDistance(parent);
-                    parent.removeChild(node);
-                    boolean disconnect = isValidNetwork(net);
-                    parent.adoptChild(node, distance);
-                    if (disconnect) {
-                        totalCoverNodes.add(node);
-                        allTotalNodes.add(node);
-                    }
-                }
-
-            }
-        }
-        return totalCoverNodes;
-    }
-
-    private boolean isValidNetwork(Network<Object> net){
-        Set<NetNode> visited = new HashSet<NetNode>();
-        Set<NetNode> seen = new HashSet<NetNode>();
-        for(NetNode<Object> node: net.bfs()){
-            if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
-            visited.add(node);
-            for(NetNode parent: node.getParents()){
-                seen.add(parent);
-            }
-            for(NetNode child: node.getChildren()){
-                seen.add(child);
-            }
-        }
-        return visited.size()==seen.size();
-    }
-*/
 
 
     private class MyThreadFromScratch extends Thread{
+        GeneTreeProbabilityYFBackup4 _gtp;
         Network _speciesNetwork;
         List<Tree> _geneTrees;
         Map<String, List<String>> _species2alleles;
         double[] _probs;
-        int _startingIndex;
-        Set<NetNode> _totalNodes;
 
 
-        public MyThreadFromScratch(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs, int startingIndex, Set<NetNode> totalNodes){
+        public MyThreadFromScratch(GeneTreeProbabilityYFBackup4 gtp, Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs){
             _speciesNetwork = speciesNetwork;
             _geneTrees = geneTrees;
             _species2alleles = species2alleles;
             _probs = probs;
-            _startingIndex = startingIndex;
-            _totalNodes = totalNodes;
+            _gtp = gtp;
         }
 
 
         public void run() {
-            GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-            gtp.setParallel(true);
-            gtp.setTotalNodes(_totalNodes);
-            for(double prob: gtp.calculateGTDistribution(_speciesNetwork, _geneTrees, _species2alleles, _startingIndex)){
-                _probs[_startingIndex++] = prob;
-            }
+            _gtp.calculateGTDistribution(_speciesNetwork, _geneTrees, _species2alleles, _probs);
 
         }
     }
@@ -839,64 +811,41 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
     private class MyThreadFromNonScratch extends Thread{
         Network _speciesNetwork;
+        List<Tree> _gts;
         double[] _probs;
-        int _startingIndex;
-        int _endingIndex;
         Set<NetNode> _childNodes;
         Set<NetNode> _parentNodes;
+        GeneTreeProbabilityYFBackup4 _gtp;
 
 
-        public MyThreadFromNonScratch(Network speciesNetwork, double[] probs, int startingIndex, int endingIndex, Set<NetNode> childNodes, Set<NetNode> parentNodes){
+        public MyThreadFromNonScratch(GeneTreeProbabilityYFBackup4 gtp, Network speciesNetwork, List<Tree> gts, Set<NetNode> childNodes, Set<NetNode> parentNodes, double[] probs){
             _speciesNetwork = speciesNetwork;
+            _gts = gts;
             _probs = probs;
-            _startingIndex = startingIndex;
-            _endingIndex = endingIndex;
             _childNodes = childNodes;
             _parentNodes = parentNodes;
+            _gtp = gtp;
         }
 
 
         public void run() {
-            GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-            gtp.setParallel(true);
-            for(double prob: gtp.calculateGTDistribution(_speciesNetwork, _childNodes, _parentNodes, _startingIndex, _endingIndex)){
-                _probs[_startingIndex++] = prob;
-            }
+            _gtp.calculateGTDistribution(_speciesNetwork, _gts, _childNodes, _parentNodes, _probs);
 
         }
     }
 
 
-    protected double computeProbabilityParallel(Network<Object> speciesNetwork, List<Tree> distinctTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
-        //long start = System.currentTimeMillis();
-
-        int numGTPerThread = distinctTrees.size()/_numThread;
-        boolean needAdd = false;
-        if(distinctTrees.size()%_numThread!=0){
-            numGTPerThread++;
-            needAdd = true;
-        }
-
+    protected double computeProbabilityParallel(Network<Object> speciesNetwork, List<Tree> distinctTrees, Map<String, List<String>> species2alleles, List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList) {
         double[] probs = new double[distinctTrees.size()];
         Thread[] myThreads = new Thread[_numThread];
 
+        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        gtp.setParallel(true);
+        gtp.preProcess(speciesNetwork, distinctTrees, true);
 
-        for(NetNode node: speciesNetwork.dfs()){
-            //NetNode nodeWData = (NetNode<GeneTreeProbabilityYF.CoalescePattern[]>)node;
-            node.setData(new GeneTreeProbabilityYF.CoalescePattern[distinctTrees.size()]);
-        }
 
-        GeneTreeProbabilityYF.removeBinaryNodes(speciesNetwork);
-        Set<NetNode> totalNodes = GeneTreeProbabilityYF.computeNodeCoverage(speciesNetwork);
-
-        int startIndex = 0;
         for(int i=0; i<_numThread; i++){
-            if(needAdd && (distinctTrees.size()-startIndex)%(_numThread-i)==0){
-                numGTPerThread--;
-                needAdd = false;
-            }
-            myThreads[i] = new MyThreadFromScratch(speciesNetwork, distinctTrees.subList(startIndex, startIndex+numGTPerThread),species2alleles, probs, startIndex, totalNodes);
-            startIndex += numGTPerThread;
+            myThreads[i] = new MyThreadFromScratch(gtp, speciesNetwork, distinctTrees, species2alleles, probs);
             myThreads[i].start();
         }
 
@@ -906,13 +855,20 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
             } catch (InterruptedException ignore) {}
         }
 
+        /*
+        for(int i=0; i<probs.length; i++){
+            System.out.println(distinctTrees.get(i));
+            System.out.println(probs[i]);
+            System.out.println();
+        }
+        */
         double initialProb = 0;
-        for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
-            double maxProb = 0;
-            for(int id: triple.Item3){
-                maxProb = Math.max(maxProb, probs[id]);
+        for(Tuple<MutableTuple<Tree,Double>, Set<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+            double totalProb = 0;
+            for(int id: triple.Item2){
+                totalProb += probs[id];
             }
-            initialProb += Math.log(maxProb) * triple.Item2;
+            initialProb += Math.log(totalProb) * triple.Item1.Item2;
         }
 
         /*
@@ -925,17 +881,18 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     }
 
 
-    protected double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList) {
-        //GeneTreeProbabilityYFBackup3 gtp = new GeneTreeProbabilityYFBackup3();
-        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles, 0);
+    protected double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList) {
+        //GeneTreeProbabilityYFBackup4Backup3 gtp = new GeneTreeProbabilityYFBackup4Backup3();
+        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        double[] probList = new double[geneTrees.size()];
+        gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles, probList);
         double total = 0;
-        for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
-            double maxProb = 0;
-            for(int id: triple.Item3){
-                maxProb = Math.max(maxProb, probList.get(id));
+        for(Tuple<MutableTuple<Tree,Double>, Set<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+            double totalProb = 0;
+            for(int id: triple.Item2){
+                totalProb += probList[id];
             }
-            total += Math.log(maxProb) * triple.Item2;
+            total += Math.log(totalProb) * triple.Item1.Item2;
         }
         return total;
     }
@@ -943,7 +900,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
 
 
-    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode child, NetNode parent) {
+    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode child, NetNode parent) {
         Set<NetNode> childNodes = new HashSet<NetNode>();
         childNodes.add(child);
         Set<NetNode> parentNodes = new HashSet<NetNode>();
@@ -952,7 +909,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     }
 
 
-    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode node, boolean changeBranchLength) {
+    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode node, boolean changeBranchLength) {
         Set<NetNode> childNodes = new HashSet<NetNode>();
         Set<NetNode> parentNodes = new HashSet<NetNode>();
         if(changeBranchLength){
@@ -983,42 +940,33 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     }
 
 
-    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
-        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
-        List<Double> probList = gtp.calculateGTDistribution(speciesNetwork, childNodes, parentNodes, 0, geneTrees.size());
+    public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
+        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        double[] probList = new double[geneTrees.size()];
+        gtp.calculateGTDistribution(speciesNetwork, geneTrees, childNodes, parentNodes, probList);
         double total = 0;
-        for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
-            double maxProb = 0;
-            for(int id: triple.Item3){
-                maxProb = Math.max(maxProb, probList.get(id));
+        for(Tuple<MutableTuple<Tree,Double>, Set<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+            double totalProb = 0;
+            for(int id: triple.Item2){
+                totalProb += probList[id];
             }
-            total += Math.log(maxProb) * triple.Item2;
+            total += Math.log(totalProb) * triple.Item1.Item2;
         }
         return total;
     }
 
 
-    public double computeProbabilityParallel(Network<Object> speciesNetwork, List<Tree> distinctTrees, final List<Tuple3<Tree, Double, List<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
-        int numGTPerThread = distinctTrees.size()/_numThread;
-        boolean needAdd = false;
-        if(distinctTrees.size()%_numThread!=0){
-            numGTPerThread++;
-            needAdd = true;
-        }
-
+    public double computeProbabilityParallel(Network<Object> speciesNetwork, List<Tree> distinctTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
         double[] probs = new double[distinctTrees.size()];
         Thread[] myThreads = new Thread[_numThread];
 
+        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        gtp.setParallel(true);
+        gtp.preProcess(speciesNetwork, distinctTrees, false);
 
         //System.out.println("\ngts:" +distinctTrees);
-        int startIndex = 0;
         for(int i=0; i<_numThread; i++){
-            if(needAdd && (distinctTrees.size()-startIndex)%(_numThread-i)==0){
-                numGTPerThread--;
-                needAdd = false;
-            }
-            myThreads[i] = new MyThreadFromNonScratch(speciesNetwork, probs, startIndex, startIndex+numGTPerThread, childNodes, parentNodes);
-            startIndex += numGTPerThread;
+            myThreads[i] = new MyThreadFromNonScratch(gtp, speciesNetwork, distinctTrees, childNodes, parentNodes, probs);
             myThreads[i].start();
         }
 
@@ -1029,12 +977,12 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         }
 
         double initialProb = 0;
-        for(Tuple3<Tree, Double, List<Integer>> triple: nbTreeAndCountAndBinaryIDList){
-            double maxProb = 0;
-            for(int id: triple.Item3){
-                maxProb = Math.max(maxProb, probs[id]);
+        for(Tuple<MutableTuple<Tree,Double>, Set<Integer>> triple: nbTreeAndCountAndBinaryIDList){
+            double totalProb = 0;
+            for(int id: triple.Item2){
+                totalProb += probs[id];
             }
-            initialProb += Math.log(maxProb) * triple.Item2;
+            initialProb += Math.log(totalProb) * triple.Item1.Item2;
         }
 
         /*
@@ -1176,5 +1124,6 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         }
         return null;
     }
+
 
 }

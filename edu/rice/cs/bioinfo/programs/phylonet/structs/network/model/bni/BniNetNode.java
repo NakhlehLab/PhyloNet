@@ -21,15 +21,14 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class implements the methodes declared in the interface NetNode.
  *
  * @author Cuong Than
  *
- * @param <T> indicates the type of additional data this node stores.
+ * @param <T> indicates the type of additional data this node stores.f
  *
  * June 12, 06: Created
  */
@@ -183,10 +182,10 @@ public class BniNetNode<T> implements NetNode<T> {
 	public int getParentNumber(){
 	    // kliu - this should be guarded appropriately
 	    if (_parents == null) {
-		return (0);
+		    return (0);
 	    }
 	    else {
-		return (_parents.size());
+		    return (_parents.size());
 	    }
 	}
 
@@ -370,18 +369,45 @@ public class BniNetNode<T> implements NetNode<T> {
             this.removeChild(child);
         }
 
-
+        BniNetNode<T> ref = (BniNetNode<T>) parent;
+        ref._children.remove(this);
         return true;
     }
 
+    /*
     //For InferNetworkUsingGLASS only and the node does not have parent
-    public boolean removeItself()
+    public boolean removeItself2()
     {
+
         for(NetNode<T> child: _children){
             ((BniNetNode)child).removeParent(this);
         }
         return true;
     }
+    */
+
+    public void removeItself()
+    {
+        if(_children!=null){
+            List<NetNode<T>> childrenList = new ArrayList<NetNode<T>>();
+            for(NetNode<T> child: this.getChildren()){
+                childrenList.add(child);
+            }
+            for(NetNode<T> child: childrenList){
+                ((BniNetNode)child).removeParent(this);
+            }
+        }
+        if(_parents!=null){
+            List<NetNode<T>> parentList = new ArrayList<NetNode<T>>();
+            for(NetNode<T> parent: this.getParents()){
+                parentList.add(parent);
+            }
+            for(NetNode<T> parent: parentList){
+                ((BniNetNode)parent).removeChild(this);
+            }
+        }
+    }
+
 
 	public void setParentProbability(NetNode<T> parent, double probability)
 	{

@@ -144,6 +144,10 @@ public interface NetNode<T> extends Serializable {
 	 */
 	public boolean removeChild(NetNode<T> child);
 
+
+    public void removeItself();
+
+
 	/**
 	 * This function changes the name of an existing node.
 	 *

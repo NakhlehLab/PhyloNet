@@ -30,7 +30,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
     private Random _random;
 
 
-    public NetworkNeighbourhoodRandomWalkGenerator(double[] probabilities, Func1<G, N> makeNode, Func3<G, N, N, E> makeEdge, long seed)
+    public NetworkNeighbourhoodRandomWalkGenerator(double[] probabilities, Func1<G, N> makeNode, Func3<G, N, N, E> makeEdge, Long seed)
     {
         super(makeNode,makeEdge);
         _operationProbabilities = new double[4];
@@ -47,9 +47,14 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             _previousTried.add(new HashSet<Integer>());
         }
         //initializeReticulationNodeSet();
-        _random = new Random(seed);
+        if(seed!=null) {
+            _random = new Random(seed);
+        }else{
+            _random = new Random();
+        }
     }
 
+    /*
     public NetworkNeighbourhoodRandomWalkGenerator(double[] probabilities, Func1<G, N> makeNode, Func3<G, N, N, E> makeEdge)
     {
         super(makeNode,makeEdge);
@@ -69,6 +74,8 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
         //initializeReticulationNodeSet();
         _random = new Random();
     }
+    */
+
 
 
     public NetworkNeighbourhoodRandomWalkGenerator(Func1<G, N> makeNode, Func3<G, N, N, E> makeEdge)
@@ -81,7 +88,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             _previousTried.add(new HashSet<Integer>());
         }
     }
-    
+
     /*
     private void initializeReticulationNodeSet(){
         _reticulationNodeSet = new HashSet<N>();
@@ -281,7 +288,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             }
         }
     }
-    */    
+    */
 
 
 
@@ -362,7 +369,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
         //System.out.println("Next Move :" + operationID);
         return operationID;
     }
-    
+
     private void computeNetworkEdges(G network, ArrayList<E> allEdges, ArrayList<E> allTreeEdges, ArrayList<E> allReticulationEdges, ArrayList<E> allRemovableReticulationEdges){
         allEdges.addAll((Collection)network.getEdges());
 
@@ -439,7 +446,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
             /*
             Tuple<N, N> nodesOfSourceEdge = _network.getNodesOfEdge(sourceEdge);
             Tuple<N, N> nodesOfDestinationEdge = _network.getNodesOfEdge(destinationEdge);
-            if(_network.getEdge(nodesOfSourceEdge.Item1, nodesOfDestinationEdge.Item1)!=null 
+            if(_network.getEdge(nodesOfSourceEdge.Item1, nodesOfDestinationEdge.Item1)!=null
                     || _network.getEdge(nodesOfDestinationEdge.Item1, nodesOfSourceEdge.Item1)!=null
                     || _network.getEdge(nodesOfSourceEdge.Item1, nodesOfDestinationEdge.Item2)!=null
                     || _network.getEdge(nodesOfSourceEdge.Item2, nodesOfDestinationEdge.Item1)!=null){
@@ -447,7 +454,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                 break;
             }
             */
-            
+
         //}while(!endSampling);
         //System.out.println("Add " + sourceEdge + " to " + destinationEdge);
         _networkOperators[0].setParameters(network,null, sourceEdge, destinationEdge);
@@ -481,7 +488,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
         Tuple<E,E> edgeTuple;
         int reticulationEdgeSize = allRemovableReticulationEdges.size();
         int edgeSize = allEdges.size();
-        
+
         boolean endSampling;
         do{
             endSampling = true;
@@ -559,7 +566,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                 }
             }
             */
-       
+
         }while(!endSampling);
 
         //System.out.println("Redirect " + edgeTuple.Item1 + " to " + edgeTuple.Item2);
@@ -652,11 +659,11 @@ public class NetworkNeighbourhoodRandomWalkGenerator<G extends Graph<N,E>,N,E> e
                     }
                 }
                 */
-                endSampling = false;              
+                endSampling = false;
                 continue;
             }
-            
-            
+
+
             if(targetInDegree == 0){
                 N targetEdgeSibling=null;
                 int count = 0;

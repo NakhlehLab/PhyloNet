@@ -288,11 +288,15 @@ public class NewickReader {
 		// read name
 		if(token == StreamTokenizer.TT_WORD) {
 
-			if(node.getTree().getNode(_stok.sval) != null) {
-				throw new ParseException("Duplicate node " + _stok.sval);
-			}
-
-			node.setName(_stok.sval);
+            if(!node.isLeaf()){
+                node.setName("");
+            }
+			else{
+                if(node.getTree().getNode(_stok.sval) != null) {
+                    throw new ParseException("Duplicate node " + _stok.sval);
+                }
+                node.setName(_stok.sval);
+            }
 
 			token = _stok.nextToken();
 		}

@@ -25,15 +25,12 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkParsimoniously;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkParsimoniouslyParallel;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkParsimoniouslyParallelBackup;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkMLBootstrap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
@@ -50,30 +47,34 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infernetwork_parsimony")
-public class InferNetwork_Parsimonious extends CommandBaseFileOut{
-    private HashMap<String, List<String>> _species2alleles = null;
-    private HashMap<String, String> _allele2species = null;
+@CommandName("infernetwork_ML_Bootstrap")
+public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
+    private HashMap<String, List<String>> _taxonMap = null;
     private List<NetworkNonEmpty> _geneTrees;
     private double _bootstrap = 100;
     private NetworkNonEmpty _startSpeciesNetwork = null;
     private int _maxReticulations;
     private Long _maxExaminations = null;
     private int _maxDiameter = 0;
+    private int _bootstrapRound = 100;
+    private int _maxRounds = 100;
+    private int _maxTryPerBranch = 100;
+    private double _maxBranchLength = 6;
+    private double _improvementThreshold = 0.001;
+    private double _Brent1 = 0.01;
+    private double _Brent2 = 0.001;
+    private boolean  _dentroscropeOutput = false;
     private long _maxFailure = 100;
-    private int _returnNetworks = 1;
-    private int _numProcessors = 1;
-    private boolean _dentroscropeOutput = false;
-    private int _numRuns = 10;
+    private int _parallel = 1;
+    private Set<String> _fixedHybrid = new HashSet<String>();
     private double[] _operationWeight = {0.15,0.15,0.2,0.5};
+    private int _numRuns = 10;
     private Long _seed = null;
 
-    private Set<String> _fixedHybrid = new HashSet<String>();
 
-
-    public InferNetwork_Parsimonious(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                                     Map<String,NetworkNonEmpty>  sourceIdentToNetwork,
-                                     Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader){
+    public InferNetwork_Probabilistic_BootStrap(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
+                                                Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                                                Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand){
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
@@ -124,15 +125,10 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
             ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
             if(aParam.ContainsSwitch){
-                ParamExtractorAllelListMap alParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
-                noError = noError && alParam.IsValidMap;
-                if(alParam.IsValidMap){
-                    _species2alleles = alParam.ValueMap;
-                }
-
-                ParamExtractorAllelMap aaParam = new ParamExtractorAllelMap("a", this.params, this.errorDetected);
+                ParamExtractorAllelListMap aaParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
+                noError = noError && aaParam.IsValidMap;
                 if(aaParam.IsValidMap){
-                    _allele2species = aaParam.ValueMap;
+                    _taxonMap = aaParam.ValueMap;
                 }
             }
 
@@ -152,26 +148,6 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 else
                 {
                     errorDetected.execute("Expected value after switch -d.", dParam.SwitchParam.getLine(), dParam.SwitchParam.getColumn());
-                }
-            }
-
-            ParamExtractor nParam = new ParamExtractor("n", this.params, this.errorDetected);
-            if(nParam.ContainsSwitch)
-            {
-                if(nParam.PostSwitchParam != null)
-                {
-                    try
-                    {
-                        _returnNetworks = Integer.parseInt(nParam.PostSwitchValue);
-                    }
-                    catch(NumberFormatException e)
-                    {
-                        errorDetected.execute("Unrecognized value of returned networks " + nParam.PostSwitchValue, nParam.PostSwitchParam.getLine(), nParam.PostSwitchParam.getColumn());
-                    }
-                }
-                else
-                {
-                    errorDetected.execute("Expected value after switch -n.", nParam.SwitchParam.getLine(), nParam.SwitchParam.getColumn());
                 }
             }
 
@@ -213,8 +189,6 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
             }
 
 
-
-
             ParamExtractor bParam = new ParamExtractor("b", this.params, this.errorDetected);
             if(bParam.ContainsSwitch)
             {
@@ -232,6 +206,200 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 else
                 {
                     errorDetected.execute("Expected value after switch -b.", bParam.SwitchParam.getLine(), bParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor iParam = new ParamExtractor("i", this.params, this.errorDetected);
+            if(iParam.ContainsSwitch)
+            {
+                if(iParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _improvementThreshold = Double.parseDouble(iParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after -i " + iParam.PostSwitchValue, iParam.PostSwitchParam.getLine(), iParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -i.", iParam.SwitchParam.getLine(), iParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor rParam = new ParamExtractor("r", this.params, this.errorDetected);
+            if(rParam.ContainsSwitch)
+            {
+                if(rParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _maxRounds = Integer.parseInt(rParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after -r " + rParam.PostSwitchValue, rParam.PostSwitchParam.getLine(), rParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -r.", rParam.SwitchParam.getLine(), rParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor lParam = new ParamExtractor("l", this.params, this.errorDetected);
+            if(lParam.ContainsSwitch)
+            {
+                if(lParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _maxBranchLength = Double.parseDouble(lParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value of maximum branch length " + lParam.PostSwitchValue, lParam.PostSwitchParam.getLine(), lParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -l.", lParam.SwitchParam.getLine(), lParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor fParam = new ParamExtractor("f", this.params, this.errorDetected);
+            if(fParam.ContainsSwitch)
+            {
+                if(fParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _maxFailure = Long.parseLong(fParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value of maximum consecutive failure " + fParam.PostSwitchValue, fParam.PostSwitchParam.getLine(), fParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -n.", fParam.SwitchParam.getLine(), fParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor nParam = new ParamExtractor("n", this.params, this.errorDetected);
+            if(nParam.ContainsSwitch)
+            {
+                if(nParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _bootstrapRound = Integer.parseInt(nParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value of returned networks " + nParam.PostSwitchValue, nParam.PostSwitchParam.getLine(), nParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -n.", nParam.SwitchParam.getLine(), nParam.SwitchParam.getColumn());
+                }
+            }
+
+
+            ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
+            if(pParam.ContainsSwitch)
+            {
+                if(pParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        if(!(pParam.PostSwitchParam instanceof ParameterIdentList)){
+                            throw new RuntimeException();
+                        }
+                        ParameterIdentList brent = (ParameterIdentList)pParam.PostSwitchParam;
+                        int index = 0;
+                        for(String value: brent.Elements){
+                            if(index==0){
+                                _Brent1 = Double.parseDouble(value.trim());
+                            }else if(index==1){
+                                _Brent2 = Double.parseDouble(value.trim());
+                            }
+                            else{
+                                throw new RuntimeException();
+                            }
+                            index++;
+                        }
+                        if(_Brent1==0 || _Brent2==0){
+                            throw new RuntimeException();
+                        }
+                        //ParameterIdentList brent = this.assertParameterIdentList(pParam.PostSwitchValue);
+                        /*
+                        String brentPrecision = pParam.PostSwitchValue;
+                        if(!brentPrecision.contains("~")){
+                            throw new NumberFormatException();
+                        }
+                        String[] splitValues = brentPrecision.split("~");
+
+                        _Brent1 = Double.parseDouble(splitValues[0].trim());
+                        _Brent2 = Double.parseDouble(splitValues[1].trim());
+                        assert(_Brent1 > _Brent2);
+                        */
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after switch -p.", pParam.PostSwitchParam.getLine(), pParam.PostSwitchParam.getColumn());
+                    }
+                    catch(RuntimeException e)
+                    {
+                        errorDetected.execute("Unexpected value after switch -p.", pParam.PostSwitchParam.getLine(), pParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -p.", pParam.SwitchParam.getLine(), pParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor tParam = new ParamExtractor("t", this.params, this.errorDetected);
+            if(tParam.ContainsSwitch)
+            {
+                if(tParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _maxTryPerBranch = Integer.parseInt(tParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after -t " + tParam.PostSwitchValue, tParam.PostSwitchParam.getLine(), tParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -t.", tParam.SwitchParam.getLine(), tParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor plParam = new ParamExtractor("pl", this.params, this.errorDetected);
+            if(plParam.ContainsSwitch){
+                if(plParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _parallel = Integer.parseInt(plParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized maximum number of networks for search " + plParam.PostSwitchValue, plParam.PostSwitchParam.getLine(), plParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -pl.", plParam.SwitchParam.getLine(), plParam.SwitchParam.getColumn());
                 }
             }
 
@@ -263,43 +431,10 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 }
             }
 
-            ParamExtractor fParam = new ParamExtractor("f", this.params, this.errorDetected);
-            if(fParam.ContainsSwitch)
+            ParamExtractor diParam = new ParamExtractor("di", this.params, this.errorDetected);
+            if(diParam.ContainsSwitch)
             {
-                if(fParam.PostSwitchParam != null)
-                {
-                    try
-                    {
-                        _maxFailure = Long.parseLong(fParam.PostSwitchValue);
-                    }
-                    catch(NumberFormatException e)
-                    {
-                        errorDetected.execute("Unrecognized value of maximum consecutive failure " + fParam.PostSwitchValue, fParam.PostSwitchParam.getLine(), fParam.PostSwitchParam.getColumn());
-                    }
-                }
-                else
-                {
-                    errorDetected.execute("Expected value after switch -n.", fParam.SwitchParam.getLine(), fParam.SwitchParam.getColumn());
-                }
-            }
-
-            ParamExtractor plParam = new ParamExtractor("pl", this.params, this.errorDetected);
-            if(plParam.ContainsSwitch){
-                if(plParam.PostSwitchParam != null)
-                {
-                    try
-                    {
-                        _numProcessors = Integer.parseInt(plParam.PostSwitchValue);
-                    }
-                    catch(NumberFormatException e)
-                    {
-                        errorDetected.execute("Unrecognized maximum number of networks for search " + plParam.PostSwitchValue, plParam.PostSwitchParam.getLine(), plParam.PostSwitchParam.getColumn());
-                    }
-                }
-                else
-                {
-                    errorDetected.execute("Expected value after switch -pl.", plParam.SwitchParam.getLine(), plParam.SwitchParam.getColumn());
-                }
+                _dentroscropeOutput = true;
             }
 
             ParamExtractor xParam = new ParamExtractor("x", this.params, this.errorDetected);
@@ -319,25 +454,6 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 else
                 {
                     errorDetected.execute("Expected value after switch -x.", xParam.SwitchParam.getLine(), xParam.SwitchParam.getColumn());
-                }
-            }
-
-            ParamExtractor rsParam = new ParamExtractor("rs", this.params, this.errorDetected);
-            if(rsParam.ContainsSwitch){
-                if(rsParam.PostSwitchParam != null)
-                {
-                    try
-                    {
-                        _seed = Long.parseLong(rsParam.PostSwitchValue);
-                    }
-                    catch(NumberFormatException e)
-                    {
-                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
-                    }
-                }
-                else
-                {
-                    errorDetected.execute("Expected value after switch -rs.", rsParam.SwitchParam.getLine(), rsParam.SwitchParam.getColumn());
                 }
             }
 
@@ -383,15 +499,28 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 }
             }
 
-
-            ParamExtractor diParam = new ParamExtractor("di", this.params, this.errorDetected);
-            if(diParam.ContainsSwitch)
-            {
-                _dentroscropeOutput = true;
+            ParamExtractor rsParam = new ParamExtractor("rs", this.params, this.errorDetected);
+            if(rsParam.ContainsSwitch){
+                if(rsParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _seed = Long.parseLong(rsParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -rs.", rsParam.SwitchParam.getLine(), rsParam.SwitchParam.getColumn());
+                }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","n", "m", "d", "di", "h","f","pl","x","rs","w");
-            checkAndSetOutFile(aParam, bParam, sParam, nParam, mParam, dParam, diParam, hParam, fParam, plParam,xParam,rsParam,wParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","f","pl","h","w","x","rs");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam,fParam,plParam,hParam,wParam,xParam,rsParam);
+
         }
 
 
@@ -401,11 +530,12 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
     @Override
     protected String produceResult() {
-        StringWriter result = new StringWriter();
+        StringBuffer result = new StringBuffer();
 
-        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
-        for(NetworkNonEmpty geneTree : _geneTrees)
-        {
+        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
+        //List<Integer> counter = new ArrayList<Integer>();
+        for(NetworkNonEmpty geneTree : _geneTrees){
+
             double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                 @Override
                 public Double forEmpty(TreeProbabilityEmpty empty) {
@@ -417,6 +547,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                     return Double.parseDouble(nonEmpty.ProbString);
                 }
             });
+
 
             String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
             NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
@@ -437,23 +568,14 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 }
 
             }
-            for(TNode node: newtr.getNodes()){
-                node.setParentDistance(TNode.NO_DISTANCE);
-            }
-
-            String exp = Trees.getLexicographicNewickString(newtr, _allele2species);
-            MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
-            if(existingTuple==null){
-                existingTuple = new MutableTuple<Tree, Double>(newtr, weight);
-                exp2tree.put(exp, existingTuple);
-            }
-            else{
-                existingTuple.Item2 += weight;
-            }
+            gts.add(new MutableTuple<Tree,Double>(newtr,weight));
         }
 
-        List<MutableTuple<Tree,Double>> tuples = new ArrayList<MutableTuple<Tree, Double>>();
-        tuples.addAll(exp2tree.values());
+
+        if(_fixedHybrid.size()!=0){
+            _operationWeight[0] = _operationWeight[1] = _operationWeight[2] = 0;
+            _operationWeight[3] = 1.0;
+        }
 
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
         Network speciesNetwork = null;
@@ -461,56 +583,44 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
-        if(_fixedHybrid.size()!=0){
-            _operationWeight[0] = _operationWeight[1] = _operationWeight[2] = 0;
-            _operationWeight[3] = 1.0;
+        //long start = System.currentTimeMillis();
+        InferILSNetworkMLBootstrap inference = new InferILSNetworkMLBootstrap();
+        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork,_fixedHybrid, _operationWeight, _numRuns, _seed);
+        Tuple<Network, Double> resultTuple = inference.inferNetworkWithBootstrap(gts, _taxonMap, _maxReticulations, _bootstrapRound);
+        //System.out.print(System.currentTimeMillis()-start);
+
+        result.append("\nInferred Network:");
+        Network n = resultTuple.Item1;
+        for(Object node : n.bfs())
+        {
+            NetNode netNode = (NetNode)node;
+            if(!netNode.isLeaf())
+            {
+                netNode.setName(NetNode.NO_NAME);
+            }
         }
 
-        //long start = System.currentTimeMillis();
-        //InferILSNetworkParsimoniouslyParallelBackup inference = new InferILSNetworkParsimoniouslyParallelBackup();
-        InferILSNetworkParsimoniouslyParallel inference = new InferILSNetworkParsimoniouslyParallel();
-        inference.setSearchParameter(_maxExaminations, _maxFailure, _maxDiameter, speciesNetwork, _fixedHybrid, _numProcessors, _operationWeight, _numRuns, _seed);
-        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(tuples,_species2alleles,_maxReticulations, _returnNetworks);
-        //System.out.print(System.currentTimeMillis()-start);
-        int index = 1;
-        for(Tuple<Network, Double> tuple: resultTuples){
-            result.append("\nInferred Network #" + index++ + ":");
+        StringWriter writer = new StringWriter();
+        RnNewickPrinter printer = new RnNewickPrinter();
+        printer.print(resultTuple.Item1, writer);
+        result.append("\n" + writer.toString());
+        result.append("\n" + "Total log probability: " + resultTuple.Item2);
 
-            Network n = tuple.Item1;
-
-            for(Object node : n.bfs())
+        if(_dentroscropeOutput){
+            for(Object node : n.getNetworkNodes())
             {
                 NetNode netNode = (NetNode)node;
-                if(!netNode.isLeaf())
+                for(Object parent: netNode.getParents())
                 {
-                    netNode.setName(NetNode.NO_NAME);
+                    NetNode parentNode = (NetNode)parent;
+                    netNode.setParentProbability(parentNode, Double.NaN);
                 }
             }
-
-            StringWriter writer = new StringWriter();
-            RnNewickPrinter printer = new RnNewickPrinter();
-            printer.print(tuple.Item1, writer);
-            result.append("\n" + writer.toString());
-            result.append("\n" + "Total number of extra lineages: " + tuple.Item2);
-
-            if(_dentroscropeOutput){
-                for(Object node : n.getNetworkNodes())
-                {
-                    NetNode netNode = (NetNode)node;
-                    for(Object parent: netNode.getParents())
-                    {
-                        NetNode parentNode = (NetNode)parent;
-                        netNode.setParentProbability(parentNode, Double.NaN);
-                    }
-                }
-                writer = new StringWriter();
-                printer = new RnNewickPrinter();
-                printer.print(tuple.Item1, writer);
-                result.append("\nVisualize in Dendroscope : " + writer.toString());
-            }
+            writer = new StringWriter();
+            printer = new RnNewickPrinter();
+            printer.print(resultTuple.Item1, writer);
+            result.append("\nVisualize in Dendroscope : " + writer.toString());
         }
-
-        return result.toString();
-
+            return result.toString();
     }
 }

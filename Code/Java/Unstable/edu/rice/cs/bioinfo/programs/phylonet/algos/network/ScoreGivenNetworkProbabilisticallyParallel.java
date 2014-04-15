@@ -86,7 +86,7 @@ public class ScoreGivenNetworkProbabilisticallyParallel extends MDCOnNetworkYFFr
 
 
 
-    public double calMLOfNetwork(Network speciesNetwork, List<Tree> gts, Map<String,List<String>> species2alleles, boolean inferBL){
+    public double calMLOfNetwork(Network speciesNetwork, List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, boolean inferBL){
         List<Tree> distinctTrees = new ArrayList<Tree>();
         List<Tuple3> nbTreeAndCountAndBinaryIDList = new ArrayList<Tuple3>();
         summarizeGeneTrees(gts, species2alleles, distinctTrees, nbTreeAndCountAndBinaryIDList);
@@ -111,7 +111,7 @@ public class ScoreGivenNetworkProbabilisticallyParallel extends MDCOnNetworkYFFr
 
 
 
-    protected void summarizeGeneTrees(List<Tree> originalGTs, Map<String,List<String>> species2alleles, List<Tree> distinctGTs, List<Tuple3> nbTreeAndCountAndBinaryIDList){
+    protected void summarizeGeneTrees(List<MutableTuple<Tree,Double>> originalGTs, Map<String,List<String>> species2alleles, List<Tree> distinctGTs, List<Tuple3> nbTreeAndCountAndBinaryIDList){
         Map<String,String> allele2species = null;
         if(species2alleles!=null){
             allele2species = new HashMap<String, String>();
@@ -125,9 +125,10 @@ public class ScoreGivenNetworkProbabilisticallyParallel extends MDCOnNetworkYFFr
 
         Map<String,Integer> exp2ID = new HashMap<String, Integer>();
         Map<String,Tuple3> exp2tuple3 = new HashMap<String,Tuple3>();
-        for(Tree tr: originalGTs){
+        for(MutableTuple<Tree,Double> tuple: originalGTs){
             //System.out.println(temp + " :" + distinctGTs.size());
-            Double weight = ((STINode<Double>)tr.getRoot()).getData();
+            Tree tr = tuple.Item1;
+            Double weight = tuple.Item2;
             if(weight == null){
                 weight = 1.0;
             }

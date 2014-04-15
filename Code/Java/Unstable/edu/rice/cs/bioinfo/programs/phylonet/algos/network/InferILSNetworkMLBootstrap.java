@@ -74,7 +74,7 @@ public class InferILSNetworkMLBootstrap extends InferILSNetworkProbabilistically
         return new Func1<List<MutableTuple<Tree,Double>>, Network>() {
             public Network execute(List<MutableTuple<Tree,Double>> gts) {
                 InferILSNetworkProbabilisticallyParallel inference = new InferILSNetworkProbabilisticallyParallel();
-                inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_diameterLimit, _numThread, _startNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
+                inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_diameterLimit, _numThreads, _startNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
                 Network network = inference.inferNetwork(gts, species2alleles, maxReticulations, 1).get(0).Item1;
                 System.out.println(network2String(network));
                 return network;

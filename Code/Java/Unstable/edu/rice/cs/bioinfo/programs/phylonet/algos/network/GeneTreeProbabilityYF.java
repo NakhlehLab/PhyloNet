@@ -43,34 +43,33 @@ public class GeneTreeProbabilityYF {
     Set<NetNode> _totalCoverNodes;
     boolean _printDetails = false;
     int _netNodeNum;
+    //List<STITreeCluster> _gtClusters;
     boolean[][] _M;
     Map<NetNode, Integer> _node2ID;
     boolean _parallel = false;
     int _currentTreeID = -1;
     int _totalTree;
     boolean _preProcessed = false;
-    //double t1, t2, t3, t4, t5, t6;
 
-
-    public void setPrintDetails(boolean p){
-        _printDetails = p;
-    }
-
-
-    public void setTotalNodes(Set<NetNode> totalCoverNodes){
-        _totalCoverNodes = totalCoverNodes;
-    }
 
     public void setParallel(boolean parallel){
         _parallel = parallel;
     }
 
-
-    public synchronized int getNextTreeID(){
-        _currentTreeID ++;
-        return _currentTreeID;
+    public void setTotalNodes(Set<NetNode> totalCoverNodes){
+        _totalCoverNodes = totalCoverNodes;
     }
 
+    public void setPrintDetails(boolean p){
+        _printDetails = p;
+    }
+
+    public synchronized int getNextTreeID(){
+        //System.out.println("In calculation:" + Thread.currentThread().getId() + ":");
+        _currentTreeID ++;
+        //System.out.println("In calculation:" + Thread.currentThread().getId() + ":" + _currentTreeID);
+        return _currentTreeID;
+    }
 
     public void preProcess(Network network, List<Tree> gts, boolean fromScratch){
         _totalTree = gts.size();
@@ -85,11 +84,9 @@ public class GeneTreeProbabilityYF {
         }
 
         int treeID = 0;
-        /*
         if(_parallel){
             treeID = getNextTreeID();
         }
-        */
 
         while(treeID < _totalTree){
             //System.out.println(Thread.currentThread().getId() + " starts #" + treeID);
@@ -781,7 +778,9 @@ public class GeneTreeProbabilityYF {
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus = new HashMap<Integer, Map<Configuration, Configuration>>();
         for (Map<Set<Integer>, List<Configuration>> lineages2configs : CACs) {
             for (List<Configuration> sameLineageConfigs : lineages2configs.values()) {
+
                 Configuration origConfig = sameLineageConfigs.get(0);
+
                 Stack<Configuration> configStack = new Stack<Configuration>();
                 Configuration configCopy = new Configuration(origConfig);
                 configCopy.clearCoalEvents();
@@ -1117,7 +1116,6 @@ public class GeneTreeProbabilityYF {
         else{
             computeM(net, totalNode);
         }
-
     }
 
 
@@ -1770,7 +1768,9 @@ public class GeneTreeProbabilityYF {
         public int hashCode(){
             return _lineages.hashCode()+Arrays.hashCode(_netNodeIndex);
         }
+
     }
+
 
 
 }

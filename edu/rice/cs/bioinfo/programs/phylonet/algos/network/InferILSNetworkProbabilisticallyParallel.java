@@ -80,7 +80,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     protected Network<Object> _startNetwork;
     protected Set<String> _fixedHybrid;
     protected double[] _operationWeight;
-    protected int _numThread;
+    protected int _numThreads;
     protected int _numRuns;
     protected Long _seed;
 
@@ -101,7 +101,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         _diameterLimit = diameterLimit;
         _startNetwork = startNetwork;
         _maxFailure = maxFailure;
-        _numThread = parallel;
+        _numThreads = parallel;
         _fixedHybrid = fixedHybrid;
         _operationWeight = operationWeight;
         _numRuns = numRuns;
@@ -610,7 +610,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
         //long start = System.currentTimeMillis();
         double initalProb;
-        if(_numThread > 1){
+        if(_numThreads > 1){
             initalProb = computeProbabilityParallel(speciesNetwork, distinctTrees, species2alleles, nbTreeAndCountAndBinaryIDList);
         }
         else{
@@ -786,14 +786,14 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
 
     private class MyThreadFromScratch extends Thread{
-        GeneTreeProbabilityYFBackup4 _gtp;
+        GeneTreeProbabilityYF _gtp;
         Network _speciesNetwork;
         List<Tree> _geneTrees;
         Map<String, List<String>> _species2alleles;
         double[] _probs;
 
 
-        public MyThreadFromScratch(GeneTreeProbabilityYFBackup4 gtp, Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs){
+        public MyThreadFromScratch(GeneTreeProbabilityYF gtp, Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs){
             _speciesNetwork = speciesNetwork;
             _geneTrees = geneTrees;
             _species2alleles = species2alleles;
@@ -815,10 +815,10 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         double[] _probs;
         Set<NetNode> _childNodes;
         Set<NetNode> _parentNodes;
-        GeneTreeProbabilityYFBackup4 _gtp;
+        GeneTreeProbabilityYF _gtp;
 
 
-        public MyThreadFromNonScratch(GeneTreeProbabilityYFBackup4 gtp, Network speciesNetwork, List<Tree> gts, Set<NetNode> childNodes, Set<NetNode> parentNodes, double[] probs){
+        public MyThreadFromNonScratch(GeneTreeProbabilityYF gtp, Network speciesNetwork, List<Tree> gts, Set<NetNode> childNodes, Set<NetNode> parentNodes, double[] probs){
             _speciesNetwork = speciesNetwork;
             _gts = gts;
             _probs = probs;
@@ -837,19 +837,19 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
     protected double computeProbabilityParallel(Network<Object> speciesNetwork, List<Tree> distinctTrees, Map<String, List<String>> species2alleles, List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList) {
         double[] probs = new double[distinctTrees.size()];
-        Thread[] myThreads = new Thread[_numThread];
+        Thread[] myThreads = new Thread[_numThreads];
 
-        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         gtp.setParallel(true);
         gtp.preProcess(speciesNetwork, distinctTrees, true);
 
 
-        for(int i=0; i<_numThread; i++){
+        for(int i=0; i<_numThreads; i++){
             myThreads[i] = new MyThreadFromScratch(gtp, speciesNetwork, distinctTrees, species2alleles, probs);
             myThreads[i].start();
         }
 
-        for(int i=0; i<_numThread; i++){
+        for(int i=0; i<_numThreads; i++){
             try {
                 myThreads[i].join();
             } catch (InterruptedException ignore) {}
@@ -882,8 +882,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
 
     protected double computeProbability(Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList) {
-        //GeneTreeProbabilityYFBackup4Backup3 gtp = new GeneTreeProbabilityYFBackup4Backup3();
-        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         double[] probList = new double[geneTrees.size()];
         gtp.calculateGTDistribution(speciesNetwork, geneTrees, species2alleles, probList);
         double total = 0;
@@ -898,14 +897,17 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     }
 
 
-
-
     public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, NetNode child, NetNode parent) {
         Set<NetNode> childNodes = new HashSet<NetNode>();
         childNodes.add(child);
         Set<NetNode> parentNodes = new HashSet<NetNode>();
         parentNodes.add(parent);
-        return computeProbabilityParallel(speciesNetwork, geneTrees, nbTreeAndCountAndBinaryIDList, childNodes, parentNodes);
+        if(_numThreads>1){
+            return computeProbabilityParallel(speciesNetwork, geneTrees, nbTreeAndCountAndBinaryIDList, childNodes, parentNodes);
+        }
+        else{
+            return computeProbability(speciesNetwork, geneTrees, nbTreeAndCountAndBinaryIDList, childNodes, parentNodes);
+        }
     }
 
 
@@ -931,7 +933,7 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
             childNodes.add(node);
         }
 
-        if(_numThread>1){
+        if(_numThreads>1){
             return computeProbabilityParallel(speciesNetwork, geneTrees, nbTreeAndCountAndBinaryIDList, childNodes, parentNodes);
         }
         else{
@@ -940,8 +942,11 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
     }
 
 
+
+
+
     public double computeProbability(Network speciesNetwork, List<Tree> geneTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
-        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         double[] probList = new double[geneTrees.size()];
         gtp.calculateGTDistribution(speciesNetwork, geneTrees, childNodes, parentNodes, probList);
         double total = 0;
@@ -958,19 +963,19 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
 
     public double computeProbabilityParallel(Network<Object> speciesNetwork, List<Tree> distinctTrees, final List<Tuple<MutableTuple<Tree,Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, Set<NetNode> childNodes, Set<NetNode> parentNodes) {
         double[] probs = new double[distinctTrees.size()];
-        Thread[] myThreads = new Thread[_numThread];
+        Thread[] myThreads = new Thread[_numThreads];
 
-        GeneTreeProbabilityYFBackup4 gtp = new GeneTreeProbabilityYFBackup4();
+        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
         gtp.setParallel(true);
         gtp.preProcess(speciesNetwork, distinctTrees, false);
 
         //System.out.println("\ngts:" +distinctTrees);
-        for(int i=0; i<_numThread; i++){
+        for(int i=0; i<_numThreads; i++){
             myThreads[i] = new MyThreadFromNonScratch(gtp, speciesNetwork, distinctTrees, childNodes, parentNodes, probs);
             myThreads[i].start();
         }
 
-        for(int i=0; i<_numThread; i++){
+        for(int i=0; i<_numThreads; i++){
             try {
                 myThreads[i].join();
             } catch (InterruptedException ignore) {}

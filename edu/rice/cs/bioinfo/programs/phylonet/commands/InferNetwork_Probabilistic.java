@@ -626,7 +626,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         }
         else{
             InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
-            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations,_maxFailure, _maxDiameter, speciesNetwork, _operationWeight, _numRuns, _seed);
+            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations,_maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
             resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
         }
         //InferILSNetworkProbabilisticallyBackup inference = new InferILSNetworkProbabilisticallyBackup();

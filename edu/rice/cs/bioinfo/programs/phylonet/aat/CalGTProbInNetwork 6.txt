@@ -1,0 +1,26 @@
+#NEXUS
+
+BEGIN NETWORKS;
+Network net = ((D:1.0,(B:0.5)#H1:0.5::0.6756144520789429):1.0,((A:0.9828573145495751,C:0.9828573145495751):0.017142685450424855,(E:0.9882320892032577,#H1:0.48823208920325767::0.3243855479210571):0.011767910796742331):1.0);
+END;
+ 
+BEGIN TREES;
+ 
+Tree geneTree1 = ((C:3,((B:1,D:1):1,A:2):1):1,E:4);
+Tree geneTree2 = (B:4,(D:3,(C:2,(A:1,E:1):1):1):1);
+Tree geneTree3 = (D:4,(B:3,((C:1,E:1):1,A:2):1):1);
+Tree geneTree4 = (D:3,((B:1,E:1):1,(C:1,A:1):1):1);
+ 
+END;
+ 
+ 
+BEGIN PHYLONET;
+calgtprob net (geneTree1,geneTree2,geneTree3,geneTree4) -bl -pl 2;
+END;
+===
+
+calgtprob net (geneTree1, geneTree2, geneTree3, geneTree4) -bl -pl 2
+Species Network:
+((((B:0.5)#H1:0.48823208920325767::0.3243855479210571,E:0.9882320892032577):0.011767910796742331,(C:0.9828573145495751,A:0.9828573145495751):0.017142685450424855):1.0,(#H1:0.5::0.6756144520789429,D:1.0):1.0);
+Total log probability: -23.060763418069545
+===

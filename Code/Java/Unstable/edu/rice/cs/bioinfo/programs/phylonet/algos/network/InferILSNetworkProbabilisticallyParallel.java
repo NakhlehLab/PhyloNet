@@ -283,7 +283,6 @@ public class InferILSNetworkProbabilisticallyParallel extends MDCOnNetworkYFFrom
         }
 
         distinctGTs.addAll(exp2tree.values());
-        originalGTs.clear();
     }
 
 

@@ -1,6 +1,6 @@
 0
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/SpanishBasicInfo
-30
+120
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/parental.tree
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/gene.trees
 OUTGROUP
@@ -24,6 +24,6 @@ true
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/optimized.viterbi.sequence
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/optimized.model.likelihoods
 /home/kl23/code/phmm-repository/phmm/ex/mmd-array-spretus-wgs-control/optimized.model.parameters
-CURRENT DEFAULT RANDOM
+CURRENT DEFAULT 
 true true true true
 4

@@ -21,8 +21,10 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class InferILSNetworkMLBootstrap extends InferILSNetworkProbabilisticallyParallel {
+    private Long _simulatorSeed;
 
     public Tuple<Network,Double> inferNetworkWithBootstrap(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numRounds){
+        _simulatorSeed = _seed;
         Tuple<Network, Double> result = this.inferNetwork(gts, species2alleles, maxReticulations, 1).get(0);
         //System.out.println("\n"+network2String(result.Item1) + " : " + result.Item2);
         Func2<Network, Integer, List<MutableTuple<Tree,Double>>> simulator = getSimulator(species2alleles);
@@ -38,6 +40,8 @@ public class InferILSNetworkMLBootstrap extends InferILSNetworkProbabilistically
         return new Func2<Network, Integer, List<MutableTuple<Tree,Double>>>() {
             public List<MutableTuple<Tree,Double>> execute(Network network, Integer numGTs) {
                 SimGTInNetwork simulator = new SimGTInNetwork();
+                simulator.setSeed(_simulatorSeed);
+                _simulatorSeed = _simulatorSeed * 2;
                 List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree, Double>>();
                 for(Tree tr: simulator.generateGTs(network, species2alleles, numGTs)){
                     gts.add(new MutableTuple<Tree, Double>(tr, 1.0));
@@ -47,12 +51,12 @@ public class InferILSNetworkMLBootstrap extends InferILSNetworkProbabilistically
         };
     }
 
-    private Func2<Network, Integer, List<MutableTuple<Tree,Double>>> getMSSimulator(final Map<String, List<String>> species2alleles){
+    private Func2<Network, Integer, List<MutableTuple<Tree,Double>>> getMSSimulator(final Map<String, List<String>> species2alleles, final String MSPath){
         return new Func2<Network, Integer, List<MutableTuple<Tree,Double>>>() {
             public List<MutableTuple<Tree,Double>> execute(Network network, Integer numGTs) {
                 SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
                 List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree, Double>>();
-                for(Tree tr: simulator.generateGTs(network, species2alleles, numGTs, "/research/tools/MS/msdir/")){
+                for(Tree tr: simulator.generateGTs(network, species2alleles, numGTs, MSPath)){
                     gts.add(new MutableTuple<Tree, Double>(tr, 1.0));
                 }
                 return gts;
@@ -76,7 +80,7 @@ public class InferILSNetworkMLBootstrap extends InferILSNetworkProbabilistically
                 InferILSNetworkProbabilisticallyParallel inference = new InferILSNetworkProbabilisticallyParallel();
                 inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_diameterLimit, _numThreads, _startNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
                 Network network = inference.inferNetwork(gts, species2alleles, maxReticulations, 1).get(0).Item1;
-                System.out.println(network2String(network));
+                //System.out.println(network2String(network));
                 return network;
             }
         };

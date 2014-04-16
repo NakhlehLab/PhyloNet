@@ -53,7 +53,7 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infernetwork_MLCV")
+@CommandName("infernetwork_ML_CV")
 public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
     private HashMap<String, List<String>> _taxonMap = null;
     private List<NetworkNonEmpty> _geneTrees;
@@ -515,7 +515,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             }
 
 
-            ParamExtractor numFoldsParam = new ParamExtractor("numfolds", this.params, this.errorDetected);
+            ParamExtractor numFoldsParam = new ParamExtractor("cv", this.params, this.errorDetected);
             if(numFoldsParam.ContainsSwitch)
             {
                 if(numFoldsParam.PostSwitchParam != null)
@@ -526,12 +526,12 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value after -numfolds " + numFoldsParam.PostSwitchValue, numFoldsParam.PostSwitchParam.getLine(), numFoldsParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value after -cv " + numFoldsParam.PostSwitchValue, numFoldsParam.PostSwitchParam.getLine(), numFoldsParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -f.", numFoldsParam.SwitchParam.getLine(), numFoldsParam.SwitchParam.getColumn());
+                    errorDetected.execute("Expected value after switch -cv.", numFoldsParam.SwitchParam.getLine(), numFoldsParam.SwitchParam.getColumn());
                 }
             }
 

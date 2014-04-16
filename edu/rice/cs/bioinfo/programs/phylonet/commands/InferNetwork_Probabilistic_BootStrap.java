@@ -56,14 +56,14 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
     private int _maxReticulations;
     private Long _maxExaminations = null;
     private int _maxDiameter = 0;
-    private int _bootstrapRound = 100;
+    private int _samplingRound = 100;
     private int _maxRounds = 100;
     private int _maxTryPerBranch = 100;
     private double _maxBranchLength = 6;
     private double _improvementThreshold = 0.001;
     private double _Brent1 = 0.01;
     private double _Brent2 = 0.001;
-    private boolean  _dentroscropeOutput = false;
+    private boolean _dentroscropeOutput = false;
     private long _maxFailure = 100;
     private int _parallel = 1;
     private Set<String> _fixedHybrid = new HashSet<String>();
@@ -289,23 +289,23 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
                 }
             }
 
-            ParamExtractor nParam = new ParamExtractor("n", this.params, this.errorDetected);
-            if(nParam.ContainsSwitch)
+            ParamExtractor srParam = new ParamExtractor("sr", this.params, this.errorDetected);
+            if(srParam.ContainsSwitch)
             {
-                if(nParam.PostSwitchParam != null)
+                if(srParam.PostSwitchParam != null)
                 {
                     try
                     {
-                        _bootstrapRound = Integer.parseInt(nParam.PostSwitchValue);
+                        _samplingRound = Integer.parseInt(srParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value of returned networks " + nParam.PostSwitchValue, nParam.PostSwitchParam.getLine(), nParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value of returned networks " + srParam.PostSwitchValue, srParam.PostSwitchParam.getLine(), srParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -n.", nParam.SwitchParam.getLine(), nParam.SwitchParam.getColumn());
+                    errorDetected.execute("Expected value after switch -n.", srParam.SwitchParam.getLine(), srParam.SwitchParam.getColumn());
                 }
             }
 
@@ -518,8 +518,8 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","f","pl","h","w","x","rs");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam,fParam,plParam,hParam,wParam,xParam,rsParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","m","sr","d","p","l","r","i","t","di","f","pl","h","w","x","rs");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, srParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam,fParam,plParam,hParam,wParam,xParam,rsParam);
 
         }
 
@@ -586,7 +586,7 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
         //long start = System.currentTimeMillis();
         InferILSNetworkMLBootstrap inference = new InferILSNetworkMLBootstrap();
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork,_fixedHybrid, _operationWeight, _numRuns, _seed);
-        Tuple<Network, Double> resultTuple = inference.inferNetworkWithBootstrap(gts, _taxonMap, _maxReticulations, _bootstrapRound);
+        Tuple<Network, Double> resultTuple = inference.inferNetworkWithBootstrap(gts, _taxonMap, _maxReticulations, _samplingRound);
         //System.out.print(System.currentTimeMillis()-start);
 
         result.append("\nInferred Network:");

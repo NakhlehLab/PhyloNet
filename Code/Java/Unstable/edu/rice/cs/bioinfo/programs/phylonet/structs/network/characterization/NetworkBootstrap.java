@@ -73,7 +73,7 @@ public class NetworkBootstrap<T> {
                 if(child.isRoot() || child.isLeaf()){
                     continue;
                 }
-                double support = child.getParentSupport(node)/total * 100;
+                double support = child.getParentSupport(node)/total;
                 child.setParentSupport(node, support);
             }
         }

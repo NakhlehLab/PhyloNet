@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.library.phylogenetics.parametricbootstrap.network;
 import edu.rice.cs.bioinfo.library.phylogenetics.parametricbootstrap.ParametricBootstrapBase;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
+import edu.rice.cs.bioinfo.library.programming.Func3;
 
 import java.util.ArrayList;
 import java.util.List;

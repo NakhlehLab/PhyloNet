@@ -25,8 +25,10 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Paramete
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilisticallyParallelCV;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkUsingBLProbabilistically;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -42,7 +44,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.*;
 
-// import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilisticallyBackup;
 
 
 /**
@@ -62,7 +63,6 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
     private Long _maxExaminations = null;
     private long _maxFailure = 100; // change from 100 to 50
     private int _maxDiameter = 0;
-    private int _returnNetworks = 1;
     private int _maxRounds = 100;
     private int _maxTryPerBranch = 100;
     private double _maxBranchLength = 6;
@@ -71,10 +71,9 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
     private double _Brent2 = 0.001;
     private boolean  _dentroscropeOutput = false;
     private int _parallel = 1;
-    private boolean _usingBL = false;
     private Set<String> _fixedHybrid = new HashSet<String>();
-
-    //TODO
+    private double[] _operationWeight = {0.15,0.15,0.2,0.5};
+    private Long _seed = null;
     private int _hasTried = 0;
     private int _numMultipleRuns = 1;  // number of multiple runs, need to be a bit large
     private int _numFolds = 10;    // number of folds in the K-fold cross validation
@@ -337,26 +336,6 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                 }
             }
 
-            ParamExtractor nParam = new ParamExtractor("n", this.params, this.errorDetected);
-            if(nParam.ContainsSwitch)
-            {
-                if(nParam.PostSwitchParam != null)
-                {
-                    try
-                    {
-                        _returnNetworks = Integer.parseInt(nParam.PostSwitchValue);
-                    }
-                    catch(NumberFormatException e)
-                    {
-                        errorDetected.execute("Unrecognized value of returned networks " + nParam.PostSwitchValue, nParam.PostSwitchParam.getLine(), nParam.PostSwitchParam.getColumn());
-                    }
-                }
-                else
-                {
-                    errorDetected.execute("Expected value after switch -n.", nParam.SwitchParam.getLine(), nParam.SwitchParam.getColumn());
-                }
-            }
-
 
             ParamExtractor pParam = new ParamExtractor("p", this.params, this.errorDetected);
             if(pParam.ContainsSwitch)
@@ -458,6 +437,48 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                 }
             }
 
+            ParamExtractor wParam = new ParamExtractor("w", this.params, this.errorDetected);
+            if(wParam.ContainsSwitch)
+            {
+                if(wParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        if(!(wParam.PostSwitchParam instanceof ParameterIdentList)){
+                            throw new RuntimeException();
+                        }
+                        ParameterIdentList weights = (ParameterIdentList)wParam.PostSwitchParam;
+                        int index = 0;
+                        double total = 0;
+                        for(String wExp: weights.Elements){
+                            if(index<4){
+                                double w = Double.parseDouble(wExp.trim());
+                                if(w<0){
+                                    throw new RuntimeException();
+                                }
+                                _operationWeight[index++] = w;
+                                total += w;
+                            }
+                            else{
+                                throw new RuntimeException();
+                            }
+                        }
+                        for(int i=0; i<4; i++){
+                            _operationWeight[i] = _operationWeight[i]/total;
+                        }
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Invalid value after switch -w.", wParam.PostSwitchParam.getLine(), wParam.PostSwitchParam.getColumn());
+                    }
+
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -w.", wParam.SwitchParam.getLine(), wParam.SwitchParam.getColumn());
+                }
+            }
+
 
 
 
@@ -473,7 +494,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             //    _usingBL = true;
             // }
 
-            ParamExtractor numMultipleRunsParam = new ParamExtractor("nummultipleruns", this.params, this.errorDetected);
+            ParamExtractor numMultipleRunsParam = new ParamExtractor("x", this.params, this.errorDetected);
             if(numMultipleRunsParam.ContainsSwitch)
             {
                 if(numMultipleRunsParam.PostSwitchParam != null)
@@ -484,12 +505,12 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value after -numMultipleRuns " + numMultipleRunsParam.PostSwitchValue, numMultipleRunsParam.PostSwitchParam.getLine(), numMultipleRunsParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value after -x " + numMultipleRunsParam.PostSwitchValue, numMultipleRunsParam.PostSwitchParam.getLine(), numMultipleRunsParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -numMultipleRuns.", numMultipleRunsParam.SwitchParam.getLine(), numMultipleRunsParam.SwitchParam.getColumn());
+                    errorDetected.execute("Expected value after switch -x.", numMultipleRunsParam.SwitchParam.getLine(), numMultipleRunsParam.SwitchParam.getColumn());
                 }
             }
 
@@ -505,19 +526,38 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized value after -numFolds " + numFoldsParam.PostSwitchValue, numFoldsParam.PostSwitchParam.getLine(), numFoldsParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized value after -numfolds " + numFoldsParam.PostSwitchValue, numFoldsParam.PostSwitchParam.getLine(), numFoldsParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -numFolds.", numFoldsParam.SwitchParam.getLine(), numFoldsParam.SwitchParam.getColumn());
+                    errorDetected.execute("Expected value after switch -f.", numFoldsParam.SwitchParam.getLine(), numFoldsParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor rsParam = new ParamExtractor("rs", this.params, this.errorDetected);
+            if(rsParam.ContainsSwitch){
+                if(rsParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _seed = Long.parseLong(rsParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -rs.", rsParam.SwitchParam.getLine(), rsParam.SwitchParam.getColumn());
                 }
             }
             // noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl","f","pl","h","ht");
             // checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam,plParam,hParam,htParam);
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","f","pl","h","ht","numMultipleRuns","numFolds");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, fParam,plParam,hParam,htParam,numMultipleRunsParam,numFoldsParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","m","d","p","l","r","i","t","di","f","pl","h","ht","x","f","w","rs");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, fParam,plParam,hParam,htParam,numMultipleRunsParam,numFoldsParam,wParam,rsParam);
         }
 
 
@@ -528,12 +568,12 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-
-        List<Tree> gts = new ArrayList<Tree>();
+        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
+        //List<Tree> gts2 = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
 
-            double prob = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+            double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                 @Override
                 public Double forEmpty(TreeProbabilityEmpty empty) {
                     return 1.0;
@@ -565,8 +605,15 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                 }
 
             }
-            newtr.getRoot().setData(prob);
-            gts.add(newtr);
+
+            gts.add(new MutableTuple<Tree,Double>(newtr,weight));
+            //((STINode<Double>)newtr.getRoot()).setData(weight);
+            //gts2.add(newtr);
+        }
+
+        if(_fixedHybrid.size()!=0){
+            _operationWeight[0] = _operationWeight[1] = _operationWeight[2] = 0;
+            _operationWeight[3] = 1.0;
         }
 
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
@@ -575,10 +622,46 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
-        //TODO hybrid, check the starting network
         InferILSNetworkProbabilisticallyParallelCV inference = new InferILSNetworkProbabilisticallyParallelCV();
-        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _numMultipleRuns, _numFolds);
-        int correctK = inference.CV(gts,_taxonMap,_maxReticulations, _returnNetworks, _hasTried);
-        return Integer.toString(correctK);
+        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _numMultipleRuns, _numFolds, _operationWeight, _seed);
+        Tuple3<Network,Double,Integer> triplet = inference.CV(gts,_taxonMap,_maxReticulations, _hasTried);
+
+
+        result.append("\nThe inferred Network has " + triplet.Item3 + " reticulations:");
+
+        for(Object node : triplet.Item1.bfs())
+        {
+            NetNode netNode = (NetNode)node;
+            if(!netNode.isLeaf())
+            {
+                netNode.setName(NetNode.NO_NAME);
+            }
+        }
+
+        StringWriter writer = new StringWriter();
+        RnNewickPrinter printer = new RnNewickPrinter();
+        printer.print(triplet.Item1, writer);
+        result.append("\n" + writer.toString());
+        result.append("\n" + "Total log probability: " + triplet.Item2);
+
+        if(_dentroscropeOutput){
+            for(Object node : triplet.Item1.getNetworkNodes())
+            {
+                NetNode netNode = (NetNode)node;
+                for(Object parent: netNode.getParents())
+                {
+                    NetNode parentNode = (NetNode)parent;
+                    netNode.setParentProbability(parentNode, Double.NaN);
+                }
+            }
+            writer = new StringWriter();
+            printer = new RnNewickPrinter();
+            printer.print(triplet.Item1, writer);
+            result.append("\nVisualize in Dendroscope : " + writer.toString());
+        }
+
+
+        return result.toString();
+
     }
 }

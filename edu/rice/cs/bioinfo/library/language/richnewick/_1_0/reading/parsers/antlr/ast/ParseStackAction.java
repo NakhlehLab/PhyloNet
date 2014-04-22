@@ -253,7 +253,7 @@ public class ParseStackAction implements ParseStack
              */
             if(!text.OriginallyQuoted)
             {
-                text = new Text(text.Content.replace('_', ' '), text.LineNumberStart, text.ColumnNumberStart, text.OriginallyQuoted);
+                text = new Text(text.Content, text.LineNumberStart, text.ColumnNumberStart, text.OriginallyQuoted);
             }
 
             _parseStack.push(new NodeLabelNonEmpty(text));

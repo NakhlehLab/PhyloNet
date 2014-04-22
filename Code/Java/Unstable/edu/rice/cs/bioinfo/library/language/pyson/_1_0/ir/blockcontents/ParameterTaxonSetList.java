@@ -77,7 +77,8 @@ public class ParameterTaxonSetList extends ParameterBase{
     }
 
     private void addTaxonToSet(StringBuffer taxonNameUnderConstruction, LinkedList<String> setUnderConstruction) {
-        setUnderConstruction.add(taxonNameUnderConstruction.toString().trim().replace('_', ' '));
+        //setUnderConstruction.add(taxonNameUnderConstruction.toString().trim().replace('_', ' '));
+        setUnderConstruction.add(taxonNameUnderConstruction.toString().trim());
     }
 
     public <R, T, E extends Exception> R execute(ParameterAlgo<R, T, E> algo, T input) throws E {

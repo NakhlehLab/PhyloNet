@@ -1,4 +1,33 @@
+Copyright © 2013-2014 Kevin Liu, Jingxuan Dai, Kathy Truong, 
+Ying Song, Michael H. Kohn, and Luay Nakhleh. <http://bioinfo.cs.rice.edu/>
+
+This file is part of PhyloNet-HMM.
+
+PhyloNet-HMM is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PhyloNet-HMM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=========================================================
+PhyloNet-HMM version 0.1
 README
+=========================================================
+
+For detailed information about the PhyloNet-HMM model, algorithm,
+or a performance study of PhyloNet-HMM, see
+the associated manuscript:
+
+K. Liu, J. Dai, K. Truong, Y. Song, M. H. Kohn, and L. Nakhleh, 
+"An HMM-based comparative genomic framework for detecting introgression in eukaryotes," 
+to appear in PLoS Computational Biology. Manuscript preprint available at: arxiv.org/abs/1310.7989.
 
 ******************
 File Formats
@@ -6,7 +35,7 @@ File Formats
 
 -> Basic Info File
 		This is a .txt file that should contain general information about your 
-		sequence files. 
+xs		sequence files. 
 
 		name format: filename.txt
 
@@ -125,28 +154,94 @@ File Formats
   ...
 
 *********************************************************************
-Compilation Requirements and Instructions on how to Use Luay's JAHMM
+Compiling Source Code
 *********************************************************************
-Need to have at hand:
-	1. a basic info file
-	2. a trees file
-	3. a state transition probability matrix
-	4. initial state probabilities
-
-Compile the project with the included junit3.8.jar in the build path
-
-Run runHmm.java file.
-Follow the instructions and provide appropriate inputs
-
+Download and install Apache Ant (http://ant.apache.org/). 
+Then run `ant` in the topmost directory that has the build.xml file.
 
 ***************************************
-Credits
+Dependencies
 ***************************************
-Our Hmm model is a modified of the JaHmm
-	- http://www.run.montefiore.ulg.ac.be/~francois/software/jahmm/
-Our TreeParser is a slightly modified version of James
-	- https://github.com/PMSeitzer/JContextExplorer/blob/master/JContextExplorer/src/newickTreeParsing/TreeParser.java
+PhyloNet-HMM makes use of code from the following projects:
+- PhyloNet version 3.5.2
+  - http://bioinfo.cs.rice.edu/phylonet?destination=node/3
+- Junit 4.10
+  - http://junit.org/
+- jblas 1.2.0
+  - http://mikiobraun.github.io/jblas/
+- Apache Commons CLI 1.0
+  - http://commons.apache.org/proper/commons-cli/
+- Jahmm version 0.6.1
+  - http://www.run.montefiore.ulg.ac.be/~francois/software/jahmm/
+- The newick tree parsing code from Phillip Seitzer's JContextExplorer project
+  - https://github.com/PMSeitzer/JContextExplorer/blob/master/JContextExplorer/src/newickTreeParsing/TreeParser.java
 
- 
+Jarfiles for the first four dependencies are provided in phmm-0.1/dependencies/.
 
+******************************************************************************
+Running PhyloNet-HMM on the Example Dataset
+******************************************************************************
+To run PhyloNet-HMM on the example dataset,
+first compile the source code by following the instructions above.
+Then, run the following commands:
+
+cd <installation directory>/ex/mmd-array-spretus-wgs
+java -jar <installation directory>/dist/lib/phmm.jar < autoinput.txt
+
+The autoinput.txt file contains the sequence of commands necessary to run
+a PhyloNet-HMM analysis. Search proceeds under the settings
+specified in the configuration files located in  <installation directory>/ex/mmd-array-spretus-wgs
+and in the autoinput.txt file.
+
+After the analysis concludes, 
+the following output files will be located in <installation directory>/ex/mmd-array-spretus-wgs:
+
+- initial.viterbi.sequence
+  - The Viterbi-optimal state sequence for PhyloNet-HMM given the initial parameter settings.
+    Each state corresponds to a pair consisting of a parental tree p_i and a gene genealogy g_j,
+    denoted with label p_i,g_j,g_j. 
+- optimized.model.likelihoods
+  - The top line lists the final model likelihood after optimization, and
+    the bottom line lists the likelihood of the Viterbi-optimal trajectory after optimization.
+- optimized.model.parameters
+  - An unstructured text file listing optimized values for PhyloNet-HMM parameters and 
+    other quantities.
+- optimized.viterbi.sequence
+  - The Viterbi-optimal state sequence after optimization.
+- optimized.posterior.decoding.probabilities
+  - The posterior decoding probability for each state and input site, after optimization.
+    Each line is formatted as follows:
+    <input site index> <hidden state index> <posterior decoding probability>
+    The mapping between hidden state indices and labels are given at the top of the
+    optimized.model.parameters file.
+
+******************************************************************************
+Running PhyloNet-HMM on Datasets from the Manuscript
+******************************************************************************
+The empirical datasets described in the manuscript can
+be obtained from http://bioinfo.cs.rice.edu/projects/phmm/.
+To run PhyloNet-HMM on an empirical dataset located
+in directory <empirical dataset directory>, run the following commands:
+
+cd <installation directory>/ex/liu-et-al-2014-empirical/
+cp * <empirical dataset directory>
+cd <empirical dataset directory>
+java -jar <installation directory>/dist/lib/phmm.jar < autoinput.txt
+
+The simulated datasets described in the manuscript can
+be obtained from http://bioinfo.cs.rice.edu/projects/phmm/.
+To run PhyloNet-HMM on a simulated dataset located
+in directory <simulated dataset directory>, run the following commands:
+
+cd <installation directory>/ex/liu-et-al-2014-simulated/
+cp * <simulated dataset directory>
+cd <simulated dataset directory>
+java -jar <installation directory>/dist/lib/phmm.jar < autoinput.txt
+
+******************************************************************************
+Contact
+******************************************************************************
+
+If you have questions or comments, please contact Luay Nakhleh at nakhleh@rice.edu or
+Kevin Liu at kl23@rice.edu.
 

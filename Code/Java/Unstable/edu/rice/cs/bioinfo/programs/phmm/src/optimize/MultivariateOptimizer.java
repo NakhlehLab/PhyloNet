@@ -1,4 +1,24 @@
 /**
+ * This file is part of PhyloNet-HMM.
+ *
+ * Copyright © 2013-2014 Kevin Liu, Jingxuan Dai, Kathy Truong, 
+ * Ying Song, Michael H. Kohn, and Luay Nakhleh. <http://bioinfo.cs.rice.edu/>
+ * 
+ * PhyloNet-HMM is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * PhyloNet-HMM is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
  * Performs expectation-maximization (E-M) of
  * continuous model parameters in PhyloNet-HMM.
  * E-M iterations use a multivariate optimization heuristic that
@@ -585,11 +605,6 @@ public class MultivariateOptimizer {
 	//   advance half the distance between u and max (similarly to always halving distance between l and min).
 	//   Need to also watch out for above underflow issues.
 
-	// Wait a sec - why is this only getting called on branch with probability less than half??
-	
-	// Search might also be stuck in a local optimum. Try alternative initial search settings.
-	// Try this before code changes above.
-
 	// constraint #3:
 	// expand search interval endpoints by half/double until satisfied
 	while (!(f.value(x) > f.value(l))) {
@@ -688,10 +703,6 @@ public class MultivariateOptimizer {
 	// only accept strict improvements within a certain delta
 	//
 	// kliu - this isn't exhaustive enough
-	// go back to old strategy
-	// 
-	// seems to be causing poor local optima on simple test-cases
-	// compared to old search heuristic, which accepted any improvement (up to floating-point precision's difference)
 	//if (brentOptimizedLogLikelihood - logLikelihood > MINIMUM_LOG_LIKELIHOOD_IMPROVEMENT_TO_ACCEPT_PROPOSAL) {
 	if (brentOptimizedLogLikelihood > logLikelihood) {
 	    if (Constants.WARNLEVEL > 2) { System.out.println ("INFO: Brent's method resulted in strict improvement in likelihood. Updating."); }
@@ -1307,23 +1318,6 @@ public class MultivariateOptimizer {
      * WARNING - only InitialSearchSettings.CURRENT will use checkpoint state to begin search.
      */
     public double optimize (MultivariateOptimizer.InitialSearchSettings[] initialSearchSettings) {
-	// initial search settings matter quite a bit
-	// try fewer rounds, but a couple of random restarts
-	// InitialSearchSettings[] initialSearchSettings = new InitialSearchSettings[] 
-	//     { InitialSearchSettings.CURRENT, // think about how to get parameter settings in line with inputs???
-	//       // // kliu - hold off on this now for testing purposes
-	//       InitialSearchSettings.DEFAULT,
-	//       //InitialSearchSettings.RANDOM,
-	//       //InitialSearchSettings.RANDOM,
-	//       InitialSearchSettings.RANDOM
-	//     };
-
-	// testing
-	// InitialSearchSettings[] initialSearchSettings = new InitialSearchSettings[] 
-	//     { InitialSearchSettings.RANDOM,
-	//       InitialSearchSettings.RANDOM
-	//     };
-
 	double finalLikelihood = 1.0; // impossible log likelihood - why won't the compiler allow this to be uninitialized?
 
 	for (int pass = 0; pass < initialSearchSettings.length; pass++) {

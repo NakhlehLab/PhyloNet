@@ -1,0 +1,29 @@
+0
+basic-info.txt
+30
+parental.trees
+gene.trees
+RAT
+./
+0.964011 0.192217 0.270592 0.0806232 0.174283
+0.1953 0.3077 0.3008 0.1962
+0.1
+switching-frequency-ratio-terms
+0
+initial.viterbi.sequence
+1
+false
+sequence.fasta
+3
+0
+length-parameters
+length-parameter-inequality-constraints
+length-parameter-constraint-sets
+
+optimized.posterior.decoding.probabilities
+optimized.viterbi.sequence
+optimized.model.likelihoods
+optimized.model.parameters
+CURRENT DEFAULT
+true true true true
+4

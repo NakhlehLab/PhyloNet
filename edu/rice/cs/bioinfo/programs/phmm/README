@@ -223,7 +223,7 @@ be obtained from http://bioinfo.cs.rice.edu/projects/phmm/.
 To run PhyloNet-HMM on an empirical dataset located
 in directory <empirical dataset directory>, run the following commands:
 
-cd <installation directory>/ex/liu-et-al-2014-empirical/
+cd <installation directory>/templates/liu-et-al-2014-empirical/
 cp * <empirical dataset directory>
 cd <empirical dataset directory>
 java -jar <installation directory>/dist/lib/phmm.jar < autoinput.txt
@@ -233,7 +233,7 @@ be obtained from http://bioinfo.cs.rice.edu/projects/phmm/.
 To run PhyloNet-HMM on a simulated dataset located
 in directory <simulated dataset directory>, run the following commands:
 
-cd <installation directory>/ex/liu-et-al-2014-simulated/
+cd <installation directory>/templates/liu-et-al-2014-simulated/
 cp * <simulated dataset directory>
 cd <simulated dataset directory>
 java -jar <installation directory>/dist/lib/phmm.jar < autoinput.txt

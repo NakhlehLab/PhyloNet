@@ -19,7 +19,7 @@ import java.util.Comparator;
 public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> extends AllNeighboursHillClimberBase<G,N,E,S> {
     private NetworkNeighbourhoodRandomWalkGenerator<G,N,E> _networkGenerator;
     private long _maxFailure = -1;
-    private long _hasTried = 0;
+    private long _hasTried = 1;
 
     public AllNeighboursHillClimberFirstBetter(NetworkNeighbourhoodRandomWalkGenerator<G, N, E> generator) {
         _networkGenerator = generator;
@@ -56,26 +56,26 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
         while(_continueSearch)
         {
 
-            Ref<Func1<G,G>>  getBetterNeighbor = new Ref<Func1<G, G>>(null);
-            Ref<S> newBestScore = new Ref<S>(null);
-            boolean sawBetterSolution = considerRandomNeighbor(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore, _diameterLimit);
-            if(sawBetterSolution){
-                tried = 0;
-                //System.out.println("Success: " + bestSeenSolutionScore);
-                bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
-                bestSeenSolutionScore = newBestScore.get();
-            }
-            else{
-                tried++;
-                //System.out.println("Failure #"+tried+": " + bestSeenSolutionScore);
-            }
-            //System.out.println("#"+tried);
-            if(_maxFailure == tried){
+            if(_maxExaminations != null && _maxExaminations <= getExaminationsCount() || _maxFailure == tried)
+            {
                 concludeSearch();
             }
-
-            //System.out.println(sawBetterSolution + ": " + bestSeenSolutionScore);
-        }
+            else {
+                Ref<Func1<G, G>> getBetterNeighbor = new Ref<Func1<G, G>>(null);
+                Ref<S> newBestScore = new Ref<S>(null);
+                boolean sawBetterSolution = considerRandomNeighbor(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore, _diameterLimit);
+                if (sawBetterSolution) {
+                    tried = 0;
+                    //System.out.println("Success: " + bestSeenSolutionScore);
+                    bestSeenSolution = getBetterNeighbor.get().execute(bestSeenSolution);
+                    bestSeenSolutionScore = newBestScore.get();
+                } else {
+                    tried++;
+                    //System.out.println("Failure #"+tried+": " + bestSeenSolutionScore);
+                }
+                incrementExaminations();
+            }
+         }
         return new HillClimbResult<G,S>(bestSeenSolution, bestSeenSolutionScore, getExaminationsCount(), getGenerationNumber());
     }
 
@@ -115,11 +115,6 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
 
     private boolean considerSolution(G solution, Func1<G,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore, Ref<S> newBestScore, boolean relax)
     {
-        incrementExaminations();
-        if(_maxExaminations != null && _maxExaminations <= getExaminationsCount())
-        {
-            concludeSearch();
-        }
 
         S solutionScore =  getScore.execute(solution);
 

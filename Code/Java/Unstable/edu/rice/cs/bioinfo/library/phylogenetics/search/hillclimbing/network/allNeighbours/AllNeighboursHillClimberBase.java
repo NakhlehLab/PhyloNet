@@ -33,6 +33,7 @@ public abstract class AllNeighboursHillClimberBase<G extends Graph<N,E>,N,E,S> e
         _diameterLimit = diameterLimit;
         S score = getScore.execute(solution);
         this.fireInitialSolutionScoreComputedEvent(solution, score);
+        incrementExaminations();
         return search(solution, getScore, scoreComparator, score);
     }
 

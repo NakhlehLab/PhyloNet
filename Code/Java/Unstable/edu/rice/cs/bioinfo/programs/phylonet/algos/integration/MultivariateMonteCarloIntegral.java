@@ -4,19 +4,25 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by yunyu on 6/2/14.
  */
 public class MultivariateMonteCarloIntegral{
+    private boolean _printDetails = false;
 
     // bins is the number of divisions that each axis it split into (so the full number of bins is this to the
     // power of the dimension of the function
     // sampleSize is the number of samples PER BIN
 
     public MultivariateMonteCarloIntegral(int sampleSize, int bins) {
-        this.sampleSize = sampleSize;
-        this.bins = bins;
+        this._sampleSize = sampleSize;
+        this._bins = bins;
+    }
+
+    public void setPrintDetails(boolean printDetails){
+        _printDetails = printDetails;
     }
 
     public MultivariateMonteCarloIntegral(int sampleSize) {
@@ -31,14 +37,20 @@ public class MultivariateMonteCarloIntegral{
      * @param maxes the  upper limit of the function
      */
     public double integrate(Func1<double[],Double> f, int dim, double[] mins, double[] maxes) {
-
-        int totalBins = (int)Math.pow(bins, dim);
+        Random random;
+        if(_seed == null){
+            random = new Random();
+        }
+        else{
+            random = new Random(_seed);
+        }
+        int totalBins = (int)Math.pow(_bins, dim);
         double[] steps = new double[dim];
         double totalArea=1;
 
         double[] currentCorner = new double[dim];
         for(int i=0; i<dim; i++){
-            steps[i] = (maxes[i]-mins[i])/bins;
+            steps[i] = (maxes[i]-mins[i])/_bins;
             totalArea *= maxes[i]-mins[i];
             currentCorner[i] = mins[i];
         }
@@ -73,19 +85,21 @@ public class MultivariateMonteCarloIntegral{
 
         double integral = 0.0;
         for(double[] sampleBase: binCorners){
-            for (int j=1; j <= sampleSize; j++) {
+            for (int j=1; j <= _sampleSize; j++) {
                 double[] sample = new double[dim];
                 for(int k=0; k<sample.length; k++){
-                    sample[k] = sampleBase[k] + Math.random()*(steps[k]);
+                    double randomNumber = random.nextDouble();
+                    sample[k] = sampleBase[k] + randomNumber * (steps[k]);
                 }
                 integral += f.execute(sample);
             }
         }
 
-        integral *= totalArea/((double)sampleSize*totalBins);
+        integral *= totalArea/((double)_sampleSize*totalBins);
         return integral;
     }
 
+    /*
     private void increaseBinStepCounter(int[] binStepCounter, int maxBin){
         for(int i=binStepCounter.length-1; i>=0; i--){
             binStepCounter[i]++;
@@ -97,15 +111,22 @@ public class MultivariateMonteCarloIntegral{
             }
         }
     }
+    */
 
-    protected int getSampleSize(){
-        return sampleSize;
-    }
-    protected int getBins(){
-        return bins;
+    public int getSampleSize(){
+        return _sampleSize;
     }
 
-    private int sampleSize;
-    private int bins;
 
+    public int getBins(){
+        return _bins;
+    }
+
+    public void setRandomSeed(Long seed){
+        _seed = seed;
+    }
+
+    private int _sampleSize;
+    private int _bins;
+    private Long _seed = null;
 }

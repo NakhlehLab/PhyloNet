@@ -37,10 +37,9 @@ import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbRe
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.library.programming.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.Felsenstein;
 import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.integration.FullLikelihoodFromSequence;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -96,7 +95,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
     private int _numSamples;
     private Long _seed = null;
 
-    private int _currentLocus;
+    private int _currentSite;
 
     //private Map<SpeciesPair, Double> _pair2time;
 
@@ -133,12 +132,37 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
         _maxHeight = maxHeight;
     }
 
+    private List<Tuple<char[], Integer>> summarizeSquences(List<char[][]> sequences){
+        List<Tuple<char[], Integer>> distinctSequences = new ArrayList<Tuple<char[], Integer>>();
+        Map<String, Integer> alignment2count = new HashMap<String, Integer>();
+        for (char[][] sa: sequences) {
+            for(int i=0; i<sa[0].length; i++){
+                String site = "";
+                for(int j=0; j<sa.length; j++){
+                    site += sa[j][i];
+                }
+                Integer count = alignment2count.get(site);
+                if(count == null){
+                    alignment2count.put(site, 1);
+                }
+                else{
+                    alignment2count.put(site, count+1);
+                }
+            }
+        }
+        for(Map.Entry<String, Integer> entry: alignment2count.entrySet()){
+            distinctSequences.add(new Tuple<char[], Integer>(entry.getKey().toCharArray(), entry.getValue()));
+        }
+        return distinctSequences;
+    }
+
 
     public List<Tuple<Network,Double>> inferNetwork(String[] gtTaxa, List<char[][]> sequences, Map<String,List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta, int maxReticulations, int numSol){
         _optimalNetworks = new Network[numSol];
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Double.NEGATIVE_INFINITY);
 
+        List<Tuple<char[], Integer>> distinctSequences = summarizeSquences(sequences);
         List<Tree> allTrees = Trees.generateAllBinaryTrees(gtTaxa);
         String startingNetwork = network2String(_startNetwork);
 
@@ -146,7 +170,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
             DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = makeNetwork(startingNetwork);
             NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, String, PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, String, PhyloEdge<String>>(_operationWeight, makeNode, makeEdge, _seed);
             AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, String, PhyloEdge<String>, Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
-            Func1<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, Double> scorer = getScoreFunction(gtTaxa, sequences, allTrees, species2alleles, gtrsm, theta);
+            Func1<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, Double> scorer = getScoreFunction(gtTaxa, distinctSequences, allTrees, species2alleles, gtrsm, theta);
             Comparator<Double> comparator = getDoubleScoreComparator();
             HillClimbResult<DirectedGraphToGraphAdapter<String, PhyloEdge<String>>, Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
          }
@@ -170,7 +194,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
     }
 
 
-    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final String[] gtTaxa, final List<char[][]> sequences, final List<Tree> allTrees, final Map<String, List<String>> species2alleles, final GTRSubstitutionModel gtrsm, final double theta){
+    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final String[] gtTaxa, final List<Tuple<char[], Integer>> sequences, final List<Tree> allTrees, final Map<String, List<String>> species2alleles, final GTRSubstitutionModel gtrsm, final double theta){
         return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
             public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
 
@@ -238,7 +262,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
     }
 
 
-    private double findUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final String[] gtTaxa, final List<char[][]> sequences, final List<Tree> allTrees, final Map<String, List<String>> species2alleles, final GTRSubstitutionModel gtrsm, final double theta){
+    private double findUltrametricOptimalBranchLength(final Network<Object> speciesNetwork, final String[] gtTaxa, final List<Tuple<char[], Integer>> sequences, final List<Tree> allTrees, final Map<String, List<String>> species2alleles, final GTRSubstitutionModel gtrsm, final double theta){
         boolean continueRounds = true; // keep trying to improve network
 
         Map<NetNode, Double> node2height = new HashMap<NetNode, Double>();
@@ -421,10 +445,10 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
     }
 
 
-    private class MyThreadFromScratch extends Thread{
+    private class MyThread extends Thread{
         Network _speciesNetwork;
         String[] _gtTaxa;
-        List<char[][]> _sequences;
+        List<Tuple<char[], Integer>> _sequences;
         List<Tree> _allTrees;
         Map<String, List<String>> _species2alleles;
         GTRSubstitutionModel _gtrsm;
@@ -432,7 +456,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
         double[] _probs;
 
 
-        public MyThreadFromScratch(String speciesNetwork, String[] gtTaxa, List<char[][]> sequences, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta, double[] probs){
+        public MyThread(String speciesNetwork, String[] gtTaxa, List<Tuple<char[], Integer>> sequences, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta, double[] probs){
             _speciesNetwork = string2Network(speciesNetwork);
             _gtTaxa = gtTaxa;
             _sequences = sequences;
@@ -447,50 +471,62 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
         public void run() {
             int locusID;
             while((locusID = getNextLocus())!=-1){
-                _probs[locusID] = computeProbabilityForOneLocus(_speciesNetwork, _gtTaxa, _sequences.get(locusID), _allTrees, _species2alleles, _gtrsm, _theta);
+                _probs[locusID] = computeProbabilityForOneSite(_speciesNetwork, _gtTaxa, _sequences.get(locusID), _allTrees, _species2alleles, _gtrsm, _theta);
             }
 
         }
 
         private synchronized int getNextLocus(){
-            _currentLocus++;
-            if(_currentLocus >= _sequences.size()){
+            _currentSite++;
+            if(_currentSite >= _sequences.size()){
                 return -1;
             }
             else{
-                return _currentLocus;
+                return _currentSite;
             }
         }
     }
 
-    protected double computeProbabilityForOneLocus(Network speciesNetwork, String[] gtTaxa, char[][] seq, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta){
+    protected double computeProbabilityForOneSite(Network speciesNetwork, String[] gtTaxa, Tuple<char[],Integer> seq, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta){
         double locusProb = 0;
+        Map<String, Character> sequenceMap = new HashMap<String, Character>();
+        for(int i=0; i< gtTaxa.length; i++){
+            sequenceMap.put(gtTaxa[i], seq.Item1[i]);
+        }
         for(Tree gt: allTrees) {
-            FullLikelihoodFromSequence integrator = new FullLikelihoodFromSequence(speciesNetwork, gt, species2alleles, gtTaxa, seq, gtrsm, theta, 0, _maxHeight);
+            FullLikelihoodFromSequence integrator = new FullLikelihoodFromSequence(speciesNetwork, gt, species2alleles, sequenceMap, gtrsm, theta, 0, _maxHeight);
+            //TODO
+            //integrator.setPrintDetails(printDetails);
+            //integrator.setRandomSeed(100);
             locusProb += integrator.computeLikelihoodWithIntegral(_numSamples, _bins);
         }
-        return locusProb;
+        return Math.log(locusProb) * seq.Item2;
     }
 
 
-    protected double computeProbability(Network speciesNetwork, String[] gtTaxa, List<char[][]> sequences, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta) {
+    protected double computeProbability(Network speciesNetwork, String[] gtTaxa, List<Tuple<char[], Integer>> sequences, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta) {
         double totalProb = 0;
-        for(char[][] seq: sequences){
-            double locusProb = computeProbabilityForOneLocus(speciesNetwork, gtTaxa, seq, allTrees, species2alleles, gtrsm, theta);
-            totalProb += Math.log(locusProb);
+        for(Tuple <char[], Integer> seq: sequences){
+            double siteProb = computeProbabilityForOneSite(speciesNetwork, gtTaxa, seq, allTrees, species2alleles, gtrsm, theta);
+            totalProb += siteProb;
         }
         return totalProb;
     }
 
 
-    protected double computeProbabilityParallel(Network speciesNetwork, String[] gtTaxa, List<char[][]> sequences, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta) {
+    protected double computeProbabilityParallel(Network speciesNetwork, String[] gtTaxa, List<Tuple<char[], Integer>> sequences, List<Tree> allTrees,  Map<String, List<String>> species2alleles, GTRSubstitutionModel gtrsm, double theta) {
         double[] probArray = new double[sequences.size()];
         Thread[] myThreads = new Thread[_numThreads];
 
         String networkExp = network2String(speciesNetwork);
-        _currentLocus = 0;
+        _currentSite = -1;
         for(int i=0; i<_numThreads; i++){
-            myThreads[i] = new MyThreadFromScratch(networkExp, gtTaxa, sequences, allTrees, species2alleles, gtrsm, theta, probArray);
+            List<Tree> trCopies = new ArrayList<Tree>();
+            for(Tree tr: allTrees){
+                Tree copy = new STITree(tr);
+                trCopies.add(copy);
+            }
+            myThreads[i] = new MyThread(networkExp, gtTaxa, sequences, trCopies, species2alleles, gtrsm, theta, probArray);
             myThreads[i].start();
         }
 
@@ -502,7 +538,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
 
         double totalProb = 0;
         for(double prob: probArray){
-            totalProb += Math.log(prob);
+            totalProb += prob;
         }
 
         return totalProb;
@@ -644,8 +680,8 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
 
     public static void main(String[] args){
         GTRSubstitutionModel gtrsm = new GTRSubstitutionModel();
-        double[] rates = {1.0, 1.0, 1.0, 1.0, 1.0};
-        double[] freqs = {0.25, 0.25, 0.25, 0.25};
+        double[] rates = {1.05, 4.7346, 1.2441, 0.5014, 4.8320};
+        double[] freqs = {0.2112, 0.2888, 0.2896, 0.2104};
         gtrsm.setSubstitutionRates(rates, freqs);
 
         String[] taxa = {"A","B","C"};
@@ -667,7 +703,7 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
         sequences.add(sequenceAlignment2);
         sequences.add(sequenceAlignment1);
         InferMLNetworkFromSequences inference = new InferMLNetworkFromSequences();
-        inference.setIntegralParameter(1, 10, 10);
+        inference.setIntegralParameter(1, 5, 10);
         inference.setStartingNetwork("((B,C)i1,A)i2;");
         inference.inferNetwork(taxa, sequences, null, gtrsm, 1, 0, 1);
     }

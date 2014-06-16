@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * Created by yunyu on 6/3/14.
  */
-public class CompleteLikelihoodFromSequence {
+public class FullLikelihoodFromSequence {
     Tree _gt;
     double _minBL;
     double _maxBL;
@@ -31,13 +31,22 @@ public class CompleteLikelihoodFromSequence {
     Network _network;
     String[] _networkTaxa;
     Map<String, List<String>> _species2alleles;
-    Map<String,char[]> _sequences;
+    Map<String, Character> _sequenceMap;
     Map<String,Double> _networkHeightConstraints;
+    Long _seed = null;
+    int _counter = 0;
+    boolean _printDetails = false;
 
-    //int _counter = 0;
+    public void setRandomSeed(long seed){
+        _seed = seed;
+    }
+
+    public void setPrintDetails(boolean ifPrint){
+        _printDetails = ifPrint;
+    }
 
 
-    public CompleteLikelihoodFromSequence(Network network, Tree gt, Map<String, List<String>> species2alleles, Map<String,char[]> sequences, SubstitutionModel model, double theta, double minbl, double maxbl){
+    public FullLikelihoodFromSequence(Network network, Tree gt, Map<String, List<String>> species2alleles, Map<String, Character> sequenceMap, SubstitutionModel model, double theta, double minbl, double maxbl){
         _network = network;
         _gt = gt;
         _species2alleles = species2alleles;
@@ -45,7 +54,7 @@ public class CompleteLikelihoodFromSequence {
         _maxBL = maxbl;
         _model = model;
         _theta = theta;
-        _sequences = sequences;
+        _sequenceMap = sequenceMap;
         computeNetworkHeightConstraints();
     }
 
@@ -55,13 +64,15 @@ public class CompleteLikelihoodFromSequence {
 
 
     public double computeLikelihoodWithIntegral(int sampleSize, int bins){
-        CompleteProbabilityFunction function = new CompleteProbabilityFunction(_network, _gt, _species2alleles, _sequences, _model, _minBL, _maxBL);
+        FullProbabilityFunction function = new FullProbabilityFunction(_network, _gt, _species2alleles, _sequenceMap, _model, _minBL, _maxBL);
         int dimension = function.getNumArguments();
         double[] mins = new double[dimension];
         double[] maxs = new double[dimension];
         computeGTNodeHeightBound(_gt, convertTaxaAssociationMap(_species2alleles), _networkHeightConstraints, _minBL, _maxBL, mins, maxs);
 
         MultivariateMonteCarloIntegral integration = new MultivariateMonteCarloIntegral(sampleSize, bins);
+        integration.setRandomSeed(_seed);
+        integration.setPrintDetails(_printDetails);
         double result = integration.integrate(function, dimension, mins, maxs);
         return result;
     }
@@ -195,19 +206,19 @@ public class CompleteLikelihoodFromSequence {
     }
 
 
-    class CompleteProbabilityFunction implements Func1<double[],Double>{
+    class FullProbabilityFunction implements Func1<double[],Double>{
         Network _network;
         Tree _gt;
         List<MutableTuple<Tree,Double>> _gtList;
         Map<String, List<String>> _species2alleles;
-        Map<String,char[]> _sequences;
+        Map<String, Character> _sequenceMap;
         int _numArguments;
         double _lowerBound;
         double _upperBound;
         SubstitutionModel _model;
         boolean[][] _R;
 
-        public CompleteProbabilityFunction(Network network, Tree gt, Map<String, List<String>> species2alleles, Map<String,char[]> sequences, SubstitutionModel model, double lowerBound, double upperBound){
+        public FullProbabilityFunction(Network network, Tree gt, Map<String, List<String>> species2alleles, Map<String, Character> sequenceMap, SubstitutionModel model, double lowerBound, double upperBound){
             _network = network;
             _gt = gt;
             _gtList = new ArrayList<MutableTuple<Tree,Double>>();
@@ -215,7 +226,7 @@ public class CompleteLikelihoodFromSequence {
             _species2alleles = species2alleles;
             _numArguments = _gt.getNodeCount() - _gt.getLeafCount();
             _model = model;
-            _sequences = sequences;
+            _sequenceMap = sequenceMap;
             _lowerBound = lowerBound;
             _upperBound = upperBound;
             findGTNodesAncestralRelationship();
@@ -237,69 +248,54 @@ public class CompleteLikelihoodFromSequence {
             }
         }
 
-        public Double execute(double[] argument){
-            /*
-            if(_counter++ % 1000 == 0){
-                System.out.println(_counter);
+        public Double execute(double[] argument) {
+            if (_counter % 1000 == 0) {
+               //System.out.println(_counter);
             }
-            */
+            _counter++;
 
-            for(int i=0; i<_numArguments; i++){
-                for(int j=0; j<_numArguments; j++){
-                    if(_R[i][j]){
-                        if(argument[i] <= argument[j]){
+            for (int i = 0; i < _numArguments; i++) {
+                for (int j = 0; j < _numArguments; j++) {
+                    if (_R[i][j]) {
+                        if (argument[i] <= argument[j]) {
                             return 0.0;
                         }
                     }
                 }
             }
 
+
             int index = 0;
             Map<TNode, Double> node2height = new HashMap<TNode, Double>();
-            for(TNode node: _gt.postTraverse()){
+            for (TNode node : _gt.postTraverse()) {
                 double height = 0;
-                if(!node.isLeaf()){
+                if (!node.isLeaf()) {
                     height = argument[index++];
                 }
-                for(TNode child: node.getChildren()){
-                    child.setParentDistance((height - node2height.get(child))*_theta);
+                for (TNode child : node.getChildren()) {
+                    child.setParentDistance((height - node2height.get(child)) * _theta);
                 }
                 node2height.put(node, height);
             }
 
-            double result = 1;
+            ObservationMap observationMap = new ObservationMap(_sequenceMap);
+            Felsenstein fcalc = new Felsenstein(_model);
+            double result = fcalc.getLikelihoodtree(_gt, observationMap);
 
-
-            int sequenceLength = 1;
-            index = 0;
-            do{
-                Map<String,Character> omap = new HashMap<String, Character>();
-                for(Map.Entry<String,char[]> entry: _sequences.entrySet()){
-                    if(index == 0){
-                        sequenceLength = entry.getValue().length;
-                    }
-                    omap.put(entry.getKey(), entry.getValue()[index]);
-                }
-
-                ObservationMap observationMap = new ObservationMap(omap);
-                Felsenstein fcalc = new Felsenstein(_model);
-                result *= fcalc.getLikelihoodtree(_gt, observationMap);
-
-                index++;
-            }while(index < sequenceLength);
-
-
-            for(TNode node: _gt.postTraverse()){
-                if(node.isRoot()){
-                    node.setParentDistance(node.getParentDistance()/_theta);
+            for (TNode node : _gt.postTraverse()) {
+                if (node.isRoot()) {
+                    node.setParentDistance(node.getParentDistance() / _theta);
                 }
             }
-            GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF();
-            double[] probs = new double[1];
-            gtp.calculateGTDistribution(_network, _gtList, _species2alleles, probs);
-            result *= probs[0];
 
-            //System.out.println(_gt.toString()+": " + result);
+
+            GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, _gtList, _species2alleles);
+            double[] probs = new double[1];
+            gtp.calculateGTDistribution(probs);
+            result *= probs[0];
+            if(_printDetails) {
+                System.out.println(_gt.toString() + ": " + probs[0]);
+            }
 
             return result;
         }
@@ -327,16 +323,11 @@ public class CompleteLikelihoodFromSequence {
         }
         //Network net = Networks.string2network("((A:2,(B:1)#H1:1::0.3):1,(C:2,#H1:1::0.7):1);");
         Network net = Networks.string2network("(A:2,(B:1,C:1):1):1;");
-
-        Map<String,char[]> omap = new Hashtable<String,char[]>();
-        String s1 = "ATAGT";
-        omap.put("A", s1.toCharArray());
-        String s2 = "ATTGT";
-        omap.put("B", s2.toCharArray());
-        String s3 = "TCTAG";
-        omap.put("C", s3.toCharArray());
-
-        CompleteLikelihoodFromSequence integrator = new CompleteLikelihoodFromSequence(net, tree, null, omap, gtrsm, 1, 0, 10);
+        Map<String, Character> omap = new HashMap<String, Character>();
+        omap.put("A",'A');
+        omap.put("B",'T');
+        omap.put("C",'T');
+        FullLikelihoodFromSequence integrator = new FullLikelihoodFromSequence(net, tree, null, omap, gtrsm, 1, 0, 10);
         System.out.println(integrator.computeLikelihoodWithIntegral(1000, 2));
     }
 }

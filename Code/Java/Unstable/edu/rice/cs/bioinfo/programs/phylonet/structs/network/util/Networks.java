@@ -19,6 +19,9 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.util;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
+import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.bipartitematching.HungarianBipartiteMatcher;
@@ -29,13 +32,18 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.Ne
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTreeEnumerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTripartition;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceAlignment;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -143,7 +151,7 @@ public class Networks
 	 *
 	 * @param net: The network we want to find all clusters.
 	 */
-	public static <T> Iterable<NetworkCluster<T>> getClusters(Network<T> net)
+	public static <T> Iterable<NetworkCluster<T>> getSoftwiredClusters(Network<T> net)
 	{
 		List<NetworkCluster<T>> clusters = new LinkedList<NetworkCluster<T>>();
 
@@ -157,6 +165,41 @@ public class Networks
 
 		return clusters;
 	}
+
+    /**
+     * This function returns an iterable list of network clusters.
+     *
+     * @param net: The network we want to find all clusters.
+     */
+    public static <T> Iterable<Set<String>> getHardwiredClusters(Network<T> net)
+    {
+
+        Map<NetNode, Set<String>> node2cluster = new HashMap<NetNode, Set<String>>();
+        for (NetNode<T> node: Networks.postTraversal(net)) {
+            if(node.isRoot()){
+                break;
+            }
+            Set<String> cluster = new HashSet<String>();
+            if(node.isLeaf()){
+                cluster.add(node.getName());
+            }
+            else{
+                for(NetNode<T> child: node.getChildren()){
+                    cluster.addAll(node2cluster.get(child));
+                }
+            }
+            node2cluster.put(node, cluster);
+        }
+        Set<Set<String>> clusters = new HashSet<Set<String>>();
+        for(Set<String> cluster: node2cluster.values()){
+            if(cluster.size()>1){
+                clusters.add(cluster);
+            }
+        }
+
+        return clusters;
+    }
+
 
 	/**
 	 * This function returns an iterable list of network tripartitions.
@@ -185,35 +228,79 @@ public class Networks
 	 *
 	 * @return [fasle-negative, false-positive, average]
 	 */
-	public static <T> double[] computeClusterDistance(Network<T> net1, Network<T> net2)
+	public static <T> double[] computeSoftwiredClusterDistance(Network<T> net1, Network<T> net2)
 	{
 		List<NetworkCluster<T>> clusters1 = new LinkedList<NetworkCluster<T>>();
 		List<NetworkCluster<T>> clusters2 = new LinkedList<NetworkCluster<T>>();
 
-		for (NetworkCluster<T> nc : getClusters(net1)) {
+		for (NetworkCluster<T> nc : getSoftwiredClusters(net1)) {
 			clusters1.add(nc);
 		}
-		for (NetworkCluster<T> nc : getClusters(net2)) {
+		for (NetworkCluster<T> nc : getSoftwiredClusters(net2)) {
 			clusters2.add(nc);
 		}
 
-		return computeClusterDistance(clusters1, clusters2);
+		return computeSoftwiredClusterDistance(clusters1, clusters2);
 	}
 
 
-	public static <T> double[] computeClusterDistance(List<NetworkCluster<T>> clusters1, List<NetworkCluster<T>> clusters2)
+	public static <T> double[] computeSoftwiredClusterDistance(List<NetworkCluster<T>> clusters1, List<NetworkCluster<T>> clusters2)
 	{
-		double fn = (clusters1.size() == 0) ? 0.0 : (double) computeClusterDiff(clusters1, clusters2) / clusters1.size();
-		double fp = (clusters2.size() == 0) ? 0.0 : (double) computeClusterDiff(clusters2, clusters1) / clusters2.size();
+		double fn = (clusters1.size() == 0) ? 0.0 : (double) computeSoftwiredClusterDiff(clusters1, clusters2) / clusters1.size();
+		double fp = (clusters2.size() == 0) ? 0.0 : (double) computeSoftwiredClusterDiff(clusters2, clusters1) / clusters2.size();
 		double avg = (fn + fp) / 2;
 
 		return new double[] {fn, fp, avg};
 	}
 
-	/**
+
+    /**
+     * This function compute the cluster-based distance between two networks.
+     *
+     * @param net1, net2: The two networks to be compared.
+     *
+     * @return [fasle-negative, false-positive, average]
+     */
+    public static <T> double[] computeHardwiredClusterDistance(Network<T> net1, Network<T> net2)
+    {
+        List<Set<String>> clusters1 = new LinkedList<Set<String>>();
+        List<Set<String>> clusters2 = new LinkedList<Set<String>>();
+
+        for (Set<String> cl : getHardwiredClusters(net1)) {
+            clusters1.add(cl);
+        }
+        for (Set<String> cl : getHardwiredClusters(net2)) {
+            clusters2.add(cl);
+        }
+
+        return computeHardwiredClusterDistance(clusters1, clusters2);
+    }
+
+
+    public static <T> double[] computeHardwiredClusterDistance(List<Set<String>> clusters1, List<Set<String>> clusters2)
+    {
+        double fn = (clusters1.size() == 0) ? 0.0 : (double) computeHardwiredClusterDiff(clusters1, clusters2) / clusters1.size();
+        double fp = (clusters2.size() == 0) ? 0.0 : (double) computeHardwiredClusterDiff(clusters2, clusters1) / clusters2.size();
+        double avg = (fn + fp) / 2;
+
+        return new double[] {fn, fp, avg};
+    }
+
+    /*
+    private static Set<String> convertHardwiredClustersToStringRepresentatives(List<Set<String>> clusters){
+        Set<String> representatives = new HashSet<String>();
+        for(Set<String> cluster: clusters){
+            Arrays.so
+        }
+        return representatives;
+    }
+    */
+
+
+    /**
 	 * This function computes the number of clusters in <code>models</code> that are not in <code>refs</code>.
 	 */
-	private static <T> int computeClusterDiff(List<NetworkCluster<T>> models, List<NetworkCluster<T>> refs)
+	private static <T> int computeSoftwiredClusterDiff(List<NetworkCluster<T>> models, List<NetworkCluster<T>> refs)
 	{
 		int diff = 0;
 		for (NetworkCluster<T> nc : models) {
@@ -224,6 +311,23 @@ public class Networks
 
 		return diff;
 	}
+
+
+    /**
+     * This function computes the number of clusters in <code>models</code> that are not in <code>refs</code>.
+     */
+    private static <T> int computeHardwiredClusterDiff(List<Set<String>> models, List<Set<String>> refs)
+    {
+        int diff = 0;
+        for (Set<String> nc : models) {
+            if (!refs.contains(nc)) {
+                diff++;
+            }
+        }
+
+        return diff;
+    }
+
 
 	/**
 	 * This function computes the tripartition-based distance between two networks.
@@ -493,6 +597,29 @@ public class Networks
             addRandomReticulationEdge(network);
         }
     }
+
+
+    public static Network string2network(String networkExp){
+        try{
+            RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+            reader.setHybridSumTolerance(BigDecimal.valueOf(0.0001));
+            NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
+            RichNewickReadResult<edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks> readResult = reader.read(new ByteArrayInputStream(networkExp.getBytes()));
+            return  transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+            e.getStackTrace();
+        }
+        return null;
+    }
+
+    public static <T> String network2string(Network<T> speciesNetwork){
+        RnNewickPrinter<T> rnNewickPrinter = new RnNewickPrinter<T>();
+        StringWriter sw = new StringWriter();
+        rnNewickPrinter.print(speciesNetwork, sw);
+        return sw.toString();
+    }
+
 
 
     private static <T> void addRandomReticulationEdge(Network<T> network){

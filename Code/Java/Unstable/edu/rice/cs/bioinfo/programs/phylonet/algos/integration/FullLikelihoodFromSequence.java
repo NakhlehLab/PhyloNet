@@ -283,11 +283,10 @@ public class FullLikelihoodFromSequence {
             double result = fcalc.getLikelihoodtree(_gt, observationMap);
 
             for (TNode node : _gt.postTraverse()) {
-                if (node.isRoot()) {
+                if (!node.isRoot()) {
                     node.setParentDistance(node.getParentDistance() / _theta);
                 }
             }
-
 
             GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, _gtList, _species2alleles);
             double[] probs = new double[1];
@@ -327,7 +326,7 @@ public class FullLikelihoodFromSequence {
         omap.put("A",'A');
         omap.put("B",'T');
         omap.put("C",'T');
-        FullLikelihoodFromSequence integrator = new FullLikelihoodFromSequence(net, tree, null, omap, gtrsm, 1, 0, 10);
+        FullLikelihoodFromSequence integrator = new FullLikelihoodFromSequence(net, tree, null, omap, gtrsm, 0.2, 0, 10);
         System.out.println(integrator.computeLikelihoodWithIntegral(1000, 2));
     }
 }

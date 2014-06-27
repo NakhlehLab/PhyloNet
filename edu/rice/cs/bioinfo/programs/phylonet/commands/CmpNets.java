@@ -25,6 +25,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkN
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTripartition;
@@ -50,7 +51,7 @@ public class CmpNets extends CommandBaseFileOut {
 
     enum Method
     {
-        Tree,Tri,Cluster;
+        Tree,Tri,Cluster,Luay;
     }
 
     private Method _method;
@@ -106,6 +107,10 @@ public class CmpNets extends CommandBaseFileOut {
                  else if(simplePlusOneValueLower.equals("cluster"))
                  {
                      _method = Method.Cluster;
+                 }
+                 else if(simplePlusOneValueLower.equals("luay"))
+                 {
+                     _method = Method.Luay;
                  }
                  else
                  {
@@ -188,18 +193,18 @@ public class CmpNets extends CommandBaseFileOut {
         {
             if (clusters1 == null) {
 				clusters1 = new LinkedList<NetworkCluster<Object>>();
-				for (NetworkCluster<Object> nc : Networks.getClusters(net1)) {
+				for (NetworkCluster<Object> nc : Networks.getSoftwiredClusters(net1)) {
 					clusters1.add(nc);
 				}
 			}
 			if (clusters2 == null) {
 				clusters2 = new LinkedList<NetworkCluster<Object>>();
-				for (NetworkCluster<Object> nc : Networks.getClusters(net2)) {
+				for (NetworkCluster<Object> nc : Networks.getSoftwiredClusters(net2)) {
 					clusters2.add(nc);
 				}
 			}
 
-			double dist[] = Networks.computeClusterDistance(clusters1, clusters2);
+			double dist[] = Networks.computeSoftwiredClusterDistance(clusters1, clusters2);
 			result.append("\n" + "The cluster-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2]);
 		}
         else if(_method == Method.Tri)
@@ -233,6 +238,12 @@ public class CmpNets extends CommandBaseFileOut {
 
            double dist[] = Networks.computeTreeDistance(trees1, trees2);
 		   result.append("\nThe tree-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2]);
+       }
+       else if(_method == Method.Luay)
+       {
+           NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
+           double distance = metric.computeDistanceBetweenTwoNetworks(net1, net2);
+           result.append("\nThe Luay's distance between two networks: " + distance);
        }
 
         return result.toString();

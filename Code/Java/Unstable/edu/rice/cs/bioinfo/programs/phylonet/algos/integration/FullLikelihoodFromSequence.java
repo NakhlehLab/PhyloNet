@@ -1,332 +1,335 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.integration;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
-import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
-import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.Felsenstein;
-import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
-import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.SubstitutionModel;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYF;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
+  import edu.rice.cs.bioinfo.library.programming.MutableTuple;
+  import edu.rice.cs.bioinfo.library.programming.Tuple;
+  import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+  import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.Felsenstein;
+  import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
+  import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.SubstitutionModel;
+  import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbability;
+  import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYF;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
+  import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.io.StringReader;
-import java.util.*;
+  import java.io.StringReader;
+  import java.util.*;
 
 /**
- * Created by yunyu on 6/3/14.
- */
-public class FullLikelihoodFromSequence {
-    Tree _gt;
-    double _minBL;
-    double _maxBL;
-    double _theta;
-    SubstitutionModel _model;
-    Network _network;
-    String[] _networkTaxa;
-    Map<String, List<String>> _species2alleles;
-    Map<String, Character> _sequenceMap;
-    Map<String,Double> _networkHeightConstraints;
-    Long _seed = null;
-    int _counter = 0;
-    boolean _printDetails = false;
+     * Created by yunyu on 6/3/14.
+     */
+  public class FullLikelihoodFromSequence {
+      List<Tree> _gts;
+      double _minHeight;
+      double _maxHeight;
+      double _theta;
+      SubstitutionModel _model;
+      //Network _network;
+      //String[] _networkTaxa;
+      String[] _gtTaxa;
+      List<Tuple<char[],Integer>> _sequences;
+      Long _seed = null;
+      int _counter = 0;
+      int _currentID = 0;
+      int _numThreads = 1;
+      boolean _printDetails = false;
 
-    public void setRandomSeed(long seed){
-        _seed = seed;
-    }
+      int _numSamples;
+      int _numSamplesPerBin;
+      int _numBins;
+      int _dim;
 
-    public void setPrintDetails(boolean ifPrint){
-        _printDetails = ifPrint;
-    }
+      Tree[][] _gtSamples;
+      double[][][] _gtLikelihoods;
 
+      public void setRandomSeed(Long seed){
+          _seed = seed;
+      }
 
-    public FullLikelihoodFromSequence(Network network, Tree gt, Map<String, List<String>> species2alleles, Map<String, Character> sequenceMap, SubstitutionModel model, double theta, double minbl, double maxbl){
-        _network = network;
-        _gt = gt;
-        _species2alleles = species2alleles;
-        _minBL = minbl;
-        _maxBL = maxbl;
-        _model = model;
-        _theta = theta;
-        _sequenceMap = sequenceMap;
-        computeNetworkHeightConstraints();
-    }
+      public void setPrintDetails(boolean ifPrint){
+          _printDetails = ifPrint;
+      }
 
-    public double computeLikelihoodWithIntegral(int sampleSize){
-        return computeLikelihoodWithIntegral(sampleSize, 1);
-    }
+      public void setParallel(int numThreads){
+          _numThreads = numThreads;
+      }
 
-
-    public double computeLikelihoodWithIntegral(int sampleSize, int bins){
-        FullProbabilityFunction function = new FullProbabilityFunction(_network, _gt, _species2alleles, _sequenceMap, _model, _minBL, _maxBL);
-        int dimension = function.getNumArguments();
-        double[] mins = new double[dimension];
-        double[] maxs = new double[dimension];
-        computeGTNodeHeightBound(_gt, convertTaxaAssociationMap(_species2alleles), _networkHeightConstraints, _minBL, _maxBL, mins, maxs);
-
-        MultivariateMonteCarloIntegral integration = new MultivariateMonteCarloIntegral(sampleSize, bins);
-        integration.setRandomSeed(_seed);
-        integration.setPrintDetails(_printDetails);
-        double result = integration.integrate(function, dimension, mins, maxs);
-        return result;
-    }
+      public FullLikelihoodFromSequence(List<Tree> gts, String[] gtTaxa, List<Tuple<char[],Integer>> sequences, SubstitutionModel model, double theta, double minHeight, double maxHeight){
+          //_network = network;
+          _gts = gts;
+          //_species2alleles = species2alleles;
+          _minHeight = minHeight;
+          _maxHeight = maxHeight;
+          _model = model;
+          _theta = theta;
+          _gtTaxa = gtTaxa;
+          _sequences = sequences;
+      }
 
 
-    private void computeGTNodeHeightBound(Tree tree, Map<String, String> allele2species, Map<String,Double> networkHeightConstraints, double minBL,  double maxBL, double[] mins, double[] maxs){
-        Map<TNode,STITreeCluster<Double>> node2cluster = new HashMap<TNode, STITreeCluster<Double>>();
-        int index = 0;
-        for(TNode node: tree.postTraverse()){
-            STITreeCluster<Double> cluster = new STITreeCluster<Double>(_networkTaxa);
-            double minHeight = 0;
-            if(node.isLeaf()){
-                if(allele2species==null) {
-                    cluster.addLeaf(node.getName());
-                }else{
-                    cluster.addLeaf(allele2species.get(node.getName()));
+
+      private Tree cloneTreeWithBranchLength(Tree tr, double[] nodeHeight, double scalor){
+          Tree trCopy = new STITree(tr);
+          int index = 0;
+          Map<TNode, Double> node2height = new HashMap<TNode, Double>();
+          for (TNode node : trCopy.postTraverse()) {
+              double height = 0;
+              if (!node.isLeaf()) {
+                  height = nodeHeight[index++];
+              }
+              for (TNode child : node.getChildren()) {
+                  double bl = height - node2height.get(child);
+                  if(bl < 0){
+                      return null;
+                  }
+                  child.setParentDistance(bl * scalor);
+              }
+              node2height.put(node, height);
+          }
+          return trCopy;
+      }
+
+      private double[] computeGTLikelhood(Tree gt){
+          double[] results = new double[_sequences.size()];
+          int index = 0;
+          for(Tuple<char[], Integer> seq: _sequences) {
+              Map<String, Character> sequenceMap = new HashMap<String, Character>();
+              for(int i=0; i<_gtTaxa.length; i++){
+                  sequenceMap.put(_gtTaxa[i], seq.Item1[i]);
+              }
+              Felsenstein fcalc = new Felsenstein(_model);
+              results[index++] = fcalc.getLikelihoodtree(gt, new ObservationMap(sequenceMap));
+          }
+          return results;
+      }
+
+      private void clearParallelIndex(){
+          _currentID = 0;
+      }
+
+
+      public void computeGTLikelhoodWithIntegral(int numSamplesPerBin, int numBins){
+          _numBins = numBins;
+          _numSamplesPerBin = numSamplesPerBin;
+          _dim = _gts.get(0).getNodeCount() - _gts.get(0).getLeafCount();
+          _numSamples = (int)Math.pow(_numBins, _dim) * numSamplesPerBin;
+          _gtSamples = new Tree[_gts.size()][_numSamples];
+          _gtLikelihoods = new double[_gts.size()][_numSamples][_sequences.size()];
+
+
+          clearParallelIndex();
+          Thread[] myThreads = new Thread[_numThreads];
+          for(int i=0; i<_numThreads; i++){
+              myThreads[i] = new GTLikelihoodThread();
+              myThreads[i].start();
+          }
+
+          for(int i=0; i<_numThreads; i++){
+              try {
+                  myThreads[i].join();
+              } catch (InterruptedException ignore) {}
+          }
+
+      }
+
+
+      public double computeNetworkLikelhoodWithIntegral(Network network, Map<String, List<String>> species2alleles) {
+          clearParallelIndex();
+          Thread[] myThreads = new Thread[_numThreads];
+          String networkExp = Networks.network2string(network);
+          double[][] networkLikelihood = new double[_gts.size()][_numSamples];
+          for (int i = 0; i < _numThreads; i++) {
+              myThreads[i] = new NetworkLikelihoodThread(networkExp, species2alleles, networkLikelihood);
+              myThreads[i].start();
+          }
+
+          for (int i = 0; i < _numThreads; i++) {
+              try {
+                  myThreads[i].join();
+              } catch (InterruptedException ignore) {
+              }
+          }
+
+          double finalResult = 0;
+          for(int i=0; i<_sequences.size(); i++){
+              double siteProb = 0;
+              for(int j=0; j<_gts.size(); j++){
+                  double[] integralValues = new double[_numSamples];
+                  for(int k=0; k<_numSamples; k++){
+                      integralValues[k] = _gtLikelihoods[j][k][i] * networkLikelihood[j][k];
+
+                      if(_printDetails && _gtSamples[j][k]!=null){
+                          System.out.println(_gtSamples[j][k] + " : " + _gtLikelihoods[j][k][i] + " * " + networkLikelihood[j][k]);
+                      }
+
+                  }
+                  siteProb += MultivariateMonteCarloIntegral.integrate(_dim, _minHeight, _maxHeight, integralValues);
+              }
+              //System.out.println(Math.log(siteProb) + " * " + _sequences.get(i).Item2);
+              //System.out.println(siteProb);
+              finalResult += Math.log(siteProb) * _sequences.get(i).Item2;
+          }
+
+          //System.out.println(finalResult);
+          return finalResult;
+      }
+
+
+     private void printArray(double array[]){
+         for(double value: array){
+             System.out.print(value + " ");
+         }
+         System.out.println();
+     }
+
+      private class GTLikelihoodThread extends Thread{
+
+          public void run() {
+              int myID;
+              while((myID = getNextID(_gts.size()))!=-1){
+                  Tree gt = _gts.get(myID);
+                  //GTBranchLengthsValidator validator = new GTBranchLengthsValidator(gt, _dim);
+                  MultivariateMonteCarloIntegral integration = new MultivariateMonteCarloIntegral(_numSamplesPerBin, _numBins);
+                  integration.setRandomSeed(_seed);
+                  int j = 0;
+                  for (double[] sample : integration.getSamplePoints(_dim, _minHeight, _maxHeight)) {
+                      //printArray(sample);
+                      Tree gtCopy = cloneTreeWithBranchLength(gt, sample, _theta);
+                      _gtSamples[myID][j] = gtCopy;
+                      if(gtCopy == null){
+                           Arrays.fill(_gtLikelihoods[myID][j], 0);
+                      }
+                      else {
+                          _gtLikelihoods[myID][j] = computeGTLikelhood(gtCopy);
+                          Trees.scaleBranchLengths((MutableTree) gtCopy, 1 / _theta);
+                      }
+
+                      j++;
+                  }
+              }
+          }
+
+          private synchronized int getNextID(int total){
+
+              if(_currentID >= total){
+                  return -1;
+              }
+              else{
+                  _currentID++;
+                  return _currentID-1;
+              }
+          }
+      }
+
+
+      private class NetworkLikelihoodThread extends Thread{
+                Network _network;
+                Map<String, List<String>> _species2alleles;
+                double[][] _results;
+
+                public NetworkLikelihoodThread(String network, Map<String, List<String>> species2alleles, double[][] results){
+                    _network = Networks.string2network(network);
+                    _species2alleles = species2alleles;
+                    _results = results;
                 }
-            }
-            else{
-                STITreeCluster<Double> childCluster1 = null;
-                STITreeCluster<Double> childCluster2 = null;
-                for(TNode child: node.getChildren()){
-                    STITreeCluster<Double> childCluster = node2cluster.get(child);
-                    minHeight = Math.max(childCluster.getData(), minHeight);
-                    cluster = cluster.merge(childCluster);
-                    if(childCluster1==null){
-                        childCluster1 = childCluster;
-                    }
-                    else{
-                        childCluster2 = childCluster;
-                    }
-                }
-                minHeight = Math.max(getMinHeightFromSpeciesNetwork(childCluster1, childCluster2, networkHeightConstraints), minHeight);
-                mins[index] = minHeight;
-                maxs[index++] = minHeight + maxBL;
-            }
-
-            cluster.setData(minHeight);
-            node2cluster.put(node, cluster);
-
-        }
-    }
 
 
-    private Map<String,String> convertTaxaAssociationMap(Map<String, List<String>> species2alleles){
-        if(species2alleles==null){
-            return null;
-        }
-        Map<String, String> allele2species = new HashMap<String, String>();
-        for(Map.Entry<String, List<String>> entry: species2alleles.entrySet()){
-            for(String allele: entry.getValue()){
-                allele2species.put(entry.getKey(), allele);
-            }
-        }
-        return allele2species;
-    }
+          public void run() {
+              int myID;
+              while((myID = getNextID(_gtSamples.length))!=-1) {
+                  List<MutableTuple<Tree, Double>> gtList = new ArrayList<MutableTuple<Tree, Double>>();
+                  List<Integer> originalIDs = new ArrayList<Integer>();
+                  int index = 0;
+                  for (Tree gt : _gtSamples[myID]) {
+                      if(gt != null) {
+                          gtList.add(new MutableTuple<Tree, Double>(gt, 1.0));
+                          originalIDs.add(index);
+                      }
+                      index++;
+
+                  }
+                  double[] probs = new double[gtList.size()];
+                  if(probs.length!=0) {
+                      GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, gtList, _species2alleles);
+                      gtp.calculateGTDistribution(probs);
+                      Iterator<Integer> idIt = originalIDs.iterator();
+                      for(double prob: probs){
+                          _results[myID][idIt.next()] = prob;
+                      }
+                  }
+                  //System.out.println(Networks.network2string(_network));
+              }
+          }
 
 
-    private double getMinHeightFromSpeciesNetwork(STITreeCluster cl1, STITreeCluster cl2, Map<String,Double> networkHeightConstraints){
-        double minHeight = 0;
-        for(String t1: cl1.getClusterLeaves()){
-            for(String t2: cl2.getClusterLeaves()){
-                String pair = t1.compareTo(t2)>0?t1+"|"+t2:t2+"|"+t1;
-                minHeight = Math.max(minHeight, networkHeightConstraints.get(pair));
-            }
-        }
-        return minHeight;
-    }
 
-    private void computeNetworkHeightConstraints(){
-        List<String> leafList = new ArrayList<String>();
-        for(Object o: _network.getLeaves()){
-            leafList.add(((NetNode)o).getName());
-        }
-        _networkTaxa = leafList.toArray(new String[leafList.size()]);
-        Map<NetNode, STITreeCluster<Double>> node2cluster = new HashMap<NetNode, STITreeCluster<Double>>();
-        _networkHeightConstraints = new HashMap<String, Double>();
-        for(Object o: Networks.postTraversal(_network)){
-            NetNode node = (NetNode)o;
-            STITreeCluster<Double> cluster = new STITreeCluster<Double>(_networkTaxa);
-            double clusterHeight = -1;
-            if(node.isLeaf()){
-                cluster.addLeaf(node.getName());
-                clusterHeight = 0;
-
-            }
-            else{
-                BitSet commonCluster = null;
-                STITreeCluster childCluster1 = null;
-                STITreeCluster childCluster2 = null;
-                for(Object co: node.getChildren()){
-                    NetNode childNode = (NetNode)co;
-                    STITreeCluster<Double> childCluster = node2cluster.get(childNode).duplicate();
-                    if(childCluster1==null){
-                        childCluster1 = childCluster;
-                    }
-                    else{
-                        childCluster2 = childCluster;
-                    }
-                    cluster = cluster.merge(childCluster);
-                    if(clusterHeight==-1){
-                        clusterHeight = childCluster.getData() + childNode.getParentDistance(node);
-                    }
-                    if(node.isTreeNode()) {
-                        if (commonCluster == null) {
-                            commonCluster = (BitSet)childCluster.getCluster().clone();
-                        } else {
-                            commonCluster.and(childCluster.getCluster());
-                        }
-                    }
-                }
-                if(node.isTreeNode()) {
-                    childCluster1.getCluster().andNot(commonCluster);
-                    childCluster2.getCluster().andNot(commonCluster);
-                    for(String t1: childCluster1.getClusterLeaves()){
-                        for(String t2: childCluster2.getClusterLeaves()){
-                            String pair = t1.compareTo(t2)>0?t1+"|"+t2:t2+"|"+t1;
-                            Double preDist = _networkHeightConstraints.get(pair);
-                            if(preDist==null || preDist>clusterHeight){
-                                _networkHeightConstraints.put(pair, clusterHeight);
-
-                            }
-                        }
-                    }
-                }
-            }
-            cluster.setData(clusterHeight);
-            node2cluster.put(node, cluster);
-        }
-
-    }
-
-
-    class FullProbabilityFunction implements Func1<double[],Double>{
-        Network _network;
-        Tree _gt;
-        List<MutableTuple<Tree,Double>> _gtList;
-        Map<String, List<String>> _species2alleles;
-        Map<String, Character> _sequenceMap;
-        int _numArguments;
-        double _lowerBound;
-        double _upperBound;
-        SubstitutionModel _model;
-        boolean[][] _R;
-
-        public FullProbabilityFunction(Network network, Tree gt, Map<String, List<String>> species2alleles, Map<String, Character> sequenceMap, SubstitutionModel model, double lowerBound, double upperBound){
-            _network = network;
-            _gt = gt;
-            _gtList = new ArrayList<MutableTuple<Tree,Double>>();
-            _gtList.add(new MutableTuple<Tree, Double>(_gt,1.0));
-            _species2alleles = species2alleles;
-            _numArguments = _gt.getNodeCount() - _gt.getLeafCount();
-            _model = model;
-            _sequenceMap = sequenceMap;
-            _lowerBound = lowerBound;
-            _upperBound = upperBound;
-            findGTNodesAncestralRelationship();
-        }
-
-        public void findGTNodesAncestralRelationship(){
-            _R = new boolean[_numArguments][_numArguments];
-            Map<TNode, Integer> node2index = new HashMap<TNode, Integer>();
-            int index = 0;
-            for(TNode node: _gt.postTraverse()){
-                for(TNode child: node.getChildren()){
-                    if(!child.isLeaf()) {
-                        _R[index][node2index.get(child)] = true;
-                    }
-                }
-                if(!node.isLeaf()) {
-                    node2index.put(node, index++);
-                }
-            }
-        }
-
-        public Double execute(double[] argument) {
-            if (_counter % 1000 == 0) {
-               //System.out.println(_counter);
-            }
-            _counter++;
-
-            for (int i = 0; i < _numArguments; i++) {
-                for (int j = 0; j < _numArguments; j++) {
-                    if (_R[i][j]) {
-                        if (argument[i] <= argument[j]) {
-                            return 0.0;
-                        }
-                    }
-                }
-            }
-
-
-            int index = 0;
-            Map<TNode, Double> node2height = new HashMap<TNode, Double>();
-            for (TNode node : _gt.postTraverse()) {
-                double height = 0;
-                if (!node.isLeaf()) {
-                    height = argument[index++];
-                }
-                for (TNode child : node.getChildren()) {
-                    child.setParentDistance((height - node2height.get(child)) * _theta);
-                }
-                node2height.put(node, height);
-            }
-
-            ObservationMap observationMap = new ObservationMap(_sequenceMap);
-            Felsenstein fcalc = new Felsenstein(_model);
-            double result = fcalc.getLikelihoodtree(_gt, observationMap);
-
-            for (TNode node : _gt.postTraverse()) {
-                if (!node.isRoot()) {
-                    node.setParentDistance(node.getParentDistance() / _theta);
+          private synchronized int getNextID(int total){
+              if(_currentID >= total){
+                  return -1;
+              }
+              else{
+                  _currentID++;
+                  return _currentID-1;
+              }
                 }
             }
 
-            GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, _gtList, _species2alleles);
-            double[] probs = new double[1];
-            gtp.calculateGTDistribution(probs);
-            result *= probs[0];
-            if(_printDetails) {
-                System.out.println(_gt.toString() + ": " + probs[0]);
-            }
-
-            return result;
-        }
 
 
-        public int getNumArguments(){
-            return _numArguments;
-        }
-    }
+ /*
+           class GTBranchLengthsValidator implements Func1<double[],Boolean>{
+               Tree _gt;
+               boolean[][] _R;
 
-    public static void main(String[] args){
-        GTRSubstitutionModel gtrsm = new GTRSubstitutionModel();
-        double[] rates = {1.0, 1.0, 1.0, 1.0, 1.0};
-        double[] freqs = {0.25, 0.25, 0.25, 0.25};
-        gtrsm.setSubstitutionRates(rates, freqs);
-        NewickReader nr = new NewickReader(new StringReader("((B:2.5,C:2.5):3,A:5.5);"));
-        STITree<Double> tree = new STITree<Double>(true);
-        try {
-            nr.readTree(tree);
-        }
-        catch(Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
-            return;
-        }
-        //Network net = Networks.string2network("((A:2,(B:1)#H1:1::0.3):1,(C:2,#H1:1::0.7):1);");
-        Network net = Networks.string2network("(A:2,(B:1,C:1):1):1;");
-        Map<String, Character> omap = new HashMap<String, Character>();
-        omap.put("A",'A');
-        omap.put("B",'T');
-        omap.put("C",'T');
-        FullLikelihoodFromSequence integrator = new FullLikelihoodFromSequence(net, tree, null, omap, gtrsm, 0.2, 0, 10);
-        System.out.println(integrator.computeLikelihoodWithIntegral(1000, 2));
-    }
-}
+               public GTBranchLengthsValidator(Tree gt, int dim){
+                   _gt = gt;
+                   findGTNodesAncestralRelationship(dim);
+               }
+
+
+               public void findGTNodesAncestralRelationship(int numInternalNodes){
+                   _R = new boolean[numInternalNodes][numInternalNodes];
+                   Map<TNode, Integer> node2index = new HashMap<TNode, Integer>();
+                   int index = 0;
+                   for(TNode node: _gt.postTraverse()){
+                       for(TNode child: node.getChildren()){
+                           if(!child.isLeaf()) {
+                               _R[index][node2index.get(child)] = true;
+                           }
+                       }
+                       if(!node.isLeaf()) {
+                           node2index.put(node, index++);
+                       }
+                   }
+               }
+
+
+
+               public Boolean execute(double[] argument) {
+                   for (int i = 0; i < argument.length; i++) {
+                       for (int j = 0; j < argument.length; j++) {
+                           if (_R[i][j]) {
+                               if (argument[i] <= argument[j]) {
+                                   return false;
+                               }
+                           }
+                       }
+                   }
+
+
+                   return true;
+               }
+           }
+      */
+
+
+
+  }

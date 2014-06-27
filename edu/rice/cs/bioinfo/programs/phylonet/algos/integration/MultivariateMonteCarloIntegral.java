@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.integration;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -11,6 +12,8 @@ import java.util.Random;
  */
 public class MultivariateMonteCarloIntegral{
     private boolean _printDetails = false;
+
+
 
     // bins is the number of divisions that each axis it split into (so the full number of bins is this to the
     // power of the dimension of the function
@@ -89,14 +92,85 @@ public class MultivariateMonteCarloIntegral{
                 double[] sample = new double[dim];
                 for(int k=0; k<sample.length; k++){
                     double randomNumber = random.nextDouble();
+                    //System.out.println(randomNumber);
                     sample[k] = sampleBase[k] + randomNumber * (steps[k]);
                 }
                 integral += f.execute(sample);
             }
         }
-
+        //System.out.println(integral +"*"+ totalArea +"/"+ _sampleSize*totalBins);
         integral *= totalArea/((double)_sampleSize*totalBins);
         return integral;
+    }
+
+
+    public List<double[]> getSamplePoints(int dim, double min, double max) {
+        Random random;
+        if(_seed == null){
+            random = new Random();
+        }
+        else{
+            random = new Random(_seed);
+        }
+
+        int totalBins = (int)Math.pow(_bins, dim);
+
+        double[] steps = new double[dim];
+        Arrays.fill(steps, (max - min)/_bins);
+
+        double[] currentCorner = new double[dim];
+        Arrays.fill(currentCorner, min);
+
+        List<double[]> binCorners = new ArrayList<double[]>();
+
+         for(int i=0; i<totalBins; i++){
+            binCorners.add(currentCorner.clone());
+            for(int j=dim-1; j>=0; j--){
+                currentCorner[j] += steps[j];
+                if(Math.abs(currentCorner[j]-max)<0.00000000001){
+                    currentCorner[j] = min;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+
+
+        List<double[]> sampleList = new ArrayList<double[]>();
+        for(double[] sampleBase: binCorners){
+            for (int j=1; j <= _sampleSize; j++) {
+                double[] sample = new double[dim];
+                //do {
+                    for (int k = 0; k < sample.length; k++) {
+                        double randomNumber = random.nextDouble();
+                        //System.out.println(randomNumber);
+                        sample[k] = sampleBase[k] + randomNumber * (steps[k]);
+                    }
+                //}while(!validator.execute(sample));
+                sampleList.add(sample);
+                //printArray(sample);
+            }
+        }
+
+        return sampleList;
+    }
+
+    private void printArray(double array[]){
+        for(double value: array){
+            System.out.print(value + " ");
+        }
+        System.out.println();
+    }
+
+    public static double integrate(int dim, double min, double max, double[] evaluatedValue){
+        double totalArea = Math.pow(max - min, dim);
+        double totalValue = 0;
+        for(double value: evaluatedValue){
+            totalValue += value;
+        }
+        //System.out.println(totalValue +"*"+ totalArea +"/"+ evaluatedValue.length);
+        return totalValue * totalArea / evaluatedValue.length;
     }
 
     /*

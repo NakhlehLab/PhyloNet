@@ -27,6 +27,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -375,7 +376,8 @@ public class STITree<D extends Object> implements MutableTree {
 		for(Object o: siblinglist){
 			newnode.adoptChild((TMutableNode)o);
 		}
-	}
+        Trees.removeBinaryNodes(this);
+    }
 	
 	public void rerootTreeAtNode(TNode node){
 		if(!_node_set.contains(node)){
@@ -390,6 +392,7 @@ public class STITree<D extends Object> implements MutableTree {
 		else{
 			doRerooting(node);
 		}
+        Trees.removeBinaryNodes(this);
 	}
 
 

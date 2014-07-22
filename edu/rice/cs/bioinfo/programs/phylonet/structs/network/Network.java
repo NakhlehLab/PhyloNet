@@ -95,5 +95,17 @@ public interface Network<T> extends Serializable {
 	 * <code>false</code> otherwise.
 	 */
 	public boolean hasDuplicateNames();
+
+
+    /**
+     * @return the number of leaves in the network.
+     */
+    public int getLeafCount();
+
+
+    /**
+     * @return the number of reticulations in the network.
+     */
+    public int getReticulationCount();
 }
 

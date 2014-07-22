@@ -28,6 +28,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.bipartitematching.HungarianBi
 import edu.rice.cs.bioinfo.programs.phylonet.algos.fitchpars.ParsimonyCalculator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTreeEnumerator;
@@ -591,6 +592,13 @@ public class Networks
 		}
 	}
 
+
+    public static <T> boolean hasTheSameTopology(Network<T> net1, Network<T> net2)
+    {
+        NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
+        return metric.computeDistanceBetweenTwoNetworks(net1,net2)==0;
+    }
+
     //With respect to topology only
     public static <T> void addRandomReticulationEdge(Network<T> network, int numReticulations){
         for(int i=0; i<numReticulations; i++){
@@ -671,6 +679,83 @@ public class Networks
 
 
 
+    /**
+     * This function computes the set of articulation nodes in a networks whose has at
+     * least one child node that is not articulation node
+     * @param net, sa: The network
+     * * @return: The set of articulation nodes
+     */
+
+    public static <T> Set<NetNode<T>> getArticulationNodes(Network<T> net){
+        List<NetNode<T>> allArticulationNodes = new ArrayList<NetNode<T>>();
+        Set<NetNode<T>> articulationNodesToReturn = new HashSet<NetNode<T>>();
+        for(NetNode<T> node: Networks.postTraversal(net)){
+            if(node.isLeaf()){
+                allArticulationNodes.add(node);
+            }
+
+            else if(node.isRoot()){
+                boolean fArticulate = true;
+                for(NetNode child: node.getChildren()){
+                    if(!allArticulationNodes.contains(child)){
+                        fArticulate = false;
+                        break;
+                    }
+                }
+                if(!fArticulate){
+                    articulationNodesToReturn.add(node);
+                }
+
+            }
+            else if(node.isTreeNode()){
+                boolean ftotal = true;
+                for(NetNode<T> child: node.getChildren()){
+                    if(!allArticulationNodes.contains(child)){
+                        ftotal = false;
+                        break;
+                    }
+                }
+                if(ftotal){
+                    allArticulationNodes.add(node);
+                }else{
+                    NetNode<T> parent = node.getParents().iterator().next();
+                    double distance = node.getParentDistance(parent);
+                    parent.removeChild(node);
+                    boolean disconnect = isValidNetwork(net, parent);
+                    parent.adoptChild(node, distance);
+                    if (disconnect) {
+                        articulationNodesToReturn.add(node);
+                        allArticulationNodes.add(node);
+                    }
+                }
+
+            }
+        }
+        return articulationNodesToReturn;
+    }
+
+
+
+    private static <T> boolean isValidNetwork(Network<T> net, NetNode<T> ignoreNode){
+        Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
+        Set<NetNode<T>> seen = new HashSet<NetNode<T>>();
+        for(NetNode<T> node: net.bfs()){
+            if(node.getIndeg()==1 && node.getOutdeg()==1 && node!=ignoreNode){
+                return false;
+            }
+            visited.add(node);
+            for(NetNode<T> parent: node.getParents()){
+                seen.add(parent);
+            }
+            for(NetNode<T> child: node.getChildren()){
+                seen.add(child);
+            }
+        }
+        return visited.size()==seen.size();
+    }
+
+
+
     public static <T> List<NetNode<T>> postTraversal(Network<T> net){
         Stack<NetNode<T>> stack = new Stack<NetNode<T>>();
         List<NetNode<T>> searchedNodes = new ArrayList<NetNode<T>>();
@@ -702,6 +787,10 @@ public class Networks
 
         return searchedNodes;
     }
+
+
+
+
 
 	// Data members
 	public static final String NAME_PREFIX = "I";	// Name prefix for interior nodes.
@@ -908,6 +997,10 @@ class BipartiteGraph {
 
 		return max;
 	}
+
+
+
+
 
 	// Data members
 	public final static double NO_EDGE = Double.NEGATIVE_INFINITY;

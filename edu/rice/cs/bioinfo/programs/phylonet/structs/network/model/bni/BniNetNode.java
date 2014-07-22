@@ -176,6 +176,13 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+    public boolean hasParent(NetNode<T> parent){
+        if(this.isRoot()){
+            return false;
+        }
+        return _parents.contains(parent);
+    }
+
 	/**
 	 * This function returns the number of parent of a node.
 	 */
@@ -444,10 +451,12 @@ public class BniNetNode<T> implements NetNode<T> {
 
     public void setParentSupport(NetNode<T> parent, double support)
 	{
+        /*
         if(support < 0 || support > 100)
         {
             throw new IllegalArgumentException("Support values must be between zero and one hundred.  Found: " + support);
         }
+        */
 
 		int i = _parents.indexOf(parent);
 

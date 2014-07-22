@@ -215,6 +215,31 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
 		return false;	// All node names are distinct.
 	}
 
+
+    /**
+     * @return the number of leaves in the network.
+     */
+    public int getLeafCount(){
+        int count = 0;
+        for(NetNode node: this.getLeaves()){
+            count ++;
+        }
+        return count;
+    }
+
+
+    /**
+     * @return the number of reticulations in the network.
+     */
+    public int getReticulationCount(){
+        int count = 0;
+        for(NetNode node: this.getNetworkNodes()){
+            count ++;
+        }
+        return count;
+    }
+
+
 	// Data members
 	private BniNetNode<T> _root;
 }

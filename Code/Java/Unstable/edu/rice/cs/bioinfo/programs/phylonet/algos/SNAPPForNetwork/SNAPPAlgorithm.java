@@ -78,7 +78,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
         R.dims = 3;
 */
-        testMultipleAlleles();
+        testFourAllelesTwoUnderReticulation();
 /*
 
 
@@ -128,6 +128,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         for (char a : nucleotides)
             for (char b1: nucleotides)
                 for (char b2: nucleotides)
+                    for (char b3: nucleotides)
                     for (char c: nucleotides)
                     {
                         //if(index++<4)continue;
@@ -146,6 +147,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
                     }
                     System.out.println(Networks.network2string(speciesNetworkTopology));
                     */
+                        /*
                         String seq = String.valueOf(a)+String.valueOf(b2)+String.valueOf(b1)+String.valueOf(c);
                         //System.out.println(seq);
                         if(tried.contains(seq) && b1!=b2){
@@ -155,17 +157,20 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
                         else{
                             tried.add(String.valueOf(a)+String.valueOf(b1)+String.valueOf(b2)+String.valueOf(c));
                         }
+                        */
 
                         Map<String, Character> colorMap = new HashMap<String, Character>();
                         colorMap.put("a", a);
                         colorMap.put("b1", b1);
                         colorMap.put("b2", b2);
+                        colorMap.put("b3", b3);
                         colorMap.put("c", c);
 
                         Map<String, String> allele2species = new HashMap<String, String>();
                         allele2species.put("a","A");
                         allele2species.put("b1","B");
                         allele2species.put("b2","B");
+                        allele2species.put("b3","B");
                         allele2species.put("c","C");
                         //allele2species = null;
 
@@ -177,7 +182,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
 
                         SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, allele2species, gtrModel);
-                        //System.out.println("Observation:  " + a +',' + b1 + ','+ b2 + "," + c);
+                        System.out.println("Observation:  " + a +',' + b1 + ','+ b2 + "," +  b3 + "," + c);
                         //System.out.println("Probability:  " + run.getProbability(converter) + "\n");
                         sum += run.getProbability(converter);
 
@@ -277,7 +282,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
 
                             SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, gtrModel);
-                            //System.out.println("Observation:  " + a +',' + b + ','+ c +','+ d + ','+ e);
+                            System.out.println("Observation:  " + a +',' + b + ','+ c +','+ d + ','+ e);
                             //System.out.println("Probability:  " + run.getProbability(converter) + "\n");
                             sum += run.getProbability(converter);
                         }

@@ -21,24 +21,6 @@ public class Algorithms
 
 
 
-    /**
-     * Calculates an element of the F bottom matrix for a leaf.
-     *
-     * @param n    The number of lineages used to index the F matrix.
-     * @param r    The R vector used to index the F matrix.
-     * @param node The node to test.
-     * @return The F matrix value for the given n and r for that node.
-     */
-    private static double getFBottomLeaf(int n, R r, NetNode<SNAPPData> node)
-    {
-        if ((n == 1) && (r.getType() == node.getData().nucleotideIndex))
-        {
-            return 1.0;
-        } else return 0.0;
-    }
-
-
-
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
         int[] newIndex = new int[index1.length];
@@ -157,25 +139,7 @@ public class Algorithms
      * @return The probability.
      */
     @SuppressWarnings("unchecked")
-    public static double getProbabilityObservationGivenNetwork(Network<SNAPPData> speciesNetwork, NucleotideObservation obs, MatrixQ Q)
-    {
-        Map<String, Integer> nucleotideIndexMap = getNucleotideIndexMap(obs);
-        Set<NetNode> articulationNodes = Networks.getArticulationNodes((Network)speciesNetwork);
-        int numReticulations = speciesNetwork.getReticulationCount();
-        int reticulationID = 0;
-        for (NetNode<SNAPPData> node : Networks.postTraversal(speciesNetwork))
-        {
-            boolean isArticulation = articulationNodes.contains(node);
-            processNode(Q, nucleotideIndexMap, node, isArticulation, numReticulations, reticulationID);
-            if(node.isNetworkNode()){
-                reticulationID++;
-            }
-        }
-
-        return getProbabilityOfNetwork(speciesNetwork, Q);
-    }
-
-    public static double getProbabilityObservationGivenNetwork(Network<SNAPPData> speciesNetwork, Map<String,String> allele2species, NucleotideObservation obs, MatrixQ Q)
+   public static double getProbabilityObservationGivenNetwork(Network<SNAPPData> speciesNetwork, Map<String,String> allele2species, NucleotideObservation obs, MatrixQ Q)
     {
         Map<String, R> nucleotideIndexMap = getNucleotideIndexMap(obs, allele2species);
         Set<NetNode> articulationNodes = Networks.getArticulationNodes((Network)speciesNetwork);
@@ -184,7 +148,7 @@ public class Algorithms
         for (NetNode<SNAPPData> node : Networks.postTraversal(speciesNetwork))
         {
             boolean isArticulation = articulationNodes.contains(node);
-            processNode2(Q, nucleotideIndexMap, node, isArticulation, numReticulations, reticulationID);
+            processNode(Q, nucleotideIndexMap, node, isArticulation, numReticulations, reticulationID);
             if(node.isNetworkNode()){
                 reticulationID++;
             }
@@ -225,37 +189,7 @@ public class Algorithms
      * @param nucleotideIndexMap The observations encoded as indices.
      * @param node               The node to process.
      */
-    private static void processNode2(MatrixQ Q, Map<String, R> nucleotideIndexMap, NetNode<SNAPPData> node, boolean isArticulation, int numReticulations, int reticulationID)
-    {
-        if(PRINT_DETAILS){
-            System.out.println("\nNode " + node.getName());
-        }
-        SNAPPData data = new SNAPPData();
-        node.setData(data);
-
-        if (node.isLeaf())
-        {
-            processLeaf2(nucleotideIndexMap, node, data, numReticulations);
-        } else if(node.isTreeNode())
-        {
-            processInternalTreeNode(node, data, isArticulation);
-        } else if(node.isNetworkNode()){
-            processNetworkNode(node, data, reticulationID);
-        }
-        if(PRINT_DETAILS){
-            System.out.println("FBottoms:");
-            data.printFMatrixs("b");
-        }
-
-        processTopBranchOfNode(Q, node, data);
-        if(PRINT_DETAILS){
-            System.out.println("FTop:");
-            data.printFMatrixs("t");
-        }
-    }
-
-
-    private static void processNode(MatrixQ Q, Map<String, Integer> nucleotideIndexMap, NetNode<SNAPPData> node, boolean isArticulation, int numReticulations, int reticulationID)
+    private static void processNode(MatrixQ Q, Map<String, R> nucleotideIndexMap, NetNode<SNAPPData> node, boolean isArticulation, int numReticulations, int reticulationID)
     {
         if(PRINT_DETAILS){
             System.out.println("\nNode " + node.getName());
@@ -283,6 +217,9 @@ public class Algorithms
             data.printFMatrixs("t");
         }
     }
+
+
+
 
     /**
      * Process the top branch of a node.
@@ -494,28 +431,19 @@ public class Algorithms
      * @param node               The node to process.
      * @param data               The data for that node.
      */
-    private static void processLeaf(Map<String, Integer> nucleotideIndexMap, NetNode<SNAPPData> node, SNAPPData data, int numReticulations)
-    {
-        NetNode parent = node.getParents().iterator().next();
-        int[] splittingIndex = new int[numReticulations]; 
-        FMatrix fBot = data.addFBottom(parent, 1, false, splittingIndex);
-        data.nucleotideIndex = nucleotideIndexMap.get(node.getName());
-
-        for (int n = 1; n <= 1; n++)
-        {
-            for (R r : R.loopOver(n))
-                fBot.set(r, getFBottomLeaf(n, r, node));
-        }
-    }
-
-
-    private static void processLeaf2(Map<String, R> nucleotideIndexMap, NetNode<SNAPPData> node, SNAPPData data, int numReticulations)
+    private static void processLeaf(Map<String, R> nucleotideIndexMap, NetNode<SNAPPData> node, SNAPPData data, int numReticulations)
     {
         NetNode parent = node.getParents().iterator().next();
         int[] splittingIndex = new int[numReticulations];
         R r = nucleotideIndexMap.get(node.getName());
         FMatrix fBot = data.addFBottom(parent, r.n, false, splittingIndex);
-        fBot.set(r , 1);
+        int weight = 1;
+        int total = r.n;
+        for(int i=0; i<4; i++){
+            weight *= ArithmeticUtils.binomialCoefficient(total, r.getNum(i));
+            total = total - r.getNum(i);
+        }
+        fBot.set(r , 1.0/weight);
     }
 
 

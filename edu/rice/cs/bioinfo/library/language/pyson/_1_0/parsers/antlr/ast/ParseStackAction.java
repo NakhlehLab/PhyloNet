@@ -109,7 +109,7 @@ class ParseStackAction implements ParseStack {
         }
     }
 
-     public void pushNetworksBlockBody(boolean containsTranslation) {
+    public void pushNetworksBlockBody(boolean containsTranslation) {
 
         try {
             if (containsTranslation) {
@@ -172,16 +172,16 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        LinkedList<PhyloNetCommand> commands = new LinkedList<PhyloNetCommand>();
+            LinkedList<PhyloNetCommand> commands = new LinkedList<PhyloNetCommand>();
 
-        while(!_parseStack.empty() && _parseStack.peek() instanceof PhyloNetCommand)
-        {
-            commands.addFirst((PhyloNetCommand)_parseStack.pop());
-        }
+            while(!_parseStack.empty() && _parseStack.peek() instanceof PhyloNetCommand)
+            {
+                commands.addFirst((PhyloNetCommand)_parseStack.pop());
+            }
 
-        _parseStack.push(new PhyloNetBlockBody(commands));
+            _parseStack.push(new PhyloNetBlockBody(commands));
         }
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -195,10 +195,10 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        Identifier ident = (Identifier)_parseStack.pop();
-        _parseStack.push(new PhyloNetCommandPartIdentifier(ident.Content, ident.Line, ident.Col));
-              }
-            catch (RuntimeException e) {
+            Identifier ident = (Identifier)_parseStack.pop();
+            _parseStack.push(new PhyloNetCommandPartIdentifier(ident.Content, ident.Line, ident.Col));
+        }
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -207,10 +207,10 @@ class ParseStackAction implements ParseStack {
 
         try
         {
-        IdentList ident = (IdentList)_parseStack.pop();
-        _parseStack.push(new PhyloNetCommandPartIdentList(ident, ident.Line, ident.Col));
-              }
-            catch (RuntimeException e) {
+            IdentList ident = (IdentList)_parseStack.pop();
+            _parseStack.push(new PhyloNetCommandPartIdentList(ident, ident.Line, ident.Col));
+        }
+        catch (RuntimeException e) {
             _exception = e;
         }
 
@@ -220,23 +220,23 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        LinkedList<Identifier> elements = new LinkedList<Identifier>();
-        for(int i=0; i<numElements; i++)
-        {
-          elements.add((Identifier)_parseStack.pop());
+            LinkedList<Identifier> elements = new LinkedList<Identifier>();
+            for(int i=0; i<numElements; i++)
+            {
+                elements.add((Identifier)_parseStack.pop());
+            }
+
+            _parseStack.push(new IdentList(startToken.getLine(), startToken.getCharPositionInLine(), elements));
+
         }
-
-        _parseStack.push(new IdentList(startToken.getLine(), startToken.getCharPositionInLine(), elements));
-
-          }
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
 
     public void pushPhylonetCommandPartSetList(Token text)
     {
-          _parseStack.push(new PhyloNetCommandPartSetList(text.getText(), text.getLine(), text.getCharPositionInLine()));
+        _parseStack.push(new PhyloNetCommandPartSetList(text.getText(), text.getLine(), text.getCharPositionInLine()));
     }
 
     public void pushPhylonetCommandPartIdSet(Token text)
@@ -248,10 +248,10 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        TaxaMap map = (TaxaMap)_parseStack.pop();
-        _parseStack.push(new PhyloNetCommandPartTaxaMap(map));
+            TaxaMap map = (TaxaMap)_parseStack.pop();
+            _parseStack.push(new PhyloNetCommandPartTaxaMap(map));
         }
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -260,17 +260,17 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        LinkedList<TaxaMapEntry> entries = new LinkedList<TaxaMapEntry>();
+            LinkedList<TaxaMapEntry> entries = new LinkedList<TaxaMapEntry>();
 
-        for(int i = 0; i<numKeys; i++)
-        {
-            entries.addFirst((TaxaMapEntry) _parseStack.pop());
+            for(int i = 0; i<numKeys; i++)
+            {
+                entries.addFirst((TaxaMapEntry) _parseStack.pop());
+            }
+
+            _parseStack.push(new TaxaMap(startToken.getLine(), startToken.getCharPositionInLine(), entries));
         }
 
-        _parseStack.push(new TaxaMap(startToken.getLine(), startToken.getCharPositionInLine(), entries));
-        }
-
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -279,19 +279,19 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        LinkedList<Identifier> values = new LinkedList<Identifier>();
+            LinkedList<Identifier> values = new LinkedList<Identifier>();
 
-        for(int i = 0; i<numValues; i++)
-        {
-            values.addFirst((Identifier)_parseStack.pop());
+            for(int i = 0; i<numValues; i++)
+            {
+                values.addFirst((Identifier)_parseStack.pop());
+            }
+
+            Identifier key = (Identifier)_parseStack.pop();
+
+            _parseStack.push(new TaxaMapEntry(key, values));
         }
 
-        Identifier key = (Identifier)_parseStack.pop();
-
-        _parseStack.push(new TaxaMapEntry(key, values));
-        }
-
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -328,18 +328,18 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        Identifier sequence = (Identifier)_parseStack.pop();
+            Identifier sequence = (Identifier)_parseStack.pop();
 
-        for(int i = 0; i<numIdentsInDesc; i++)
-        {
-            _parseStack.pop();
+            for(int i = 0; i<numIdentsInDesc; i++)
+            {
+                _parseStack.pop();
+            }
+
+            Identifier ident = (Identifier)_parseStack.pop();
+
+            _parseStack.push(new FASTAEntry(ident, sequence));
         }
-
-        Identifier ident = (Identifier)_parseStack.pop();
-
-        _parseStack.push(new FASTAEntry(ident, sequence));
-              }
-            catch (RuntimeException e) {
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -348,15 +348,15 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        LinkedList<FASTAEntry> entries = new LinkedList<FASTAEntry>();
-        while(!_parseStack.empty() && _parseStack.peek() instanceof FASTAEntry)
-        {
-            entries.add( (FASTAEntry) _parseStack.pop());
-        }
+            LinkedList<FASTAEntry> entries = new LinkedList<FASTAEntry>();
+            while(!_parseStack.empty() && _parseStack.peek() instanceof FASTAEntry)
+            {
+                entries.add( (FASTAEntry) _parseStack.pop());
+            }
 
-        _parseStack.push(new FASTABlockBody(entries));
-              }
-            catch (RuntimeException e) {
+            _parseStack.push(new FASTABlockBody(entries));
+        }
+        catch (RuntimeException e) {
             _exception = e;
         }
     }
@@ -365,17 +365,22 @@ class ParseStackAction implements ParseStack {
     {
         try
         {
-        LinkedList<AbstractMap.SimpleImmutableEntry<Identifier,Identifier>> pairs = new LinkedList<AbstractMap.SimpleImmutableEntry<Identifier, Identifier>>();
-        for(int i = 0; i<numPairs; i++)
-        {
-            Identifier taxonKey = (Identifier) _parseStack.pop();
-            Identifier sequence = (Identifier) _parseStack.pop();
-            pairs.add(new AbstractMap.SimpleImmutableEntry(taxonKey, sequence));
-        }
+            LinkedList<AbstractMap.SimpleImmutableEntry<Identifier,Identifier>> pairs = new LinkedList<AbstractMap.SimpleImmutableEntry<Identifier, Identifier>>();
+            for(int i = 0; i<numPairs; i++)
+            {
+                Identifier sequence = (Identifier) _parseStack.pop();
+                Identifier taxonKey = (Identifier) _parseStack.pop();
+                pairs.add(new AbstractMap.SimpleImmutableEntry(taxonKey, sequence));
+            }
 
-        _parseStack.push(new DataBlockBody(pairs));
-              }
-            catch (RuntimeException e) {
+            // nchars, ntax, and type are not currently supported.
+            _parseStack.pop();
+            _parseStack.pop();
+            _parseStack.pop();
+
+            _parseStack.push(new DataBlockBody(pairs));
+        }
+        catch (RuntimeException e) {
             _exception = e;
         }
     }

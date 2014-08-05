@@ -33,10 +33,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.csa.CSAError;
 import edu.rice.cs.bioinfo.library.programming.Container;
 import edu.rice.cs.bioinfo.library.programming.Proc1;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.commands.Command;
-import edu.rice.cs.bioinfo.programs.phylonet.commands.CommandFactory;
-import edu.rice.cs.bioinfo.programs.phylonet.commands.NexusOut;
-import edu.rice.cs.bioinfo.programs.phylonet.commands.RuntimeDefinedNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.commands.*;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -51,7 +48,7 @@ import java.util.*;
  */
 public class Program {
 
-
+    public static String inputNexusFileName;
 
     public static void main(String[] args) throws FileNotFoundException, IOException
     {
@@ -64,6 +61,7 @@ public class Program {
         }
 
         File nexusFile = new File(args[0]);
+        inputNexusFileName = args[0];    //Used to print the filename to the GUI output.
 
         BigDecimal hybridSumTolerance = BigDecimal.valueOf(0.001);
         if(args.length >=2 )
@@ -175,6 +173,10 @@ public class Program {
         Map<String,NetworkNonEmpty> sourceIdentToNetwork = makeNetworks(blockContents, reader, errorDetected); // make a Network representation of each defined Rich Newick string
         // map is keyed by source code identifier of the string
 
+        Map<String,String> sourceIdentToDNA = new HashMap<String,String>();
+        for (String key : blockContents.getDataBlockSequenceKeys())
+            sourceIdentToDNA.put(key,blockContents.getDataBlockSequence(key));
+
         // if we already have errors, don't continue.  Else we will get confusing cascades.
         if(!allowCommandExecution.getContents())
         {
@@ -191,7 +193,7 @@ public class Program {
         {
             try
             {
-                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, errorDetected, reader, rand));
+                commands.add(CommandFactory.make(sCommand, sourceIdentToNetwork, sourceIdentToDNA, errorDetected, reader, rand));
             }
             catch(IllegalArgumentException e)
             {
@@ -376,7 +378,6 @@ public class Program {
 
         displayResult.execute(accum.toString());
     }
-
 
     private static Map<String, NetworkNonEmpty> makeNetworks(BlockContents blockContents, RichNewickReader<Networks> rnReader, Proc3<String, Integer, Integer> errorDetected) throws IOException {
 

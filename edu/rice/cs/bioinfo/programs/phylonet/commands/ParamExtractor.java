@@ -43,7 +43,7 @@ public class ParamExtractor
 
     public final boolean DuplicateSwitch;
 
-    ParamExtractor(String switchValue, List<Parameter> params, Proc3<String, Integer, Integer> errorDetected)
+    public ParamExtractor(String switchValue, List<Parameter> params, Proc3<String, Integer, Integer> errorDetected)
     {
         for(int i = 0; i<params.size(); i++)
         {

@@ -30,10 +30,7 @@ import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -46,8 +43,12 @@ import java.util.Set;
 public class CommandFactory {
 
 
-
     public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand)
+    {
+        return make(directive,sourceIdentToNetwork,null,errorDetected,rnReader,rand);
+    }
+
+    public static Command make(SyntaxCommand directive, Map<String,NetworkNonEmpty> sourceIdentToNetwork, Map<String,String> sourceIdentToDNA, Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader, Random rand)
     {
         final String lowerCommandName = directive.getName().toLowerCase();
 
@@ -66,10 +67,10 @@ public class CommandFactory {
         Class matchingCommand = null;
         for(Class c : annotated)
         {
-           for(Annotation a : c.getAnnotations())
-           {
-              if(((CommandName)a).value().toLowerCase().equals(lowerCommandName))
-              {
+            for(Annotation a : c.getAnnotations())
+            {
+                if(((CommandName)a).value().toLowerCase().equals(lowerCommandName))
+                {
                     if(matchingCommand == null)
                     {
                         matchingCommand = c;
@@ -78,13 +79,13 @@ public class CommandFactory {
                     {
                         throw new IllegalStateException("More than one class in classpath is marked with the command name " + directive.getName());
                     }
-              }
-           }
+                }
+            }
         }
 
         if(matchingCommand == null)
         {
-             throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));
+            throw new IllegalArgumentException(String.format("Unknown command name '%s'.", directive.getName()));
         }
 
         try
@@ -96,8 +97,16 @@ public class CommandFactory {
             }
             catch(NoSuchMethodException e)
             {
-                Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class, RichNewickReader.class, Random.class);
-                return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected, rnReader, rand);
+                try
+                {
+                    Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class, Proc3.class, RichNewickReader.class, Random.class);
+                    return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork, errorDetected, rnReader, rand);
+                }
+                catch (NoSuchMethodException e2)
+                {
+                    Constructor<Command> constructor = matchingCommand.getConstructor(SyntaxCommand.class, ArrayList.class, Map.class,Map.class, Proc3.class, RichNewickReader.class);
+                    return (Command) constructor.newInstance(directive, params, sourceIdentToNetwork,sourceIdentToDNA, errorDetected, rnReader);
+                }
             }
         }
         catch (NoSuchMethodException e)
@@ -106,15 +115,15 @@ public class CommandFactory {
         }
         catch (InvocationTargetException e)
         {
-           throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
         catch (InstantiationException e)
         {
-           throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
         catch (IllegalAccessException e)
         {
-           throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
 
     }

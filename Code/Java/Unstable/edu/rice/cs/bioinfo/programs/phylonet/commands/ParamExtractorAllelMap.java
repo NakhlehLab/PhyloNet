@@ -40,7 +40,7 @@ public class ParamExtractorAllelMap extends ParamExtractor
 
     public final boolean IsValidMap;
 
-    ParamExtractorAllelMap(String switchValue, List<Parameter> params, Proc3<String, Integer, Integer> errorDetected)
+    public ParamExtractorAllelMap(String switchValue, List<Parameter> params, Proc3<String, Integer, Integer> errorDetected)
     {
         super(switchValue, params, errorDetected);
 

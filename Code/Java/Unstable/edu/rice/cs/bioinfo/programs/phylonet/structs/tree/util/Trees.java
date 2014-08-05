@@ -45,7 +45,7 @@ public class Trees {
 	// static methods
 	/**
 	 * @param t is the tree to compute the leaf distance matrix for.
-	 * @param id_lookup is the hashtable that will be populated with a lookup mapping a leaf to its index in the matrix.
+	 * @param id_lookup is the hashtable that will be populated with a lorokup mapping a leaf to its index in the matrix.
 	 * @param node_lookup is the array that maps a node index to the leaf itself.
 	 *
 	 * @return the distance matrix for all leaves in the specified tree.
@@ -206,6 +206,39 @@ public class Trees {
 	}
 
 
+    public static Tree flattenTree(Tree source)
+    {
+
+        STITree copy = new STITree();
+        flattenNode(source.getRoot(),copy.getRoot(),0);
+
+        return copy;
+    }
+
+    private static void processChildren(TNode root, STINode destination,double lengthCount)
+    {
+        for (TNode child : root.getChildren())
+        {
+            if (child.getChildCount() == 1)
+                processChildren(child,destination,lengthCount + child.getParentDistance());
+            else
+                flattenNode(child,destination.createChild(),lengthCount + child.getParentDistance());
+        }
+
+
+    }
+
+    private static void flattenNode(TNode root, STINode destination, double length)
+    {
+
+        destination.setName(root.getName());
+        destination.setParentDistance(length);
+
+        processChildren(root,destination,0);
+
+    }
+
+
 	private static final void removeBinaryChildren(TMutableNode node) {
 
 		// copy iterator
@@ -244,6 +277,48 @@ public class Trees {
 
 		return true;
 	}
+
+    /**
+     * compute if a tree is ultrametric
+     *
+     * @param tree
+     * @return true if the tree is ultrametric
+     * @author yy9
+     */
+
+    public static final boolean isUltrametric(Tree tree, double epsilon){
+        Map<TNode, Double> node2height = new Hashtable<TNode, Double>();
+        for(TNode node: tree.postTraverse()){
+            double height = -1;
+            if(!node.isRoot() && node.getParentDistance()<0){
+                return false;
+            }
+            if(node.isLeaf()) {
+               height = 0;
+            }
+            else{
+                double totalHeight = 0;
+                for(TNode child: node.getChildren()){
+                    double heightFromThisBranch = node2height.get(child) + child.getParentDistance();
+                    totalHeight += heightFromThisBranch;
+                    if(height == -1){
+                        height = heightFromThisBranch;
+                    }
+                    else{
+                        if(Math.abs(height - heightFromThisBranch) > epsilon){
+                            return false;
+                        }
+                        height = Math.min(height, heightFromThisBranch);
+                    }
+                }
+                height = totalHeight/node.getChildCount();
+            }
+            node2height.put(node, height);
+        }
+
+        return true;
+    }
+
 
 	/**
 	 * @return <code>true</code> if these trees have identical leafsets
@@ -778,13 +853,14 @@ public class Trees {
 										if(peerNode.getID()==id){
 											if(peerNode.isLeaf()){
 												((STINode)replacingNode).createChild(peerNode.getName());
+                                                ((STINode)replacingNode).setName("");
 											}
 											else{
 												for(TNode child: peerNode.getChildren()){
 													((STINode)replacingNode).createChild(child);
 												}
+                                                ((STINode)replacingNode).setName(peerNode.getName());
 											}
-											((STINode)replacingNode).setName("");
 											break;
 										}
 									}
@@ -948,10 +1024,7 @@ public class Trees {
                 continue;
             }
 			Double bootstrap = ((STINode<Double>)node).getData();
-			if(bootstrap==null){
-				return -1;
-			}
-			if(bootstrap < threshold){
+			if(bootstrap!=TNode.NO_SUPPORT && bootstrap < threshold){
 				nodestomodify.add(node);
 			}
 		}
@@ -1055,9 +1128,11 @@ public class Trees {
             if(node.isLeaf()){
                 if(allele2Species == null){
                     node2leaves.put(node, node.getName());
+                    //System.out.println("Put " + node.getName() + ": " + node.getName());
                 }
                 else{
                     node2leaves.put(node, allele2Species.get(node.getName()));
+                    //System.out.println("Put " + node.getName() + ": " + allele2Species.get(node.getName()));
                 }
 
             }
@@ -1067,6 +1142,8 @@ public class Trees {
                     String minLeaf = node2leaves.get(child);
                     int i = 0;
                     for(; i<children.size(); i++){
+                        //System.out.println("Get " + children.get(i).getName() + ": " + node2leaves.get(children.get(i)));
+                            //System.out.println(minLeaf + " vs. " + node2leaves.get(children.get(i)));
                         if(minLeaf.compareTo(node2leaves.get(children.get(i)))<0){
                             break;
                         }
@@ -1086,14 +1163,19 @@ public class Trees {
                 ((STINode)node).sortChildren(children);
                 //System.out.println(node);
                 node2leaves.put(node, leaves);
+                //System.out.println("Put " + node.getName() + ": " + leaves);
             }
         }
+
+        //System.out.println();
+        //System.out.println();
     }
 
     //For topology only
     public static String getLexicographicNewickString(Tree tree, Map<String,String> allele2Species){
         convertToLexicographicTree(tree, allele2Species);
         String treeExp = tree.toString();
+        //System.out.println(treeExp);
         if(allele2Species!=null){
             for(Map.Entry<String,String> entry: allele2Species.entrySet()){
                 String allele = entry.getKey();

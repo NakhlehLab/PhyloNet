@@ -20,8 +20,6 @@ public class Algorithms
     private static final boolean PRINT_DETAILS = false;
 
 
-
-
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
         int[] newIndex = new int[index1.length];
         for(int i=0; i<index1.length; i++){

@@ -29,7 +29,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     public SNAPPAlgorithm(Tree theSpeciesTree, RateModel rModel){
         speciesTree = theSpeciesTree;
 
-        Q = new MatrixQ(rModel, speciesTree.getLeafCount(), 1);
+        Q = new MatrixQ(rModel, speciesTree.getLeafCount(), 0.018);
     }
 
 
@@ -70,7 +70,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
         R.dims = 3;
 */
-        testSpeed1();
+        testFourAlleles();
 /*
 
 
@@ -91,7 +91,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
             for (char b: nucleotides)
                 for (char c: nucleotides)
                 {
-                    Tree speciesTreeTopology = toTree("(A:.5,(B:.2,C:.2)n1:.3)n0");
+                    Tree speciesTreeTopology = toTree("(A:1,(B:.4,C:.4)n1:.6)n0");
                     Map<String, Character> colorMap = new HashMap<String, Character>();
                     colorMap.put("A", a);
                     colorMap.put("B", b);
@@ -103,7 +103,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
                     GTRModel gtrModel = new GTRModel(new double[]{.1, .2, .3, .4},new double[]{1,1.5,2,2.5,3,3.5});
 
-                    SNAPPAlgorithm run = new SNAPPAlgorithm(speciesTreeTopology, gtrModel, 1);
+                    SNAPPAlgorithm run = new SNAPPAlgorithm(speciesTreeTopology, gtrModel, 2);
                     System.out.println("Observation:  " + a +',' + b + ','+ c);
                     System.out.println("Probability:  " + run.getProbability(converter) + "\n");
                     sum += run.getProbability(converter);

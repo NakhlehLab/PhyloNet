@@ -31,7 +31,7 @@ public class MatrixQ{
 
     public MatrixQ(RateModel rModel, int M)
     {
-        this(rModel,M,1);
+        this(rModel, M, 0.018);
     }
 
 

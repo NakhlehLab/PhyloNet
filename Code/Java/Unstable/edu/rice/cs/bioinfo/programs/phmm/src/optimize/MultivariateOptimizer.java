@@ -99,8 +99,8 @@ public class MultivariateOptimizer {
     // search defaults
     // don't allow zero branch lengths
     // 1e-10 too small
-    public static final double DEFAULT_MINIMUM_BRANCH_LENGTH = 1e-3;
-    public static final double DEFAULT_INITIAL_BRANCH_LENGTH = 1e-1;
+    public static final double DEFAULT_MINIMUM_BRANCH_LENGTH = 1e-1;
+    public static final double DEFAULT_INITIAL_BRANCH_LENGTH = 1e0;
     public static final double DEFAULT_MAXIMUM_BRANCH_LENGTH = 1e1; // scientific notation - e for decimal exponent
 
     public static final double DEFAULT_MINIMUM_RATE = 1e-2;

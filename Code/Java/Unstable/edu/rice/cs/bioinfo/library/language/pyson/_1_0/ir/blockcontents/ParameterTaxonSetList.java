@@ -19,7 +19,14 @@
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents;
 
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.Identifier;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.PySONNode;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.TreeAssignment;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.TreesBlockBody;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -78,10 +85,49 @@ public class ParameterTaxonSetList extends ParameterBase{
 
     private void addTaxonToSet(StringBuffer taxonNameUnderConstruction, LinkedList<String> setUnderConstruction) {
         //setUnderConstruction.add(taxonNameUnderConstruction.toString().trim().replace('_', ' '));
-        setUnderConstruction.add(taxonNameUnderConstruction.toString().trim());
+        setUnderConstruction.addAll(readIdentifier(taxonNameUnderConstruction.toString().trim()));
     }
 
     public <R, T, E extends Exception> R execute(ParameterAlgo<R, T, E> algo, T input) throws E {
         return algo.forTaxonSetList(this, input);
+    }
+
+
+    private List<String> readIdentifier(String identifier){
+        List<String> values = new ArrayList<>();
+        boolean isSet = false;
+        if (identifier.contains("-")) {
+            String[] identPairs = identifier.split("-");
+            char[] startingIdent = identPairs[0].toCharArray();
+            int index;
+            for (index = startingIdent.length - 1; index >= 0; index--) {
+                if (startingIdent[index] > '9' || startingIdent[index] < '0') {
+                    break;
+                }
+            }
+            int startingID = Integer.parseInt(identPairs[0].substring(index + 1));
+            String startingPrefix = identPairs[0].substring(0, index + 1);
+            char[] endingIdent = identPairs[1].toCharArray();
+            for (index = endingIdent.length - 1; index >= 0; index--) {
+                if (endingIdent[index] > '9' || endingIdent[index] < '0') {
+                    break;
+                }
+            }
+
+            int endingID = Integer.parseInt(identPairs[1].substring(index + 1));
+            String endingPrefix = identPairs[1].substring(0, index + 1);
+            if (startingPrefix.equals(endingPrefix) && startingID <= endingID) {
+                for (int j = startingID; j <= endingID; j++) {
+                    values.add(startingPrefix + j);
+                }
+                isSet = true;
+            }
+
+        }
+        if (!isSet) {
+            values.add(identifier);
+        }
+
+        return values;
     }
 }

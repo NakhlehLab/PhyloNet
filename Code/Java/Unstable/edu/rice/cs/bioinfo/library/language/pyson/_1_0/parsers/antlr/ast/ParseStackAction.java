@@ -283,8 +283,7 @@ class ParseStackAction implements ParseStack {
 
             for(int i = 0; i<numValues; i++)
             {
-                Identifier identifier = (Identifier)_parseStack.pop();
-                values.addAll(0,readIdentifier(identifier, false));
+                values.addFirst((Identifier)_parseStack.pop());
 
             }
 

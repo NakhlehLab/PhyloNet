@@ -53,6 +53,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
     public HillClimbResult<G,S> search(G bestSeenSolution, Func1<G,S> getScore, Comparator<S> scoreComparator, S bestSeenSolutionScore)
     {
         long tried = _hasTried;
+        //System.out.print("Trying ");
         while(_continueSearch)
         {
 
@@ -61,6 +62,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
                 concludeSearch();
             }
             else {
+                //System.out.print(" #"+tried);
                 Ref<Func1<G, G>> getBetterNeighbor = new Ref<Func1<G, G>>(null);
                 Ref<S> newBestScore = new Ref<S>(null);
                 boolean sawBetterSolution = considerRandomNeighbor(bestSeenSolution, getScore, scoreComparator, bestSeenSolutionScore, getBetterNeighbor, newBestScore, _diameterLimit);
@@ -76,6 +78,7 @@ public class AllNeighboursHillClimberFirstBetter<G extends Graph<N,E>,N,E,S> ext
                 incrementExaminations();
             }
          }
+        //System.out.println();
         return new HillClimbResult<G,S>(bestSeenSolution, bestSeenSolutionScore, getExaminationsCount(), getGenerationNumber());
     }
 

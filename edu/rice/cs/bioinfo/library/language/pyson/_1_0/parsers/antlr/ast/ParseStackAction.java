@@ -22,9 +22,7 @@ package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ast.*;
 import org.antlr.runtime.Token;
 
-import java.util.AbstractMap;
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -223,7 +221,8 @@ class ParseStackAction implements ParseStack {
             LinkedList<Identifier> elements = new LinkedList<Identifier>();
             for(int i=0; i<numElements; i++)
             {
-                elements.add((Identifier)_parseStack.pop());
+                Identifier identifier = (Identifier)_parseStack.pop();
+                elements.addAll(readIdentifier(identifier, numElements==1));
             }
 
             _parseStack.push(new IdentList(startToken.getLine(), startToken.getCharPositionInLine(), elements));
@@ -262,9 +261,8 @@ class ParseStackAction implements ParseStack {
         {
             LinkedList<TaxaMapEntry> entries = new LinkedList<TaxaMapEntry>();
 
-            for(int i = 0; i<numKeys; i++)
-            {
-                entries.addFirst((TaxaMapEntry) _parseStack.pop());
+            for(int i = 0; i<numKeys; i++) {
+                entries.addFirst((TaxaMapEntry)_parseStack.pop());
             }
 
             _parseStack.push(new TaxaMap(startToken.getLine(), startToken.getCharPositionInLine(), entries));
@@ -275,6 +273,8 @@ class ParseStackAction implements ParseStack {
         }
     }
 
+
+
     public void pushTaxaMapEntry(int numValues)
     {
         try
@@ -283,11 +283,12 @@ class ParseStackAction implements ParseStack {
 
             for(int i = 0; i<numValues; i++)
             {
-                values.addFirst((Identifier)_parseStack.pop());
+                Identifier identifier = (Identifier)_parseStack.pop();
+                values.addAll(0,readIdentifier(identifier, false));
+
             }
 
             Identifier key = (Identifier)_parseStack.pop();
-
             _parseStack.push(new TaxaMapEntry(key, values));
         }
 
@@ -384,5 +385,59 @@ class ParseStackAction implements ParseStack {
             _exception = e;
         }
     }
+
+
+    private List<Identifier> readIdentifier(Identifier identifier, boolean checkAll){
+        List<Identifier> values = new ArrayList<>();
+        if(checkAll && identifier.Content.toLowerCase().equals("all")){
+            for(PySONNode block: _parseStack){
+                if(block instanceof TreesBlockBody){
+                    TreesBlockBody tbb = (TreesBlockBody)block;
+                    for(TreeAssignment ta: tbb.getAssignments()){
+                        values.add(ta.getAssignment().LHSIdentifier);
+                    }
+                }
+            }
+
+        }
+
+        else {
+
+            boolean isSet = false;
+            if (identifier.Content.contains("-")) {
+                String[] identPairs = identifier.Content.split("-");
+                char[] startingIdent = identPairs[0].toCharArray();
+                int index;
+                for (index = startingIdent.length - 1; index >= 0; index--) {
+                    if (startingIdent[index] > '9' || startingIdent[index] < '0') {
+                        break;
+                    }
+                }
+                int startingID = Integer.parseInt(identPairs[0].substring(index + 1));
+                String startingPrefix = identPairs[0].substring(0, index + 1);
+                char[] endingIdent = identPairs[1].toCharArray();
+                for (index = endingIdent.length - 1; index >= 0; index--) {
+                    if (endingIdent[index] > '9' || endingIdent[index] < '0') {
+                        break;
+                    }
+                }
+
+                int endingID = Integer.parseInt(identPairs[1].substring(index + 1));
+                String endingPrefix = identPairs[1].substring(0, index + 1);
+                if (startingPrefix.equals(endingPrefix) && startingID <= endingID) {
+                    for (int j = startingID; j <= endingID; j++) {
+                        values.add(new Identifier(startingPrefix + j, identifier.Line, identifier.Col));
+                    }
+                    isSet = true;
+                }
+
+            }
+            if (!isSet) {
+                values.add(identifier);
+            }
+        }
+        return values;
+    }
+
 
 }

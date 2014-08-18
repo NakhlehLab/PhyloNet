@@ -32,18 +32,18 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     int _totalNodeNum;
 
     boolean _parallel = false;
-    int _currentTreeID = -1;
+    int _currentTreeID = 0;
     int _totalTree;
 
     Network _network;
-    List<MutableTuple<Tree, Double>> _gts;
+    List<Tree> _gts;
     Map<String, List<String>> _species2alleles;
 
-    int _binNumber = 1;
-    int _sampleSize = 10000;
+    //int _binNumber = 1;
+    //int _sampleSize = 10000;
 
 
-    public GeneTreeWithBranchLengthProbabilityYF(Network network, List<MutableTuple<Tree, Double>> gts, Map<String, List<String>> species2alleles){
+    public GeneTreeWithBranchLengthProbabilityYF(Network network, List<Tree> gts, Map<String, List<String>> species2alleles){
         _network = network;
         _gts = gts;
         _species2alleles = species2alleles;
@@ -60,41 +60,59 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
     
 
-    public synchronized int getNextTreeID(){
+    public synchronized int getNextTreeID(int batchSize){
         //System.out.println("In calculation:" + Thread.currentThread().getId() + ":");
-        _currentTreeID ++;
+        _currentTreeID = _currentTreeID + batchSize;
         //System.out.println("In calculation:" + Thread.currentThread().getId() + ":" + _currentTreeID);
-        return _currentTreeID;
+        return _currentTreeID - batchSize;
     }
 
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
 
+    /*
     public void setIntegralParameter(int binNumber, int sampleSize){
         _binNumber = binNumber;
         _sampleSize = sampleSize;
     }
+    */
 
     public void calculateGTDistribution(double[] resultProbs){
+        calculateGTDistribution(1, resultProbs);
+    }
+
+    public void calculateGTDistribution(int batchSize, double[] resultProbs){
         //System.out.println(gts.size());
         //System.exit(0);
         int treeID = 0;
         if(_parallel){
-            treeID = getNextTreeID();
+            treeID = getNextTreeID(batchSize);
         }
 
+        int count = 0;
         while(treeID < _totalTree){
-            Tree gt = _gts.get(treeID).Item1;
+            Tree gt = _gts.get(treeID);
+            /*
+            for(TNode node: gt.postTraverse()){
+                if(!node.isRoot() && node.getParentDistance()<0){
+                    resultProbs[treeID] = 0;
+                    break;
+                }
+            }
+            */
 
-            if(!Trees.isBinary(gt)){
-                GTBranchLengthsIntegrationForSpeciesPhylogeny integral = new GTBranchLengthsIntegrationForSpeciesPhylogeny(_network, gt, _species2alleles);
-                integral.setArticulateNodes(_articulateNodes);
-                resultProbs[treeID] = integral.computeLikelihoodWithIntegral(_binNumber, _sampleSize);
-            }
-            else{
-                resultProbs[treeID] = computeBinaryGTProbability(gt);
-            }
+            resultProbs[treeID] = computeBinaryGTProbability(gt);
+                /*
+                if (!Trees.isBinary(gt)) {
+                    GTBranchLengthsIntegrationForSpeciesPhylogeny integral = new GTBranchLengthsIntegrationForSpeciesPhylogeny(_network, gt, _species2alleles);
+                    integral.setArticulateNodes(_articulateNodes);
+                    resultProbs[treeID] = integral.computeLikelihoodWithIntegral(_binNumber, _sampleSize);
+                } else {
+                    resultProbs[treeID] = computeBinaryGTProbability(gt);
+                }
+                */
+
 
             //System.out.println(gt + ": " + gtProb);
             if(_printDetail){
@@ -103,7 +121,15 @@ public class GeneTreeWithBranchLengthProbabilityYF {
             }
 
             if(_parallel){
-                treeID = getNextTreeID();
+                count++;
+                if(count == batchSize) {
+                    treeID = getNextTreeID(batchSize);
+                    count = 0;
+
+                }
+                else{
+                    treeID ++;
+                }
             }
             else{
                 treeID++;
@@ -393,10 +419,10 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         int index = 0;
         for(STITreeCluster<Double> gtCl: gtClusters){
             double coalTime = gtCl.getData();
-            if(coalTime>highTau){
+            if(coalTime>=highTau){
                 break;
             }
-            if(coalTime>lowTau && coalTime<=highTau){
+            if(coalTime>=lowTau){
                 BitSet temp = (BitSet) config._coverage.clone();
                 temp.and(gtCl.getCluster());
 
@@ -497,7 +523,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
             node.setData(_totalNodeNum++);
         }
         if(_articulateNodes==null){
-            computeArticulateNodes(_network);
+            _articulateNodes = Networks.getArticulationNodes(_network);
         }
 
     }
@@ -574,7 +600,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
 
 
 
-
+/*
     private void computeArticulateNodes(Network<Integer> net){
         //List<Integer> leaves = new ArrayList<Integer>();
         List<NetNode> allTotalNodes = new ArrayList<NetNode>();
@@ -641,7 +667,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
 
 
-
+*/
 
     private List<boolean[]> getSelected(int n, int m){
         List<boolean[]> selectedList = new ArrayList<boolean[]>();

@@ -107,5 +107,11 @@ public interface Network<T> extends Serializable {
      * @return the number of reticulations in the network.
      */
     public int getReticulationCount();
+
+    /**
+     * @return the Rich Newick string of the network.
+     */
+    public String toString();
+
 }
 

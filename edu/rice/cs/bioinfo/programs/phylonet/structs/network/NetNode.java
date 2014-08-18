@@ -59,6 +59,12 @@ public interface NetNode<T> extends Serializable {
 	 */
 	public Iterable<NetNode<T>> getParents();
 
+
+    /**
+     * @return if parent is a parent node
+     */
+    public boolean hasParent(NetNode<T> parent);
+
 	/**
 	 * @param parent: The parent of this node.
 	 *
@@ -181,5 +187,7 @@ public interface NetNode<T> extends Serializable {
 
 	// Data members
 	public static final double NO_DISTANCE = Double.NEGATIVE_INFINITY;	// Constant for no distances.
+    public static final double NO_PROBABILITY = Double.NaN;	// Constant for no probability.
+    public static final double NO_SUPPORT = Double.NaN;	// Constant for no support.
 	public static final String NO_NAME = "";		// Constant for nodes without a name.
 }

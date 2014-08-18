@@ -85,7 +85,7 @@ public class SimGTInNetworkByMS {
             outputCommand += " "+numAllele;
             totalAlleles += numAllele;
         }
-        outputCommand = "ms " + totalAlleles + " " + numGTs + " -T -I " + numPopulations + outputCommand;
+        outputCommand = " " + totalAlleles + " " + numGTs + " -T -I " + numPopulations + outputCommand;
 
         Map<BitSet, Integer> edge2population = new HashMap<BitSet, Integer>();
 

@@ -89,7 +89,6 @@ public class GeneTreeProbabilityYF {
         }
 
         while(treeID < _totalTree){
-            //System.out.println(Thread.currentThread().getId() + " starts #" + treeID);
             Tree gt = gts.get(treeID);
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
@@ -1108,7 +1107,7 @@ public class GeneTreeProbabilityYF {
             }
         }
         if(fromScratch){
-            _totalCoverNodes = computeNodeCoverage(net);
+            _totalCoverNodes = Networks.getArticulationNodes((Network)net);
             for(NetNode<CoalescePattern[]> node: Networks.postTraversal(net)){
                 node.setData(new CoalescePattern[totalNumGTs]);
             }
@@ -1216,7 +1215,7 @@ public class GeneTreeProbabilityYF {
     }
 
 
-
+/*
     public static Set<NetNode> computeNodeCoverage(Network net){
         //List<Integer> leaves = new ArrayList<Integer>();
         Network<Object> network = net;
@@ -1285,6 +1284,7 @@ public class GeneTreeProbabilityYF {
         }
         return visited.size()==seen.size();
     }
+*/
 
 
     /**
@@ -1770,6 +1770,10 @@ public class GeneTreeProbabilityYF {
         }
 
     }
+
+
+
+
 
 
 

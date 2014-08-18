@@ -473,6 +473,7 @@ protected void removeSelf2(boolean iterator) {
 	public TMutableNode createChild(TNode clade) {
 	
 		STINode<D> node = createChild(clade.getName());
+        node.setParentDistance(clade.getParentDistance());
 		if(((STINode<D>)clade).getData()!=null){
 			node.setData(((STINode<D>)clade).getData());
 		}

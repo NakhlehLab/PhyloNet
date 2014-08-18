@@ -49,14 +49,14 @@ public class SimGTInNetwork
     private Map<NetNode, Map<Integer, double[]>> _node2gij = new HashMap<NetNode, Map<Integer, double[]>>();
     private boolean _printDetails = false;
     private Random _random;
-    private long _seed = 0;
+    private Long _seed = null;
 
-    public void setSeed(long seed){
+    public void setSeed(Long seed){
         _seed = seed;
     }
 
     public List<Tree> generateGTs(Network network, Map<String, List<String>> species2alleles, int numGTs){
-        if(_seed == 0){
+        if(_seed == null){
             _random = new Random();
         }
         else{

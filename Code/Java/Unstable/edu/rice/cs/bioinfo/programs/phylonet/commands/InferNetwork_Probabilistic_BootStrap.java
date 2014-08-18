@@ -25,7 +25,9 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkMLBootstrap;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMLFromGTTBLWithParametricBootstrap;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMLFromGTTWithParametricBootstrap;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMLFromGTWithParametricBootstrap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
@@ -69,6 +71,9 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
     private Set<String> _fixedHybrid = new HashSet<String>();
     private double[] _operationWeight = {0.15,0.15,0.2,0.5};
     private int _numRuns = 10;
+    private boolean _usingBL = false;
+    private String _estimatorType = "softwired";
+    private String _MSPath = "";
     private Long _seed = null;
 
 
@@ -85,7 +90,7 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 25;
+        return 30;
     }
 
     @Override
@@ -518,8 +523,46 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","sr","d","p","l","r","i","t","di","f","pl","h","w","x","rs");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, srParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam,fParam,plParam,hParam,wParam,xParam,rsParam);
+
+
+            ParamExtractor msParam = new ParamExtractor("ms", this.params, this.errorDetected);
+            if(msParam.ContainsSwitch) {
+                if (msParam.PostSwitchParam != null) {
+                    _MSPath = msParam.PostSwitchValue;
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -ms.", msParam.SwitchParam.getLine(), msParam.SwitchParam.getColumn());
+                }
+            }
+
+
+            ParamExtractor blParam = new ParamExtractor("bl", this.params, this.errorDetected);
+            if(blParam.ContainsSwitch)
+            {
+                _usingBL = true;
+                if(_MSPath.equals("")){
+                    errorDetected.execute("Expected setting -ms while using -bl.", blParam.SwitchParam.getLine(), blParam.SwitchParam.getColumn());
+                }
+            }
+
+
+            ParamExtractor emParam = new ParamExtractor("em", this.params, this.errorDetected);
+            if(emParam.ContainsSwitch)
+            {
+                if(emParam.ContainsSwitch) {
+                    _estimatorType = emParam.PostSwitchValue.toLowerCase();
+                    if (!_estimatorType.equals("hardwired") && !_estimatorType.equals("hardwired")) {
+                        errorDetected.execute("Expected \"softwired\" or \"hardwired\" after switch -em.", emParam.SwitchParam.getLine(), emParam.SwitchParam.getColumn());
+                    }
+                }else
+                {
+                    errorDetected.execute("Expected \"softwired\" or \"hardwired\" after switch -em.", emParam.SwitchParam.getLine(), emParam.SwitchParam.getColumn());
+                }
+            }
+
+            noError = noError && checkForUnknownSwitches("a","b","s","m","sr","d","p","l","r","i","t","di","f","pl","h","w","x","rs","bl","ms","em");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, srParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam,fParam,plParam,hParam,wParam,xParam,rsParam,blParam,msParam,emParam);
 
         }
 
@@ -528,11 +571,11 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
         return  noError;
     }
 
-    @Override
+
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
 
-        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
 
@@ -568,7 +611,7 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
                 }
 
             }
-            gts.add(new MutableTuple<Tree,Double>(newtr,weight));
+            gts.add(Arrays.asList(new MutableTuple<Tree,Double>(newtr,weight)));
         }
 
 
@@ -584,9 +627,16 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
         }
 
         //long start = System.currentTimeMillis();
-        InferILSNetworkMLBootstrap inference = new InferILSNetworkMLBootstrap();
+        InferNetworkMLFromGTWithParametricBootstrap inference;
+        if(_usingBL){
+            inference = new InferNetworkMLFromGTTBLWithParametricBootstrap();
+        }
+        else{
+            inference = new InferNetworkMLFromGTTWithParametricBootstrap();
+        }
+
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork,_fixedHybrid, _operationWeight, _numRuns, _seed);
-        Tuple<Network, Double> resultTuple = inference.inferNetworkWithBootstrap(gts, _taxonMap, _maxReticulations, _samplingRound);
+        Tuple<Network, Double> resultTuple = inference.inferNetwork(gts, _taxonMap, _maxReticulations, _samplingRound, _MSPath, _estimatorType);
         //System.out.print(System.currentTimeMillis()-start);
 
         result.append("\nInferred Network:");
@@ -600,27 +650,13 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
             }
         }
 
-        StringWriter writer = new StringWriter();
-        RnNewickPrinter printer = new RnNewickPrinter();
-        printer.print(resultTuple.Item1, writer);
-        result.append("\n" + writer.toString());
+        result.append("\n" + n.toString());
         result.append("\n" + "Total log probability: " + resultTuple.Item2);
 
         if(_dentroscropeOutput){
-            for(Object node : n.getNetworkNodes())
-            {
-                NetNode netNode = (NetNode)node;
-                for(Object parent: netNode.getParents())
-                {
-                    NetNode parentNode = (NetNode)parent;
-                    netNode.setParentProbability(parentNode, Double.NaN);
-                }
-            }
-            writer = new StringWriter();
-            printer = new RnNewickPrinter();
-            printer.print(resultTuple.Item1, writer);
-            result.append("\nVisualize in Dendroscope : " + writer.toString());
+            edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.removeAllParameters(n);
+            result.append("\nVisualize in Dendroscope : " + n.toString());
         }
-            return result.toString();
+        return result.toString();
     }
 }

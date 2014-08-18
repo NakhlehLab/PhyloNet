@@ -52,7 +52,7 @@ import java.util.*;
 @CommandName("infernetwork_ML")
 public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private HashMap<String, List<String>> _taxonMap = null;
-    private List<NetworkNonEmpty> _geneTrees;
+    private List<List<NetworkNonEmpty>> _geneTrees;
     private double _bootstrap = 100;
     private NetworkNonEmpty _startSpeciesNetwork = null;
     private int _maxReticulations;
@@ -72,7 +72,9 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private Set<String> _fixedHybrid = new HashSet<String>();
     private double[] _operationWeight = {0.15,0.15,0.2,0.5};
     private int _numRuns = 10;
-    private Long _seed = null;
+    private Long _seed = new Long(100);
+    private boolean _oneGTPerLocus = true;
+
 
 
     public InferNetwork_Probabilistic(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
@@ -95,9 +97,9 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     protected boolean checkParamsForCommand(){
         boolean noError = true;
 
-        ParameterIdentList geneTreeParam = this.assertParameterIdentList(0);
+        Parameter geneTreeParam = this.assertParameterIdentListOrSetList(0);
         noError = noError && geneTreeParam != null;
-        _geneTrees = new LinkedList<NetworkNonEmpty>();
+        _geneTrees = new ArrayList<>();
 
         ParameterIdent number = this.assertParameterIdent(1);
         try
@@ -116,14 +118,31 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         if(noError)
         {
 
-            for(String ident : geneTreeParam.Elements)
-            {
-                noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
-                if(noError)
-                {
-                    _geneTrees.add(this.sourceIdentToNetwork.get(ident));
+            if(geneTreeParam instanceof ParameterIdentList) {
+                ParameterIdentList geneTreeList = (ParameterIdentList)geneTreeParam;
+                for (String ident : geneTreeList.Elements) {
+                    noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                    if (noError) {
+                        _geneTrees.add(Arrays.asList(this.sourceIdentToNetwork.get(ident)));
+                    }
                 }
             }
+            else{
+                _oneGTPerLocus = false;
+                ParameterTaxonSetList geneTreeSetList = (ParameterTaxonSetList)geneTreeParam;
+                for(Iterable<String> gtSet : geneTreeSetList.TaxonSetList)
+                {
+                    List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<>();
+                    for (String ident : gtSet) {
+                        noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                        if (noError) {
+                            geneTreesForOneLocus.add(this.sourceIdentToNetwork.get(ident));
+                        }
+                    }
+                    _geneTrees.add(geneTreesForOneLocus);
+                }
+            }
+
 
 
             ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
@@ -561,45 +580,45 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
         //List<Tree> gts2 = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
-        for(NetworkNonEmpty geneTree : _geneTrees){
+        for(List<NetworkNonEmpty> geneTrees : _geneTrees){
+            List<MutableTuple<Tree,Double>> gtsForOneLocus = new ArrayList<>();
+            for(NetworkNonEmpty geneTree : geneTrees) {
+                double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                    @Override
+                    public Double forEmpty(TreeProbabilityEmpty empty) {
+                        return 1.0;
+                    }
 
-            double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
-                @Override
-                public Double forEmpty(TreeProbabilityEmpty empty) {
-                    return 1.0;
+                    @Override
+                    public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                        return Double.parseDouble(nonEmpty.ProbString);
+                    }
+                });
+
+
+                String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
+                NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
+                STITree<Double> newtr = new STITree<Double>(true);
+                try {
+                    nr.readTree(newtr);
+                } catch (Exception e) {
+                    errorDetected.execute(e.getMessage(),
+                            this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
+                }
+                Trees.removeBinaryNodes(newtr);
+                if (_bootstrap < 100) {
+                    if (Trees.handleBootStrapInTree(newtr, _bootstrap) == -1) {
+                        throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
+                    }
+
                 }
 
-                @Override
-                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
-                    return Double.parseDouble(nonEmpty.ProbString);
-                }
-            });
-
-
-            String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
-            NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
-            STITree<Double> newtr = new STITree<Double>(true);
-            try
-            {
-                nr.readTree(newtr);
+                gtsForOneLocus.add(new MutableTuple<Tree, Double>(newtr, weight));
             }
-            catch(Exception e)
-            {
-                errorDetected.execute(e.getMessage(),
-                        this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
-            }
-            Trees.removeBinaryNodes(newtr);
-            if(_bootstrap<100){
-                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
-                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
-                }
-
-            }
-
-            gts.add(new MutableTuple<Tree,Double>(newtr,weight));
+            gts.add(gtsForOneLocus);
             //((STINode<Double>)newtr.getRoot()).setData(weight);
             //gts2.add(newtr);
         }
@@ -615,25 +634,23 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
-        List<Tuple<Network, Double>> resultTuples;
 
+        InferNetworkMLFromGT inference;
         if(!_usingBL){
-            //InferILSNetworkProbabilisticallyParallelBackup3 inference = new InferILSNetworkProbabilisticallyParallelBackup3();
-            InferILSNetworkProbabilisticallyParallel inference = new InferILSNetworkProbabilisticallyParallel();
-            //InferILSNetworkProbabilisticallyParallelMInheritanceProbsBackup1 inference = new InferILSNetworkProbabilisticallyParallelMInheritanceProbsBackup1();
-            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
-            resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+            if(_oneGTPerLocus)
+                inference = new InferNetworkMLFromGTT_SingleTreePerLocus();
+            else
+                inference = new InferNetworkMLFromGTT_MultiTreesPerLocus();
         }
         else{
-            InferILSNetworkUsingBLProbabilistically inference = new InferILSNetworkUsingBLProbabilistically();
-            inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations,_maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
-            resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+            if(_oneGTPerLocus)
+                inference = new InferNetworkMLFromGTTBL_SingleTreePerLocus();
+            else
+                inference = new InferNetworkMLFromGTTBL_MultiTreesPerLocus();
         }
-        //InferILSNetworkProbabilisticallyBackup inference = new InferILSNetworkProbabilisticallyBackup();
-        //inference.setBrentParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2);
-        //List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap, _maxExaminations, _maxReticulations, _maxDiameter, speciesNetwork, _returnNetworks);
 
-        //System.out.print(System.currentTimeMillis()-start);
+        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
+        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
 
         int index = 1;
         for(Tuple<Network, Double> tuple: resultTuples){
@@ -650,26 +667,12 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
-            StringWriter writer = new StringWriter();
-            RnNewickPrinter printer = new RnNewickPrinter();
-            printer.print(tuple.Item1, writer);
-            result.append("\n" + writer.toString());
+            result.append("\n" + n.toString());
             result.append("\n" + "Total log probability: " + tuple.Item2);
 
             if(_dentroscropeOutput){
-                for(Object node : n.getNetworkNodes())
-                {
-                    NetNode netNode = (NetNode)node;
-                    for(Object parent: netNode.getParents())
-                    {
-                        NetNode parentNode = (NetNode)parent;
-                        netNode.setParentProbability(parentNode, Double.NaN);
-                    }
-                }
-                writer = new StringWriter();
-                printer = new RnNewickPrinter();
-                printer.print(tuple.Item1, writer);
-                result.append("\nVisualize in Dendroscope : " + writer.toString());
+                edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.removeAllParameters(n);
+                result.append("\nVisualize in Dendroscope : " + n.toString());
             }
         }
 

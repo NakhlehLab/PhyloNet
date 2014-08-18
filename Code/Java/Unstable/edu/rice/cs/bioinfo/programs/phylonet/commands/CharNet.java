@@ -183,7 +183,7 @@ public class CharNet extends CommandBaseFileOut {
         }
         else if(_method == Method.Cluster)
         {
-	        for (NetworkCluster<String> nc : Networks.getClusters(net))
+	        for (NetworkCluster<String> nc : Networks.getSoftwiredClusters(net))
             {
 				result.append("\n" + nc.toString());
 			}

@@ -318,71 +318,81 @@ public class runHmm {
 
 		// Allow users to read in New Sequence Observation or re-use a
 		// previously read in Sequence
-		ArrayList<ObservationMap> obsSeq;
-		int seqChoice = sequenceChoice(in);
-		if (seqChoice == 1) {
-		    obsSeq = getObs(in);
-		} else {
-		    obsSeq = fParser.getObs();
-		}
+		// ArrayList<ObservationMap> obsSeq;
+		// int seqChoice = sequenceChoice(in);
+		// if (seqChoice == 1) {
+		//     obsSeq = getObs(in);
+		// } else {
+		//     obsSeq = fParser.getObs();
+		// }
+		
+		ArrayList<ArrayList<ObservationMap>> obsSeqArray = getDataPartitions(in);
 
-		Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSeq);
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outputfile));
-		double viterbiLLH = viterbiResult.Item2;
-		for (int index : viterbiResult.Item1) {
-		    bw.write(hiddenStates.get(index).getName()); bw.newLine();
+		Vector<Double> partitionViterbiLikelihoods = new Vector<Double>();
+		Vector<Double> partitionModelLikelihoods = new Vector<Double>();
+
+		// log likelihoods
+		double viterbiLLH = 0.0;
+		double llh = 0.0;
+
+		for (int partition = 0; partition < obsSeqArray.size(); partition++) {
+		    Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSeqArray.get(partition));	
+		    double partitionModelLikelihood = myhmm.lnProbability(obsSeqArray.get(partition));
+
+		    BufferedWriter bw = new BufferedWriter(new FileWriter(outputfile + MultivariateOptimizer.FILENAME_SUFFIX_DELIMITER + Integer.toString(partition)));
+		    for (int index : viterbiResult.Item1) {
+			bw.write(hiddenStates.get(index).getName()); bw.newLine();
+		    }
+		    bw.flush();
+		    bw.close();
+
+		    viterbiLLH += viterbiResult.Item2.doubleValue();
+		    llh += partitionModelLikelihood;
 		}
-		bw.flush();
-		bw.close();
 
 		System.out.println ("Input HMM Viterbi log likelihood: |" + viterbiLLH + "|");
-
-		System.out.println ("Computing input HMM log likelihood for input sequences... ");
-		double llh = myhmm.lnProbability(obsSeq);
-		System.out.println ("Computing input HMM log likelihood for input sequences DONE.");
-			
 		System.out.println ("Input HMM log likelihood: |" + llh + "|");
 	
 		break;
-	    case 1:
-		// RUN BAUM WELCH
-	        // Modifies the current Hmm;
+	    // case 1:
+	    // 	// RUN BAUM WELCH
+	    //     // Modifies the current Hmm;
 
-	        System.out.println("\n");
+	    //     System.out.println("\n");
 
-		// Testing purposes
-		//			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
-		//			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
-		//			for (int i = 0; i < hiddenStates.size(); i++) {
-		//				System.out.println("State : " + i);
-		//				System.out.println("Opdf : {");
-		//				for (int j = 0; j < oSeq.size(); j++) {
-		//					System.out.print(oSeq.get(j) + ":" + myhmm.getOpdf(i).probability(oSeq.get(j)) + " , ");
-		//				}
-		//				System.out.print("}\n\n");
-		//			}
+	    // 	// Testing purposes
+	    // 	//			ArrayList<ObservationMap> oSeq = listOfOseq.get(0);
+	    // 	//			System.out.println("\n ---------------------\nThe HMM Emission Probabilities");
+	    // 	//			for (int i = 0; i < hiddenStates.size(); i++) {
+	    // 	//				System.out.println("State : " + i);
+	    // 	//				System.out.println("Opdf : {");
+	    // 	//				for (int j = 0; j < oSeq.size(); j++) {
+	    // 	//					System.out.print(oSeq.get(j) + ":" + myhmm.getOpdf(i).probability(oSeq.get(j)) + " , ");
+	    // 	//				}
+	    // 	//				System.out.print("}\n\n");
+	    // 	//			}
 			
-	    	// END TEST PURPOSES
+	    // 	// END TEST PURPOSES
 
-	        // Allow users to read in New Sequence Observation or re-use a
-	        // previously read in Sequence
-	        int seqChoice2 = sequenceChoice(in);
-	        ArrayList<ObservationMap> obsSequence;
-	        if (seqChoice2 == 1) {
-	            obsSequence = getObs(in);
-	        } else {
-	            obsSequence = fParser.getObs();
-	        }
+	    //     // Allow users to read in New Sequence Observation or re-use a
+	    //     // previously read in Sequence
+	    //     int seqChoice2 = sequenceChoice(in);
+	    //     ArrayList<ObservationMap> obsSequence;
+	    //     if (seqChoice2 == 1) {
+	    //         obsSequence = getObs(in);
+	    //     } else {
+	    //         obsSequence = fParser.getObs();
+	    //     }
 
-		BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
+	    // 	BaumWelchScaledLearner bwl = new BaumWelchScaledLearner();
 
-		Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm, obsSequence, 9);
-		myhmm = learnedhmm;
-		learnedhmm = null; // for garbage collection
-		System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");
-		System.out.println(myhmm + "\n\n");
+	    // 	Hmm<ObservationMap> learnedhmm = bwl.learn(myhmm, obsSequence, 9);
+	    // 	myhmm = learnedhmm;
+	    // 	learnedhmm = null; // for garbage collection
+	    // 	System.out.println("\n----------------------------\nThe LEARNED HMM IS: ");
+	    // 	System.out.println(myhmm + "\n\n");
 			
-		break;
+	    // 	break;
 		
 		
 	    // case 2:
@@ -474,14 +484,17 @@ public class runHmm {
 
     protected void runMultivariateOptimizer (BufferedReader in) {
 	try {
-	    int sc = sequenceChoice(in);
-	    ArrayList<ObservationMap> obsSequence;
-	    if (sc == 1) {
-		obsSequence = getObs(in);
-	    } 
-	    else {
-		obsSequence = fParser.getObs();
-	    }
+	    // int sc = sequenceChoice(in);
+	    // ArrayList<ObservationMap> obsSequence;
+	    // if (sc == 1) {
+	    // 	obsSequence = getObs(in);
+	    // } getData
+	    // else {
+	    // 	obsSequence = fParser.getObs();
+	    // }
+
+	    // meh, just read in new sequence for this operation
+	    ArrayList<ArrayList<ObservationMap>> obsSequenceArray = getDataPartitions(in);	
 	    
 	    System.out.println("Input parental-branch-length-parameter-to-edge map filename: ");
 	    String inputLengthParameterToEdgeMapFilename = in.readLine();
@@ -519,7 +532,7 @@ public class runHmm {
 										    gamma,
 										    nameToSwitchingFrequencyRatioTermMap,
 										    switchingFrequencyRatioTermNameToOptimizeFlagMap,
-										    obsSequence,
+										    obsSequenceArray,
 										    inputLengthParameterToEdgeMapFilename,
 										    inputParentalBranchLengthParameterInequalitiesFilename,
 										    inputLengthParameterSetConstraintsFilename,
@@ -536,42 +549,46 @@ public class runHmm {
 	    System.out.println ("Optimizing PhyloNet-HMM parameters DONE. ");
 
 	    System.out.println ("Saving posterior decoding probabilities... "); 
-	    BufferedWriter pdpbw = new BufferedWriter(new FileWriter(posteriorDecodingProbabilitiesFilename));
-	    // indexed by [observation index][hidden state index]
-	    double[][] posteriorDecodingProbabilities = multivariateOptimizer.computeHMMPosteriorDecodingProbabilities();
-	    for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
-		for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
-		    pdpbw.write (i + " " + j + " " + posteriorDecodingProbabilities[i][j]); pdpbw.newLine();
+	    for (int partition = 0; partition < obsSequenceArray.size(); partition++) {
+		BufferedWriter pdpbw = new BufferedWriter(new FileWriter(posteriorDecodingProbabilitiesFilename + MultivariateOptimizer.FILENAME_SUFFIX_DELIMITER + Integer.toString(partition)));
+		// indexed by [observation index][hidden state index]
+		double[][] posteriorDecodingProbabilities = multivariateOptimizer.computeHMMPosteriorDecodingProbabilities(obsSequenceArray.get(partition));
+		for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
+		    for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
+			pdpbw.write (i + " " + j + " " + posteriorDecodingProbabilities[i][j]); pdpbw.newLine();
+		    }
 		}
+		pdpbw.flush();
+		pdpbw.close();
 	    }
-	    pdpbw.flush();
-	    pdpbw.close();
 	    System.out.println ("Saving posterior decoding probabilities DONE."); 
 
-	    System.out.println ("Saving Viterbi-optimal hidden state sequence... "); 
-	    Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSequence);
-	    BufferedWriter bw = new BufferedWriter(new FileWriter(viterbiHiddenStateSequenceFilename));
-	    double viterbiLLH = viterbiResult.Item2;
-	    for (int index : viterbiResult.Item1) {
-		bw.write(hiddenStates.get(index).getName()); bw.newLine();
+	    double viterbiLogLikelihood = 0.0;
+	    double modelLogLikelihood = 0.0;
+	    System.out.println ("Saving Viterbi-optimal hidden state sequence and computing Viterbi-optimal and model log likelihoods... "); 
+	    for (int partition = 0; partition < obsSequenceArray.size(); partition++) {
+		Tuple<int[],Double> viterbiResult = myhmm.viterbiStateSequence(obsSequenceArray.get(partition));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(viterbiHiddenStateSequenceFilename + MultivariateOptimizer.FILENAME_SUFFIX_DELIMITER + Integer.toString(partition)));
+		viterbiLogLikelihood += viterbiResult.Item2;
+		for (int index : viterbiResult.Item1) {
+		    bw.write(hiddenStates.get(index).getName()); bw.newLine();
+		}
+		bw.flush();
+		bw.close();
+
+		modelLogLikelihood += myhmm.lnProbability(obsSequenceArray.get(partition));
 	    }
-	    bw.flush();
-	    bw.close();
-	    System.out.println ("Saving Viterbi-optimal hidden state sequence DONE."); 		
+	    System.out.println ("Saving Viterbi-optimal hidden state sequence and computing Viterbi-optimal and model log likelihoods DONE."); 
 
-	    System.out.println ("Computing final model log likelihood... ");
-	    double finalLLH = myhmm.lnProbability(obsSequence);
-	    System.out.println ("Computing final model log likelihood DONE. ");
-
-	    System.out.println ("Optimized model's final log likelihood: |" + finalLLH + "|");
-	    System.out.println ("Optimized model's Viterbi-optimal log likelihood: |" + viterbiLLH + "|");
+	    System.out.println ("Optimized model's final log likelihood: |" + modelLogLikelihood + "|");
+	    System.out.println ("Optimized model's Viterbi-optimal log likelihood: |" + viterbiLogLikelihood + "|");
 
 	    System.out.println ("Saving log likelihoods... ");
-	    bw = new BufferedWriter(new FileWriter(modelLikelihoodsFilename));
-	    bw.write(Double.toString(finalLLH)); bw.newLine();
-	    bw.write(Double.toString(viterbiLLH)); bw.newLine();
-	    bw.flush();
-	    bw.close();
+	    BufferedWriter lbw = new BufferedWriter(new FileWriter(modelLikelihoodsFilename));
+	    lbw.write(Double.toString(modelLogLikelihood)); lbw.newLine();
+	    lbw.write(Double.toString(viterbiLogLikelihood)); lbw.newLine();
+	    lbw.flush();
+	    lbw.close();
 	    System.out.println ("Saving log likelihoods DONE. ");
 	    
 	    // also save values for all model parameters
@@ -920,32 +937,38 @@ public class runHmm {
      *
      * @return the option
      */
-    protected int sequenceChoice(BufferedReader in) {
-	boolean init = true;
-	int option = -1;
-	while (init) {
-	    System.out.println("Which observation sequence would you like to use?");
-	    System.out.println("0) Reuse previously read sequence.");
-	    System.out.println("1) Load a new observation sequence.");
-	    System.out.println("Choose an option: ");
-	    option = getOption(2, in);
-	    if (option != -1) init = false;
-	}
-	return option;
-    }
+    // protected int sequenceChoice(BufferedReader in) {
+    // 	boolean init = true;
+    // 	int option = -1;
+    // 	while (init) {
+    // 	    System.out.println("Which observation sequence would you like to use?");
+    // 	    System.out.println("0) Reuse previously read sequence.");
+    // 	    System.out.println("1) Load a new observation sequence.");
+    // 	    System.out.println("Choose an option: ");
+    // 	    option = getOption(2, in);
+    // 	    if (option != -1) init = false;
+    // 	}
+    // 	return option;
+    // }
 
 
     /**
      * Read and Get Observation
      */
-    protected ArrayList<ObservationMap> getObs(BufferedReader in) {
+    protected ArrayList<ArrayList<ObservationMap>> getDataPartitions(BufferedReader in) {
 	try {
 	    System.out.println("Keep or discard parsimony-uninformative sites? true for keep, false for discard: ");
 	    boolean keepUninformativeSitesFlag = Boolean.parseBoolean(in.readLine());
-	    System.out.println("Input observation sequence file path name : ");
-	    String filename = in.readLine();
-	    fParser.parseMe(filename, keepUninformativeSitesFlag);
-	    return fParser.getObs();
+	    System.out.println("Input whitespace-delimited list of FASTA alignments: ");
+	    String filenamesString = in.readLine();
+	    StringTokenizer st = new StringTokenizer(filenamesString);
+	    ArrayList<ArrayList<ObservationMap>> dataPartitions = new ArrayList<ArrayList<ObservationMap>>();
+	    while (st.hasMoreTokens()) {
+		String filename = st.nextToken();
+		fParser.parseMe(filename, keepUninformativeSitesFlag);
+		dataPartitions.add(fParser.getObs());
+	    }
+	    return (dataPartitions);
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}

@@ -41,6 +41,7 @@
 package optimize;
 
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
@@ -165,7 +166,7 @@ public class MultivariateOptimizer {
     protected SwitchingFrequency gamma;
     protected BijectiveHashtable<String,SwitchingFrequencyRatioTerm> nameToSwitchingFrequencyRatioTermMap;
     protected Hashtable<String,Tuple3<Double,Double,Boolean>> switchingFrequencyRatioTermNameToOptimizeFlagMap;
-    protected List<ObservationMap> observation;
+    protected ArrayList<ArrayList<ObservationMap>> partitionObservations;
     protected CalculationCache calculationCache;
 
     // create parental tree decorations/parameter maps
@@ -208,7 +209,7 @@ public class MultivariateOptimizer {
 				  SwitchingFrequency inGamma,
 				  BijectiveHashtable<String,SwitchingFrequencyRatioTerm> inNameToSwitchingFrequencyRatioTermMap,
 				  Hashtable<String,Tuple3<Double,Double,Boolean>> inSwitchingFrequencyRatioTermNameToOptimizeFlagMap,
-				  List<ObservationMap> inObservation,
+				  ArrayList<ArrayList<ObservationMap>> inPartitionObservations,
 				  String inputParentalBranchLengthParameterToEdgeMapFilename,
 				  String inputParentalBranchLengthParameterInequalitiesFilename,
 				  String inputParentalBranchLengthParameterSetConstraintsFilename,
@@ -230,7 +231,7 @@ public class MultivariateOptimizer {
 	this.gamma = inGamma;
 	this.nameToSwitchingFrequencyRatioTermMap = inNameToSwitchingFrequencyRatioTermMap;
 	this.switchingFrequencyRatioTermNameToOptimizeFlagMap = inSwitchingFrequencyRatioTermNameToOptimizeFlagMap;
-	this.observation = inObservation;
+	this.partitionObservations = inPartitionObservations;
 	this.calculationCache = inCalculationCache;
 	this.enableParentalTreeOptimizationFlag = inEnableParentalTreeOptimizationFlag;
 	this.enableGeneGenealogyOptimizationFlag = inEnableGeneGenealogyOptimizationFlag;
@@ -930,7 +931,11 @@ public class MultivariateOptimizer {
      * and it's a log likelihood.
      */
     public double computeHMMLikelihood () {
-	return (hmm.lnProbability(observation));
+	double modelLogLikelihood = 0.0;
+	for (int i = 0; i < partitionObservations.size(); i++) {
+	    modelLogLikelihood += hmm.lnProbability(partitionObservations.get(i));
+	}
+	return (modelLogLikelihood);
     }
 
     /**
@@ -939,7 +944,7 @@ public class MultivariateOptimizer {
      *
      * indexed by (observation index, hidden state index)
      */
-    public double[][] computeHMMPosteriorDecodingProbabilities () {
+    public double[][] computeHMMPosteriorDecodingProbabilities (List<ObservationMap> observation) {
 	EnumSet<ForwardBackwardCalculator.Computation> flags = EnumSet.allOf(ForwardBackwardCalculator.Computation.class);
 	ForwardBackwardScaledCalculator fbsc = new ForwardBackwardScaledCalculator(observation, hmm, flags);
 	double[][] result = new double[observation.size()][hiddenStates.size()];
@@ -1251,27 +1256,33 @@ public class MultivariateOptimizer {
 	    if (Constants.WARNLEVEL > 4) { System.out.println ("Writing checkpoint  " + filename + " DONE."); }
 
 	    // write out posterior decoding probabilities
-	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
-	    bw = new BufferedWriter(new FileWriter(filename));
-	    double[][] posteriorDecodingProbabilities = this.computeHMMPosteriorDecodingProbabilities();
-	    for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
-		for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
-		    bw.write (i + " " + j + " " + posteriorDecodingProbabilities[i][j]); bw.newLine();
+	    for (int partition = 0; partition < partitionObservations.size(); partition++) {
+		filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_POSTERIOR_DECODING_PROBABILITIES_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(partition) + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
+		bw = new BufferedWriter(new FileWriter(filename));
+		double[][] posteriorDecodingProbabilities = this.computeHMMPosteriorDecodingProbabilities(partitionObservations.get(partition));
+		for (int i = 0; i < posteriorDecodingProbabilities.length; i++) {
+		    for (int j = 0; j < posteriorDecodingProbabilities[i].length; j++) {
+			bw.write (i + " " + j + " " + posteriorDecodingProbabilities[i][j]); bw.newLine();
+		    }
 		}
+		bw.flush();
+		bw.close();
 	    }
-	    bw.flush();
-	    bw.close();
 
-	    // write Viterbi-optimal hidden state sequence
-	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_VITERBI_SEQUENCE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
-	    Tuple<int[],Double> viterbiResult = hmm.viterbiStateSequence(observation);
-	    bw = new BufferedWriter(new FileWriter(filename));
-	    double viterbiLLH = viterbiResult.Item2;
-	    for (int index : viterbiResult.Item1) {
-		bw.write(hiddenStates.get(index).getName()); bw.newLine();
+	    double viterbiLogLikelihood = 0.0;
+
+	    // write Viterbi-optimal hidden state sequence, compute Viterbi-optimal and model log likelihoods
+	    for (int partition = 0; partition < partitionObservations.size(); partition++) {
+		filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_VITERBI_SEQUENCE_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(partition) + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
+		Tuple<int[],Double> viterbiResult = hmm.viterbiStateSequence(partitionObservations.get(partition));
+		bw = new BufferedWriter(new FileWriter(filename));
+		viterbiLogLikelihood += viterbiResult.Item2;
+		for (int index : viterbiResult.Item1) {
+		    bw.write(hiddenStates.get(index).getName()); bw.newLine();
+		}
+		bw.flush();
+		bw.close();
 	    }
-	    bw.flush();
-	    bw.close();
 
 	    // write likelihood
 	    filename = runHmmObject.getWorkingDirectory() + File.separator + CHECKPOINT_LIKELIHOOD_FILENAME + FILENAME_SUFFIX_DELIMITER + Integer.toString(pass) + FILENAME_SUFFIX_DELIMITER + Integer.toString(round);
@@ -1279,7 +1290,7 @@ public class MultivariateOptimizer {
 	    bw = new BufferedWriter(new FileWriter(filename));
 	    // safe due to guards in createNameMapOfAllParameters()
 	    bw.write(Double.toString(likelihood)); bw.newLine();
-	    bw.write(Double.toString(viterbiLLH)); bw.newLine();
+	    bw.write(Double.toString(viterbiLogLikelihood)); bw.newLine();
 	    bw.flush();
 	    bw.close();
 	    

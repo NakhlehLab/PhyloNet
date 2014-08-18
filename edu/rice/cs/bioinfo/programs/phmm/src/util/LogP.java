@@ -26,7 +26,7 @@
  * set to 0.0 = log(1.0) initially.
  */
 
-package util;
+package edu.rice.cs.bioinfo.programs.phmm.src.util;
 
 public class LogP {
     protected double d;

@@ -18,9 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
-import substitutionModel.GTRSubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
 import java.util.Vector;
 
 public class GTRBaseFrequencyParameter extends Parameter {

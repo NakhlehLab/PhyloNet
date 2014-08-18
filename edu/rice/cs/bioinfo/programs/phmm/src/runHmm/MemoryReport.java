@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package runHmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.runHmm;
 
 public class MemoryReport {
     private static final long MiB = 1024 * 1024;

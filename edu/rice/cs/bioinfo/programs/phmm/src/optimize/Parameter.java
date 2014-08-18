@@ -29,7 +29,7 @@
 // takes in reference to a set of length parameters
 // and a ParameterConstraintSet
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 import java.util.Stack;
 

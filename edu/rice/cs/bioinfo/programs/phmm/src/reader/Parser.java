@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package reader;
+package edu.rice.cs.bioinfo.programs.phmm.src.reader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -30,13 +30,13 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
-import substitutionModel.NucleotideAlphabet;
-import util.Constants;
-import phylogeny.EvoTree;
-import phylogeny.Node;
-import be.ac.ulg.montefiore.run.jahmm.Hmm;
-import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
-import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.NucleotideAlphabet;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Constants;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.EvoTree;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.Node;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.Hmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 //import be.ac.ulg.montefiore.run.jahmm.MyHMM;
 // kliu - pull in additional library support
 

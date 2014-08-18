@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package runHmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.runHmm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,27 +42,27 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.Collections;
 
-import util.Constants;
-import util.Matrix;
-import util.TreeUtils;
-import util.MapOfMap;
-import substitutionModel.SubstitutionModel;
-import substitutionModel.GTRSubstitutionModel;
-import substitutionModel.NucleotideAlphabet;
-import optimize.MultivariateOptimizer;
-import optimize.CalculationCache;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Constants;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Matrix;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.TreeUtils;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.MapOfMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.SubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.NucleotideAlphabet;
+import edu.rice.cs.bioinfo.programs.phmm.src.optimize.MultivariateOptimizer;
+import edu.rice.cs.bioinfo.programs.phmm.src.optimize.CalculationCache;
 //import gridSearch.GridSearchAlgorithm;
-import phylogeny.EvoTree;
-import phylogeny.TreeParser;
-import reader.Parser;
-import reader.ParserFileException;
-import be.ac.ulg.montefiore.run.jahmm.Hmm;
-import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
-import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
-import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
-import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
-import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
-import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.EvoTree;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.TreeParser;
+import edu.rice.cs.bioinfo.programs.phmm.src.reader.Parser;
+import edu.rice.cs.bioinfo.programs.phmm.src.reader.ParserFileException;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.Hmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;

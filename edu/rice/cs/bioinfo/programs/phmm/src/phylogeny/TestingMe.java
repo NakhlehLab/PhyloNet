@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package phylogeny;
+package edu.rice.cs.bioinfo.programs.phmm.src.phylogeny;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

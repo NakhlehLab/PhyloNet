@@ -18,15 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 /**
  * Directly handle model manipulation in here.
  * Lightweight. Fiddles with SwitchingFrequencyRatio as a simple positive rate (member of a ratio).
  */
 
-import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
-import runHmm.runHmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
+import edu.rice.cs.bioinfo.programs.phmm.src.runHmm.runHmm;
 
 public class SwitchingFrequencyRatioTermParameter extends Parameter {
     // allow this to get basically to zero

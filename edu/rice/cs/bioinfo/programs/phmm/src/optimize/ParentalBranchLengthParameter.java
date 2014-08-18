@@ -18,10 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
-import runHmm.runHmm;
-import util.Constants;
+import edu.rice.cs.bioinfo.programs.phmm.src.runHmm.runHmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Constants;
 import edu.rice.cs.bioinfo.library.programming.BijectiveHashtable;
 import edu.rice.cs.bioinfo.library.programming.BidirectionalMultimap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;

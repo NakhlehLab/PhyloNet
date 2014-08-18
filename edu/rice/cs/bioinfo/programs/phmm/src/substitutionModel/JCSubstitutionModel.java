@@ -30,9 +30,9 @@
  * dependent cached quantities.
  */
 
-package substitutionModel;
+package edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel;
 
-import util.Matrix;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Matrix;
 
 public class JCSubstitutionModel implements SubstitutionModel {
     // only one parameter

@@ -23,9 +23,9 @@
  * from a sequence evolution model, e.g. GTR.
  */
 
-package substitutionModel;
+package edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel;
 
-import util.*;
+import java.util.*;
 
 public interface SubstitutionModel {
     /**

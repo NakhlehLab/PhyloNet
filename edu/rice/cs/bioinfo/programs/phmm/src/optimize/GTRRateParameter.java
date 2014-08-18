@@ -18,9 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
-import substitutionModel.GTRSubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
 
 public class GTRRateParameter extends Parameter {
     public static final double DEFAULT_MINIMUM_RATE = MultivariateOptimizer.DEFAULT_MINIMUM_RATE;

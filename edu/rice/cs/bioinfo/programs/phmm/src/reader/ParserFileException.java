@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package reader;
+package edu.rice.cs.bioinfo.programs.phmm.src.reader;
 
 public class ParserFileException extends RuntimeException {
 

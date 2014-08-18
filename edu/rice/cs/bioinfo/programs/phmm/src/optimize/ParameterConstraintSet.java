@@ -25,7 +25,7 @@
  * Use a BidirectionalMultimap to assign Parameter objects to a ParameterConstraintSet
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 public class ParameterConstraintSet {
     protected String name;

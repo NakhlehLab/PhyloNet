@@ -24,7 +24,7 @@
  * phylonet.....Tree.
  */
 
-package util;
+package edu.rice.cs.bioinfo.programs.phmm.src.util;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 

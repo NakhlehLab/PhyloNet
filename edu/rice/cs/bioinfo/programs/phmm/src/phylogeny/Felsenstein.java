@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package phylogeny;
+package edu.rice.cs.bioinfo.programs.phmm.src.phylogeny;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,12 +26,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Hashtable;
 import java.io.StringReader;
-import optimize.CalculationCache;
-import substitutionModel.GTRSubstitutionModel;
-import substitutionModel.SubstitutionModel;
-import substitutionModel.NucleotideAlphabet;
-import substitutionModel.Alphabet;
-import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.optimize.CalculationCache;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.SubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.NucleotideAlphabet;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.Alphabet;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -49,12 +49,11 @@ public class Felsenstein {
     protected static final String genes = NucleotideAlphabet.alphabet;
 
     protected SubstitutionModel substitutionModel;
-    protected CalculationCache calculationCache;
+    //protected CalculationCache calculationCache;
 
-    public Felsenstein (SubstitutionModel inSubstitutionModel,
-			CalculationCache inCalculationCache) {
+    public Felsenstein (SubstitutionModel inSubstitutionModel) {
 	this.substitutionModel = inSubstitutionModel;
-	this.calculationCache = inCalculationCache;
+	//this.calculationCache = inCalculationCache;
     }
 
     // kliu - CACHE OPPORTUNITY #2
@@ -91,14 +90,15 @@ public class Felsenstein {
 	Alphabet alphabet = NucleotideAlphabet.getClassInstance();
 
 	// if cache entry exists, use it
+        /*
 	if (calculationCache.cacheSubstitutionProbabilityMatrix.containsKey(n)) {
 	    double[][] pij = calculationCache.cacheSubstitutionProbabilityMatrix.get(n);
 	    return (pij[alphabet.getObservationSymbolIndex(i)][alphabet.getObservationSymbolIndex(j)]);
 	}
-
+  */
 	// otherwise calculate and cache it
 	double[][] pij = substitutionModel.calculateProbabilitiesFromRates(t);
-	calculationCache.cacheSubstitutionProbabilityMatrix.put(n, pij);
+	//calculationCache.cacheSubstitutionProbabilityMatrix.put(n, pij);
 	return (pij[alphabet.getObservationSymbolIndex(i)][alphabet.getObservationSymbolIndex(j)]);
     }
 
@@ -202,7 +202,7 @@ public class Felsenstein {
 	double[] freqs = {0.25, 0.25, 0.25, 0.25};
 	gtrsm.setSubstitutionRates(rates, freqs);
 
-	Felsenstein fcalc = new Felsenstein(gtrsm, new CalculationCache());
+	Felsenstein fcalc = new Felsenstein(gtrsm);
 	double result = fcalc.getLikelihoodtree(tree, observationMap);
 	
 	System.out.println ("Result: |" + result + "|");

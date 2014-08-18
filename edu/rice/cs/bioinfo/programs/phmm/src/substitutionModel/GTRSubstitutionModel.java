@@ -23,11 +23,11 @@
  * from sequence evolution model, e.g. GTR.
  */
 
-package substitutionModel;
+package edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel;
 
 import java.util.Arrays;
-import util.Matrix;
-import util.Constants;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Matrix;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Constants;
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
 

@@ -52,12 +52,12 @@
  * No value guards in here.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 import java.util.Hashtable;
-import util.MapOfMap;
-import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
-import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.MapOfMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;

@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package containers;
+package edu.rice.cs.bioinfo.programs.phmm.src.containers;
 
 import java.util.AbstractList;
 import java.util.ArrayList;

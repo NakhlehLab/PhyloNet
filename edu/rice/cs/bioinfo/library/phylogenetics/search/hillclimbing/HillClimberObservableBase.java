@@ -28,7 +28,7 @@ public abstract class HillClimberObservableBase<T1,S> extends ObservableGenerati
     }
 
     protected Long _maxExaminations;
-    protected int _maxGenerations = -1 ;
+    protected int _maxGenerations;
 
 
     @Override

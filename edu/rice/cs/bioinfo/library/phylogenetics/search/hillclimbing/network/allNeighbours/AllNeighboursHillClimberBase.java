@@ -19,7 +19,6 @@ import java.util.Comparator;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AllNeighboursHillClimberBase<G extends Graph<N,E>,N,E,S> extends HillClimberObservableBase<G, S> {
-    protected int _maxGenerations;
     protected int _diameterLimit;
 
 

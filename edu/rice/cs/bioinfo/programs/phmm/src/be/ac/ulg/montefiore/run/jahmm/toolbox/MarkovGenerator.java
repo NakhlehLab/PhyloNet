@@ -40,12 +40,12 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.toolbox;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.toolbox;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import be.ac.ulg.montefiore.run.jahmm.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.*;
 
 
 /**

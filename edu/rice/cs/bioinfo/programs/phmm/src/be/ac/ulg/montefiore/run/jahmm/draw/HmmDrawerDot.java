@@ -40,13 +40,13 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.draw;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.draw;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
 
-import be.ac.ulg.montefiore.run.jahmm.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.*;
 
 
 /**

@@ -39,11 +39,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package be.ac.ulg.montefiore.run.jahmm.phmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm;
 
-import be.ac.ulg.montefiore.run.jahmm.Opdf;
-import phylogeny.EvoTree;
-import phylogeny.Node;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.Opdf;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.EvoTree;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.Node;
 //import phylogeny.Felsenstein;
 
 import java.text.NumberFormat;

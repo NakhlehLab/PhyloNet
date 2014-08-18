@@ -40,7 +40,7 @@
 
  */
 
-package be.ac.ulg.montefiore.run.distributions;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.distributions;
 
 import java.util.Arrays;
 

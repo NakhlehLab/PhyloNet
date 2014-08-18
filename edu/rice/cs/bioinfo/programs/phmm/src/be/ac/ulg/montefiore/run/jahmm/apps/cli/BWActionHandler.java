@@ -40,17 +40,17 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.apps.cli;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli;
 
 import java.io.*;
 import java.util.EnumSet;
 import java.util.List;
 
-import be.ac.ulg.montefiore.run.jahmm.*;
-import be.ac.ulg.montefiore.run.jahmm.apps.cli.CommandLineArguments.Arguments;
-import be.ac.ulg.montefiore.run.jahmm.io.*;
-import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchLearner;
-import be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli.CommandLineArguments.Arguments;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.io.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchLearner;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.learn.BaumWelchScaledLearner;
 
 
 /**

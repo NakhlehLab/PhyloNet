@@ -40,11 +40,11 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.learn;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.learn;
 
 import java.util.*;
 
-import be.ac.ulg.montefiore.run.jahmm.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.*;
 
 
 /**

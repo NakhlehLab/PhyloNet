@@ -40,15 +40,15 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.apps.cli;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
-import be.ac.ulg.montefiore.run.jahmm.*;
-import be.ac.ulg.montefiore.run.jahmm.io.*;
-import be.ac.ulg.montefiore.run.jahmm.toolbox.MarkovGenerator;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.io.*;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.toolbox.MarkovGenerator;
 
 
 /**

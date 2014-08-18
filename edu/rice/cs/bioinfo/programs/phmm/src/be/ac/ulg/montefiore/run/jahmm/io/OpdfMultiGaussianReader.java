@@ -40,12 +40,12 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.io;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.io;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
 
-import be.ac.ulg.montefiore.run.jahmm.OpdfMultiGaussian;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.OpdfMultiGaussian;
 
 /**
  * This class implements a {@link OpdfMultiGaussian} reader.  The syntax of the

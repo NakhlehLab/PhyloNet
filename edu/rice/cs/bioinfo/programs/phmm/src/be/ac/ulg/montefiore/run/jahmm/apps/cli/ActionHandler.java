@@ -40,13 +40,13 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.apps.cli;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli;
 
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import be.ac.ulg.montefiore.run.jahmm.io.FileFormatException;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.io.FileFormatException;
 
 abstract class ActionHandler
 {

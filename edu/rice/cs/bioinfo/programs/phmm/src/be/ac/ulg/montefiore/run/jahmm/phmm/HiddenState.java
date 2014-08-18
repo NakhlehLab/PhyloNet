@@ -48,7 +48,7 @@
  * is crucial!
  */
 
-package be.ac.ulg.montefiore.run.jahmm.phmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,9 +61,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.IOException;
 //import phylogeny.EvoTree;
-import phylogeny.Felsenstein;
-import optimize.CalculationCache;
-import substitutionModel.SubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.Felsenstein;
+import edu.rice.cs.bioinfo.programs.phmm.src.optimize.CalculationCache;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.SubstitutionModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
@@ -76,7 +76,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbabilityYF.CoalescePattern;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 //import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
-import util.TreeUtils;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.TreeUtils;
 
 public class HiddenState
 {
@@ -175,7 +175,7 @@ public class HiddenState
 	this.calculationCache = inCalculationCache;
 	// keep our own Felsenstein calculator
 	// everything shares the same inCalculationCache anyways
-	felsensteinCalculator = new Felsenstein(getSubstitutionModel(), calculationCache);
+	felsensteinCalculator = new Felsenstein(getSubstitutionModel());
 	gtpyf = new GeneTreeProbabilityYF();
 	rnNewickPrinter = new RnNewickPrinter<CoalescePattern[]>();
     }
@@ -428,7 +428,7 @@ public class HiddenState
      * Try to make as few changes to PhyloNet code as possible.
      */
     protected double computeGTProb (boolean debugFlag) {
-	gtpyf.emptyState();
+	//gtpyf.emptyState();
 
 	// A list with one element.
 	Vector<Tree> rootedGeneGenealogies = new Vector<Tree>();
@@ -462,8 +462,8 @@ public class HiddenState
             nbTree2bTrees.add(bTrees);
         }
 
-        List<Double> probList;
-	probList = gtpyf.calculateGTDistribution(parentalTree, bGeneTrees, getSpeciesToAllelesMapping(), 0);
+        List<Double> probList = new ArrayList<Double>();
+	//probList = gtpyf.calculateGTDistribution(parentalTree, bGeneTrees, getSpeciesToAllelesMapping(), 0);
 
 	// look like the calculation is proceeding OK
 	//

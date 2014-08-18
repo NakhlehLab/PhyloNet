@@ -40,9 +40,9 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.apps.cli;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli;
 
-import be.ac.ulg.montefiore.run.jahmm.apps.cli.CommandLineArguments.Arguments;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli.CommandLineArguments.Arguments;
 
 
 /**

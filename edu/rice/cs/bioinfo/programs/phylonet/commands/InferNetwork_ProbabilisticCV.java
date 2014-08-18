@@ -555,7 +555,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             // noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl","f","pl","h","ht");
             // checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam,plParam,hParam,htParam);
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","d","p","l","r","i","t","di","f","pl","h","ht","x","f","w","rs");
+            noError = noError && checkForUnknownSwitches("a","b","s","m","d","p","l","r","i","t","di","f","pl","h","ht","x","cv","w","rs");
             checkAndSetOutFile(aParam, bParam, sParam, mParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, fParam,plParam,hParam,htParam,numMultipleRunsParam,numFoldsParam,wParam,rsParam);
         }
 

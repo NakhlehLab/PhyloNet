@@ -590,11 +590,8 @@ public class MDCInference_DP
 			}
             if(contain){
                 total += tr.Item2;
-                System.out.println();
             }
 		}
-
-        System.out.println("\n"+total);
 
 		// Add the cluster containing all taxa to the map.
 		STITreeCluster all = new STITreeCluster(stTaxa);

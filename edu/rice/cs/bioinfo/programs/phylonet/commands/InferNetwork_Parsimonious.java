@@ -25,9 +25,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkParsimoniously;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkParsimoniouslyParallel;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkParsimoniouslyParallelBackup;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMP;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
@@ -50,7 +48,7 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("infernetwork_parsimony")
+@CommandName("infernetwork_mp")
 public class InferNetwork_Parsimonious extends CommandBaseFileOut{
     private HashMap<String, List<String>> _species2alleles = null;
     private HashMap<String, String> _allele2species = null;
@@ -468,7 +466,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
 
         //long start = System.currentTimeMillis();
         //InferILSNetworkParsimoniouslyParallelBackup inference = new InferILSNetworkParsimoniouslyParallelBackup();
-        InferILSNetworkParsimoniouslyParallel inference = new InferILSNetworkParsimoniouslyParallel();
+        InferNetworkMP inference = new InferNetworkMP();
         inference.setSearchParameter(_maxExaminations, _maxFailure, _maxDiameter, speciesNetwork, _fixedHybrid, _numProcessors, _operationWeight, _numRuns, _seed);
         List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(tuples,_species2alleles,_maxReticulations, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
@@ -487,26 +485,12 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 }
             }
 
-            StringWriter writer = new StringWriter();
-            RnNewickPrinter printer = new RnNewickPrinter();
-            printer.print(tuple.Item1, writer);
-            result.append("\n" + writer.toString());
+            result.append("\n" + n.toString());
             result.append("\n" + "Total number of extra lineages: " + tuple.Item2);
 
             if(_dentroscropeOutput){
-                for(Object node : n.getNetworkNodes())
-                {
-                    NetNode netNode = (NetNode)node;
-                    for(Object parent: netNode.getParents())
-                    {
-                        NetNode parentNode = (NetNode)parent;
-                        netNode.setParentProbability(parentNode, Double.NaN);
-                    }
-                }
-                writer = new StringWriter();
-                printer = new RnNewickPrinter();
-                printer.print(tuple.Item1, writer);
-                result.append("\nVisualize in Dendroscope : " + writer.toString());
+                edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.removeAllParameters(n);
+                result.append("\nVisualize in Dendroscope : " + n.toString());
             }
         }
 

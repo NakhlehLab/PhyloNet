@@ -19,9 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
-import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
@@ -56,7 +54,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     private HashMap _taxonMap = null;
     private boolean  _multree = false;
     private NetworkNonEmpty _speciesNetwork;
-    private List<NetworkNonEmpty> _geneTrees;
+    private List<List<NetworkNonEmpty>> _geneTrees;
     private int _maxRounds = 100;
     private int _maxTryPerBranch = 100;
     private double _maxBranchLength = 6;
@@ -68,6 +66,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     private boolean _inferBL = false;
     private int _numRuns = 5;
     private boolean _usingBL = false;
+    private boolean _oneGTPerLocus = true;
 
     public CalGTProbInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                               Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
@@ -92,15 +91,32 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
         _speciesNetwork = this.assertAndGetNetwork(0);
         noError = noError && _speciesNetwork != null;
 
-        ParameterIdentList geneTreeParam = this.assertParameterIdentList(1);
+        Parameter geneTreeParam = this.assertParameterIdentListOrSetList(1);
         noError = noError && geneTreeParam != null;
-        _geneTrees = new LinkedList<NetworkNonEmpty>();
-        for(String ident : geneTreeParam.Elements)
-        {
-            noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
-            if(noError)
+        _geneTrees = new LinkedList<>();
+
+        if(geneTreeParam instanceof ParameterIdentList) {
+            ParameterIdentList geneTreeList = (ParameterIdentList)geneTreeParam;
+            for (String ident : geneTreeList.Elements) {
+                noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                if (noError) {
+                    _geneTrees.add(Arrays.asList(this.sourceIdentToNetwork.get(ident)));
+                }
+            }
+        }
+        else{
+            _oneGTPerLocus = false;
+            ParameterTaxonSetList geneTreeSetList = (ParameterTaxonSetList)geneTreeParam;
+            for(Iterable<String> gtSet : geneTreeSetList.TaxonSetList)
             {
-                _geneTrees.add(this.sourceIdentToNetwork.get(ident));
+                List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<>();
+                for (String ident : gtSet) {
+                    noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                    if (noError) {
+                        geneTreesForOneLocus.add(this.sourceIdentToNetwork.get(ident));
+                    }
+                }
+                _geneTrees.add(geneTreesForOneLocus);
             }
         }
 
@@ -357,38 +373,43 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
 
-        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
-        for (NetworkNonEmpty geneTree : _geneTrees) {
-            double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
-                @Override
-                public Double forEmpty(TreeProbabilityEmpty empty) {
-                    return 1.0;
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
+        for(List<NetworkNonEmpty> geneTrees : _geneTrees) {
+            List<MutableTuple<Tree, Double>> gtsForOneLocus = new ArrayList<>();
+            for (NetworkNonEmpty geneTree : geneTrees) {
+                double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                    @Override
+                    public Double forEmpty(TreeProbabilityEmpty empty) {
+                        return 1.0;
+                    }
+
+                    @Override
+                    public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                        return Double.parseDouble(nonEmpty.ProbString);
+                    }
+                });
+
+                String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
+                NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
+                STITree<Double> newtr = new STITree<Double>(true);
+
+                try {
+                    nr.readTree(newtr);
+                } catch (Exception e) {
+                    errorDetected.execute(e.getMessage(),
+                            this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
                 }
+                Trees.removeBinaryNodes(newtr);
+                if (_bootstrap < 100) {
+                    if (Trees.handleBootStrapInTree(newtr, _bootstrap) == -1) {
+                        throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
+                    }
 
-                @Override
-                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
-                    return Double.parseDouble(nonEmpty.ProbString);
                 }
-            });
+                gtsForOneLocus.add(new MutableTuple<Tree, Double>(newtr, weight));
 
-            String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
-            NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
-            STITree<Double> newtr = new STITree<Double>(true);
-
-            try {
-                nr.readTree(newtr);
-            } catch (Exception e) {
-                errorDetected.execute(e.getMessage(),
-                        this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
             }
-            Trees.removeBinaryNodes(newtr);
-            if (_bootstrap < 100) {
-                if (Trees.handleBootStrapInTree(newtr, _bootstrap) == -1) {
-                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
-                }
-
-            }
-            gts.add(new MutableTuple<Tree, Double>(newtr, weight));
+            gts.add(gtsForOneLocus);
         }
 
 
@@ -397,9 +418,17 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
         if (_usingBL) {
             NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
             optimalNetwork = transformer.makeNetwork(_speciesNetwork);
-            ScoreGivenNetworkUsingBLProbabilisticallyParallel scoring = new ScoreGivenNetworkUsingBLProbabilisticallyParallel();
+            NetworkLikelihoodFromGTTBL scoring;
+            if(_oneGTPerLocus){
+                scoring = new NetworkLikelihoodFromGTTBL_SingleTreePerLocus();
+            }
+            else{
+                scoring = new NetworkLikelihoodFromGTTBL_MultiTreesPerLocus();
+            }
+            //ScoreGivenNetworkUsingBLProbabilisticallyParallel scoring = new ScoreGivenNetworkUsingBLProbabilisticallyParallel();
             scoring.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _parallel);
-            optimalScore = scoring.calMLOfNetwork(optimalNetwork, gts, _taxonMap, _inferBL);
+            //optimalScore = scoring.calMLOfNetwork(optimalNetwork, gts, _taxonMap, _inferBL);
+            optimalScore = scoring.computeLikelihood(optimalNetwork, gts, _taxonMap, _inferBL);
         }
         else{
             if (_multree) {
@@ -407,27 +436,29 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                 optimalNetwork = transformer.makeNetwork(_speciesNetwork);
                 List<Tree> bGeneTrees = new ArrayList<Tree>();
                 List<MutableTuple<List<Integer>,Double>> nbTree2bTrees = new ArrayList<MutableTuple<List<Integer>,Double>>();
-                for (MutableTuple<Tree, Double> nbgt : gts) {
-                    List<Integer> bTrees = new ArrayList<Integer>();
-                    for (Tree bgt : Trees.getAllBinaryResolution(nbgt.Item1)) {
-                        int index = 0;
-                        for (Tree exBgt : bGeneTrees) {
-                            if (Trees.haveSameRootedTopology(bgt, exBgt)) {
-                                break;
+                for (List<MutableTuple<Tree, Double>> list : gts) {
+                    for (MutableTuple<Tree, Double> nbgt : list) {
+                        List<Integer> bTrees = new ArrayList<Integer>();
+                        for (Tree bgt : Trees.getAllBinaryResolution(nbgt.Item1)) {
+                            int index = 0;
+                            for (Tree exBgt : bGeneTrees) {
+                                if (Trees.haveSameRootedTopology(bgt, exBgt)) {
+                                    break;
+                                }
+                                index++;
                             }
-                            index++;
-                        }
-                        if (index == bGeneTrees.size()) {
-                            try {
-                                NewickReader nr = new NewickReader(new StringReader(bgt.toString()));
-                                bGeneTrees.add(nr.readTree());
-                            } catch (Exception e) {
-                            }
+                            if (index == bGeneTrees.size()) {
+                                try {
+                                    NewickReader nr = new NewickReader(new StringReader(bgt.toString()));
+                                    bGeneTrees.add(nr.readTree());
+                                } catch (Exception e) {
+                                }
 
+                            }
+                            bTrees.add(index);
                         }
-                        bTrees.add(index);
+                        nbTree2bTrees.add(new MutableTuple<List<Integer>, Double>(bTrees, nbgt.Item2));
                     }
-                    nbTree2bTrees.add(new MutableTuple<List<Integer>, Double>(bTrees, nbgt.Item2));
                 }
                 GeneTreeProbability gtp = new GeneTreeProbability();
                 List<Double> scores = gtp.calculateGTDistribution(optimalNetwork, bGeneTrees, _taxonMap, false);
@@ -443,16 +474,18 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
             } else {
 
-                if (!_inferBL) {
-                    _numRuns = 1;
-                }
                 for (int i = 0; i < _numRuns; i++) {
-                    //_parallel = 32;
                     NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
                     Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
-                    ScoreGivenNetworkProbabilisticallyParallel scoring = new ScoreGivenNetworkProbabilisticallyParallel();
+                    NetworkLikelihoodFromGTT scoring;
+                    if(_oneGTPerLocus){
+                        scoring = new NetworkLikelihoodFromGTT_SingleTreePerLocus();
+                    }
+                    else{
+                        scoring = new NetworkLikelihoodFromGTT_MultiTreesPerLocus();
+                    }
                     scoring.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _parallel);
-                    double score = scoring.calMLOfNetwork(speciesNetwork, gts, _taxonMap, _inferBL);
+                    double score = scoring.computeLikelihood(speciesNetwork, gts, _taxonMap, _inferBL);
 
                     if (optimalScore < score) {
                         optimalScore = score;
@@ -473,10 +506,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             }
         }
 
-        StringWriter writer = new StringWriter();
-        RnNewickPrinter printer = new RnNewickPrinter();
-        printer.print(optimalNetwork, writer);
-        result.append("\n" + writer.toString());
+        result.append("\n" + optimalNetwork.toString());
         result.append("\n" + "Total log probability: " + optimalScore);
         //result.append(totalScore + " ");
 

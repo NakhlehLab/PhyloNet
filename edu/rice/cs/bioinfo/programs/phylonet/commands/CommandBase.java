@@ -441,12 +441,12 @@ public abstract class CommandBase implements Command {
             }
 
             public ParameterIdentList forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found quoted parameter.", parameterQuote.getColumn(), parameterQuote.getLine());
+                errorDetected.execute("Expected identifier list, found quoted parameter.", parameterQuote.getColumn(), parameterQuote.getLine());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             public ParameterIdentList forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found identifier set list.", parameterTaxonSetList.getColumn(), parameterTaxonSetList.getLine());
+                errorDetected.execute("Expected identifier list, found identifier set list.", parameterTaxonSetList.getColumn(), parameterTaxonSetList.getLine());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
@@ -458,11 +458,54 @@ public abstract class CommandBase implements Command {
             }
 
             public ParameterIdentList forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
-                errorDetected.execute("Expected identifier set, found taxa map.", parameterTaxaMap.getColumn(), parameterTaxaMap.getLine());
+                errorDetected.execute("Expected identifier list, found taxa map.", parameterTaxaMap.getColumn(), parameterTaxaMap.getLine());
                 return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
         }, null);
     }
+
+
+
+    protected Parameter assertParameterIdentListOrSetList(int paramIndex)
+    {
+        Parameter param = this.params.get(paramIndex);
+        return param.execute(new ParameterAlgo<Parameter, Object, RuntimeException>()
+        {
+            public Parameter forIdentifier(ParameterIdent parameterIdent, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier list or set list, found identifier.", parameterIdent.getColumn(), parameterIdent.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ParameterIdentList forIdentList(ParameterIdentList parameterIdentList, Object o) throws RuntimeException {
+                return parameterIdentList;
+            }
+
+            public Parameter forQuote(ParameterQuote parameterQuote, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier list or set list, found quoted parameter.", parameterQuote.getColumn(), parameterQuote.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Parameter forTaxonSetList(ParameterTaxonSetList parameterTaxonSetList, Object o) throws RuntimeException {
+                return parameterTaxonSetList;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Parameter forIdentSet(ParameterIdentSet parameterIdentSet, Object o) throws RuntimeException {
+
+                errorDetected.execute("Expected identifier list or set list, found identifier set.", parameterIdentSet.getColumn(), parameterIdentSet.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+            }
+
+            public ParameterTaxaMap forTaxaMap(ParameterTaxaMap parameterTaxaMap, Object o) throws RuntimeException {
+                errorDetected.execute("Expected identifier list or set list, found identifier taxa map.", parameterTaxaMap.getColumn(), parameterTaxaMap.getLine());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }, null);
+    }
+
+
+
+
 
     protected  boolean checkForUnknownSwitches(String... expectedSwitches)
     {

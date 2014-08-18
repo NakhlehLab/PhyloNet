@@ -29,8 +29,7 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkProbabilisticallyParallelCV;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferILSNetworkUsingBLProbabilistically;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMLFromGTTWithCrossValidation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
@@ -75,7 +74,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
     private double[] _operationWeight = {0.15,0.15,0.2,0.5};
     private Long _seed = null;
     private int _hasTried = 0;
-    private int _numMultipleRuns = 1;  // number of multiple runs, need to be a bit large
+    private int _numRuns = 1;  // number of multiple runs, need to be a bit large
     private int _numFolds = 10;    // number of folds in the K-fold cross validation
 
 
@@ -501,7 +500,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _numMultipleRuns = Integer.parseInt(numMultipleRunsParam.PostSwitchValue);
+                        _numRuns = Integer.parseInt(numMultipleRunsParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
@@ -565,10 +564,9 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
         return  noError;
     }
 
-    @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        List<MutableTuple<Tree,Double>> gts = new ArrayList<MutableTuple<Tree,Double>>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
         //List<Tree> gts2 = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
@@ -606,7 +604,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
 
             }
 
-            gts.add(new MutableTuple<Tree,Double>(newtr,weight));
+            gts.add(Arrays.asList(new MutableTuple<Tree,Double>(newtr,weight)));
             //((STINode<Double>)newtr.getRoot()).setData(weight);
             //gts2.add(newtr);
         }
@@ -622,44 +620,45 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
+        /*
         InferILSNetworkProbabilisticallyParallelCV inference = new InferILSNetworkProbabilisticallyParallelCV();
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _numMultipleRuns, _numFolds, _operationWeight, _seed);
         Tuple3<Network,Double,Integer> triplet = inference.CV(gts,_taxonMap,_maxReticulations, _hasTried);
+        */
 
 
-        result.append("\nThe inferred Network has " + triplet.Item3 + " reticulations:");
+        InferNetworkMLFromGTTWithCrossValidation inference = new InferNetworkMLFromGTTWithCrossValidation();
+        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
+        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap, _maxReticulations, _numFolds);
 
-        for(Object node : triplet.Item1.bfs())
-        {
-            NetNode netNode = (NetNode)node;
-            if(!netNode.isLeaf())
-            {
-                netNode.setName(NetNode.NO_NAME);
-            }
+
+        if(resultTuples == null){
+            result.append("\nCross validation failed to find the turning point.");
         }
+        else {
+            int index = 1;
 
-        StringWriter writer = new StringWriter();
-        RnNewickPrinter printer = new RnNewickPrinter();
-        printer.print(triplet.Item1, writer);
-        result.append("\n" + writer.toString());
-        result.append("\n" + "Total log probability: " + triplet.Item2);
+            for (Tuple<Network, Double> tuple : resultTuples) {
+                result.append("\nInferred Network #" + index++ + ":");
 
-        if(_dentroscropeOutput){
-            for(Object node : triplet.Item1.getNetworkNodes())
-            {
-                NetNode netNode = (NetNode)node;
-                for(Object parent: netNode.getParents())
-                {
-                    NetNode parentNode = (NetNode)parent;
-                    netNode.setParentProbability(parentNode, Double.NaN);
+                Network n = tuple.Item1;
+
+                for (Object node : n.bfs()) {
+                    NetNode netNode = (NetNode) node;
+                    if (!netNode.isLeaf()) {
+                        netNode.setName(NetNode.NO_NAME);
+                    }
+                }
+
+                result.append("\n" + n.toString());
+                result.append("\n" + "Total log probability: " + tuple.Item2);
+
+                if (_dentroscropeOutput) {
+                    edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.removeAllParameters(n);
+                    result.append("\nVisualize in Dendroscope : " + n.toString());
                 }
             }
-            writer = new StringWriter();
-            printer = new RnNewickPrinter();
-            printer.print(triplet.Item1, writer);
-            result.append("\nVisualize in Dendroscope : " + writer.toString());
         }
-
 
         return result.toString();
 

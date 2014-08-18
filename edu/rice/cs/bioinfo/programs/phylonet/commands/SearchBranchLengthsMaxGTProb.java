@@ -222,7 +222,7 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                     initialBL = 1.0;
                 child.setParentDistance(parent, initialBL);
 
-                if(child.getParentNumber() == 2)
+                if(child.getParentCount() == 2)
                 {
                     for(NetNode<Double> hybridParent : child.getParents())
                     {
@@ -321,7 +321,7 @@ public class SearchBranchLengthsMaxGTProb extends CommandBaseFileOut{
                 if(child.isRoot()) // calling getParentNumber on root causes NPE. Bug workaround.
                     continue;
 
-                if(child.getParentNumber() == 2)  // hybrid node
+                if(child.getParentCount() == 2)  // hybrid node
                 {
                     Iterator<NetNode<Double>> hybridParents = child.getParents().iterator();
                     final NetNode<Double> hybridParent1 = hybridParents.next();

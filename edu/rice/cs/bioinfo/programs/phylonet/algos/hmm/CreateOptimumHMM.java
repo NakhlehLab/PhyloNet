@@ -39,11 +39,10 @@ public class CreateOptimumHMM {
                             List<NucleotideObservation> observations, Configuration config) {
 
         myConfiguration = config;
-
-
+        myConfiguration.seed = Long.parseLong("8699692860394415879");
         System.out.println("\nThe seed was " + myConfiguration.seed);
 
-        rand = new MersenneTwister(config.seed);
+        rand = new MersenneTwister(myConfiguration.seed);
         f = new HmmOptimizationFunction(net, speciesToAlleles, observations, config);
         params = f.getParams();
 

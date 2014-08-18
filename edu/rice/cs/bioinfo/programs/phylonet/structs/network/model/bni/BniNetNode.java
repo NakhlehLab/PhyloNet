@@ -186,7 +186,7 @@ public class BniNetNode<T> implements NetNode<T> {
 	/**
 	 * This function returns the number of parent of a node.
 	 */
-	public int getParentNumber(){
+	public int getParentCount(){
 	    // kliu - this should be guarded appropriately
 	    if (_parents == null) {
 		    return (0);
@@ -195,6 +195,22 @@ public class BniNetNode<T> implements NetNode<T> {
 		    return (_parents.size());
 	    }
 	}
+
+
+    /**
+     * This function returns the number of children of a node.
+     */
+    public int getChildCount(){
+        // kliu - this should be guarded appropriately
+        if (_children == null) {
+            return (0);
+        }
+        else {
+            return (_children.size());
+        }
+    }
+
+
 
 	/**
 	 * This function returns the distance from this node to one of its parent.

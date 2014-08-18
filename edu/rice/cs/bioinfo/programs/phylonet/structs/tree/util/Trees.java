@@ -206,37 +206,6 @@ public class Trees {
 	}
 
 
-    public static Tree flattenTree(Tree source)
-    {
-
-        STITree copy = new STITree();
-        flattenNode(source.getRoot(),copy.getRoot(),0);
-
-        return copy;
-    }
-
-    private static void processChildren(TNode root, STINode destination,double lengthCount)
-    {
-        for (TNode child : root.getChildren())
-        {
-            if (child.getChildCount() == 1)
-                processChildren(child,destination,lengthCount + child.getParentDistance());
-            else
-                flattenNode(child,destination.createChild(),lengthCount + child.getParentDistance());
-        }
-
-
-    }
-
-    private static void flattenNode(TNode root, STINode destination, double length)
-    {
-
-        destination.setName(root.getName());
-        destination.setParentDistance(length);
-
-        processChildren(root,destination,0);
-
-    }
 
 
 	private static final void removeBinaryChildren(TMutableNode node) {
@@ -935,6 +904,15 @@ public class Trees {
 	 * Return all possible binary trees over a given taxa list
 	 */
 	public static List<Tree> generateAllBinaryTrees(String[] leaves){
+
+        if (leaves.length == 2)
+        {
+            STITree tree = new STITree();
+            tree.getRoot().createChild(leaves[0]);
+            tree.getRoot().createChild(leaves[1]);
+            return Arrays.asList((Tree)tree);
+        }
+
 		List<Tree> alltrees = new ArrayList<Tree>();
 
 		int index = 0;

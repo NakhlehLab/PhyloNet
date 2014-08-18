@@ -20,7 +20,7 @@ public class PrintNetwork
                 4.372790327458064
         }).apply();
 
-        System.out.println(Networks.network2string(net));
+        System.out.println(net.toString());
 
         new NetworkLengthApplier(net,new double[]{
                 0.2605287847619249,
@@ -29,7 +29,7 @@ public class PrintNetwork
                 4.324511317655939
         }).apply();
 
-        System.out.println(Networks.network2string(net));
+        System.out.println(net.toString());
     }
 
 

@@ -142,12 +142,7 @@ public class HmmOptimizationFunction extends LimitedRunMultivariateFunction impl
 
         double[] result = new double[allGeneTrees.size()];
 
-        List<MutableTuple<Tree, Double>> MTallGeneTrees = new ArrayList<>();
-
-        for (Tree geneTree : allGeneTrees)
-            MTallGeneTrees.add(new MutableTuple<Tree, Double>(geneTree, 0.0));
-
-        GeneTreeWithBranchLengthProbabilityYF g = new GeneTreeWithBranchLengthProbabilityYF(test,MTallGeneTrees,null);
+       GeneTreeWithBranchLengthProbabilityYF g = new GeneTreeWithBranchLengthProbabilityYF(test,allGeneTrees,null);
 
         g.calculateGTDistribution(result);
         return result;
@@ -333,7 +328,7 @@ public class HmmOptimizationFunction extends LimitedRunMultivariateFunction impl
 
                 if (config.ALGORITHM == Configuration.AlgorithmType.SNAPP)
                 {
-                    algo = new SNAPPAlgorithm(speciesTree, model);
+                    algo = new SNAPPAlgorithm(speciesTree, model, 0.018);
                     algorithms.add(algo);
                 }
 

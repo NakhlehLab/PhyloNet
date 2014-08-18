@@ -30,7 +30,7 @@ public class CreateDataset
 
         System.out.println(settings);
 
-        System.out.println(Networks.network2string(HmmNetworkUtils.fromENewickString(settings.network)));
+        System.out.println(HmmNetworkUtils.fromENewickString(settings.network));
 
         createDataset(finalDirectory, settings);
 

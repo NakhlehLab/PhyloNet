@@ -31,11 +31,9 @@ import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
 import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
 import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
 import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkNeighbourhoodRandomWalkGenerator;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkWholeNeighbourhoodGenerator;
 import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
 import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberSteepestAscent;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
@@ -44,12 +42,11 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.ByteArrayInputStream;
@@ -64,7 +61,7 @@ import java.util.*;
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
  */
-public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJung {
+public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
     private Network[] _optimalNetworks;
     private double[] _optimalScores;
     protected Long _maxFailure;
@@ -72,19 +69,26 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
     protected int _diameterLimit;
     private Set<String> _fixedHybrid;
     protected Network<Object> _startNetwork;
+    private int _numProcessors;
+    protected double[] _operationWeight;
+    private int _numRuns;
+    private Long _seed;
 
-    public InferILSNetworkParsimoniously(){
+    public InferNetworkMP(){
         super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
     }
 
-    public void setSearchParameter(Long maxExaminations, Long maxFailure, int diameterLimit, Network startNetwork, Set<String> fixedHybrid){
+
+    public void setSearchParameter(Long maxExaminations, Long maxFailure, int diameterLimit, Network startNetwork, Set<String> fixedHybrid, int numProcessors, double[] operationWeight, int numRuns, Long seed){
         _maxExaminations = maxExaminations;
         _diameterLimit = diameterLimit;
         _startNetwork = startNetwork;
         _maxFailure = maxFailure;
         _fixedHybrid = fixedHybrid;
-
-
+        _numProcessors = numProcessors;
+        _operationWeight = operationWeight;
+        _numRuns = numRuns;
+        _seed = seed;
     }
 
 
@@ -122,44 +126,28 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
         _optimalScores = new double[numSol];
         Arrays.fill(_optimalScores, Integer.MAX_VALUE);
 
-        //TODO
-        double[] operationProb = new double[4];
-        if(_fixedHybrid.size()==0){
+        String startingNetwork = getStartNetwork(gts, species2alleles,_fixedHybrid, _startNetwork);
 
-            operationProb[0] = 0.15;
-            operationProb[1] = 0.15;
-            operationProb[2] = 0.2;
-            operationProb[3] = 0.5;
+        for(int i=1; i<=_numRuns; i++){
+            DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = makeNetwork(startingNetwork);
+            NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(_operationWeight, makeNode, makeEdge, _seed);
+            AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+            //NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
+            //AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
 
-            /*
-            operationProb[0] = 1;
-            operationProb[1] = 0;
-            operationProb[2] = 0;
-            operationProb[3] = 0;
-            */
+            Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(gts, species2alleles);
+            Comparator<Double> comparator = getDoubleScoreComparator();
+            HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
+            //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _diameterLimit); // search starts here
+/*
+            System.out.println("Results after run #" + i);
+            for(int j=0; j<_optimalNetworks.length; j++){
+                System.out.println(_optimalScores[j] + ": " + network2String(_optimalNetworks[j]));
+            }
+            System.out.println("===============================\n\n");
+*/
         }
-        else{
-            operationProb[0] = 0;
-            operationProb[1] = 0;
-            operationProb[2] = 0;
-            operationProb[3] = 1.0;
-        }
 
-        DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = getStartNetwork(gts, species2alleles,_fixedHybrid, _startNetwork);
-        //NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(operationProb, makeNode, makeEdge);
-        //AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
-
-
-        NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-        AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
-
-        Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(gts, species2alleles);
-        Comparator<Double> comparator = getDoubleScoreComparator();
-        //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
-
-        HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _diameterLimit); // search starts here
-        //DirectedGraphToGraphAdapter<String,PhyloEdge<String>> resultNetwork = result.BestExaminedNetwork;
-        //System.out.println("\n #Networks " + result.ExaminationsCount);
         List<Tuple<Network, Double>> resultTuples= postProcessResult(gts, species2alleles);
         return resultTuples;
     }
@@ -167,8 +155,9 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
     private List<Tuple<Network, Double>> postProcessResult(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles){
         List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
         for(int i=0; i<_optimalNetworks.length; i++){
-            MDCOnNetworkYFBackup3 scorer = new MDCOnNetworkYFBackup3();
-            scorer.countExtraCoal(_optimalNetworks[i], gts, species2alleles);
+            MDCOnNetworkYF scorer = new MDCOnNetworkYF();
+            int[] xls = new int[gts.size()];
+            scorer.countExtraCoal(_optimalNetworks[i], gts, species2alleles, xls);
             resultList.add(new Tuple<Network, Double>(_optimalNetworks[i], _optimalScores[i]));
         }
         return resultList;
@@ -207,7 +196,7 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
     }
 
 
-    private DirectedGraphToGraphAdapter<String,PhyloEdge<String>> getStartNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
+    private String getStartNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
         checkNetworkWithHybrids(startingNetwork);
 
         if(startingNetwork == null){
@@ -237,20 +226,12 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
             createHybrid(startingNetwork, hybrid);
         }
 
-        int index = 1;
-        for(NetNode<Object> node: startingNetwork.dfs()){
-            if(node.getName()==null || node.getName().equals("")){
-                String name;
-                do{
-                    name = "i" + (index++);
-                }while(startingNetwork.findNode(name)!=null);
-                node.setName(name);
-            }
-        }
+        edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.removeAllParameters(startingNetwork);
+        edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.autoLabelNodes(startingNetwork);
 
         String newNetwork = network2String(startingNetwork);
 
-        return makeNetwork(newNetwork);
+        return newNetwork;
 
     }
 
@@ -265,19 +246,49 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
     }
 
 
+
+    private int[] computeXLParallel(Network network, List<MutableTuple<Tree,Double>> gts, Map<String, List<String>> species2alleles, int[] xls){
+        Thread[] myThreads = new Thread[_numProcessors];
+
+        MDCOnNetworkYF mdc = new MDCOnNetworkYF();
+        mdc.setParallel(true);
+        mdc.processNetwork(network);
+
+        for(int i=0; i<_numProcessors; i++){
+            myThreads[i] = new MyThread(network, gts, species2alleles, xls, mdc);
+            myThreads[i].start();
+        }
+
+        for(int i=0; i<_numProcessors; i++){
+            try {
+                myThreads[i].join();
+            } catch (InterruptedException ignore) {}
+        }
+
+        return xls;
+
+    }
+
+
+
     private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<MutableTuple<Tree,Double>> gts, final Map<String, List<String>> species2alleles){
         return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
             public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
                 Network bniNetwork = networkNew2Old(network);
 
-                MDCOnNetworkYFBackup3 scorer = new MDCOnNetworkYFBackup3();
-                List<Integer> scores = scorer.countExtraCoal(bniNetwork, gts, species2alleles);
+                int[] scores = new int[gts.size()];
+                if(_numProcessors == 1){
+                    MDCOnNetworkYF scorer = new MDCOnNetworkYF();
+                    scorer.countExtraCoal(bniNetwork, gts, species2alleles, scores);
+                }
+                else{
+                    computeXLParallel(bniNetwork, gts, species2alleles, scores);
+                }
 
                 double total = 0;
                 Iterator<MutableTuple<Tree,Double>> weightIt = gts.iterator();
                 for(int score: scores){
                     total += score * weightIt.next().Item2;
-                    //total += score;
                 }
 
 
@@ -285,8 +296,8 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
                     boolean exist = false;
                     for(int i=0; i<_optimalNetworks.length; i++){
                         if(_optimalNetworks[i]==null)break;
-                        if(edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.computeClusterDistance(bniNetwork, _optimalNetworks[i])[2]<0.00001 &&
-                                edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.computeTripartitionDistance(bniNetwork, _optimalNetworks[i])[2]<0.00001){
+                        NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
+                        if(metric.computeDistanceBetweenTwoNetworks(bniNetwork, _optimalNetworks[i]) == 0){
                             exist = true;
                             break;
                         }
@@ -309,11 +320,11 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
                     }
                 }
 
-                System.out.println();
+                /*
                 System.out.println(total + ": "+network2String(bniNetwork));
-                System.out.println(_optimalScores[0] + ":" + network2String(_optimalNetworks[0]));
-
-
+                System.out.println(_optimalScores[0] + ": " + network2String(_optimalNetworks[0]));
+                System.out.println();
+                */
                 return total;
 
             }
@@ -446,6 +457,28 @@ public class InferILSNetworkParsimoniously extends MDCOnNetworkYFFromRichNewickJ
             e.getStackTrace();
         }
         return null;
+    }
+
+    private class MyThread extends Thread{
+        Network _speciesNetwork;
+        List<MutableTuple<Tree,Double>> _geneTrees;
+        Map<String, List<String>> _species2alleles;
+        int[] _xls;
+        MDCOnNetworkYF _mdc;
+
+
+        public MyThread(Network speciesNetwork, List<MutableTuple<Tree,Double>> geneTrees, Map<String, List<String>> species2alleles, int[] xls, MDCOnNetworkYF mdc){
+            _speciesNetwork = speciesNetwork;
+            _geneTrees = geneTrees;
+            _species2alleles = species2alleles;
+            _xls = xls;
+            _mdc = mdc;
+        }
+
+
+        public void run() {
+            _mdc.countExtraCoal(_speciesNetwork, _geneTrees, _species2alleles, _xls);
+        }
     }
 
 

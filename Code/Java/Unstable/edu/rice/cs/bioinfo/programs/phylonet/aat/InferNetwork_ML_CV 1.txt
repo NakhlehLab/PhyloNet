@@ -107,17 +107,13 @@ END;
 
 BEGIN PHYLONET;
 
-InferNetwork_ML_CV (gt0,gt1,gt2,gt3,gt4,gt5,gt6,gt7,gt8,gt9,gt10,gt11,gt12,gt13,gt14,gt15,gt16,gt17,gt18,gt19,gt20,gt21,gt22,gt23,gt24,gt25,gt26,gt27,gt28,gt29,gt30,gt31,gt32,gt33,gt34,gt35,gt36,gt37,gt38,gt39,gt40,gt41,gt42,gt43,gt44,gt45,gt46,gt47,gt48,gt49,gt50,gt51,gt52,gt53,gt54,gt55,gt56,gt57,gt58,gt59,gt60,gt61,gt62,gt63,gt64,gt65,gt66,gt67,gt68,gt69,gt70,gt71,gt72,gt73,gt74,gt75,gt76,gt77,gt78,gt79,gt80,gt81,gt82,gt83,gt84,gt85,gt86,gt87,gt88,gt89,gt90,gt91,gt92,gt93,gt94,gt95,gt96,gt97,gt98,gt99) 3 -x 1 -rs 100;
+InferNetwork_ML_CV (gt0, gt1, gt2, gt3, gt4, gt5, gt6, gt7, gt8, gt9, gt10, gt11, gt12, gt13, gt14, gt15, gt16, gt17, gt18, gt19, gt20, gt21, gt22, gt23, gt24, gt25, gt26, gt27, gt28, gt29, gt30, gt31, gt32, gt33, gt34, gt35, gt36, gt37, gt38, gt39, gt40, gt41, gt42, gt43, gt44, gt45, gt46, gt47, gt48, gt49, gt50, gt51, gt52, gt53, gt54, gt55, gt56, gt57, gt58, gt59, gt60, gt61, gt62, gt63, gt64, gt65, gt66, gt67, gt68, gt69, gt70, gt71, gt72, gt73, gt74, gt75, gt76, gt77, gt78, gt79, gt80, gt81, gt82, gt83, gt84, gt85, gt86, gt87, gt88, gt89, gt90, gt91, gt92, gt93, gt94, gt95, gt96, gt97, gt98, gt99) 3 -x 1 -rs 5000;
 
 END;
 ===
 
-InferNetwork_ML_CV (gt0,gt1,gt2,gt3,gt4,gt5,gt6,gt7,gt8,gt9,gt10,gt11,gt12,gt13,gt14,gt15,gt16,gt17,gt18,gt19,gt20,gt21,gt22,gt23,gt24,gt25,gt26,gt27,gt28,gt29,gt30,gt31,gt32,gt33,gt34,gt35,gt36,gt37,gt38,gt39,gt40,gt41,gt42,gt43,gt44,gt45,gt46,gt47,gt48,gt49,gt50,gt51,gt52,gt53,gt54,gt55,gt56,gt57,gt58,gt59,gt60,gt61,gt62,gt63,gt64,gt65,gt66,gt67,gt68,gt69,gt70,gt71,gt72,gt73,gt74,gt75,gt76,gt77,gt78,gt79,gt80,gt81,gt82,gt83,gt84,gt85,gt86,gt87,gt88,gt89,gt90,gt91,gt92,gt93,gt94,gt95,gt96,gt97,gt98,gt99) 3 -x 1 -rs 100
-The inferred Network has 1 reticulations:
-(((((C:1.0)#H1:1.0::0.8022786380379568,B:1.0):5.915981312837137,A:1.0):0.5999497571362995,#H1:1.0::0.19772136196204315):1.815215337121316,D:1.0);
-Total log probability: -92.92288320600223
+InferNetwork_ML_CV (gt0, gt1, gt2, gt3, gt4, gt5, gt6, gt7, gt8, gt9, gt10, gt11, gt12, gt13, gt14, gt15, gt16, gt17, gt18, gt19, gt20, gt21, gt22, gt23, gt24, gt25, gt26, gt27, gt28, gt29, gt30, gt31, gt32, gt33, gt34, gt35, gt36, gt37, gt38, gt39, gt40, gt41, gt42, gt43, gt44, gt45, gt46, gt47, gt48, gt49, gt50, gt51, gt52, gt53, gt54, gt55, gt56, gt57, gt58, gt59, gt60, gt61, gt62, gt63, gt64, gt65, gt66, gt67, gt68, gt69, gt70, gt71, gt72, gt73, gt74, gt75, gt76, gt77, gt78, gt79, gt80, gt81, gt82, gt83, gt84, gt85, gt86, gt87, gt88, gt89, gt90, gt91, gt92, gt93, gt94, gt95, gt96, gt97, gt98, gt99) 3 -x 1 -rs 5000
+Inferred Network #1:
+(((((((B:1.0)#H1:1.0::0.06357392446743637,A:1.0):5.910594001926697)#H2:0.0011774181844964955::0.13168550530551332,#H1:1.0::0.9364260755325636):0.4483519102271312,C:1.0):5.93807620880014,#H2:5.9136180596640955::0.8683144946944867):2.0236298985795824,D:1.0);
+Total log probability: -91.38980698487964
 ===
-
-
-
-

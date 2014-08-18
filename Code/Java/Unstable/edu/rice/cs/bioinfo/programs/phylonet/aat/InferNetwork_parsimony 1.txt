@@ -13,13 +13,13 @@ END;
  
 BEGIN PHYLONET;
  
-InferNetwork_parsimony (geneTree1, geneTree2, geneTree3, geneTree4, geneTree5) 1 -rs 100 -x 1;
+InferNetwork_MP (geneTree1, geneTree2, geneTree3, geneTree4, geneTree5) 1 -rs 100 -x 1;
  
 END;
 ===
 
-InferNetwork_parsimony (geneTree1, geneTree2, geneTree3, geneTree4, geneTree5) 1 -rs 100 -x 1
+InferNetwork_MP (geneTree1, geneTree2, geneTree3, geneTree4, geneTree5) 1 -rs 100 -x 1
 Inferred Network #1:
-((((E)#H1:::0.75,C),A),((B,#H1:::0.25),D));
+(((B,(E)#H1:::0.25),D),((C,#H1:::0.75),A));
 Total number of extra lineages: 7.0
 ===

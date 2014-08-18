@@ -28,13 +28,13 @@ END;
 
 BEGIN PHYLONET;
 
-InferNetwork_ML_bootstrap (gt0, gt1, gt2, gt3, gt4, gt5, gt6, gt7, gt8, gt9, gt10, gt11, gt12, gt13, gt14, gt15, gt16, gt17, gt18, gt19, gt20) 1 -sr 10 -x 1 -rs 100;
+InferNetwork_ML_bootstrap (gt0, gt1, gt2, gt3, gt4, gt5, gt6, gt7, gt8, gt9, gt10, gt11, gt12, gt13, gt14, gt15, gt16, gt17, gt18, gt19, gt20) 1 -sr 10 -x 1 -rs 100 -em hardwired;
 
 END;
 ===
 
-InferNetwork_ML_bootstrap (gt0, gt1, gt2, gt3, gt4, gt5, gt6, gt7, gt8, gt9, gt10, gt11, gt12, gt13, gt14, gt15, gt16, gt17, gt18, gt19, gt20) 1 -sr 10 -x 1 -rs 100
+InferNetwork_ML_bootstrap (gt0, gt1, gt2, gt3, gt4, gt5, gt6, gt7, gt8, gt9, gt10, gt11, gt12, gt13, gt14, gt15, gt16, gt17, gt18, gt19, gt20) 1 -sr 10 -x 1 -rs 100 -em hardwired
 Inferred Network:
-(D:1.0,((C:1.0)#H1:1.0:0.2:0.2331935004979735,(A:1.0,(#H1:1.0:0.2:0.7668064995020265,B:1.0):5.911418414113012:0.2):0.7535194397555397:0.2):1.1334390534128125:0.9);
+(D:1.0,((C:1.0)#H1:1.0:1.0:0.2331935004979735,(A:1.0,(#H1:1.0:1.0:0.7668064995020265,B:1.0):5.911418414113012:0.7):0.7535194397555397:0.9):1.1334390534128125:0.9);
 Total log probability: -22.486750178505975
 ===

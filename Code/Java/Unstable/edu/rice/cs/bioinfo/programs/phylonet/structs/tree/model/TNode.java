@@ -24,6 +24,7 @@ import java.util.List;
 public interface TNode {
 
 	public static final double NO_DISTANCE = Double.NEGATIVE_INFINITY;
+    public static final double NO_SUPPORT = Double.NEGATIVE_INFINITY;
 
 	public static final String NO_NAME = "";
 

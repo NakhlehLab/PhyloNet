@@ -607,7 +607,7 @@ public class Networks
     }
 
 
-    public static Network string2network(String networkExp){
+    public static <T> Network<T> readNetwork(String networkExp){
         try{
             RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
             reader.setHybridSumTolerance(BigDecimal.valueOf(0.0001));
@@ -621,11 +621,15 @@ public class Networks
         return null;
     }
 
-    public static <T> String network2string(Network<T> speciesNetwork){
-        RnNewickPrinter<T> rnNewickPrinter = new RnNewickPrinter<T>();
-        StringWriter sw = new StringWriter();
-        rnNewickPrinter.print(speciesNetwork, sw);
-        return sw.toString();
+
+    public static <T> void removeAllParameters (Network<T> network){
+        for(NetNode<T> parent: network.bfs()){
+            for(NetNode<T> child: parent.getChildren()){
+                child.setParentDistance(parent, NetNode.NO_DISTANCE);
+                child.setParentProbability(parent, NetNode.NO_PROBABILITY);
+                child.setParentSupport(parent, NetNode.NO_SUPPORT);
+            }
+        }
     }
 
 

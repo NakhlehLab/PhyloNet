@@ -255,7 +255,10 @@ public class STITree<D extends Object> implements MutableTree {
 	}
 	
 	public void removeNode(String name){
-		getNode(name).removeNode();
+		STINode node = getNode(name);
+        if(node!=null){
+            node.removeNode();
+        }
 	}
 	
 	/**

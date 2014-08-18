@@ -21,7 +21,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 
+import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -237,6 +239,14 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
             count ++;
         }
         return count;
+    }
+
+
+    public String toString(){
+        RnNewickPrinter<T> rnNewickPrinter = new RnNewickPrinter<T>();
+        StringWriter sw = new StringWriter();
+        rnNewickPrinter.print(this, sw);
+        return sw.toString();
     }
 
 

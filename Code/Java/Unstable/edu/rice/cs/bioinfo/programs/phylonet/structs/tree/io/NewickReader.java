@@ -21,6 +21,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
@@ -328,9 +329,7 @@ public class NewickReader {
 					if (token != StreamTokenizer.TT_WORD) {
 						throw new ParseException("Bootstrap value expected");
 					}
-
 					double bootstrap = 0;
-
 					try {
 						bootstrap = Double.parseDouble(_stok.sval);
 					}
@@ -341,7 +340,7 @@ public class NewickReader {
 					node.setData(bootstrap);
 				}
 				else {	// no
-					node.setData(new Double(0));
+					node.setData(TNode.NO_SUPPORT);
 
 					_stok.pushBack();
 				}

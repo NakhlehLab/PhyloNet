@@ -39,6 +39,11 @@ import java.util.Random;
 
 public class PhyloNetAAT  {
 
+    public PhyloNetAAT()
+    {
+
+    }
+
     static class AATTestCase extends TestCase
     {
         private final File _file;
@@ -85,9 +90,7 @@ public class PhyloNetAAT  {
 
     private static Random _rand = new Random(23);
 
-
-
-    public static Test suite() throws IOException
+    public static TestSuite suite() throws Throwable
     {
         TestSuite aatSuite = new TestSuite();
 
@@ -100,7 +103,7 @@ public class PhyloNetAAT  {
         }))
         {
 
-            aatSuite.addTest(new AATTestCase(file));
+            new AATTestCase(file).runTest();
 
         }
 

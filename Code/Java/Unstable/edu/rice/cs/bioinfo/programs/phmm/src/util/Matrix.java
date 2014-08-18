@@ -25,7 +25,7 @@
  * Later, can parameterize by generic types. Meh, no need for now.
  */
 
-package util;
+package edu.rice.cs.bioinfo.programs.phmm.src.util;
 
 public class Matrix {
     // base case

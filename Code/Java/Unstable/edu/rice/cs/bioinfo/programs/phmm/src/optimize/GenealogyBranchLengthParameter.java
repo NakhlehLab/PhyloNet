@@ -26,7 +26,7 @@
  * Only use this for PhyloNet TNode objects.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 

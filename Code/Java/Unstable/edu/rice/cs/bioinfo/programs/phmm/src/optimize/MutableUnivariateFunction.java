@@ -22,7 +22,7 @@
  * UnivariateFunction with exposed methods to work with a single mutable parameter.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 

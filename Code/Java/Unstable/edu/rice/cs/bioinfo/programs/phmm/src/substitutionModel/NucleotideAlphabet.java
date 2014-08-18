@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package substitutionModel;
+package edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel;
 
 /**
  * Eh, futz with the class hierarchy later. Geez.

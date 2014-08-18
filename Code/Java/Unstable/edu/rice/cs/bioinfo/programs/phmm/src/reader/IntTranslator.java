@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package reader;
+package edu.rice.cs.bioinfo.programs.phmm.src.reader;
 
 import java.util.ArrayList;
 import java.util.HashMap;

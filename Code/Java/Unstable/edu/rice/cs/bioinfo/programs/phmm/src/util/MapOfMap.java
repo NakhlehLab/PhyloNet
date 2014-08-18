@@ -26,7 +26,7 @@
  * Use a hashtable for now.
  */
 
-package util;
+package edu.rice.cs.bioinfo.programs.phmm.src.util;
 
 import java.util.Map;
 import java.util.Set;

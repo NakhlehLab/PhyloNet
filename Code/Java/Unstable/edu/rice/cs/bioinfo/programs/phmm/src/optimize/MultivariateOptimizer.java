@@ -38,7 +38,7 @@
 // Later, if need to have more careful parameterization,
 // can change it.
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 import java.util.Collections;
 import java.util.ArrayList;
@@ -57,22 +57,21 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
-import be.ac.ulg.montefiore.run.jahmm.Hmm;
-import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardCalculator;
-import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardCalculator.Computation;
-import be.ac.ulg.montefiore.run.jahmm.ForwardBackwardScaledCalculator;
-import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
-import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
-import be.ac.ulg.montefiore.run.jahmm.phmm.OpdfMap;
-import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
-import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.Hmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.ForwardBackwardCalculator;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.ForwardBackwardCalculator.Computation;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.ForwardBackwardScaledCalculator;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequencyRatioTerm;
 import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.optimization.GoalType;
-import runHmm.runHmm;
-import util.Constants;
-import substitutionModel.GTRSubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phmm.src.runHmm.runHmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Constants;
+import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.GTRSubstitutionModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;

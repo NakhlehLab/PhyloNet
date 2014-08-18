@@ -18,15 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 /**
  * Directly handle model manipulation in here.
  * Lightweight. Fiddles with SwitchingFrequency as a (capped) probability.
  */
 
-import be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
-import runHmm.runHmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.SwitchingFrequency;
+import edu.rice.cs.bioinfo.programs.phmm.src.runHmm.runHmm;
 
 public class SwitchingFrequencyParameter extends Parameter {
     // Like in original algorithm,

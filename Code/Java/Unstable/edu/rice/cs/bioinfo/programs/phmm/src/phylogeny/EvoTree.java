@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package phylogeny;
+package edu.rice.cs.bioinfo.programs.phmm.src.phylogeny;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.ObservationMap;
 // kliu - pull in additional library support
 
 // kliu - use this as general tree class.

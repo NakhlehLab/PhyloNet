@@ -26,7 +26,7 @@
  * For convenience.
  */
 
-package optimize;
+package edu.rice.cs.bioinfo.programs.phmm.src.optimize;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -36,9 +36,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
-import util.Constants;
-import runHmm.runHmm;
-import be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
+import edu.rice.cs.bioinfo.programs.phmm.src.util.Constants;
+import edu.rice.cs.bioinfo.programs.phmm.src.runHmm.runHmm;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.HiddenState;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;

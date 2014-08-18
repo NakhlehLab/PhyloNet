@@ -167,7 +167,7 @@ public class SpeciesComparision
 
         double[] result = new double[1];
 
-        GeneTreeWithBranchLengthProbabilityYF g = new GeneTreeWithBranchLengthProbabilityYF(test, Arrays.asList( new MutableTuple<>(geneTree,0.0)),null);
+        GeneTreeWithBranchLengthProbabilityYF g = new GeneTreeWithBranchLengthProbabilityYF(test, Arrays.asList(geneTree),null);
         g.calculateGTDistribution(result);
         return result[0];
     }

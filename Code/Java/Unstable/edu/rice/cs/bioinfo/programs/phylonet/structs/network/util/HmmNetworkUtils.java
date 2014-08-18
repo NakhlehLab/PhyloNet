@@ -337,6 +337,6 @@ public class HmmNetworkUtils
 
     public static <T> Network<T> fromENewickString(String net)
     {
-        return (Network<T>) Networks.string2network(net);
+        return (Network<T>) Networks.readNetwork(net);
     }
 }

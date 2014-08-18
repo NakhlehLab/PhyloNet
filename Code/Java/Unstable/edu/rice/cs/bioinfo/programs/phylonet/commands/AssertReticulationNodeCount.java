@@ -112,7 +112,7 @@ public class AssertReticulationNodeCount extends CommandBase
                 if(child.isRoot())
                     continue;
 
-                if(child.getParentNumber() > 1)
+                if(child.getParentCount() > 1)
                 {
                     foundReticulationNodeCount++;
                 }

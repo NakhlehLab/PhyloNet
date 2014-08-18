@@ -62,7 +62,7 @@ public class ExtractOutput
         if (MSGeneTrees != null)
             result.actualSpeciesTrees = getActualSpeciesTrees(MSGeneTrees);
 
-        result.formattedNetwork = Networks.network2string(f.net);
+        result.formattedNetwork = f.net.toString();
 
         if (result.actualSpeciesTrees != null)
         {

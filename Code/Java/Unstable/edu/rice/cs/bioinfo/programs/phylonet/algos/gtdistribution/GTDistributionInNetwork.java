@@ -277,7 +277,7 @@ public class GTDistributionInNetwork {
 						st_taxa.add(newname);
 					}
 					
-					if(child.getParentNumber()>1){
+					if(child.getParentCount()>1){
 						List<TNode> corresNodes = hname2tnodes.get(child.getName());
 						if(corresNodes==null){
 							corresNodes = new ArrayList<TNode>();

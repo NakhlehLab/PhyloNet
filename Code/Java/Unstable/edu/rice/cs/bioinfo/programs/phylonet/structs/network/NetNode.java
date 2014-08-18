@@ -183,7 +183,14 @@ public interface NetNode<T> extends Serializable {
 	/**
 	 * This function returns the number of parent of a node.
 	 */
-	public int getParentNumber();
+	public int getParentCount();
+
+
+    /**
+     * This function returns the number of children of a node.
+     */
+    public int getChildCount();
+
 
 	// Data members
 	public static final double NO_DISTANCE = Double.NEGATIVE_INFINITY;	// Constant for no distances.

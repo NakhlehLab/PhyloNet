@@ -30,7 +30,7 @@ public static void main(String[] args)
 //
 //    new NetworkLengthApplier(net,lengths).apply();
 
-    System.out.println(Networks.network2string(net));
+    System.out.println(net.toString());
 
 }
 

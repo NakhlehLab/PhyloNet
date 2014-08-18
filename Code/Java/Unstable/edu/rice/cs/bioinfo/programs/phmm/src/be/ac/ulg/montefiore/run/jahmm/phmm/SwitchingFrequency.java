@@ -24,9 +24,9 @@
  * See writeup for details.
  */
 
-package be.ac.ulg.montefiore.run.jahmm.phmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm;
 
-import optimize.CalculationCache;
+import edu.rice.cs.bioinfo.programs.phmm.src.optimize.CalculationCache;
 
 public class SwitchingFrequency extends SwitchingFrequencyRatioTerm {
     public static final String GAMMA = "gamma";

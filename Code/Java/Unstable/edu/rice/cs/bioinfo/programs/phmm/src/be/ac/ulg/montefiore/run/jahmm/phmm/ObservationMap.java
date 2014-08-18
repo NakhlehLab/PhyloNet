@@ -30,13 +30,13 @@
  * Changed from String values to Character values.
  */
 
-package be.ac.ulg.montefiore.run.jahmm.phmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm;
 
 import java.text.NumberFormat;
 import java.util.Map;
 import java.util.Set;
 import java.util.Hashtable;
-import be.ac.ulg.montefiore.run.jahmm.Observation;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.Observation;
 
 public class ObservationMap extends Observation
 {

@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package be.ac.ulg.montefiore.run.jahmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm;
 
 /**
  * Creates a centroid for type <O>.  Used by the k-means algorithm.

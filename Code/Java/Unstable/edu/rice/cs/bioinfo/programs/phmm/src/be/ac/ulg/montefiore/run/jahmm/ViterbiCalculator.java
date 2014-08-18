@@ -40,7 +40,7 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -51,10 +51,10 @@ import java.util.Iterator;
 import java.util.List;
 
 // kliu - these appear to be new
-import runHmm.MemoryReport;
-import containers.IArrayFactory;
-import containers.IntArrayFactory;
-import containers.ListOfArrays;
+import edu.rice.cs.bioinfo.programs.phmm.src.runHmm.MemoryReport;
+import edu.rice.cs.bioinfo.programs.phmm.src.containers.IArrayFactory;
+import edu.rice.cs.bioinfo.programs.phmm.src.containers.IntArrayFactory;
+import edu.rice.cs.bioinfo.programs.phmm.src.containers.ListOfArrays;
 
 
 /**

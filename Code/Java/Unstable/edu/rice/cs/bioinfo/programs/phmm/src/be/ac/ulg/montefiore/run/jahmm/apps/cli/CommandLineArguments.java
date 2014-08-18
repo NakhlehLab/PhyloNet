@@ -40,7 +40,7 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.apps.cli;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.apps.cli;
 
 import java.io.*;
 import java.util.Arrays;

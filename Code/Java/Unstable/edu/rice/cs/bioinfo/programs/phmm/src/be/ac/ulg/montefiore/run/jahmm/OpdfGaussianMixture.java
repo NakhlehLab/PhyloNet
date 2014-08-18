@@ -40,14 +40,14 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
 
-import be.ac.ulg.montefiore.run.distributions.GaussianDistribution;
-import be.ac.ulg.montefiore.run.distributions.GaussianMixtureDistribution;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.distributions.GaussianDistribution;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.distributions.GaussianMixtureDistribution;
 
 
 /**

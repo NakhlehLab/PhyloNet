@@ -40,14 +40,14 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.io;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.io;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import be.ac.ulg.montefiore.run.jahmm.Opdf;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.Opdf;
 
 
 /**

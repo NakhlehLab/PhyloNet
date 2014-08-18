@@ -40,12 +40,12 @@
 
  */
 
-package be.ac.ulg.montefiore.run.jahmm.io;
+package edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.io;
 
 import java.io.IOException;
 import java.io.Writer;
 
-import be.ac.ulg.montefiore.run.jahmm.OpdfGaussianMixture;
+import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.OpdfGaussianMixture;
 
 
 /**

@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPP;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.GTRModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.RateModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.matrixexponentiation.GenericKrylovMethod;
 import jeigen.DenseMatrix;
@@ -19,6 +20,8 @@ public class MatrixQ{
 
     final double theta;
 
+    final int krylovIterations;
+
     public MatrixQ(RateModel rModel, int M, double theta){
         this.M = M;
         this.theta = theta;
@@ -27,11 +30,13 @@ public class MatrixQ{
         rateModel = rModel;
         transposedQ = initializeMatrixQ(rateMatrix,M,theta);
         equilibrium = computeEquilibrium();
+
+        krylovIterations = 20;
     }
 
     public MatrixQ(RateModel rModel, int M)
     {
-        this(rModel, M, 0.018);
+        this(rModel, M, 0.02);
     }
 
 
@@ -76,7 +81,7 @@ public class MatrixQ{
     }
 
 
-    public GenericKrylovMethod.MatrixLike getScaled(final double timeScale)
+    private GenericKrylovMethod.MatrixLike getScaled(final double timeScale)
     {
         return new GenericKrylovMethod.MatrixLike()
         {
@@ -92,13 +97,13 @@ public class MatrixQ{
     public DenseMatrix getProbabilityForColumn(double time, double[] actualColumn)
     {
 
-        KrylovResult krylovResult = getProbabilityForColumnKrylov(time,actualColumn);
-        //KrylovResult krylovResult = null;
+        KrylovResult krylovResult = getProbabilityForColumnKrylov(time,actualColumn,krylovIterations);
+
         if (isGood(krylovResult))
             return krylovResult.result;
         else
         {
-            //System.out.println("Krylov is returning bad approximations. You might want to consider upping the iteration count in MatrixQ.getProbabilityForColumnKrylov.");
+            System.out.println("Krylov is returning bad approximations. You might want to consider upping the iteration count in MatrixQ.getProbabilityForColumnKrylov.");
             DenseMatrix mexpResult = getProbabiltyForColumnMexp(time, actualColumn);
             //checkAccuracyReal(mexpResult,krylovResult);
             return mexpResult;
@@ -110,6 +115,16 @@ public class MatrixQ{
         return result.errorGuess < .01;
     }
 
+    private boolean isActuallyGood(DenseMatrix mexpResult, KrylovResult krylovResult)
+    {
+        DenseMatrix diff = krylovResult.result.sub(mexpResult);
+
+        double diffMagnitude = diff.pow(2).sum().sqrt().s();
+
+        return diffMagnitude < .01;
+
+    }
+
     private void checkAccuracyReal(DenseMatrix mexpResult, KrylovResult krylovResult) {
         DenseMatrix diff = krylovResult.result.sub(mexpResult);
 
@@ -117,13 +132,13 @@ public class MatrixQ{
         //double originalMagnitude = mexpResult.pow(2).sum().sqrt().s();
         //System.out.println(diff + " " + diffMagnitude);
 
-        if (diffMagnitude > .001)
+        if (diffMagnitude > .01)
         {
-            System.out.print(' ');
+            System.out.println("Really BAD :(");
         }
 
         if (diffMagnitude > (krylovResult.errorGuess + 1e-10))
-            System.out.println("Actually bad");
+            System.out.println("Error guess is  bad " + diffMagnitude + " vs " + krylovResult.errorGuess);
     }
 
     private static class KrylovResult
@@ -137,9 +152,9 @@ public class MatrixQ{
         }
     }
 
-    private KrylovResult getProbabilityForColumnKrylov(double time, double[] actualColumn) {
+    private KrylovResult getProbabilityForColumnKrylov(double time, double[] actualColumn, int iterations) {
 
-        GenericKrylovMethod method = new GenericKrylovMethod(getScaled(time),actualColumn,10);
+        GenericKrylovMethod method = new GenericKrylovMethod(getScaled(time),actualColumn,iterations);
 
         return new KrylovResult(method.getResult(),method.getEstimatedError());
     }
@@ -152,7 +167,7 @@ public class MatrixQ{
     }
 
 
-    public DenseMatrix computeEquilibrium() {
+    private DenseMatrix computeEquilibrium() {
 
         DenseMatrix result = Shortcuts.ones(R.getMatrixSize(M),1);
         result = result.div(0);
@@ -221,12 +236,38 @@ public class MatrixQ{
     }
 
     public static void main(String[] args){
-        //R.dims = 1;
-        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {5/6.0, 1/6.0}, new double[] {0.1});
-        System.out.println("The BiAllelicGTR Model is: " + BAGTRModel.getRateMatrix());
-        MatrixQ tester = new MatrixQ(BAGTRModel , 5, 1);
+//        //R.dims = 1;
+//        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {5/6.0, 1/6.0}, new double[] {0.1});
+//        System.out.println("The BiAllelicGTR Model is: " + BAGTRModel.getRateMatrix());
+//        MatrixQ tester = new MatrixQ(BAGTRModel , 5);
+//
+//        System.out.println(tester.transposedQ);
 
-        System.out.println(tester.transposedQ);
+
+
+
+        RateModel jc = new GTRModel(new double[]{.1, .2, .3, .4},new double[]{1,1.5,2,2.5,3,3.5});
+        for (int n = 1; n <= 100 ;n++)
+        {
+            FMatrix test = new FMatrix(n);
+            test.set(R.loopOver(n).iterator().next(),1);
+            MatrixQ q = new MatrixQ(jc,n);
+
+            for (int a = 0; a< 100; a++)
+            {
+                q.transposedQ.mexp();//(1,test.arr);
+            }
+
+            long startTime = System.nanoTime();
+            for (int a = 0; a< 100; a++)
+            {
+                q.transposedQ.mexp();//getProbabilityForColumn(1,test.arr);
+            }
+            long totalTime = System.nanoTime() - startTime;
+
+            System.out.println(n + "," + totalTime/100.0);
+
+        }
     }
 
 

@@ -49,23 +49,6 @@ public class Algorithms
      * @param obs The nucleotide observations.
      * @return The nucleotideIndex observations.
      */
-    private static Map<String, Integer> getNucleotideIndexMap(NucleotideObservation obs)
-    {
-        Map<String, Integer> colorMap = new HashMap<String, Integer>();
-        for (String allele : obs.getAlleles())
-        {
-            colorMap.put(allele, alleleToColor(obs.getObservationForAllele(allele)));
-        }
-        return colorMap;
-    }
-
-
-    /**
-     * This transforms a nucleotide observation map of strings to characters to a "nucleotideIndex" map of strings to ints.
-     *
-     * @param obs The nucleotide observations.
-     * @return The nucleotideIndex observations.
-     */
     private static Map<String, R> getNucleotideIndexMap(NucleotideObservation obs, Map<String, String> allele2species)
     {
         Map<String, int[]> colorMap = new HashMap<String, int[]>();
@@ -137,22 +120,56 @@ public class Algorithms
      * @return The probability.
      */
     @SuppressWarnings("unchecked")
-   public static double getProbabilityObservationGivenNetwork(Network<SNAPPData> speciesNetwork, Map<String,String> allele2species, NucleotideObservation obs, MatrixQ Q)
+   public static double getProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, Map<String,String> allele2species, NucleotideObservation obs, MatrixQ Q, int siteID)
     {
         Map<String, R> nucleotideIndexMap = getNucleotideIndexMap(obs, allele2species);
-        Set<NetNode> articulationNodes = Networks.getArticulationNodes((Network)speciesNetwork);
+        Set<String> articulationNodes = new HashSet<String>();
+        for(Object node: Networks.getArticulationNodes(cloneNetwork(speciesNetwork))){
+            articulationNodes.add(((NetNode)node).getName());
+        }
         int numReticulations = speciesNetwork.getReticulationCount();
         int reticulationID = 0;
-        for (NetNode<SNAPPData> node : Networks.postTraversal(speciesNetwork))
+        for (NetNode<SNAPPData[]> node : Networks.postTraversal(speciesNetwork))
         {
-            boolean isArticulation = articulationNodes.contains(node);
-            processNode(Q, nucleotideIndexMap, node, isArticulation, numReticulations, reticulationID);
+            boolean isArticulation = articulationNodes.contains(node.getName());
+            processNode(Q, nucleotideIndexMap, node, isArticulation, numReticulations, reticulationID, siteID);
             if(node.isNetworkNode()){
                 reticulationID++;
             }
         }
 
-        return getProbabilityOfNetwork(speciesNetwork, Q);
+        return getProbabilityOfNetwork(speciesNetwork, Q, siteID);
+    }
+
+
+    public static double updateProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, MatrixQ Q, int siteID, Map<NetNode, Boolean> node2update)
+    {
+
+        Set<String> articulationNodes = new HashSet<String>();
+        for(Object node: Networks.getArticulationNodes(cloneNetwork(speciesNetwork))){
+            articulationNodes.add(((NetNode)node).getName());
+        }
+        int numReticulations = speciesNetwork.getReticulationCount();
+        int reticulationID = 0;
+        for (NetNode<SNAPPData[]> node : Networks.postTraversal(speciesNetwork))
+        {
+            /*
+            if(node2update.containsKey(node)) {
+                boolean isArticulation = articulationNodes.contains(node.getName());
+                updateNode(Q, node, isArticulation, numReticulations, reticulationID, siteID, node2update.get(node));
+            }
+            */
+
+            boolean isArticulation = articulationNodes.contains(node.getName());
+            updateNode(Q, node, isArticulation, reticulationID, siteID, node2update.get(node));
+
+
+            if(node.isNetworkNode()){
+                reticulationID++;
+            }
+        }
+
+        return getProbabilityOfNetwork(speciesNetwork, Q, siteID);
     }
 
 
@@ -164,9 +181,9 @@ public class Algorithms
      * @param Q           A SNAPP transition matrix.
      * @return The probability
      */
-    private static double getProbabilityOfNetwork(Network<SNAPPData> speciesNetwork, MatrixQ Q)
+    private static double getProbabilityOfNetwork(Network<SNAPPData[]> speciesNetwork, MatrixQ Q, int siteID)
     {
-        FMatrix rootFBot = speciesNetwork.getRoot().getData().getFBottoms(null).iterator().next().Item1;
+        FMatrix rootFBot = speciesNetwork.getRoot().getData()[siteID].getFBottoms(null).iterator().next().Item1;
 
         DenseMatrix eq = Q.getEquilibrium();
         double sum = 0;
@@ -187,22 +204,22 @@ public class Algorithms
      * @param nucleotideIndexMap The observations encoded as indices.
      * @param node               The node to process.
      */
-    private static void processNode(MatrixQ Q, Map<String, R> nucleotideIndexMap, NetNode<SNAPPData> node, boolean isArticulation, int numReticulations, int reticulationID)
+    private static void processNode(MatrixQ Q, Map<String, R> nucleotideIndexMap, NetNode<SNAPPData[]> node, boolean isArticulation, int numReticulations, int reticulationID, int siteID)
     {
         if(PRINT_DETAILS){
             System.out.println("\nNode " + node.getName());
         }
         SNAPPData data = new SNAPPData();
-        node.setData(data);
+        node.getData()[siteID] = data;
 
         if (node.isLeaf())
         {
             processLeaf(nucleotideIndexMap, node, data, numReticulations);
         } else if(node.isTreeNode())
         {
-            processInternalTreeNode(node, data, isArticulation);
+            processInternalTreeNode(node, data, isArticulation, siteID);
         } else if(node.isNetworkNode()){
-            processNetworkNode(node, data, reticulationID);
+            processNetworkNode(node, data, reticulationID, siteID);
         }
         if(PRINT_DETAILS){
             System.out.println("FBottoms:");
@@ -217,6 +234,53 @@ public class Algorithms
     }
 
 
+    /**
+     * Process a node for the snapp algorithm.
+     *
+     * @param Q                  The transition matrix for SNAPP.
+     * @param node               The node to process.
+     */
+    private static void updateNode(MatrixQ Q, NetNode<SNAPPData[]> node, boolean isArticulation, int reticulationID, int siteID, Boolean constructFBottom)
+    {
+        if(PRINT_DETAILS){
+            System.out.println("\nNode " + node.getName());
+        }
+        SNAPPData data = node.getData()[siteID];
+        if(constructFBottom==null){
+            if (PRINT_DETAILS) {
+
+                System.out.println("FBottoms:");
+                data.printFMatrixs("b");
+                System.out.println("FTop:");
+                data.printFMatrixs("t");
+            }
+            return;
+        }
+
+
+
+        if(constructFBottom) {
+            data.cleanFBottom();
+            if (node.isTreeNode()) {
+                processInternalTreeNode(node, data, isArticulation, siteID);
+            } else if (node.isNetworkNode()) {
+                processNetworkNode(node, data, reticulationID, siteID);
+            }
+            if (PRINT_DETAILS) {
+                System.out.println("FBottoms:");
+                data.printFMatrixs("b");
+            }
+        }
+        data.cleanFTop();
+        processTopBranchOfNode(Q, node, data);
+        if(PRINT_DETAILS){
+            System.out.println("FTop:");
+            data.printFMatrixs("t");
+        }
+    }
+
+
+
 
 
     /**
@@ -225,9 +289,13 @@ public class Algorithms
      * @param Q    The transition matrix for SNAPP.
      * @param node The node to process.
      */
-    private static void processTopBranchOfNode(MatrixQ Q, NetNode<SNAPPData> node, SNAPPData data)
+    private static void processTopBranchOfNode(MatrixQ Q, NetNode<SNAPPData[]> node, SNAPPData data)
     {
-        for(NetNode<SNAPPData> parent: node.getParents()) {
+
+        for(NetNode<SNAPPData[]> parent: node.getParents()) {
+            if (Double.isNaN(node.getParentDistance(parent)) || Double.isInfinite(node.getParentDistance(parent)))
+                throw new RuntimeException("Snapp only works with finite branch distances: " + node.getParentDistance(parent));
+
             for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
                 FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                 if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {
@@ -239,17 +307,22 @@ public class Algorithms
         }
     }
 
+
+
     /**
      * Process an internal non-leaf node.
      *
      * @param node The node to process.
      * @param data The data for that node.
      */
-    private static void processInternalTreeNode(NetNode<SNAPPData> node, SNAPPData data, boolean isArticulation)
-    {
-        Iterator<NetNode<SNAPPData>> children = node.getChildren().iterator();
-        SNAPPData childData1 = children.next().getData();
-        SNAPPData childData2 = children.next().getData();
+    private static void processInternalTreeNode(NetNode<SNAPPData[]> node, SNAPPData data, boolean isArticulation, int siteID) {
+
+        if (node.getChildCount() != 2)
+            throw new RuntimeException("SNAPP does not work on networks with internal tree node with 3 or more children per node");
+
+        Iterator<NetNode<SNAPPData[]>> children = node.getChildren().iterator();
+        SNAPPData childData1 = children.next().getData()[siteID];
+        SNAPPData childData2 = children.next().getData()[siteID];
 
         NetNode parent = null;
         if(!node.isRoot()) {
@@ -338,8 +411,12 @@ public class Algorithms
      * @param node The node to process.
      * @param data The data for that node.
      */
-    private static void processNetworkNode(NetNode<SNAPPData> node, SNAPPData data, int reticulationID)
+    private static void processNetworkNode(NetNode<SNAPPData[]> node, SNAPPData data, int reticulationID, int siteID)
     {
+        if (node.getChildCount() != 1)
+            throw new RuntimeException("SNAPP does not work on networks with reticulation node with 2 or more children per node");
+
+
         double[] inheritanceProbs = new double[2];
         NetNode[] parents = new NetNode[2];
         int index = 0;
@@ -349,7 +426,7 @@ public class Algorithms
         }
 
         index = 1;
-        for(Tuple<FMatrix,int[]> tuple: node.getChildren().iterator().next().getData().getFTops(node)){
+        for(Tuple<FMatrix,int[]> tuple: node.getChildren().iterator().next().getData()[siteID].getFTops(node)){
             FMatrix fTop = tuple.Item1;
             for (int n = 1; n <= fTop.mx; n++)
             {
@@ -429,7 +506,7 @@ public class Algorithms
      * @param node               The node to process.
      * @param data               The data for that node.
      */
-    private static void processLeaf(Map<String, R> nucleotideIndexMap, NetNode<SNAPPData> node, SNAPPData data, int numReticulations)
+    private static void processLeaf(Map<String, R> nucleotideIndexMap, NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations)
     {
         NetNode parent = node.getParents().iterator().next();
         int[] splittingIndex = new int[numReticulations];
@@ -442,6 +519,11 @@ public class Algorithms
             total = total - r.getNum(i);
         }
         fBot.set(r , 1.0/weight);
+    }
+
+
+    private static Network cloneNetwork(Network net) {
+        return Networks.readNetwork(net.toString());
     }
 
 

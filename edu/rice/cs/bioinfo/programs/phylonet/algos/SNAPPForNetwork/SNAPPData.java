@@ -100,6 +100,14 @@ public class SNAPPData {
         fTopList.add(matrixTuple);
     }
 
+    public void cleanFTop(){
+        FTopsMap.clear();
+    }
+
+    public void cleanFBottom(){
+        FBottomsMap.clear();
+    }
+
 
     public List<Tuple<FMatrix, int[]>> getFTops(NetNode parent){
         return FTopsMap.get(parent);

@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.algorithm.Nucleo
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.RateModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.HmmTreeUtils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.StringReader;
@@ -29,19 +30,19 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     public SNAPPAlgorithm(Tree theSpeciesTree, RateModel rModel){
         speciesTree = theSpeciesTree;
 
-        Q = new MatrixQ(rModel, speciesTree.getLeafCount(), 0.018);
+        Q = new MatrixQ(rModel, speciesTree.getLeafCount(), 0.02);
     }
 
 
     @Override
     public double getProbability(NucleotideObservation dna) {
 
-        Tree result = Trees.flattenTree(speciesTree);
+        Tree result = HmmTreeUtils.flattenTree(speciesTree);
 
         double resultVal= Algorithms.getProbabilityObservationGivenTree(result, dna, Q);
 
-        if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
-            throw new RuntimeException("Result is not finite");
+        if (Double.isNaN(resultVal) || Double.isInfinite(resultVal))
+            throw new RuntimeException("SNAPP result is not finite");
         return resultVal;
     }
 

@@ -253,6 +253,9 @@ public class Algorithms
     {
         data.FTop = new FMatrix(data.mx);
 
+        if (Double.isNaN(node.getParentDistance()) || Double.isInfinite(node.getParentDistance()))
+            throw new RuntimeException("Snapp only works with finite branch distances: " + node.getParentDistance());
+
         DenseMatrix result = Q.getProbabilityForColumn(node.getParentDistance(), data.FBottom.arr);
 
         data.FTop.setMatrix(result);
@@ -267,6 +270,9 @@ public class Algorithms
     private static void processInternalNode(STINode<SNAPPData> node, SNAPPData data)
     {
         Iterator<STINode<SNAPPData>> children = node.getChildren().iterator();
+        if (node.getChildCount() != 2)
+            throw new RuntimeException("SNAPP does not work on trees with 2 or more children per node");
+
         STINode<SNAPPData> leftChild = children.next();
         STINode<SNAPPData> rightChild = children.next();
 

@@ -299,7 +299,11 @@ public class R {
                     R last = null;
 
                     @Override
-                    public void remove(){}
+                    public void remove()
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+
 
                     @Override
                     public boolean hasNext()

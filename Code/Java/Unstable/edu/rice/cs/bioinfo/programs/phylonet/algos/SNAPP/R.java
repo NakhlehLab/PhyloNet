@@ -253,7 +253,7 @@ public class R {
             numerator/= CombinatoricsUtils.factorialDouble(getNum(i));
         }
 
-        if (Double.isNaN(numerator)||Double.isInfinite(numerator))
+        if (Double.isInfinite(numerator) || Double.isNaN(numerator))
             throw new RuntimeException("GetLikelihoodproduct is not returning a finite value.");
 
         return numerator;
@@ -294,9 +294,6 @@ public class R {
                     R last = null;
 
                     @Override
-                    public void remove(){}
-
-                    @Override
                     public boolean hasNext()
                     {
                         return last == null || last.values[dims - 1] != n;
@@ -313,6 +310,12 @@ public class R {
                         }
                         last.sum = calculateSum(last.values);
                         return last;
+                    }
+
+                    @Override
+                    public void remove()
+                    {
+                        throw new UnsupportedOperationException();
                     }
 
                     private void tryAdvance(int i)
@@ -470,12 +473,20 @@ public class R {
     public static void main(String[] args)
     {
 
-        Map<Integer,String> seenIndices = new HashMap<Integer,String>();
+        for (int n = 1; n < 100; n++)
+        {
+            System.out.println(n+","+R.getMatrixSize(n));
+        }
+
+
+        Map<Integer,String> seenIndices = new HashMap<>();
+        int count = 0;
 
         for (int n = 1; n <=20 ;n++) {
 
 
             for (R r : R.loopOver(n)) {
+                count++;
                 int firstIndex = r.getIndex();
 
                 if (seenIndices.containsKey(firstIndex)) {
@@ -488,6 +499,8 @@ public class R {
 
             }
         }
+        System.out.println(count);
+        System.out.println(seenIndices.size());
 
     }
 

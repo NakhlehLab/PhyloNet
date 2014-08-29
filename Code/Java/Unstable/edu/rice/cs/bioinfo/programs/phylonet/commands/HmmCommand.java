@@ -135,10 +135,7 @@ public class HmmCommand extends CommandBaseFileOutWithDNA {
     {
         ConfigurationBuilder configBuilder;
 
-        if (parser.getBooleanParameter("normal"))
-            configBuilder = ConfigurationBuilder.getNormal();
-        else
-            configBuilder = ConfigurationBuilder.getSNAPP();
+        configBuilder = ConfigurationBuilder.getNormal();
 
         Integer threads = parser.getIntegerParameter("threads");
         if (threads != null)
@@ -310,8 +307,8 @@ public class HmmCommand extends CommandBaseFileOutWithDNA {
     }
 
     private FullOutputInformation getHmm(Configuration config,
-            List<NucleotideObservation> trainingObservations, List<NucleotideObservation> testingObservations, Path outputDirectory,
-            List<STITree<String>> sourceTrees, List<Tree> currentMSTrees)
+                                         List<NucleotideObservation> trainingObservations, List<NucleotideObservation> testingObservations, Path outputDirectory,
+                                         List<STITree<String>> sourceTrees, List<Tree> currentMSTrees)
     {
 
         FullOutputInformation bestRun = null;

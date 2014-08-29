@@ -547,7 +547,7 @@ public class GeneTreeProbability {
             }
         }
         if(_printDetails)
-            System.out.println("");
+            System.out.println(" = " + gtmaphisprob);
 
         if(countXL){
             return gtmaphisprob+"|"+xl;

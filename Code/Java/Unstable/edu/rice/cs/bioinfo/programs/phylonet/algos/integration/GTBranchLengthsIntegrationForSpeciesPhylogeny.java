@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.integration;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYF;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYFBackup;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -27,6 +28,8 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
     Map<String, List<String>> _species2alleles;
     Map<String,Double> _networkHeightConstraints;
     Set<NetNode> _articulateNodes;
+
+    //int _batchSize = 1;
 
 
     public GTBranchLengthsIntegrationForSpeciesPhylogeny(Network network, Tree gt, Map<String, List<String>> species2alleles){
@@ -342,7 +345,7 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
                 throw new RuntimeException("Not Ultrametric");
             }
 
-            GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, _gtList, _species2alleles);
+            GeneTreeWithBranchLengthProbabilityYFBackup gtp = new GeneTreeWithBranchLengthProbabilityYFBackup(_network, _gtList, _species2alleles);
             if(_articulateNodes!=null){
                 gtp.setTotalNodes(_articulateNodes);
             }
@@ -360,7 +363,7 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
 
 
         try{
-            Network net = Networks.string2network("((A:2,(B:1)X#H1:1::0.3)AB:1,(C:2,X#H1:1::0.7)BC:1)root;");
+            Network net = Networks.readNetwork("(((((D:1)#H1:1::0.3,C:2):1,(B:2)#H2:1::0.7):1,(A:3,#H2:1::0.3):1):1,(E:2,#H1:1::0.7):3);");
             String gtString = "(A:4,B:4,C:4);";
             NewickReader nr = new NewickReader(new StringReader(gtString));
             Tree gt = nr.readTree();

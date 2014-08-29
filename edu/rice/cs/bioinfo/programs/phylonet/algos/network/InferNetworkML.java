@@ -88,6 +88,8 @@ public abstract class InferNetworkML extends MDCOnNetworkYFFromRichNewickJung {
     protected File logFile = null;
     protected List<Tuple<Network,Double>> _networksTried = new ArrayList<Tuple<Network, Double>>();
 
+    private boolean _printDetails = false;
+
 
 /*
     protected Network[] _optimalNetworks;
@@ -205,7 +207,9 @@ public abstract class InferNetworkML extends MDCOnNetworkYFFromRichNewickJung {
 
 
         for(int i=1; i<=_numRuns; i++){
-            //System.out.println("\n\nRun #" + i + ":");
+            if(_printDetails) {
+                System.out.println("\n\nRun #" + i + ":");
+            }
             DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = makeNetwork(startingNetwork);
             NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(_operationWeight, makeNode, makeEdge, _seed);
             AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
@@ -227,13 +231,14 @@ public abstract class InferNetworkML extends MDCOnNetworkYFFromRichNewickJung {
                 }
             }
 
-             /*
-             System.out.println("Results after run #" + i);
-             for(int j=0; j<_optimalNetworks.length; j++){
-                 System.out.println(_optimalScores[j] + ": " + network2String(_optimalNetworks[j]));
-             }
-             System.out.println("===============================\n\n");
-            */
+            if(_printDetails) {
+                System.out.println("Results after run #" + i);
+                for (int j = 0; j < _optimalNetworks.length; j++) {
+                    System.out.println(_optimalScores[j] + ": " + _optimalNetworks[j].toString());
+                }
+                System.out.println("===============================\n\n");
+            }
+
         }
         List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
         for(int i=0; i<numSol; i++){
@@ -328,19 +333,19 @@ public abstract class InferNetworkML extends MDCOnNetworkYFFromRichNewickJung {
 
                 System.gc();
 
-/*
-                 System.out.println(score +  ": "+ network2String(speciesNetwork));
-                 if(optimalChanged){
-                     System.out.println("Optimal ones:");
-                     for(int i=0; i<_optimalNetworks.length; i++){
-                         if(_optimalNetworks[i]!=null){
-                             System.out.println(_optimalScores[i]+": " + network2String(_optimalNetworks[i]));
-                         }
-                     }
-                 }
+                if(_printDetails) {
+                    System.out.println(score + ": " + speciesNetwork.toString());
+                    if (optimalChanged) {
+                        System.out.println("Optimal ones:");
+                        for (int i = 0; i < _optimalNetworks.length; i++) {
+                            if (_optimalNetworks[i] != null) {
+                                System.out.println(_optimalScores[i] + ": " + _optimalNetworks[i].toString());
+                            }
+                        }
+                    }
 
-                 System.out.println();
-*/
+                    System.out.println();
+                }
 
 
                 return score;

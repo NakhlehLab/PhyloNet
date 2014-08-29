@@ -4,10 +4,12 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phmm.src.be.ac.ulg.montefiore.run.jahmm.phmm.*;
-import edu.rice.cs.bioinfo.programs.phmm.src.substitutionModel.*;
-import edu.rice.cs.bioinfo.programs.phmm.src.phylogeny.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.algorithm.FelsensteinAlgorithm;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.GTRModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.SubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
+
 
 import java.io.StringReader;
 import java.util.Arrays;
@@ -80,10 +82,10 @@ public class GTBranchLengthsIntegrationForSequence {
                     node.setParentDistance(argument[index++]);
             }
 
-            ObservationMap observationMap = new ObservationMap(_leaf2char);
+            OneNucleotideObservation converter = new OneNucleotideObservation(_leaf2char);
 
-            Felsenstein fcalc = new Felsenstein(_model);
-            double result = fcalc.getLikelihoodtree(_gt, observationMap);
+            FelsensteinAlgorithm fcalc = new FelsensteinAlgorithm(_gt,_model);
+            double result = fcalc.getProbability(converter);
             //System.out.println(_gt.toString()+": " + result);
             return result;
         }
@@ -95,10 +97,9 @@ public class GTBranchLengthsIntegrationForSequence {
     }
 
     public static void main(String[] args){
-        GTRSubstitutionModel gtrsm = new GTRSubstitutionModel();
-        double[] rates = {1.0, 1.0, 1.0, 1.0, 1.0};
+        double[] rates = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
         double[] freqs = {0.25, 0.25, 0.25, 0.25};
-        gtrsm.setSubstitutionRates(rates, freqs);
+        GTRModel gtrsm = new GTRModel(freqs,rates);
         NewickReader nr = new NewickReader(new StringReader("((SA:1.0,SB:1.0)SAB:0.5,(SC:1.0,SD:1.0)SCD:0.5)root"));
         STITree<Double> tree = new STITree<Double>(true);
         try {

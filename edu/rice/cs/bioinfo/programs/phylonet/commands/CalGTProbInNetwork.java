@@ -412,7 +412,9 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             gts.add(gtsForOneLocus);
         }
 
-
+        if(!_inferBL){
+            _numRuns = 1;
+        }
         double optimalScore = Double.NEGATIVE_INFINITY;
         Network optimalNetwork = null;
         if (_usingBL) {
@@ -434,6 +436,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             if (_multree) {
                 NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
                 optimalNetwork = transformer.makeNetwork(_speciesNetwork);
+
                 List<Tree> bGeneTrees = new ArrayList<Tree>();
                 List<MutableTuple<List<Integer>,Double>> nbTree2bTrees = new ArrayList<MutableTuple<List<Integer>,Double>>();
                 for (List<MutableTuple<Tree, Double>> list : gts) {
@@ -491,7 +494,6 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                         optimalScore = score;
                         optimalNetwork = speciesNetwork;
                     }
-
                 }
             }
         }

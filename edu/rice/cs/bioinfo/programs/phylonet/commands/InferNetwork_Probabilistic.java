@@ -72,7 +72,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private Set<String> _fixedHybrid = new HashSet<String>();
     private double[] _operationWeight = {0.15,0.15,0.2,0.5};
     private int _numRuns = 10;
-    private Long _seed = new Long(100);
+    private Long _seed = null;
     private boolean _oneGTPerLocus = true;
 
 

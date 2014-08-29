@@ -109,8 +109,8 @@ public class CreateOptimumHMM {
 
         lower.allGeneTreeLengths = new double[params.numberOfGeneTreeLengths()];
         upper.allGeneTreeLengths = new double[params.numberOfGeneTreeLengths()];
-        Arrays.fill(lower.allGeneTreeLengths,.1);
-        Arrays.fill(upper.allGeneTreeLengths,10.0);
+        Arrays.fill(lower.allGeneTreeLengths,.00001);
+        Arrays.fill(upper.allGeneTreeLengths,Double.POSITIVE_INFINITY);
 
         lower.speciesNetworkBranchLengths = new double[params.numberOfNetworkLengths()];
         upper.speciesNetworkBranchLengths = new double[params.numberOfNetworkLengths()];

@@ -57,7 +57,7 @@ public class ExtractOutput
 
         result.formattedSpeciesTrees = getFormattedSpeciesTrees(f.getSpeciesTrees());
         result.formattedHmmStates = getFormattedHmmStates(hmm);
-        result.formattedHmmStateCounts =  getStateCounts(viterbiStateSequence,params.getNumberOfSpeciesTrees());
+        result.formattedHmmStateCounts =  getStateCounts(viterbiStateSequence,hmm.nbStates());
 
         if (MSGeneTrees != null)
             result.actualSpeciesTrees = getActualSpeciesTrees(MSGeneTrees);
@@ -76,9 +76,9 @@ public class ExtractOutput
         return result;
     }
 
-    private int[] getStateCounts(int[] viterbiStateSequence, int numberOfSpeciesTrees)
+    private int[] getStateCounts(int[] viterbiStateSequence, int numberOfStates)
     {
-        int[] result = new int[numberOfSpeciesTrees];
+        int[] result = new int[numberOfStates];
         for (int state : viterbiStateSequence)
             result[state]++;
 

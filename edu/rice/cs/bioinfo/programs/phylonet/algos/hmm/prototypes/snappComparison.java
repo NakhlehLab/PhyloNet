@@ -17,7 +17,7 @@ public class snappComparison {
 
     public long seed;
     public  Tree topology;
-    private static Map<String,String> baDATA = new HashMap<>();
+    private static Map<String,String> baDATA = new HashMap<String,String>();
 
 
     public snappComparison(Tree specTreeTopology, long numSeed){
@@ -39,7 +39,7 @@ public class snappComparison {
 
             List<String> geneTreesStrings = Arrays.asList("(A,(B,C)n1)n0", "(B,(A,C)n1)n0", "(C,(B,A)n1)n0");
 
-            List<Tree> geneTrees = new ArrayList<>();
+            List<Tree> geneTrees = new ArrayList<Tree>();
             for (String str: geneTreesStrings)
                 geneTrees.add(HmmTreeUtils.toTree(str));
 
@@ -80,7 +80,7 @@ public class snappComparison {
     private static <T> Network<T> toNetwork(Tree speciesTree) {
         String newickString = speciesTree.toNewickWD();
 
-        ExNewickReader<T> reader = new ExNewickReader<>(new StringReader(newickString));
+        ExNewickReader<T> reader = new ExNewickReader<T>(new StringReader(newickString));
 
         try {
             return reader.readNetwork();

@@ -43,7 +43,7 @@ public class GenerateMSGeneTrees
         //String net = "(((1:.75)ANC1#H1:0)ANC2#H2:7.25,(ANC2#H2:3,(ANC1#H1:0,2:.75)Earliest:3)Medium:4.25)Root;";
         String net = "((1:3,ANC#H1:2.25)AA:2,((2:.75)ANC#H1:0,3:.75)CA:4.25)ROOT;";
 
-        Map<String,Integer> mp = new HashMap<>();
+        Map<String,Integer> mp = new HashMap<String,Integer>();
         mp.put("1",1);
         mp.put("2",1);
         mp.put("3",1);

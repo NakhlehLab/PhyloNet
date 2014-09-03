@@ -10,8 +10,8 @@ public class EthanGenerateMSCommand
 {
 
     private String command = "";
-    private Map<Integer,String> numberToSpeciesMapping = new HashMap<>();
-    private Map<String,List<String>> speciesToAlleleMap = new HashMap<>();
+    private Map<Integer,String> numberToSpeciesMapping = new HashMap<Integer,String>();
+    private Map<String,List<String>> speciesToAlleleMap = new HashMap<String,List<String>>();
 
     private static class MSData
     {
@@ -22,7 +22,7 @@ public class EthanGenerateMSCommand
             this.height = height;
         }
 
-        List<Integer> speciesArriving = new ArrayList<>();
+        List<Integer> speciesArriving = new ArrayList<Integer>();
 
         void addSpecies(int species)
         {
@@ -41,7 +41,7 @@ public class EthanGenerateMSCommand
     private List<NetNode<MSData>> getSortedNetNodeAndTimes(Network<MSData> net)
     {
 
-        List<NetNode<MSData>> result = new ArrayList<>();
+        List<NetNode<MSData>> result = new ArrayList<NetNode<MSData>>();
         for (NetNode<MSData> node : net.bfs())
         {
             result.add(node);
@@ -101,7 +101,7 @@ public class EthanGenerateMSCommand
     {
         HmmNetworkUtils.annotateHeights(net);
 
-        numberToSpeciesMapping = new HashMap<>();
+        numberToSpeciesMapping = new HashMap<Integer, String>();
 
         for (NetNode<MSData> node: net.bfs())
         {
@@ -217,7 +217,7 @@ public class EthanGenerateMSCommand
     {
         String net = "((A:3.1,(B:3)ANC#H1:.1):.9,ANC#H1:1);";
 
-        Map<String,Integer> speciesToAlleles = new HashMap<>();
+        Map<String,Integer> speciesToAlleles = new HashMap<String,Integer>();
         speciesToAlleles.put("A", 1);
         speciesToAlleles.put("B", 1);
 

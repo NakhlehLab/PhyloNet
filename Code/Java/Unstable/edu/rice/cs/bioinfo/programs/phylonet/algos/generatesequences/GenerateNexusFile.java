@@ -52,7 +52,7 @@ public class GenerateNexusFile
     {
         String result = "<";
 
-        List<String> entries = new ArrayList<>();
+        List<String> entries = new ArrayList<String>();
         for (String species : speciesToAlleleMap.keySet())
             entries.add(getAlleleMapEntry(species));
 
@@ -100,7 +100,7 @@ public class GenerateNexusFile
     {
         String net = "((1:3,ANC#H1:2.25)AA:2,((2:.75)ANC#H1:0,3:.75)CA:4.25)ROOT;";
 
-        Map<String,Integer> mp = new HashMap<>();
+        Map<String,Integer> mp = new HashMap<String,Integer>();
         mp.put("1",1);
         mp.put("2",1);
         mp.put("3",1);

@@ -20,7 +20,7 @@ public abstract class LimitedRunMultivariateFunction implements MultivariateFunc
 
     public LimitedRunMultivariateFunction(int maxIterations)
     {
-        probScoreData = new ArrayList<>();
+        probScoreData = new ArrayList<Double>();
         this.maxIterations = maxIterations;
     }
 

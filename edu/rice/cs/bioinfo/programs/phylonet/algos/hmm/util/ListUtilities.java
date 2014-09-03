@@ -9,7 +9,7 @@ public class ListUtilities
     {
         int partitionSize = (original.size() + partitions-1)/partitions;
 
-        List<List<T>> result = new ArrayList<>(partitions);
+        List<List<T>> result = new ArrayList<List<T>>(partitions);
 
         for (int partitionNumber = 0; partitionNumber < partitions; partitionNumber++)
         {
@@ -24,7 +24,7 @@ public class ListUtilities
 
     public static <T> List<T> pieceTogether(List<List<T>> parts, int dontIncludeIndex)
     {
-        List<T> result = new ArrayList<>();
+        List<T> result = new ArrayList<T>();
 
         for (int i =0 ; i < parts.size();i++)
         {

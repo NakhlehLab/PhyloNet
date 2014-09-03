@@ -479,7 +479,7 @@ public class R {
         }
 
 
-        Map<Integer,String> seenIndices = new HashMap<>();
+        Map<Integer,String> seenIndices = new HashMap<Integer,String>();
         int count = 0;
 
         for (int n = 1; n <=20 ;n++) {

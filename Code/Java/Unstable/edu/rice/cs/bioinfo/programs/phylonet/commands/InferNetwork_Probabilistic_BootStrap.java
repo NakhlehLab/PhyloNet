@@ -575,7 +575,7 @@ public class InferNetwork_Probabilistic_BootStrap extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
 
-        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<List<MutableTuple<Tree,Double>>>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){
 

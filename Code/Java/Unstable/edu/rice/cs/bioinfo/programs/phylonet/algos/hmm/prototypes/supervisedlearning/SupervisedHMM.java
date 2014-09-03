@@ -14,7 +14,7 @@ public class SupervisedHMM
 
     static class SupervisedState implements Opdf<JahmmNucleotideObservation>
     {
-        Map<NucleotideObservation,Integer> countsObserved = new HashMap<>();
+        Map<NucleotideObservation,Integer> countsObserved = new HashMap<NucleotideObservation,Integer>();
         int totalCountObserved =0;
 
 
@@ -48,7 +48,7 @@ public class SupervisedHMM
         public void fit(Collection<? extends JahmmNucleotideObservation> co)
         {
             totalCountObserved = co.size();
-            countsObserved = new HashMap<>();
+            countsObserved = new HashMap<NucleotideObservation, Integer>();
 
             for (JahmmNucleotideObservation jObs : co)
             {
@@ -83,7 +83,7 @@ public class SupervisedHMM
         {
             try{
                 SupervisedState result = (SupervisedState) super.clone();
-                result.countsObserved = new HashMap<>(countsObserved);
+                result.countsObserved = new HashMap<NucleotideObservation, Integer>(countsObserved);
                 result.totalCountObserved = totalCountObserved;
                 return result;
             }
@@ -103,7 +103,7 @@ public class SupervisedHMM
         for (int stateIndex = 0 ; stateIndex < numberOfStates; stateIndex++)
         {
             states[stateIndex] = new SupervisedState();
-            List<NucleotideObservation> obsForThisState = new ArrayList<>();
+            List<NucleotideObservation> obsForThisState = new ArrayList<NucleotideObservation>();
 
             for (int i = 0 ;i < trainingStates.length;i++)
             {
@@ -138,7 +138,7 @@ public class SupervisedHMM
                 a[i][j] = (1+moreCounts[i][j])/ ((double)counts[i]+numberOfStates);
             }
 
-        Hmm<JahmmNucleotideObservation> myHMM = new Hmm<>(pi,a,Arrays.asList(states));
+        Hmm<JahmmNucleotideObservation> myHMM = new Hmm<JahmmNucleotideObservation>(pi,a,Arrays.asList(states));
 
         int[] inferred = myHMM.mostLikelyStateSequence(JahmmNucleotideObservation.wrapObservations(testingSet));
 

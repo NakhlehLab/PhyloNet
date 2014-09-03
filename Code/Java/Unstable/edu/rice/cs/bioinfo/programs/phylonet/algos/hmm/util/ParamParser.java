@@ -21,8 +21,8 @@ public class ParamParser
     public ParamParser(List<Parameter> params,  Proc3<String, Integer, Integer> errorDetected)
     {
         this.params = params;
-        this.switches = new ArrayList<>();
-        this.switchParamsNames = new ArrayList<>();
+        this.switches = new ArrayList<ParamExtractor>();
+        this.switchParamsNames = new ArrayList<String>();
         this.errorDetected = errorDetected;
 
     }
@@ -120,7 +120,7 @@ public class ParamParser
 
     private Map<String, List<String>> convertParamAlleleMapToActual(Map<String,String> ValueMap)
     {
-        Map<String, List<String>> result = new HashMap<>();
+        Map<String, List<String>> result = new HashMap<String, List<String>>();
 
         for (String allele : ValueMap.keySet())
         {

@@ -84,7 +84,7 @@ public class FelsensteinAlgorithmBiAllelic extends NucleotideProbabilityAlgorith
     }
 
 
-    Map<NucleotideObservation, Double> memo = new HashMap<>();
+    Map<NucleotideObservation, Double> memo = new HashMap<NucleotideObservation, Double>();
 
     /**
      * Run the Felstein algorithm and obtain the likelihood of the whole tree.
@@ -112,7 +112,7 @@ public class FelsensteinAlgorithmBiAllelic extends NucleotideProbabilityAlgorith
     public static void main(String[] args) {
         NewickReader nr = new NewickReader(new StringReader("((SA:1.0,SB:1.0)SAB:0.5,(SC:1.0,SD:1.0)SCD:0.5)root"));
 
-        STITree<Double> tree = new STITree<>(true);
+        STITree<Double> tree = new STITree<Double>(true);
         try {
             nr.readTree(tree);
         } catch (Exception e) {
@@ -120,7 +120,7 @@ public class FelsensteinAlgorithmBiAllelic extends NucleotideProbabilityAlgorith
             return;
         }
 
-        Map<String, Character> omap = new HashMap<>();
+        Map<String, Character> omap = new HashMap<String, Character>();
         omap.put("SA", 'G');
         omap.put("SB", 'C');
         omap.put("SC", 'T');

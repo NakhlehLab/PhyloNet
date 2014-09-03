@@ -7,7 +7,7 @@ public class HmmStateUtilities {
 
     public static List<Integer> getGeneTrees(int[] hmmStateSequence, HmmParameters params) {
         //Decomposing HMM States to geneTrees.
-        List<Integer> geneTrees = new ArrayList<>();
+        List<Integer> geneTrees = new ArrayList<Integer>();
         for (int i : hmmStateSequence) {
             geneTrees.add(i / params.getNumberOfSpeciesTrees());
         }
@@ -16,7 +16,7 @@ public class HmmStateUtilities {
 
     public static List<Integer> getSpeciesTrees(int[] hmmStateSequence, HmmParameters params) {
         //Decomposing HMM States to speciesTrees.
-        List<Integer> speciesTrees = new ArrayList<>();
+        List<Integer> speciesTrees = new ArrayList<Integer>();
         for (int i : hmmStateSequence) {
             speciesTrees.add(i % params.getNumberOfSpeciesTrees());
         }

@@ -27,7 +27,7 @@ public class InferNetworkMLFromGTTBLWithParametricBootstrap extends InferNetwork
         return new Func2<Network, Integer, List>() {
             public List execute(Network network, Integer numGTs) {
                 SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
-                List<List<MutableTuple>> gts = new ArrayList<>();
+                List<List<MutableTuple>> gts = new ArrayList<List<MutableTuple>>();
                 for(Tree tr: simulator.generateGTs(network, species2alleles, numGTs, MSPath)){
                     gts.add(Arrays.asList(new MutableTuple(tr, 1.0)));
                 }

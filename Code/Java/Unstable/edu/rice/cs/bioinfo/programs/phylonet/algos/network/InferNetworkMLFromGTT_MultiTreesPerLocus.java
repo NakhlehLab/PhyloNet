@@ -42,10 +42,10 @@ public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFrom
 
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List dataForStartingNetwork, List dataForInferNetwork, List treeCorrespondences){
         int treeID = 0;
-        Map<String, MutableTuple<Integer,Double>> tree2Info = new HashMap<>();
+        Map<String, MutableTuple<Integer,Double>> tree2Info = new HashMap<String, MutableTuple<Integer,Double>>();
         for(Object o: originalGTs) {
             List<MutableTuple<Tree,Double>> treesForOneLocus = (List<MutableTuple<Tree,Double>>)o;
-            Map<String, Integer> tree2infoIndex = new HashMap<>();
+            Map<String, Integer> tree2infoIndex = new HashMap<String, Integer>();
             List<MutableTuple<Integer,Double>> infoList = new ArrayList<MutableTuple<Integer, Double>>();
             for (MutableTuple<Tree, Double> gtTuple : treesForOneLocus) {
                 //MutableTuple<Integer,Double> info = new MutableTuple<Integer, Double>(-1,gtTuple.Item2);
@@ -55,7 +55,7 @@ public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFrom
                 String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
                 MutableTuple<Integer,Double> existingInfo = tree2Info.get(exp);
                 if (existingInfo == null) {
-                    existingInfo = new MutableTuple<>(treeID, gtTuple.Item2);
+                    existingInfo = new MutableTuple<Integer,Double>(treeID, gtTuple.Item2);
                     dataForStartingNetwork.add(gtTuple);
                     dataForInferNetwork.add(gtTuple.Item1);
                     tree2Info.put(exp, existingInfo);

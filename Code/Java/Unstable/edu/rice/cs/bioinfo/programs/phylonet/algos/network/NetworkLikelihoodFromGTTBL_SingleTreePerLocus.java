@@ -50,7 +50,7 @@ public class NetworkLikelihoodFromGTTBL_SingleTreePerLocus extends NetworkLikeli
         double totalProb = 0;
         Iterator weight = gtCorrespondences.iterator();
         for(double prob: probList){
-            totalProb += Math.log(prob) * (double)weight.next();
+            totalProb += Math.log(prob) * (Double)weight.next();
         }
         return totalProb;
     }

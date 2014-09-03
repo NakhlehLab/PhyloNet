@@ -210,7 +210,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         }
 
         List<Tuple3<Tree, List<Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDListForCV =
-                new ArrayList<>();  // New data structure
+                new ArrayList<Tuple3<Tree, List<Double>, Set<Integer>>>();  // New data structure
         summarizeGeneTreestoKfolds(gts, distinctBinaryTrees, nbTreeAndCountAndBinaryIDListForCV);
 
         int ret = 0; // initial and current value of reticulation nodes
@@ -345,7 +345,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
                 // 2. Work on nbTreeAndCountAndBinaryIDList_vsublist.
                 // Transfer info from nbTreeAndCountAndBinaryIDListForCV
-                List<Tuple3<Tree,Double, Set<Integer>>> nbTreeAndCountAndBinaryIDList_vsubList = new ArrayList<>();
+                List<Tuple3<Tree,Double, Set<Integer>>> nbTreeAndCountAndBinaryIDList_vsubList = new ArrayList<Tuple3<Tree,Double, Set<Integer>>>();
 
                 for (Tuple3<Tree,List<Double>,Set<Integer>> tuple: nbTreeAndCountAndBinaryIDListForCV) {
                     if (tuple.Item2.get(s-_numFolds) > 0) { // weight > 0, only those present in vsublist
@@ -597,7 +597,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
                 // Create a new binaryID for each of tr's binary resolutions and
                 // put them into binaryIDs.
 
-                Set<Integer> binaryIDs = new HashSet<>();
+                Set<Integer> binaryIDs = new HashSet<Integer>();
                 for(Tree btr: Trees.getAllBinaryResolution(tr)){
                     // loop for all binary resolution of tr, tr could be non-binary
                     // btr is one of its binary resolution trees.
@@ -680,7 +680,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
                         temp1 +=weight;  // increment temp1
                         triple.Item2.set(i+1,temp1); // increment the (i+1)th element in CountList
 
-                        newTuple = new Tuple3<>(tr, triple.Item2, triple.Item3);
+                        newTuple = new Tuple3<Tree, List<Double>, Set<Integer>>(tr, triple.Item2, triple.Item3);
                         // create a newTuple = an updated version of the one saved in nbTreeAndCountAndBinaryIDListForCV
 
                         break;  // when breaking out, the index points to this item

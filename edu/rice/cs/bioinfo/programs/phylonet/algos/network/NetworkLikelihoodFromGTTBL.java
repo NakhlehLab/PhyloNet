@@ -45,7 +45,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
 
     private void computePairwiseCoalesceTime(List<Tree> trees, Map<String,List<String>> species2alleles){
-        _pair2time = new HashMap<>();
+        _pair2time = new HashMap<SpeciesPair, Double>();
 
         Map<String,String> allele2species = null;
         if(species2alleles!=null){

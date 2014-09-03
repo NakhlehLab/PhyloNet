@@ -76,7 +76,7 @@ public abstract class InferNetworkMLFromGTWithParametricBootstrap{
 
 
     private Network performBootstrapping(Network model, Integer sampleSize, int numRound, String estimator){
-        List<Network> inferredModels = new ArrayList<>();
+        List<Network> inferredModels = new ArrayList<Network>();
         for(int i=0; i<numRound; i++){
             List sample = _simulator.execute(model, sampleSize);
             inferredModels.add(_inference.execute(sample).Item1);

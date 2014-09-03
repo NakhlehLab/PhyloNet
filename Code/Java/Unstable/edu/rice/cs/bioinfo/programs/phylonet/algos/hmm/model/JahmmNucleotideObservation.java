@@ -21,7 +21,7 @@ public class JahmmNucleotideObservation extends Observation
 
     public static List<JahmmNucleotideObservation> wrapObservations(List<NucleotideObservation> nucObs)
     {
-        List<JahmmNucleotideObservation> result = new ArrayList<>();
+        List<JahmmNucleotideObservation> result = new ArrayList<JahmmNucleotideObservation>();
         for (NucleotideObservation obs: nucObs)
             result.add(new JahmmNucleotideObservation(obs));
         return result;

@@ -217,7 +217,7 @@ public class HmmParameters {
     public static void main(String[] args)
     {
         Network<String> foo = HmmNetworkUtils.fromENewickString("(A:1,B:1);");
-        Map<String,List<String>> alleleMapping = new HashMap<>();
+        Map<String,List<String>> alleleMapping = new HashMap<String,List<String>>();
         alleleMapping.put("A",Arrays.asList("A"));
         alleleMapping.put("B",Arrays.asList("B"));
         HmmParameters p = new HmmParameters(2,foo,alleleMapping,1, ConfigurationBuilder.getSNAPP().build(""));

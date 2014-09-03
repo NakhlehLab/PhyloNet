@@ -387,7 +387,7 @@ class ParseStackAction implements ParseStack {
 
 
     private List<Identifier> readIdentifier(Identifier identifier, boolean checkAll){
-        List<Identifier> values = new ArrayList<>();
+        List<Identifier> values = new ArrayList<Identifier>();
         if(checkAll && identifier.Content.toLowerCase().equals("all")){
             for(PySONNode block: _parseStack){
                 if(block instanceof TreesBlockBody){

@@ -94,7 +94,7 @@ public class ParameterTaxonSetList extends ParameterBase{
 
 
     private List<String> readIdentifier(String identifier){
-        List<String> values = new ArrayList<>();
+        List<String> values = new ArrayList<String>();
         boolean isSet = false;
         if (identifier.contains("-")) {
             String[] identPairs = identifier.split("-");

@@ -566,7 +566,7 @@ public class InferNetwork_ProbabilisticCV extends CommandBaseFileOut{
 
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<List<MutableTuple<Tree,Double>>>();
         //List<Tree> gts2 = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(NetworkNonEmpty geneTree : _geneTrees){

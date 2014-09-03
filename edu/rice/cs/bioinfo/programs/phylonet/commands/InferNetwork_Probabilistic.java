@@ -99,7 +99,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
         Parameter geneTreeParam = this.assertParameterIdentListOrSetList(0);
         noError = noError && geneTreeParam != null;
-        _geneTrees = new ArrayList<>();
+        _geneTrees = new ArrayList<List<NetworkNonEmpty>>();
 
         ParameterIdent number = this.assertParameterIdent(1);
         try
@@ -132,7 +132,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 ParameterTaxonSetList geneTreeSetList = (ParameterTaxonSetList)geneTreeParam;
                 for(Iterable<String> gtSet : geneTreeSetList.TaxonSetList)
                 {
-                    List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<>();
+                    List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<NetworkNonEmpty>();
                     for (String ident : gtSet) {
                         noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
                         if (noError) {
@@ -580,11 +580,11 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     @Override
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
-        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<List<MutableTuple<Tree,Double>>>();
         //List<Tree> gts2 = new ArrayList<Tree>();
         //List<Integer> counter = new ArrayList<Integer>();
         for(List<NetworkNonEmpty> geneTrees : _geneTrees){
-            List<MutableTuple<Tree,Double>> gtsForOneLocus = new ArrayList<>();
+            List<MutableTuple<Tree,Double>> gtsForOneLocus = new ArrayList<MutableTuple<Tree,Double>>();
             for(NetworkNonEmpty geneTree : geneTrees) {
                 double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                     @Override

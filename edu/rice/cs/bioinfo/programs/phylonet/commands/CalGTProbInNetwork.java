@@ -93,7 +93,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
 
         Parameter geneTreeParam = this.assertParameterIdentListOrSetList(1);
         noError = noError && geneTreeParam != null;
-        _geneTrees = new LinkedList<>();
+        _geneTrees = new LinkedList<List<NetworkNonEmpty>>();
 
         if(geneTreeParam instanceof ParameterIdentList) {
             ParameterIdentList geneTreeList = (ParameterIdentList)geneTreeParam;
@@ -109,7 +109,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             ParameterTaxonSetList geneTreeSetList = (ParameterTaxonSetList)geneTreeParam;
             for(Iterable<String> gtSet : geneTreeSetList.TaxonSetList)
             {
-                List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<>();
+                List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<NetworkNonEmpty>();
                 for (String ident : gtSet) {
                     noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
                     if (noError) {
@@ -373,9 +373,9 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     protected String produceResult() {
         StringBuffer result = new StringBuffer();
 
-        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<>();
+        List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<List<MutableTuple<Tree,Double>>>();
         for(List<NetworkNonEmpty> geneTrees : _geneTrees) {
-            List<MutableTuple<Tree, Double>> gtsForOneLocus = new ArrayList<>();
+            List<MutableTuple<Tree, Double>> gtsForOneLocus = new ArrayList<MutableTuple<Tree, Double>>();
             for (NetworkNonEmpty geneTree : geneTrees) {
                 double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
                     @Override

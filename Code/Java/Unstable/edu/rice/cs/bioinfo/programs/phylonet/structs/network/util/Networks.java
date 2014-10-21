@@ -793,6 +793,29 @@ public class Networks
     }
 
 
+    public static <T> boolean hasCycle(Network<T> net) {
+        NetNode<T> root = net.getRoot();
+        Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
+        Set<NetNode<T>> stacked = new HashSet<NetNode<T>>();
+        if(dfs(root, visited, stacked)) return true;
+        return false;
+    }
+
+    private static <T> boolean dfs(NetNode<T> node, Set<NetNode<T>> visited,
+                                   Set<NetNode<T>> stacked) {
+        if(stacked.contains(node)) return true;
+        if(visited.contains(node)) return false;
+
+        visited.add(node);
+        stacked.add(node);
+        for(NetNode<T> n : node.getChildren()) {
+            if(dfs(n, visited, stacked)) return true;
+        }
+        stacked.remove(node);
+        return false;
+    }
+
+
 
 
 

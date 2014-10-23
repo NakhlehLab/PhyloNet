@@ -18,7 +18,9 @@ public class NetRetDel<T> implements NetworkOperation {
 
     private Network _net;
 
-    private double logP;
+    private Random random;
+
+    private double logQ = 1.0;
 
     /**
      * store deleted reticulation nodes
@@ -46,18 +48,19 @@ public class NetRetDel<T> implements NetworkOperation {
     private double dist2;
 
 
-    public NetRetDel(Network net) {
+    public NetRetDel(Network net, Random rand) {
         this._net = net;
+        this.random = rand;
     }
 
     @Override
     public double operate() {
         List<NetNode<T>> netNodes = IterableHelp.toList(_net.getNetworkNodes());
         if(netNodes.size() == 0) {
-            logP = Double.MIN_VALUE;
-            return logP;
+            logQ = Double.MIN_VALUE;
+            return logQ;
         }
-        deleted = netNodes.get((new Random()).nextInt(netNodes.size()));
+        deleted = netNodes.get(random.nextInt(netNodes.size()));
 
         List<NetNode<T>> parents = IterableHelp.toList(deleted.getParents());
         // delete parent node cannot be network node
@@ -65,8 +68,8 @@ public class NetRetDel<T> implements NetworkOperation {
         if(parents.get(0).isNetworkNode() && parents.get(1).isNetworkNode()){
             count--;
             if(count == 0) {
-                logP = Double.MIN_VALUE;
-                return logP;
+                logQ = Double.MIN_VALUE;
+                return logQ;
             }
             return operate();
         } else if(parents.get(0).isNetworkNode()) {
@@ -76,7 +79,7 @@ public class NetRetDel<T> implements NetworkOperation {
             deletedParent = parents.get(0);
             parent = parents.get(1);
         } else {
-            if((new Random()).nextDouble() < 0.50) {
+            if(random.nextDouble() < 0.50) {
                 deletedParent = parents.get(0);
                 parent = parents.get(1);
             } else {
@@ -89,8 +92,8 @@ public class NetRetDel<T> implements NetworkOperation {
         if(!deletedParent.getParents().iterator().hasNext()) {
             count--;
             if(count == 0) {
-                logP = Double.MIN_VALUE;
-                return logP;
+                logQ = Double.MIN_VALUE;
+                return logQ;
             }
             return operate();
         }
@@ -99,8 +102,8 @@ public class NetRetDel<T> implements NetworkOperation {
             if(pc.hasParent(dpp)){
                 count--;
                 if(count == 0) {
-                    logP = Double.MIN_VALUE;
-                    return logP;
+                    logQ = Double.MIN_VALUE;
+                    return logQ;
                 }
                 return operate();
             }
@@ -145,14 +148,13 @@ public class NetRetDel<T> implements NetworkOperation {
             deletedParent.removeChild(child);
         }
         dpp.removeChild(deletedParent);
-        logP = 0.0;
-        return logP;
+        return logQ;
     }
 
     @Override
     public void undo() {
         // no-op
-        if(logP == Double.MIN_VALUE) return;
+        if(logQ == Double.MIN_VALUE) return;
         // 1:: restore deleted parent
         dpp.adoptChild(deletedParent, distp);
         deletedParent.setParentDistance(dpp, distp);

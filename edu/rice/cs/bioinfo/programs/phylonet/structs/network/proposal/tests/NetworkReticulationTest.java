@@ -10,12 +10,16 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.NetworkSwa
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.junit.Test;
 
+import java.util.Random;
+
 /**
  * Created by wendingqiao on 10/21/14.
  */
 public class NetworkReticulationTest {
     @Test
     public void test() throws Exception {
+
+        Random random = new Random(559872L);
 
         BniNetwork<Double> network = new BniNetwork<Double>();
         network.createRoot("R");
@@ -76,7 +80,7 @@ public class NetworkReticulationTest {
         // test undo()
         System.out.println(network.toString());
         for (int i = 0; i < 0; i++) {
-            NetworkOperation op = new NetRetAdd<>(network);
+            NetworkOperation op = new NetRetAdd<>(network, random);
             System.out.println(op.operate());
             //System.out.println(network.toString());
             op.undo();
@@ -86,7 +90,7 @@ public class NetworkReticulationTest {
         // test operation()
         for (int i = 0; i < 100; i++) {
             //System.out.println(network.toString());
-            NetworkOperation op = new NetRetAdd<>(network);
+            NetworkOperation op = new NetRetAdd<>(network, random);
             System.out.println(op.operate());
             assert (!Networks.hasCycle(network));
             //op = new NetRetDel<>(network);
@@ -101,7 +105,7 @@ public class NetworkReticulationTest {
         System.out.println(network.toString());
         for (int i = 0; i < 100; i++) {
             //System.out.println(network.toString());
-            NetworkOperation op = new NetRetDel<>(network);
+            NetworkOperation op = new NetRetDel<>(network, random);
             System.out.println(op.operate());
             //System.out.println(network.toString());
             op.undo();
@@ -113,7 +117,7 @@ public class NetworkReticulationTest {
         // test operate()
         for (int i = 0; i < 100; i++) {
             System.out.println(network.toString());
-            NetworkOperation op = new NetRetDel<>(network);
+            NetworkOperation op = new NetRetDel<>(network, random);
             System.out.println(op.operate());
             System.out.println(Networks.hasTheSameTopology(network, net1));
             //System.out.println(network.toString());

@@ -7,6 +7,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.NetworkSwa
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.junit.Test;
 
+import java.util.Random;
+
 /**
  * Created by wendingqiao on 10/18/14.
  */
@@ -14,6 +16,7 @@ public class NetworkSwapTest {
     @Test
     public void test() throws Exception
     {
+        Random random = new Random(475905L);
 
         BniNetwork<Integer> network = new BniNetwork<Integer>();
         network.createRoot("R");
@@ -45,7 +48,7 @@ public class NetworkSwapTest {
         // test undo()
         System.out.println(network.toString());
         for(int i = 0; i < 1000; i++) {
-            NetworkSwap op = new NetworkSwap(network);
+            NetworkSwap op = new NetworkSwap(network, random);
             op.operate();
             op.undo();
         }
@@ -54,7 +57,7 @@ public class NetworkSwapTest {
 
         // test operation()
         for(int i = 0; i < 1000; i++) {
-            NetworkSwap op = new NetworkSwap(network);
+            NetworkSwap op = new NetworkSwap(network, random);
             System.out.println(op.operate());
             assert(!Networks.hasCycle(network));
             System.out.println(network.toString());

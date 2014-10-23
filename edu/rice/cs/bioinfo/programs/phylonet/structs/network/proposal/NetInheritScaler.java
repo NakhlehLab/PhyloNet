@@ -17,8 +17,8 @@ public class NetInheritScaler<T> extends NetworkBranchScaler<T> {
 
     private double windowSize = 0.1;
 
-    public NetInheritScaler(Network net) {
-        super(net);
+    public NetInheritScaler(Network net, Random rand) {
+        super(net, rand);
     }
 
     @Override
@@ -29,14 +29,13 @@ public class NetInheritScaler<T> extends NetworkBranchScaler<T> {
     @Override
     protected void selectNodes() {
         List<NetNode<T>> nodes = IterableHelp.toList(_net.getNetworkNodes());
-        Random rand = new Random();
         int num = nodes.size();
         while(num < 1 && nodes.size() > 0) {
-            num = rand.nextInt(nodes.size());
+            num = random.nextInt(nodes.size());
         }
         while(num > 0) {
             num--;
-            selectedNodes.add(nodes.get(rand.nextInt(nodes.size())));
+            selectedNodes.add(nodes.get(random.nextInt(nodes.size())));
         }
     }
 
@@ -50,9 +49,9 @@ public class NetInheritScaler<T> extends NetworkBranchScaler<T> {
             double p2 = node.getParentProbability(par2);
             originals.add(p1);
             originals.add(p2);
-            double p3 =  windowSize * 2.0 * ((new Random()).nextDouble() - 0.50) + p1;
+            double p3 =  windowSize * 2.0 * (random.nextDouble() - 0.50) + p1;
             while(p3 <= 0.0 || p3 >= 1.0) {
-                p3 =  windowSize * 2.0 * ((new Random()).nextDouble() - 0.50) + p1;
+                p3 =  windowSize * 2.0 * (random.nextDouble() - 0.50) + p1;
             }
             setLength(node, par1, p3);
             setLength(node, par2, 1.0-p3);

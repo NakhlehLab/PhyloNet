@@ -3,9 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.tests;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.NetBranchScaler;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.NetInheritScaler;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.NetworkSwap;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.junit.Test;
 
@@ -44,26 +42,10 @@ public class NetworkBranchScalerTest {
         x.setParentProbability(j, .3);
         x.setParentProbability(k,.7);
 
-        /*
-        // test undo()
-        for(int i = 0; i < 1000; i++) {
-            NetInheritScaler op = new NetInheritScaler<>(network);
-            System.out.println(op.operate());
-            System.out.println(network.toString());
-            op.undo();
-            System.out.println(network.toString());
-        }
-        // test operation()
-        for(int i = 0; i < 1000; i++) {
-            NetInheritScaler op = new NetInheritScaler<>(network);
-            System.out.println(op.operate());
-            System.out.println(network.toString());
-        }
-        */
 
         // test undo()
         for(int i = 0; i < 1000; i++) {
-            NetBranchScaler op = new NetBranchScaler<>(network);
+            NetInheritScaler op = new NetInheritScaler<>(network);
             System.out.println(op.operate());
             System.out.println(network.toString());
             op.undo();
@@ -71,10 +53,32 @@ public class NetworkBranchScalerTest {
         }
         // test operation()
         for(int i = 0; i < 1000; i++) {
+            NetInheritScaler op = new NetInheritScaler<>(network);
+            System.out.println(op.operate());
+            System.out.println(network.toString());
+        }
+
+
+        // test undo()
+
+        System.out.println(network.toString());
+        for(int i = 0; i < 1000; i++) {
+            NetworkOperation<Double> op = new NetBranchScaler<Double>(network);
+            System.out.println(op.operate());
+            //System.out.println(network.toString());
+            op.undo();
+            //System.out.println(network.toString());
+        }
+        System.out.println(network.toString());
+
+
+        // test operation()
+        for(int i = 0; i < 1000; i++) {
             NetBranchScaler op = new NetBranchScaler<>(network);
             System.out.println(op.operate());
             System.out.println(network.toString());
         }
+
     }
 }
 

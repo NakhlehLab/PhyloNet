@@ -15,6 +15,8 @@ import java.util.Random;
  */
 public class NetBranchScaler<T> extends NetworkBranchScaler<T> {
 
+    private double windowSize = 0.1;
+
     public NetBranchScaler(Network net) {
         super(net);
     }
@@ -31,7 +33,6 @@ public class NetBranchScaler<T> extends NetworkBranchScaler<T> {
         nodes.remove(_net.getRoot());
         Random rand = new Random();
         int num = rand.nextInt(nodes.size());
-        System.out.println(num);
         while(num > 0) {
             num--;
             selectedNodes.add(nodes.get(rand.nextInt(nodes.size())));
@@ -40,14 +41,13 @@ public class NetBranchScaler<T> extends NetworkBranchScaler<T> {
 
     @Override
     protected void scaleLengths() {
-        NormalDistribution normal = new NormalDistribution(0.0, 0.25);
         for(NetNode<T> node : selectedNodes) {
             // tree node - only one parent
             NetNode<T> par = node.getParents().iterator().next();
             double dist = node.getParentDistance(par);
             originals.add(dist);
-            double scale = dist * (1.0 + normal.sample());
-            while(scale <= 0.0) scale = dist * (1.0 + normal.sample());
+            double scale = windowSize * 2.0 * ((new Random()).nextDouble() - 0.50) + dist;
+            while(scale <= 0.0) scale = windowSize * 2.0 * ((new Random()).nextDouble() - 0.50) + dist;
             setLength(node, par, scale);
         }
     }

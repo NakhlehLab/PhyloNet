@@ -24,22 +24,23 @@ public abstract class NetworkBranchScaler<T> implements NetworkOperation {
     public double operate() {
         selectNodes();
         scaleLengths();
-        for(Double d : originals) {
-            System.out.print(d + " ");
-        } System.out.println();
+        //for(Double d : originals) { System.out.print(d + " "); } System.out.println();
         logP = selectedNodes.size()==0 ? Double.MIN_VALUE : 0.0;
         return logP;
     }
 
     public void undo() {
         if(logP == Double.MIN_VALUE) return;
-        int i = 0;
-        for(NetNode<T> node : selectedNodes) {
-            Iterable<NetNode<T>> parents = node.getParents();
+        int size = selectedNodes.size();
+        int idx = originals.size();
+        for(int i = size-1; i >= 0; i--) {
+            Iterable<NetNode<T>> parents = selectedNodes.get(i).getParents();
             for(NetNode<T> par : parents) {
-                setLength(node, par, originals.get(i++));
+                setLength(selectedNodes.get(i), par, originals.get(--idx));
             }
         }
+        assert(idx == 0);
+        //if(idx != 0) System.out.println("wrong");
     }
 
     protected abstract void setLength(NetNode<T> node, NetNode<T> parent, double dist);

@@ -20,7 +20,9 @@ public class NetRetAdd<T> implements NetworkOperation {
 
     private Network _net;
 
-    private double logP;
+    private Random random;
+
+    private double logQ = 1.0;
 
     /**
      * one of the parents of network node
@@ -38,22 +40,22 @@ public class NetRetAdd<T> implements NetworkOperation {
     private double dstDist;
     private NetNode<T> netNode;
 
-    public NetRetAdd(Network net) {
+    public NetRetAdd(Network net, Random rand) {
         this._net = net;
+        this.random = rand;
     }
 
     @Override
     public double operate() {
         List<NetNode<T>> treeNodes = IterableHelp.toList(_net.getTreeNodes());
         treeNodes.remove(_net.getRoot());
-        Random rand = new Random();
-        int r1 = rand.nextInt(treeNodes.size()), r2 = rand.nextInt(treeNodes.size());
+        int r1 = random.nextInt(treeNodes.size()), r2 = random.nextInt(treeNodes.size());
         // r1 != r2
         if(r1 == r2) {
             count--;
             if(count == 0) {
-                logP = Double.MIN_VALUE;
-                return logP;
+                logQ = Double.MIN_VALUE;
+                return logQ;
             }
             return operate();
         }
@@ -68,8 +70,8 @@ public class NetRetAdd<T> implements NetworkOperation {
             if(cur.equals(destination)) { // end this loop
                 count--;
                 if(count == 0) {
-                    logP = Double.MIN_VALUE;
-                    return logP;
+                    logQ = Double.MIN_VALUE;
+                    return logQ;
                 }
                 return operate();
             }
@@ -80,7 +82,7 @@ public class NetRetAdd<T> implements NetworkOperation {
         srcDist = source.getParentDistance(srcPar);
         // add parent node
         parentNode = new BniNetNode<T>("", null);
-        double d = srcDist * (new Random()).nextDouble();
+        double d = srcDist * random.nextDouble();
         // source parent node -> parent node
         srcPar.adoptChild(parentNode, d);
         parentNode.setParentDistance(srcPar, d);
@@ -95,7 +97,7 @@ public class NetRetAdd<T> implements NetworkOperation {
         dstDist = destination.getParentDistance(dstPar);
         // add network node
         netNode = new BniNetNode<T>("", null);
-        d = dstDist * (new Random()).nextDouble();
+        d = dstDist * random.nextDouble();
         // destination parent node -> network node
         dstPar.adoptChild(netNode, d);
         netNode.setParentDistance(dstPar, d);
@@ -111,14 +113,13 @@ public class NetRetAdd<T> implements NetworkOperation {
         netNode.setParentDistance(parentNode, 1.0);
         netNode.setParentProbability(parentNode, 0.5);
 
-        logP = 0.0;
-        return logP;
+        return logQ;
     }
 
     @Override
     public void undo() {
         // no-op
-        if(logP == Double.MIN_VALUE) return;
+        if(logQ == Double.MIN_VALUE) return;
         // remove parent node -> network node
         parentNode.removeChild(netNode);
         // remove network node

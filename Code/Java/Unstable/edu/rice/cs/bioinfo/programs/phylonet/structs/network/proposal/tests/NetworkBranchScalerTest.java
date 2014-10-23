@@ -7,6 +7,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.proposal.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.junit.Test;
 
+import java.util.Random;
+
 /**
  * Created by wendingqiao on 10/20/14.
  */
@@ -14,6 +16,7 @@ public class NetworkBranchScalerTest {
     @Test
     public void test() throws Exception
     {
+        Random random = new Random(294345L);
 
         BniNetwork<Double> network = new BniNetwork<Double>();
         network.createRoot("R");
@@ -45,7 +48,7 @@ public class NetworkBranchScalerTest {
 
         // test undo()
         for(int i = 0; i < 1000; i++) {
-            NetInheritScaler op = new NetInheritScaler<>(network);
+            NetInheritScaler op = new NetInheritScaler<>(network, random);
             System.out.println(op.operate());
             System.out.println(network.toString());
             op.undo();
@@ -53,7 +56,7 @@ public class NetworkBranchScalerTest {
         }
         // test operation()
         for(int i = 0; i < 1000; i++) {
-            NetInheritScaler op = new NetInheritScaler<>(network);
+            NetInheritScaler op = new NetInheritScaler<>(network, random);
             System.out.println(op.operate());
             System.out.println(network.toString());
         }
@@ -63,7 +66,7 @@ public class NetworkBranchScalerTest {
 
         System.out.println(network.toString());
         for(int i = 0; i < 1000; i++) {
-            NetworkOperation<Double> op = new NetBranchScaler<Double>(network);
+            NetworkOperation<Double> op = new NetBranchScaler<Double>(network, random);
             System.out.println(op.operate());
             //System.out.println(network.toString());
             op.undo();
@@ -74,7 +77,7 @@ public class NetworkBranchScalerTest {
 
         // test operation()
         for(int i = 0; i < 1000; i++) {
-            NetBranchScaler op = new NetBranchScaler<>(network);
+            NetBranchScaler op = new NetBranchScaler<>(network, random);
             System.out.println(op.operate());
             System.out.println(network.toString());
         }

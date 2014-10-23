@@ -11,26 +11,28 @@ public abstract class NetworkBranchScaler<T> implements NetworkOperation {
 
     protected Network _net;
 
-    protected double logP;
+    protected Random random;
+
+    protected double logQ = 0.0;
 
     protected List<NetNode<T>> selectedNodes = new ArrayList<NetNode<T>>();
 
     protected List<Double> originals = new ArrayList<Double>();
 
-    public NetworkBranchScaler(Network net) {
+    public NetworkBranchScaler(Network net, Random random) {
         this._net = net;
+        this.random = random;
     }
 
     public double operate() {
         selectNodes();
         scaleLengths();
-        //for(Double d : originals) { System.out.print(d + " "); } System.out.println();
-        logP = selectedNodes.size()==0 ? Double.MIN_VALUE : 0.0;
-        return logP;
+        if(selectedNodes.size() == 0) logQ = Double.MIN_VALUE;
+        return logQ;
     }
 
     public void undo() {
-        if(logP == Double.MIN_VALUE) return;
+        if(logQ == Double.MIN_VALUE) return;
         int size = selectedNodes.size();
         int idx = originals.size();
         for(int i = size-1; i >= 0; i--) {

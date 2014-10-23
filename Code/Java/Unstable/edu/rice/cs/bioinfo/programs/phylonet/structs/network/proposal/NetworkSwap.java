@@ -16,14 +16,17 @@ public class NetworkSwap<T> implements NetworkOperation {
 
     private Network net;
 
-    private double logP;
+    private Random random;
+
+    private double logQ = 1.0;
 
     private NetNode<T> n1;
 
     private NetNode<T> n2;
 
-    public NetworkSwap(Network net) {
+    public NetworkSwap(Network net, Random rand) {
         this.net = net;
+        this.random = rand;
     }
 
     /**
@@ -32,18 +35,17 @@ public class NetworkSwap<T> implements NetworkOperation {
      */
     public double operate() {
         op();
-        return logP;
+        return logQ;
     }
 
     private void op() {
         List<NetNode<T>> nodes = IterableHelp.toList(net.getTreeNodes());
         nodes.remove(net.getRoot());
         int count = 10; // try up to 10 times
-        Random rand = new Random();
         while(count > 0) {
             count--;
-            int r1 = rand.nextInt(nodes.size());
-            int r2 = rand.nextInt(nodes.size());
+            int r1 = random.nextInt(nodes.size());
+            int r2 = random.nextInt(nodes.size());
             // n1 != n2
             if(r1 == r2) continue;
             n1 = nodes.get(r1);
@@ -82,15 +84,14 @@ public class NetworkSwap<T> implements NetworkOperation {
             }
             if(!valid) continue;
             swap();
-            logP = 0.0;
             return;
         }
-        logP = Double.MIN_VALUE;
+        logQ = Double.MIN_VALUE;
     }
 
     public void undo() {
         // no-op
-        if(logP == Double.MIN_VALUE) return;
+        if(logQ == Double.MIN_VALUE) return;
         swap();
     }
 

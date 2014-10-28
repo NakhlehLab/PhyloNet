@@ -19,6 +19,8 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network;
 
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
+
 import java.io.Serializable;
 
 /**
@@ -107,6 +109,16 @@ public interface Network<T> extends Serializable {
      * @return the number of reticulations in the network.
      */
     public int getReticulationCount();
+
+    /**
+     * @return the number of edges in the network.
+     */
+    public int getEdgeCount();
+
+    /**
+     * Reset the root of the network
+     */
+    public void resetRoot(NetNode root);
 
     /**
      * @return the Rich Newick string of the network.

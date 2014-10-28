@@ -22,6 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.io.StringWriter;
 import java.util.Hashtable;
@@ -239,6 +240,26 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
             count ++;
         }
         return count;
+    }
+
+
+    /**
+     * @return the number of edges in the network.
+     */
+    public int getEdgeCount(){
+        int count = 0;
+        for(NetNode node: Networks.postTraversal(this)){
+            count += node.getChildCount();
+        }
+        return count;
+    }
+
+
+    /**
+     * Reset the root of the network
+     */
+    public void resetRoot(NetNode root){
+        _root = (BniNetNode)root;
     }
 
 

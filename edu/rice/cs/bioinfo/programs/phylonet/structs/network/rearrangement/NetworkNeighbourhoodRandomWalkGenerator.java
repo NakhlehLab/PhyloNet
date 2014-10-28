@@ -84,6 +84,9 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             computeNodeDistances(network);
         }
         //System.out.println("#reticulationEdges:"+allReticulationEdges.size());
+        if(_printDetails){
+            System.out.println("Before rearrangement: "+ network.toString());
+        }
         boolean successRearrangment;
         boolean[] triedOperations = new boolean[5];
         do{
@@ -93,19 +96,20 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             Set<Integer> previousTriedEdges = new HashSet<>();
             successRearrangment = false;
             while(!successRearrangment && setNextMove(network, allEdges, allRemovableReticulationEdges, previousTriedEdges)){
-                if(_printDetails){
-                    System.out.println("Before rearrangement: "+ network.toString());
-                }
                 if (_networkOperators[_operationID].performOperation()) {
-                    if(_printDetails){
-                        System.out.println("After rearrangement: " + network.toString());
-                    }
+
                     if (Networks.hasCycle(network) || !isNetworkContainsAllTaxa(network, taxa)) {
+                        if(_printDetails){
+                            System.out.println(": Invalid");
+                        }
                         successRearrangment = false;
                         _networkOperators[_operationID].undoOperation();
                     }
                     else{
                         successRearrangment = true;
+                        if(_printDetails){
+                            System.out.println();
+                        }
                     }
                 }
             }
@@ -113,6 +117,10 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
                 triedOperations[_operationID] = true;
             }
         }while(!successRearrangment);
+
+        if(_printDetails){
+            System.out.println("After rearrangement: " + network.toString());
+        }
         if(_operationID == 0){
             return 1;
         }
@@ -280,7 +288,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             }
         }while(!endSampling);
         if(_printDetails){
-            System.out.println("Add " + printEdge(_sourceEdge) + " to " + printEdge(_destinationEdge));
+            System.out.print("Add " + printEdge(_sourceEdge) + " to " + printEdge(_destinationEdge));
         }
 
     }
@@ -299,7 +307,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
         _targetEdge = allRemovableReticulationEdges.get(randomID);
         edgesTried.add(randomID);
         if(_printDetails){
-            System.out.println("Remove " + printEdge(_targetEdge));
+            System.out.print("Remove " + printEdge(_targetEdge));
         }
         return true;
     }
@@ -353,7 +361,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
         }while(!endSampling);
 
         if(_printDetails){
-            System.out.println("Redirect destination of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+            System.out.print("Redirect destination of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
         }
         return true;
     }
@@ -394,7 +402,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             _destinationEdge = allEdges.get(destinationID);
 
             if(_moveDiameterLimit!=-1){
-                if(_nodeDistanceMatrix[_node2ID.get(_targetEdge.Item1)][_node2ID.get(_destinationEdge.Item2)]>_moveDiameterLimit){
+                if(_nodeDistanceMatrix[_node2ID.get(_targetEdge.Item2)][_node2ID.get(_destinationEdge.Item2)]>_moveDiameterLimit){
                     endSampling = false;
                     continue;
                 }
@@ -432,7 +440,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
 
         }while(!endSampling);
         if(_printDetails){
-            System.out.println("Redirect source of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+            System.out.print("Redirect source of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
         }
         return true;
     }
@@ -460,7 +468,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
 
         }while(!endSampling);
         if(_printDetails){
-            System.out.println("Flip reticulation edge " + printEdge(_targetEdge));
+            System.out.print("Flip reticulation edge " + printEdge(_targetEdge));
         }
         return true;
     }

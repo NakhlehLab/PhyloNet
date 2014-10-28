@@ -25,7 +25,8 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
     private int _reticulationDiameterLimit;
     private Map<NetNode, Integer> _node2ID;
     private Random _random;
-    protected NetworkRearrangementOperation[] _networkOperators;
+    private NetworkRearrangementOperation[] _networkOperators;
+    private boolean _printDetails = false;
 
 
 
@@ -71,8 +72,8 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
         //ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allRemovableReticulationEdges = new ArrayList<>();
-        //ArrayList<Tuple<NetNode, NetNode>> allTreeEdges = new ArrayList<>();
-        computeNetworkEdges(network, allEdges, allRemovableReticulationEdges);
+        Set<NetNode> taxa = new HashSet<>();
+        computeNetworkEdges(network, allEdges, allRemovableReticulationEdges, taxa);
 
         if(_reticulationDiameterLimit!=-1 || _moveDiameterLimit!=-1){
             _node2ID = new HashMap<NetNode, Integer>();
@@ -92,10 +93,14 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             Set<Integer> previousTriedEdges = new HashSet<>();
             successRearrangment = false;
             while(!successRearrangment && setNextMove(network, allEdges, allRemovableReticulationEdges, previousTriedEdges)){
-                //System.out.println("Before rearrangement: "+ network.toString());
+                if(_printDetails){
+                    System.out.println("Before rearrangement: "+ network.toString());
+                }
                 if (_networkOperators[_operationID].performOperation()) {
-                    //System.out.println("After rearrangement: " + network.toString());
-                    if (!Networks.isValidNetwork(network)) {
+                    if(_printDetails){
+                        System.out.println("After rearrangement: " + network.toString());
+                    }
+                    if (Networks.hasCycle(network) || !isNetworkContainsAllTaxa(network, taxa)) {
                         successRearrangment = false;
                         _networkOperators[_operationID].undoOperation();
                     }
@@ -194,36 +199,18 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             }
 
         }while(!stop);
-        //System.out.println();
-        //System.out.println("Next Move :" + operationID);
         return operationID;
     }
 
-    /*private void computeNetworkEdges(Network network, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> treeEdges, ArrayList<Tuple<NetNode, NetNode>> reticulationEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges){
+
+
+
+    private void computeNetworkEdges(Network network, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges, Set<NetNode> leafNodes){
         for(Object nodeO: Networks.postTraversal(network)){
             NetNode node = (NetNode)nodeO;
-            for(Object childO: node.getChildren()){
-                NetNode childNode = (NetNode)childO;
-                Tuple<NetNode,NetNode> edge = new Tuple<>(node, childNode);
-                allEdges.add(edge);
-                if(childNode.isNetworkNode()){
-                    reticulationEdges.add(edge);
-                    if(node.isTreeNode()){
-                        removableReticulationEdges.add(edge);
-                    }
-                }else{
-                    treeEdges.add(edge);
-                }
+            if(node.isLeaf()){
+                leafNodes.add(node);
             }
-        }
-
-    }
-    */
-
-
-    private void computeNetworkEdges(Network network, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges){
-        for(Object nodeO: Networks.postTraversal(network)){
-            NetNode node = (NetNode)nodeO;
             for(Object childO: node.getChildren()){
                 NetNode childNode = (NetNode)childO;
                 Tuple<NetNode,NetNode> edge = new Tuple<>(node, childNode);
@@ -235,49 +222,31 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
                 }
             }
         }
-
     }
 
     private boolean setNextMove(Network network, ArrayList<Tuple<NetNode,NetNode>> allEdges, ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> previousTriedEdges){
+        boolean successMove = true;
         switch(_operationID){
-            case 0: //setParametersForReticulationEdgeAddition(allEdges,allReticulationEdges);
+            case 0:
                 setParametersForReticulationEdgeAddition(allEdges, previousTriedEdges);
                 break;
             case 1:
-                if(previousTriedEdges.size()==allRemovableReticulationEdges.size()){
-                    return false;
-                }
-
-                setParametersForReticulationEdgeDeletion(allRemovableReticulationEdges, previousTriedEdges);
+                successMove = setParametersForReticulationEdgeDeletion(allRemovableReticulationEdges, previousTriedEdges);
                 break;
-            case 2: //setParametersForReticulationEdgeDestinationChange(allRemovableReticulationEdges,allEdges);
-
-                if(previousTriedEdges.size()==allRemovableReticulationEdges.size()*allEdges.size()){
-                    return false;
-                }
-                setParametersForReticulationEdgeDestinationChange(allRemovableReticulationEdges,allEdges, previousTriedEdges);
+            case 2:
+                successMove = setParametersForReticulationEdgeDestinationChange(allRemovableReticulationEdges,allEdges, previousTriedEdges);
                 break;
-            case 3: //setParametersForEdgeSourceChange(allEdges, allEdges);
-
-                //int numTreeEdge = allTreeEdges.size();
-                int upper = allEdges.size()*(allEdges.size()-1);
-                if(previousTriedEdges.size()==upper){
-                    return false;
-                    //System.out.println(_previousTried.get(_operationID));
-                    //throw new RuntimeException("tried all EdgeSourceChange");
-                }
-                setParametersForEdgeSourceChange(allEdges, previousTriedEdges);
+            case 3:
+                successMove = setParametersForEdgeSourceChange(allEdges, previousTriedEdges);
                 break;
             case 4:
-                if(previousTriedEdges.size()==allRemovableReticulationEdges.size()){
-                    return false;
-                }
-
-                setParametersForReticulationFlip(allRemovableReticulationEdges, previousTriedEdges);
+                successMove = setParametersForReticulationFlip(allRemovableReticulationEdges, previousTriedEdges);
                 break;
         }
-        _networkOperators[_operationID].setParameters(network,_targetEdge, _sourceEdge, _destinationEdge);
-        return true;
+        if(successMove){
+            _networkOperators[_operationID].setParameters(network,_targetEdge, _sourceEdge, _destinationEdge);
+        }
+        return successMove;
     }
 
     private String printEdge(Tuple<NetNode,NetNode> edge){
@@ -310,31 +279,43 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
                 }
             }
         }while(!endSampling);
-        //System.out.println("Add " + printEdge(_sourceEdge) + " to " + printEdge(_destinationEdge));
+        if(_printDetails){
+            System.out.println("Add " + printEdge(_sourceEdge) + " to " + printEdge(_destinationEdge));
+        }
 
     }
 
-    private void setParametersForReticulationEdgeDeletion(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> edgesTried){
+    private boolean setParametersForReticulationEdgeDeletion(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         _destinationEdge = null;
+        int size = allRemovableReticulationEdges.size();
         int randomID;
         do{
-            randomID = _random.nextInt(allRemovableReticulationEdges.size());
+            if(edgesTried.size()==size){
+                return false;
+            }
+            randomID = _random.nextInt(size);
         }while(edgesTried.contains(randomID));
         _targetEdge = allRemovableReticulationEdges.get(randomID);
         edgesTried.add(randomID);
-        //System.out.println("Remove " + printEdge(_targetEdge));
-
+        if(_printDetails){
+            System.out.println("Remove " + printEdge(_targetEdge));
+        }
+        return true;
     }
 
 
-    private void setParametersForReticulationEdgeDestinationChange(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
+    private boolean setParametersForReticulationEdgeDestinationChange(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         int reticulationEdgeSize = allRemovableReticulationEdges.size();
         int edgeSize = allEdges.size();
 
         boolean endSampling;
         do{
+            if(edgesTried.size()==reticulationEdgeSize*edgeSize){
+                return false;
+            }
+
             endSampling = true;
             int targetID = _random.nextInt(reticulationEdgeSize);
             _targetEdge = allRemovableReticulationEdges.get(targetID);
@@ -371,15 +352,21 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
 
         }while(!endSampling);
 
-        //System.out.println("Redirect destination of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+        if(_printDetails){
+            System.out.println("Redirect destination of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+        }
+        return true;
     }
 
-    private void setParametersForEdgeSourceChange(ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
+    private boolean setParametersForEdgeSourceChange(ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         int allEdgeSize = allEdges.size();
 
         boolean endSampling;
         do{
+            if(edgesTried.size()==allEdgeSize*(allEdgeSize-1)){
+                return false;
+            }
             endSampling = true;
             int targetID = _random.nextInt(allEdgeSize);
             _targetEdge = allEdges.get(targetID);
@@ -444,16 +431,22 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             }
 
         }while(!endSampling);
-        //System.out.println("Redirect source of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+        if(_printDetails){
+            System.out.println("Redirect source of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+        }
+        return true;
     }
 
 
-    private void setParametersForReticulationFlip(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> edgesTried){
+    private boolean setParametersForReticulationFlip(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         _destinationEdge = null;
         boolean endSampling;
         int size = allRemovableReticulationEdges.size();
         do{
+            if(edgesTried.size()==size){
+                return false;
+            }
             endSampling = true;
             int targetID;
             do{
@@ -466,13 +459,30 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
             }
 
         }while(!endSampling);
-        //System.out.println("Flip reticulation edge " + printEdge(_targetEdge));
+        if(_printDetails){
+            System.out.println("Flip reticulation edge " + printEdge(_targetEdge));
+        }
+        return true;
     }
 
 
     public void performRearrangement(Network network, Integer operation, Tuple<NetNode,NetNode> targetEdge, Tuple<NetNode,NetNode> sourceEdge, Tuple<NetNode,NetNode> destinationEdge){
         _networkOperators[operation].setParameters(network, targetEdge, sourceEdge, destinationEdge);
         _networkOperators[operation].performOperation();
+    }
+
+
+    private boolean isNetworkContainsAllTaxa(Network network, Set<NetNode> leafNodes){
+        int count = 0;
+        for(Object leaf: network.getLeaves()){
+            if(leafNodes.contains(leaf)){
+                count++;
+            }
+            else{
+                return false;
+            }
+        }
+        return count==leafNodes.size();
     }
 
 }

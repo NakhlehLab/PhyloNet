@@ -49,6 +49,11 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
                 _operationProbabilities[i] = _operationProbabilities[i-1] + probabilities[i];
             }
         }
+        if(_operationProbabilities[4]!=1){
+            for(int i=0; i<5; i++){
+                _operationProbabilities[i] = _operationProbabilities[i]/_operationProbabilities[4];
+            }
+        }
         if(seed!=null) {
             _random = new Random(seed);
         }else{

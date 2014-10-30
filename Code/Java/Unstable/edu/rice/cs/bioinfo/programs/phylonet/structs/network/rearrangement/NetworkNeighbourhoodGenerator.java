@@ -22,4 +22,6 @@ public interface NetworkNeighbourhoodGenerator{
 
    public abstract void computeRandomNeighbour(Network network);
 
+    public abstract String getOperationName();
+
 }

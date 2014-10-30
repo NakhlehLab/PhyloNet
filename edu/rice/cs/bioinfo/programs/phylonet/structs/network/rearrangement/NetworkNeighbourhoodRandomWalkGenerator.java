@@ -26,7 +26,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
     private Map<NetNode, Integer> _node2ID;
     private Random _random;
     private NetworkRearrangementOperation[] _networkOperators;
-    private boolean _printDetails = true;
+    private boolean _printDetails = false;
     private int _maxReticulations;
     private Set<String> _singleAlleleSpecies;
 
@@ -87,7 +87,9 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
     }
 
 
-
+    public String getOperationName(){
+        return _networkOperators[_operationID].getClass().getSimpleName();
+    }
 
     public void computeRandomNeighbour(Network network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();

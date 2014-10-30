@@ -14,7 +14,6 @@ import java.util.Arrays;
 public class EdgeSourceChange extends NetworkRearrangementOperation{
 
     public boolean performOperation(){
-
         if(_sourceEdge == null){
             _sourceEdge = findParentAndAnotherChild(_targetEdge.Item1, _targetEdge.Item2);
             _sourceEdgeBrlens = new double[2];

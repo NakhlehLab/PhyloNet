@@ -66,6 +66,7 @@ public abstract class NetworkRearrangementOperation {
         }
     }
 
+
     protected void addNodeToAnEdge(NetNode node, Tuple<NetNode, NetNode> edge, double[] brlens, double[] inheriProbs){
         edge.Item1.adoptChild(node, brlens[0]);
         node.setParentProbability(edge.Item1, inheriProbs[0]);
@@ -83,7 +84,6 @@ public abstract class NetworkRearrangementOperation {
     }
 
     protected void removeNodeFromAnEdge(NetNode node, Tuple<NetNode,NetNode> edge, double[] brlens, double[] inheriProbs){
-
         brlens[1] = edge.Item2.getParentDistance(node);
         inheriProbs[1] = edge.Item2.getParentProbability(node);
         node.removeChild(edge.Item2);
@@ -92,10 +92,8 @@ public abstract class NetworkRearrangementOperation {
             inheriProbs[0] = node.getParentProbability(edge.Item1);
             edge.Item1.removeChild(node);
             edge.Item1.adoptChild(edge.Item2, brlens[0]+brlens[1]);
-            edge.Item2.setParentProbability(edge.Item1, combineInheritanceProbability(inheriProbs));
+            edge.Item2.setParentProbability(edge.Item1, inheriProbs[1]);
         }
-
-
     }
 
 

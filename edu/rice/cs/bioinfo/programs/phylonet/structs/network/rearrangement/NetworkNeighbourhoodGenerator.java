@@ -20,6 +20,6 @@ public interface NetworkNeighbourhoodGenerator{
    public abstract void undo();
 
 
-   public abstract int computeRandomNeighbour(Network network, boolean incrementHybrid);
+   public abstract void computeRandomNeighbour(Network network);
 
 }

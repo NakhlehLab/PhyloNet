@@ -41,7 +41,7 @@ public class ReticulationEdgeDeletion extends NetworkRearrangementOperation{
         _sourceEdgeBrlens = new double[2];
         _sourceEdgeInheriProbs = new double[2];
         removeNodeFromAnEdge(_targetEdge.Item1, _sourceEdge, _sourceEdgeBrlens, _sourceEdgeInheriProbs);
-        _destinationEdge.Item2.setParentProbability(_destinationEdge.Item1, _destinationEdge.Item2.getParentProbability(_destinationEdge.Item1)/(1-_targetEdgeInheriProb));
+        //_destinationEdge.Item2.setParentProbability(_destinationEdge.Item1, _destinationEdge.Item2.getParentProbability(_destinationEdge.Item1)/(1-_targetEdgeInheriProb));
 
         if(_sourceEdge.Item1==null){
             _network.resetRoot(_sourceEdge.Item2);

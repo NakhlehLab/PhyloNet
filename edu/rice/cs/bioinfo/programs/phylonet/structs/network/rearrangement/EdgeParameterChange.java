@@ -19,7 +19,6 @@ public abstract class EdgeParameterChange extends NetworkRearrangementOperation{
         do{
             random = originalValue + (Math.random()*2-1)*_windowSize;
         }while(random<lowerBound || random>upperBound);
-        System.out.println(random);
         return random;
     }
 

@@ -13,11 +13,13 @@ public abstract class EdgeParameterChange extends NetworkRearrangementOperation{
 
     protected double drawRandomParameter(double originalValue, double lowerBound, double upperBound){
         double random;
-        lowerBound = Math.max(lowerBound, originalValue - _windowSize);
         upperBound = Math.min(upperBound, originalValue + _windowSize);
+        lowerBound = Math.min( Math.max(lowerBound, originalValue - _windowSize), upperBound - _windowSize);
+        originalValue = Math.min(originalValue, upperBound);
         do{
             random = originalValue + (Math.random()*2-1)*_windowSize;
         }while(random<lowerBound || random>upperBound);
+        System.out.println(random);
         return random;
     }
 

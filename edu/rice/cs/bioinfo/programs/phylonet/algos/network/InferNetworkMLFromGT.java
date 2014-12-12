@@ -93,10 +93,10 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             MDCInference_DP mdc = new MDCInference_DP();
             Solution sol;
             if(allele2species==null){
-                sol = mdc.inferSpeciesTree(gts, false, 1, true, true, -1).get(0);
+                sol = mdc.inferSpeciesTree(gts, false, 1, false, true, -1).get(0);
             }
             else{
-                sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, true, true, -1).get(0);
+                sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, true, -1).get(0);
             }
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(startingTree.toString());
@@ -108,11 +108,21 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             createHybrid(startingNetwork, hybrid);
         }
 
+
         Networks.removeAllParameters(startingNetwork);
-        Networks.autoLabelNodes(startingNetwork);
+        //Networks.autoLabelNodes(startingNetwork);
 
+        for(NetNode<Object> node: startingNetwork.dfs()){
+            for(NetNode<Object> parent: node.getParents()){
+                node.setParentDistance(parent,1.0);
+                if(node.isNetworkNode()){
+                    node.setParentProbability(parent, 0.5);
+                }
+            }
+        }
+
+        System.out.println(startingNetwork.toString());
         return startingNetwork.toString();
-
     }
 
     private void createHybrid(Network<Object> network, String hybrid){

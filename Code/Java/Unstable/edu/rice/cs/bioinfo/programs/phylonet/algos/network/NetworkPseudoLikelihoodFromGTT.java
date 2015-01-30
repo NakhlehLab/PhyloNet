@@ -20,27 +20,17 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.library.programming.Container;
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.RateModel;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.optimization.GoalType;
 import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * Created with IntelliJ IDEA.
@@ -49,7 +39,222 @@ import java.util.concurrent.Future;
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
  */
-public class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
+public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
+
+    public Map<String, double[]> computeTripleFrequenciesFromSingleGT(Tree gt){
+        List<String> taxaList = new ArrayList<>();
+        Map<String,Integer> pairwiseDepths = new HashMap<>();
+        Map<TNode, Integer> node2depth = new HashMap<>();
+        Map<TNode, List<String>> node2leaves = new HashMap<>();
+        for(TNode node: gt.postTraverse()){
+            int depth = 0;
+            List<String> leaves = new ArrayList<>();
+            if(node.isLeaf()){
+                //leaves.add(taxon2ID.get(node.getName()));
+                leaves.add(node.getName());
+                taxaList.add(node.getName());
+            }
+            else{
+                List<List<String>> childLeavesList = new ArrayList<>();
+                for(TNode child: node.getChildren()){
+                    depth = Math.max(depth, node2depth.get(child));
+                    List<String> childLeaves = new ArrayList<>();
+                    childLeaves.addAll(node2leaves.get(child));
+                    childLeavesList.add(childLeaves);
+                    leaves.addAll(childLeaves);
+                }
+                depth++;
+                for(int i=0; i<childLeavesList.size(); i++){
+                    List<String> childLeaves1 = childLeavesList.get(i);
+                    for(int j=i+1; j<childLeavesList.size(); j++){
+                        List<String> childLeaves2 = childLeavesList.get(j);
+                        for(String leaf1: childLeaves1){
+                            for(String leaf2: childLeaves2){
+                                pairwiseDepths.put(leaf1+"&"+leaf2,depth);
+                                pairwiseDepths.put(leaf2+"&"+leaf1,depth);
+                            }
+                        }
+                    }
+
+                }
+
+            }
+            node2depth.put(node, depth);
+            node2leaves.put(node, leaves);
+        }
+
+        String[] taxa = taxaList.toArray(new String[0]);
+        Arrays.sort(taxa);
+        int numTaxa = taxa.length;
+        Map<String, double[]> triple2counts = new HashMap<>();
+
+        for(int i=0; i<numTaxa; i++){
+            String taxonI = taxa[i];
+            for(int j=i+1; j<numTaxa; j++){
+                String taxonJ = taxa[j];
+                String pair = taxonI+"&"+taxonJ;
+                int ij = pairwiseDepths.get(pair);
+                for(int k=j+1; k<numTaxa; k++){
+                    String taxonK = taxa[k];
+                    String triplet = pair+"&"+taxonK;
+                    double[] freq = new double[3];
+                    triple2counts.put(triplet, freq);
+                    int minIndex = -1;
+                    int ik = pairwiseDepths.get(taxonI+"&"+taxonK);
+                    int jk = pairwiseDepths.get(taxonJ+"&"+taxonK);
+                    if(ij<ik && ij<jk){
+                        minIndex = 0;
+                    }else if(ik<ij && ik<jk)
+                    {
+                        minIndex = 1;
+                    }
+                    else if(jk<ij && jk<ik){
+                        minIndex = 2;
+                    }
+                    if(minIndex!=-1){
+                        freq[minIndex] = 1;
+                    }
+                    else{
+
+                        for(int m=0; m<3; m++){
+                            freq[m] = 1/3;
+                        }
+                    }
+                }
+            }
+        }
+
+        return triple2counts;
+    }
+
+
+    public Map<String, double[]>  computeTripleFrequenciesFromSingleGT(Tree gt, Map<String,String> allele2species){
+        Set<String> allAlleles = new HashSet<>();
+        //int[] alleleNums = new int[speciesArray.length];
+        Map<String,Integer> species2count = new HashMap<>();
+        for(String allele: gt.getLeaves()){
+            allAlleles.add(allele);
+            String species = allele2species.get(allele);
+            Integer count = species2count.get(species);
+            if(count==null){
+                count = 0;
+            }
+            species2count.put(species,count+1);
+        }
+
+        String[] speciesArray = species2count.keySet().toArray(new String[0]);
+        Arrays.sort(speciesArray);
+        int[] alleleNums = new int[speciesArray.length];
+        for(int i=0; i< speciesArray.length; i++){
+            alleleNums[i] = species2count.get(speciesArray[i]);
+        }
+
+        Map<TNode,Set<String>> node2leaves = new HashMap<>();
+        Map<String, double[]> triple2counts = new HashMap<>();
+        for(TNode node: gt.postTraverse()){
+            Set<String> leavesUnder = new HashSet<>();
+            node2leaves.put(node, leavesUnder);
+            if(node.isLeaf()){
+                leavesUnder.add(node.getName());
+            }
+            else{
+                List<Set<String>> childLeavesList = new ArrayList<>();
+                for(TNode child: node.getChildren()){
+                    Set<String> childLeaves = node2leaves.get(child);
+                    leavesUnder.addAll(childLeaves);
+                    childLeavesList.add(childLeaves);
+                }
+
+                allAlleles.removeAll(leavesUnder);
+
+                for(int i=0; i<childLeavesList.size(); i++){
+                    Set<String> childLeaves1 = childLeavesList.get(i);
+                    for(int j=i+1; j<childLeavesList.size(); j++){
+                        Set<String> childLeaves2 = childLeavesList.get(j);
+                        for(String allele1: childLeaves1){
+                            String species1 = allele2species.get(allele1);
+                            for(String allele2: childLeaves2){
+                                String species2 = allele2species.get(allele2);
+                                if(!species1.equals(species2)){
+                                    for(String allele3: allAlleles){
+                                        String species3 = allele2species.get(allele3);
+                                        if(!species1.equals(species3) && !species2.equals(species3)){
+                                            addHighestFrequency(species1, species2, species3, species2count, triple2counts);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //non-binary node
+                        for(int k=j+1; k<childLeavesList.size(); k++) {
+                            Set<String> childLeaves3 = childLeavesList.get(k);
+                            for(String allele1: childLeaves1) {
+                                String species1 = allele2species.get(allele1);
+                                for (String allele2 : childLeaves2) {
+                                    String species2 = allele2species.get(allele2);
+                                    for (String allele3 : childLeaves3) {
+                                        String species3 = allele2species.get(allele3);
+                                        addEqualFrequency(species1, species2, species3, species2count, triple2counts);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                allAlleles.addAll(leavesUnder);
+            }
+
+        }
+        return triple2counts;
+    }
+
+    private void addEqualFrequency(String species1, String species2, String species3, Map<String,Integer> species2count, Map<String, double[]> triple2counts) {
+        double weight = 1.0/(species2count.get(species1)*species2count.get(species2)*species2count.get(species3));
+        String[] forSort = new String[3];
+        forSort[0] = species1;
+        forSort[1] = species2;
+        forSort[2] = species3;
+        Arrays.sort(forSort);
+        String exp = forSort[0]+"&"+forSort[1]+"&"+forSort[2];
+        double[] frequency = triple2counts.get(exp);
+        if(frequency == null) {
+            frequency = new double[3];
+            triple2counts.put(exp, frequency);
+        }
+        for (int i = 0; i < 3; i++) {
+            frequency[i] += weight / 3;
+        }
+    }
+
+
+
+    private void addHighestFrequency(String species1, String species2, String species3, Map<String,Integer> species2count, Map<String, double[]> triple2counts) {
+        double weight = 1.0/(species2count.get(species1)*species2count.get(species2)*species2count.get(species3));
+        int index = 0;
+        String[] forSort = new String[3];
+        forSort[0] = species1;
+        forSort[1] = species2;
+        forSort[2] = species3;
+        Arrays.sort(forSort);
+        String exp = forSort[0]+"&"+forSort[1]+"&"+forSort[2];
+        if(forSort[2].equals(species3)){
+            index = 0;
+        }
+        else if(forSort[1].equals(species3)){
+            index = 1;
+        }
+        else if(forSort[0].equals(species3)){
+            index = 2;
+        }
+        double[] frequency = triple2counts.get(exp);
+        if(frequency == null) {
+            frequency = new double[3];
+            triple2counts.put(exp, frequency);
+        }
+        frequency[index] += weight;
+    }
 
     protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List tripleFrequencies, final List gtCorrespondence){
         boolean continueRounds = true; // keep trying to improve network
@@ -219,59 +424,55 @@ public class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    private class MyThread implements Callable<Double> {
+    private class MyThread extends Thread{
         Network _network;
         GeneTreeProbabilityPseudo _calculator;
-        List<MutableTuple<String, double[]>> _tripleFrequencies;
+        List<String> _allTriplets;
+        double[][] _probs;
 
 
-        public MyThread(Network network,GeneTreeProbabilityPseudo calculator,List<MutableTuple<String, double[]>> tripleFrequencies){
+        public MyThread(Network network,GeneTreeProbabilityPseudo calculator,List<String> allTriplets, double[][] probs){
             _network = network;
             _calculator = calculator;
-            _tripleFrequencies = tripleFrequencies;
+            _allTriplets = allTriplets;
+            _probs = probs;
         }
 
 
-        public Double call(){
+        public void run(){
             //System.out.println("Start computing");
-            return _calculator.computePseudoLikelihood(_network, _tripleFrequencies);
+            _calculator.computePseudoLikelihood(_network, _allTriplets, _probs);
         }
     }
 
 
 
 
-    protected double computeProbability(Network<Object> speciesNetwork, List tripleFrequencies, Map<String, List<String>> species2alleles, List gtCorrespondences) {
+    protected double computeProbability(Network<Object> speciesNetwork, List allTriplets, Map<String, List<String>> species2alleles, List tripleFrequencies) {
         /*
         GeneTreeProbabilityPseudo likelihood = new GeneTreeProbabilityPseudo();
         double prob = likelihood.computePseudoLikelihood(speciesNetwork, tripleFrequencies);
         */
         GeneTreeProbabilityPseudo calculator = new GeneTreeProbabilityPseudo();
         calculator.initialize(speciesNetwork);
-        double totalProb = 0;
+        double[][] probs = new double[allTriplets.size()][3];
+        Thread[] myThreads = new Thread[_numThreads];
         //System.out.println(speciesNetwork);
         if(_numThreads>1) {
             calculator.setParallel(true);
-            ExecutorService executor = Executors.newFixedThreadPool(_numThreads);
-            List<Future<Double>> futureList = new ArrayList<Future<Double>>();
             for (int i = 0; i < _numThreads; i++) {
-                MyThread myThread = new MyThread(speciesNetwork, calculator, tripleFrequencies);
-                Future<Double> future = executor.submit(myThread);
-                futureList.add(future);
+                myThreads[i] = new MyThread(speciesNetwork, calculator, allTriplets, probs);
+
             }
-            for (Future<Double> future : futureList) {
+            for (int i = 0; i < _numThreads; i++) {
                 try {
-                    totalProb += future.get();
-                } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                    e.getStackTrace();
-                    System.exit(-1);
+                    myThreads[i].join();
+                } catch (InterruptedException ignore) {
                 }
             }
-            executor.shutdown();
         }else{
             try {
-                totalProb = calculator.computePseudoLikelihood(speciesNetwork, tripleFrequencies);
+                calculator.computePseudoLikelihood(speciesNetwork, allTriplets, probs);
             }catch (Exception e){
                 System.out.println(speciesNetwork);
                 System.err.println(e.getMessage());
@@ -280,256 +481,28 @@ public class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
             }
         }
+        double totalProb = calculateFinalLikelihood(probs, tripleFrequencies);
         return totalProb;
     }
 
+    abstract protected double calculateFinalLikelihood(double[][] probs, List tripleFrequencies);
 
 
-    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List tripleFrequencies, List treeCorrespondences){
-        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
-        for(Object list: originalGTs) {
-            for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>)list) {
-                for (TNode node : gtTuple.Item1.getNodes()) {
-                    node.setParentDistance(TNode.NO_DISTANCE);
+    public List gettingTripleFrequencies(Network speciesNetwork, List originalData, Map<String,List<String>> species2alleles){
+        Map<String,String> allele2species = null;
+        if(species2alleles!=null){
+            allele2species = new HashMap<String, String>();
+            for(Map.Entry<String,List<String>> entry: species2alleles.entrySet()){
+                for(String allele: entry.getValue()){
+                    allele2species.put(allele, entry.getKey());
                 }
-                String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
-                MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
-                if (existingTuple == null) {
-                    existingTuple = gtTuple;
-                    exp2tree.put(exp, existingTuple);
-
-                } else {
-                    existingTuple.Item2 += gtTuple.Item2;
-                }
-
             }
         }
-        List<MutableTuple<Tree,Double>> gts = new ArrayList<>();
-        gts.addAll(exp2tree.values());
-        tripleFrequencies.addAll(computeTripleFrequenciesInGTs(gts, allele2species));
+
+        List dataCorrespondences = new ArrayList();
+        List summarizedData = new ArrayList();
+        summarizeData(originalData, allele2species, summarizedData, dataCorrespondences);
+        return summarizedData;
     }
 
-
-
-    private List<MutableTuple<String, double[]>> computeTripleFrequenciesInGTs(List<MutableTuple<Tree,Double>> gts, Map<String,String> allele2species){
-        String[] speciesArray;
-        if(allele2species==null){
-            speciesArray = gts.get(0).Item1.getLeaves();
-        }
-        else{
-            Set<String> taxonSet = new HashSet<>();
-            taxonSet.addAll(allele2species.values());
-            speciesArray = new String[taxonSet.size()];
-            int index = 0;
-            for(String taxon: taxonSet){
-                speciesArray[index++] = taxon;
-            }
-        }
-        Map<String, double[]> triple2counts = new HashMap<>();
-        for(int i=0; i<speciesArray.length; i++){
-            for(int j=i+1; j<speciesArray.length; j++){
-                for(int k=j+1; k<speciesArray.length; k++){
-                    triple2counts.put(speciesArray[i]+"&"+speciesArray[j]+"&"+speciesArray[k], new double[3]);
-                }
-            }
-        }
-        Map<String, Integer> species2ID = new HashMap<>();
-        for(int i=0; i<speciesArray.length; i++){
-            species2ID.put(speciesArray[i], i);
-        }
-
-        for(MutableTuple<Tree,Double> gt: gts){
-            if(allele2species==null) {
-
-                computeTripleFrequenciesFromSingleGT(gt, speciesArray, species2ID, triple2counts);
-            }else{
-                Map<String, Integer> allele2speciesID = new HashMap<>();
-                for(Map.Entry<String,String> entry: allele2species.entrySet()){
-                    allele2speciesID.put(entry.getKey(), species2ID.get(entry.getValue()));
-                }
-                computeTripleFrequenciesFromSingleGT(gt, allele2speciesID, speciesArray, triple2counts);
-            }
-        }
-        List<MutableTuple<String, double[]>> tripleFrequencies = new ArrayList<>();
-        for(Map.Entry<String, double[]> entry: triple2counts.entrySet()){
-            tripleFrequencies.add(new MutableTuple<String, double[]>(entry.getKey(), entry.getValue()));
-        }
-        return tripleFrequencies;
-    }
-
-    private void computeTripleFrequenciesFromSingleGT(MutableTuple<Tree,Double> gt, String[] taxa, Map<String, Integer> taxon2ID, Map<String, double[]> triple2counts){
-        int numTaxa = taxon2ID.size();
-        int[][] pairwiseDepths = new int[numTaxa][numTaxa];
-        Map<TNode, Integer> node2depth = new HashMap<>();
-        Map<TNode, List<String>> node2leaves = new HashMap<>();
-        for(TNode node: gt.Item1.postTraverse()){
-            int depth = 0;
-            List<String> leaves = new ArrayList<>();
-            if(node.isLeaf()){
-                //leaves.add(taxon2ID.get(node.getName()));
-                leaves.add(node.getName());
-            }
-            else{
-                List<List<String>> childLeavesList = new ArrayList<>();
-                for(TNode child: node.getChildren()){
-                    depth = Math.max(depth, node2depth.get(child));
-                    List<String> childLeaves = new ArrayList<>();
-                    childLeaves.addAll(node2leaves.get(child));
-                    childLeavesList.add(childLeaves);
-                    leaves.addAll(childLeaves);
-                }
-                depth++;
-                for(int i=0; i<childLeavesList.size(); i++){
-                    List<String> childLeaves1 = childLeavesList.get(i);
-                    for(int j=i+1; j<childLeavesList.size(); j++){
-                        List<String> childLeaves2 = childLeavesList.get(j);
-                        for(String leaf1: childLeaves1){
-                            int id1 = taxon2ID.get(leaf1);
-                            for(String leaf2: childLeaves2){
-                                int id2 = taxon2ID.get(leaf2);
-                                pairwiseDepths[id1][id2] = depth;
-                                pairwiseDepths[id2][id1] = depth;
-                            }
-                        }
-                    }
-
-                }
-
-            }
-            node2depth.put(node, depth);
-            node2leaves.put(node, leaves);
-        }
-
-        for(int i=0; i<numTaxa; i++){
-            for(int j=i+1; j<numTaxa; j++){
-                int ij = pairwiseDepths[i][j];
-                String pair = taxa[i]+"&"+taxa[j];
-                for(int k=j+1; k<numTaxa; k++){
-                    int minIndex = -1;
-                    int ik = pairwiseDepths[i][k];
-                    int jk = pairwiseDepths[j][k];
-                    if(ij<ik && ij<jk){
-                        minIndex = 0;
-                    }else if(ik<ij && ik<jk)
-                    {
-                        minIndex = 1;
-                    }
-                    else if(jk<ij && jk<ik){
-                        minIndex = 2;
-                    }
-                    if(minIndex!=-1){
-                        triple2counts.get(pair+"&"+taxa[k])[minIndex]+=gt.Item2;
-                    }
-                    else{
-                        double[] frequencies = triple2counts.get(pair+"&"+taxa[k]);
-                        for(int m=0; m<3; m++){
-                            frequencies[m] += gt.Item2/3;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    private void computeTripleFrequenciesFromSingleGT(MutableTuple<Tree,Double> gt, Map<String,Integer> allele2speciesID, String[] speciesArray, Map<String, double[]> triple2counts){
-        Set<String> allAlleles = new HashSet<>();
-        int[] alleleNums = new int[speciesArray.length];
-        for(String allele: gt.Item1.getLeaves()){
-            allAlleles.add(allele);
-            alleleNums[allele2speciesID.get(allele)]++;
-        }
-        Map<TNode,Set<String>> node2leaves = new HashMap<>();
-        for(TNode node: gt.Item1.postTraverse()){
-            Set<String> leavesUnder = new HashSet<>();
-            node2leaves.put(node, leavesUnder);
-            if(node.isLeaf()){
-                leavesUnder.add(node.getName());
-            }
-            else{
-                List<Set<String>> childLeavesList = new ArrayList<>();
-                for(TNode child: node.getChildren()){
-                    Set<String> childLeaves = node2leaves.get(child);
-                    leavesUnder.addAll(childLeaves);
-                    childLeavesList.add(childLeaves);
-                }
-
-                allAlleles.removeAll(leavesUnder);
-
-                for(int i=0; i<childLeavesList.size(); i++){
-                    Set<String> childLeaves1 = childLeavesList.get(i);
-                    for(int j=i+1; j<childLeavesList.size(); j++){
-                        Set<String> childLeaves2 = childLeavesList.get(j);
-                        for(String allele1: childLeaves1){
-                            int species1 = allele2speciesID.get(allele1);
-                            for(String allele2: childLeaves2){
-                                int species2 = allele2speciesID.get(allele2);
-                                if(species1!=species2){
-                                    for(String allele3: allAlleles){
-                                        int species3 = allele2speciesID.get(allele3);
-                                        if(species1!=species3 && species2!=species3){
-                                            addHighestFrequency(species1, species2, species3, speciesArray, alleleNums, triple2counts);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        //non-binary node
-                        for(int k=j+1; k<childLeavesList.size(); k++) {
-                            Set<String> childLeaves3 = childLeavesList.get(k);
-                            for(String allele1: childLeaves1) {
-                                int species1 = allele2speciesID.get(allele1);
-                                for (String allele2 : childLeaves2) {
-                                    int species2 = allele2speciesID.get(allele2);
-                                    for (String allele3 : childLeaves3) {
-                                        int species3 = allele2speciesID.get(allele3);
-                                        addEqualFrequency(species1, species2, species3, speciesArray, alleleNums, triple2counts);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-
-                allAlleles.addAll(leavesUnder);
-            }
-
-        }
-
-    }
-
-    private void addEqualFrequency(int species1, int species2, int species3, String[] speciesArray, int[] alleleNums, Map<String, double[]> triple2counts) {
-        double weight = 1.0/(alleleNums[species1]*alleleNums[species2]*alleleNums[species3]);
-        int[] forSort = new int[3];
-        forSort[0] = species1;
-        forSort[1] = species2;
-        forSort[2] = species3;
-        Arrays.sort(forSort);
-        String exp = speciesArray[forSort[0]]+"&"+speciesArray[forSort[1]]+"&"+speciesArray[forSort[2]];
-        double[] frequency = triple2counts.get(exp);
-        for(int i=0; i<3; i++){
-            frequency[i] += weight/3;
-        }
-    }
-
-
-
-    private void addHighestFrequency(int species1, int species2, int species3, String[] speciesArray, int[] alleleNums, Map<String, double[]> triple2counts) {
-        double weight = 1.0/(alleleNums[species1]*alleleNums[species2]*alleleNums[species3]);
-        if(species1<species3 && species2<species3){
-            String exp = speciesArray[Math.min(species1,species2)]+"&"+speciesArray[Math.max(species1, species2)]+"&"+speciesArray[species3];
-            triple2counts.get(exp)[0] += weight;
-        }
-        else if((species1<species3&&species3<species2) || (species2<species3&&species3<species1)){
-            String exp = speciesArray[Math.min(species1,species2)]+"&"+speciesArray[species3]+"&"+speciesArray[Math.max(species1,species2)];
-            triple2counts.get(exp)[1] += weight;
-        }
-        else if(species1>species3 && species2>species3){
-            String exp = speciesArray[species3]+"&"+speciesArray[Math.min(species1,species2)]+"&"+speciesArray[Math.max(species1,species2)];
-            triple2counts.get(exp)[2] += weight;
-        }
-    }
-
-    protected double calculateFinalLikelihood(double[] probs, List gtCorrespondences){return 0;}
 }

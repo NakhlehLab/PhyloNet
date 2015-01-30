@@ -1,18 +1,11 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 
 import java.util.*;
 
@@ -126,15 +119,8 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
-    public double computePseudoLikelihoodFromGTs(Network network, List<MutableTuple<Tree,Double>> gts){
 
-        String[] taxa = gts.get(0).Item1.getLeaves();
-        List<MutableTuple<String, double[]>> tripleFrequencies = computeTripleFrequenciesInGTs(gts, taxa);
-        return computePseudoLikelihood(network, tripleFrequencies);
-    }
-
-
-    public double computePseudoLikelihood(Network network, List<MutableTuple<String, double[]>> tripleFrequencies){
+    public void computePseudoLikelihood(Network network, List<String> allTriplets, double[][] probs){
 
         if(_articulationNodes==null){
             initialize(network);
@@ -148,36 +134,32 @@ public class GeneTreeProbabilityPseudo {
         }
 
 
-        int totalTripleNum = tripleFrequencies.size();
+        int totalTripleNum = allTriplets.size();
         int count = 0;
         while(tripleID < totalTripleNum){
-            MutableTuple<String,double[]> tf = tripleFrequencies.get(tripleID);
-            //System.out.println(tripleID + "/" + totalTripleNum);
-            String[] triple = tf.Item1.split("&");
-            //String[] triple = {"C","D","B"};
-            double tripleProbs[] = new double[3];
+            String[] triple = allTriplets.get(tripleID).split("&");
             //System.out.println(tripleID + " " + Arrays.toString(triple));
-            tripleProbs[0] = calculateTripleProbability(network,triple);
+            probs[tripleID][0] = calculateTripleProbability(network,triple);
 
             String temp = triple[1];
             triple[1] = triple[2];
             triple[2] = temp;
-            tripleProbs[1] = calculateTripleProbability(network,triple);
+            probs[tripleID][1] = calculateTripleProbability(network,triple);
 
-            tripleProbs[2] = 1-tripleProbs[0]-tripleProbs[1];
+            probs[tripleID][2] = 1-probs[tripleID][0]-probs[tripleID][1];
 /*
             temp = triple[0];
             triple[0] = triple[2];
             triple[2] = temp;
             tripleProbs[2] = calculateTripleProbability(network,triple);
-            double checkingOne = 0;*/
+            double checkingOne = 0;
 
 
             for(int i=0; i<3; i++){
                 //checkingOne += tripleProbs[i];
                 totalProb += Math.log(tripleProbs[i]) * tf.Item2[i];
             }
-            /*
+
             if(Math.abs(checkingOne-1)>0.0001){
                 throw new RuntimeException(Arrays.toString(tripleProbs));
             }
@@ -197,97 +179,6 @@ public class GeneTreeProbabilityPseudo {
                 tripleID++;
             }
 
-        }
-        //System.out.println("Return " + totalProb);
-        return totalProb;
-    }
-
-
-    private List<MutableTuple<String, double[]>> computeTripleFrequenciesInGTs(List<MutableTuple<Tree,Double>> gts, String[] taxa){
-        Map<String, double[]> triple2counts = new HashMap<>();
-        for(int i=0; i<taxa.length; i++){
-            for(int j=i+1; j<taxa.length; j++){
-                for(int k=j+1; k<taxa.length; k++){
-                    triple2counts.put(taxa[i]+"&"+taxa[j]+"&"+taxa[k], new double[3]);
-                }
-            }
-        }
-        Map<String, Integer> taxon2ID = new HashMap<>();
-        for(int i=0; i<taxa.length; i++){
-            taxon2ID.put(taxa[i], i);
-        }
-        for(MutableTuple<Tree,Double> gt: gts){
-            computeTripleFrequenciesFromSingleGT(gt, taxa, taxon2ID, triple2counts);
-        }
-        List<MutableTuple<String, double[]>> tripleFrequencies = new ArrayList<>();
-        for(Map.Entry<String, double[]> entry: triple2counts.entrySet()){
-            tripleFrequencies.add(new MutableTuple<String, double[]>(entry.getKey(), entry.getValue()));
-        }
-        return tripleFrequencies;
-    }
-
-    private void computeTripleFrequenciesFromSingleGT(MutableTuple<Tree,Double> gt, String[] taxa, Map<String, Integer> taxon2ID, Map<String, double[]> triple2counts){
-        int numTaxa = taxon2ID.size();
-        int[][] pairwiseDepths = new int[numTaxa][numTaxa];
-        Map<TNode, Integer> node2depth = new HashMap<>();
-        Map<TNode, Set<String>> node2leaves = new HashMap<>();
-        for(TNode node: gt.Item1.postTraverse()){
-            int depth = 0;
-            Set<String> leaves = new HashSet<>();
-            if(node.isLeaf()){
-                //leaves.add(taxon2ID.get(node.getName()));
-                leaves.add(node.getName());
-            }
-            else{
-                Set<String> childLeaves1 = new HashSet<>();
-                Set<String> childLeaves2 = new HashSet<>();
-                int index = 0;
-                for(TNode child: node.getChildren()){
-                    depth = Math.max(depth, node2depth.get(child));
-                    if(index==0){
-                        childLeaves1 = node2leaves.get(child);
-                        leaves.addAll(childLeaves1);
-                    }
-                    else{
-                        childLeaves2 = node2leaves.get(child);
-                        leaves.addAll(childLeaves2);
-                    }
-                    index++;
-                }
-                depth++;
-                for(String leaf1: childLeaves1){
-                    int id1 = taxon2ID.get(leaf1);
-                    for(String leaf2: childLeaves2){
-                        int id2 = taxon2ID.get(leaf2);
-                        pairwiseDepths[id1][id2] = depth;
-                        pairwiseDepths[id2][id1] = depth;
-                    }
-                }
-            }
-            node2depth.put(node, depth);
-            node2leaves.put(node, leaves);
-        }
-
-        for(int i=0; i<numTaxa; i++){
-            for(int j=i+1; j<numTaxa; j++){
-                int ij = pairwiseDepths[i][j];
-                String pair = taxa[i]+"&"+taxa[j];
-                for(int k=j+1; k<numTaxa; k++){
-                    int minDepth = ij;
-                    int minIndex = 0;
-                    int ik = pairwiseDepths[i][k];
-                    if(minDepth>ik){
-                        minDepth = ik;
-                        minIndex = 1;
-                    }
-                    int jk = pairwiseDepths[j][k];
-                    if(minDepth>jk){
-                        minDepth = jk;
-                        minIndex = 2;
-                    }
-                    triple2counts.get(pair+"&"+taxa[k])[minIndex]+=gt.Item2;
-                }
-            }
         }
     }
 
@@ -356,6 +247,7 @@ public class GeneTreeProbabilityPseudo {
                 } else if (AC1 != null && AC2 != null) {
                     CACs = new HashMap<>();
                     boolean isArticulation = _lowestArticulationNodes.contains(node);
+                    //boolean isArticulation = false;
                     for (Map.Entry<Integer, List<Configuration>> entry1 : AC1.entrySet()) {
                         int configLineages1 = entry1.getKey();
                         for (Map.Entry<Integer, List<Configuration>> entry2 : AC2.entrySet()) {

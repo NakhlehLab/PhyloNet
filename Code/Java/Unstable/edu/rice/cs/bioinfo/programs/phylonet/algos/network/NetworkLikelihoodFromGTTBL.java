@@ -581,21 +581,28 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
     protected double computeProbability(Network<Object> speciesNetwork, List geneTrees, Map<String, List<String>> species2alleles, List gtCorrespondences) {
         double[] probArray = new double[geneTrees.size()];
-        Thread[] myThreads = new Thread[_numThreads];
+
 
         GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(speciesNetwork, geneTrees, species2alleles);
-        gtp.setParallel(true);
-
-
-        for(int i=0; i<_numThreads; i++){
-            myThreads[i] = new MyThreadFromScratch(gtp, probArray);
-            myThreads[i].start();
+        //
+        if(_numThreads==1){
+            gtp.calculateGTDistribution(probArray);
         }
+        else {
+            Thread[] myThreads = new Thread[_numThreads];
+            gtp.setParallel(true);
 
-        for(int i=0; i<_numThreads; i++){
-            try {
-                myThreads[i].join();
-            } catch (InterruptedException ignore) {}
+            for (int i = 0; i < _numThreads; i++) {
+                myThreads[i] = new MyThreadFromScratch(gtp, probArray);
+                myThreads[i].start();
+            }
+
+            for (int i = 0; i < _numThreads; i++) {
+                try {
+                    myThreads[i].join();
+                } catch (InterruptedException ignore) {
+                }
+            }
         }
 
         return calculateFinalLikelihood(probArray, gtCorrespondences);

@@ -59,7 +59,7 @@ public class NetworkLikelihoodFromGTTBL_MultiTreesPerLocus extends NetworkLikeli
             double totalProbForLocus = 0;
             double totalWeight = 0;
             for(MutableTuple<Integer,Double> one: locusInfo){
-                totalProbForLocus += probList[one.Item1];
+                totalProbForLocus += probList[one.Item1] * one.Item2;
                 totalWeight += one.Item2;
             }
             totalProbForLocus = totalProbForLocus/totalWeight;

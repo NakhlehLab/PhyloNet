@@ -40,11 +40,8 @@ import java.util.*;
  */
 public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
-
-
     protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List distinctTrees, final List gtCorrespondence){
         boolean continueRounds = true; // keep trying to improve network
-
         for(NetNode<Object> node: speciesNetwork.dfs()){
             for(NetNode<Object> parent: node.getParents()){
                 node.setParentDistance(parent,1.0);
@@ -53,8 +50,10 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                 }
             }
         }
+        double initalProb = computeProbabilityForCached(speciesNetwork, distinctTrees, species2alleles, gtCorrespondence);
+        if(_printDetails)
+            System.out.println(speciesNetwork.toString() + " : " + initalProb);
 
-        double initalProb = computeProbability(speciesNetwork, distinctTrees, species2alleles, gtCorrespondence);
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(initalProb);  // records the GTProb of the network at all times
 
         int roundIndex = 0;
@@ -89,7 +88,8 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
                                     child.setParentDistance(parent, suggestedBranchLength);
 
-                                    double lnProb = updateProbability(speciesNetwork, distinctTrees, gtCorrespondence, child, parent);
+                                    double lnProb = updateProbabilityForCached(speciesNetwork, distinctTrees, gtCorrespondence, child, parent);
+                                    //System.out.println(speciesNetwork + ": " + lnProb);
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
                                         lnGtProbOfSpeciesNetwork.setContents(lnProb);
@@ -112,7 +112,10 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                             {
                             }
 
-                            updateProbability(speciesNetwork, distinctTrees, gtCorrespondence, child, parent);
+                            updateProbabilityForCached(speciesNetwork, distinctTrees, gtCorrespondence, child, parent);
+                            if(_printDetails)
+                                System.out.println(speciesNetwork.toString() + " : " + lnGtProbOfSpeciesNetwork.getContents());
+
                         }
                     });
                 }
@@ -132,12 +135,13 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                     {
                         UnivariateFunction functionToOptimize = new UnivariateFunction() {
                             public double value(double suggestedProb) {
-                                 double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
+                                double incumbentHybridProbParent1 = child.getParentProbability(hybridParent1);
 
                                 child.setParentProbability(hybridParent1, suggestedProb);
                                 child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                                double lnProb = updateProbability(speciesNetwork, distinctTrees, gtCorrespondence, child, null);
+                                double lnProb = updateProbabilityForCached(speciesNetwork, distinctTrees, gtCorrespondence, child, null);
+                                //System.out.println(speciesNetwork + ": " + lnProb);
                                 if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                 {
 
@@ -161,8 +165,9 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                         catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
                         {
                         }
-                        updateProbability(speciesNetwork, distinctTrees, gtCorrespondence, child, null);
-                        //System.out.println(network2String(speciesNetwork) + " : " + lnGtProbOfSpeciesNetwork.getContents());
+                        updateProbabilityForCached(speciesNetwork, distinctTrees, gtCorrespondence, child, null);
+                        if(_printDetails)
+                            System.out.println(speciesNetwork.toString() + " : " + lnGtProbOfSpeciesNetwork.getContents());
                     }
                 });
 
@@ -177,8 +182,10 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
             {
                 assigment.execute();
             }
-
-
+            if(_printDetails) {
+                System.out.println("Round end ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                System.out.println(speciesNetwork.toString() + "\n" + lnGtProbOfSpeciesNetwork.getContents() + "\n");
+            }
             if( ((double)lnGtProbOfSpeciesNetwork.getContents()) == lnGtProbLastRound)  // if no improvement was made wrt to last around, stop trying to find a better assignment
             {
                 continueRounds = false;
@@ -201,9 +208,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-
-
-    private class MyThreadFromScratch extends Thread{
+    private class MyThreadNonCached extends Thread{
         GeneTreeProbabilityYF _gtp;
         Network _speciesNetwork;
         List<Tree> _geneTrees;
@@ -211,7 +216,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
         double[] _probs;
 
 
-        public MyThreadFromScratch(GeneTreeProbabilityYF gtp, Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs){
+        public MyThreadNonCached(GeneTreeProbabilityYF gtp, Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs){
             _speciesNetwork = speciesNetwork;
             _geneTrees = geneTrees;
             _species2alleles = species2alleles;
@@ -227,16 +232,44 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    private class MyThreadFromNonScratch extends Thread{
+
+    private class MyThreadFromScratchForCached extends Thread{
+        GeneTreeProbabilityYF_Cached _gtp;
+        Network _speciesNetwork;
+        List<Tree> _geneTrees;
+        Map<String, List<String>> _species2alleles;
+        double[] _probs;
+
+
+        public MyThreadFromScratchForCached(GeneTreeProbabilityYF_Cached gtp, Network speciesNetwork, List<Tree> geneTrees, Map<String, List<String>> species2alleles, double[] probs){
+            _speciesNetwork = speciesNetwork;
+            _geneTrees = geneTrees;
+            _species2alleles = species2alleles;
+            _probs = probs;
+            _gtp = gtp;
+        }
+
+
+        public void run() {
+            _gtp.calculateGTDistribution(_speciesNetwork, _geneTrees, _species2alleles, _probs);
+
+        }
+    }
+
+
+
+
+
+    private class MyThreadFromNonScratchForCached extends Thread{
         Network _speciesNetwork;
         List<Tree> _gts;
         double[] _probs;
         Set<NetNode> _childNodes;
         Set<NetNode> _parentNodes;
-        GeneTreeProbabilityYF _gtp;
+        GeneTreeProbabilityYF_Cached _gtp;
 
 
-        public MyThreadFromNonScratch(GeneTreeProbabilityYF gtp, Network speciesNetwork, List<Tree> gts, Set<NetNode> childNodes, Set<NetNode> parentNodes, double[] probs){
+        public MyThreadFromNonScratchForCached(GeneTreeProbabilityYF_Cached gtp, Network speciesNetwork, List<Tree> gts, Set<NetNode> childNodes, Set<NetNode> parentNodes, double[] probs){
             _speciesNetwork = speciesNetwork;
             _gts = gts;
             _probs = probs;
@@ -263,7 +296,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
 
         for(int i=0; i<_numThreads; i++){
-            myThreads[i] = new MyThreadFromScratch(gtp, speciesNetwork, distinctTrees, species2alleles, probs);
+            myThreads[i] = new MyThreadNonCached(gtp, speciesNetwork, distinctTrees, species2alleles, probs);
             myThreads[i].start();
         }
 
@@ -273,12 +306,41 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
             } catch (InterruptedException ignore) {}
         }
 
+        _maxNumACs = gtp._maxNumACs;
+
+        double prob = calculateFinalLikelihood(probs, gtCorrespondences);
+        return prob;
+    }
+
+
+    protected double computeProbabilityForCached(Network<Object> speciesNetwork, List distinctTrees, Map<String, List<String>> species2alleles, List gtCorrespondences) {
+        double[] probs = new double[distinctTrees.size()];
+        Thread[] myThreads = new Thread[_numThreads];
+
+        GeneTreeProbabilityYF_Cached gtp = new GeneTreeProbabilityYF_Cached();
+        gtp.setParallel(true);
+        gtp.preProcess(speciesNetwork, distinctTrees, true);
+
+
+        for(int i=0; i<_numThreads; i++){
+            myThreads[i] = new MyThreadFromScratchForCached(gtp, speciesNetwork, distinctTrees, species2alleles, probs);
+            myThreads[i].start();
+        }
+
+        for(int i=0; i<_numThreads; i++){
+            try {
+                myThreads[i].join();
+            } catch (InterruptedException ignore) {}
+        }
+
+        _maxNumACs = gtp._maxNumACs;
+
         return calculateFinalLikelihood(probs, gtCorrespondences);
     }
 
 
 
-    private double updateProbability(Network speciesNetwork, List<Tree> geneTrees, final List gtCorrespondences, NetNode child, NetNode parent) {
+    private double updateProbabilityForCached(Network speciesNetwork, List<Tree> geneTrees, final List gtCorrespondences, NetNode child, NetNode parent) {
         Set<NetNode> childNodes = new HashSet<NetNode>();
         childNodes.add(child);
         Set<NetNode> parentNodes = new HashSet<NetNode>();
@@ -294,12 +356,12 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
         double[] probs = new double[geneTrees.size()];
         Thread[] myThreads = new Thread[_numThreads];
 
-        GeneTreeProbabilityYF gtp = new GeneTreeProbabilityYF();
+        GeneTreeProbabilityYF_Cached gtp = new GeneTreeProbabilityYF_Cached();
         gtp.setParallel(true);
         gtp.preProcess(speciesNetwork, geneTrees, false);
 
         for(int i=0; i<_numThreads; i++){
-            myThreads[i] = new MyThreadFromNonScratch(gtp, speciesNetwork, geneTrees, childNodes, parentNodes, probs);
+            myThreads[i] = new MyThreadFromNonScratchForCached(gtp, speciesNetwork, geneTrees, childNodes, parentNodes, probs);
             myThreads[i].start();
         }
 

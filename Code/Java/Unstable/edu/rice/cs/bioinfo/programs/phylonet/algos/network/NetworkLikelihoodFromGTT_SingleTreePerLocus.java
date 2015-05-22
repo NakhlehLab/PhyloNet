@@ -34,7 +34,7 @@ import java.util.*;
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
  */
-public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikelihoodFromGTT {
+public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikelihoodFromGTT{
 
 
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForInferNetwork, List treeCorrespondences){
@@ -68,9 +68,7 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
                     existingTuple.Item2 += gtTuple.Item2;
                 }
             }
-
         }
-
     }
 
 
@@ -82,6 +80,7 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
             for(int id: tuple.Item2){
                 totalProbForOneTree += probList[id];
             }
+
             totalProb += Math.log(totalProbForOneTree) * tuple.Item1.Item2;
             //totalProb += totalProbForOneTree;
         }

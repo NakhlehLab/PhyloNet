@@ -10,10 +10,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkBootstrap;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,8 +41,10 @@ public class InferNetworkMLFromGTTWithParametricBootstrap extends InferNetworkML
         return new Func1<List, Tuple<Network,Double>>() {
             public Tuple<Network,Double> execute(List gts) {
                 InferNetworkMLFromGTT_SingleTreePerLocus inference = new InferNetworkMLFromGTT_SingleTreePerLocus();
-                inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_diameterLimit, _numThreads, _startNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
-                Tuple<Network,Double> result = inference.inferNetwork(gts, species2alleles, maxReticulations, 1).get(0);
+                inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_moveDiameter,_reticulationDiameter, _numThreads, _startNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
+                LinkedList<Tuple<Network,Double>> resultList = new LinkedList<>();
+                inference.inferNetwork(gts, species2alleles, maxReticulations, 1, resultList);
+                Tuple<Network,Double> result = resultList.get(0);
                 //System.out.println(network2String(network));
                 return result;
             }

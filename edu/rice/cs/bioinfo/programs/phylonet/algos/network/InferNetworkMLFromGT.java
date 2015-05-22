@@ -89,7 +89,6 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
                     }
                 }
             }
-
             MDCInference_DP mdc = new MDCInference_DP();
             Solution sol;
             if(allele2species==null){
@@ -121,7 +120,7 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             }
         }
 
-        System.out.println(startingNetwork.toString());
+        //System.out.println(startingNetwork.toString());
         return startingNetwork.toString();
     }
 

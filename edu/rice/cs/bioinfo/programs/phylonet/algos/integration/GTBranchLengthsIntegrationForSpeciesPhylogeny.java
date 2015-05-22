@@ -3,7 +3,6 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.integration;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYF;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeWithBranchLengthProbabilityYFBackup;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -278,7 +277,7 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
         List<TNode> _nodes; //keep it in post order
         boolean[][] _R;
         Map<TNode, Double> _node2height;
-        List<MutableTuple<Tree,Double>> _gtList;
+        List<Tree> _gtList;
 
 
         public GTProbInNetworkFunction(Network network, Tree gt, Map<String, List<String>> species2alleles, List<TNode> nodes, double[] lowerBound, double[] upperBound){
@@ -289,8 +288,8 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
             _lowerBound = lowerBound;
             _upperBound = upperBound;
             _nodes = nodes;
-            _gtList = new ArrayList<MutableTuple<Tree,Double>>();
-            _gtList.add(new MutableTuple<Tree, Double>(_gt,1.0));
+            _gtList = new ArrayList<Tree>();
+            _gtList.add(_gt);
             findGTNodesAncestralRelationship();
         }
 
@@ -345,7 +344,7 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
                 throw new RuntimeException("Not Ultrametric");
             }
 
-            GeneTreeWithBranchLengthProbabilityYFBackup gtp = new GeneTreeWithBranchLengthProbabilityYFBackup(_network, _gtList, _species2alleles);
+            GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, _gtList, _species2alleles);
             if(_articulateNodes!=null){
                 gtp.setTotalNodes(_articulateNodes);
             }

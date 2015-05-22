@@ -41,31 +41,29 @@ public class NetworkLikelihoodFromGTT_MultiTreesPerLocus extends NetworkLikeliho
 
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List summarizedGTs, List treeCorrespondences){
         int treeID = 0;
-        Map<String, MutableTuple<Integer,Double>> tree2Info = new HashMap<String, MutableTuple<Integer,Double>>();
+        Map<String, Integer> tree2Info = new HashMap<String, Integer>();
         for(Object o: originalGTs) {
             List<MutableTuple<Tree,Double>> treesForOneLocus = (List<MutableTuple<Tree,Double>>)o;
             Map<String, Integer> tree2infoIndex = new HashMap<String, Integer>();
             List<MutableTuple<Integer,Double>> infoList = new ArrayList<MutableTuple<Integer, Double>>();
             for (MutableTuple<Tree, Double> gtTuple : treesForOneLocus) {
-                //MutableTuple<Integer,Double> info = new MutableTuple<Integer, Double>(-1,gtTuple.Item2);
                 for (TNode node : gtTuple.Item1.getNodes()) {
                     node.setParentDistance(TNode.NO_DISTANCE);
                 }
                 String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
-                MutableTuple<Integer,Double> existingInfo = tree2Info.get(exp);
-                if (existingInfo == null) {
-                    existingInfo = new MutableTuple<Integer,Double>(treeID, gtTuple.Item2);
+                Integer existingID = tree2Info.get(exp);
+                if (existingID == null) {
+                    existingID = treeID;
                     summarizedGTs.add(gtTuple.Item1);
-                    tree2Info.put(exp, existingInfo);
+                    tree2Info.put(exp, existingID);
                     tree2infoIndex.put(exp, infoList.size());
                     infoList.add(new MutableTuple(treeID, gtTuple.Item2));
                     treeID++;
                 } else {
-                    existingInfo.Item2 += gtTuple.Item2;
                     Integer infoID = tree2infoIndex.get(exp);
                     if(infoID == null){
                         tree2infoIndex.put(exp, infoList.size());
-                        infoList.add(new MutableTuple(existingInfo.Item1, gtTuple.Item2));
+                        infoList.add(new MutableTuple(existingID, gtTuple.Item2));
                     }
                     else{
                         infoList.get(infoID).Item2 += gtTuple.Item2;
@@ -76,8 +74,19 @@ public class NetworkLikelihoodFromGTT_MultiTreesPerLocus extends NetworkLikeliho
 
             }
             treeCorrespondences.add(infoList);
+            /*
+            for(MutableTuple<Integer,Double> info: infoList){
+                System.out.println(info.Item1+": " +info.Item2);
+            }
+            System.out.println();
+            */
         }
-
+    /*
+        int index = 0;
+        for(Object o: summarizedGTs){
+            System.out.println(index++ + ": " + o.toString());
+        }
+*/
     }
 
 
@@ -88,7 +97,7 @@ public class NetworkLikelihoodFromGTT_MultiTreesPerLocus extends NetworkLikeliho
             double totalProbForLocus = 0;
             double totalWeight = 0;
             for(MutableTuple<Integer,Double> one: locusInfo){
-                totalProbForLocus += probList[one.Item1];
+                totalProbForLocus += probList[one.Item1] * one.Item2;
                 totalWeight += one.Item2;
             }
             totalProbForLocus = totalProbForLocus/totalWeight;

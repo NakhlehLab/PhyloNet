@@ -35,14 +35,28 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung {
-    protected int _maxRounds;
-    protected int _maxTryPerBranch;
-    protected double _improvementThreshold;
-    protected double _maxBranchLength;
-    protected double _Brent1;
-    protected double _Brent2;
-    protected int _numThreads;
+    protected int _maxRounds = 100;
+    protected int _maxTryPerBranch = 100;
+    protected double _improvementThreshold = 0.001;
+    protected double _maxBranchLength = 6;
+    protected double _Brent1 = 0.01;
+    protected double _Brent2 = 0.001;
+    protected int _numThreads = 1;
+    protected boolean _printDetails = false;
+    protected int _numRuns = 1;
 
+    //TODO
+    protected int _maxNumACs;
+    protected int _dataSize;
+
+
+    public int getMaxNumACs(){
+        return _maxNumACs;
+    }
+
+    public int getDataSize(){
+        return _dataSize;
+    }
 
     public void setParallel(int numThreads){
         _numThreads = numThreads;
@@ -93,11 +107,22 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
         List dataCorrespondences = new ArrayList();
         List summarizedData = new ArrayList();
         summarizeData(originalData, allele2species, summarizedData, dataCorrespondences);
-        return computeLikelihood(speciesNetwork, summarizedData, dataCorrespondences, species2alleles, needOptimize);
+        //System.out.println(summarizedData.size());
+        //computeLikelihood(speciesNetwork, summarizedData, dataCorrespondences, species2alleles, needOptimize);
+
+        //_numThreads = Math.max(1, _numThreads);
+        //_dataSize = summarizedData.size();
+        double maxProb = Double.NEGATIVE_INFINITY;
+        for(int i=0; i<_numRuns; i++){
+            double prob = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, needOptimize);
+            maxProb = Math.max(maxProb, prob);
+        }
+        return maxProb;
     }
 
 
-    protected double computeLikelihood(Network speciesNetwork,  List summarizedData, List dataCorrespondences, Map<String,List<String>> species2alleles, boolean needOptimize){
+    protected double computeLikelihood(Network speciesNetwork, Map<String,List<String>> species2alleles, List summarizedData, List dataCorrespondences, boolean needOptimize){
+        //long startTime = System.currentTimeMillis();
         double MLScore;
         if(!needOptimize){
             MLScore = computeProbability(speciesNetwork, summarizedData, species2alleles, dataCorrespondences);
@@ -105,6 +130,7 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
         else{
             MLScore = findOptimalBranchLength(speciesNetwork, species2alleles, summarizedData, dataCorrespondences);
         }
+        //System.out.println((System.currentTimeMillis()-startTime)/1000.0);
         return MLScore;
     }
 

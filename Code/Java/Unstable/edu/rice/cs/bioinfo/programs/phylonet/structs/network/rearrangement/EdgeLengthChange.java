@@ -8,7 +8,7 @@ public class EdgeLengthChange extends EdgeParameterChange{
         double newBranchLength = _targetEdgeBrlen;
         if(newBranchLength==-1){
             _targetEdgeBrlen = _targetEdge.Item2.getParentDistance(_targetEdge.Item1);
-            newBranchLength = drawRandomParameter(_targetEdgeBrlen, 0, _maxBrlen);
+            newBranchLength = drawRandomParameter(_targetEdgeBrlen, 0, Double.POSITIVE_INFINITY);
         }
         _targetEdge.Item2.setParentDistance(_targetEdge.Item1, newBranchLength);
         return true;

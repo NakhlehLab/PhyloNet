@@ -56,21 +56,23 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
     private double _bootstrap = 100;
     private NetworkNonEmpty _startSpeciesNetwork = null;
     private int _maxReticulations;
-    private Long _maxExaminations = null;
-    private long _maxFailure = 100;
-    private int _maxDiameter = 0;
+    private long _maxExaminations = -1;
+    private int _maxFailure = 100;
+    private int _moveDiameter = -1;
+    private int _reticulationDiameter = -1;
     private int _returnNetworks = 1;
     private int _maxRounds = 100;
     private int _maxTryPerBranch = 100;
     private double _maxBranchLength = 6;
-    private double _improvementThreshold = 0.001;
+    private double _improvementThreshold = 0.01;
     private double _Brent1 = 0.01;
     private double _Brent2 = 0.001;
     private boolean _dentroscropeOutput = false;
     private int _parallel = 1;
     private boolean _usingBL = false;
     private Set<String> _fixedHybrid = new HashSet<String>();
-    private double[] _operationWeight = {0.15,0.15,0.2,0.5};
+    //TODO
+    private double[] _operationWeight = {0.1,0.1,0.15,0.55,0.15,0.15,2.8};
     private int _numRuns = 10;
     private Long _seed = null;
     private boolean _oneGTPerLocus = true;
@@ -90,7 +92,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams(){
-        return 38;
+        return 40;
     }
 
     @Override
@@ -154,22 +156,41 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
-            ParamExtractor dParam = new ParamExtractor("d", this.params, this.errorDetected);
-            if(dParam.ContainsSwitch){
-                if(dParam.PostSwitchParam != null)
+            ParamExtractor mdParam = new ParamExtractor("md", this.params, this.errorDetected);
+            if(mdParam.ContainsSwitch){
+                if(mdParam.PostSwitchParam != null)
                 {
                     try
                     {
-                        _maxDiameter = Integer.parseInt(dParam.PostSwitchValue);
+                        _moveDiameter = Integer.parseInt(mdParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized maximum diameter for network search " + dParam.PostSwitchValue, dParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized maximum diameter for network search " + mdParam.PostSwitchValue, mdParam.PostSwitchParam.getLine(), mdParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -d.", dParam.SwitchParam.getLine(), dParam.SwitchParam.getColumn());
+                    errorDetected.execute("Expected value after switch -d.", mdParam.SwitchParam.getLine(), mdParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor rdParam = new ParamExtractor("rd", this.params, this.errorDetected);
+            if(rdParam.ContainsSwitch){
+                if(rdParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _reticulationDiameter = Integer.parseInt(rdParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized maximum diameter for network search " + rdParam.PostSwitchValue, rdParam.PostSwitchParam.getLine(), rdParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -d.", rdParam.SwitchParam.getLine(), rdParam.SwitchParam.getColumn());
                 }
             }
 
@@ -236,7 +257,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _maxFailure = Long.parseLong(fParam.PostSwitchValue);
+                        _maxFailure = Integer.parseInt(fParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
@@ -558,7 +579,7 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), rsParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
@@ -567,8 +588,8 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","d","p","l","r","i","t","di","bl","f","pl","h","w","x","rs");
-            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, dParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam,plParam,hParam,wParam,xParam,rsParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","md","rd","p","l","r","i","t","di","bl","f","pl","h","w","x","rs");
+            checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, mdParam, rdParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,fParam,plParam,hParam,wParam,xParam,rsParam);
 
         }
 
@@ -624,8 +645,15 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
         }
 
         if(_fixedHybrid.size()!=0){
-            _operationWeight[0] = _operationWeight[1] = _operationWeight[2] = 0;
-            _operationWeight[3] = 1.0;
+            for(int i=0; i<_operationWeight.length-1; i++){
+                if(i == 3){
+                    _operationWeight[i] = 1.0;
+                }
+                else{
+                    _operationWeight[i] = 0;
+                }
+            }
+            _operationWeight[_operationWeight.length-1] = 1/0.3*0.7;
         }
 
         NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
@@ -649,8 +677,9 @@ public class InferNetwork_Probabilistic extends CommandBaseFileOut{
                 inference = new InferNetworkMLFromGTTBL_MultiTreesPerLocus();
         }
 
-        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _maxDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
-        List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks);
+        inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
+        LinkedList<Tuple<Network, Double>> resultTuples = new LinkedList<>();
+        inference.inferNetwork(gts,_taxonMap,_maxReticulations, _returnNetworks, resultTuples);
 
         int index = 1;
         for(Tuple<Network, Double> tuple: resultTuples){

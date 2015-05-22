@@ -7,6 +7,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 
+import java.util.Random;
+
 /**
  * Created by yunyu on 10/20/14.
  */
@@ -21,7 +23,8 @@ public abstract class NetworkRearrangementOperation {
     protected Tuple<NetNode,NetNode> _destinationEdge;
     protected double[] _destinationEdgeBrlens;
     protected double[] _destinationEdgeInheriProbs;
-
+    protected Random _random;
+    //protected double _maxBrlen = 6;
 
 
     public void setParameters(Network network, Tuple<NetNode,NetNode> targetEdge, double targetEdgeBrlen, double targetEdgeInheriProb, Tuple<NetNode,NetNode> sourceEdge, double[] sourceEdgeBrlens, double[] sourceEdgeInheriProbs, Tuple<NetNode,NetNode> destinationEdge, double[] destinationEdgeBrlens, double[] destinationEdgeInheriProbs){
@@ -73,6 +76,12 @@ public abstract class NetworkRearrangementOperation {
         edge.Item1.removeChild(edge.Item2);
         node.adoptChild(edge.Item2, brlens[1]);
         edge.Item2.setParentProbability(node, inheriProbs[1]);
+        if(node.isNetworkNode() && !Double.isNaN(inheriProbs[0])){
+            node.setParentProbability(findAnotherParentAndChild(node, edge.Item1).Item1, 1-inheriProbs[0]);
+        }
+        if(edge.Item2.isNetworkNode() && !Double.isNaN(inheriProbs[1])){
+            edge.Item2.setParentProbability(findAnotherParentAndChild(edge.Item2, node).Item1, 1-inheriProbs[1]);
+        }
     }
 
     protected void randomlyPartitionAnEdge(Tuple<NetNode, NetNode> edge, double[] brlens, double[] inheriProbs){
@@ -91,7 +100,7 @@ public abstract class NetworkRearrangementOperation {
             brlens[0] = node.getParentDistance(edge.Item1);
             inheriProbs[0] = node.getParentProbability(edge.Item1);
             edge.Item1.removeChild(node);
-            edge.Item1.adoptChild(edge.Item2, brlens[0]+brlens[1]);
+            edge.Item1.adoptChild(edge.Item2, brlens[0] + brlens[1]);
             edge.Item2.setParentProbability(edge.Item1, inheriProbs[1]);
         }
     }

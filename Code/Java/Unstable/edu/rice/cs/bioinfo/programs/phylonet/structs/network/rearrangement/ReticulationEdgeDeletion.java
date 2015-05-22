@@ -55,7 +55,7 @@ public class ReticulationEdgeDeletion extends NetworkRearrangementOperation{
 
     public void undoOperation(){
         ReticulationEdgeAddition undo = new ReticulationEdgeAddition();
-        undo.setParameters(_network, null, _targetEdgeBrlen, _targetEdgeInheriProb, _sourceEdge, _sourceEdgeBrlens, _sourceEdgeInheriProbs, _destinationEdge, _destinationEdgeBrlens, _destinationEdgeInheriProbs);
+        undo.setParameters(_network, _targetEdge, _targetEdgeBrlen, _targetEdgeInheriProb, _sourceEdge, _sourceEdgeBrlens, _sourceEdgeInheriProbs, _destinationEdge, _destinationEdgeBrlens, _destinationEdgeInheriProbs);
         undo.performOperation();
     }
 }

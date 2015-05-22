@@ -12,8 +12,12 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 public class ReticulationEdgeAddition extends NetworkRearrangementOperation{
 
     public boolean performOperation(){
-        //N sourceEdgeNewNode = _nodesOfTargetEdge==null?_makeNode.execute(_network):_nodesOfTargetEdge.Item1;
-        NetNode newEdgeTail = new BniNetNode();
+
+        if(_targetEdge == null) {
+            _targetEdge = new Tuple<>((NetNode)new BniNetNode(), (NetNode)new BniNetNode());
+        }
+        NetNode newEdgeTail = _targetEdge.Item1;
+
         if(_sourceEdge!=null){
             if(_sourceEdgeBrlens==null) {
                 _sourceEdgeBrlens = new double[2];
@@ -28,7 +32,7 @@ public class ReticulationEdgeAddition extends NetworkRearrangementOperation{
             _network.resetRoot(newEdgeTail);
         }
 
-        NetNode newEdgeHead = new BniNetNode();
+        NetNode newEdgeHead = _targetEdge.Item2;
         if(_destinationEdgeBrlens==null) {
             _destinationEdgeBrlens = new double[2];
             _destinationEdgeInheriProbs = new double[2];
@@ -36,8 +40,6 @@ public class ReticulationEdgeAddition extends NetworkRearrangementOperation{
         }
         addNodeToAnEdge(newEdgeHead, _destinationEdge, _destinationEdgeBrlens, _destinationEdgeInheriProbs);
 
-
-        _targetEdge = new Tuple<>(newEdgeTail, newEdgeHead);
         if(_targetEdgeBrlen==-1) {
             _targetEdgeBrlen = 1;
             _targetEdgeInheriProb = 0.5;

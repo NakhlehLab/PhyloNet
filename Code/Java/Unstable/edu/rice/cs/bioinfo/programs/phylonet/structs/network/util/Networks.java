@@ -81,9 +81,7 @@ public class Networks
 		}
 	}
 
-	/**
-	 * This function removes all binary nodes from the network.
-	 */
+/*
 	public static <T> void removeBinaryNodes(Network<T> net)
 	{
 		// Find all binary nodes.
@@ -100,14 +98,43 @@ public class Networks
 			NetNode<T> parent = node.getParents().iterator().next();	// Node's only parent.
 			NetNode<T> child = node.getChildren().iterator().next();	// Node's only child.
 			double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-			//double gamma = node.getParentProbability(parent) * child.getParentProbability(node);
+			double inheritanceProb = child.getParentProbability(node);
             //System.out.println("removing " + node.getName());
 			parent.removeChild(node);
             //System.out.println("removing " + child.getName());
 			node.removeChild(child);
 			parent.adoptChild(child, distance);
+            child.setParentProbability(parent, inheritanceProb);
 		}
 	}
+    */
+
+
+    /**
+     * This function removes all binary nodes from the network.
+     */
+    public static <T> void removeBinaryNodes(Network<T> net) {
+        boolean update;
+        do{
+            update = false;
+            for (NetNode<T> node : net.bfs()) {
+                //System.out.println(node.getName() + " " + node.getIndeg() + " " + node.getOutdeg());
+                if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
+                    NetNode<T> parent = node.getParents().iterator().next();    // Node's only parent.
+                    NetNode<T> child = node.getChildren().iterator().next();    // Node's only child.
+                    double distance = node.getParentDistance(parent) + child.getParentDistance(node);
+                    double inheritanceProb = child.getParentProbability(node);
+                    //System.out.println("removing " + node.getName());
+                    parent.removeChild(node);
+                    //System.out.println("removing " + child.getName());
+                    node.removeChild(child);
+                    parent.adoptChild(child, distance);
+                    child.setParentProbability(parent, inheritanceProb);
+                    update = true;
+                }
+            }
+        }while(update);
+    }
 
 	/**
 	 * This function creates a dummy network, which contains just the root and a set of leaves
@@ -684,13 +711,13 @@ public class Networks
 
 
     /**
-     * This function computes the set of articulation nodes in a networks whose has at
+     * This function computes the set of lowest articulation nodes in a networks whose has at
      * least one child node that is not articulation node
      * @param net, sa: The network
      * * @return: The set of articulation nodes
      */
 
-    public static <T> Set<NetNode<T>> getArticulationNodes(Network<T> net){
+    public static <T> Set<NetNode<T>> getLowestArticulationNodes(Network<T> net){
         List<NetNode<T>> allArticulationNodes = new ArrayList<NetNode<T>>();
         Set<NetNode<T>> articulationNodesToReturn = new HashSet<NetNode<T>>();
         for(NetNode<T> node: Networks.postTraversal(net)){
@@ -725,7 +752,7 @@ public class Networks
                     NetNode<T> parent = node.getParents().iterator().next();
                     double distance = node.getParentDistance(parent);
                     parent.removeChild(node);
-                    boolean disconnect = isValidNetwork(net, parent);
+                    boolean disconnect = isDisconnectedNetwork(net, parent);
                     parent.adoptChild(node, distance);
                     if (disconnect) {
                         articulationNodesToReturn.add(node);
@@ -739,8 +766,51 @@ public class Networks
     }
 
 
+    /**
+     * This function computes the set of articulation nodes in a networks whose has at
+     * least one child node that is not articulation node
+     * @param net, sa: The network
+     * * @return: The set of articulation nodes
+     */
 
-    private static <T> boolean isValidNetwork(Network<T> net, NetNode<T> ignoreNode){
+    public static <T> Set<NetNode<T>> getAllArticulationNodes(Network<T> net){
+        Set<NetNode<T>> articulationNodes = new HashSet<>();
+        for(NetNode<T> node: Networks.postTraversal(net)){
+            if(node.isLeaf() || node.isRoot()){
+                articulationNodes.add(node);
+            }
+            else if(node.isTreeNode()){
+                boolean childrenArticulate = true;
+                for(NetNode<T> child: node.getChildren()){
+                    if(!articulationNodes.contains(child)){
+                        childrenArticulate = false;
+                        break;
+                    }
+                }
+                if(childrenArticulate){
+                    articulationNodes.add(node);
+                }else{
+                    NetNode<T> parent = node.getParents().iterator().next();
+                    double distance = node.getParentDistance(parent);
+                    parent.removeChild(node);
+                    boolean disconnect = isDisconnectedNetwork(net, parent);
+                    parent.adoptChild(node, distance);
+                    if (disconnect) {
+                        articulationNodes.add(node);
+                    }
+                }
+
+            }
+        }
+        return articulationNodes;
+    }
+
+
+
+
+
+
+    public static <T> boolean isDisconnectedNetwork(Network<T> net, NetNode<T> ignoreNode){
         Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
         Set<NetNode<T>> seen = new HashSet<NetNode<T>>();
         for(NetNode<T> node: net.bfs()){
@@ -803,6 +873,7 @@ public class Networks
 
     private static <T> boolean dfs(NetNode<T> node, Set<NetNode<T>> visited,
                                    Set<NetNode<T>> stacked) {
+
         if(stacked.contains(node)) return true;
         if(visited.contains(node)) return false;
 
@@ -816,7 +887,11 @@ public class Networks
     }
 
 
-
+//TODO
+    public static <T> double computeMaxLoad(Network<T> network, Map<String, List<String>> species2alleles){
+        NetworkLoad networkLoad = new NetworkLoad();
+        return networkLoad.computeMaxLoad(network, species2alleles);
+    }
 
 
 	// Data members
@@ -1024,7 +1099,6 @@ class BipartiteGraph {
 
 		return max;
 	}
-
 
 
 

@@ -37,17 +37,21 @@ import java.util.Map;
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
  */
-public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFromGT {
+public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFromGTT {
 
 
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List dataForStartingNetwork, List dataForInferNetwork, List treeCorrespondences){
         int treeID = 0;
         Map<String, MutableTuple<Integer,Double>> tree2Info = new HashMap<String, MutableTuple<Integer,Double>>();
+        //int index = 0;
         for(Object o: originalGTs) {
+            //System.out.println(index++);
             List<MutableTuple<Tree,Double>> treesForOneLocus = (List<MutableTuple<Tree,Double>>)o;
             Map<String, Integer> tree2infoIndex = new HashMap<String, Integer>();
             List<MutableTuple<Integer,Double>> infoList = new ArrayList<MutableTuple<Integer, Double>>();
+            //int index = 0;
             for (MutableTuple<Tree, Double> gtTuple : treesForOneLocus) {
+                //System.out.println(index++);
                 //MutableTuple<Integer,Double> info = new MutableTuple<Integer, Double>(-1,gtTuple.Item2);
                 for (TNode node : gtTuple.Item1.getNodes()) {
                     node.setParentDistance(TNode.NO_DISTANCE);
@@ -78,20 +82,32 @@ public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFrom
 
             }
             treeCorrespondences.add(infoList);
+            /*
+            for(MutableTuple<Integer,Double> info: infoList){
+                System.out.println(info.Item1+": " +info.Item2);
+            }
+            System.out.println();
+            */
         }
 
         for(MutableTuple<Integer,Double> info: tree2Info.values()){
             MutableTuple<Integer,Double> tuple = (MutableTuple<Integer,Double>)dataForStartingNetwork.get(info.Item1);
             tuple.Item2 = info.Item2;
         }
-
+/*
+        int index = 0;
+        for(Object o: dataForInferNetwork){
+            System.out.println(index++ + ": " + o.toString());
+        }
+*/
     }
 
 
-    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedGTs, final List treeCorrespondence){
+    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedGTs, final List treeCorrespondence){
         NetworkLikelihoodFromGTT_MultiTreesPerLocus likelihoodComputer = new NetworkLikelihoodFromGTT_MultiTreesPerLocus();
         likelihoodComputer.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-        return likelihoodComputer.findOptimalBranchLength(speciesNetwork, species2alleles, summarizedGTs, treeCorrespondence);
+        double prob = likelihoodComputer.computeLikelihood(speciesNetwork, species2alleles, summarizedGTs, treeCorrespondence, _optimizeBL);
+        return prob;
     }
 
 

@@ -25,9 +25,10 @@ public abstract class InferNetworkMLFromGTWithParametricBootstrap{
     protected double _maxBranchLength;
     protected double _Brent1;
     protected double _Brent2;
-    protected Long _maxFailure;
+    protected int _maxFailure;
     protected Long _maxExaminations;
-    protected int _diameterLimit;
+    protected int _moveDiameter;
+    protected int _reticulationDiameter;
     protected Network<Object> _startNetwork;
     protected Set<String> _fixedHybrid;
     protected double[] _operationWeight;
@@ -51,7 +52,7 @@ public abstract class InferNetworkMLFromGTWithParametricBootstrap{
     }
 
 
-    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, Long maxExaminations, Long maxFailure, int diameterLimit, int parallel, Network startNetwork, Set<String> fixedHybrid, double[] operationWeight, int numRuns, Long seed){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, long maxExaminations, int maxFailure, int moveDiameter, int reticulationDiameter, int parallel, Network startNetwork, Set<String> fixedHybrid, double[] operationWeight, int numRuns, Long seed){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
@@ -60,7 +61,8 @@ public abstract class InferNetworkMLFromGTWithParametricBootstrap{
         _Brent1 = Brent1;
         _Brent2 = Brent2;
         _maxExaminations = maxExaminations;
-        _diameterLimit = diameterLimit;
+        _moveDiameter = moveDiameter;
+        _reticulationDiameter = reticulationDiameter;
         _startNetwork = startNetwork;
         _maxFailure = maxFailure;
         _numThreads = parallel;

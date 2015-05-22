@@ -79,19 +79,40 @@ public abstract class InferNetworkML {
     protected int _moveDiameter = -1;
     protected int _reticulationDiameter = -1;
     protected Network _startNetwork;
-    protected double[] _topologyOperationWeight = {0.05,0.05,0.1,0.2,0.1};
+    protected double[] _topologyOperationWeight = {0.1,0.1,0.15,0.6,0.15,0.15};
     //protected double[] _topologyOperationWeight = {0.05,0.05,0.1,10,0.1};
     protected double[] _topologyVsParameterOperation = {0.3,0.7};
-    //protected double[] _operationWeight = {0.2,0.05,0.1,0.2,0.1,0,0};
+    //protected double[] _topologyVsParameterOperation = {1,0};
     protected int _numRuns = 5;
     protected int _numThreads = 1;
     protected Long _seed = null;
     protected Set<String> _fixedHybrid = new HashSet<String>();
     protected File _logFile = null;
+    protected File _intermediateResultFile = null;
     protected boolean _optimizeBL = false;
 
     public void setLogFile(File file){
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            }catch (Exception e){
+                System.err.println(e.getMessage());
+                e.getStackTrace();
+            }
+        }
         _logFile = file;
+    }
+
+    public void setIntermediateResultFile(File file){
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            }catch (Exception e){
+                System.err.println(e.getMessage());
+                e.getStackTrace();
+            }
+        }
+        _intermediateResultFile = file;
     }
 
     public void setStartNetwork(Network startNetwork){
@@ -125,10 +146,10 @@ public abstract class InferNetworkML {
         _maxFailure = maxFailure;
         _numThreads = parallel;
         _fixedHybrid = fixedHybrid;
-        _topologyOperationWeight = new double[5];
+        _topologyOperationWeight = new double[operationWeight.length-1];
         _topologyVsParameterOperation = new double[2];
-        for(int i=0; i<6; i++){
-            if(i!=5){
+        for(int i=0; i<operationWeight.length; i++){
+            if(i!=operationWeight.length-1){
                 _topologyOperationWeight[i] = operationWeight[i];
                 _topologyVsParameterOperation[0] += _topologyOperationWeight[i];
             }
@@ -167,16 +188,18 @@ public abstract class InferNetworkML {
             findSingleAlleleSpeciesSet(dataForStartingNetwork, allele2species, singleAlleleSpecies);
         }
 
-        String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
+        //String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
+        String startingNetwork = _startNetwork.toString();
         dataForStartingNetwork.clear();
 
-
-        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _seed), _topologyVsParameterOperation[0], new NetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
         //SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
 
-        SimulatedAnnealingSalterPearLBackup searcher = new SimulatedAnnealingSalterPearLBackup(comparator, allNeighboursStrategy);
+        SimulatedAnnealingSalterPearL searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
         searcher.setLogFile(_logFile);
+        searcher.setResultFile(_intermediateResultFile);
+
         Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, species2alleles, dataCorrespondence);
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here

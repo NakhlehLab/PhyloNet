@@ -19,16 +19,17 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
-import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkNeighbourhoodRandomWalkGenerator;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
+
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
@@ -52,32 +53,12 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
 
 
-    protected Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List summarizedData, final Map<String, List<String>> species2alleles, final List dataCorrespondences){
-        return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
-            public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
-                //_counter++;
-                Network<Object> speciesNetwork = networkNew2Old(network);
-                Tuple<Network,Double> previousResult = hasAlreadyComputed(speciesNetwork);
-                double score;
-                if(previousResult == null) {
-                    score = findOptimalBranchLength(speciesNetwork, species2alleles, summarizedData, dataCorrespondences);
-                    String networkString = speciesNetwork.toString();
-                    _networksTried.add(new Tuple<Network, Double>(edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(networkString), score));
-                    if(logFile!=null) {
-                        try {
-                            BufferedWriter bw = new BufferedWriter(new FileWriter(logFile, true));
-                            bw.append(score + " " + networkString + "\n");
-                            bw.close();
-                        } catch (Exception e) {
-                            System.err.println(e.getMessage());
-                            e.getStackTrace();
-                        }
-                    }
-                }
-                else{
-                    speciesNetwork = previousResult.Item1;
-                    score = previousResult.Item2;
-                }
+    protected Func1<Network, Double> getScoreFunction(final List summarizedData, final Map<String, List<String>> species2alleles, final List dataCorrespondences){
+        return new Func1<Network, Double>() {
+            public Double execute(Network speciesNetwork) {
+
+                double score = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences);
+
                 //System.out.println(speciesNetwork + ": " + score);
                 // A score can be lower than the scores that I currently have in the
                 // optimal score list, but it is still the best score
@@ -92,7 +73,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
                 int indexCount = speciesNetwork.getReticulationCount();
 
                 if (score > _optimalScoreswithReticulations[indexCount]) {  // initially -inf, already assigned double value
-                    _optimalNetworkswithReticulations[indexCount] = cloneNetwork(speciesNetwork);
+                    _optimalNetworkswithReticulations[indexCount] = speciesNetwork.clone();
                     _optimalScoreswithReticulations[indexCount] = score;
                 }
                 System.gc();
@@ -103,7 +84,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
 
 
-    public List<Tuple<Network,Double>> inferNetwork(List originalGTs, Map<String,List<String>> species2alleles, int maxReticulations, int numFolds){
+    public void inferNetwork(List originalGTs, Map<String,List<String>> species2alleles, int maxReticulations, int numFolds, LinkedList<Tuple<Network,Double>> resultList){
         _numFolds = numFolds;
         _optimalNetworkswithReticulations = new Network[10];   // hold the best network so far with k reticulation nodes
         _optimalScoreswithReticulations = new double[10];
@@ -124,53 +105,52 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         List gtCorrespondence = new ArrayList();
         summarizeData(originalGTs, allele2species, gtsForStartingNetwork, gtsForNetworkInference, gtCorrespondence);
 
+        Set<String> singleAlleleSpecies = new HashSet<>();
+        if(_optimizeBL){
+            _topologyVsParameterOperation[0] = 1;
+            _topologyVsParameterOperation[1] = 0;
+        }
+        else{
+            findSingleAlleleSpeciesSet(gtsForStartingNetwork, allele2species, singleAlleleSpecies);
+        }
+
         String startingNetwork = getStartNetwork(gtsForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
         gtsForStartingNetwork.clear();
 
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
+        Comparator<Double> comparator = getDoubleScoreComparator();
+        SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+        Func1<Network, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence);
+        searcher.search(Networks.readNetwork(startingNetwork), scorer, 1, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
+
+        System.gc();
+
+        // Move the output here. Assume that there are enough rounds so that every network
+        // is populated with a real one until the maxReticulations (real reticulation node number + 2)
+
+        // Find numPopulated, which is normally maxReticulations. However, in rare situations,
+        // it can be as less than maxReticulations.
+
+
 
         int numPopulated = -1;
-        for(int i=1; i<=_numRuns; i++){
-            //System.out.println("\n\nRun #" + i + ":");
-            DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = makeNetwork(startingNetwork);
-            NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(_operationWeight, makeNode, makeEdge, _seed);
-            AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
-
-            Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence);
-            Comparator<Double> comparator = getDoubleScoreComparator();
-            HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
-
-            System.gc();
-
-            // Move the output here. Assume that there are enough rounds so that every network
-            // is populated with a real one until the maxReticulations (real reticulation node number + 2)
-
-            // Find numPopulated, which is normally maxReticulations. However, in rare situations,
-            // it can be as less than maxReticulations.
-
-            for (int j=0; j<=9; j++) {
-                if (_optimalScoreswithReticulations[j] == Double.NEGATIVE_INFINITY) {
-                    numPopulated = j-1;
-                    break;
-                }
-            }
-            if(_printDetails) {
-                System.out.println("numPopulated = " + numPopulated);
-                for (int j = 0; j <= numPopulated; j++) {
-                    System.out.println("_optimalNetworkswithReticulations[" + j + "] =" + _optimalNetworkswithReticulations[j].toString());
-                    System.out.println("_optimalScoreswithReticulations[" + j + "] =" + _optimalScoreswithReticulations[j]);
-                }
+        for (int j=0; j<=9; j++) {
+            if (_optimalScoreswithReticulations[j] == Double.NEGATIVE_INFINITY) {
+                numPopulated = j-1;
+                break;
             }
         }
-
+        if(_printDetails) {
+            System.out.println("numPopulated = " + numPopulated);
+            for (int j = 0; j <= numPopulated; j++) {
+                System.out.println("_optimalNetworkswithReticulations[" + j + "] =" + _optimalNetworkswithReticulations[j].toString());
+                System.out.println("_optimalScoreswithReticulations[" + j + "] =" + _optimalScoreswithReticulations[j]);
+            }
+        }
         int correctNumReticulations = doCrossValidation(originalGTs, species2alleles, gtsForNetworkInference, gtCorrespondence, maxReticulations);
 
-        if(correctNumReticulations!=-1){
-            return Arrays.asList(new Tuple<Network, Double>(_optimalNetworkswithReticulations[correctNumReticulations], _optimalScoreswithReticulations[correctNumReticulations]));
-        }
-        else{
-            return null;
-        }
-
+        resultList.clear();
+        resultList.add(new Tuple<Network, Double>(_optimalNetworkswithReticulations[correctNumReticulations], _optimalScoreswithReticulations[correctNumReticulations]));
     }
 
     private int doCrossValidation(List<List<MutableTuple<Tree,Double>>> originalGTs, Map<String,List<String>> species2alleles, List<Tree> distinctBinaryTrees, List<Tuple<MutableTuple<Tree, Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, int maxReticulations){
@@ -260,7 +240,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
                 // Given the network, use Brent to optimize its lengths and probabilities.
                 // It modifies the species network to an optimal one during the Brent process.
-                double score = findOptimalBranchLength(network, species2alleles, distinctBinaryTrees, nbTreeAndCountAndBinaryIDList);
+                double score = computeLikelihood(network, species2alleles, distinctBinaryTrees, nbTreeAndCountAndBinaryIDList);
 
                 // Compute theoretical probabilities and real frequencies with trained network and validation data set.
 

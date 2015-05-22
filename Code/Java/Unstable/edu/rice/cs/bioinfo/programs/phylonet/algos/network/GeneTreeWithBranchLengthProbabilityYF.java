@@ -523,7 +523,7 @@ public class GeneTreeWithBranchLengthProbabilityYF {
             node.setData(_totalNodeNum++);
         }
         if(_articulateNodes==null){
-            _articulateNodes = Networks.getArticulationNodes(_network);
+            _articulateNodes = Networks.getLowestArticulationNodes(_network);
         }
 
     }

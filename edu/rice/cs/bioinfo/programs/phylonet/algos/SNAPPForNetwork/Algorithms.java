@@ -124,7 +124,7 @@ public class Algorithms
     {
         Map<String, R> nucleotideIndexMap = getNucleotideIndexMap(obs, allele2species);
         Set<String> articulationNodes = new HashSet<String>();
-        for(Object node: Networks.getArticulationNodes(cloneNetwork(speciesNetwork))){
+        for(Object node: Networks.getLowestArticulationNodes(cloneNetwork(speciesNetwork))){
             articulationNodes.add(((NetNode)node).getName());
         }
         int numReticulations = speciesNetwork.getReticulationCount();
@@ -146,7 +146,7 @@ public class Algorithms
     {
 
         Set<String> articulationNodes = new HashSet<String>();
-        for(Object node: Networks.getArticulationNodes(cloneNetwork(speciesNetwork))){
+        for(Object node: Networks.getLowestArticulationNodes(cloneNetwork(speciesNetwork))){
             articulationNodes.add(((NetNode)node).getName());
         }
         int numReticulations = speciesNetwork.getReticulationCount();

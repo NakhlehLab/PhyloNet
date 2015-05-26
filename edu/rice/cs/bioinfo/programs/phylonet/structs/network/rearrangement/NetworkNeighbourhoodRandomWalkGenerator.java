@@ -92,7 +92,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator extends NetworkNeighbourhoo
         ArrayList<Tuple<NetNode, NetNode>> allEdgesNeedBrlens = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allRemovableReticulationEdges = new ArrayList<>();
-        Set<NetNode> taxa = new HashSet<>();
+        Set<String> taxa = new HashSet<>();
         Ref<Boolean> incrementHybrid = new Ref<>(false);
         getNetworkInfo(network, allEdges, allEdgesNeedBrlens, allReticulationEdges, allRemovableReticulationEdges, taxa, incrementHybrid);
 
@@ -228,14 +228,14 @@ public class NetworkNeighbourhoodRandomWalkGenerator extends NetworkNeighbourhoo
 
 
 
-    private void getNetworkInfo(Network network, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> edgesNeedBrlens, ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges, Set<NetNode> leafNodes, Ref<Boolean> increaseReticulations){
+    private void getNetworkInfo(Network network, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> edgesNeedBrlens, ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges, Set<String> leafSet, Ref<Boolean> increaseReticulations){
         int numReticulations = 0;
         Map<NetNode,Set<String>> node2leaves = new HashMap<>();
         for(Object nodeO: Networks.postTraversal(network)){
             NetNode node = (NetNode)nodeO;
             Set<String> leaves = new HashSet<>();
             if(node.isLeaf()){
-                leafNodes.add(node);
+                leafSet.add(node.getName());
                 leaves.add(node.getName());
             }
             else if(node.isNetworkNode()){

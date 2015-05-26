@@ -14,7 +14,7 @@ import java.util.*;
  * Time: 9:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbourhoodGenerator{
+public class NetworkNeighbourhoodRandomWalkGenerator extends NetworkNeighbourhoodGenerator{
     private double[] _operationProbabilities;
     private int _operationID;
     private Tuple<NetNode,NetNode> _targetEdge;
@@ -87,11 +87,7 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
     }
 
 
-    public String getOperationName(){
-        return _networkOperators[_operationID].getClass().getSimpleName();
-    }
-
-    public void computeRandomNeighbour(Network network){
+    public void mutateNetwork(Network network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allEdgesNeedBrlens = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges = new ArrayList<>();
@@ -303,9 +299,6 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
         return successMove;
     }
 
-    private String printEdge(Tuple<NetNode,NetNode> edge){
-        return "("+edge.Item1.getName()+","+edge.Item2.getName()+")";
-    }
 
     private void setParametersForReticulationEdgeAddition(ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _targetEdge = null;
@@ -554,34 +547,6 @@ public class NetworkNeighbourhoodRandomWalkGenerator implements NetworkNeighbour
     }
 
 
-    private boolean isNetworkValid(Network network, Set<NetNode> leafNodes){
-        int count = 0;
-        for(Object leaf: network.getLeaves()){
-            if(leafNodes.contains(leaf)){
-                count++;
-            }
-            else{
-                return false;
-            }
-        }
-        if(count!=leafNodes.size())return false;
-        for(Object node: network.dfs()){
-            double totalProb = 0;
-            for (Object parent : ((NetNode) node).getParents()) {
-                totalProb += ((NetNode) node).getParentProbability((NetNode) parent);
-            }
-            if(((NetNode)node).isNetworkNode()){
-                if(Math.abs(totalProb - 1) > 0.00001) {
-                    throw new RuntimeException(network.toString());
-                }
-            }
-            else if(!((NetNode)node).isRoot()){
-                if(!Double.isNaN(totalProb)){
-                    throw new RuntimeException(network.toString());
-                }
-            }
-        }
-        return true;
-    }
+
 
 }

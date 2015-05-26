@@ -27,6 +27,7 @@ public abstract class NetworkNeighbourhoodGenerator{
         return "(" + edge.Item1.getName() + "," + edge.Item2.getName() + ")";
     }
 
+    /*
     protected boolean isNetworkValid(Network network, Set<String> leaves){
         int count = 0;
         for(Object leaf: network.getLeaves()){
@@ -46,6 +47,37 @@ public abstract class NetworkNeighbourhoodGenerator{
             }
             if(((NetNode)node).getChildCount()==1 && (((NetNode)node).getParentCount()==1||((NetNode)node).getParentCount()==0)){
                 return false;
+            }
+            if(((NetNode)node).isNetworkNode()){
+                if(Math.abs(totalProb - 1) > 0.00001) {
+                    throw new RuntimeException(network.toString());
+                }
+            }
+            else if(!((NetNode)node).isRoot()){
+                if(!Double.isNaN(totalProb)){
+                    throw new RuntimeException(network.toString());
+                }
+            }
+        }
+        return true;
+    }
+    */
+
+    protected boolean isNetworkValid(Network network, Set<NetNode> leafNodes){
+        int count = 0;
+        for(Object leaf: network.getLeaves()){
+            if(leafNodes.contains(leaf)){
+                count++;
+            }
+            else{
+                return false;
+            }
+        }
+        if(count!=leafNodes.size())return false;
+        for(Object node: network.dfs()){
+            double totalProb = 0;
+            for (Object parent : ((NetNode) node).getParents()) {
+                totalProb += ((NetNode) node).getParentProbability((NetNode) parent);
             }
             if(((NetNode)node).isNetworkNode()){
                 if(Math.abs(totalProb - 1) > 0.00001) {

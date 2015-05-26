@@ -456,7 +456,7 @@ public class NetworkMetricNakhleh<T> {
             totalDiff2 += KV-KVPrime>0 ? KV-KVPrime:0;
         }
 
-        return totalDiff1+totalDiff2/2;
+        return (totalDiff1+totalDiff2) / 2;
     }
 
 

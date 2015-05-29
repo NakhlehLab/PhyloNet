@@ -20,6 +20,22 @@ public class Morphylonet
         Blocks nexusContents;
         try
         {
+
+//            #NEXUS
+//
+//            Begin MORPHDATA;
+//               dimensions ntax=3
+//                    format symbols="1 2 3" missing=?;
+//                    matrix
+//            Human   1 2 3
+//            Chimp   2 2 2
+//            Gorilla 3 2 1;
+//            END;
+//
+//            BEGIN PHYLONET;
+//            	 SomeCommand;
+//            END;
+//
             FileInputStream nexusFileStream = new FileInputStream("C:\\temp\\example.nex");
             nexusContents = Parser.parse(nexusFileStream);
             Iterator<Block> blocks = nexusContents.Contents.iterator();

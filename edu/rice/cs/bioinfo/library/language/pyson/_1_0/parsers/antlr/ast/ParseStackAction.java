@@ -385,6 +385,29 @@ class ParseStackAction implements ParseStack {
         }
     }
 
+    @Override
+    public void pushMorphDataBlockBody(int numIdents, String symbols, String missing)
+    {
+        try
+        {
+            LinkedList<Identifier> matrixContents = new LinkedList<Identifier>();
+            for(int i = 0; i<numIdents; i++)
+            {
+                Identifier ident = (Identifier) _parseStack.pop();
+                matrixContents.add(ident);
+            }
+
+            // nchars, ntax, and type are not currently supported.
+            Identifier ntax = (Identifier) _parseStack.pop();
+
+            _parseStack.push(new MorphDataBlockBody(ntax, symbols, missing, matrixContents));
+        }
+        catch (RuntimeException e) {
+            _exception = e;
+        }
+
+    }
+
 
     private List<Identifier> readIdentifier(Identifier identifier, boolean checkAll){
         List<Identifier> values = new ArrayList<Identifier>();

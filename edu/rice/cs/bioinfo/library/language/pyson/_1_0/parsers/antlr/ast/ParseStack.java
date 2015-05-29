@@ -79,4 +79,5 @@ public interface ParseStack {
 
     public void pushDataBlockBody(int numPairs);
 
+    public void pushMorphDataBlockBody(int numIdents, String symbols, String missing);
 }

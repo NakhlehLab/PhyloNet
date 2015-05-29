@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2013-03-05 15:54:00
+// $ANTLR 3.4 D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g 2015-05-29 14:53:08
 
 package edu.rice.cs.bioinfo.library.language.pyson._1_0.parsers.antlr.ast;
 import java.util.LinkedList;
@@ -12,7 +12,6 @@ import java.util.ArrayList;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class PySONLexer extends Lexer {
     public static final int EOF=-1;
-    public static final int T__33=33;
     public static final int T__34=34;
     public static final int T__35=35;
     public static final int T__36=36;
@@ -20,6 +19,7 @@ public class PySONLexer extends Lexer {
     public static final int T__38=38;
     public static final int T__39=39;
     public static final int T__40=40;
+    public static final int T__41=41;
     public static final int BEGIN=4;
     public static final int DATA=5;
     public static final int DATATYPE=6;
@@ -33,22 +33,23 @@ public class PySONLexer extends Lexer {
     public static final int ID_SET=14;
     public static final int MATRIX=15;
     public static final int MISSING=16;
-    public static final int NCHAR=17;
-    public static final int NESTED_ML_COMMENT=18;
-    public static final int NETWORK=19;
-    public static final int NETWORKS=20;
-    public static final int NTAX=21;
-    public static final int PHYLONET=22;
-    public static final int QUOTE=23;
-    public static final int RN_LS_NONCOMMENT=24;
-    public static final int START=25;
-    public static final int SYMBOLS=26;
-    public static final int TAXON_SET_LIST=27;
-    public static final int TRANSLATE=28;
-    public static final int TREE=29;
-    public static final int TREES=30;
-    public static final int UTREE=31;
-    public static final int WS=32;
+    public static final int MORPHDATA=17;
+    public static final int NCHAR=18;
+    public static final int NESTED_ML_COMMENT=19;
+    public static final int NETWORK=20;
+    public static final int NETWORKS=21;
+    public static final int NTAX=22;
+    public static final int PHYLONET=23;
+    public static final int QUOTE=24;
+    public static final int RN_LS_NONCOMMENT=25;
+    public static final int START=26;
+    public static final int SYMBOLS=27;
+    public static final int TAXON_SET_LIST=28;
+    public static final int TRANSLATE=29;
+    public static final int TREE=30;
+    public static final int TREES=31;
+    public static final int UTREE=32;
+    public static final int WS=33;
 
     public class ErrorWrapper
     {
@@ -90,38 +91,17 @@ public class PySONLexer extends Lexer {
     public PySONLexer(CharStream input, RecognizerSharedState state) {
         super(input,state);
     }
-    public String getGrammarFileName() { return "D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g"; }
-
-    // $ANTLR start "T__33"
-    public final void mT__33() throws RecognitionException {
-        try {
-            int _type = T__33;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:34:7: ( '(' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:34:9: '('
-            {
-            match('('); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        	// do for sure before leaving
-        }
-    }
-    // $ANTLR end "T__33"
+    public String getGrammarFileName() { return "D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g"; }
 
     // $ANTLR start "T__34"
     public final void mT__34() throws RecognitionException {
         try {
             int _type = T__34;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:35:7: ( ')' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:35:9: ')'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:34:7: ( '(' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:34:9: '('
             {
-            match(')'); 
+            match('('); 
 
             }
 
@@ -139,10 +119,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = T__35;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:36:7: ( ',' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:36:9: ','
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:35:7: ( ')' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:35:9: ')'
             {
-            match(','); 
+            match(')'); 
 
             }
 
@@ -160,10 +140,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = T__36;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:37:7: ( ':' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:37:9: ':'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:36:7: ( ',' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:36:9: ','
             {
-            match(':'); 
+            match(','); 
 
             }
 
@@ -181,10 +161,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = T__37;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:38:7: ( ';' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:38:9: ';'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:37:7: ( ':' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:37:9: ':'
             {
-            match(';'); 
+            match(':'); 
 
             }
 
@@ -202,10 +182,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = T__38;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:39:7: ( '<' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:39:9: '<'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:38:7: ( ';' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:38:9: ';'
             {
-            match('<'); 
+            match(';'); 
 
             }
 
@@ -223,10 +203,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = T__39;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:40:7: ( '=' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:40:9: '='
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:39:7: ( '<' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:39:9: '<'
             {
-            match('='); 
+            match('<'); 
 
             }
 
@@ -244,10 +224,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = T__40;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:41:7: ( '>' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:41:9: '>'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:40:7: ( '=' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:40:9: '='
             {
-            match('>'); 
+            match('='); 
 
             }
 
@@ -260,13 +240,34 @@ public class PySONLexer extends Lexer {
     }
     // $ANTLR end "T__40"
 
+    // $ANTLR start "T__41"
+    public final void mT__41() throws RecognitionException {
+        try {
+            int _type = T__41;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:41:7: ( '>' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:41:9: '>'
+            {
+            match('>'); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "T__41"
+
     // $ANTLR start "DEFAULT_INDICATOR"
     public final void mDEFAULT_INDICATOR() throws RecognitionException {
         try {
             int _type = DEFAULT_INDICATOR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:163:2: ( '*' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:163:4: '*'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:170:2: ( '*' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:170:4: '*'
             {
             match('*'); 
 
@@ -286,8 +287,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = PHYLONET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:165:9: ( ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:165:11: ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:172:9: ( ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:172:11: ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'Y' | 'y' ) ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
                 input.consume();
@@ -385,8 +386,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = DATA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:169:6: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:169:8: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:176:6: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:176:8: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' )
             {
             if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
                 input.consume();
@@ -439,13 +440,122 @@ public class PySONLexer extends Lexer {
     }
     // $ANTLR end "DATA"
 
+    // $ANTLR start "MORPHDATA"
+    public final void mMORPHDATA() throws RecognitionException {
+        try {
+            int _type = MORPHDATA;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:2: ( ( 'M' | 'm' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:4: ( 'M' | 'm' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'P' | 'p' ) ( 'H' | 'h' ) ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' )
+            {
+            if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='H'||input.LA(1)=='h' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "MORPHDATA"
+
     // $ANTLR start "DIMENSIONS"
     public final void mDIMENSIONS() throws RecognitionException {
         try {
             int _type = DIMENSIONS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:172:2: ( ( 'D' | 'd' ) ( 'I' | 'i' ) ( 'M' | 'm' ) ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:172:4: ( 'D' | 'd' ) ( 'I' | 'i' ) ( 'M' | 'm' ) ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:182:2: ( ( 'D' | 'd' ) ( 'I' | 'i' ) ( 'M' | 'm' ) ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:182:4: ( 'D' | 'd' ) ( 'I' | 'i' ) ( 'M' | 'm' ) ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
                 input.consume();
@@ -563,8 +673,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TREE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:175:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:175:10: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:10: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                 input.consume();
@@ -622,8 +732,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = UTREE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:177:8: ( ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:177:11: ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:8: ( ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:11: ( 'U' | 'u' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='U'||input.LA(1)=='u' ) {
                 input.consume();
@@ -691,8 +801,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NETWORK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:9: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:179:11: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:189:9: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:189:11: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -780,8 +890,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NTAX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:181:6: ( ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'X' | 'x' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:181:8: ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'X' | 'x' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:6: ( ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'X' | 'x' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:8: ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'X' | 'x' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -839,8 +949,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NCHAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:183:7: ( ( 'N' | 'n' ) ( 'C' | 'c' ) ( 'H' | 'h' ) ( 'A' | 'a' ) ( 'R' | 'r' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:183:9: ( 'N' | 'n' ) ( 'C' | 'c' ) ( 'H' | 'h' ) ( 'A' | 'a' ) ( 'R' | 'r' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:193:7: ( ( 'N' | 'n' ) ( 'C' | 'c' ) ( 'H' | 'h' ) ( 'A' | 'a' ) ( 'R' | 'r' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:193:9: ( 'N' | 'n' ) ( 'C' | 'c' ) ( 'H' | 'h' ) ( 'A' | 'a' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -908,8 +1018,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = FORMAT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:8: ( ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:185:10: ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:8: ( ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:10: ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='F'||input.LA(1)=='f' ) {
                 input.consume();
@@ -987,8 +1097,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = DATATYPE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:9: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'Y' | 'y' ) ( 'P' | 'p' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:187:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'Y' | 'y' ) ( 'P' | 'p' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:197:9: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'Y' | 'y' ) ( 'P' | 'p' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:197:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'Y' | 'y' ) ( 'P' | 'p' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
                 input.consume();
@@ -1086,8 +1196,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = SYMBOLS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:189:9: ( ( 'S' | 's' ) ( 'Y' | 'y' ) ( 'M' | 'm' ) ( 'B' | 'b' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:189:11: ( 'S' | 's' ) ( 'Y' | 'y' ) ( 'M' | 'm' ) ( 'B' | 'b' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:199:9: ( ( 'S' | 's' ) ( 'Y' | 'y' ) ( 'M' | 'm' ) ( 'B' | 'b' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:199:11: ( 'S' | 's' ) ( 'Y' | 'y' ) ( 'M' | 'm' ) ( 'B' | 'b' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
                 input.consume();
@@ -1175,8 +1285,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = GAP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:5: ( ( 'G' | 'g' ) ( 'A' | 'a' ) ( 'P' | 'p' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:191:7: ( 'G' | 'g' ) ( 'A' | 'a' ) ( 'P' | 'p' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:201:5: ( ( 'G' | 'g' ) ( 'A' | 'a' ) ( 'P' | 'p' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:201:7: ( 'G' | 'g' ) ( 'A' | 'a' ) ( 'P' | 'p' )
             {
             if ( input.LA(1)=='G'||input.LA(1)=='g' ) {
                 input.consume();
@@ -1224,8 +1334,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = MATRIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:193:8: ( ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'I' | 'i' ) ( 'X' | 'x' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:193:10: ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'I' | 'i' ) ( 'X' | 'x' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:8: ( ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'I' | 'i' ) ( 'X' | 'x' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:10: ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'R' | 'r' ) ( 'I' | 'i' ) ( 'X' | 'x' )
             {
             if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
                 input.consume();
@@ -1303,8 +1413,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = MISSING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'G' | 'g' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:195:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'G' | 'g' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:205:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'G' | 'g' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:205:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'S' | 's' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'G' | 'g' )
             {
             if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
                 input.consume();
@@ -1392,8 +1502,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = START;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:198:2: ( '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:198:4: '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:208:2: ( '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:208:4: '#' ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'X' | 'x' ) ( 'U' | 'u' ) ( 'S' | 's' )
             {
             match('#'); 
 
@@ -1463,8 +1573,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = BEGIN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:200:8: ( ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:200:10: ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:210:8: ( ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:210:10: ( 'B' | 'b' ) ( 'E' | 'e' ) ( 'G' | 'g' ) ( 'I' | 'i' ) ( 'N' | 'n' )
             {
             if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
                 input.consume();
@@ -1532,8 +1642,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TRANSLATE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:2: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:203:4: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:213:2: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:213:4: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'S' | 's' ) ( 'L' | 'l' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                 input.consume();
@@ -1641,8 +1751,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NETWORKS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:206:2: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:206:4: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:216:2: ( ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:216:4: ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'T' | 't' ) ( 'W' | 'w' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'K' | 'k' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -1740,8 +1850,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TREES;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:208:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:208:9: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:7: ( ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:9: ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                 input.consume();
@@ -1809,8 +1919,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = END;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:210:5: ( ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:210:7: ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:220:5: ( ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:220:7: ( 'E' | 'e' ) ( 'N' | 'n' ) ( 'D' | 'd' )
             {
             if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                 input.consume();
@@ -1858,10 +1968,10 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:4: ( ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+ )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:4: ( ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+ )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:212:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:6: ( ( 'a' .. 'z' ) | ( 'A' .. 'Z' ) | ( '0' .. '9' ) | '_' | '?' | '-' | '.' | '\\\\' | '/' )+
             int cnt1=0;
             loop1:
             do {
@@ -1875,7 +1985,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
             	    if ( (input.LA(1) >= '-' && input.LA(1) <= '9')||input.LA(1)=='?'||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
             	        input.consume();
@@ -1916,12 +2026,12 @@ public class PySONLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:214:7: ( '\"' (~ ( '\"' ) )* '\"' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:214:9: '\"' (~ ( '\"' ) )* '\"'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:224:7: ( '\"' (~ ( '\"' ) )* '\"' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:224:9: '\"' (~ ( '\"' ) )* '\"'
             {
             match('\"'); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:214:13: (~ ( '\"' ) )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:224:13: (~ ( '\"' ) )*
             loop2:
             do {
                 int alt2=2;
@@ -1934,7 +2044,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -1973,21 +2083,21 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ID_SET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:2: ( '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:4: '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:2: ( '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:4: '{' ( ( WS )* ID ( WS )* ',' )* ( WS )* ID ( WS )* '}'
             {
             match('{'); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:8: ( ( WS )* ID ( WS )* ',' )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:8: ( ( WS )* ID ( WS )* ',' )*
             loop5:
             do {
                 int alt5=2;
                 alt5 = dfa5.predict(input);
                 switch (alt5) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:9: ( WS )* ID ( WS )* ','
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:9: ( WS )* ID ( WS )* ','
             	    {
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:9: ( WS )*
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:9: ( WS )*
             	    loop3:
             	    do {
             	        int alt3=2;
@@ -2000,7 +2110,7 @@ public class PySONLexer extends Lexer {
 
             	        switch (alt3) {
             	    	case 1 :
-            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:9: WS
+            	    	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:9: WS
             	    	    {
             	    	    mWS(); 
 
@@ -2017,7 +2127,7 @@ public class PySONLexer extends Lexer {
             	    mID(); 
 
 
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:16: ( WS )*
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:16: ( WS )*
             	    loop4:
             	    do {
             	        int alt4=2;
@@ -2030,7 +2140,7 @@ public class PySONLexer extends Lexer {
 
             	        switch (alt4) {
             	    	case 1 :
-            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:217:16: WS
+            	    	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:227:16: WS
             	    	    {
             	    	    mWS(); 
 
@@ -2055,7 +2165,7 @@ public class PySONLexer extends Lexer {
             } while (true);
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:15: ( WS )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:15: ( WS )*
             loop6:
             do {
                 int alt6=2;
@@ -2068,7 +2178,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt6) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:15: WS
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:15: WS
             	    {
             	    mWS(); 
 
@@ -2085,7 +2195,7 @@ public class PySONLexer extends Lexer {
             mID(); 
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:22: ( WS )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:22: ( WS )*
             loop7:
             do {
                 int alt7=2;
@@ -2098,7 +2208,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:218:22: WS
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:22: WS
             	    {
             	    mWS(); 
 
@@ -2130,21 +2240,21 @@ public class PySONLexer extends Lexer {
         try {
             int _type = TAXON_SET_LIST;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:2: ( '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:4: '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:2: ( '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:4: '(' ( ( WS )* ID_SET ( ( WS )* ',' )? )* ( ( WS )* ID_SET ( WS )* ) ')'
             {
             match('('); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*
             loop11:
             do {
                 int alt11=2;
                 alt11 = dfa11.predict(input);
                 switch (alt11) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:9: ( WS )* ID_SET ( ( WS )* ',' )?
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:9: ( WS )* ID_SET ( ( WS )* ',' )?
             	    {
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:9: ( WS )*
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:9: ( WS )*
             	    loop8:
             	    do {
             	        int alt8=2;
@@ -2157,7 +2267,7 @@ public class PySONLexer extends Lexer {
 
             	        switch (alt8) {
             	    	case 1 :
-            	    	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:9: WS
+            	    	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:9: WS
             	    	    {
             	    	    mWS(); 
 
@@ -2174,14 +2284,14 @@ public class PySONLexer extends Lexer {
             	    mID_SET(); 
 
 
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:20: ( ( WS )* ',' )?
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:20: ( ( WS )* ',' )?
             	    int alt10=2;
             	    alt10 = dfa10.predict(input);
             	    switch (alt10) {
             	        case 1 :
-            	            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:21: ( WS )* ','
+            	            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:21: ( WS )* ','
             	            {
-            	            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:21: ( WS )*
+            	            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:21: ( WS )*
             	            loop9:
             	            do {
             	                int alt9=2;
@@ -2194,7 +2304,7 @@ public class PySONLexer extends Lexer {
 
             	                switch (alt9) {
             	            	case 1 :
-            	            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:221:21: WS
+            	            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:231:21: WS
             	            	    {
             	            	    mWS(); 
 
@@ -2225,10 +2335,10 @@ public class PySONLexer extends Lexer {
             } while (true);
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:14: ( ( WS )* ID_SET ( WS )* )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:15: ( WS )* ID_SET ( WS )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:232:14: ( ( WS )* ID_SET ( WS )* )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:232:15: ( WS )* ID_SET ( WS )*
             {
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:15: ( WS )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:232:15: ( WS )*
             loop12:
             do {
                 int alt12=2;
@@ -2241,7 +2351,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt12) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:15: WS
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:232:15: WS
             	    {
             	    mWS(); 
 
@@ -2258,7 +2368,7 @@ public class PySONLexer extends Lexer {
             mID_SET(); 
 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:26: ( WS )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:232:26: ( WS )*
             loop13:
             do {
                 int alt13=2;
@@ -2271,7 +2381,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt13) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:222:26: WS
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:232:26: WS
             	    {
             	    mWS(); 
 
@@ -2306,14 +2416,14 @@ public class PySONLexer extends Lexer {
         try {
             int _type = RN_LS_NONCOMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:2: ( '[' '&' (~ ( ']' ) )* ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:4: '[' '&' (~ ( ']' ) )* ']'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:235:2: ( '[' '&' (~ ( ']' ) )* ']' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:235:4: '[' '&' (~ ( ']' ) )* ']'
             {
             match('['); 
 
             match('&'); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:225:12: (~ ( ']' ) )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:235:12: (~ ( ']' ) )*
             loop14:
             do {
                 int alt14=2;
@@ -2326,7 +2436,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt14) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\\')||(input.LA(1) >= '^' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -2365,12 +2475,12 @@ public class PySONLexer extends Lexer {
         try {
             int _type = NESTED_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:3: ( '[' (~ ( '[' | ']' ) )* ']' )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:6: '[' (~ ( '[' | ']' ) )* ']'
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:238:3: ( '[' (~ ( '[' | ']' ) )* ']' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:238:6: '[' (~ ( '[' | ']' ) )* ']'
             {
             match('['); 
 
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:228:10: (~ ( '[' | ']' ) )*
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:238:10: (~ ( '[' | ']' ) )*
             loop15:
             do {
                 int alt15=2;
@@ -2383,7 +2493,7 @@ public class PySONLexer extends Lexer {
 
                 switch (alt15) {
             	case 1 :
-            	    // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
+            	    // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= 'Z')||input.LA(1)=='\\'||(input.LA(1) >= '^' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -2424,8 +2534,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:230:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:230:9: ( ' ' | '\\t' | '\\r' | '\\n' )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:240:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:240:9: ( ' ' | '\\t' | '\\r' | '\\n' )
             {
             if ( (input.LA(1) >= '\t' && input.LA(1) <= '\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -2455,8 +2565,8 @@ public class PySONLexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:239:6: ( . )
-            // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:239:8: .
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:249:6: ( . )
+            // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:249:8: .
             {
             matchAny(); 
 
@@ -2472,76 +2582,76 @@ public class PySONLexer extends Lexer {
     // $ANTLR end "ELSE"
 
     public void mTokens() throws RecognitionException {
-        // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:8: ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | RN_LS_NONCOMMENT | NESTED_ML_COMMENT | WS | ELSE )
-        int alt16=37;
+        // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:8: ( T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | DEFAULT_INDICATOR | PHYLONET | DATA | MORPHDATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | RN_LS_NONCOMMENT | NESTED_ML_COMMENT | WS | ELSE )
+        int alt16=38;
         alt16 = dfa16.predict(input);
         switch (alt16) {
             case 1 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:10: T__33
-                {
-                mT__33(); 
-
-
-                }
-                break;
-            case 2 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:16: T__34
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:10: T__34
                 {
                 mT__34(); 
 
 
                 }
                 break;
-            case 3 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:22: T__35
+            case 2 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:16: T__35
                 {
                 mT__35(); 
 
 
                 }
                 break;
-            case 4 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:28: T__36
+            case 3 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:22: T__36
                 {
                 mT__36(); 
 
 
                 }
                 break;
-            case 5 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:34: T__37
+            case 4 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:28: T__37
                 {
                 mT__37(); 
 
 
                 }
                 break;
-            case 6 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:40: T__38
+            case 5 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:34: T__38
                 {
                 mT__38(); 
 
 
                 }
                 break;
-            case 7 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:46: T__39
+            case 6 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:40: T__39
                 {
                 mT__39(); 
 
 
                 }
                 break;
-            case 8 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:52: T__40
+            case 7 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:46: T__40
                 {
                 mT__40(); 
 
 
                 }
                 break;
+            case 8 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:52: T__41
+                {
+                mT__41(); 
+
+
+                }
+                break;
             case 9 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:58: DEFAULT_INDICATOR
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:58: DEFAULT_INDICATOR
                 {
                 mDEFAULT_INDICATOR(); 
 
@@ -2549,7 +2659,7 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 10 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:76: PHYLONET
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:76: PHYLONET
                 {
                 mPHYLONET(); 
 
@@ -2557,7 +2667,7 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 11 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:85: DATA
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:85: DATA
                 {
                 mDATA(); 
 
@@ -2565,207 +2675,215 @@ public class PySONLexer extends Lexer {
                 }
                 break;
             case 12 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:90: DIMENSIONS
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:90: MORPHDATA
+                {
+                mMORPHDATA(); 
+
+
+                }
+                break;
+            case 13 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:100: DIMENSIONS
                 {
                 mDIMENSIONS(); 
 
 
                 }
                 break;
-            case 13 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:101: TREE
+            case 14 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:111: TREE
                 {
                 mTREE(); 
 
 
                 }
                 break;
-            case 14 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:106: UTREE
+            case 15 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:116: UTREE
                 {
                 mUTREE(); 
 
 
                 }
                 break;
-            case 15 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:112: NETWORK
+            case 16 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:122: NETWORK
                 {
                 mNETWORK(); 
 
 
                 }
                 break;
-            case 16 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:120: NTAX
+            case 17 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:130: NTAX
                 {
                 mNTAX(); 
 
 
                 }
                 break;
-            case 17 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:125: NCHAR
+            case 18 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:135: NCHAR
                 {
                 mNCHAR(); 
 
 
                 }
                 break;
-            case 18 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:131: FORMAT
+            case 19 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:141: FORMAT
                 {
                 mFORMAT(); 
 
 
                 }
                 break;
-            case 19 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:138: DATATYPE
+            case 20 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:148: DATATYPE
                 {
                 mDATATYPE(); 
 
 
                 }
                 break;
-            case 20 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:147: SYMBOLS
+            case 21 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:157: SYMBOLS
                 {
                 mSYMBOLS(); 
 
 
                 }
                 break;
-            case 21 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:155: GAP
+            case 22 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:165: GAP
                 {
                 mGAP(); 
 
 
                 }
                 break;
-            case 22 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:159: MATRIX
+            case 23 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:169: MATRIX
                 {
                 mMATRIX(); 
 
 
                 }
                 break;
-            case 23 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:166: MISSING
+            case 24 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:176: MISSING
                 {
                 mMISSING(); 
 
 
                 }
                 break;
-            case 24 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:174: START
+            case 25 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:184: START
                 {
                 mSTART(); 
 
 
                 }
                 break;
-            case 25 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:180: BEGIN
+            case 26 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:190: BEGIN
                 {
                 mBEGIN(); 
 
 
                 }
                 break;
-            case 26 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:186: TRANSLATE
+            case 27 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:196: TRANSLATE
                 {
                 mTRANSLATE(); 
 
 
                 }
                 break;
-            case 27 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:196: NETWORKS
+            case 28 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:206: NETWORKS
                 {
                 mNETWORKS(); 
 
 
                 }
                 break;
-            case 28 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:205: TREES
+            case 29 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:215: TREES
                 {
                 mTREES(); 
 
 
                 }
                 break;
-            case 29 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:211: END
+            case 30 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:221: END
                 {
                 mEND(); 
 
 
                 }
                 break;
-            case 30 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:215: ID
+            case 31 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:225: ID
                 {
                 mID(); 
 
 
                 }
                 break;
-            case 31 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:218: QUOTE
+            case 32 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:228: QUOTE
                 {
                 mQUOTE(); 
 
 
                 }
                 break;
-            case 32 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:224: ID_SET
+            case 33 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:234: ID_SET
                 {
                 mID_SET(); 
 
 
                 }
                 break;
-            case 33 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:231: TAXON_SET_LIST
+            case 34 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:241: TAXON_SET_LIST
                 {
                 mTAXON_SET_LIST(); 
 
 
                 }
                 break;
-            case 34 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:246: RN_LS_NONCOMMENT
+            case 35 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:256: RN_LS_NONCOMMENT
                 {
                 mRN_LS_NONCOMMENT(); 
 
 
                 }
                 break;
-            case 35 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:263: NESTED_ML_COMMENT
+            case 36 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:273: NESTED_ML_COMMENT
                 {
                 mNESTED_ML_COMMENT(); 
 
 
                 }
                 break;
-            case 36 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:281: WS
+            case 37 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:291: WS
                 {
                 mWS(); 
 
 
                 }
                 break;
-            case 37 :
-                // D:\\WorkDev\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:284: ELSE
+            case 38 :
+                // D:\\WorkDev\\Bioinfo\\Code\\Antlr\\Unstable\\PySON\\PySON.g:1:294: ELSE
                 {
                 mELSE(); 
 
@@ -2837,7 +2955,7 @@ public class PySONLexer extends Lexer {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "()* loopback of 217:8: ( ( WS )* ID ( WS )* ',' )*";
+            return "()* loopback of 227:8: ( ( WS )* ID ( WS )* ',' )*";
         }
     }
     static final String DFA11_eotS =
@@ -2903,7 +3021,7 @@ public class PySONLexer extends Lexer {
             this.transition = DFA11_transition;
         }
         public String getDescription() {
-            return "()* loopback of 221:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*";
+            return "()* loopback of 231:8: ( ( WS )* ID_SET ( ( WS )* ',' )? )*";
         }
     }
     static final String DFA10_eotS =
@@ -2955,61 +3073,64 @@ public class PySONLexer extends Lexer {
             this.transition = DFA10_transition;
         }
         public String getDescription() {
-            return "221:20: ( ( WS )* ',' )?";
+            return "231:20: ( ( WS )* ',' )?";
         }
     }
     static final String DFA16_eotS =
         "\1\uffff\1\34\10\uffff\11\47\1\33\2\47\1\uffff\3\33\14\uffff\1\47"+
-        "\1\uffff\14\47\1\uffff\2\47\5\uffff\13\47\1\132\3\47\1\136\3\uffff"+
-        "\1\47\1\141\1\47\1\144\3\47\1\150\3\47\1\uffff\3\47\1\uffff\2\47"+
-        "\1\uffff\1\47\1\162\1\uffff\1\47\1\164\1\47\1\uffff\1\166\4\47\1"+
-        "\173\3\47\1\uffff\1\47\1\uffff\1\47\1\uffff\1\u0081\1\47\1\u0083"+
-        "\1\47\1\uffff\4\47\1\u008a\1\uffff\1\u008b\1\uffff\1\u008c\1\u008d"+
-        "\1\u008e\2\47\1\u0091\5\uffff\1\47\1\u0093\1\uffff\1\u0094\2\uffff";
+        "\1\uffff\15\47\1\uffff\2\47\5\uffff\16\47\1\137\1\47\1\141\3\uffff"+
+        "\1\47\1\144\4\47\1\152\3\47\1\156\3\47\1\uffff\1\47\1\uffff\2\47"+
+        "\1\uffff\4\47\1\171\1\uffff\1\47\1\173\1\47\1\uffff\1\175\2\47\1"+
+        "\u0080\4\47\1\u0085\1\47\1\uffff\1\47\1\uffff\1\47\1\uffff\1\u0089"+
+        "\1\47\1\uffff\4\47\1\uffff\1\u008f\1\47\1\u0092\1\uffff\1\u0093"+
+        "\1\u0094\1\u0095\2\47\1\uffff\1\47\1\u0099\4\uffff\1\47\1\u009b"+
+        "\1\u009c\1\uffff\1\u009d\3\uffff";
     static final String DFA16_eofS =
-        "\u0095\uffff";
+        "\u009e\uffff";
     static final String DFA16_minS =
-        "\1\0\1\11\10\uffff\1\110\1\101\1\122\1\124\1\103\1\117\1\131\2\101"+
+        "\1\0\1\11\10\uffff\1\110\2\101\1\122\1\124\1\103\1\117\1\131\1\101"+
         "\1\116\1\105\1\116\1\uffff\1\0\1\11\1\0\14\uffff\1\131\1\uffff\1"+
-        "\124\1\115\1\101\1\122\1\124\1\101\1\110\1\122\1\115\1\120\1\124"+
-        "\1\123\1\uffff\1\107\1\104\2\uffff\1\0\2\uffff\1\114\1\101\2\105"+
-        "\1\116\1\105\1\127\1\130\1\101\1\115\1\102\1\55\1\122\1\123\1\111"+
-        "\1\55\1\0\2\uffff\1\117\1\55\1\116\1\55\1\123\1\105\1\117\1\55\1"+
-        "\122\1\101\1\117\1\uffff\2\111\1\116\1\uffff\1\116\1\131\1\uffff"+
-        "\1\123\1\55\1\uffff\1\114\1\55\1\122\1\uffff\1\55\1\124\1\114\1"+
-        "\130\1\116\1\55\1\105\1\120\1\111\1\uffff\1\101\1\uffff\1\113\1"+
-        "\uffff\1\55\1\123\1\55\1\107\1\uffff\1\124\1\105\1\117\1\124\1\55"+
-        "\1\uffff\1\55\1\uffff\3\55\1\116\1\105\1\55\5\uffff\1\123\1\55\1"+
-        "\uffff\1\55\2\uffff";
+        "\124\1\115\1\122\1\124\1\123\1\101\1\122\1\124\1\101\1\110\1\122"+
+        "\1\115\1\120\1\uffff\1\107\1\104\2\uffff\1\0\2\uffff\1\114\1\101"+
+        "\1\105\1\120\1\122\1\123\1\105\1\116\1\105\1\127\1\130\1\101\1\115"+
+        "\1\102\1\55\1\111\1\55\1\0\2\uffff\1\117\1\55\1\116\1\110\2\111"+
+        "\1\55\1\123\1\105\1\117\1\55\1\122\1\101\1\117\1\uffff\1\116\1\uffff"+
+        "\1\116\1\131\1\uffff\1\123\1\104\1\130\1\116\1\55\1\uffff\1\114"+
+        "\1\55\1\122\1\uffff\1\55\1\124\1\114\1\55\1\105\1\120\1\111\1\101"+
+        "\1\55\1\107\1\uffff\1\101\1\uffff\1\113\1\uffff\1\55\1\123\1\uffff"+
+        "\1\124\1\105\1\117\1\124\1\uffff\1\55\1\124\1\55\1\uffff\3\55\1"+
+        "\116\1\101\1\uffff\1\105\1\55\4\uffff\1\123\2\55\1\uffff\1\55\3"+
+        "\uffff";
     static final String DFA16_maxS =
-        "\1\uffff\1\173\10\uffff\1\150\1\151\1\162\2\164\1\157\1\171\1\141"+
-        "\1\151\1\156\1\145\1\156\1\uffff\1\uffff\1\172\1\uffff\14\uffff"+
-        "\1\171\1\uffff\1\164\1\155\1\145\1\162\1\164\1\141\1\150\1\162\1"+
-        "\155\1\160\1\164\1\163\1\uffff\1\147\1\144\2\uffff\1\uffff\2\uffff"+
-        "\1\154\1\141\2\145\1\156\1\145\1\167\1\170\1\141\1\155\1\142\1\172"+
-        "\1\162\1\163\1\151\1\172\1\uffff\2\uffff\1\157\1\172\1\156\1\172"+
-        "\1\163\1\145\1\157\1\172\1\162\1\141\1\157\1\uffff\2\151\1\156\1"+
-        "\uffff\1\156\1\171\1\uffff\1\163\1\172\1\uffff\1\154\1\172\1\162"+
-        "\1\uffff\1\172\1\164\1\154\1\170\1\156\1\172\1\145\1\160\1\151\1"+
-        "\uffff\1\141\1\uffff\1\153\1\uffff\1\172\1\163\1\172\1\147\1\uffff"+
-        "\1\164\1\145\1\157\1\164\1\172\1\uffff\1\172\1\uffff\3\172\1\156"+
-        "\1\145\1\172\5\uffff\1\163\1\172\1\uffff\1\172\2\uffff";
+        "\1\uffff\1\173\10\uffff\1\150\1\151\1\157\1\162\2\164\1\157\1\171"+
+        "\1\141\1\156\1\145\1\156\1\uffff\1\uffff\1\172\1\uffff\14\uffff"+
+        "\1\171\1\uffff\1\164\1\155\1\162\1\164\1\163\1\145\1\162\1\164\1"+
+        "\141\1\150\1\162\1\155\1\160\1\uffff\1\147\1\144\2\uffff\1\uffff"+
+        "\2\uffff\1\154\1\141\1\145\1\160\1\162\1\163\1\145\1\156\1\145\1"+
+        "\167\1\170\1\141\1\155\1\142\1\172\1\151\1\172\1\uffff\2\uffff\1"+
+        "\157\1\172\1\156\1\150\2\151\1\172\1\163\1\145\1\157\1\172\1\162"+
+        "\1\141\1\157\1\uffff\1\156\1\uffff\1\156\1\171\1\uffff\1\163\1\144"+
+        "\1\170\1\156\1\172\1\uffff\1\154\1\172\1\162\1\uffff\1\172\1\164"+
+        "\1\154\1\172\1\145\1\160\1\151\1\141\1\172\1\147\1\uffff\1\141\1"+
+        "\uffff\1\153\1\uffff\1\172\1\163\1\uffff\1\164\1\145\1\157\1\164"+
+        "\1\uffff\1\172\1\164\1\172\1\uffff\3\172\1\156\1\141\1\uffff\1\145"+
+        "\1\172\4\uffff\1\163\2\172\1\uffff\1\172\3\uffff";
     static final String DFA16_acceptS =
-        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\14\uffff\1\36\3\uffff"+
-        "\1\44\1\45\1\1\1\41\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1"+
-        "\36\14\uffff\1\30\2\uffff\1\37\1\40\1\uffff\1\43\1\44\21\uffff\2"+
-        "\42\13\uffff\1\25\3\uffff\1\35\2\uffff\1\13\2\uffff\1\15\3\uffff"+
-        "\1\20\11\uffff\1\34\1\uffff\1\16\1\uffff\1\21\4\uffff\1\31\5\uffff"+
-        "\1\22\1\uffff\1\26\6\uffff\1\17\1\24\1\27\1\12\1\23\2\uffff\1\33"+
-        "\1\uffff\1\32\1\14";
+        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\14\uffff\1\37\3\uffff"+
+        "\1\45\1\46\1\1\1\42\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1"+
+        "\37\15\uffff\1\31\2\uffff\1\40\1\41\1\uffff\1\44\1\45\22\uffff\2"+
+        "\43\16\uffff\1\26\1\uffff\1\36\2\uffff\1\13\5\uffff\1\16\3\uffff"+
+        "\1\21\12\uffff\1\35\1\uffff\1\17\1\uffff\1\22\2\uffff\1\32\4\uffff"+
+        "\1\27\3\uffff\1\23\5\uffff\1\30\2\uffff\1\20\1\25\1\12\1\24\3\uffff"+
+        "\1\34\1\uffff\1\14\1\33\1\15";
     static final String DFA16_specialS =
-        "\1\4\26\uffff\1\1\1\uffff\1\3\37\uffff\1\0\22\uffff\1\2\110\uffff}>";
+        "\1\4\26\uffff\1\2\1\uffff\1\0\40\uffff\1\1\23\uffff\1\3\117\uffff}>";
     static final String[] DFA16_transitionS = {
             "\11\33\2\32\2\33\1\32\22\33\1\32\1\33\1\27\1\23\4\33\1\1\1\2"+
             "\1\11\1\33\1\3\15\26\1\4\1\5\1\6\1\7\1\10\1\26\1\33\1\26\1\24"+
-            "\1\26\1\13\1\25\1\17\1\21\5\26\1\22\1\16\1\26\1\12\2\26\1\20"+
-            "\1\14\1\15\5\26\1\31\1\26\2\33\1\26\1\33\1\26\1\24\1\26\1\13"+
-            "\1\25\1\17\1\21\5\26\1\22\1\16\1\26\1\12\2\26\1\20\1\14\1\15"+
+            "\1\26\1\13\1\25\1\20\1\22\5\26\1\14\1\17\1\26\1\12\2\26\1\21"+
+            "\1\15\1\16\5\26\1\31\1\26\2\33\1\26\1\33\1\26\1\24\1\26\1\13"+
+            "\1\25\1\20\1\22\5\26\1\14\1\17\1\26\1\12\2\26\1\21\1\15\1\16"+
             "\5\26\1\30\uff84\33",
             "\2\35\2\uffff\1\35\22\uffff\1\35\132\uffff\1\35",
             "",
@@ -3022,25 +3143,23 @@ public class PySONLexer extends Lexer {
             "",
             "\1\46\37\uffff\1\46",
             "\1\50\7\uffff\1\51\27\uffff\1\50\7\uffff\1\51",
-            "\1\52\37\uffff\1\52",
-            "\1\53\37\uffff\1\53",
-            "\1\56\1\uffff\1\54\16\uffff\1\55\16\uffff\1\56\1\uffff\1\54"+
-            "\16\uffff\1\55",
-            "\1\57\37\uffff\1\57",
-            "\1\60\37\uffff\1\60",
-            "\1\61\37\uffff\1\61",
-            "\1\62\7\uffff\1\63\27\uffff\1\62\7\uffff\1\63",
+            "\1\53\7\uffff\1\54\5\uffff\1\52\21\uffff\1\53\7\uffff\1\54"+
+            "\5\uffff\1\52",
+            "\1\55\37\uffff\1\55",
+            "\1\56\37\uffff\1\56",
+            "\1\61\1\uffff\1\57\16\uffff\1\60\16\uffff\1\61\1\uffff\1\57"+
+            "\16\uffff\1\60",
+            "\1\62\37\uffff\1\62",
+            "\1\63\37\uffff\1\63",
             "\1\64\37\uffff\1\64",
             "\1\65\37\uffff\1\65",
             "\1\66\37\uffff\1\66",
+            "\1\67\37\uffff\1\67",
             "",
-            "\0\67",
-            "\2\70\2\uffff\1\70\22\uffff\1\70\14\uffff\15\70\5\uffff\1\70"+
-            "\1\uffff\32\70\1\uffff\1\70\2\uffff\1\70\1\uffff\32\70",
-            "\46\72\1\71\64\72\1\uffff\uffa4\72",
-            "",
-            "",
-            "",
+            "\0\70",
+            "\2\71\2\uffff\1\71\22\uffff\1\71\14\uffff\15\71\5\uffff\1\71"+
+            "\1\uffff\32\71\1\uffff\1\71\2\uffff\1\71\1\uffff\32\71",
+            "\46\73\1\72\64\73\1\uffff\uffa4\73",
             "",
             "",
             "",
@@ -3050,30 +3169,32 @@ public class PySONLexer extends Lexer {
             "",
             "",
             "",
-            "\1\74\37\uffff\1\74",
+            "",
+            "",
             "",
             "\1\75\37\uffff\1\75",
+            "",
             "\1\76\37\uffff\1\76",
-            "\1\100\3\uffff\1\77\33\uffff\1\100\3\uffff\1\77",
+            "\1\77\37\uffff\1\77",
+            "\1\100\37\uffff\1\100",
             "\1\101\37\uffff\1\101",
             "\1\102\37\uffff\1\102",
-            "\1\103\37\uffff\1\103",
-            "\1\104\37\uffff\1\104",
+            "\1\104\3\uffff\1\103\33\uffff\1\104\3\uffff\1\103",
             "\1\105\37\uffff\1\105",
             "\1\106\37\uffff\1\106",
             "\1\107\37\uffff\1\107",
             "\1\110\37\uffff\1\110",
             "\1\111\37\uffff\1\111",
-            "",
             "\1\112\37\uffff\1\112",
             "\1\113\37\uffff\1\113",
             "",
+            "\1\114\37\uffff\1\114",
+            "\1\115\37\uffff\1\115",
             "",
-            "\133\114\1\116\1\114\1\115\uffa2\114",
+            "",
+            "\133\116\1\120\1\116\1\117\uffa2\116",
             "",
             "",
-            "\1\117\37\uffff\1\117",
-            "\1\120\37\uffff\1\120",
             "\1\121\37\uffff\1\121",
             "\1\122\37\uffff\1\122",
             "\1\123\37\uffff\1\123",
@@ -3083,101 +3204,112 @@ public class PySONLexer extends Lexer {
             "\1\127\37\uffff\1\127",
             "\1\130\37\uffff\1\130",
             "\1\131\37\uffff\1\131",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
+            "\1\132\37\uffff\1\132",
             "\1\133\37\uffff\1\133",
             "\1\134\37\uffff\1\134",
             "\1\135\37\uffff\1\135",
+            "\1\136\37\uffff\1\136",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
-            "\133\114\1\116\1\114\1\115\uffa2\114",
+            "\1\140\37\uffff\1\140",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\133\116\1\120\1\116\1\117\uffa2\116",
             "",
             "",
-            "\1\137\37\uffff\1\137",
-            "\15\47\5\uffff\1\47\1\uffff\23\47\1\140\6\47\1\uffff\1\47\2"+
-            "\uffff\1\47\1\uffff\23\47\1\140\6\47",
             "\1\142\37\uffff\1\142",
-            "\15\47\5\uffff\1\47\1\uffff\22\47\1\143\7\47\1\uffff\1\47\2"+
-            "\uffff\1\47\1\uffff\22\47\1\143\7\47",
+            "\15\47\5\uffff\1\47\1\uffff\23\47\1\143\6\47\1\uffff\1\47\2"+
+            "\uffff\1\47\1\uffff\23\47\1\143\6\47",
             "\1\145\37\uffff\1\145",
             "\1\146\37\uffff\1\146",
             "\1\147\37\uffff\1\147",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
-            "\1\151\37\uffff\1\151",
-            "\1\152\37\uffff\1\152",
+            "\1\150\37\uffff\1\150",
+            "\15\47\5\uffff\1\47\1\uffff\22\47\1\151\7\47\1\uffff\1\47\2"+
+            "\uffff\1\47\1\uffff\22\47\1\151\7\47",
             "\1\153\37\uffff\1\153",
-            "",
             "\1\154\37\uffff\1\154",
             "\1\155\37\uffff\1\155",
-            "\1\156\37\uffff\1\156",
-            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
             "\1\157\37\uffff\1\157",
             "\1\160\37\uffff\1\160",
-            "",
             "\1\161\37\uffff\1\161",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
+            "",
+            "\1\162\37\uffff\1\162",
             "",
             "\1\163\37\uffff\1\163",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
-            "\1\165\37\uffff\1\165",
+            "\1\164\37\uffff\1\164",
             "",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
+            "\1\165\37\uffff\1\165",
+            "\1\166\37\uffff\1\166",
             "\1\167\37\uffff\1\167",
             "\1\170\37\uffff\1\170",
-            "\1\171\37\uffff\1\171",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "",
             "\1\172\37\uffff\1\172",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
             "\1\174\37\uffff\1\174",
-            "\1\175\37\uffff\1\175",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
             "\1\176\37\uffff\1\176",
-            "",
             "\1\177\37\uffff\1\177",
-            "",
-            "\1\u0080\37\uffff\1\u0080",
-            "",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
+            "\1\u0081\37\uffff\1\u0081",
             "\1\u0082\37\uffff\1\u0082",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
+            "\1\u0083\37\uffff\1\u0083",
             "\1\u0084\37\uffff\1\u0084",
-            "",
-            "\1\u0085\37\uffff\1\u0085",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
             "\1\u0086\37\uffff\1\u0086",
+            "",
             "\1\u0087\37\uffff\1\u0087",
+            "",
             "\1\u0088\37\uffff\1\u0088",
-            "\15\47\5\uffff\1\47\1\uffff\22\47\1\u0089\7\47\1\uffff\1\47"+
-            "\2\uffff\1\47\1\uffff\22\47\1\u0089\7\47",
             "",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
+            "\1\u008a\37\uffff\1\u008a",
+            "",
+            "\1\u008b\37\uffff\1\u008b",
+            "\1\u008c\37\uffff\1\u008c",
+            "\1\u008d\37\uffff\1\u008d",
+            "\1\u008e\37\uffff\1\u008e",
             "",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
-            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
-            "\1\uffff\32\47",
-            "\1\u008f\37\uffff\1\u008f",
             "\1\u0090\37\uffff\1\u0090",
+            "\15\47\5\uffff\1\47\1\uffff\22\47\1\u0091\7\47\1\uffff\1\47"+
+            "\2\uffff\1\47\1\uffff\22\47\1\u0091\7\47",
+            "",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
+            "\1\u0096\37\uffff\1\u0096",
+            "\1\u0097\37\uffff\1\u0097",
+            "",
+            "\1\u0098\37\uffff\1\u0098",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
             "",
             "",
             "",
             "",
-            "",
-            "\1\u0092\37\uffff\1\u0092",
+            "\1\u009a\37\uffff\1\u009a",
+            "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
+            "\1\uffff\32\47",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
             "",
             "\15\47\5\uffff\1\47\1\uffff\32\47\1\uffff\1\47\2\uffff\1\47"+
             "\1\uffff\32\47",
+            "",
             "",
             ""
     };
@@ -3212,58 +3344,58 @@ public class PySONLexer extends Lexer {
             this.transition = DFA16_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | DEFAULT_INDICATOR | PHYLONET | DATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | RN_LS_NONCOMMENT | NESTED_ML_COMMENT | WS | ELSE );";
+            return "1:1: Tokens : ( T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | DEFAULT_INDICATOR | PHYLONET | DATA | MORPHDATA | DIMENSIONS | TREE | UTREE | NETWORK | NTAX | NCHAR | FORMAT | DATATYPE | SYMBOLS | GAP | MATRIX | MISSING | START | BEGIN | TRANSLATE | NETWORKS | TREES | END | ID | QUOTE | ID_SET | TAXON_SET_LIST | RN_LS_NONCOMMENT | NESTED_ML_COMMENT | WS | ELSE );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA16_57 = input.LA(1);
+                        int LA16_25 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA16_57 >= '\u0000' && LA16_57 <= 'Z')||LA16_57=='\\'||(LA16_57 >= '^' && LA16_57 <= '\uFFFF')) ) {s = 76;}
+                        if ( (LA16_25=='&') ) {s = 58;}
 
-                        else if ( (LA16_57==']') ) {s = 77;}
+                        else if ( ((LA16_25 >= '\u0000' && LA16_25 <= '%')||(LA16_25 >= '\'' && LA16_25 <= 'Z')||(LA16_25 >= '\\' && LA16_25 <= '\uFFFF')) ) {s = 59;}
 
-                        else if ( (LA16_57=='[') ) {s = 78;}
+                        else s = 27;
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 1 : 
-                        int LA16_23 = input.LA(1);
+                        int LA16_58 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA16_23 >= '\u0000' && LA16_23 <= '\uFFFF')) ) {s = 55;}
+                        if ( ((LA16_58 >= '\u0000' && LA16_58 <= 'Z')||LA16_58=='\\'||(LA16_58 >= '^' && LA16_58 <= '\uFFFF')) ) {s = 78;}
 
-                        else s = 27;
+                        else if ( (LA16_58==']') ) {s = 79;}
+
+                        else if ( (LA16_58=='[') ) {s = 80;}
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 2 : 
-                        int LA16_76 = input.LA(1);
+                        int LA16_23 = input.LA(1);
 
                         s = -1;
-                        if ( (LA16_76==']') ) {s = 77;}
+                        if ( ((LA16_23 >= '\u0000' && LA16_23 <= '\uFFFF')) ) {s = 56;}
 
-                        else if ( ((LA16_76 >= '\u0000' && LA16_76 <= 'Z')||LA16_76=='\\'||(LA16_76 >= '^' && LA16_76 <= '\uFFFF')) ) {s = 76;}
-
-                        else if ( (LA16_76=='[') ) {s = 78;}
+                        else s = 27;
 
                         if ( s>=0 ) return s;
                         break;
 
                     case 3 : 
-                        int LA16_25 = input.LA(1);
+                        int LA16_78 = input.LA(1);
 
                         s = -1;
-                        if ( (LA16_25=='&') ) {s = 57;}
+                        if ( (LA16_78==']') ) {s = 79;}
 
-                        else if ( ((LA16_25 >= '\u0000' && LA16_25 <= '%')||(LA16_25 >= '\'' && LA16_25 <= 'Z')||(LA16_25 >= '\\' && LA16_25 <= '\uFFFF')) ) {s = 58;}
+                        else if ( ((LA16_78 >= '\u0000' && LA16_78 <= 'Z')||LA16_78=='\\'||(LA16_78 >= '^' && LA16_78 <= '\uFFFF')) ) {s = 78;}
 
-                        else s = 27;
+                        else if ( (LA16_78=='[') ) {s = 80;}
 
                         if ( s>=0 ) return s;
                         break;
@@ -3294,19 +3426,19 @@ public class PySONLexer extends Lexer {
 
                         else if ( (LA16_0=='D'||LA16_0=='d') ) {s = 11;}
 
-                        else if ( (LA16_0=='T'||LA16_0=='t') ) {s = 12;}
+                        else if ( (LA16_0=='M'||LA16_0=='m') ) {s = 12;}
 
-                        else if ( (LA16_0=='U'||LA16_0=='u') ) {s = 13;}
+                        else if ( (LA16_0=='T'||LA16_0=='t') ) {s = 13;}
 
-                        else if ( (LA16_0=='N'||LA16_0=='n') ) {s = 14;}
+                        else if ( (LA16_0=='U'||LA16_0=='u') ) {s = 14;}
 
-                        else if ( (LA16_0=='F'||LA16_0=='f') ) {s = 15;}
+                        else if ( (LA16_0=='N'||LA16_0=='n') ) {s = 15;}
 
-                        else if ( (LA16_0=='S'||LA16_0=='s') ) {s = 16;}
+                        else if ( (LA16_0=='F'||LA16_0=='f') ) {s = 16;}
 
-                        else if ( (LA16_0=='G'||LA16_0=='g') ) {s = 17;}
+                        else if ( (LA16_0=='S'||LA16_0=='s') ) {s = 17;}
 
-                        else if ( (LA16_0=='M'||LA16_0=='m') ) {s = 18;}
+                        else if ( (LA16_0=='G'||LA16_0=='g') ) {s = 18;}
 
                         else if ( (LA16_0=='#') ) {s = 19;}
 

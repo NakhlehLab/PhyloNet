@@ -47,7 +47,7 @@ import java.util.concurrent.Future;
  */
 public class NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus extends NetworkPseudoLikelihoodFromGTT {
 
-    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List allTriplets, List tripletFrequencies){
+    public void summarizeData(List originalGTs, Map<String,String> allele2species, List allTriplets, List tripletFrequencies){
         Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
         for(Object list: originalGTs) {
             for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>)list) {
@@ -69,6 +69,30 @@ public class NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus extends NetworkPs
         List<MutableTuple<Tree,Double>> gts = new ArrayList<>();
         gts.addAll(exp2tree.values());
         computeTripleFrequenciesInGTs(gts, allele2species, allTriplets, tripletFrequencies);
+    }
+
+
+    public void summarizeData(List originalGTs, Map<String,String> allele2species, List distinctGTs, List allTriplets, List tripletFrequencies){
+        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
+        for(Object list: originalGTs) {
+            for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>)list) {
+                for (TNode node : gtTuple.Item1.getNodes()) {
+                    node.setParentDistance(TNode.NO_DISTANCE);
+                }
+                String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
+                MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
+                if (existingTuple == null) {
+                    existingTuple = gtTuple;
+                    exp2tree.put(exp, existingTuple);
+
+                } else {
+                    existingTuple.Item2 += gtTuple.Item2;
+                }
+
+            }
+        }
+        distinctGTs.addAll(exp2tree.values());
+        computeTripleFrequenciesInGTs(distinctGTs, allele2species, allTriplets, tripletFrequencies);
     }
 
 
@@ -100,7 +124,13 @@ public class NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus extends NetworkPs
         for(Map.Entry<String, double[]> entry: triple2counts.entrySet()){
             allTriplets.add(entry.getKey());
             tripletFrequencies.add(entry.getValue());
+            /*
+            for(double value: entry.getValue()){
+                System.out.print(value/5000.0 + ",");
+            }
+            */
         }
+
     }
 
 
@@ -114,6 +144,7 @@ public class NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus extends NetworkPs
             double[] freqs = (double[])o;
             for(int i=0; i<3; i++){
                 totalProb += freqs[i] * Math.log(probs[index][i]);
+                //totalProb *= Math.pow(probs[index][i],freqs[i]);
             }
             index++;
         }

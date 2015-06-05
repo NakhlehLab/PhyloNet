@@ -40,6 +40,12 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
+    private int _batchSize;
+
+    public void setBatchSize(int size){
+        _batchSize = size;
+    }
+
 
     public Map<String, double[]> computeTripleFrequenciesFromSingleGT(Tree gt){
         List<String> taxaList = new ArrayList<>();
@@ -117,7 +123,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                     else{
 
                         for(int m=0; m<3; m++){
-                            freq[m] = 1/3;
+                            freq[m] = 1/3.0;
                         }
                     }
                 }
@@ -142,12 +148,6 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             species2count.put(species,count+1);
         }
 
-        String[] speciesArray = species2count.keySet().toArray(new String[0]);
-        Arrays.sort(speciesArray);
-        int[] alleleNums = new int[speciesArray.length];
-        for(int i=0; i< speciesArray.length; i++){
-            alleleNums[i] = species2count.get(speciesArray[i]);
-        }
 
         Map<TNode,Set<String>> node2leaves = new HashMap<>();
         Map<String, double[]> triple2counts = new HashMap<>();
@@ -424,7 +424,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    private class MyThread extends Thread{
+    protected class MyThread extends Thread{
         Network _network;
         GeneTreeProbabilityPseudo _calculator;
         List<String> _allTriplets;
@@ -454,6 +454,13 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
         double prob = likelihood.computePseudoLikelihood(speciesNetwork, tripleFrequencies);
         */
         GeneTreeProbabilityPseudo calculator = new GeneTreeProbabilityPseudo();
+        if(_numThreads!=0){
+            int batchSize = allTriplets.size()/_numThreads;
+            if(allTriplets.size()%_numThreads != 0){
+                batchSize++;
+            }
+            calculator.setBatchSize(batchSize);
+        }
         calculator.initialize(speciesNetwork);
         double[][] probs = new double[allTriplets.size()][3];
         Thread[] myThreads = new Thread[_numThreads];
@@ -462,7 +469,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             calculator.setParallel(true);
             for (int i = 0; i < _numThreads; i++) {
                 myThreads[i] = new MyThread(speciesNetwork, calculator, allTriplets, probs);
-
+                myThreads[i].start();
             }
             for (int i = 0; i < _numThreads; i++) {
                 try {
@@ -482,6 +489,8 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             }
         }
         double totalProb = calculateFinalLikelihood(probs, tripleFrequencies);
+        //System.out.println(speciesNetwork);
+        //System.out.println(totalProb);
         return totalProb;
     }
 

@@ -37,6 +37,10 @@ public class GeneTreeProbabilityPseudo {
         _printDetails = false;
     }
 
+    public void setBatchSize(int size){
+        _batchSize = size;
+    }
+
     public synchronized int getNextTripleID(){
         _currentTripleID = _currentTripleID + _batchSize;
         return _currentTripleID-_batchSize;
@@ -126,19 +130,18 @@ public class GeneTreeProbabilityPseudo {
             initialize(network);
         }
 
-
-        double totalProb = 0;
         int tripleID = 0;
         if(_parallel){
             tripleID = getNextTripleID();
         }
 
-
         int totalTripleNum = allTriplets.size();
         int count = 0;
         while(tripleID < totalTripleNum){
+
             String[] triple = allTriplets.get(tripleID).split("&");
-            //System.out.println(tripleID + " " + Arrays.toString(triple));
+            //if(tripleID % 100 == 0)
+                //System.out.println(tripleID);
             probs[tripleID][0] = calculateTripleProbability(network,triple);
 
             String temp = triple[1];
@@ -147,23 +150,28 @@ public class GeneTreeProbabilityPseudo {
             probs[tripleID][1] = calculateTripleProbability(network,triple);
 
             probs[tripleID][2] = 1-probs[tripleID][0]-probs[tripleID][1];
+            /*
+            for(double value: probs[tripleID]){
+                System.out.print(value + ",");
+            }
+            */
 /*
             temp = triple[0];
             triple[0] = triple[2];
             triple[2] = temp;
-            tripleProbs[2] = calculateTripleProbability(network,triple);
+            probs[tripleID][2] = calculateTripleProbability(network,triple);
             double checkingOne = 0;
 
 
             for(int i=0; i<3; i++){
-                //checkingOne += tripleProbs[i];
-                totalProb += Math.log(tripleProbs[i]) * tf.Item2[i];
+                checkingOne += probs[tripleID][i];
+
             }
 
             if(Math.abs(checkingOne-1)>0.0001){
-                throw new RuntimeException(Arrays.toString(tripleProbs));
+                throw new RuntimeException(Arrays.toString(probs[tripleID]));
             }
-            */
+*/
 
             if(_parallel){
                 count++;

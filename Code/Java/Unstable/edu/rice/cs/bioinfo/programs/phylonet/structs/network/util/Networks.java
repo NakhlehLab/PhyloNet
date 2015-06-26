@@ -813,7 +813,7 @@ public class Networks
     public static <T> boolean isDisconnectedNetwork(Network<T> net, NetNode<T> ignoreNode){
         Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
         Set<NetNode<T>> seen = new HashSet<NetNode<T>>();
-        for(NetNode<T> node: net.bfs()){
+        for(NetNode<T> node: Networks.postTraversal(net)){
             if(node.getIndeg()==1 && node.getOutdeg()==1 && node!=ignoreNode){
                 return false;
             }
@@ -825,6 +825,7 @@ public class Networks
                 seen.add(child);
             }
         }
+
         return visited.size()==seen.size();
     }
 
@@ -887,7 +888,7 @@ public class Networks
     }
 
 
-//TODO
+
     public static <T> double computeMaxLoad(Network<T> network, Map<String, List<String>> species2alleles){
         NetworkLoad networkLoad = new NetworkLoad();
         return networkLoad.computeMaxLoad(network, species2alleles);

@@ -22,6 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.lca.SchieberVishkinLCA;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.BitVector;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -31,6 +32,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeBipartition;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 
+import java.io.StringReader;
 import java.util.*;
 
 /**
@@ -171,7 +173,7 @@ public class Trees {
 		int node_num = 0;
 
 		for(TMutableNode n : tree.getNodes()) {
-			if(n.getName() == null || n.getName().equals("")) { // TODO Make sure there aren't any other == string comparisons!
+			if(n.getName() == null || n.getName().equals("")) {
 				String new_name = prefix + node_num++;
 
 				while(tree.getNode(new_name) != null) {
@@ -1002,6 +1004,7 @@ public class Trees {
                 continue;
             }
 			Double bootstrap = ((STINode<Double>)node).getData();
+            if(bootstrap == null)continue;
 			if(bootstrap!=TNode.NO_SUPPORT && bootstrap < threshold){
 				nodestomodify.add(node);
 			}
@@ -1176,6 +1179,18 @@ public class Trees {
             }
         }
         return treeExp;
+    }
+
+
+    public static Tree readTree(String exp){
+        try {
+            NewickReader nr = new NewickReader(new StringReader(exp));
+            return nr.readTree();
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+            e.getStackTrace();
+        }
+        return null;
     }
 
 

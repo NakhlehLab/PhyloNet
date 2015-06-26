@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni;
 
 import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class NetworkFactoryFromRNNetwork
 
         }, null);
 
-        parent.adoptChild(result, Double.NaN);
+        parent.adoptChild(result, NetNode.NO_DISTANCE);
         populateChild(result, principleInfo, parent);
         return result;
     }

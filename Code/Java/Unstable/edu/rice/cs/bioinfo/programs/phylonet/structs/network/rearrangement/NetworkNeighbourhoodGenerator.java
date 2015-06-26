@@ -17,7 +17,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class NetworkNeighbourhoodGenerator{
-    protected boolean _printDetails = true;
+    protected boolean _printDetails = false;
 
     public abstract void undo();
 
@@ -45,7 +45,7 @@ public abstract class NetworkNeighbourhoodGenerator{
             for (Object parent : ((NetNode) node).getParents()) {
                 totalProb += ((NetNode) node).getParentProbability((NetNode) parent);
             }
-            if(((NetNode)node).getChildCount()==1 && (((NetNode)node).getParentCount()==1||((NetNode)node).getParentCount()==0)){
+            if(((NetNode)node).getChildCount()==1 && ((NetNode)node).getParentCount()<2){
                 return false;
             }
             if(((NetNode)node).isNetworkNode()){
@@ -54,7 +54,7 @@ public abstract class NetworkNeighbourhoodGenerator{
                 }
             }
             else if(!((NetNode)node).isRoot()){
-                if(!Double.isNaN(totalProb)){
+                if(totalProb != NetNode.NO_PROBABILITY){
                     throw new RuntimeException(network.toString());
                 }
             }

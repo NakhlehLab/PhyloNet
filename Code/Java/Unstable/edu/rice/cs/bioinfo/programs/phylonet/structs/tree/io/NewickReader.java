@@ -84,6 +84,7 @@ public class NewickReader {
 		stok.wordChars('0','9');
 		stok.wordChars('A','z');
 		stok.wordChars('-','.');
+        stok.wordChars('#','#');
 		
 		stok.whitespaceChars('\t',' ');
 		
@@ -438,8 +439,13 @@ public class NewickReader {
 				throw new ParseException("Duplicate node " + _stok.sval);
 			}
 
-			node.setName(_stok.sval);
-
+            node.setName(_stok.sval);
+/*
+            if(node.isLeaf())
+			    node.setName(_stok.sval);
+            else
+                ((STINode<Integer>)node).setData(Integer.parseInt(_stok.sval));
+*/
 			token = _stok.nextToken();
 		}
 

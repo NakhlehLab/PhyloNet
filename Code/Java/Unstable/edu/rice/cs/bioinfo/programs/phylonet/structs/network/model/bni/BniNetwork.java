@@ -62,6 +62,7 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
 		else {
 			_root = root;
 		}
+
 	}
 
 	/**
@@ -185,12 +186,26 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
 	/**
 	 * This function creates an identical copy of this current network.
 	 */
+    public Network<T> clone()
+    {
+        /*
+        try {
+            return (Network) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("This should be impossible ...");
+        }
+        */
+
+        return Networks.readNetwork(this.toString());
+    }
+    /*
 	public Network<T> clone()
 	{
 		BniNetNode<T> root_copy = new BniNetNode<T>();
 
 		return new BniNetwork<T>(root_copy);
 	}
+	*/
 
 	/**
 	 * This function checks if the network has duplicate names or not.

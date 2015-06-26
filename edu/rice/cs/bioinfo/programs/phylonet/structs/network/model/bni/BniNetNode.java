@@ -434,11 +434,8 @@ public class BniNetNode<T> implements NetNode<T> {
 
 	public void setParentProbability(NetNode<T> parent, double probability)
 	{
-<<<<<<< .mine
+
         if(probability != NetNode.NO_PROBABILITY && (probability < 0 || probability > 1))
-=======
-        if(probability < 0.0 || probability > 1.0)
->>>>>>> .r995
         {
             throw new IllegalArgumentException("Probability values must be between zer and one.  Found: " + probability);
         }

@@ -2,18 +2,18 @@ package edu.rice.cs.bioinfo.library.programming;
 
 /**
  * Created by IntelliJ IDEA.
- * User: Matt
- * Date: 4/6/12
+ * User: Yun
+ * Date: 6/25/15
  * Time: 6:11 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MutableTuple<T1,T2>
+public class UnorderedPair<T>
 {
-    public T1 Item1;
+    public final T Item1;
 
-    public T2 Item2;
+    public final T Item2;
 
-    public MutableTuple(T1 item1, T2 item2)
+    public UnorderedPair(T item1, T item2)
     {
         Item1 = item1;
         Item2 = item2;
@@ -24,7 +24,7 @@ public class MutableTuple<T1,T2>
     {
         try
         {
-            return equals((MutableTuple<T1,T2>)candidate);
+            return equals((UnorderedPair<T>)candidate);
         }
         catch (ClassCastException e)
         {
@@ -32,12 +32,12 @@ public class MutableTuple<T1,T2>
         }
     }
 
-    public boolean equals(MutableTuple<T1,T2> candidate)
+    public boolean equals(UnorderedPair<T> candidate)
     {
         if(candidate == null)
             return false;
 
-        return candidate.Item1.equals(Item1) && candidate.Item2.equals(Item2);
+        return (candidate.Item1.equals(Item1) && candidate.Item2.equals(Item2)) || (candidate.Item2.equals(Item1) && candidate.Item1.equals(Item2));
     }
 
     @Override
@@ -65,6 +65,6 @@ public class MutableTuple<T1,T2>
     @Override
     public String toString()
     {
-        return "(" + Item1.toString() + ", " + Item2.toString() + ")";
+        return "(" + Item1 + ", " + Item2 + ")";
     }
 }

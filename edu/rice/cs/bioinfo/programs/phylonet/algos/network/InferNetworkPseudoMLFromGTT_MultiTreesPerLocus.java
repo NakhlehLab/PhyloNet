@@ -39,28 +39,23 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class InferNetworkPseudoMLFromGTT_MultiTreesPerLocus extends InferNetworkPseudoMLFromGTT {
-
+    public InferNetworkPseudoMLFromGTT_MultiTreesPerLocus(){
+        _fullLikelihoodCalculator = new NetworkLikelihoodFromGTT_MultiTreesPerLocus();
+        _likelihoodCalculator = new NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus();
+        if(_batchSize!=0){
+            ((NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus)_likelihoodCalculator).setBatchSize(_batchSize);
+        }
+    }
 
     protected void summarizeData(List originalData, Map<String,String> allele2species, List dataForStartingNetwork, List dataForInferNetwork, List dataCorrespondences){
         NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus likelihoodComputer = new NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus();
-        //likelihoodComputer.summarizeData(originalData, allele2species, dataForStartingNetwork, dataForInferNetwork, dataCorrespondences);
-        likelihoodComputer.summarizeDataForSimulation(originalData, allele2species, dataForStartingNetwork, dataForInferNetwork, dataCorrespondences);
+        likelihoodComputer.summarizeData(originalData, allele2species, dataForStartingNetwork, dataForInferNetwork, dataCorrespondences);
 
     }
 
 
-    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedGTs, final List treeCorrespondence){
-        //System.out.println(speciesNetwork.toString());
-        NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus likelihoodComputer = new NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus();
-        likelihoodComputer.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-        double prob = likelihoodComputer.computeLikelihood(speciesNetwork, species2alleles, summarizedGTs, treeCorrespondence, _optimizeBL);
-        return prob;
-    }
 
-
-
-
-    //Temp: just for the bird dataset
+    /*
     public void inferNetworkForBird(String gtFile, Map<String,String> allele2species, int maxReticulations, int numSol, LinkedList<Tuple<Network,Double>> resultList){
 
         List dataForNetworkInference = new ArrayList();
@@ -78,12 +73,7 @@ public class InferNetworkPseudoMLFromGTT_MultiTreesPerLocus extends InferNetwork
             for(String taxon: taxa){
                 singleAlleleSpecies.add(taxon);
             }
-            /*
-            String[] taxa = {"CHAVO","CHAPE","CALAN","COLLI","MERNU","TINMA","TAEGU","GEOFO","CORBR","ACACH","MANVI","NESNO","MELUN","CUCCA","TYTAL","ANAPL","GALGA","MELGA","PTEGU","LEPDI","BUCRH","FALPE","PHACA","STRCA","PODCR","PHALE","CHLUN","PYGAD","HALAL","HALLE","APTFO","CARCR","FULGL","OPHHO","EURHE","PHORU","PELCR","GAVST","EGRGA","COLST","PICPU","MESUN","BALRE","TAUER","NIPNI"};
-            for(String taxon: taxa){
-                singleAlleleSpecies.add(taxon);
-            }
-            */
+
         }
 
         for(Object nodeO: _startNetwork.dfs()){
@@ -111,18 +101,6 @@ public class InferNetworkPseudoMLFromGTT_MultiTreesPerLocus extends InferNetwork
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
 
-        //
-/*
-        NetworkRandomTopologyNeighbourGenerator topologyMutator = new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _seed);
-        NetworkRandomParameterNeighbourGenerator parameterMutator = new NetworkRandomParameterNeighbourGenerator(singleAlleleSpecies);
-        TwoNetworkRandomPDGGenerator recombinationMaker = new TwoNetworkRandomPDGGenerator(_seed);
-        Comparator<Double> comparator = getDoubleScoreComparator();
-        GeneticAlgorithmInstance searcher = new GeneticAlgorithmInstance(25,comparator,parameterMutator, 0.1, topologyMutator, 0.3, recombinationMaker, 0.1, 5);
-        searcher.setLogFile(_logFile);
-        Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, species2alleles, dataCorrespondence);
-        Network speciesNetwork = Networks.readNetwork(startingNetwork);
-        searcher.search(speciesNetwork, scorer, numSol, _numRuns, 4000, _optimizeBL, resultList); // search starts here
-*/
     }
 
 
@@ -142,6 +120,7 @@ public class InferNetworkPseudoMLFromGTT_MultiTreesPerLocus extends InferNetwork
         likelihoodComputer.summarizeDataForBird4(gtFile, dataForInferNetwork, dataCorrespondences);
     }
 
+
     protected Func1<Network, Double> getScoreFunctionForBird(final List summarizedData, final List dataCorrespondences){
         return new Func1<Network, Double>() {
             public Double execute(Network speciesNetwork) {
@@ -149,6 +128,6 @@ public class InferNetworkPseudoMLFromGTT_MultiTreesPerLocus extends InferNetwork
             }
         };
     }
-
+    */
 
 }

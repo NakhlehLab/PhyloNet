@@ -32,7 +32,13 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class InferNetworkPseudoMLFromGTT_SingleTreePerLocus extends InferNetworkPseudoMLFromGTT {
-
+    public InferNetworkPseudoMLFromGTT_SingleTreePerLocus(){
+        _fullLikelihoodCalculator = new NetworkLikelihoodFromGTT_SingleTreePerLocus();
+        _likelihoodCalculator = new NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus();
+        if(_batchSize!=0){
+            ((NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus)_likelihoodCalculator).setBatchSize(_batchSize);
+        }
+    }
 
     protected void summarizeData(List originalData, Map<String,String> allele2species, List dataForStartingNetwork, List dataForInferNetwork, List dataCorrespondences){
         NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus likelihoodComputer = new NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus();
@@ -40,17 +46,4 @@ public class InferNetworkPseudoMLFromGTT_SingleTreePerLocus extends InferNetwork
     }
 
 
-    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedGTs, final List treeCorrespondence){
-        //System.out.println(speciesNetwork.toString());
-        NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus likelihoodComputer = new NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus();
-        likelihoodComputer.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-        if(_batchSize!=0){
-            likelihoodComputer.setBatchSize(_batchSize);
-        }
-        double prob = likelihoodComputer.computeLikelihood(speciesNetwork, species2alleles, summarizedGTs, treeCorrespondence, _optimizeBL);
-        //int numReticulations = speciesNetwork.getReticulationCount();
-        //System.out.println(numReticulations + " " + prob + " " + (System.currentTimeMillis() - startTime)/1000.0);
-        return prob;
-    }
-
-    }
+}

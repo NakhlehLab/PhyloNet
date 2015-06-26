@@ -45,13 +45,12 @@ import java.util.*;
 public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPseudoLikelihoodFromGTT {
 
     //for simulation only
-    //TODO
+/*
     public void summarizeData(List originalGTs, Map<String,String> allele2species, List allTriplets, List tripletFrequencies){
         computeTripleFrequenciesInGTsForSimulation(originalGTs, allTriplets, tripletFrequencies);
     }
+*/
 
-    //uncomment this after simulation
-    /*
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List allTriplets, List tripletFrequencies){
         int treeID = 0;
         Map<String, Integer> distinctTree2ID = new HashMap<>();
@@ -90,7 +89,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         }
         computeTripleFrequenciesInGTs(distinctGTs, allele2species, treeCorrespondences, allTriplets, tripletFrequencies);
     }
-    */
+
 
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List distinctGTs, List allTriplets, List tripletFrequencies){
         int treeID = 0;
@@ -133,7 +132,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
 
 
 
-
+/*
     protected void summarizeDataForSimulation(List originalGTs, Map<String,String> allele2species, List distinctGTs, List allTriplets, List tripletFrequencies){
         //Set<String> distinctTree2ID = new HashSet<>();
         for(Object o: originalGTs) {
@@ -144,9 +143,9 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         }
         computeTripleFrequenciesInGTsForSimulation(originalGTs, allTriplets, tripletFrequencies);
     }
+*/
 
-
-
+/*
     private void computeTripleFrequenciesInGTs_original(List<MutableTuple<Tree,Double>> gts, Map<String,String> allele2species, List<List<MutableTuple<Integer,Double>>> treeCorrespondences, List<String> allTriplets, List<List<Tuple<double[][],Double>>> tripletFrequencies){
 
         List<Map<String, double[]>> triple2countList = new ArrayList<>();
@@ -185,8 +184,8 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         }
 
     }
-
-
+*/
+/*
     protected void computeTripleFrequenciesInGTsForSimulation(List originalGTs, List allTriplets, List tripletFrequencies){
         //Set<String> distinctTree2ID = new HashSet<>();
         Map<String, double[]> triplet2freq = new HashMap<>();
@@ -215,14 +214,12 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
             tripletFrequencies.add(entry.getValue());
         }
     }
-
+*/
 
     private void computeTripleFrequenciesInGTs(List<MutableTuple<Tree,Double>> gts, Map<String,String> allele2species, List<List<MutableTuple<Integer,Double>>> treeCorrespondences, List<String> allTriplets, List<double[]> tripletFrequencies){
         List<Map<String, double[]>> triple2countList = new ArrayList<>();
         Set<String> allAlleleSet = new HashSet<>();
 
-        int k=0;
-        int size = gts.size();
         for(MutableTuple<Tree,Double> gt: gts){
             //System.out.println(k++ + "/" + size);
             Map<String, double[]> result;
@@ -297,7 +294,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         return totalProb;
     }
 
-
+/*
     protected double calculateFinalLikelihood_original(double[][] probs, List tripletFrequencies){
 
         double totalProb = 0;
@@ -322,8 +319,9 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         }
         return totalProb;
     }
+*/
 
-
+/*
     protected void summarizeDataForBird1(String gtFile, List allTriplets, List tripletFrequencies){
 
         try {
@@ -527,11 +525,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
                 }
                 //System.out.println();
             }
-            /*
-            for (Map.Entry<String, double[]> entry : triplet2freq.entrySet()) {
-                System.out.println(entry.getKey() + ": " + Arrays.toString(entry.getValue()));
-            }
-            */
+
             br.close();
             for(Map.Entry<String, double[]> entry: triplet2freq.entrySet()){
                 allTriplets.add(entry.getKey());
@@ -546,10 +540,6 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
 
 
     public double computeProbabilityForBird(Network<Object> speciesNetwork, List allTriplets, List tripleFrequencies) {
-        /*
-        GeneTreeProbabilityPseudo likelihood = new GeneTreeProbabilityPseudo();
-        double prob = likelihood.computePseudoLikelihood(speciesNetwork, tripleFrequencies);
-        */
         GeneTreeProbabilityPseudo calculator = new GeneTreeProbabilityPseudo();
         calculator.initialize(speciesNetwork);
         double[][] probs = new double[allTriplets.size()][3];
@@ -584,7 +574,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         return totalProb;
     }
 
-    /*
+
     protected double calculateFinalLikelihoodForBird(double[][] probs, List tripletFrequencies){
 
         BigDecimal totalProb = new BigDecimal(0);
@@ -611,7 +601,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         }
         return totalProb;
     }
-    */
+
 
     protected double calculateFinalLikelihoodForBird(double[][] probs, List tripletFrequencies){
         int index = 0;
@@ -626,7 +616,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
         return totalProb;
     }
 
-
+*/
 
 
 }

@@ -204,6 +204,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
+        //System.out.print("\n" + lnGtProbOfSpeciesNetwork.getContents() + ": " + speciesNetwork);
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 

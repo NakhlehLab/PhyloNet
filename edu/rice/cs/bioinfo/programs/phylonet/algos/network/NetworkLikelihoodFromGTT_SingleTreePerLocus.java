@@ -70,9 +70,36 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
             }
         }
     }
+/*
+    protected double calculateFinalLikelihood(double[] probList, List gtCorrespondences){
+        double allTreeProb = 0;
+        for(double prob: probList){
+            allTreeProb += prob;
+            //totalProb += totalProbForOneTree;
+        }
+        //allTreeProb = 1;
+        //System.out.println(totalProb);
+        //return totalProb;
 
+
+        double totalProb = 0;
+        for(Object o: gtCorrespondences){
+            Tuple<MutableTuple<Tree,Double>, Set<Integer>> tuple = (Tuple<MutableTuple<Tree,Double>, Set<Integer>>)o;
+            double totalProbForOneTree = 0;
+            for(int id: tuple.Item2){
+                totalProbForOneTree += probList[id];
+            }
+
+            totalProb += Math.log(totalProbForOneTree/allTreeProb) * tuple.Item1.Item2;
+            //totalProb += totalProbForOneTree;
+        }
+        //System.out.println(totalProb);
+        return totalProb;
+    }
+    */
 
     protected double calculateFinalLikelihood(double[] probList, List gtCorrespondences){
+
         double totalProb = 0;
         for(Object o: gtCorrespondences){
             Tuple<MutableTuple<Tree,Double>, Set<Integer>> tuple = (Tuple<MutableTuple<Tree,Double>, Set<Integer>>)o;

@@ -35,7 +35,9 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class InferNetworkMLFromGTTBL_MultiTreesPerLocus extends InferNetworkMLFromGTTBL {
-
+    public InferNetworkMLFromGTTBL_MultiTreesPerLocus(){
+        _likelihoodCalculator = new NetworkLikelihoodFromGTTBL_MultiTreesPerLocus();
+    }
 
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
         int treeID = 0;
@@ -52,13 +54,6 @@ public class InferNetworkMLFromGTTBL_MultiTreesPerLocus extends InferNetworkMLFr
         }
 
     }
-
-    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedGTs, final List treeCorrespondence){
-        NetworkLikelihoodFromGTTBL_MultiTreesPerLocus likelihoodComputer = new NetworkLikelihoodFromGTTBL_MultiTreesPerLocus();
-        likelihoodComputer.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-        return likelihoodComputer.computeLikelihood(speciesNetwork, species2alleles, summarizedGTs, treeCorrespondence, _optimizeBL);
-    }
-
 
 
 }

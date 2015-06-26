@@ -25,10 +25,12 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
@@ -90,6 +92,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         _optimalScoreswithReticulations = new double[10];
         Arrays.fill(_optimalScoreswithReticulations, Double.NEGATIVE_INFINITY);
 
+
         Map<String,String> allele2species = null;
         if(species2alleles!=null){
             allele2species = new HashMap<String, String>();
@@ -117,13 +120,20 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         String startingNetwork = getStartNetwork(gtsForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
         gtsForStartingNetwork.clear();
 
-        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
-        SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
-        Func1<Network, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence);
-        searcher.search(Networks.readNetwork(startingNetwork), scorer, 1, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
+        //SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
 
-        System.gc();
+        SimulatedAnnealingSalterPearL searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
+        searcher.setLogFile(_logFile);
+        //System.out.print(_intermediateResultFile.getAbsolutePath());
+        //searcher.setIntermediateFile(_intermediateResultFile.getAbsolutePath());
+
+        Func1<Network, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence);
+        Network speciesNetwork = Networks.readNetwork(startingNetwork);
+        searcher.search(speciesNetwork, scorer, 1, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
+
+
 
         // Move the output here. Assume that there are enough rounds so that every network
         // is populated with a real one until the maxReticulations (real reticulation node number + 2)

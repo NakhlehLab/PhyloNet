@@ -431,7 +431,6 @@ public class GeneTreeWithBranchLengthProbabilityYF {
                     //temp.and(gtCl.getCluster());
                     if(temp.equals(gtCl.getCluster())){  //contains
                         config.mergeCluster(index, R);
-                        //TODO /2
                         prob *= Math.exp((-1)*(coalTime-lowTau)*u*(u-1)/2);
                         //System.out.println(Math.exp((-1)*(coalTime-lowTau)*u*(u-1)/2));
                         //prob *= Math.exp((-1)*(coalTime-lowTau)*u*(u-1));
@@ -456,7 +455,6 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         }
 
         if(u != 1){
-            //TODO /2
             prob *= Math.exp((-1)*(highTau-lowTau)*u*(u-1)/2);
             //prob *= Math.exp((-1)*(highTau-lowTau)*u*(u-1));
             if(_printDetail){

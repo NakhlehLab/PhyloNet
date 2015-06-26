@@ -21,6 +21,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
@@ -37,10 +38,32 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class InferNetworkPseudoMLFromGTT extends InferNetworkMLFromGTT {
+    NetworkLikelihood _fullLikelihoodCalculator;
     protected int _batchSize;
 
     public void setBatchSize(int size) {
         _batchSize = size;
+    }
+
+    public void inferNetwork(List originalData, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, boolean optimization, LinkedList<Tuple<Network,Double>> resultList){
+        super.inferNetwork(originalData, species2alleles, maxReticulations, numSol, !optimization, resultList);
+        if(optimization){
+            Map<String,String> allele2species = null;
+            if(species2alleles!=null){
+                allele2species = new HashMap<String, String>();
+                for(Map.Entry<String,List<String>> entry: species2alleles.entrySet()){
+                    for(String allele: entry.getValue()){
+                        allele2species.put(allele, entry.getKey());
+                    }
+                }
+            }
+            List summarizedGTs = new ArrayList();
+            List gtCorrespondence = new ArrayList();
+            _fullLikelihoodCalculator.summarizeData(originalData, allele2species, summarizedGTs, gtCorrespondence);
+            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_fullLikelihoodCalculator, summarizedGTs, gtCorrespondence, species2alleles, resultList);
+            resultList.clear();
+            resultList.addAll(updatedResult);
+        }
     }
 
 

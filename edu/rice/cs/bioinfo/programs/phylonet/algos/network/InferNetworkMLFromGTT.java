@@ -26,6 +26,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -72,6 +74,11 @@ public abstract class InferNetworkMLFromGTT extends InferNetworkMLFromGT {
 
             }
         }
+    }
+
+
+    protected NetworkRandomParameterNeighbourGenerator getNetworkRandomParameterNeighbourGenerator(List dataForNetworkInference, Map<String,String> allele2species, Set<String> singleAlleleSpecies){
+        return new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies);
     }
 
 }

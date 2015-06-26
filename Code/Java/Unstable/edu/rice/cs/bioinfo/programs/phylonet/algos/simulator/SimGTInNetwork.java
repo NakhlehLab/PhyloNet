@@ -124,7 +124,7 @@ public class SimGTInNetwork
                 else{
                     NetNode parent1 = (NetNode)node.getParents().iterator().next();
                     double inheritanceProb = node.getParentProbability(parent1);
-                    if(Double.isNaN(inheritanceProb)){
+                    if(inheritanceProb == NetNode.NO_PROBABILITY){
                         throw new RuntimeException("The network has network node that doesn't have inheritance probability.");
 
                     }
@@ -220,7 +220,7 @@ public class SimGTInNetwork
     }
 
     private void calculateGij(double[] cache, double length){
-        if(length == NetNode.NO_DISTANCE || Double.isNaN(length)){
+        if(length == NetNode.NO_DISTANCE){
             throw new RuntimeException("The network has branch that doesn't have branch length.");
         }
         int i = cache.length;

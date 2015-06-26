@@ -28,7 +28,6 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMP;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -49,29 +48,30 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 @CommandName("infernetwork_mp")
-public class InferNetwork_Parsimonious extends CommandBaseFileOut{
+public class InferNetwork_MP extends CommandBaseFileOut{
     private HashMap<String, List<String>> _species2alleles = null;
     private HashMap<String, String> _allele2species = null;
-    private List<NetworkNonEmpty> _geneTrees;
+    private List<List<NetworkNonEmpty>> _geneTrees;
     private double _bootstrap = 100;
     private NetworkNonEmpty _startSpeciesNetwork = null;
     private int _maxReticulations;
-    private Long _maxExaminations = null;
-    private int _maxDiameter = 0;
-    private long _maxFailure = 100;
+    private long _maxExaminations = -1;
+    private int _moveDiameter = -1;
+    private int _reticulationDiameter = -1;
+    private int _maxFailure = 100;
     private int _returnNetworks = 1;
     private int _numProcessors = 1;
     private boolean _dentroscropeOutput = false;
-    private int _numRuns = 10;
-    private double[] _operationWeight = {0.15,0.15,0.2,0.5};
+    private int _numRuns = 5;
+    private double[] _operationWeight = {0.1,0.1,0.15,0.55,0.15,0.15};
     private Long _seed = null;
 
     private Set<String> _fixedHybrid = new HashSet<String>();
 
 
-    public InferNetwork_Parsimonious(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
-                                     Map<String,NetworkNonEmpty>  sourceIdentToNetwork,
-                                     Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader){
+    public InferNetwork_MP(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
+                           Map<String, NetworkNonEmpty> sourceIdentToNetwork,
+                           Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader){
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
@@ -89,9 +89,9 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
     protected boolean checkParamsForCommand(){
         boolean noError = true;
 
-        ParameterIdentList geneTreeParam = this.assertParameterIdentList(0);
+        Parameter geneTreeParam = this.assertParameterIdentListOrSetList(0);
         noError = noError && geneTreeParam != null;
-        _geneTrees = new LinkedList<NetworkNonEmpty>();
+        _geneTrees = new ArrayList<List<NetworkNonEmpty>>();
 
         ParameterIdent number = this.assertParameterIdent(1);
         try
@@ -106,16 +106,30 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
         }
 
 
-
         if(noError)
         {
 
-            for(String ident : geneTreeParam.Elements)
-            {
-                noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
-                if(noError)
+            if(geneTreeParam instanceof ParameterIdentList) {
+                ParameterIdentList geneTreeList = (ParameterIdentList)geneTreeParam;
+                for (String ident : geneTreeList.Elements) {
+                    noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                    if (noError) {
+                        _geneTrees.add(Arrays.asList(this.sourceIdentToNetwork.get(ident)));
+                    }
+                }
+            }
+            else{
+                ParameterTaxonSetList geneTreeSetList = (ParameterTaxonSetList)geneTreeParam;
+                for(Iterable<String> gtSet : geneTreeSetList.TaxonSetList)
                 {
-                    _geneTrees.add(this.sourceIdentToNetwork.get(ident));
+                    List<NetworkNonEmpty> geneTreesForOneLocus = new ArrayList<NetworkNonEmpty>();
+                    for (String ident : gtSet) {
+                        noError = noError && this.assertNetworkExists(ident, geneTreeParam.getLine(), geneTreeParam.getColumn());
+                        if (noError) {
+                            geneTreesForOneLocus.add(this.sourceIdentToNetwork.get(ident));
+                        }
+                    }
+                    _geneTrees.add(geneTreesForOneLocus);
                 }
             }
 
@@ -134,22 +148,41 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 }
             }
 
-            ParamExtractor dParam = new ParamExtractor("d", this.params, this.errorDetected);
-            if(dParam.ContainsSwitch){
-                if(dParam.PostSwitchParam != null)
+            ParamExtractor mdParam = new ParamExtractor("md", this.params, this.errorDetected);
+            if(mdParam.ContainsSwitch){
+                if(mdParam.PostSwitchParam != null)
                 {
                     try
                     {
-                        _maxDiameter = Integer.parseInt(dParam.PostSwitchValue);
+                        _moveDiameter = Integer.parseInt(mdParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized maximum diameter for network search " + dParam.PostSwitchValue, dParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized maximum diameter for network search " + mdParam.PostSwitchValue, mdParam.PostSwitchParam.getLine(), mdParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -d.", dParam.SwitchParam.getLine(), dParam.SwitchParam.getColumn());
+                    errorDetected.execute("Expected value after switch -md.", mdParam.SwitchParam.getLine(), mdParam.SwitchParam.getColumn());
+                }
+            }
+
+            ParamExtractor rdParam = new ParamExtractor("rd", this.params, this.errorDetected);
+            if(rdParam.ContainsSwitch){
+                if(rdParam.PostSwitchParam != null)
+                {
+                    try
+                    {
+                        _reticulationDiameter = Integer.parseInt(rdParam.PostSwitchValue);
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized maximum diameter for network search " + rdParam.PostSwitchValue, rdParam.PostSwitchParam.getLine(), rdParam.PostSwitchParam.getColumn());
+                    }
+                }
+                else
+                {
+                    errorDetected.execute("Expected value after switch -rd.", rdParam.SwitchParam.getLine(), rdParam.SwitchParam.getColumn());
                 }
             }
 
@@ -268,7 +301,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _maxFailure = Long.parseLong(fParam.PostSwitchValue);
+                        _maxFailure = Integer.parseInt(fParam.PostSwitchValue);
                     }
                     catch(NumberFormatException e)
                     {
@@ -330,7 +363,7 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), dParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Unrecognized seed for network search " + rsParam.PostSwitchValue, rsParam.PostSwitchParam.getLine(), rsParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
@@ -353,20 +386,16 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                         int index = 0;
                         double total = 0;
                         for(String wExp: weights.Elements){
-                            if(index<4){
+                            if(index < _operationWeight.length){
                                 double w = Double.parseDouble(wExp.trim());
                                 if(w<0){
                                     throw new RuntimeException();
                                 }
                                 _operationWeight[index++] = w;
-                                total += w;
                             }
                             else{
                                 throw new RuntimeException();
                             }
-                        }
-                        for(int i=0; i<4; i++){
-                            _operationWeight[i] = _operationWeight[i]/total;
                         }
                     }
                     catch(NumberFormatException e)
@@ -388,8 +417,8 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
                 _dentroscropeOutput = true;
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","n", "m", "d", "di", "h","f","pl","x","rs","w");
-            checkAndSetOutFile(aParam, bParam, sParam, nParam, mParam, dParam, diParam, hParam, fParam, plParam,xParam,rsParam,wParam);
+            noError = noError && checkForUnknownSwitches("a","b","s","n", "m", "md", "rd", "di", "h","f","pl","x","rs","w");
+            checkAndSetOutFile(aParam, bParam, sParam, nParam, mParam, mdParam, rdParam, diParam, hParam, fParam, plParam,xParam,rsParam,wParam);
         }
 
 
@@ -402,51 +431,50 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
         StringWriter result = new StringWriter();
 
         Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
-        for(NetworkNonEmpty geneTree : _geneTrees)
-        {
-            double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
-                @Override
-                public Double forEmpty(TreeProbabilityEmpty empty) {
-                    return 1.0;
+        for(List<NetworkNonEmpty> geneTreesForOneLocus : _geneTrees) {
+            final int size = geneTreesForOneLocus.size();
+            for (NetworkNonEmpty geneTree : geneTreesForOneLocus) {
+                {
+                    double weight = geneTree.TreeProbability.execute(new TreeProbabilityAlgo<Double, RuntimeException>() {
+                        @Override
+                        public Double forEmpty(TreeProbabilityEmpty empty) {
+                            return 1.0/size;
+                        }
+
+                        @Override
+                        public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
+                            return Double.parseDouble(nonEmpty.ProbString)/size;
+                        }
+                    });
+
+                    String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
+                    NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
+                    STITree<Double> newtr = new STITree<Double>(true);
+                    try {
+                        nr.readTree(newtr);
+                    } catch (Exception e) {
+                        errorDetected.execute(e.getMessage(),
+                                this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
+                    }
+                    Trees.removeBinaryNodes(newtr);
+                    if (_bootstrap < 100) {
+                        if (Trees.handleBootStrapInTree(newtr, _bootstrap) == -1) {
+                            throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
+                        }
+                    }
+                    for (TNode node : newtr.getNodes()) {
+                        node.setParentDistance(TNode.NO_DISTANCE);
+                    }
+
+                    String exp = Trees.getLexicographicNewickString(newtr, _allele2species);
+                    MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
+                    if (existingTuple == null) {
+                        existingTuple = new MutableTuple<Tree, Double>(newtr, weight);
+                        exp2tree.put(exp, existingTuple);
+                    } else {
+                        existingTuple.Item2 += weight;
+                    }
                 }
-
-                @Override
-                public Double forNonEmpty(TreeProbabilityNonEmpty nonEmpty) {
-                    return Double.parseDouble(nonEmpty.ProbString);
-                }
-            });
-
-            String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
-            NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
-            STITree<Double> newtr = new STITree<Double>(true);
-            try
-            {
-                nr.readTree(newtr);
-            }
-            catch(Exception e)
-            {
-                errorDetected.execute(e.getMessage(),
-                        this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
-            }
-            Trees.removeBinaryNodes(newtr);
-            if(_bootstrap<100){
-                if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
-                    throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
-                }
-
-            }
-            for(TNode node: newtr.getNodes()){
-                node.setParentDistance(TNode.NO_DISTANCE);
-            }
-
-            String exp = Trees.getLexicographicNewickString(newtr, _allele2species);
-            MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
-            if(existingTuple==null){
-                existingTuple = new MutableTuple<Tree, Double>(newtr, weight);
-                exp2tree.put(exp, existingTuple);
-            }
-            else{
-                existingTuple.Item2 += weight;
             }
         }
 
@@ -459,15 +487,11 @@ public class InferNetwork_Parsimonious extends CommandBaseFileOut{
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
         }
 
-        if(_fixedHybrid.size()!=0){
-            _operationWeight[0] = _operationWeight[1] = _operationWeight[2] = 0;
-            _operationWeight[3] = 1.0;
-        }
 
         //long start = System.currentTimeMillis();
         //InferILSNetworkParsimoniouslyParallelBackup inference = new InferILSNetworkParsimoniouslyParallelBackup();
         InferNetworkMP inference = new InferNetworkMP();
-        inference.setSearchParameter(_maxExaminations, _maxFailure, _maxDiameter, speciesNetwork, _fixedHybrid, _numProcessors, _operationWeight, _numRuns, _seed);
+        inference.setSearchParameter(_maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, speciesNetwork, _fixedHybrid, _numProcessors, _operationWeight, _numRuns, _seed);
         List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(tuples,_species2alleles,_maxReticulations, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);
         int index = 1;

@@ -9,16 +9,16 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.Program;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.Configuration;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.ConfigurationBuilder;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.CreateOptimumHMM;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.gui.PlotOutput;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model.FullOutputInformation;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model.HmmOptimizationFunction;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.util.JsonUtilities;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.util.ListUtilities;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.util.MSDataParser;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.util.ParamParser;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.Configuration;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.ConfigurationBuilder;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.CreateOptimumHMM;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.gui.PlotOutput;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.model.FullOutputInformation;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.model.HmmOptimizationFunction;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.util.JsonUtilities;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.util.ListUtilities;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.util.MSDataParser;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.hmmEthan.util.ParamParser;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.NucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -155,9 +155,6 @@ public class HmmCommand extends CommandBaseFileOutWithDNA {
 
         if (parser.getBooleanParameter("gtr"))
             configBuilder.withGTR();
-
-        if (parser.getBooleanParameter("multiplestayprobs"))
-            configBuilder.withMultipleStayProbs();
 
         if (numberOfFolds != null && numberOfFolds == 1)
         {

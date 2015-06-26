@@ -45,7 +45,7 @@ public class InferNetworkMLFromGTT_SingleTreePerLocus extends InferNetworkMLFrom
         _likelihoodCalculator = new NetworkLikelihoodFromGTT_SingleTreePerLocus();
     }
 
-
+/*
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
         Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
         Map<String,Integer> exp2ID = new HashMap<String, Integer>();
@@ -102,8 +102,9 @@ public class InferNetworkMLFromGTT_SingleTreePerLocus extends InferNetworkMLFrom
         }
         //System.out.println();
     }
+*/
 
-/*
+
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
         Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
         Map<String,Integer> exp2ID = new HashMap<String, Integer>();
@@ -142,6 +143,6 @@ public class InferNetworkMLFromGTT_SingleTreePerLocus extends InferNetworkMLFrom
         gtsForStartingNetwork.addAll(exp2tree.values());
 
     }
-*/
+
 
 }

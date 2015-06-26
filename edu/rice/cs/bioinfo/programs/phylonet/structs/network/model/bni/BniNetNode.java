@@ -313,8 +313,8 @@ public class BniNetNode<T> implements NetNode<T> {
 			}
 			ref._parents.add(this);
 			ref._parent_distances.add(new Double(distance));
-            ref._parent_support.add(Double.NaN);
-            ref._parent_probabiliites.add(Double.NaN);
+            ref._parent_support.add(NetNode.NO_SUPPORT);
+            ref._parent_probabiliites.add(NetNode.NO_PROBABILITY);
 
 			return true;
 		}
@@ -434,7 +434,11 @@ public class BniNetNode<T> implements NetNode<T> {
 
 	public void setParentProbability(NetNode<T> parent, double probability)
 	{
+<<<<<<< .mine
+        if(probability != NetNode.NO_PROBABILITY && (probability < 0 || probability > 1))
+=======
         if(probability < 0.0 || probability > 1.0)
+>>>>>>> .r995
         {
             throw new IllegalArgumentException("Probability values must be between zer and one.  Found: " + probability);
         }
@@ -445,10 +449,8 @@ public class BniNetNode<T> implements NetNode<T> {
             throw new IllegalArgumentException("Passed parent is not a parent of the node.");
 		}
 		else {
-			// Update the distance.
 
-			_parent_probabiliites.remove(i);
-			_parent_probabiliites.add(i, new Double(probability));
+			_parent_probabiliites.set(i, probability);
 		}
 	}
 

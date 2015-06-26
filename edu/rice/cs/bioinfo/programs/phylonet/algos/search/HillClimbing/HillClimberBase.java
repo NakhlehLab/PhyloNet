@@ -35,11 +35,13 @@ public abstract class HillClimberBase extends SearchBase{
     {
         _examinationsCount=0;
     }
-
-    private long _maxExaminations = -1;
     protected long getExaminations(){
         return _examinationsCount;
     }
+    protected void setExaminations(int count){_examinationsCount = count;}
+
+    private long _maxExaminations = -1;
+
 
     protected boolean reachMaxExaminations(){
         if(_maxExaminations != -1){
@@ -81,7 +83,13 @@ public abstract class HillClimberBase extends SearchBase{
     public void search(Network startSolution, Func1<Network,Double> getScore, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList){
         _maxExaminations = maxExaminationsCount;
         _maxFailures = maxFailures;
-        _optimalNetworks = resultList;
+        //_optimalNetworks = resultList;
+        if(_optimalNetworks!=null){
+            resultList.addAll(_optimalNetworks);
+        }
+        else{
+            _optimalNetworks = resultList;
+        }
         _numOptimums = numOptimums;
         _scoreEachTopologyOnce = scoreEachTopologyOnce;
         if(getCashedNetworkListSize()!=0 && _optimalNetworks.size()==0){
@@ -89,16 +97,17 @@ public abstract class HillClimberBase extends SearchBase{
                 updateOptimalNetworks(tried.Item1, tried.Item2);
             }
         }
-        int i = readResultsFromPreviousRuns() + 1;
+        int startingI = readResultsFromPreviousRuns() + 1;
         double score = getScore.execute(startSolution);
         updateOptimalNetworks(startSolution, score);
-        for(; i<=numRuns; i++){
+        for(int i=startingI; i<=numRuns; i++){
             //System.out.println("Run #" + i);
             long startingTime = System.currentTimeMillis();
-
-            _examinationsCount = 0;
-            _consecutiveFailures = 0;
-            incrementExaminations();
+            if(i!=startingI) {
+                _examinationsCount = 0;
+                _consecutiveFailures = 0;
+                incrementExaminations();
+            }
             search(startSolution.clone(), getScore, score);
 
             if(printDetails() || _printResultsAfterEachRun) {

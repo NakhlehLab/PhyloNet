@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkNeighbourhoodGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
+import java.io.*;
 import java.util.Comparator;
 import java.util.LinkedList;
 
@@ -29,10 +30,106 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
     private int _investigatedProposalThreshold;
     private boolean _initialized = false;
 
+    //Temp: for intermediateFile only
+    private long _previousTime = -1;
+    private File _intermediateFile;
+    private String _currentNetwork;
+
+
 
     public SimulatedAnnealingSalterPearL(Comparator<Double> scoreComparator, NetworkNeighbourhoodGenerator generator, Long seed) {
         super(scoreComparator, generator, seed);
+
     }
+
+    public void setIntermediateFile(String fileName){
+        _intermediateFile = new File(fileName);
+        readIntermediateFile();
+    }
+
+    public void writeIntermediateFile(){
+        if(_intermediateFile == null || !_intermediateFile.exists()) return;
+        long currentTime = System.currentTimeMillis();
+        if(_previousTime == -1){
+            _previousTime = currentTime;
+        }
+        else if((currentTime - _previousTime) / 60000.0 > 10 && _doneBurnin){
+            _previousTime = currentTime;
+            try {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(_intermediateFile));
+                bw.append("_currentNetwork:" + _currentNetwork+"\n");
+                bw.append("_U:" + _U + "\n");
+                bw.append("_beta:" + _beta + "\n");
+                //bw.append("_preScore:" + _preScore + "\n");
+                bw.append("_savedNetworks:\n");
+                for(Tuple<Network,MutableTuple<Double,Integer>> tuple: _savedNetworks){
+                    bw.append(tuple.Item1.toString() + " " + tuple.Item2.Item1 + " " + tuple.Item2.Item2 + "\n");
+                }
+                bw.append("_maxUninvestigatedProposals:" + _maxUninvestigatedProposals + "\n");
+                bw.append("_consecutiveUninvestigatedProposals:" + _consecutiveUninvestigatedProposals + "\n");
+                bw.append("_investigatedProposalThreshold:" + _investigatedProposalThreshold + "\n");
+                bw.append("_temperature:" + _temperature + "\n");
+                bw.append("_examinationsCount:" + getExaminations() + "\n");
+                bw.append("_optimalNetworks:\n");
+                for(Tuple<Network,Double> tuple: _optimalNetworks){
+                    bw.append(tuple.Item1.toString() + " " + tuple.Item2+ "\n");
+                }
+                bw.close();
+            }catch (Exception e){
+                System.err.println(e.getMessage());
+                e.getStackTrace();
+            }
+            //System.out.println("\n\n\nWriting files ........................................................ \n\n");
+        }
+        else{
+            //System.out.println((currentTime - _previousTime) / 60000.0);
+        }
+    }
+
+    public void readIntermediateFile() {
+        try {
+            if(!_intermediateFile.exists()) return;
+            String line;
+            BufferedReader br = new BufferedReader(new FileReader(_intermediateFile));
+            if(br.readLine()==null) return;
+            _initialized = true;
+            _doneBurnin = true;
+            line = br.readLine();
+
+            _U = Double.parseDouble(line.substring(line.indexOf(":") + 1));
+            line = br.readLine();
+            _beta = Double.parseDouble(line.substring(line.indexOf(":") + 1));
+            //line = br.readLine();
+            //_preScore = Double.parseDouble(line.substring(line.indexOf(":") + 1));
+            br.readLine();
+            _savedNetworks = new LinkedList<>();
+            for(int i=0; i<_numSavedNetworks; i++){
+                String[] subs = br.readLine().split(" ");
+                _savedNetworks.add(new Tuple<Network, MutableTuple<Double, Integer>>(Networks.readNetwork(subs[0]), new MutableTuple<Double, Integer>(Double.parseDouble(subs[1]), Integer.parseInt(subs[2]))));
+            }
+            line = br.readLine();
+            _maxUninvestigatedProposals = Integer.parseInt(line.substring(line.indexOf(":") + 1));
+            line = br.readLine();
+            _consecutiveUninvestigatedProposals = Integer.parseInt(line.substring(line.indexOf(":") + 1));
+            line = br.readLine();
+            _investigatedProposalThreshold = Integer.parseInt(line.substring(line.indexOf(":") + 1));
+            line = br.readLine();
+            _temperature = Double.parseDouble(line.substring(line.indexOf(":") + 1));
+            line = br.readLine();
+            setExaminations(Integer.parseInt(line.substring(line.indexOf(":") + 1)));
+            br.readLine();
+            _optimalNetworks = new LinkedList<>();
+            while((line = br.readLine())!=null){
+                String[] subs = line.split(" ");
+                _optimalNetworks.add(new Tuple<Network, Double>(Networks.readNetwork(subs[0]), Double.parseDouble(subs[1])));
+            }
+            br.close();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.getStackTrace();
+        }
+    }
+
 
     private void clearConsecutiveUninvestigatedProposals(){
         _consecutiveUninvestigatedProposals = 1;
@@ -47,6 +144,7 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
     }
 
     protected double computeRandomNeighborScore(Network currentNetwork, Func1<Network, Double> getScore) {
+        //System.out.println("Start computing");
         double newScore = super.computeRandomNeighborScore(currentNetwork, getScore);
         if(!_doneBurnin){
             if(!Double.isNaN(newScore)){
@@ -64,13 +162,12 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
         }
         updateTemperature();
 
+        writeIntermediateFile();
         return newScore;
     }
 
     protected void updateTemperature(){
-
         _temperature = _U/(1+getExaminations()*_beta);
-
     }
 
 
@@ -87,7 +184,7 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
 
     protected void initializeParameters(Network currentNetwork, double initialScore){
         int ntaxa = currentNetwork.getLeafCount();
-        _maxUninvestigatedProposals = 300 * ntaxa;
+        _maxUninvestigatedProposals = 100 * ntaxa;
         _consecutiveUninvestigatedProposals=0;
         _investigatedProposalThreshold = (int) (Math.log(0.05) / (ntaxa * Math.log(1.0 - (1.0 / ntaxa)))) + 1;
         _investigatedProposalThreshold *= ntaxa;
@@ -196,7 +293,7 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
 
 
     protected void handleAcceptCase(Network currentNetwork, Ref<Double> currentScore, double newScore){
-
+        _currentNetwork = currentNetwork.toString();
         currentScore.set(newScore);
         if(_numSavedNetworks!=0) {
             updateSavedNetworks(currentNetwork, newScore);

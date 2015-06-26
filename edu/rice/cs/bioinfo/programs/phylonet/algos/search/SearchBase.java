@@ -167,12 +167,12 @@ public abstract class SearchBase {
         }
         */
 
-        if(score > _optimalNetworks.getLast().Item2) {
+        if(compareTwoScores(score, _optimalNetworks.getLast().Item2)>0) {
             for (int i = 0; i < _optimalNetworks.size(); i++) {
                 Tuple<Network, Double> entry = _optimalNetworks.get(i);
                 if (Networks.hasTheSameTopology(network, entry.Item1)) {
                     if (compareTwoScores(score, entry.Item2)>0){
-                        if ((i == 0 || (i != 0 && _optimalNetworks.get(i-1).Item2 > score)) && (i == _optimalNetworks.size() - 1 || (i != _optimalNetworks.size() - 1 && _optimalNetworks.get(i + 1).Item2 < score))) {
+                        if ((i == 0 || (i != 0 && compareTwoScores(_optimalNetworks.get(i-1).Item2, score)>0)) && (i == _optimalNetworks.size() - 1 || (i != _optimalNetworks.size() - 1 && compareTwoScores(_optimalNetworks.get(i + 1).Item2, score)<0))) {
                             _optimalNetworks.set(i, new Tuple<>(network.clone(), score));
                             return true;
                         }

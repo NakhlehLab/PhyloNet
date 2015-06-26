@@ -3,9 +3,12 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model;
 //Created 5-22-14, our own implementation different from GTRSubstitutionModel.
 
 import jeigen.DenseMatrix;
+//import jeigen.DenseMatrix.PseudoEigenResult;
+import Jama.Matrix;
+
 
 import java.util.Arrays;
-import java.util.Random;
+
 
 /**
  * This class represents a GTR substition model.
@@ -15,6 +18,8 @@ public class GTRModel extends SubstitutionModel
 
     private final DenseMatrix rateMatrix;
     private final DenseMatrix equilibriumVector;
+    DenseMatrix rateMatrixIntegrated;
+
 
     /**
      * Creates a GTR model with scaled transition frequencies.
@@ -59,6 +64,7 @@ public class GTRModel extends SubstitutionModel
 
         rateMatrix = createRateMatrix(equilibriumFrequencies, transitionFrequencies);
         equilibriumVector = createEquilibriumVector(equilibriumFrequencies);
+        rateMatrixIntegrated = setProbabilityMatrixIntegrated();
     }
 
     /**
@@ -129,58 +135,129 @@ public class GTRModel extends SubstitutionModel
         return new DenseMatrix(temporary);
     }
 
-    @Override
+    //@Override
     public DenseMatrix getEquilibriumVector()
     {
         return equilibriumVector;
     }
 
-    @Override
+    //@Override
     public DenseMatrix getRateMatrix()
     {
         return rateMatrix;
     }
 
+    public DenseMatrix getProbabilityMatrixIntegrated(){
+        return rateMatrixIntegrated;
+    }
+
+
+    public DenseMatrix setProbabilityMatrixIntegrated(){
+
+        int rows = rateMatrix.rows;
+        int cols = rateMatrix.cols;
+        //todo
+        /*
+        PseudoEigenResult eig = rateMatrix.peig();
+        DenseMatrix D = eig.values;
+        DenseMatrix V = eig.vectors;
+        DenseMatrix Vinv = inverse(eig.vectors);
+        */
+    	
+    	
+    	/*
+    	System.out.println("values");
+    	System.out.println(D);
+    	System.out.println("vectors");
+    	System.out.println(V);
+    	System.out.println("vectors inverse");
+    	System.out.println(Vinv);    	
+    	
+    	
+    	for (int i = 0; i < rows; i++) {
+    		D.set(i, i, Math.exp(2 * D.get(i, i)));
+    	}
+    	System.out.println("New values");
+    	System.out.println(D);  	
+    	
+    	
+    	System.out.println(V.mmul(D).mmul(Vinv));
+    	System.out.println("Inside");
+    	*/
+
+
+        double [][] temp = new double[rows][cols];
+        double pivot = rows;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (int k = 0; k < pivot; k++) {
+                    //todo
+                    //temp[i][j] += V.get(i, k)* Vinv.get(k, j)* (1/(-D.get(k,k)+1)) ;
+                }
+            }
+        }
+
+        return new DenseMatrix(temp);
+    }
+
+
+
+//  //todo
+    /*
+    public DenseMatrix inverse (DenseMatrix M) {
+        // Use JAMA instead of Jeigen, as it doesn't have support for inverse.
+        int rows = M.rows;
+        int cols = M.cols;
+        double [] values = M.getValues();
+
+
+        //Convert "Jeigen" to "JAMA".
+        double [][] array = new double[rows][cols];
+        int count = 0;
+        for(int i = 0; i < cols; i++) {
+            for (int j = 0; j < rows; j++) {
+                array[j][i] = values[count++];
+            }
+        }
+        Matrix A = new Matrix(array);
+        Matrix Ainv = A.inverse();
+
+        //Convert "JAMA" to "Jeigen".
+        double [][] temp = new double[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for(int j = 0; j < cols; j++) {
+                temp[i][j] = Ainv.get(i, j);
+            }
+        }
+
+        return new DenseMatrix(temp);
+    }
+    */
+
+
+
+
     public static void main(String[] Args)
     {
+        double[] equilibriums = {.1,.2,.3,.4};
+        double[] transitions = {.4,.9,.3,.2,.5,.2};
 
-        Random rand = new Random();
+        //double[] equilibriums = {.25,.25,.25,.25};
+        //double[] transitions = {.025,.025,.025,.025,.025,.025};    	
 
+        System.out.println(Arrays.toString(equilibriums));
+        GTRModel model = new GTRModel(equilibriums, transitions);
 
-        double[] equalibriums = new double[4];
-
-        for (int i = 0; i < 4; i++)
-        {
-            equalibriums[i] = rand.nextDouble();
-        }
-
-        double sum = sum(equalibriums);
-        for (int i = 0; i < equalibriums.length; i++)
-        {
-            equalibriums[i] /= sum;
-        }
-
-        double[] transitions = new double[6];
-
-        for (int i = 0; i < transitions.length; i++)
-        {
-            transitions[i] = rand.nextDouble() * 10;
-        }
-
-        System.out.println(Arrays.toString(equalibriums));
-        GTRModel model = new GTRModel(equalibriums, transitions);
-
-        System.out.println(model.rateMatrix);
+        //System.out.println(model.rateMatrix);
 
 
-        System.out.println(model.rateMatrix.mmul(model.getEquilibriumVector()));
+        //System.out.println(model.rateMatrix.mmul(model.getEquilibriumVector()));
 
-        DenseMatrix testColumns = new DenseMatrix(new double[][]{{1, 1, 1, 1}});
-        System.out.println(testColumns.mmul(model.rateMatrix));
+        //DenseMatrix testColumns = new DenseMatrix(new double[][]{{1, 1, 1, 1}});
+        //System.out.println(testColumns.mmul(model.rateMatrix));
 
-
-        System.out.println(model.getProbabilityMatrix(1));
-
+        System.out.println(model.getRateMatrix());
+        System.out.println(model.getProbabilityMatrixIntegrated());
     }
 
 

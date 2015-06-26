@@ -42,4 +42,7 @@ public abstract class SubstitutionModel implements RateModel
             return result;
     }
 
+
+    public abstract DenseMatrix getProbabilityMatrixIntegrated();
+
 }

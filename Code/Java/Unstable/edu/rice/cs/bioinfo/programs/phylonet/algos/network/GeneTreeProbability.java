@@ -1,6 +1,8 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
@@ -20,7 +22,7 @@ import java.util.*;
  */
 
 public class GeneTreeProbability {
-    private boolean _printDetails;
+    private boolean _printDetails = false;
     private List<String> _netTaxa;
     private List<String> _stTaxa;
     private boolean [][] _R, _M, _S;
@@ -39,7 +41,7 @@ public class GeneTreeProbability {
         _nname2tamount = new TreeMap<String,Integer>();
         _hname2tnodes = new TreeMap<String,List<TNode>>();
         _tname2nname = new TreeMap<String,String>();
-        _printDetails = true;
+        _printDetails = false;
     }
 
     /**
@@ -134,6 +136,7 @@ public class GeneTreeProbability {
                     }
                 }
 
+
                 if(_printDetails){
                     System.out.print("Mapping: ");
                     for(int i=0; i<mapping.length; i++){
@@ -156,6 +159,7 @@ public class GeneTreeProbability {
                     System.out.println();
                 }
 
+
             }while(mergeNumberAddOne(mergeNumber,upper));
 
             if(_printDetails){
@@ -172,7 +176,7 @@ public class GeneTreeProbability {
     }
 
 
-    public Map<int[],Double> findOptimalMapping(Network<Double> net, List<Tree> gts, Map<String,String> allele2species){
+    public List<Tuple3<int[],int[],Double>> findOptimalMapping(Network<Double> net, Tree gt, List<String> gtTaxa, Map<String,String> allele2species){
         networkToTree(net);
         for(NetNode leaf: net.getLeaves()){
             _netTaxa.add(leaf.getName());
@@ -188,13 +192,13 @@ public class GeneTreeProbability {
         _S = calculateSorR(_mulTree);
         computeNodesUnderHybrid(_mulTree);
 
-        Map<int[],Double> results = new HashMap<int[],Double>();
-        for(Tree gt: gts){
+        List<Tuple3<int[],int[],Double>> results = new ArrayList<>();
+        //for(Tree gt: gts){
             if(_printDetails){
                 System.out.println("Gene tree " + gt+" :");
             }
             _R = calculateSorR(gt);
-            List<String> gtTaxa = Arrays.asList(gt.getLeaves());
+            //List<String> gtTaxa = Arrays.asList(gt.getLeaves());
             List<List<String>> allelesList = new ArrayList<List<String>>();
             for(int i=0; i<_netTaxa.size(); i++){
                 allelesList.add(new ArrayList<String>());
@@ -221,9 +225,10 @@ public class GeneTreeProbability {
             }
 
             double maxProb = -1;
-            List<int[]> optimalMappings = new ArrayList<int[]>();
-            List<int[]> optimalHistories = new ArrayList<int[]>();
-
+            //List<int[]> optimalMappings = new ArrayList<int[]>();
+            //List<int[]> optimalHistories = new ArrayList<int[]>();
+            MutableTuple<int[],int[]> optimalCoalescentHistory = new MutableTuple(null,null);
+            //results.add(optimalCoalescentHistory);
             do{
                 int[] mapping = new int[gtTaxa.size()];
                 for(int i=0; i<_netTaxa.size(); i++){
@@ -246,6 +251,8 @@ public class GeneTreeProbability {
 
                 for(int[] history: histories){
                     double prob = Double.parseDouble(computeProbability(mapping, history, false));
+                    results.add(new Tuple3<int[], int[], Double>(mapping, history, prob));
+                    /*
                     if(prob >= maxProb){
                         if(prob > maxProb){
                             maxProb = prob;
@@ -255,37 +262,44 @@ public class GeneTreeProbability {
                         optimalMappings.add(mapping);
                         optimalHistories.add(history);                        
                     }
+                    */
 
-                    results.put(history, prob);
+                    if(prob > maxProb){
+                        maxProb = prob;
+                        optimalCoalescentHistory.Item1 = mapping;
+                        optimalCoalescentHistory.Item2 = history;
+                    }
+
                 }
                 if(_printDetails)
                     System.out.println("");
 
             }while(mergeNumberAddOne(mergeNumber,upper));
 
-            /*
-               if(print){
+
+               //if(_printDetails){
+                   System.out.println(_mulTree);
                    System.out.println("Probability:" + maxProb);
-                   for(int i=0; i<optimalMappings.size(); i++){
-                       int[] mapping = optimalMappings.get(i);
-                       int[] history = optimalHistories.get(i);
+                   //for(int i=0; i<optimalMappings.size(); i++){
+                       int[] mapping = optimalCoalescentHistory.Item1;
+                       int[] history = optimalCoalescentHistory.Item2;
                        System.out.println("Mapping:");
                        for(int j=0; j<mapping.length; j++){
-                           System.out.print(gt_taxa.get(j)+"->"+st_taxa.get(mapping[j])+"\t");
+                           System.out.print(gtTaxa.get(j)+"->"+_stTaxa.get(mapping[j])+"\t");
                        }
                        System.out.println();
                        System.out.println("History:");
                        for(int j=0; j<history.length; j++){
                            if(history[j] != -1){
-                               System.out.println(gt.getNode(j).toString() + ":" + st.getNode(history[j]).toString(Tree.NEWICK_FORMAT));
+                               System.out.println(gt.getNode(j).toString() + ":" + _mulTree.getNode(history[j]).getName());
                            }
                        }
-                   }
+                   //}
                    System.out.println();
-               }
-               */
+               //}
+
             //allOptimalHistories.add(optimalHistories);
-        }
+        //}
 
         return results;
     }
@@ -585,11 +599,12 @@ public class GeneTreeProbability {
         removeBinaryNodes(net);
         _mulTree = new STITree<Double>();
         ((STINode<Double>)(_mulTree.getRoot())).setData(1.0);
+        ((STINode<Double>)(_mulTree.getRoot())).setName("root");
         Queue<NetNode<Double>> source = new LinkedList<NetNode<Double>>();
         Queue<TMutableNode> dest = new LinkedList<TMutableNode>();
         source.offer(net.getRoot());
         dest.offer((TMutableNode) _mulTree.getRoot());
-        long nameid = System.currentTimeMillis();
+        int nameid = 1;
         //long nameid = 0;
         while(!source.isEmpty()){
             NetNode<Double> parent = source.poll();
@@ -625,7 +640,7 @@ public class GeneTreeProbability {
                 }
 
                 double gamma = child.getParentProbability(parent);
-                gamma = Double.isNaN(gamma)?1.0:gamma;
+                gamma = gamma==NetNode.NO_PROBABILITY?1.0:gamma;
                 ((STINode<Double>)copy).setData(gamma);
 
                 // Continue to iterate over the children of nn and tn.
@@ -1105,8 +1120,8 @@ public class GeneTreeProbability {
             }
             NetNode<Double> parent = node.getParents().iterator().next();	// Node's only parent.
             double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-            double gamma1 = Double.isNaN(node.getParentProbability(parent))?1.0:node.getParentProbability(parent);
-            double gamma2 = Double.isNaN(child.getParentProbability(node))?1.0:child.getParentProbability(node);
+            double gamma1 = node.getParentProbability(parent)==NetNode.NO_PROBABILITY?1.0:node.getParentProbability(parent);
+            double gamma2 = child.getParentProbability(node)==NetNode.NO_PROBABILITY?1.0:child.getParentProbability(node);
             double gamma =  gamma1 * gamma2;
             parent.removeChild(node);
             node.removeChild(child);

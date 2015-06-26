@@ -20,9 +20,11 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,26 +36,20 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class InferNetworkMLFromGTTBL_SingleTreePerLocus extends InferNetworkMLFromGTTBL {
+    public InferNetworkMLFromGTTBL_SingleTreePerLocus(){
+        _likelihoodCalculator = new NetworkLikelihoodFromGTTBL_SingleTreePerLocus();
+    }
 
-
-    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
-        for(Object list: originalGTs) {
+    protected void summarizeData(List originalGTs, Map<String, String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences) {
+        for (Object list : originalGTs) {
             for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>) list) {
                 gtsForInferNetwork.add(gtTuple.Item1);
                 treeCorrespondences.add(gtTuple.Item2);
             }
-            gtsForStartingNetwork.addAll((List<MutableTuple<Tree, Double>>)list);
+            gtsForStartingNetwork.addAll((List<MutableTuple<Tree, Double>>) list);
         }
 
     }
-
-
-    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedGTs, final List treeCorrespondence){
-        NetworkLikelihoodFromGTTBL_SingleTreePerLocus likelihoodComputer = new NetworkLikelihoodFromGTTBL_SingleTreePerLocus();
-        likelihoodComputer.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-        return likelihoodComputer.computeLikelihood(speciesNetwork, species2alleles, summarizedGTs, treeCorrespondence, _optimizeBL);
-    }
-
 
 
 }

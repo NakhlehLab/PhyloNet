@@ -99,6 +99,7 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             }
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(startingTree.toString());
+
         }
 
 
@@ -108,14 +109,16 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
         }
 
 
-        Networks.removeAllParameters(startingNetwork);
+        //Networks.removeAllParameters(startingNetwork);
         //Networks.autoLabelNodes(startingNetwork);
 
         for(NetNode<Object> node: startingNetwork.dfs()){
             for(NetNode<Object> parent: node.getParents()){
-                node.setParentDistance(parent,1.0);
+                if(node.getParentDistance(parent) == NetNode.NO_DISTANCE)
+                    node.setParentDistance(parent,1.0);
                 if(node.isNetworkNode()){
-                    node.setParentProbability(parent, 0.5);
+                    if(node.getParentProbability(parent) == NetNode.NO_PROBABILITY)
+                        node.setParentProbability(parent, 0.5);
                 }
             }
         }

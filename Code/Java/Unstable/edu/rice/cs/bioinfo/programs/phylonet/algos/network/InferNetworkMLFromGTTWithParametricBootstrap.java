@@ -37,13 +37,13 @@ public class InferNetworkMLFromGTTWithParametricBootstrap extends InferNetworkML
 
 
 
-    protected Func1<List, Tuple<Network,Double>> getInferenceMethod(final Map<String,List<String>> species2alleles, final int maxReticulations){
+    protected Func1<List, Tuple<Network,Double>> getInferenceMethod(final Map<String,List<String>> species2alleles, final int maxReticulations, final boolean optimization){
         return new Func1<List, Tuple<Network,Double>>() {
             public Tuple<Network,Double> execute(List gts) {
                 InferNetworkMLFromGTT_SingleTreePerLocus inference = new InferNetworkMLFromGTT_SingleTreePerLocus();
-                inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_moveDiameter,_reticulationDiameter, _numThreads, _startNetwork, _fixedHybrid, _operationWeight, _numRuns, _seed);
+                inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_moveDiameter,_reticulationDiameter, _numThreads, _startNetwork, _fixedHybrid, _operationWeights, _numRuns, _optimizeBL, _seed);
                 LinkedList<Tuple<Network,Double>> resultList = new LinkedList<>();
-                inference.inferNetwork(gts, species2alleles, maxReticulations, 1, resultList);
+                inference.inferNetwork(gts, species2alleles, maxReticulations, 1, optimization, resultList);
                 Tuple<Network,Double> result = resultList.get(0);
                 //System.out.println(network2String(network));
                 return result;

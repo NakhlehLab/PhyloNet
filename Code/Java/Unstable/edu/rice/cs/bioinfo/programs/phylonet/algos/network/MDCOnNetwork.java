@@ -252,7 +252,6 @@ public class MDCOnNetwork {
                 if (cluster.containsCluster(bs)) {
                     count++;
                 }
-
                 map.put(node, bs);
             }
             else {

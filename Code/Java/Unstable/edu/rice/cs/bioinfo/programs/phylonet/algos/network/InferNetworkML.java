@@ -22,6 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.GeneticAlgorithm.GeneticAlgorithmInstance;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.HillClimberBase;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -44,8 +45,6 @@ import java.util.*;
  */
 public abstract class InferNetworkML {
     /*
-    protected Network[] _optimalNetworks;
-    protected double[] _optimalScores;
     protected int _maxRounds;
     protected int _maxTryPerBranch;
     protected double _improvementThreshold;
@@ -54,7 +53,8 @@ public abstract class InferNetworkML {
     protected double _Brent2;
     protected Long _maxFailure;
     protected Long _maxExaminations;
-    protected int _diameterLimit;
+    protected int _moveDiameter;
+    protected int _reticulationDiameter;
     protected Network<Object> _startNetwork;
     protected Set<String> _fixedHybrid;
     protected double[] _topologyOperationWeight;
@@ -64,8 +64,10 @@ public abstract class InferNetworkML {
     protected Long _seed;
     protected File resultFile = null;
     protected File logFile = null;
-    protected List<Tuple<Network,Double>> _networksTried = new ArrayList<Tuple<Network, Double>>();
+    protected File _intermediateResultFile = null;
+    protected boolean _optimizeBL = false;
 */
+    protected NetworkLikelihood _likelihoodCalculator;
     protected boolean _printDetails = false;
     protected int _maxRounds = 100;
     protected int _maxTryPerBranch = 100;
@@ -78,11 +80,11 @@ public abstract class InferNetworkML {
     protected int _moveDiameter = -1;
     protected int _reticulationDiameter = -1;
     protected Network _startNetwork;
-    protected double[] _topologyOperationWeight = {0.1,0.1,0.15,0.6,0.15,0.15};
+    protected double[] _topologyOperationWeight = {0.1,0.1,0.15,0.55,0.15,0.15};
     //protected double[] _topologyOperationWeight = {0.05,0.05,0.1,10,0.1};
     protected double[] _topologyVsParameterOperation = {0.3,0.7};
     //protected double[] _topologyVsParameterOperation = {1,0};
-    protected int _numRuns = 5;
+    protected int _numRuns = 10;
     protected int _numThreads = 1;
     protected Long _seed = null;
     protected Set<String> _fixedHybrid = new HashSet<String>();
@@ -131,7 +133,7 @@ public abstract class InferNetworkML {
     }
 
 
-    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, long maxExaminations, int maxFailure, int moveDiameter, int reticulationDiamter, int parallel, Network startNetwork, Set<String> fixedHybrid, double[] operationWeight, int numRuns, Long seed){
+    public void setSearchParameter(int maxRounds, int maxTryPerBranch, double improvementThreshold, double maxBranchLength, double Brent1, double Brent2, long maxExaminations, int maxFailure, int moveDiameter, int reticulationDiamter, int parallel, Network startNetwork, Set<String> fixedHybrid, double[] operationWeight, int numRuns, boolean optimizeBL, Long seed){
         _maxRounds = maxRounds;
         _maxTryPerBranch = maxTryPerBranch;
         _improvementThreshold = improvementThreshold;
@@ -157,12 +159,13 @@ public abstract class InferNetworkML {
             }
         }
         _numRuns = numRuns;
+        _optimizeBL = optimizeBL;
         _seed = seed;
     }
 
 
 
-    public void inferNetwork(List originalData, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, LinkedList<Tuple<Network,Double>> resultList){
+    public void inferNetwork(List originalData, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, boolean postOptimization, LinkedList<Tuple<Network,Double>> resultList){
         Map<String,String> allele2species = null;
         if(species2alleles!=null){
             allele2species = new HashMap<String, String>();
@@ -187,22 +190,34 @@ public abstract class InferNetworkML {
             findSingleAlleleSpeciesSet(dataForStartingNetwork, allele2species, singleAlleleSpecies);
         }
 
-        //String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
-        String startingNetwork = _startNetwork.toString();
-        dataForStartingNetwork.clear();
-
-        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
+        NetworkRandomParameterNeighbourGenerator parameterGenerator = getNetworkRandomParameterNeighbourGenerator(dataForNetworkInference, allele2species, singleAlleleSpecies);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], parameterGenerator, _topologyVsParameterOperation[1], _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
         //SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
 
-        SimulatedAnnealingSalterPearL searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
+        HillClimberBase searcher;
+        if(_optimizeBL){
+            searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+        } else{
+            searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
+        }
+        //SimulatedAnnealingSalterPearL searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
         searcher.setLogFile(_logFile);
-        searcher.setResultFile(_intermediateResultFile);
-
+        //System.out.print(_intermediateResultFile.getAbsolutePath());
+        //searcher.setIntermediateFile(_intermediateResultFile.getAbsolutePath());
         Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, species2alleles, dataCorrespondence);
+        String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
+        //String startingNetwork = _startNetwork.toString();
+        dataForStartingNetwork.clear();
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
+
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
 
+        if(postOptimization){
+            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_likelihoodCalculator, dataForNetworkInference, dataCorrespondence, species2alleles, resultList);
+            resultList.clear();
+            resultList.addAll(updatedResult);
+        }
         //
 /*
         NetworkRandomTopologyNeighbourGenerator topologyMutator = new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _seed);
@@ -217,14 +232,31 @@ public abstract class InferNetworkML {
 */
     }
 
+    protected LinkedList<Tuple<Network,Double>> optimizeResultingNetworks(NetworkLikelihood likelihoodCalculator, List summarizedGTs, List treeCorrespondence, Map<String,List<String>> species2alleles, LinkedList<Tuple<Network,Double>> resultList){
+        LinkedList<Tuple<Network, Double>> optimizedResults = new LinkedList<>();
+        for(Tuple<Network, Double> resultTuple: resultList){
+            likelihoodCalculator.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
+            double prob = likelihoodCalculator.computeLikelihood(resultTuple.Item1, species2alleles, summarizedGTs, treeCorrespondence, true);
+            Tuple<Network,Double> newResult = new Tuple<>(resultTuple.Item1, prob);
+            int index = 0;
+            for(Tuple<Network, Double> updatedTuple: optimizedResults){
+                if(updatedTuple.Item2 < prob){
+                    break;
+                }
+                else{
+                    index++;
+                }
+            }
+            optimizedResults.add(index, newResult);
+        }
+        return optimizedResults;
+    }
+
 
     abstract protected String getStartNetwork(List dataForStartingNetwork, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork);
 
 
     abstract protected void summarizeData(List originalData, Map<String,String> allele2species, List dataForStartingNetwork, List dataForInferNetwork, List dataCorrespondences);
-
-
-
 
 
     protected Comparator<Double> getDoubleScoreComparator(){
@@ -245,12 +277,18 @@ public abstract class InferNetworkML {
     }
 
 
-    abstract protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedData, final List dataCorrespondence);
+    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedData, final List dataCorrespondence){
+        _likelihoodCalculator.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
+        return _likelihoodCalculator.computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondence, _optimizeBL);
+    }
+
+
 
     abstract protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies);
 
+    abstract protected NetworkRandomParameterNeighbourGenerator getNetworkRandomParameterNeighbourGenerator(List dataForNetworkInference, Map<String,String> allele2species, Set<String> singleAlleleSpecies);
 
-
+    //abstract protected HillClimberBase getSearchingStrategy(Comparator<Double> comparator, NetworkRandomNeighbourGenerator neighbourGenerator, long seed);
 
 
 }

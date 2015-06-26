@@ -19,11 +19,10 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import edu.rice.cs.bioinfo.library.programming.Container;
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
-import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -41,11 +40,11 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
-    protected Map<SpeciesPair, Double> _pair2time = null;
+    protected Map<UnorderedPair, Double> _pair2time = null;
 
 
     private void computePairwiseCoalesceTime(List<Tree> trees, Map<String,List<String>> species2alleles){
-        _pair2time = new HashMap<SpeciesPair, Double>();
+        _pair2time = new HashMap<UnorderedPair, Double>();
 
         Map<String,String> allele2species = null;
         if(species2alleles!=null){
@@ -81,7 +80,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
                     for (String taxon1 : node2leaves.get(child1)) {
                         for (String taxon2 : node2leaves.get(child2)) {
-                            SpeciesPair sp = new SpeciesPair(taxon1,taxon2);
+                            UnorderedPair sp = new UnorderedPair(taxon1,taxon2);
                             Double minTime = _pair2time.get(sp);
                             if(minTime == null || minTime > height){
                                 _pair2time.put(sp, height);
@@ -98,12 +97,12 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
 
 
-    private void initializeNetwork(Network<Object> speciesNetwork, Map<NetNode, MutableTuple<List<SpeciesPair>, Integer>> node2constraints, Map<NetNode<Object>, Double> node2height){
+    private void initializeNetwork(Network<Object> speciesNetwork, Map<NetNode, Double> node2constraints, Map<NetNode<Object>, Double> node2height){
         Map<NetNode, Integer> node2depth = new Hashtable<NetNode, Integer>();
         Map<NetNode, Integer> node2ID = new Hashtable<NetNode, Integer>();
         int id = 0;
 
-        for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
+        for(NetNode<Object> node: Networks.postTraversal(speciesNetwork)){
             node2ID.put(node, id++);
             if(node.isLeaf()){
                 node2height.put(node, 0.0);
@@ -111,8 +110,8 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                 continue;
             }
             double upperBound = -1;
-            if(node2constraints.containsKey(node)){
-                upperBound = node2constraints.get(node).Item1.get(0)._time;
+            if(node2constraints.get(node)!=Double.POSITIVE_INFINITY){
+                upperBound = node2constraints.get(node);
             }
             node2height.put(node, upperBound);
             int maxDepth = 0;
@@ -142,7 +141,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
         boolean[][] M = computeM(speciesNetwork, node2ID);
 
-        for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
+        for(NetNode<Object> node: Networks.postTraversal(speciesNetwork)){
             int nodeID = node2ID.get(node);
             double minParent = Double.MAX_VALUE;
             int maxParentDepth = 0;
@@ -207,7 +206,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         }
 
 
-        //System.out.println(edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.network2string(speciesNetwork));
+        //System.out.println(speciesNetwork);
 
         for(NetNode<Object> node: speciesNetwork.bfs()){
             double height = node2height.get(node);
@@ -230,14 +229,13 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         if(_pair2time == null){
             computePairwiseCoalesceTime(gts, species2alleles);
         }
-
-        final Map<NetNode, MutableTuple<List<SpeciesPair>, Integer>> node2constraints = new Hashtable<NetNode, MutableTuple<List<SpeciesPair>, Integer>>();
-        final Map<SpeciesPair, MutableTuple<List<NetNode>, BitSet>> pairHeight2nodes = new Hashtable<SpeciesPair, MutableTuple<List<NetNode>, BitSet>>();
-        computeNodeHeightUpperbound(speciesNetwork, node2constraints, pairHeight2nodes);
+        //System.out.println("\n"+speciesNetwork);
+        final Map<NetNode, Double> node2constraints = new Hashtable<NetNode, Double>();
+        computeNodeHeightUpperbound(speciesNetwork, node2constraints);
 
         final Map<NetNode<Object>, Double> node2height = new Hashtable<NetNode<Object>, Double>();
         initializeNetwork(speciesNetwork, node2constraints, node2height);
-        //System.out.println("\n"+network2String(speciesNetwork));
+
         double initialProb = computeProbability(speciesNetwork, gts, species2alleles, gtCorrespondence);
 
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(initialProb);  // records the GTProb of the network at all times
@@ -298,7 +296,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
             }
 
 
-            for(final NetNode<Object> node : edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork))
+            for(final NetNode<Object> node : Networks.postTraversal(speciesNetwork))
             {
                 if(node.isLeaf()){
                     continue;
@@ -317,29 +315,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                             minHeight.setContents(Math.max(minHeight.getContents(), childHeight));
                         }
 
-                        //TODO
-                        MutableTuple<List<SpeciesPair>, Integer> spTuple = node2constraints.get(node);
-                        int currentIndex = -1;
-                        int maxIndex = -1;
-                        boolean hasUpperBound = false;
-                        boolean canLower = false;
-                        if(spTuple != null){
-                            currentIndex = spTuple.Item2;
-                            canLower = currentIndex!=0;
-                            maxIndex = spTuple.Item2;
-                            SpeciesPair sp;
-                            boolean canHigher = true;
-                            while(canHigher && spTuple.Item1.size()>maxIndex){
-                                sp = spTuple.Item1.get(maxIndex);
-                                canHigher = pairHeight2nodes.get(sp).Item2.cardinality()>1;
-                                if(canHigher){
-                                    maxIndex++;
-                                }
-                            }
-                            if(spTuple.Item1.size()>maxIndex){
-                                hasUpperBound = true;
-                            }
-                        }
+
                         double minParent = Double.MAX_VALUE;
                         if(!node.isRoot()){
                             for(NetNode<Object> parent: node.getParents()){
@@ -351,15 +327,8 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                             minParent = minHeight.getContents() + _maxBranchLength;
                         }
 
-                        if(hasUpperBound){
-                            maxHeight.setContents(Math.min(minParent, spTuple.Item1.get(maxIndex)._time));
-                        }
-                        else{
-                            maxHeight.setContents(minParent);
-                        }
-                        if(canLower){
-                            canLower = spTuple.Item1.get(currentIndex-1)._time>minHeight.getContents();
-                        }
+                        maxHeight.setContents(Math.min(minParent, node2constraints.get(node)));
+
 
                         //System.out.println("\nChanging node " + node.getName() + " from " + minHeight.getContents() + " to " + maxHeight.getContents());
                         UnivariateFunction functionToOptimize = new UnivariateFunction() {
@@ -414,35 +383,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                         {
                         }
 
-                        if(currentIndex!=maxIndex || canLower){
-                            double updatedHeight = node2height.get(node);
-                            int updatedIndex = 0;
-                            for(; updatedIndex<spTuple.Item1.size(); updatedIndex++){
-                                if(updatedHeight < spTuple.Item1.get(updatedIndex)._time){
-                                    break;
-                                }
-                            }
-                            if(updatedIndex!=currentIndex){
-                                if(updatedIndex>currentIndex){
-                                    for(int i=currentIndex; i<updatedIndex; i++){
-                                        SpeciesPair sp = spTuple.Item1.get(i);
-                                        MutableTuple<List<NetNode>, BitSet> changedSP = pairHeight2nodes.get(sp);
-                                        int offBit = changedSP.Item1.indexOf(node);
-                                        changedSP.Item2.set(offBit, false);
-                                    }
-                                }
-                                else if(updatedIndex<currentIndex){
-                                    currentIndex = Math.min(currentIndex, spTuple.Item1.size()-1);
-                                    for(int i=currentIndex; i>=updatedIndex; i--){
-                                        SpeciesPair sp = spTuple.Item1.get(i);
-                                        MutableTuple<List<NetNode>, BitSet> changedSP = pairHeight2nodes.get(sp);
-                                        int offBit = changedSP.Item1.indexOf(node);
-                                        changedSP.Item2.set(offBit, true);
-                                    }
-                                }
-                                spTuple.Item2 = updatedIndex;
-                            }
-                        }
+
                         //System.out.println(network2String(speciesNetwork) + " " + lnGtProbOfSpeciesNetwork.getContents());
                     }
 
@@ -475,68 +416,68 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
+
+        //System.out.print("\n" + lnGtProbOfSpeciesNetwork.getContents() + ": " + speciesNetwork);
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
 
 
-    private void computeNodeHeightUpperbound(Network network, Map<NetNode, MutableTuple<List<SpeciesPair>, Integer>> node2constraints, Map<SpeciesPair, MutableTuple<List<NetNode>, BitSet>> pairHeight2nodes){
-        Map<NetNode, Set<String>> node2leaves = new Hashtable<NetNode, Set<String>>();
-        for(Object nodeObject: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(network)){
-            NetNode node = (NetNode)nodeObject;
-            Set<String> leafSet = new HashSet<String>();
+    private void computeNodeHeightUpperbound(Network network, Map<NetNode, Double> node2constraints){
+        Map<NetNode, Set<String>> node2taxa = new HashMap<>();
+        for(Object o: Networks.postTraversal(network)){
+            NetNode node = (NetNode)o;
+            Set<String> taxa = new HashSet<>();
+            double upperBound = Double.POSITIVE_INFINITY;
             if(node.isLeaf()){
-                leafSet.add(node.getName());
+                taxa.add(node.getName());
             }
-            else{
-                Iterator<NetNode> childIt = node.getChildren().iterator();
-                if(node.isNetworkNode()){
-                    leafSet.addAll(node2leaves.get(childIt.next()));
+            else if(node.isNetworkNode()){
+                NetNode childNode = (NetNode)node.getChildren().iterator().next();
+                if(!childNode.isLeaf())
+                    upperBound = node2constraints.get(childNode);
+                taxa.addAll(node2taxa.get(childNode));
+            }
+            else {
+                Set<String> intersection = null;
+                List<NetNode> childNodes = null;
+                for (Object childO : node.getChildren()) {
+                    NetNode childNode = (NetNode) childO;
+                    if (childNodes == null) {
+                        childNodes = new ArrayList<>();
+                    }
+                    childNodes.add(childNode);
+                    if (intersection == null) {
+                        intersection = new HashSet<>();
+                        intersection.addAll(node2taxa.get(childNode));
+                    } else {
+                        intersection.retainAll(node2taxa.get(childNode));
+                    }
+
+                    taxa.addAll(node2taxa.get(childNode));
                 }
-                else{
-                    NetNode child1 = childIt.next();
-                    Set<String> child1Leaves = new HashSet<String>(node2leaves.get(child1));
-                    leafSet.addAll(child1Leaves);
-                    NetNode child2 = childIt.next();
-                    Set<String> child2Leaves = new HashSet<String>(node2leaves.get(child2));
-                    leafSet.addAll(child2Leaves);
-                    Set<String> temp = new HashSet<String>(child1Leaves);
-                    child1Leaves.removeAll(child2Leaves);
-                    child2Leaves.removeAll(temp);
-                    if(child1Leaves.size()!=0 && child2Leaves.size()!=0){
-                        List<SpeciesPair> spList = new ArrayList<SpeciesPair>();
-                        for(String leaf1: child1Leaves){
-                            for(String leaf2: child2Leaves){
-                                SpeciesPair sp = new SpeciesPair(leaf1, leaf2);
-                                double time = _pair2time.get(sp);
-                                sp.setTime(time);
-                                int index = 0;
-                                for(SpeciesPair exsp: spList){
-                                    if(time < exsp._time){
-                                        break;
-                                    }
-                                    index++;
-                                }
-                                spList.add(index, sp);
-                                MutableTuple<List<NetNode>, BitSet> MutableTuple = pairHeight2nodes.get(sp);
-                                if(MutableTuple == null){
-                                    MutableTuple = new MutableTuple<List<NetNode>, BitSet>(new ArrayList<NetNode>(),null);
-                                    pairHeight2nodes.put(sp, MutableTuple);
-                                }
-                                MutableTuple.Item1.add(node);
+
+                for (int i = 0; i < childNodes.size(); i++) {
+                    Set<String> taxa1 = node2taxa.get(childNodes.get(i));
+                    for (int j = i + 1; j < childNodes.size(); j++) {
+                        Set<String> taxa2 = node2taxa.get(childNodes.get(j));
+                        for (String taxon1 : taxa1) {
+                            if (intersection.contains(taxon1))
+                                continue;
+                            for (String taxon2 : taxa2) {
+                                if (intersection.contains(taxon2))
+                                    continue;
+                                upperBound = Math.min(upperBound, _pair2time.get(new UnorderedPair(taxon1, taxon2)));
                             }
                         }
-                        MutableTuple<List<SpeciesPair>, Integer> MutableTuple = new MutableTuple<List<SpeciesPair>, Integer>(spList, 0);
-                        node2constraints.put(node, MutableTuple);
+
                     }
                 }
             }
-            node2leaves.put(node, leafSet);
-        }
-        for(MutableTuple<List<NetNode>, BitSet> tuple: pairHeight2nodes.values()){
-            BitSet bs = new BitSet(tuple.Item1.size());
-            bs.set(0, tuple.Item1.size(), true);
-            tuple.Item2 = bs;
+            if(!node.isLeaf()){
+                node2constraints.put(node, upperBound);
+            }
+            node2taxa.put(node, taxa);
         }
     }
 
@@ -582,7 +523,6 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
     protected double computeProbability(Network<Object> speciesNetwork, List geneTrees, Map<String, List<String>> species2alleles, List gtCorrespondences) {
         double[] probArray = new double[geneTrees.size()];
 
-
         GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(speciesNetwork, geneTrees, species2alleles);
         //
         if(_numThreads==1){
@@ -605,7 +545,8 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
             }
         }
 
-        return calculateFinalLikelihood(probArray, gtCorrespondences);
+        double prob = calculateFinalLikelihood(probArray, gtCorrespondences);
+        return prob;
     }
 
 
@@ -615,45 +556,5 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
 
 
-    class SpeciesPair{
-        String _species1;
-        String _species2;
-        double _time;
-
-        public SpeciesPair(String s1, String s2){
-            _species1 = s1;
-            _species2 = s2;
-        }
-
-        public SpeciesPair(String s1, String s2, double t){
-            _species1 = s1;
-            _species2 = s2;
-            _time = t;
-        }
-
-        public void setTime(double t){
-            _time = t;
-        }
-
-        public int hashCode(){
-            return _species1.hashCode() * _species2.hashCode();
-        }
-
-        public boolean equals(Object o) {
-            if(!(o instanceof SpeciesPair)){
-                return false;
-            }
-            SpeciesPair sp = (SpeciesPair)o;
-            if((this._species1.equals(sp._species1) && this._species2.equals(sp._species2)) || (this._species1.equals(sp._species2) && this._species2.equals(sp._species1))){
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-
-        public String toString(){
-            return _species1+"|"+_species2 + ":" + _time;
-        }
-    }
+    
 }

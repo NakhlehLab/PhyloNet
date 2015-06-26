@@ -270,8 +270,6 @@ public class GeneTreeProbabilityYF_Cached {
                     }
                 }
 
-                //TODO
-
                 int count = 0;
                 for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
                     for(List<Configuration> configList: lineages2configs.values()){
@@ -496,7 +494,7 @@ public class GeneTreeProbabilityYF_Cached {
                     NetNode<CoalescePattern[]> parentNode1 = it.next();
                     double distance1 = node.getParentDistance(parentNode1);
                     double hybridProb1 = node.getParentProbability(parentNode1);
-                    hybridProb1 = Double.isNaN(hybridProb1)?1:hybridProb1;
+                    hybridProb1 = hybridProb1==NetNode.NO_PROBABILITY?1:hybridProb1;
                     List<Configuration> temp = new ArrayList<Configuration>();
                     for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
                         for(List<Configuration> configs: lineages2configs.values()){
@@ -509,7 +507,7 @@ public class GeneTreeProbabilityYF_Cached {
                     NetNode<CoalescePattern[]> parentNode2 = it.next();
                     double distance2 = node.getParentDistance(parentNode2);
                     double hybridProb2 = node.getParentProbability(parentNode2);
-                    hybridProb2 = Double.isNaN(hybridProb2)?1:hybridProb2;
+                    hybridProb2 = hybridProb2==NetNode.NO_PROBABILITY?1:hybridProb2;
                     temp = new ArrayList<Configuration>();
                     for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs2){
                         for(List<Configuration> configs: lineages2configs.values()){
@@ -744,7 +742,7 @@ public class GeneTreeProbabilityYF_Cached {
                             while(coalescedInfos.hasNext()){
                                 CoalescingInfo info = coalescedInfos.next();
                                 double inheritanceProb = node.getParentProbability(parent);
-                                inheritanceProb = Double.isNaN(inheritanceProb)?1:inheritanceProb;
+                                inheritanceProb = inheritanceProb==NetNode.NO_PROBABILITY?1:inheritanceProb;
                                 double prob = Math.max(0,computeProbability(info._uncoalescedConfig, coalescedConfig, info._coalWeight, node.getParentDistance(parent), inheritanceProb, gtClusters));
                                 info._coalProb = prob;
                                 coalescedConfig.addTotalProbability(Math.max(0, prob*info._uncoalescedConfig._totalProb));
@@ -1206,9 +1204,9 @@ public class GeneTreeProbabilityYF_Cached {
             NetNode parent = node.getParents().iterator().next();	// Node's only parent.
             double distance = node.getParentDistance(parent) + child.getParentDistance(node);
             double inheritanceProb1 = node.getParentProbability(parent);
-            inheritanceProb1 = Double.isNaN(inheritanceProb1)?1:inheritanceProb1;
+            inheritanceProb1 = inheritanceProb1==NetNode.NO_PROBABILITY?1:inheritanceProb1;
             double inheritanceProb2 = child.getParentProbability(node);
-            inheritanceProb2 = Double.isNaN(inheritanceProb2)?1:inheritanceProb2;
+            inheritanceProb2 = inheritanceProb2==NetNode.NO_PROBABILITY?1:inheritanceProb2;
             double gamma = inheritanceProb1 * inheritanceProb2;
             parent.removeChild(node);
             node.removeChild(child);
@@ -1332,7 +1330,7 @@ public class GeneTreeProbabilityYF_Cached {
 
 
     private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion, List<STITreeCluster> gtClusters){
-        double prob;
+        double prob = 1;
         int u = preConfig.getLineageCount();
         int v = coalescedConfig.getLineageCount();
         prob = Math.pow(portion, u);

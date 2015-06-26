@@ -19,39 +19,24 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
-import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
-import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
-import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
-import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkNeighbourhoodRandomWalkGenerator;
-import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
+
 import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -61,27 +46,23 @@ import java.util.*;
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
  */
-public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
-    private Network[] _optimalNetworks;
-    private double[] _optimalScores;
-    protected Long _maxFailure;
-    protected Long _maxExaminations;
-    protected int _diameterLimit;
-    private Set<String> _fixedHybrid;
-    protected Network<Object> _startNetwork;
-    private int _numProcessors;
-    protected double[] _operationWeight;
-    private int _numRuns;
-    private Long _seed;
-
-    public InferNetworkMP(){
-        super(new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER));
-    }
+public class InferNetworkMP{
+    protected int _maxFailure = 100;
+    protected long _maxExaminations = -1;
+    protected int _moveDiameter = -1;
+    protected int _reticulationDiameter = -1;
+    private Set<String> _fixedHybrid = new HashSet<String>();
+    protected Network<Object> _startNetwork = null;
+    private int _numProcessors = 1;
+    protected double[] _operationWeight = {0.1,0.1,0.15,0.55,0.15,0.15};
+    private int _numRuns = 1;
+    private Long _seed = null;
 
 
-    public void setSearchParameter(Long maxExaminations, Long maxFailure, int diameterLimit, Network startNetwork, Set<String> fixedHybrid, int numProcessors, double[] operationWeight, int numRuns, Long seed){
+    public void setSearchParameter(long maxExaminations, int maxFailure, int moveDiameter, int reticulationDiameter, Network startNetwork, Set<String> fixedHybrid, int numProcessors, double[] operationWeight, int numRuns, Long seed){
         _maxExaminations = maxExaminations;
-        _diameterLimit = diameterLimit;
+        _moveDiameter = moveDiameter;
+        _reticulationDiameter = reticulationDiameter;
         _startNetwork = startNetwork;
         _maxFailure = maxFailure;
         _fixedHybrid = fixedHybrid;
@@ -92,18 +73,6 @@ public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
     }
 
 
-    /*
-    private void temp(List<Tree> gts){
-        String[] leaves = {"Nyala2","LKudu1","GEland1","Eland3","Kudu4","MNyala1","Sitat2","Bongo1","Script1","Script2","Script3","Sylvat1","Sylvat2","Sylvat3","Sylvat4"};
-        List<String> leafList = Arrays.asList(leaves);
-        int index = 0;
-        for(Tree tr: gts){
-            ((STITree)tr).constrainByLeaves(leafList);
-            System.out.println("\nTREE tre"+ index++ + "=" + tr.toString());
-        }
-
-    }
-    */
 
     private void checkNetworkWithHybrids(Network<Object> startNetwork){
         if(startNetwork == null || _fixedHybrid.size() == 0){
@@ -122,46 +91,19 @@ public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
 
 
     public List<Tuple<Network,Double>> inferNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol){
-        _optimalNetworks = new Network[numSol];
-        _optimalScores = new double[numSol];
-        Arrays.fill(_optimalScores, Integer.MAX_VALUE);
-
+        LinkedList<Tuple<Network, Double>> resultList = new LinkedList<>();
         String startingNetwork = getStartNetwork(gts, species2alleles,_fixedHybrid, _startNetwork);
 
-        for(int i=1; i<=_numRuns; i++){
-            DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork = makeNetwork(startingNetwork);
-            NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkNeighbourhoodRandomWalkGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(_operationWeight, makeNode, makeEdge, _seed);
-            AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberFirstBetter<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
-            //NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>> allNeighboursStrategy = new NetworkWholeNeighbourhoodGenerator<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>>(makeNode, makeEdge);
-            //AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,String,PhyloEdge<String>,Double> searcher = new AllNeighboursHillClimberSteepestAscent<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, String, PhyloEdge<String>, Double>(allNeighboursStrategy);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_operationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), 1, new NonUltrametricNetworkRandomParameterNeighbourGenerator(), 0, _seed);
+        Comparator<Double> comparator = getDoubleScoreComparator();
+        SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+        Func1<Network, Double> scorer = getScoreFunction(gts, species2alleles);
+        Network speciesNetwork = Networks.readNetwork(startingNetwork);
+        searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
 
-            Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> scorer = getScoreFunction(gts, species2alleles);
-            Comparator<Double> comparator = getDoubleScoreComparator();
-            HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _maxFailure, _diameterLimit); // search starts here
-            //HillClimbResult<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>,Double> result = searcher.search(speciesNetwork, scorer, comparator, _maxExaminations, maxReticulations, _diameterLimit); // search starts here
-/*
-            System.out.println("Results after run #" + i);
-            for(int j=0; j<_optimalNetworks.length; j++){
-                System.out.println(_optimalScores[j] + ": " + network2String(_optimalNetworks[j]));
-            }
-            System.out.println("===============================\n\n");
-*/
-        }
-
-        List<Tuple<Network, Double>> resultTuples= postProcessResult(gts, species2alleles);
-        return resultTuples;
-    }
-
-    private List<Tuple<Network, Double>> postProcessResult(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles){
-        List<Tuple<Network, Double>> resultList = new ArrayList<Tuple<Network, Double>>();
-        for(int i=0; i<_optimalNetworks.length; i++){
-            MDCOnNetworkYF scorer = new MDCOnNetworkYF();
-            int[] xls = new int[gts.size()];
-            scorer.countExtraCoal(_optimalNetworks[i], gts, species2alleles, xls);
-            resultList.add(new Tuple<Network, Double>(_optimalNetworks[i], _optimalScores[i]));
-        }
         return resultList;
     }
+
 
 
     protected void createHybrid(Network<Object> network, String hybrid){
@@ -219,17 +161,17 @@ public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
                 sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, true, -1).get(0);
             }
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
-            startingNetwork = string2Network(startingTree.toString());
+            startingNetwork = Networks.readNetwork(startingTree.toString());
         }
 
         for(String hybrid: hybridSpecies){
             createHybrid(startingNetwork, hybrid);
         }
 
-        edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.removeAllParameters(startingNetwork);
-        edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.autoLabelNodes(startingNetwork);
+        Networks.removeAllParameters(startingNetwork);
+        Networks.autoLabelNodes(startingNetwork);
 
-        String newNetwork = network2String(startingNetwork);
+        String newNetwork = startingNetwork.toString();
 
         return newNetwork;
 
@@ -271,18 +213,16 @@ public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
 
 
 
-    private Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double> getScoreFunction(final List<MutableTuple<Tree,Double>> gts, final Map<String, List<String>> species2alleles){
-        return new Func1<DirectedGraphToGraphAdapter<String,PhyloEdge<String>>, Double>() {
-            public Double execute(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> network) {
-                Network bniNetwork = networkNew2Old(network);
-
+    private Func1<Network, Double> getScoreFunction(final List<MutableTuple<Tree,Double>> gts, final Map<String, List<String>> species2alleles){
+        return new Func1<Network, Double>() {
+            public Double execute(Network network) {
                 int[] scores = new int[gts.size()];
                 if(_numProcessors == 1){
                     MDCOnNetworkYF scorer = new MDCOnNetworkYF();
-                    scorer.countExtraCoal(bniNetwork, gts, species2alleles, scores);
+                    scorer.countExtraCoal(network, gts, species2alleles, scores);
                 }
                 else{
-                    computeXLParallel(bniNetwork, gts, species2alleles, scores);
+                    computeXLParallel(network, gts, species2alleles, scores);
                 }
 
                 double total = 0;
@@ -291,173 +231,13 @@ public class InferNetworkMP extends MDCOnNetworkYFFromRichNewickJung {
                     total += score * weightIt.next().Item2;
                 }
 
-
-                if(total < _optimalScores[_optimalNetworks.length-1]){
-                    boolean exist = false;
-                    for(int i=0; i<_optimalNetworks.length; i++){
-                        if(_optimalNetworks[i]==null)break;
-                        NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
-                        if(metric.computeDistanceBetweenTwoNetworks(bniNetwork, _optimalNetworks[i]) == 0){
-                            exist = true;
-                            break;
-                        }
-                    }
-                    if(!exist){
-                        int index = -1;
-                        for(int i=0; i<_optimalScores.length; i++){
-                            if(total < _optimalScores[i]){
-                                index = i;
-                                break;
-                            }
-                        }
-                        for(int i=_optimalScores.length-1; i>index; i--){
-                            _optimalNetworks[i] = _optimalNetworks[i-1];
-                            _optimalScores[i] = _optimalScores[i-1];
-                        }
-                        _optimalScores[index] = total;
-                        //System.out.println(network2String(bniNetwork));
-                        _optimalNetworks[index] = string2Network(network2String(bniNetwork));
-                    }
-                }
-
-                /*
-                System.out.println(total + ": "+network2String(bniNetwork));
-                System.out.println(_optimalScores[0] + ": " + network2String(_optimalNetworks[0]));
-                System.out.println();
-                */
                 return total;
 
             }
         };
     }
 
-    private String network2String(Network speciesNetwork){
-        RnNewickPrinter<Double> rnNewickPrinter = new RnNewickPrinter<Double>();
-        StringWriter sw = new StringWriter();
-        rnNewickPrinter.print(speciesNetwork, sw);
-        return sw.toString();
-    }
 
-    private String network2String(final DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork){
-        Func1<String,String> _getNetworkNodeLabel  = new Func1<String,String>()
-        {
-            public String execute(String node) {
-                return node;
-            }
-        };
-
-        Func1<String, Iterable<String>> _getDestinationNodes = new Func1<String, Iterable<String>>() {
-            public Iterable<String> execute(String node) {
-                return new GetDirectSuccessors<String,PhyloEdge<String>>().execute(speciesNetwork, node);
-            }
-        };
-
-
-        Func2<String, String, String> _getNetworkDistanceForPrint = new Func2<String, String, String>() {
-            public String execute(String parent, String child) {
-                PhyloEdge<String> edge = speciesNetwork.getEdge(parent, child);
-                if(edge.getBranchLength()==null){
-                    return null;
-                }
-                return edge.getBranchLength()+"";
-            }
-        };
-
-        Func2<String, String, String> _getProbabilityForPrint = new Func2<String, String, String>() {
-            public String execute(String parent, String child) {
-                PhyloEdge<String> edge = speciesNetwork.getEdge(parent, child);
-                if(edge.getProbability()==null){
-                    return null;
-                }
-                return edge.getProbability()+"";
-            }
-        };
-
-        Func2<String, String, String> _getSupportForPrint = new Func2<String, String, String>() {
-            public String execute(String parent, String child) {
-                PhyloEdge<String> edge = speciesNetwork.getEdge(parent, child);
-                if(edge.getSupport()==null){
-                    return null;
-                }
-                return edge.getSupport()+"";
-            }
-        };
-
-        Func1<String, HybridNodeType> _getHybridTypeForPrint = new Func1<String, HybridNodeType>()
-        {
-            public HybridNodeType execute(String node)
-            {
-                int inDegree = new GetInDegree<String,PhyloEdge<String>>().execute(speciesNetwork, node);
-                return inDegree == 2 ? HybridNodeType.Hybridization : null;
-            }
-        };
-
-        Func1<String,String> _getHybridNodeIndexForPrint = new Func1<String, String>() {
-            List<String> hybridNodes = new ArrayList<String>();
-
-            public String execute(String node) {
-                int inDegree = new GetInDegree<String,PhyloEdge<String>>().execute(speciesNetwork, node);
-                if(inDegree == 2){
-                    int index = hybridNodes.indexOf(node) + 1;
-                    if(index == 0){
-                        hybridNodes.add(node);
-                        return hybridNodes.size()+"";
-                    }
-                    else{
-                        return index + "";
-                    }
-                }
-                else{
-                    return null;
-                }
-            }
-        };
-
-        try{
-            StringWriter sw = new StringWriter();
-            //   new RichNewickPrinterCompact<String>().print(true, "R", _getNetworkNodeLabel, _getDestinationNodes, _getNetworkDistanceForPrint, _getSupportForPrint, _getProbabilityForPrint, _getHybridNodeIndexForPrint, _getHybridTypeForPrint, sw);
-            RichNewickPrinterCompact<String> printer = new RichNewickPrinterCompact<String>();
-            printer.setGetBranchLength(_getNetworkDistanceForPrint);
-            printer.setGetProbability(_getProbabilityForPrint);
-            printer.setGetSupport(_getSupportForPrint);
-
-            printer.print(true, new FindRoot<String>().execute(speciesNetwork), _getNetworkNodeLabel, _getDestinationNodes, _getHybridNodeIndexForPrint, _getHybridTypeForPrint, sw);
-            sw.flush();
-            sw.close();
-            return sw.toString();
-        }catch (Exception e){
-            System.err.println(e.getMessage());
-            e.getStackTrace();
-        }
-        return null;
-    }
-
-
-    private Network networkNew2Old(DirectedGraphToGraphAdapter<String,PhyloEdge<String>> speciesNetwork){
-        Network<Object> bniNetwork = null;
-        try{
-            String networkString = network2String(speciesNetwork);
-            bniNetwork = string2Network(networkString);
-        }catch (Exception e){
-            System.err.println(e.getMessage());
-            e.getStackTrace();
-        }
-        return bniNetwork;
-    }
-
-    private Network string2Network(String networkString){
-        try{
-            RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
-            reader.setHybridSumTolerance(BigDecimal.valueOf(0.00001));
-            NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
-            RichNewickReadResult<Networks> readResult = reader.read(new ByteArrayInputStream(networkString.getBytes()));
-            return transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());
-        }catch (Exception e){
-            System.err.println(e.getMessage());
-            e.getStackTrace();
-        }
-        return null;
-    }
 
     private class MyThread extends Thread{
         Network _speciesNetwork;

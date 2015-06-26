@@ -17,18 +17,16 @@ import java.util.*;
  * Time: 9:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NetworkRandomParameterNeighbourGenerator extends NetworkNeighbourhoodGenerator {
-    private EdgeLengthChange _lengthChanger = new EdgeLengthChange();
-    private EdgeInheritanceProbabilityChange _inheriProbChanger = new EdgeInheritanceProbabilityChange();
-    private Func1<Integer, Integer> _numParametersToChange;
-    private Set<String> _singleAlleleSpecies;
-    private List<Tuple<Tuple<Tuple<NetNode, NetNode>, Boolean>, Double>> _edgeChanged = new ArrayList<>();
+public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNeighbourhoodGenerator {
+    protected EdgeParameterChange _lengthChanger;
+    protected EdgeParameterChange _inheriProbChanger = new EdgeInheritanceProbabilityChange();
+    protected Func1<Integer, Integer> _numParametersToChange;
+    protected List<Tuple<Tuple<Tuple<NetNode, NetNode>, Boolean>, Double>> _edgeChanged = new ArrayList<>();
     private Random _random;
 
 
-    public NetworkRandomParameterNeighbourGenerator(Func1<Integer, Integer> numParametersToChange, Set<String> singleAlleleSpecies, Long seed) {
+    public NetworkRandomParameterNeighbourGenerator(Func1<Integer, Integer> numParametersToChange, Long seed) {
         _numParametersToChange = numParametersToChange;
-        _singleAlleleSpecies = singleAlleleSpecies;
         if (seed != null) {
             _random = new Random(seed);
         } else {
@@ -36,27 +34,23 @@ public class NetworkRandomParameterNeighbourGenerator extends NetworkNeighbourho
         }
     }
 
-    public NetworkRandomParameterNeighbourGenerator(Func1<Integer, Integer> numParametersToChange, Set<String> singleAlleleSpecies) {
-        this(numParametersToChange, singleAlleleSpecies, null);
+    public NetworkRandomParameterNeighbourGenerator(Func1<Integer, Integer> numParametersToChange) {
+        this(numParametersToChange, null);
     }
 
 
-    public NetworkRandomParameterNeighbourGenerator(Set<String> singleAlleleSpecies) {
+    public NetworkRandomParameterNeighbourGenerator() {
         this(new Func1<Integer, Integer>() {
             @Override
             public Integer execute(Integer input) {
                 return 2;
             }
-        }, singleAlleleSpecies, null);
+        });
     }
+
 
     public void setParametersToChange(Func1<Integer, Integer> numParametersToChange){
         _numParametersToChange = numParametersToChange;
-    }
-
-    public NetworkRandomParameterNeighbourGenerator() {
-        this(new HashSet<String>());
-
     }
 
     public void setWindowSize(double window){
@@ -71,6 +65,10 @@ public class NetworkRandomParameterNeighbourGenerator extends NetworkNeighbourho
             System.out.println("Before rearrangement: "+ network.toString());
             System.out.println("Select operation: "+ this.getClass().getSimpleName());
         }
+        if(_lengthChanger instanceof NodeHeightChange){
+            ((NodeHeightChange)_lengthChanger).setInfo(network);
+        }
+
         ArrayList<Tuple<Tuple<NetNode, NetNode>, Boolean>> allEdges = new ArrayList<>();
         getAllParameters(network, allEdges);
         _edgeChanged.clear();
@@ -118,31 +116,8 @@ public class NetworkRandomParameterNeighbourGenerator extends NetworkNeighbourho
     }
 
 
-    private void getAllParameters(Network network, ArrayList<Tuple<Tuple<NetNode, NetNode>, Boolean>> allEdges) {
-        Map<NetNode, Set<String>> node2leaves = new HashMap<>();
-        for (Object nodeO : Networks.postTraversal(network)) {
-            NetNode node = (NetNode) nodeO;
-            Set<String> leaves = new HashSet<>();
-            if(node.isLeaf()){
-                leaves.add(node.getName());
-            }
-            for (Object childO : node.getChildren()) {
-                NetNode childNode = (NetNode) childO;
-                Set<String> childLeaves = node2leaves.get(childNode);
-                leaves.addAll(childLeaves);
-                Tuple<NetNode, NetNode> edge = new Tuple<>(node, childNode);
-                if (childLeaves.size() != 1 || !_singleAlleleSpecies.containsAll(childLeaves)) {
-                    allEdges.add(new Tuple<Tuple<NetNode, NetNode>, Boolean>(edge, true));
-                }
-            }
-            if (node.isNetworkNode()) {
-                Tuple<NetNode, NetNode> edge = new Tuple<>((NetNode) node.getParents().iterator().next(), node);
-                allEdges.add(new Tuple<Tuple<NetNode, NetNode>, Boolean>(edge, false));
-            }
-            node2leaves.put(node, leaves);
-        }
+    abstract protected void getAllParameters(Network network, ArrayList<Tuple<Tuple<NetNode, NetNode>, Boolean>> allEdges);
 
-    }
 
 
 

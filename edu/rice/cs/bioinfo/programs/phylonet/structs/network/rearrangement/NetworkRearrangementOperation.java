@@ -55,13 +55,13 @@ public abstract class NetworkRearrangementOperation {
     }
 
     protected double combineInheritanceProbability(double[] probs){
-        if(Double.isNaN(probs[0]) && Double.isNaN(probs[1])){
-            return Double.NaN;
+        if(probs[0] == NetNode.NO_PROBABILITY && probs[1] == NetNode.NO_PROBABILITY){
+            return NetNode.NO_PROBABILITY;
         }
-        else if(Double.isNaN(probs[0])){
+        else if(probs[0] == NetNode.NO_PROBABILITY){
             return probs[1];
         }
-        else if(Double.isNaN(probs[1])){
+        else if(probs[1] == NetNode.NO_PROBABILITY){
             return probs[0];
         }
         else{
@@ -76,19 +76,25 @@ public abstract class NetworkRearrangementOperation {
         edge.Item1.removeChild(edge.Item2);
         node.adoptChild(edge.Item2, brlens[1]);
         edge.Item2.setParentProbability(node, inheriProbs[1]);
-        if(node.isNetworkNode() && !Double.isNaN(inheriProbs[0])){
+        if(node.isNetworkNode() && inheriProbs[0]!=NetNode.NO_PROBABILITY){
             node.setParentProbability(findAnotherParentAndChild(node, edge.Item1).Item1, 1-inheriProbs[0]);
         }
-        if(edge.Item2.isNetworkNode() && !Double.isNaN(inheriProbs[1])){
+        if(edge.Item2.isNetworkNode() && inheriProbs[1]!=NetNode.NO_PROBABILITY){
             edge.Item2.setParentProbability(findAnotherParentAndChild(edge.Item2, node).Item1, 1-inheriProbs[1]);
         }
     }
 
     protected void randomlyPartitionAnEdge(Tuple<NetNode, NetNode> edge, double[] brlens, double[] inheriProbs){
         double originalBrlen = edge.Item2.getParentDistance(edge.Item1);
-        brlens[0] = originalBrlen * Math.random();
-        brlens[1] = originalBrlen - brlens[0];
-        inheriProbs[0] = Double.NaN;
+        if(originalBrlen == NetNode.NO_DISTANCE){
+            brlens[0] = NetNode.NO_DISTANCE;
+            brlens[1] = NetNode.NO_DISTANCE;
+        }
+        else {
+            brlens[0] = originalBrlen * Math.random();
+            brlens[1] = originalBrlen - brlens[0];
+        }
+        inheriProbs[0] = NetNode.NO_PROBABILITY;
         inheriProbs[1] = edge.Item2.getParentProbability(edge.Item1);
     }
 

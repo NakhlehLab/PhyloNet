@@ -7,6 +7,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.commands.NetworkTransformer;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
@@ -14,10 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ethan_000 on 7/29/2014.
@@ -339,4 +338,87 @@ public class HmmNetworkUtils
     {
         return (Network<T>) Networks.readNetwork(net);
     }
+
+
+    /**
+     * The function is to convert a network to a multilabel tree.
+     * @param	net 	the given network
+     */
+
+    public static STITree generateMulTree(Network net, Map<String,List<String>> species2alleles, Map<NetNode,List<TNode>> netnode2treenodes, List<Map<String, List<String>>> alleleMappings){
+        STITree mulTree = new STITree<Double>();
+        ((STINode<Double>)(mulTree.getRoot())).setData(1.0);
+        ((STINode<Double>)(mulTree.getRoot())).setName("root");
+        Queue<NetNode<Double>> source = new LinkedList<NetNode<Double>>();
+        Queue<TMutableNode> dest = new LinkedList<TMutableNode>();
+        NetNode root = net.getRoot();
+        if(root.getName().equals("")){
+            root.setName("root");
+        }
+        source.offer(root);
+        dest.offer((TMutableNode) mulTree.getRoot());
+        int nameid = 1;
+        while(!source.isEmpty()){
+            NetNode<Double> parent = source.poll();
+            TMutableNode peer = dest.poll();
+            for (NetNode<Double> child : parent.getChildren()) {
+                if (child.getName().equals(NetNode.NO_NAME)) {
+                    child.setName("i" + (nameid++));
+                }
+
+                List<TNode> correspondingTreeNodes = netnode2treenodes.get(child);
+                if(correspondingTreeNodes == null){
+                    correspondingTreeNodes = new ArrayList<>();
+                    netnode2treenodes.put(child, correspondingTreeNodes);
+                }
+                String name = child.getName();
+                String newname = name + "#" + (correspondingTreeNodes.size()+1);
+                if(child.isNetworkNode()){
+                    newname += "~" + parent.getName();
+                }
+                TMutableNode copy = peer.createChild(newname);
+                correspondingTreeNodes.add(copy);
+
+                // Update the distance and data for this child.
+                double distance = child.getParentDistance(parent);
+                if (distance == NetNode.NO_DISTANCE) {
+                    copy.setParentDistance(0);
+                }
+                else {
+                    copy.setParentDistance(distance);
+                }
+
+                double gamma = child.getParentProbability(parent);
+                gamma = gamma==NetNode.NO_PROBABILITY?1.0:gamma;
+                ((STINode<Double>)copy).setData(gamma);
+
+                // Continue to iterate over the children of nn and tn.
+                source.offer(child);
+                dest.offer(copy);
+                //index ++;
+            }
+        }
+
+        Map<String,List<String>> speciesNamesToNodeNames = new HashMap<String,List<String>>();
+        for(Map.Entry<NetNode,List<TNode>> entry: netnode2treenodes.entrySet()){
+            String speciesName = "";
+            if(entry.getKey().isLeaf()){
+                speciesName = entry.getKey().getName();
+            }
+            List<String> nodeNames = speciesNamesToNodeNames.get(speciesName);
+            if(nodeNames == null){
+                nodeNames = new ArrayList<>();
+                speciesNamesToNodeNames.put(speciesName, nodeNames);
+            }
+            for(TNode node: entry.getValue()){
+                nodeNames.add(node.getName());
+            }
+        }
+
+        List<Map<String,String>> alleleMappingsOfAlleleNamesToNodeName = allPossibleAssignments(species2alleles, speciesNamesToNodeNames);
+        alleleMappings.addAll(inverseList(alleleMappingsOfAlleleNamesToNodeName));
+
+        return mulTree;
+    }
+
 }

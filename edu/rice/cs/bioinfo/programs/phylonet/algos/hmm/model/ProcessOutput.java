@@ -30,8 +30,8 @@ public class ProcessOutput
             result.percentErrorBetweenActualAndViterbi = SpeciesComparision.percentError(rawOutputInformation.viterbiSpeciesTrees, rawOutputInformation.actualSpeciesTrees);
             result.percentErrorBetweenActualAndMostLikely = SpeciesComparision.percentError(result.mostLikelySpeciesTrees, rawOutputInformation.actualSpeciesTrees);
             result.percentErrorBetweenActualAndThreshold = SpeciesComparision.percentErrorAndUnknown(result.thresholdedMostLikelySpeciesTrees,rawOutputInformation.actualSpeciesTrees);
-            result.errorMatrixForActualAndViterbi = SpeciesComparision.errorMatrix(rawOutputInformation.viterbiSpeciesTrees,rawOutputInformation.actualSpeciesTrees,rawOutputInformation.formattedSpeciesTrees.length);
-            result.errorMatrixForActualAndThreshold = SpeciesComparision.errorMatrix(result.thresholdedMostLikelySpeciesTrees,rawOutputInformation.actualSpeciesTrees,rawOutputInformation.formattedSpeciesTrees.length);
+            result.errorMatrixForActualAndViterbi = SpeciesComparision.errorMatrix(rawOutputInformation.viterbiSpeciesTrees,rawOutputInformation.actualSpeciesTrees,rawOutputInformation.formattedAlleleMappings.size());
+            result.errorMatrixForActualAndThreshold = SpeciesComparision.errorMatrix(result.thresholdedMostLikelySpeciesTrees,rawOutputInformation.actualSpeciesTrees,rawOutputInformation.formattedAlleleMappings.size());
         }
 
         return result;

@@ -3,8 +3,10 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.Configuration;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.ConfigurationBuilder;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.HmmNetworkUtils;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.*;
 
@@ -16,7 +18,8 @@ public class HmmParameters {
 
     int numberOfTaxa;
     Network<String> net;
-    private int numberOfSpeciesTrees;
+    Map<String, List<String>> species2alleles;
+    private int numberOfAlleleMappings;
     private int numberOfGeneTrees;
     Configuration config;
 
@@ -31,13 +34,14 @@ public class HmmParameters {
         this.numberOfTaxa = numberOfTaxa;
         this.net = net;
         this.config = config;
-        numberOfSpeciesTrees = HmmNetworkUtils.generateParentalTrees(net, speciesOptions).size();
+        numberOfAlleleMappings = HmmNetworkUtils.generateParentalTrees(net, speciesOptions).size();
         numberOfGeneTrees = numGeneTrees;
+        species2alleles = speciesOptions;
     }
 
-    public int getNumberOfSpeciesTrees()
+    public int getNumberOfAlleleMappings()
     {
-        return numberOfSpeciesTrees;
+        return numberOfAlleleMappings;
     }
 
     /**
@@ -77,13 +81,9 @@ public class HmmParameters {
         result.scale = foo.getNext();
         result.equilibriumFrequencies = scaleEquilibriumFrequencies(foo.getNext(4));
         result.transitionFrequencies = scaleEquilibriumFrequencies(foo.getNext(6));
-        result.speciesStayProbs = foo.getNext(numberOfSpeciesStayProbs());
+        result.speciesNetworkParameters = foo.getNext(numberOfNetworkParameters());
         result.geneStayProb = foo.getNext();
-        result.speciesNetworkBranchLengths = foo.getNext(numberOfNetworkLengths());
-
-        if (config.ALGORITHM == Configuration.AlgorithmType.NORMAL)
-            result.allGeneTreeLengths = foo.getNext(numberOfGeneTreeLengths());
-
+        result.speciesStayProb = foo.getNext();
         return result;
     }
 
@@ -101,33 +101,13 @@ public class HmmParameters {
         foo.putNext(input.scale);
         foo.putNext(input.equilibriumFrequencies);
         foo.putNext(input.transitionFrequencies);
-        foo.putNext(input.speciesStayProbs);
+        foo.putNext(input.speciesNetworkParameters);
         foo.putNext(input.geneStayProb);
-        foo.putNext(input.speciesNetworkBranchLengths);
-
-        if (config.ALGORITHM == Configuration.AlgorithmType.NORMAL)
-            foo.putNext(input.allGeneTreeLengths);
-
+        foo.putNext(input.speciesStayProb);
         return result;
     }
 
-    /**
-     * Calculates the number of gene tree lengths in this model.
-     *
-     * @return The number of gene tree lengths.
-     */
-    public int numberOfGeneTreeLengths() {
-        return numberOfTreeLengthsPerGeneTree() * numberOfGeneTrees();
-    }
 
-
-    public int numberOfSpeciesStayProbs()
-    {
-        if (config.USEMULTIPLESTAYPROBABILITIES)
-            return numberOfSpeciesTrees;
-        else
-            return 1;
-    }
 
     /**
      * Calculates the number of parameters (IE, the number of elements in the double arrays).
@@ -141,21 +121,13 @@ public class HmmParameters {
         {
             case INTEGRATION:
             case SNAPP:
-                return 12 + numberOfNetworkLengths() + numberOfSpeciesStayProbs();
+                return 12 + numberOfNetworkParameters() + (numberOfAlleleMappings>1?1:0);
             case NORMAL:
-                return 12 + numberOfGeneTreeLengths() + numberOfSpeciesStayProbs() + numberOfNetworkLengths();
+                return 12 + numberOfNetworkParameters() + (numberOfAlleleMappings>1?1:0);
         }
         throw new RuntimeException("Invalid algorithm type");
     }
 
-    /**
-     * Calculates the number of tree lengths per each gene tree.
-     *
-     * @return The number of tree lengths per each gene tree.
-     */
-    public int numberOfTreeLengthsPerGeneTree() {
-        return numberOfTaxa * 2 - 2;
-    }
 
     /**
      * Calculates the number of gene trees for the given model.
@@ -163,18 +135,47 @@ public class HmmParameters {
      * @return The number of gene trees.
      */
     public int numberOfGeneTrees() {
-       return numberOfGeneTrees;
+        return numberOfGeneTrees;
     }
+
+
+    public int numberOfReticulations() {
+        return sizeOfIterable(net.getNetworkNodes());
+    }
+
 
     <T> int sizeOfIterable(Iterable<T> iter)
     {
         return ((Collection<T>) iter).size();
     }
 
-    public int numberOfNetworkLengths()
+    public int numberOfNetworkParameters()
     {
-        return sizeOfIterable(net.getTreeNodes()) + sizeOfIterable(net.getNetworkNodes())- sizeOfIterable(net.getLeaves());
+        int numParameters = 0;
+        Map<NetNode, Set<String>> node2leaves = new HashMap<>();
+        for(NetNode node: Networks.postTraversal(net)){
+            if(node.isRoot())break;
+            Set<String> leaves = new HashSet<>();
+            node2leaves.put(node, leaves);
+            if(node.isLeaf()){
+                leaves.addAll(species2alleles.get(node.getName()));
+            }
+            else{
+                for(Object childO: node.getChildren()){
+                    leaves.addAll(node2leaves.get(childO));
+                }
+            }
+            if(node.isNetworkNode()){
+                numParameters++;
+            }
+            if(leaves.size()>1){
+                numParameters += sizeOfIterable(node.getParents());
+            }
+        }
+        return numParameters;
     }
+
+
 
     /**
      * Gets the state id for given gene and species indices.
@@ -184,7 +185,7 @@ public class HmmParameters {
      * @return The index as an integer.
      */
     public int getStateIndex(int geneTreeIndex, int speciesTreeIndex) {
-        return geneTreeIndex * numberOfSpeciesTrees + speciesTreeIndex;
+        return geneTreeIndex * numberOfAlleleMappings + speciesTreeIndex;
     }
 
     /**
@@ -194,10 +195,10 @@ public class HmmParameters {
         public double scale;
         public double[] equilibriumFrequencies;
         public double[] transitionFrequencies;
-        public double[] speciesStayProbs;
+        public double[] speciesNetworkParameters;
         public double geneStayProb;
-        public double[] allGeneTreeLengths;
-        public double[] speciesNetworkBranchLengths;
+        public double speciesStayProb;
+
 
         @Override
         public String toString() {
@@ -205,10 +206,10 @@ public class HmmParameters {
                     "scale=" + scale +
                     "equilibriumFrequencies=" + Arrays.toString(equilibriumFrequencies) +
                     ", transitionFrequencies=" + Arrays.toString(transitionFrequencies) +
-                    ", speciesStayProbs=" + Arrays.toString(speciesStayProbs) +
+                    ", speciesNetworkParameters=" + Arrays.toString(speciesNetworkParameters) +
                     ", geneStayProb=" + geneStayProb +
-                    ", allGeneTreeLengths=" + Arrays.toString(allGeneTreeLengths) +
-                    ", speciesNetworkBranchLengths=" + Arrays.toString(speciesNetworkBranchLengths) +
+                    ", speciesStayProb=" + speciesStayProb +
+                    //", speciesNetworkInheritanceProbabilities=" + Arrays.toString(speciesNetworkInheritanceProbabilities) +
                     '}';
         }
     }

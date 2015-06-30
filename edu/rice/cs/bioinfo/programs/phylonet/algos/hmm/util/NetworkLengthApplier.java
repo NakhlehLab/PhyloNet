@@ -2,18 +2,23 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.util;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+
+import java.util.*;
 
 public class NetworkLengthApplier
 {
     final private Network net;
-    final double[] networkLengths;
+    final private Map<String, List<String>> species2alleles;
+    final double[] networkParameters;
 
-    private int netLengthIndex = 0;
+    private int netParameterIndex = 0;
 
-    public NetworkLengthApplier(Network net, double[] networkLengths)
+    public NetworkLengthApplier(Network net, double[] networkParameters, Map<String, List<String>> species2alleles)
     {
         this.net =net;
-        this.networkLengths = networkLengths;
+        this.species2alleles = species2alleles;
+        this.networkParameters = networkParameters;
     }
 
     @SuppressWarnings("unchecked")
@@ -22,56 +27,42 @@ public class NetworkLengthApplier
         return net;
     }
 
-    private void applyNetNodeLengths(NetNode<Double> net, double[] lengths)
-    {
-        if (net.getData() != null)
-            return;
-
-        if (net.isLeaf())
-        {
-            net.setData(0.0);
-        }
-        else
-        {
-            double maxChildHeight = 0;
-            for (NetNode<Double> child : net.getChildren())
-            {
-                if (child.getData() == null)
-                    applyNetNodeLengths(child, lengths);
-
-                double childHeight = child.getData();
-                maxChildHeight = Math.max(maxChildHeight, childHeight);
-            }
-
-            double myHeight = maxChildHeight + lengths[netLengthIndex++];
-            net.setData(myHeight);
-
-            for (NetNode<Double> child : net.getChildren())
-            {
-                child.setParentDistance(net, myHeight - child.getData());
-            }
-
-        }
-
-    }
 
 
     public void apply()
     {
-        netLengthIndex = 0;
+        netParameterIndex = 0;
         Network<Double> foo = uglyCast(net);
 
-        for (NetNode<Double> node:  foo.bfs())
-        {
-            node.setData(null);
+        for(NetNode reticulation: foo.getNetworkNodes()){
+            double inheritanceProb = networkParameters[netParameterIndex++];
+            for(Object parent: reticulation.getParents()){
+                reticulation.setParentProbability((NetNode)parent, inheritanceProb);
+                inheritanceProb = 1 - inheritanceProb;
+            }
         }
 
-        for (NetNode<Double> node : foo.bfs())
-        {
-            applyNetNodeLengths(node, networkLengths);
+        Map<NetNode, Set<String>> node2leaves = new HashMap<>();
+        for(NetNode node: Networks.postTraversal(foo)){
+            if(node.isRoot())break;
+            Set<String> leaves = new HashSet<>();
+            node2leaves.put(node, leaves);
+            if(node.isLeaf()){
+                leaves.addAll(species2alleles.get(node.getName()));
+            }
+            else{
+                for(Object childO: node.getChildren()){
+                    leaves.addAll(node2leaves.get(childO));
+                }
+            }
+            if(leaves.size()>1){
+                for(Object parentO: node.getParents()){
+                    node.setParentDistance((NetNode)parentO, networkParameters[netParameterIndex++]);
+                }
+            }
         }
 
-        if (netLengthIndex != networkLengths.length)
+        if (netParameterIndex != networkParameters.length)
             throw new RuntimeException("FAIL adding netlengths");
 
     }

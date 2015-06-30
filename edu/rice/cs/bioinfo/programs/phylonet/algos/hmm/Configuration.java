@@ -6,7 +6,6 @@ public class Configuration
     public final boolean MARKOV;                //Choose between Markov and non-Markov models.
     public final boolean USEGENETREELENGTHS;
     public final boolean USEFASTTREES;
-    public final boolean USEMULTIPLESTAYPROBABILITIES;
     public final SubstitutionModelType MODEL;
     public final AlgorithmType ALGORITHM;
     public int numberOfRuns;
@@ -18,7 +17,7 @@ public class Configuration
 
     public final String inputFile;
 
-    public Configuration(int ITERATIONS, boolean MARKOV, boolean USEGENETREELENGTHS, boolean USEFASTTREES, boolean USEMULTIPLESTAYPROBABILITIES,
+    public Configuration(int ITERATIONS, boolean MARKOV, boolean USEGENETREELENGTHS, boolean USEFASTTREES,
                          SubstitutionModelType MODEL, AlgorithmType ALGORITHM, int numberOfRuns, long seed, int threads,
                          boolean PPATraining, int numberOfFolds, String inputFile, double threshold)
     {
@@ -26,7 +25,6 @@ public class Configuration
         this.MARKOV = MARKOV;
         this.USEGENETREELENGTHS = USEGENETREELENGTHS;
         this.USEFASTTREES = USEFASTTREES;
-        this.USEMULTIPLESTAYPROBABILITIES = USEMULTIPLESTAYPROBABILITIES;
         this.MODEL = MODEL;
         this.ALGORITHM = ALGORITHM;
         this.numberOfRuns = numberOfRuns;

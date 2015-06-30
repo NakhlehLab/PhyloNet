@@ -7,16 +7,19 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 import java.text.NumberFormat;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class HmmState implements Opdf<JahmmNucleotideObservation>{
 
-    Tree speciesTree;
+    //Tree speciesTree;
+    Map<String, List<String>> alleleMapping;
     Tree geneTree;
     SubstitutionModel model;
     NucleotideProbabilityAlgorithm nucleotideProbabilityAlgorithm;
 
-    public HmmState(Tree speciesTree, Tree geneTree,SubstitutionModel model, NucleotideProbabilityAlgorithm nucleotideProbabilityAlgorithm){
-        this.speciesTree = speciesTree;
+    public HmmState(Map<String, List<String>> alleleMapping, Tree geneTree,SubstitutionModel model, NucleotideProbabilityAlgorithm nucleotideProbabilityAlgorithm){
+        this.alleleMapping = alleleMapping;
         this.geneTree = geneTree;
         this.model = model;
         this.nucleotideProbabilityAlgorithm = nucleotideProbabilityAlgorithm;
@@ -70,7 +73,7 @@ public class HmmState implements Opdf<JahmmNucleotideObservation>{
     @Override
     public String toString() {
         return "HmmState{" +
-                "speciesTree=" + speciesTree +
+                "alleleMapping=" + alleleMapping +
                 ", geneTree=" + geneTree +
                 '}';
     }

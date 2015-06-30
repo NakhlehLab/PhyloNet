@@ -8,7 +8,6 @@ public class ConfigurationBuilder
     private boolean MARKOV;                //Choose between Markov and non-Markov models.
     private boolean USEGENETREELENGTHS;
     private boolean USEFASTTREES;
-    private boolean USEMULTIPLESTAYPROBABILITIES;
     private Configuration.SubstitutionModelType MODEL;
     private Configuration.AlgorithmType ALGORITHM;
     private int numberOfRuns;
@@ -24,7 +23,7 @@ public class ConfigurationBuilder
 
     public Configuration build(String inputFile)
     {
-        return new Configuration(ITERATIONS,MARKOV,USEGENETREELENGTHS,USEFASTTREES,USEMULTIPLESTAYPROBABILITIES,MODEL,ALGORITHM,
+        return new Configuration(ITERATIONS,MARKOV,USEGENETREELENGTHS,USEFASTTREES,MODEL,ALGORITHM,
                 numberOfRuns, seed, threads, PPATraining, numberOfFolds, inputFile, threshold);
     }
 
@@ -105,8 +104,6 @@ public class ConfigurationBuilder
         config.USEGENETREELENGTHS = false;
         config.USEFASTTREES = false;
 
-        config.USEMULTIPLESTAYPROBABILITIES = false;
-
         config.MODEL = Configuration.SubstitutionModelType.JC;
         config.numberOfRuns = 10;
         config.seed = createSeed();
@@ -122,9 +119,4 @@ public class ConfigurationBuilder
         return new SecureRandom().nextLong();
     }
 
-    public ConfigurationBuilder withMultipleStayProbs()
-    {
-        this.USEMULTIPLESTAYPROBABILITIES = true;
-        return this;
-    }
 }

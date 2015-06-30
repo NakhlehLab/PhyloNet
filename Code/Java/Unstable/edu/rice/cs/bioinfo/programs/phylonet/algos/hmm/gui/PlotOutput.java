@@ -9,6 +9,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model.RawOutputInformatio
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.util.SpeciesComparision;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class PlotOutput {
 
@@ -107,22 +109,29 @@ public class PlotOutput {
         textTabString += "All HMMData Parameters: " + rawOut.bestParameters + "\n\n";
         textTabString += "P(Observations|Model) 'Score' = " + rawOut.finalScore + "\n\n";
         textTabString += "P(Observations|Actual) 'Score' = " + rawOut.scoreOfActual + "\n\n";
-        textTabString += "Probability of remaining in Species Tree: " + Arrays.toString(rawOut.bestParameters.speciesStayProbs) + "\n";
-        textTabString += "Probability of remaining in Gene Tree: " + rawOut.bestParameters.geneStayProb + "\n\n";
+        textTabString += "MulTree: " + rawOut.formattedMulTree + "\n\n";
         textTabString += "HMM State Definitions: \n";
         textTabString += rawOut.formattedHmmStates + "\n\n";
         textTabString += Arrays.toString(rawOut.formattedHmmStateCounts) + "\n\n";
 
-        textTabString += "\n Species Tree Indices Definitions: Apply to Legends of Plots and Output Text Info \n";
+        textTabString += "\nOptimal parameters of the species network:\n";
+        textTabString += rawOut.formattedNetwork + "\n\n";
 
+        textTabString += "\nAllele Mappings: Apply to Legends of Plots and Output Text Info\n";
         String formatSpeciesTrees = "";
-        for (int i  =0; i < rawOut.formattedSpeciesTrees.length; i++)
-            formatSpeciesTrees += String.format("%d: %s\n",i,rawOut.formattedSpeciesTrees[i]);
+        int i = 0;
+        for (Map<String,List<String>> alleleMapping: rawOut.formattedAlleleMappings)
+            formatSpeciesTrees += String.format("%d: %s\n",i++,alleleMapping.toString());
         textTabString += formatSpeciesTrees+ "\n\n";
 
-        textTabString += "\n\n" + rawOut.formattedNetwork + "\n\n";
+        textTabString += "\nViterbiSpeciesTrees:\n";
+        textTabString += Arrays.toString(rawOut.viterbiSpeciesTrees) + "\n";
+        textTabString += "ViterbiGeneTrees:\n";
+        textTabString += Arrays.toString(rawOut.viterbiGeneTrees) + "\n\n\n";
+
 
         textTabString += new GsonBuilder().setPrettyPrinting().create().toJson(out);
+
         return textTabString;
     }
 

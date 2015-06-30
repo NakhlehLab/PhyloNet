@@ -42,7 +42,7 @@ public class ExtractOutput
         Hmm<JahmmNucleotideObservation> hmm = f.getBestHmm();
         int[] viterbiStateSequence = hmm.mostLikelyStateSequence(JObservations);
 
-        result.viterbiSpeciesTrees = toIntArray(HmmStateUtilities.getSpeciesTrees(viterbiStateSequence, params));
+        result.viterbiSpeciesTrees = toIntArray(HmmStateUtilities.getAlleleMappings(viterbiStateSequence, params));
         result.viterbiGeneTrees = toIntArray(HmmStateUtilities.getGeneTrees(viterbiStateSequence,params));
 
         result.posteriorProbabilityOfSpeciesTrees = getProbabilityOfSpeciesTreePerLoci(hmm, JObservations);
@@ -55,7 +55,7 @@ public class ExtractOutput
         result.bestParametersRaw = f.getBestInput();
         result.bestParameters = hmmParameters;
 
-        result.formattedSpeciesTrees = getFormattedSpeciesTrees(f.getSpeciesTrees());
+        result.formattedMulTree = f.getAlleleMappings(result.formattedAlleleMappings).toString();
         result.formattedHmmStates = getFormattedHmmStates(hmm);
         result.formattedHmmStateCounts =  getStateCounts(viterbiStateSequence,hmm.nbStates());
 
@@ -160,11 +160,11 @@ public class ExtractOutput
         StateProbabilityCalculator t = new StateProbabilityCalculator();
 
         double[][] gamma = t.getProbabilityOfStateAtTime(JObservations, hmm);
-        double[][] prob = new double[params.getNumberOfSpeciesTrees()][JObservations.size()];
+        double[][] prob = new double[params.getNumberOfAlleleMappings()][JObservations.size()];
 
         //Computation for a new plot.
         for (int i = 0; i < prob[0].length; i++) {
-            for (int speciesTreeIndex = 0; speciesTreeIndex < params.getNumberOfSpeciesTrees(); speciesTreeIndex++) {
+            for (int speciesTreeIndex = 0; speciesTreeIndex < params.getNumberOfAlleleMappings(); speciesTreeIndex++) {
                 double[] val = new double[params.numberOfGeneTrees()];
                 for (int geneTreeIndex = 0; geneTreeIndex < params.numberOfGeneTrees(); geneTreeIndex++) {
                     val[geneTreeIndex] = gamma[i][params.getStateIndex(geneTreeIndex, speciesTreeIndex)];
@@ -184,8 +184,8 @@ public class ExtractOutput
         //Computation for a new plot.
         for (int i = 0; i < prob[0].length; i++) {
             for (int geneTreeIndex = 0; geneTreeIndex < params.numberOfGeneTrees(); geneTreeIndex++) {
-                double[] val = new double[params.getNumberOfSpeciesTrees()];
-                for (int speciesTreeIndex = 0; speciesTreeIndex < params.getNumberOfSpeciesTrees(); speciesTreeIndex++) {
+                double[] val = new double[params.getNumberOfAlleleMappings()];
+                for (int speciesTreeIndex = 0; speciesTreeIndex < params.getNumberOfAlleleMappings(); speciesTreeIndex++) {
                     val[speciesTreeIndex] = gamma[i][params.getStateIndex(geneTreeIndex, speciesTreeIndex)];
                 }
                 prob[geneTreeIndex][i] = KahanSum(val);

@@ -16,6 +16,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * The main class for the problem we are working on. Alex Yozzo & Ethan Steinberg
@@ -39,14 +40,16 @@ public class CreateOptimumHMM {
                             List<NucleotideObservation> observations, Configuration config) {
 
         myConfiguration = config;
-        myConfiguration.seed = Long.parseLong("8699692860394415879");
+        //myConfiguration.seed = Long.parseLong("8699692860394415879");
+        //Random random = new Random();
+        myConfiguration.seed = ConfigurationBuilder.createSeed();
         System.out.println("\nThe seed was " + myConfiguration.seed);
 
         rand = new MersenneTwister(myConfiguration.seed);
         f = new HmmOptimizationFunction(net, speciesToAlleles, observations, config);
         params = f.getParams();
 
-        System.out.println("\nStates: " + params.numberOfGeneTrees() * params.getNumberOfSpeciesTrees() + " Params: " + params.numberOfParameters());
+        System.out.println("\nStates: " + params.numberOfGeneTrees() * params.getNumberOfAlleleMappings() + " Params: " + params.numberOfParameters());
     }
 
     public long getSeed()
@@ -66,22 +69,24 @@ public class CreateOptimumHMM {
         //Initialize Random Values for transition frequencies and gene tree lengths.
         for (int i = 0; i < initial.transitionFrequencies.length; i++) {
             initial.transitionFrequencies[i] = 0.1 + .9 * rand.nextDouble();
+            //initial.transitionFrequencies[i] = 1/6.0;
         }
 
-        initial.speciesStayProbs = new double[params.numberOfSpeciesStayProbs()];
-        Arrays.fill(initial.speciesStayProbs,.99);
-
-        initial.geneStayProb = .5;
-        initial.allGeneTreeLengths = new double[params.numberOfGeneTreeLengths()];
-
-        for (int i = 0; i < initial.allGeneTreeLengths.length; i++) {
-            initial.allGeneTreeLengths[i] = .1 + .9 * rand.nextDouble();
+        initial.speciesNetworkParameters = new double[params.numberOfNetworkParameters()];
+        int numReticulations = params.numberOfReticulations();
+        for (int i = 0; i < initial.speciesNetworkParameters.length; i++) {
+            if(i < numReticulations){
+                initial.speciesNetworkParameters[i] = rand.nextDouble();
+                //initial.speciesNetworkParameters[i] = 0.5;
+            }
+            else {
+                initial.speciesNetworkParameters[i] = .001 + rand.nextDouble() * 5;
+                //initial.speciesNetworkParameters[i] = 3;
+            }
         }
 
-        initial.speciesNetworkBranchLengths = new double[params.numberOfNetworkLengths()];
-        for (int i = 0; i < initial.speciesNetworkBranchLengths.length; i++) {
-            initial.speciesNetworkBranchLengths[i] = .001 + rand.nextDouble() * 5;
-        }
+        initial.geneStayProb = 0.5;
+        initial.speciesStayProb = 0.5;
 
         return params.encode(initial);
     }
@@ -90,32 +95,43 @@ public class CreateOptimumHMM {
     {
         lower.scale = 0.001;
         upper.scale = Double.POSITIVE_INFINITY;
+        //lower.scale = 0.99;
+        //upper.scale = 1.01;
 
         lower.equilibriumFrequencies =new double[] {0.1,0.1,0.1,0.1};
         upper.equilibriumFrequencies = new double[] {1,1,1,1};
+        //lower.equilibriumFrequencies =new double[] {0.24,0.24,0.24,0.24};
+        //upper.equilibriumFrequencies = new double[] {0.26,0.26,0.26,0.26};
 
         lower.transitionFrequencies = new double[] {.1,.1,.1,.1,.1,.1};
-        upper.transitionFrequencies = new double[] {1,  1, 1, 1, 1, 1};
+        upper.transitionFrequencies = new double[] {1, 1, 1, 1, 1, 1};
+        //lower.transitionFrequencies = new double[] {1/6.0-0.01,1/6.0-0.01,1/6.0-0.01,1/6.0-0.01,1/6.0-0.01,1/6.0-0.01};
+        //upper.transitionFrequencies = new double[] {1/6.0+0.01,1/6.0+0.01,1/6.0+0.01,1/6.0+0.01,1/6.0+0.01,1/6.0+0.01};
 
-        lower.speciesStayProbs = new double[params.numberOfSpeciesStayProbs()];
-        upper.speciesStayProbs = new double[params.numberOfSpeciesStayProbs()];
-
-        Arrays.fill(lower.speciesStayProbs,.95);
-        Arrays.fill(upper.speciesStayProbs,1);
-
+        int numNetworkParameters = params.numberOfNetworkParameters();
+        lower.speciesNetworkParameters = new double[numNetworkParameters];
+        upper.speciesNetworkParameters = new double[numNetworkParameters];
+        int numReticulations = params.numberOfReticulations();
+        for(int i = 0; i < numNetworkParameters; i++){
+            if(i < numReticulations){
+                lower.speciesNetworkParameters[i] = 0;
+                upper.speciesNetworkParameters[i] = 1;
+                //lower.speciesNetworkParameters[i] = 0.49;
+                //upper.speciesNetworkParameters[i] = 0.51;
+            }
+            else{
+                lower.speciesNetworkParameters[i] = .00001;
+                upper.speciesNetworkParameters[i] = Double.POSITIVE_INFINITY;
+                //lower.speciesNetworkParameters[i] = 2.9;
+                //upper.speciesNetworkParameters[i] = 3.1;
+            }
+        }
 
         lower.geneStayProb =  0.0001; // Lower bound cannot be zero as results in a divide by zero and NaNs
         upper.geneStayProb =  1;
 
-        lower.allGeneTreeLengths = new double[params.numberOfGeneTreeLengths()];
-        upper.allGeneTreeLengths = new double[params.numberOfGeneTreeLengths()];
-        Arrays.fill(lower.allGeneTreeLengths,.00001);
-        Arrays.fill(upper.allGeneTreeLengths,Double.POSITIVE_INFINITY);
-
-        lower.speciesNetworkBranchLengths = new double[params.numberOfNetworkLengths()];
-        upper.speciesNetworkBranchLengths = new double[params.numberOfNetworkLengths()];
-        Arrays.fill(lower.speciesNetworkBranchLengths,.00001);
-        Arrays.fill(upper.speciesNetworkBranchLengths,Double.POSITIVE_INFINITY);
+        lower.speciesStayProb =  0.0001; // Lower bound cannot be zero as results in a divide by zero and NaNs
+        upper.speciesStayProb =  1;
 
         return new SimpleBounds(params.encode(lower),params.encode(upper));
     }

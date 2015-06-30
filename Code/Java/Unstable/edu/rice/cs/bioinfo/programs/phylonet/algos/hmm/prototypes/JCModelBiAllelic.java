@@ -7,6 +7,7 @@ public class JCModelBiAllelic extends SubstitutionModel {
     DenseMatrix rateMatrix;
     double U;
     double V;
+    DenseMatrix rateMatrixIntegrated;
 
     public JCModelBiAllelic(double u, double v)
     {
@@ -49,5 +50,9 @@ public class JCModelBiAllelic extends SubstitutionModel {
 
         System.out.println("EQUILIBRIUM MATRIX = " + foo.getEquilibriumVector());
 
+    }
+
+    public DenseMatrix getProbabilityMatrixIntegrated(){
+        return rateMatrixIntegrated;
     }
 }

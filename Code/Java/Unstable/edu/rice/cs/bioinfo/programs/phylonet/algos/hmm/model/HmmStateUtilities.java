@@ -9,18 +9,18 @@ public class HmmStateUtilities {
         //Decomposing HMM States to geneTrees.
         List<Integer> geneTrees = new ArrayList<Integer>();
         for (int i : hmmStateSequence) {
-            geneTrees.add(i / params.getNumberOfSpeciesTrees());
+            geneTrees.add(i / params.getNumberOfAlleleMappings());
         }
         return geneTrees;
     }
 
-    public static List<Integer> getSpeciesTrees(int[] hmmStateSequence, HmmParameters params) {
+    public static List<Integer> getAlleleMappings(int[] hmmStateSequence, HmmParameters params) {
         //Decomposing HMM States to speciesTrees.
-        List<Integer> speciesTrees = new ArrayList<Integer>();
+        List<Integer> alleleMappings = new ArrayList<Integer>();
         for (int i : hmmStateSequence) {
-            speciesTrees.add(i % params.getNumberOfSpeciesTrees());
+            alleleMappings.add(i % params.getNumberOfAlleleMappings());
         }
-        return speciesTrees;
+        return alleleMappings;
     }
 
 

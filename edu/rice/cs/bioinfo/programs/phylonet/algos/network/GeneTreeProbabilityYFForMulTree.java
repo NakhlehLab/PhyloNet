@@ -418,10 +418,10 @@ public class GeneTreeProbabilityYFForMulTree {
 
 
     private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion, List<STITreeCluster> gtClusters){
-        double prob;
+        double prob = 1.0;
         int u = preConfig.getLineageCount();
         int v = coalescedConfig.getLineageCount();
-        prob = Math.pow(portion, u);
+        //prob = Math.pow(portion, u);
         if(distance == 0 && u != v){
             if(_printDetails){
                 System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"(0)=0");

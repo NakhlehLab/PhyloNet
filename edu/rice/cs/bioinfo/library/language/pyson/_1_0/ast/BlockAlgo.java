@@ -35,6 +35,4 @@ public interface BlockAlgo<R, T, E extends Exception> {
     public R forPhylonetBlockBody(PhyloNetBlockBody phyloBlock, T input) throws E;
 
     public R forDataBlock(DataBlockBody dataBlock, T input) throws E;
-
-    public R forMorphDataBlock(MorphDataBlockBody morphDataBlock, T input) throws E;
 }

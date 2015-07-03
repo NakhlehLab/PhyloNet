@@ -138,6 +138,8 @@ public abstract class HillClimberBase extends SearchBase{
             //Ref<Double> newBestScore = new Ref<Double>(null);
             double newScore = computeRandomNeighborScore(currentNetwork, getScore);
             if(!Double.isNaN(newScore)){
+                updateOptimalNetworks(currentNetwork, newScore);
+                updateCashedResults(currentNetwork, newScore);
                 if (makeAcceptanceDecision(currentScore.get(), newScore)) {
                     if (printDetails()) {
                         System.out.println("Accepted ("+currentScore.get()+")\n");
@@ -150,8 +152,6 @@ public abstract class HillClimberBase extends SearchBase{
                     }
                     currentNetwork = handleRejectCase(currentNetwork, currentScore, newScore);
                 }
-                updateOptimalNetworks(currentNetwork, newScore);
-                updateCashedResults(currentNetwork, newScore);
             }
             incrementExaminations();
         }

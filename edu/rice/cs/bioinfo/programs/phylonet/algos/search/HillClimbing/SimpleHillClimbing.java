@@ -29,10 +29,9 @@ public class SimpleHillClimbing extends HillClimberBase{
             Double previousResult = getPreviousResult(currentNetwork);
             if(previousResult!=null){
                 if(printDetails()){
-                    System.out.println("Skip");
+                    System.out.println("Skip: " + previousResult);
                 }
-                _networkGenerator.undo();
-                return Double.NaN;
+                return previousResult;
             }
         }
         double newScore =  getScore.execute(currentNetwork);

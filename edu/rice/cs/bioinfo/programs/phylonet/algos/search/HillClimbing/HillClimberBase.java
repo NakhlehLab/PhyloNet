@@ -137,22 +137,22 @@ public abstract class HillClimberBase extends SearchBase{
             }
             //Ref<Double> newBestScore = new Ref<Double>(null);
             double newScore = computeRandomNeighborScore(currentNetwork, getScore);
-            if(!Double.isNaN(newScore)){
-                updateOptimalNetworks(currentNetwork, newScore);
-                updateCashedResults(currentNetwork, newScore);
-                if (makeAcceptanceDecision(currentScore.get(), newScore)) {
-                    if (printDetails()) {
-                        System.out.println("Accepted ("+currentScore.get()+")\n");
-                    }
-                    handleAcceptCase(currentNetwork, currentScore, newScore);
 
-                } else {
-                    if (printDetails()) {
-                        System.out.println("Rejected ("+currentScore.get()+")\n");
-                    }
-                    currentNetwork = handleRejectCase(currentNetwork, currentScore, newScore);
+            updateOptimalNetworks(currentNetwork, newScore);
+            updateCashedResults(currentNetwork, newScore);
+            if (makeAcceptanceDecision(currentScore.get(), newScore)) {
+                if (printDetails()) {
+                    System.out.println("Accepted ("+currentScore.get()+")\n");
                 }
+                handleAcceptCase(currentNetwork, currentScore, newScore);
+
+            } else {
+                if (printDetails()) {
+                    System.out.println("Rejected ("+currentScore.get()+")\n");
+                }
+                currentNetwork = handleRejectCase(currentNetwork, currentScore, newScore);
             }
+
             incrementExaminations();
         }
     }

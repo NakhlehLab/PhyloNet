@@ -77,7 +77,7 @@ public class RnNewickPrinter<T> extends RichNewickPrinterCompact<NetNode<T>>
                     return null;
 
                 double probability = child.getParentProbability(parent);
-                return Double.isNaN(probability) ? null : probability + "";
+                return probability==NetNode.NO_PROBABILITY ? null : probability + "";
 
             }
         });

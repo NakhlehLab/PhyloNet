@@ -29,10 +29,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.StringReader;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**

@@ -33,7 +33,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.TwoNe
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**

@@ -115,7 +115,7 @@ public abstract class HillClimberBase extends SearchBase{
                 for (Tuple<Network, Double> result: resultList) {
                     System.out.println(result.Item2 + ": " + result.Item1.toString());
                 }
-                System.out.println("Running Time: " + (System.currentTimeMillis()-startingTime)/60000.0);
+                System.out.println("Running Time (min): " + (System.currentTimeMillis()-startingTime)/60000.0);
                 System.out.println("===============================\n");
             }
 

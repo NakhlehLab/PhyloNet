@@ -46,8 +46,7 @@ public class ReticulationEdgeAddition extends NetworkRearrangementOperation{
         }
         newEdgeTail.adoptChild(newEdgeHead, _targetEdgeBrlen);
         newEdgeHead.setParentProbability(newEdgeTail, _targetEdgeInheriProb);
-        newEdgeHead.setParentProbability(_destinationEdge.Item1, 1-_targetEdgeInheriProb);
-
+        newEdgeHead.setParentProbability(_destinationEdge.Item1,_targetEdgeInheriProb==NetNode.NO_PROBABILITY? NetNode.NO_PROBABILITY: 1-_targetEdgeInheriProb);
         Networks.autoLabelNodes(_network);
         return true;
     }

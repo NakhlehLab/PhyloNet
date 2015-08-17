@@ -30,7 +30,7 @@ public class ReticulationEdgeDestinationChange extends NetworkRearrangementOpera
             randomlyPartitionAnEdge(_destinationEdge, _destinationEdgeBrlens, _destinationEdgeInheriProbs);
         }
         addNodeToAnEdge(_targetEdge.Item2, _destinationEdge,_destinationEdgeBrlens, _destinationEdgeInheriProbs);
-        _targetEdge.Item2.setParentProbability(_destinationEdge.Item1, 1-_targetEdge.Item2.getParentProbability(_targetEdge.Item1));
+        _targetEdge.Item2.setParentProbability(_destinationEdge.Item1, _targetEdge.Item2.getParentProbability(_targetEdge.Item1)==NetNode.NO_PROBABILITY? NetNode.NO_PROBABILITY: 1-_targetEdge.Item2.getParentProbability(_targetEdge.Item1));
         return true;
     }
 

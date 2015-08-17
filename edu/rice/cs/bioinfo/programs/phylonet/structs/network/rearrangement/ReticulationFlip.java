@@ -31,7 +31,8 @@ public class ReticulationFlip extends NetworkRearrangementOperation {
         _targetEdge = new Tuple<>(_targetEdge.Item2,_targetEdge.Item1);
         _targetEdge.Item2.setParentProbability(_targetEdge.Item1,_targetEdgeInheriProb);
         _targetEdge.Item1.setParentProbability(_destinationEdge.Item1, NetNode.NO_PROBABILITY);
-        _targetEdge.Item2.setParentProbability(_sourceEdge.Item1, 1-_targetEdgeInheriProb);
+        _targetEdge.Item2.setParentProbability(_sourceEdge.Item1, _targetEdgeInheriProb==NetNode.NO_PROBABILITY? NetNode.NO_PROBABILITY: 1-_targetEdgeInheriProb);
+
         return true;
     }
 

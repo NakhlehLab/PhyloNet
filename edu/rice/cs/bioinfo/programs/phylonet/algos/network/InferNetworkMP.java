@@ -100,7 +100,13 @@ public class InferNetworkMP{
         Func1<Network, Double> scorer = getScoreFunction(gts, species2alleles);
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
-
+        //To set inheritance probability
+        if(_numProcessors != 1){
+            for(Tuple<Network, Double> tuple: resultList){
+                MDCOnNetworkYF mdc = new MDCOnNetworkYF();
+                mdc.countExtraCoal(tuple.Item1, gts, species2alleles, new int[gts.size()]);
+            }
+        }
         return resultList;
     }
 

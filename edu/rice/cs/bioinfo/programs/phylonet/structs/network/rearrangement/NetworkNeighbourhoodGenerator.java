@@ -48,7 +48,7 @@ public abstract class NetworkNeighbourhoodGenerator{
             if(((NetNode)node).getChildCount()==1 && ((NetNode)node).getParentCount()<2){
                 return false;
             }
-            if(((NetNode)node).isNetworkNode()){
+            if(totalProb!=NetNode.NO_PROBABILITY && ((NetNode)node).isNetworkNode()){
                 if(Math.abs(totalProb - 1) > 0.00001) {
                     throw new RuntimeException(network.toString());
                 }

@@ -9,8 +9,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.ExNewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -160,11 +162,14 @@ public class HmmNetworkUtils
             if (alleleMapping.containsKey(mulTree.getName()))
             {
                 List<String> names = alleleMapping.get(mulTree.getName());
+
                 for (String name : names)
                 {
+                    //mulTree.setName(name);
                     STINode<T> child = mulTree.createChild(name);
                     child.setParentDistance(0);
                 }
+
 
                 return true;
             }
@@ -225,7 +230,9 @@ public class HmmNetworkUtils
 
         List<Map<String,List<String>>> alleleAssignmentsOfNodeNamesToAlleleNames = inverseList(alleleMappingsOfAlleleNamesToNodeName);
 
-        return applyAllAlleleAssignementAndClone(mulTree,alleleAssignmentsOfNodeNamesToAlleleNames);
+        List<STITree<T>> results = applyAllAlleleAssignementAndClone(mulTree,alleleAssignmentsOfNodeNamesToAlleleNames);
+        //System.out.println(results);
+        return results;
     }
 
     private static <T> STITree<T> applyAlleleAssignementAndClone(STINode<T> mulTree, Map<String,List<String>> alleleAssignment)
@@ -241,9 +248,11 @@ public class HmmNetworkUtils
     private static <T> List<STITree<T>> applyAllAlleleAssignementAndClone(STINode<T> mulTree, List<Map<String,List<String>>> alleleAssignments)
     {
         List<STITree<T>> result = new ArrayList<STITree<T>>();
-        for (Map<String,List<String>> alleleAssignment : alleleAssignments)
-            result.add(applyAlleleAssignementAndClone(mulTree, alleleAssignment));
-
+        for (Map<String,List<String>> alleleAssignment : alleleAssignments) {
+            STITree<T> newTree = applyAlleleAssignementAndClone(mulTree, alleleAssignment);
+            Trees.removeBinaryNodes(newTree);
+            result.add(newTree);
+        }
         return result;
     }
 

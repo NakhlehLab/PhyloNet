@@ -252,12 +252,15 @@ public class STINode<D extends Object> implements TMutableNode {
 			}
 			
 			// make them our children
-			_children.addAll(batichild._children);
+            for(STINode<D> childToAdopt: batichild._children) {
+                _children.add(childToAdopt);
+                childToAdopt.setParentDistance(childToAdopt.getParentDistance() + batichild.getParentDistance());
+            }
 			
 			// remove them from the former parent
 			batichild._children.clear();
 		}
-		
+
 		_children.remove(batichild);
 		
 		batichild.removeSelf();	

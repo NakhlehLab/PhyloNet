@@ -34,6 +34,7 @@ public class NetworkLengthApplier
         netParameterIndex = 0;
         Network<Double> foo = uglyCast(net);
 
+        /*
         for(NetNode reticulation: foo.getNetworkNodes()){
             double inheritanceProb = networkParameters[netParameterIndex++];
             for(Object parent: reticulation.getParents()){
@@ -41,6 +42,7 @@ public class NetworkLengthApplier
                 inheritanceProb = 1 - inheritanceProb;
             }
         }
+        */
 
         Map<NetNode, Set<String>> node2leaves = new HashMap<>();
         for(NetNode node: Networks.postTraversal(foo)){

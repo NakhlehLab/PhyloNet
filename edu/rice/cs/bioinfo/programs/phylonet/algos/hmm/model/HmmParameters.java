@@ -138,11 +138,11 @@ public class HmmParameters {
         return numberOfGeneTrees;
     }
 
-
+/*
     public int numberOfReticulations() {
         return sizeOfIterable(net.getNetworkNodes());
     }
-
+*/
 
     <T> int sizeOfIterable(Iterable<T> iter)
     {
@@ -165,9 +165,11 @@ public class HmmParameters {
                     leaves.addAll(node2leaves.get(childO));
                 }
             }
+            /*
             if(node.isNetworkNode()){
                 numParameters++;
             }
+            */
             if(leaves.size()>1){
                 numParameters += sizeOfIterable(node.getParents());
             }

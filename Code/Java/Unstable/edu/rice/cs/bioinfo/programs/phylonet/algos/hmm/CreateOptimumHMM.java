@@ -73,8 +73,10 @@ public class CreateOptimumHMM {
         }
 
         initial.speciesNetworkParameters = new double[params.numberOfNetworkParameters()];
-        int numReticulations = params.numberOfReticulations();
+        //int numReticulations = params.numberOfReticulations();
         for (int i = 0; i < initial.speciesNetworkParameters.length; i++) {
+            initial.speciesNetworkParameters[i] = .001 + rand.nextDouble() * 5;
+            /*
             if(i < numReticulations){
                 initial.speciesNetworkParameters[i] = rand.nextDouble();
                 //initial.speciesNetworkParameters[i] = 0.5;
@@ -83,6 +85,7 @@ public class CreateOptimumHMM {
                 initial.speciesNetworkParameters[i] = .001 + rand.nextDouble() * 5;
                 //initial.speciesNetworkParameters[i] = 3;
             }
+            */
         }
 
         initial.geneStayProb = 0.5;
@@ -111,8 +114,11 @@ public class CreateOptimumHMM {
         int numNetworkParameters = params.numberOfNetworkParameters();
         lower.speciesNetworkParameters = new double[numNetworkParameters];
         upper.speciesNetworkParameters = new double[numNetworkParameters];
-        int numReticulations = params.numberOfReticulations();
+        //int numReticulations = params.numberOfReticulations();
         for(int i = 0; i < numNetworkParameters; i++){
+            lower.speciesNetworkParameters[i] = .00001;
+            upper.speciesNetworkParameters[i] = Double.POSITIVE_INFINITY;
+            /*
             if(i < numReticulations){
                 lower.speciesNetworkParameters[i] = 0;
                 upper.speciesNetworkParameters[i] = 1;
@@ -125,6 +131,7 @@ public class CreateOptimumHMM {
                 //lower.speciesNetworkParameters[i] = 2.9;
                 //upper.speciesNetworkParameters[i] = 3.1;
             }
+            */
         }
 
         lower.geneStayProb =  0.0001; // Lower bound cannot be zero as results in a divide by zero and NaNs

@@ -110,11 +110,13 @@ public class HmmOptimizationFunction extends LimitedRunMultivariateFunction impl
         {
             Collection<String> alleles = observations.get(0).getAlleles();
             allGeneTrees = Trees.generateAllBinaryTrees(alleles.toArray(new String[alleles.size()]));
+            /*
             for(Tree gt: allGeneTrees){
                 for(TNode node: gt.getNodes()){
                     node.setParentDistance(1.0);
                 }
             }
+            */
         }
     }
 
@@ -217,6 +219,7 @@ public class HmmOptimizationFunction extends LimitedRunMultivariateFunction impl
 
     private SubstitutionModel getModel(double scale, double[] equilibriumFrequencies, double[] transitionFrequencies)
     {
+
 
         switch (config.MODEL)
         {

@@ -3,6 +3,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.Configuration;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.ConfigurationBuilder;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.GTRModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.JCModel;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.HmmNetworkUtils;
@@ -79,8 +81,13 @@ public class HmmParameters {
 
         ArrayReader foo = new ArrayReader(input);
         result.scale = foo.getNext();
-        result.equilibriumFrequencies = scaleEquilibriumFrequencies(foo.getNext(4));
-        result.transitionFrequencies = scaleEquilibriumFrequencies(foo.getNext(6));
+        switch (config.MODEL)
+        {
+            case GTR:
+                result.equilibriumFrequencies = scaleEquilibriumFrequencies(foo.getNext(4));
+                result.transitionFrequencies = scaleEquilibriumFrequencies(foo.getNext(6));
+        }
+
         result.speciesNetworkParameters = foo.getNext(numberOfNetworkParameters());
         result.geneStayProb = foo.getNext();
         result.speciesStayProb = foo.getNext();
@@ -96,11 +103,18 @@ public class HmmParameters {
     public double[] encode(Data input) {
         double[] result = new double[numberOfParameters()];
 
+        if(input.getSize() != numberOfParameters()){
+            throw new RuntimeException("Size not correct!");
+        }
 
         ArrayWriter foo = new ArrayWriter(result);
         foo.putNext(input.scale);
-        foo.putNext(input.equilibriumFrequencies);
-        foo.putNext(input.transitionFrequencies);
+        switch (config.MODEL)
+        {
+            case GTR:
+                foo.putNext(input.equilibriumFrequencies);
+                foo.putNext(input.transitionFrequencies);
+        }
         foo.putNext(input.speciesNetworkParameters);
         foo.putNext(input.geneStayProb);
         foo.putNext(input.speciesStayProb);
@@ -116,14 +130,23 @@ public class HmmParameters {
      */
     public int numberOfParameters() {
 
+        int numParametersForSubstitutionModel = 0;
+        switch (config.MODEL)
+        {
+            case GTR:
+                numParametersForSubstitutionModel = 11;
+                break;
+            case JC:
+                numParametersForSubstitutionModel = 1;
+        }
 
         switch(config.ALGORITHM)
         {
             case INTEGRATION:
             case SNAPP:
-                return 12 + numberOfNetworkParameters() + (numberOfAlleleMappings>1?1:0);
+                return numParametersForSubstitutionModel + 1 + numberOfNetworkParameters() + (numberOfAlleleMappings>1?1:0);
             case NORMAL:
-                return 12 + numberOfNetworkParameters() + (numberOfAlleleMappings>1?1:0);
+                return numParametersForSubstitutionModel + 1 + numberOfNetworkParameters() + (numberOfAlleleMappings>1?1:0);
         }
         throw new RuntimeException("Invalid algorithm type");
     }
@@ -202,11 +225,20 @@ public class HmmParameters {
         public double speciesStayProb;
 
 
+        public int getSize(){
+            int size = 3 + speciesNetworkParameters.length;
+            if(equilibriumFrequencies!=null){
+                size += equilibriumFrequencies.length;
+                size += transitionFrequencies.length;
+            }
+            return size;
+        }
+
         @Override
         public String toString() {
             return "Data{" +
                     "scale=" + scale +
-                    "equilibriumFrequencies=" + Arrays.toString(equilibriumFrequencies) +
+                    ", equilibriumFrequencies=" + Arrays.toString(equilibriumFrequencies) +
                     ", transitionFrequencies=" + Arrays.toString(transitionFrequencies) +
                     ", speciesNetworkParameters=" + Arrays.toString(speciesNetworkParameters) +
                     ", geneStayProb=" + geneStayProb +

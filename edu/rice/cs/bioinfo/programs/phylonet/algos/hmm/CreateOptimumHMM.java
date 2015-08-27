@@ -3,6 +3,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.hmm;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model.HmmOptimizationFunction;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.hmm.model.HmmParameters;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.GTRModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.JCModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.NucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
@@ -61,15 +63,18 @@ public class CreateOptimumHMM {
     {
         HmmParameters.Data initial = new HmmParameters.Data();
 
-
         initial.scale = 1;
-        initial.equilibriumFrequencies = new double[] {.25,.25,.25,.25};
-        initial.transitionFrequencies = new double[6];
+        switch (myConfiguration.MODEL)
+        {
+            case GTR:
+                initial.equilibriumFrequencies = new double[] {.25,.25,.25,.25};
+                initial.transitionFrequencies = new double[6];
 
-        //Initialize Random Values for transition frequencies and gene tree lengths.
-        for (int i = 0; i < initial.transitionFrequencies.length; i++) {
-            initial.transitionFrequencies[i] = 0.1 + .9 * rand.nextDouble();
-            //initial.transitionFrequencies[i] = 1/6.0;
+                //Initialize Random Values for transition frequencies and gene tree lengths.
+                for (int i = 0; i < initial.transitionFrequencies.length; i++) {
+                    initial.transitionFrequencies[i] = 0.1 + .9 * rand.nextDouble();
+                    //initial.transitionFrequencies[i] = 1/6.0;
+                }
         }
 
         initial.speciesNetworkParameters = new double[params.numberOfNetworkParameters()];
@@ -100,14 +105,18 @@ public class CreateOptimumHMM {
         upper.scale = Double.POSITIVE_INFINITY;
         //lower.scale = 0.99;
         //upper.scale = 1.01;
+        switch (myConfiguration.MODEL)
+        {
+            case GTR:
+                lower.equilibriumFrequencies =new double[] {0.1,0.1,0.1,0.1};
+                upper.equilibriumFrequencies = new double[] {1,1,1,1};
+                //lower.equilibriumFrequencies =new double[] {0.24,0.24,0.24,0.24};
+                //upper.equilibriumFrequencies = new double[] {0.26,0.26,0.26,0.26};
 
-        lower.equilibriumFrequencies =new double[] {0.1,0.1,0.1,0.1};
-        upper.equilibriumFrequencies = new double[] {1,1,1,1};
-        //lower.equilibriumFrequencies =new double[] {0.24,0.24,0.24,0.24};
-        //upper.equilibriumFrequencies = new double[] {0.26,0.26,0.26,0.26};
+                lower.transitionFrequencies = new double[] {.1,.1,.1,.1,.1,.1};
+                upper.transitionFrequencies = new double[] {1, 1, 1, 1, 1, 1};
+        }
 
-        lower.transitionFrequencies = new double[] {.1,.1,.1,.1,.1,.1};
-        upper.transitionFrequencies = new double[] {1, 1, 1, 1, 1, 1};
         //lower.transitionFrequencies = new double[] {1/6.0-0.01,1/6.0-0.01,1/6.0-0.01,1/6.0-0.01,1/6.0-0.01,1/6.0-0.01};
         //upper.transitionFrequencies = new double[] {1/6.0+0.01,1/6.0+0.01,1/6.0+0.01,1/6.0+0.01,1/6.0+0.01,1/6.0+0.01};
 

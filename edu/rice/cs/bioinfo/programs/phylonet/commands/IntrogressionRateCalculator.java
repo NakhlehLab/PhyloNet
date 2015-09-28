@@ -46,7 +46,7 @@ import java.util.*;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("GalIntroRate")
+@CommandName("CalIntroRate")
 public class IntrogressionRateCalculator extends CommandBaseFileOut{
 
 

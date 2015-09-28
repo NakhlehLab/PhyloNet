@@ -18,7 +18,7 @@ END;
 
 BEGIN PHYLONET;
 
-GalIntroRate net (geneTree1,geneTree2,geneTree3);
+CalIntroRate net (geneTree1,geneTree2,geneTree3);
 
 END;
 ===

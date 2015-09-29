@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.introgression;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -23,9 +24,14 @@ public class CoalescenceAnalysis {
 
 
     public String computeIntrogressionRate() {
-        Map<Double, Double> rateMapping = new HashMap<>();
-        // Process Network
         Network net = Networks.readNetwork(_network.toString());
+        StringBuilder sb = new StringBuilder("\n");
+        sb.append(net.toString());
+        sb.append("\n");
+        // Process Network
+        Map<Double, Double> rateMapping = new HashMap<>();
+        Map<Double, String> edgeMapping = new HashMap<>();
+
         TreeMap<Double, NetNode<Double>> map = new TreeMap<>();
         for(Object o : net.getNetworkNodes())  {
             NetNode<Double> node = (NetNode<Double>)o;
@@ -45,12 +51,12 @@ public class CoalescenceAnalysis {
                 } else {
                     node.setParentProbability(par, 1.0 - 0.000001 * i);
                     rateMapping.put(1.0 - 0.000001 * i, d);
+                    edgeMapping.put(d, par.getName() + "->" + node.getName());
                 }
             }
             i--;
         }
         // computation
-        StringBuilder sb = new StringBuilder("\n");
         for(List<MutableTuple<Tree,Double>> gtPerLocus : _geneTrees) {
             List<Tree> input = new ArrayList<>();
             for(MutableTuple<Tree,Double> mt : gtPerLocus) {
@@ -77,15 +83,15 @@ public class CoalescenceAnalysis {
                     }
                 }
             }
-            sb.append(report(result, totalProb));
+            sb.append(report(result, totalProb, edgeMapping));
         }
         return sb.toString();
     }
 
-    private String report(Map<Double,Double> map, double div) {
+    private String report(Map<Double,Double> map, double div, Map<Double, String> edges) {
         StringBuilder sb = new StringBuilder(" ");
         for(Double d : map.keySet()) {
-            sb.append(String.format(" %.4f:%.4f; ", d, map.get(d) / div));
+            sb.append(String.format(" %s:%.4f; ", edges.get(d), map.get(d) / div));
         }
         sb.append("\n");
         return sb.toString();

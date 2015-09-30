@@ -3,10 +3,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model;
 //Created 5-22-14, our own implementation different from GTRSubstitutionModel.
 
 import jeigen.DenseMatrix;
-//import jeigen.DenseMatrix.PseudoEigenResult;
 import Jama.Matrix;
-
-
+import Jama.EigenvalueDecomposition;
 import java.util.Arrays;
 
 
@@ -15,7 +13,6 @@ import java.util.Arrays;
  */
 public class GTRModel extends SubstitutionModel
 {
-
     private final DenseMatrix rateMatrix;
     private final DenseMatrix equilibriumVector;
     DenseMatrix rateMatrixIntegrated;
@@ -156,34 +153,19 @@ public class GTRModel extends SubstitutionModel
 
         int rows = rateMatrix.rows;
         int cols = rateMatrix.cols;
-        //todo
-        /*
-        PseudoEigenResult eig = rateMatrix.peig();
-        DenseMatrix D = eig.values;
-        DenseMatrix V = eig.vectors;
-        DenseMatrix Vinv = inverse(eig.vectors);
-        */
-    	
-    	
-    	/*
-    	System.out.println("values");
-    	System.out.println(D);
-    	System.out.println("vectors");
-    	System.out.println(V);
-    	System.out.println("vectors inverse");
-    	System.out.println(Vinv);    	
-    	
-    	
-    	for (int i = 0; i < rows; i++) {
-    		D.set(i, i, Math.exp(2 * D.get(i, i)));
-    	}
-    	System.out.println("New values");
-    	System.out.println(D);  	
-    	
-    	
-    	System.out.println(V.mmul(D).mmul(Vinv));
-    	System.out.println("Inside");
-    	*/
+
+        //Convert "Jeigen" to "JAMA".
+        double [][] array = new double[rows][cols];
+        for(int i = 0; i < cols; i++) {
+            for (int j = 0; j < rows; j++) {
+                array[j][i] = rateMatrix.get(j, i);
+            }
+        }
+        Matrix A = new Matrix(array);		//RateMatrix in JAMA format.
+        EigenvalueDecomposition e = new EigenvalueDecomposition(A);
+        Matrix V = e.getV();
+        Matrix D = e.getD();
+        Matrix Vinv = V.inverse();
 
 
         double [][] temp = new double[rows][cols];
@@ -191,8 +173,7 @@ public class GTRModel extends SubstitutionModel
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 for (int k = 0; k < pivot; k++) {
-                    //todo
-                    //temp[i][j] += V.get(i, k)* Vinv.get(k, j)* (1/(-D.get(k,k)+1)) ;
+                    temp[i][j] += V.get(i, k)* Vinv.get(k, j)* (1/(-D.get(k,k)+1)) ;
                 }
             }
         }
@@ -201,62 +182,16 @@ public class GTRModel extends SubstitutionModel
     }
 
 
-
-//  //todo
-    /*
-    public DenseMatrix inverse (DenseMatrix M) {
-        // Use JAMA instead of Jeigen, as it doesn't have support for inverse.
-        int rows = M.rows;
-        int cols = M.cols;
-        double [] values = M.getValues();
-
-
-        //Convert "Jeigen" to "JAMA".
-        double [][] array = new double[rows][cols];
-        int count = 0;
-        for(int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                array[j][i] = values[count++];
-            }
-        }
-        Matrix A = new Matrix(array);
-        Matrix Ainv = A.inverse();
-
-        //Convert "JAMA" to "Jeigen".
-        double [][] temp = new double[rows][cols];
-        for (int i = 0; i < rows; i++) {
-            for(int j = 0; j < cols; j++) {
-                temp[i][j] = Ainv.get(i, j);
-            }
-        }
-
-        return new DenseMatrix(temp);
-    }
-    */
-
-
-
-
     public static void main(String[] Args)
     {
         double[] equilibriums = {.1,.2,.3,.4};
         double[] transitions = {.4,.9,.3,.2,.5,.2};
 
-        //double[] equilibriums = {.25,.25,.25,.25};
-        //double[] transitions = {.025,.025,.025,.025,.025,.025};    	
-
         System.out.println(Arrays.toString(equilibriums));
+        System.out.println(Arrays.toString(transitions));
         GTRModel model = new GTRModel(equilibriums, transitions);
 
-        //System.out.println(model.rateMatrix);
-
-
-        //System.out.println(model.rateMatrix.mmul(model.getEquilibriumVector()));
-
-        //DenseMatrix testColumns = new DenseMatrix(new double[][]{{1, 1, 1, 1}});
-        //System.out.println(testColumns.mmul(model.rateMatrix));
-
-        System.out.println(model.getRateMatrix());
+        System.out.println("Integrated Matrix:");
         System.out.println(model.getProbabilityMatrixIntegrated());
     }
 

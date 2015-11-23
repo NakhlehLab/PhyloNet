@@ -95,17 +95,17 @@ public class GeneTreeProbabilityPseudo {
 
     private void initializeCoalescingMap() {
         _coalescingMap = new HashMap<>();
-        _coalescingMap.put(0,Arrays.asList(new Tuple<>(0,new Tuple<>(0,0))));
-        _coalescingMap.put(1,Arrays.asList(new Tuple<>(1,new Tuple<>(1,1))));
-        _coalescingMap.put(2,Arrays.asList(new Tuple<>(2,new Tuple<>(1,1))));
-        _coalescingMap.put(3,Arrays.asList(new Tuple<>(3,new Tuple<>(1,1))));
-        _coalescingMap.put(4,Arrays.asList(new Tuple<>(4,new Tuple<>(2,2)),new Tuple<>(8,new Tuple<>(2,1))));
-        _coalescingMap.put(5,Arrays.asList(new Tuple<>(5,new Tuple<>(2,2))));
-        _coalescingMap.put(6,Arrays.asList(new Tuple<>(6,new Tuple<>(2,2))));
-        _coalescingMap.put(7,Arrays.asList(new Tuple<>(7,new Tuple<>(3,3)),new Tuple<>(9,new Tuple<>(3,2)),new Tuple<>(10,new Tuple<>(3,1))));
-        _coalescingMap.put(8,Arrays.asList(new Tuple<>(8,new Tuple<>(1,1))));
-        _coalescingMap.put(9,Arrays.asList(new Tuple<>(9,new Tuple<>(2,2)),new Tuple<>(10,new Tuple<>(2,1))));
-        _coalescingMap.put(10,Arrays.asList(new Tuple<>(10,new Tuple<>(1,1))));
+        _coalescingMap.put(0,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(0,new Tuple<>(0,0))));
+        _coalescingMap.put(1,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(1,new Tuple<>(1,1))));
+        _coalescingMap.put(2,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(2,new Tuple<>(1,1))));
+        _coalescingMap.put(3,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(3,new Tuple<>(1,1))));
+        _coalescingMap.put(4,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(4,new Tuple<>(2,2)),new Tuple<Integer, Tuple<Integer, Integer>>(8,new Tuple<>(2,1))));
+        _coalescingMap.put(5,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(5,new Tuple<>(2,2))));
+        _coalescingMap.put(6,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(6,new Tuple<>(2,2))));
+        _coalescingMap.put(7,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(7,new Tuple<>(3,3)),new Tuple<Integer, Tuple<Integer, Integer>>(9,new Tuple<>(3,2)),new Tuple<Integer, Tuple<Integer, Integer>>(10,new Tuple<>(3,1))));
+        _coalescingMap.put(8,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(8,new Tuple<>(1,1))));
+        _coalescingMap.put(9,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(9,new Tuple<>(2,2)),new Tuple<Integer, Tuple<Integer, Integer>>(10,new Tuple<>(2,1))));
+        _coalescingMap.put(10,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(10,new Tuple<>(1,1))));
     }
 
 

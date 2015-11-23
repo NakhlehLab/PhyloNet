@@ -132,6 +132,11 @@ public class Networks
                     child.setParentProbability(parent, inheritanceProb);
                     update = true;
                 }
+				if(node.isRoot() && node.getOutdeg()==1){
+					NetNode newRoot = node.getChildren().iterator().next();
+					node.removeChild(newRoot);
+					net.resetRoot(newRoot);
+				}
             }
         }while(update);
     }

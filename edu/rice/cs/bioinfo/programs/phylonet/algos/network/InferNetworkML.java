@@ -185,9 +185,7 @@ public abstract class InferNetworkML {
             _topologyVsParameterOperation[0] = 1;
             _topologyVsParameterOperation[1] = 0;
         }
-        else{
-            findSingleAlleleSpeciesSet(dataForStartingNetwork, allele2species, singleAlleleSpecies);
-        }
+        findSingleAlleleSpeciesSet(dataForStartingNetwork, allele2species, singleAlleleSpecies);
 
         NetworkRandomParameterNeighbourGenerator parameterGenerator = getNetworkRandomParameterNeighbourGenerator(dataForNetworkInference, allele2species, singleAlleleSpecies);
         NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], parameterGenerator, _topologyVsParameterOperation[1], _seed);
@@ -204,16 +202,15 @@ public abstract class InferNetworkML {
         searcher.setLogFile(_logFile);
         //System.out.print(_intermediateResultFile.getAbsolutePath());
         //searcher.setIntermediateFile(_intermediateResultFile.getAbsolutePath());
-        Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, species2alleles, dataCorrespondence);
+        Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, species2alleles, dataCorrespondence, singleAlleleSpecies);
+
         String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
         //String startingNetwork = _startNetwork.toString();
         dataForStartingNetwork.clear();
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
-
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
-
         if(postOptimization){
-            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_likelihoodCalculator, dataForNetworkInference, dataCorrespondence, species2alleles, resultList);
+            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_likelihoodCalculator, dataForNetworkInference, dataCorrespondence, species2alleles, singleAlleleSpecies, resultList);
             resultList.clear();
             resultList.addAll(updatedResult);
         }
@@ -231,11 +228,11 @@ public abstract class InferNetworkML {
 */
     }
 
-    protected LinkedList<Tuple<Network,Double>> optimizeResultingNetworks(NetworkLikelihood likelihoodCalculator, List summarizedGTs, List treeCorrespondence, Map<String,List<String>> species2alleles, LinkedList<Tuple<Network,Double>> resultList){
+    protected LinkedList<Tuple<Network,Double>> optimizeResultingNetworks(NetworkLikelihood likelihoodCalculator, List summarizedGTs, List treeCorrespondence, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies, LinkedList<Tuple<Network,Double>> resultList){
         LinkedList<Tuple<Network, Double>> optimizedResults = new LinkedList<>();
         for(Tuple<Network, Double> resultTuple: resultList){
             likelihoodCalculator.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-            double prob = likelihoodCalculator.computeLikelihood(resultTuple.Item1, species2alleles, summarizedGTs, treeCorrespondence, true);
+            double prob = likelihoodCalculator.computeLikelihood(resultTuple.Item1, species2alleles, summarizedGTs, treeCorrespondence, singleAlleleSpecies, true);
             Tuple<Network,Double> newResult = new Tuple<>(resultTuple.Item1, prob);
             int index = 0;
             for(Tuple<Network, Double> updatedTuple: optimizedResults){
@@ -267,18 +264,18 @@ public abstract class InferNetworkML {
         };
     }
 
-    protected Func1<Network, Double> getScoreFunction(final List summarizedData, final Map<String, List<String>> species2alleles, final List dataCorrespondences){
+    protected Func1<Network, Double> getScoreFunction(final List summarizedData, final Map<String, List<String>> species2alleles, final List dataCorrespondences, final Set<String> singleAlleleSpecies){
         return new Func1<Network, Double>() {
             public Double execute(Network speciesNetwork) {
-                return computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences);
+                return computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, singleAlleleSpecies);
             }
         };
     }
 
 
-    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedData, final List dataCorrespondence){
+    protected double computeLikelihood(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List summarizedData, final List dataCorrespondence, final Set<String> singleAlleleSpecies){
         _likelihoodCalculator.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
-        return _likelihoodCalculator.computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondence, _optimizeBL);
+        return _likelihoodCalculator.computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondence, singleAlleleSpecies, _optimizeBL);
     }
 
 

@@ -96,7 +96,7 @@ public class NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus extends NetworkPs
     }
 
 
-    private void computeTripleFrequenciesInGTs(List<MutableTuple<Tree,Double>> gts, Map<String,String> allele2species, List<String> allTriplets, List<double[]> tripletFrequencies){
+    public static void computeTripleFrequenciesInGTs(List<MutableTuple<Tree,Double>> gts, Map<String,String> allele2species, List<String> allTriplets, List<double[]> tripletFrequencies){
 
         Map<String, double[]> triple2counts = new HashMap<>();
 

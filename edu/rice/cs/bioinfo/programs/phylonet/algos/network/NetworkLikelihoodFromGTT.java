@@ -20,9 +20,11 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.library.programming.Container;
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
@@ -40,7 +42,7 @@ import java.util.*;
  */
 public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
-    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List distinctTrees, final List gtCorrespondence){
+    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List distinctTrees, final List gtCorrespondence, final Set<String> singleAlleleSpecies){
         boolean continueRounds = true; // keep trying to improve network
         for(NetNode<Object> node: speciesNetwork.dfs()){
             for(NetNode<Object> parent: node.getParents()){
@@ -50,6 +52,8 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                 }
             }
         }
+
+        Set<NetNode> node2ignoreForBL = findEdgeHavingNoBL(speciesNetwork, singleAlleleSpecies);
         double initalProb = computeProbabilityForCached(speciesNetwork, distinctTrees, species2alleles, gtCorrespondence);
         if(_printDetails)
             System.out.println(speciesNetwork.toString() + " : " + initalProb);
@@ -71,10 +75,8 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
                 for(final NetNode<Object> child : parent.getChildren())
                 {
-                    if(child.isLeaf()){
-                        if(species2alleles==null || species2alleles.get(child.getName()).size()<2){
-                            continue;
-                        }
+                    if(node2ignoreForBL.contains(child)){
+                        continue;
                     }
 
                     assigmentActions.add(new Proc()
@@ -160,6 +162,8 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
                         try
                         {
+                            if(child.getName().equals("Y"))optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0.6, 0.8);
+                            else
                             optimizer.optimize(_maxTryPerBranch, functionToOptimize, GoalType.MAXIMIZE, 0, 1.0);
                         }
                         catch(TooManyEvaluationsException e)  // _maxAssigmentAttemptsPerBranchParam exceeded
@@ -204,7 +208,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
-        //System.out.print("\n" + lnGtProbOfSpeciesNetwork.getContents() + ": " + speciesNetwork);
+        //System.out.println("\n" + lnGtProbOfSpeciesNetwork.getContents() + ": " + speciesNetwork);
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
@@ -377,6 +381,63 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
         return probability;
     }
 
+
+    protected void findSingleAlleleSpeciesSet(List gts, Map<String, String> allele2species, Set<String> singleAlleleSpecies){
+        if(allele2species==null){
+            for(Object o: gts){
+                Tree gt = (Tree)o;
+                for(String leaf: gt.getLeaves()){
+                    singleAlleleSpecies.add(leaf);
+                }
+            }
+        }
+        else{
+            singleAlleleSpecies.addAll(allele2species.values());
+            for(Object o: gts){
+                Tree gt = (Tree)o;
+                if(singleAlleleSpecies.size()==0)return;
+                Set<String> speciesVisited = new HashSet<>();
+
+                for(String leaf: gt.getLeaves()){
+                    String species = allele2species.get(leaf);
+                    if(singleAlleleSpecies.contains(species)){
+                        if(speciesVisited.contains(species)){
+                            singleAlleleSpecies.remove(species);
+                        }
+                        else{
+                            speciesVisited.add(species);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private Set<NetNode> findEdgeHavingNoBL(Network network, Set<String> singleAlleleSpecies) {
+        Set<NetNode> node2ignore = new HashSet<>();
+        Map<NetNode, Set<String>> node2leaves = new HashMap<>();
+        for (Object nodeO : Networks.postTraversal(network)) {
+            NetNode node = (NetNode) nodeO;
+            Set<String> leaves = new HashSet<>();
+            if (node.isLeaf()) {
+                leaves.add(node.getName());
+            }
+            else {
+                for (Object childO : node.getChildren()) {
+                    NetNode childNode = (NetNode) childO;
+                    Set<String> childLeaves = node2leaves.get(childNode);
+                    leaves.addAll(childLeaves);
+                }
+            }
+            if(leaves.size()<=1 && singleAlleleSpecies.containsAll(leaves)){
+                node2ignore.add(node);
+            }
+            node2leaves.put(node, leaves);
+
+        }
+        return node2ignore;
+    }
 
 
     abstract protected double calculateFinalLikelihood(double[] probs, List gtCorrespondences);

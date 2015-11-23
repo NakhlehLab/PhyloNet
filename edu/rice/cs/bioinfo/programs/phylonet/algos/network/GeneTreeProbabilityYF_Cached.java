@@ -700,9 +700,7 @@ public class GeneTreeProbabilityYF_Cached {
                         for(NetNode<CoalescePattern[]> parent: node.getParents()){
                             for(Configuration coalescedConfig: cp.getACMinuss(parent)){
                                 coalescedConfig._totalProb = 0;
-                                Iterator<CoalescingInfo> coalescedInfos = coalescedConfig._coalesingInfo.iterator();
-                                while(coalescedInfos.hasNext()){
-                                    CoalescingInfo info = coalescedInfos.next();
+                                for(CoalescingInfo info: coalescedConfig._coalesingInfo){
                                     coalescedConfig.addTotalProbability(Math.max(0,info._uncoalescedConfig._totalProb*info._coalProb));
                                 }
                             }
@@ -760,10 +758,7 @@ public class GeneTreeProbabilityYF_Cached {
                         }
                     }
                 }
-                else{
 
-
-                }
 
                 if(node.isRoot()){
                     Configuration rootConfig = cp.getACMinuss(null).get(0);
@@ -1755,7 +1750,7 @@ public class GeneTreeProbabilityYF_Cached {
         public double getChildrenProbProduction(){
             double sum = 0;
             for(Configuration[] configPair: _childPairList){
-                sum += Math.max(0,configPair[0]._totalProb*configPair[1]._totalProb);
+                sum += Math.max(0,configPair[0]._totalProb * configPair[1]._totalProb);
             }
             return sum;
         }

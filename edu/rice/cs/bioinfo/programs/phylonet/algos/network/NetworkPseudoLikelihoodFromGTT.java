@@ -20,9 +20,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
 import edu.rice.cs.bioinfo.library.programming.Container;
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -47,7 +50,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    public Map<String, double[]> computeTripleFrequenciesFromSingleGT(Tree gt){
+    public static Map<String, double[]> computeTripleFrequenciesFromSingleGT(Tree gt){
         List<String> taxaList = new ArrayList<>();
         Map<String,Integer> pairwiseDepths = new HashMap<>();
         Map<TNode, Integer> node2depth = new HashMap<>();
@@ -134,18 +137,10 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    public Map<String, double[]>  computeTripleFrequenciesFromSingleGT(Tree gt, Map<String,String> allele2species){
+    public static Map<String, double[]>  computeTripleFrequenciesFromSingleGT(Tree gt, Map<String,String> allele2species){
         Set<String> allAlleles = new HashSet<>();
-        //int[] alleleNums = new int[speciesArray.length];
-        Map<String,Integer> species2count = new HashMap<>();
         for(String allele: gt.getLeaves()){
             allAlleles.add(allele);
-            String species = allele2species.get(allele);
-            Integer count = species2count.get(species);
-            if(count==null){
-                count = 0;
-            }
-            species2count.put(species,count+1);
         }
 
 
@@ -179,7 +174,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                                     for(String allele3: allAlleles){
                                         String species3 = allele2species.get(allele3);
                                         if(!species1.equals(species3) && !species2.equals(species3)){
-                                            addHighestFrequency(species1, species2, species3, species2count, triple2counts);
+                                            addHighestFrequency(species1, species2, species3, triple2counts);
                                         }
                                     }
                                 }
@@ -192,9 +187,13 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                                 String species1 = allele2species.get(allele1);
                                 for (String allele2 : childLeaves2) {
                                     String species2 = allele2species.get(allele2);
-                                    for (String allele3 : childLeaves3) {
-                                        String species3 = allele2species.get(allele3);
-                                        addEqualFrequency(species1, species2, species3, species2count, triple2counts);
+                                    if(!species1.equals(species2)) {
+                                        for (String allele3 : childLeaves3) {
+                                            String species3 = allele2species.get(allele3);
+                                            if(!species1.equals(species3) && !species2.equals(species3)) {
+                                                addEqualFrequency(species1, species2, species3, triple2counts);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -210,8 +209,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
         return triple2counts;
     }
 
-    private void addEqualFrequency(String species1, String species2, String species3, Map<String,Integer> species2count, Map<String, double[]> triple2counts) {
-        double weight = 1.0/(species2count.get(species1)*species2count.get(species2)*species2count.get(species3));
+    private static void addEqualFrequency(String species1, String species2, String species3, Map<String, double[]> triple2counts) {
         String[] forSort = new String[3];
         forSort[0] = species1;
         forSort[1] = species2;
@@ -224,14 +222,13 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             triple2counts.put(exp, frequency);
         }
         for (int i = 0; i < 3; i++) {
-            frequency[i] += weight / 3;
+            frequency[i] += 1.0 / 3;
         }
     }
 
 
 
-    private void addHighestFrequency(String species1, String species2, String species3, Map<String,Integer> species2count, Map<String, double[]> triple2counts) {
-        double weight = 1.0/(species2count.get(species1)*species2count.get(species2)*species2count.get(species3));
+    private static void addHighestFrequency(String species1, String species2, String species3, Map<String, double[]> triple2counts) {
         int index = 0;
         String[] forSort = new String[3];
         forSort[0] = species1;
@@ -253,10 +250,10 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             frequency = new double[3];
             triple2counts.put(exp, frequency);
         }
-        frequency[index] += weight;
+        frequency[index] ++;
     }
 
-    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List tripleFrequencies, final List gtCorrespondence){
+    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List tripleFrequencies, final List gtCorrespondence, final Set<String> singleAlleleSpecies){
         boolean continueRounds = true; // keep trying to improve network
 
         for(NetNode<Object> node: speciesNetwork.dfs()){
@@ -267,6 +264,8 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                 }
             }
         }
+
+        Set<NetNode> node2ignoreForBL = findEdgeHavingNoBL(speciesNetwork);
 
         double initalProb = computeProbability(speciesNetwork, tripleFrequencies, species2alleles, gtCorrespondence);
         if(_printDetails)
@@ -289,10 +288,8 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
                 for(final NetNode<Object> child : parent.getChildren())
                 {
-                    if(child.isLeaf()){
-                        if(species2alleles==null || species2alleles.get(child.getName()).size()<2){
-                            continue;
-                        }
+                    if(node2ignoreForBL.contains(child)){
+                        continue;
                     }
 
                     assigmentActions.add(new Proc()
@@ -420,6 +417,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
+        //System.out.println(speciesNetwork + " " + lnGtProbOfSpeciesNetwork.getContents());
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
@@ -440,7 +438,6 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
 
         public void run(){
-            //System.out.println("Start computing");
             _calculator.computePseudoLikelihood(_network, _allTriplets, _probs);
         }
     }
@@ -512,6 +509,66 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
         List summarizedData = new ArrayList();
         summarizeData(originalData, allele2species, summarizedData, dataCorrespondences);
         return summarizedData;
+    }
+
+
+    protected void findSingleAlleleSpeciesSet(List gts, Map<String, String> allele2species, Set<String> singleAlleleSpecies){
+        if(allele2species==null){
+            for(Object tupleList: gts){
+                for(Object tuple: (ArrayList)tupleList) {
+                    Tree gt = ((MutableTuple<Tree, Double>) tuple).Item1;
+                    for (String leaf : gt.getLeaves()) {
+                        singleAlleleSpecies.add(leaf);
+                    }
+                }
+            }
+        }
+        else{
+            singleAlleleSpecies.addAll(allele2species.values());
+            for(Object tuple: gts){
+                Tree gt = ((MutableTuple<Tree,Double>)tuple).Item1;
+                if(singleAlleleSpecies.size()==0)return;
+                Set<String> speciesVisited = new HashSet<>();
+
+                for(String leaf: gt.getLeaves()){
+                    String species = allele2species.get(leaf);
+                    if(singleAlleleSpecies.contains(species)){
+                        if(speciesVisited.contains(species)){
+                            singleAlleleSpecies.remove(species);
+                        }
+                        else{
+                            speciesVisited.add(species);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private Set<NetNode> findEdgeHavingNoBL(Network network) {
+        Set<NetNode> node2ignore = new HashSet<>();
+        Map<NetNode, Set<String>> node2leaves = new HashMap<>();
+        for (Object nodeO : Networks.postTraversal(network)) {
+            NetNode node = (NetNode) nodeO;
+            Set<String> leaves = new HashSet<>();
+            if (node.isLeaf()) {
+                leaves.add(node.getName());
+            }
+            else {
+                for (Object childO : node.getChildren()) {
+                    NetNode childNode = (NetNode) childO;
+                    Set<String> childLeaves = node2leaves.get(childNode);
+                    leaves.addAll(childLeaves);
+                }
+            }
+            if(leaves.size()<=1){
+                node2ignore.add(node);
+            }
+            node2leaves.put(node, leaves);
+
+        }
+        return node2ignore;
     }
 
 }

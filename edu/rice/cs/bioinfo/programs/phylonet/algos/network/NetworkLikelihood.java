@@ -86,11 +86,6 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
         };
     }
 
-    abstract protected void summarizeData(List originalData, Map<String,String> allele2species, List summarizedData, List dataCorrespondences);
-
-    abstract protected double findOptimalBranchLength(Network<Object> speciesNetwork, Map<String, List<String>> species2alleles, List summarizedData, List dataCorrespondences);
-
-    abstract protected double computeProbability(Network<Object> speciesNetwork, List summarizedData, Map<String, List<String>> species2alleles, List dataCorrespondences);
 
 
     public double computeLikelihood(Network speciesNetwork, List originalData, Map<String,List<String>> species2alleles, boolean needOptimize){
@@ -107,32 +102,39 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
         List dataCorrespondences = new ArrayList();
         List summarizedData = new ArrayList();
         summarizeData(originalData, allele2species, summarizedData, dataCorrespondences);
-        //System.out.println(summarizedData.size());
-        //computeLikelihood(speciesNetwork, summarizedData, dataCorrespondences, species2alleles, needOptimize);
 
-        //_numThreads = Math.max(1, _numThreads);
-        //_dataSize = summarizedData.size();
+        Set<String> singleAlleleSpecies = new HashSet<>();
+        findSingleAlleleSpeciesSet(summarizedData, allele2species, singleAlleleSpecies);
+
         double maxProb = Double.NEGATIVE_INFINITY;
         for(int i=0; i<_numRuns; i++){
-            double prob = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, needOptimize);
+            double prob = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, singleAlleleSpecies, needOptimize);
             maxProb = Math.max(maxProb, prob);
         }
         return maxProb;
     }
 
 
-    protected double computeLikelihood(Network speciesNetwork, Map<String,List<String>> species2alleles, List summarizedData, List dataCorrespondences, boolean needOptimize){
+    protected double computeLikelihood(Network speciesNetwork, Map<String,List<String>> species2alleles, List summarizedData, List dataCorrespondences, Set<String> singleAlleleSpecies, boolean needOptimize){
         //long startTime = System.currentTimeMillis();
         double MLScore;
         if(!needOptimize){
             MLScore = computeProbability(speciesNetwork, summarizedData, species2alleles, dataCorrespondences);
         }
         else{
-            MLScore = findOptimalBranchLength(speciesNetwork, species2alleles, summarizedData, dataCorrespondences);
+            MLScore = findOptimalBranchLength(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, singleAlleleSpecies);
         }
         //System.out.println((System.currentTimeMillis()-startTime)/1000.0);
         return MLScore;
     }
 
+
+    abstract protected void summarizeData(List originalData, Map<String,String> allele2species, List summarizedData, List dataCorrespondences);
+
+    abstract protected double findOptimalBranchLength(Network<Object> speciesNetwork, Map<String, List<String>> species2alleles, List summarizedData, List dataCorrespondences, Set<String> singleAlleleSpecies);
+
+    abstract protected double computeProbability(Network<Object> speciesNetwork, List summarizedData, Map<String, List<String>> species2alleles, List dataCorrespondences);
+
+    abstract protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies);
 
 }

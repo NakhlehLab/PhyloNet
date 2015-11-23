@@ -197,14 +197,14 @@ public class Trees {
 
 		// check the root
 		TMutableNode oroot = tree.getRoot();
-		if(oroot.getChildCount() == 1) {
+		while(oroot.getChildCount() == 1) {
 			TMutableNode n = oroot.getChildren().iterator().next();
 
 			n.makeRoot();
 			n.removeChild(oroot, false);
+			oroot = tree.getRoot();
 		}
 
-		return;
 	}
 
 

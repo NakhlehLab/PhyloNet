@@ -55,11 +55,11 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
 
 
-    protected Func1<Network, Double> getScoreFunction(final List summarizedData, final Map<String, List<String>> species2alleles, final List dataCorrespondences){
+    protected Func1<Network, Double> getScoreFunction(final List summarizedData, final Map<String, List<String>> species2alleles, final List dataCorrespondences, final Set<String> singleAlleleSpecies ){
         return new Func1<Network, Double>() {
             public Double execute(Network speciesNetwork) {
 
-                double score = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences);
+                double score = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, singleAlleleSpecies);
 
                 //System.out.println(speciesNetwork + ": " + score);
                 // A score can be lower than the scores that I currently have in the
@@ -109,13 +109,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         summarizeData(originalGTs, allele2species, gtsForStartingNetwork, gtsForNetworkInference, gtCorrespondence);
 
         Set<String> singleAlleleSpecies = new HashSet<>();
-        if(_optimizeBL){
-            _topologyVsParameterOperation[0] = 1;
-            _topologyVsParameterOperation[1] = 0;
-        }
-        else{
-            findSingleAlleleSpeciesSet(gtsForStartingNetwork, allele2species, singleAlleleSpecies);
-        }
+        findSingleAlleleSpeciesSet(gtsForStartingNetwork, allele2species, singleAlleleSpecies);
 
         String startingNetwork = getStartNetwork(gtsForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
         gtsForStartingNetwork.clear();
@@ -129,7 +123,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         //System.out.print(_intermediateResultFile.getAbsolutePath());
         //searcher.setIntermediateFile(_intermediateResultFile.getAbsolutePath());
 
-        Func1<Network, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence);
+        Func1<Network, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence, singleAlleleSpecies);
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, 1, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
 
@@ -157,13 +151,13 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
                 System.out.println("_optimalScoreswithReticulations[" + j + "] =" + _optimalScoreswithReticulations[j]);
             }
         }
-        int correctNumReticulations = doCrossValidation(originalGTs, species2alleles, gtsForNetworkInference, gtCorrespondence, maxReticulations);
+        int correctNumReticulations = doCrossValidation(originalGTs, species2alleles, gtsForNetworkInference, gtCorrespondence, maxReticulations, singleAlleleSpecies);
 
         resultList.clear();
         resultList.add(new Tuple<Network, Double>(_optimalNetworkswithReticulations[correctNumReticulations], _optimalScoreswithReticulations[correctNumReticulations]));
     }
 
-    private int doCrossValidation(List<List<MutableTuple<Tree,Double>>> originalGTs, Map<String,List<String>> species2alleles, List<Tree> distinctBinaryTrees, List<Tuple<MutableTuple<Tree, Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, int maxReticulations){
+    private int doCrossValidation(List<List<MutableTuple<Tree,Double>>> originalGTs, Map<String,List<String>> species2alleles, List<Tree> distinctBinaryTrees, List<Tuple<MutableTuple<Tree, Double>, Set<Integer>>> nbTreeAndCountAndBinaryIDList, int maxReticulations, Set<String> singleAlleleSpecies){
                /* Cross validation
             1. The external while loop is for the number of reticulations.  Undetermined, go up until stoppage criteria are
                met, or exceeding the maximum reticulations limit.
@@ -250,7 +244,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
                 // Given the network, use Brent to optimize its lengths and probabilities.
                 // It modifies the species network to an optimal one during the Brent process.
-                double score = computeLikelihood(network, species2alleles, distinctBinaryTrees, nbTreeAndCountAndBinaryIDList);
+                double score = computeLikelihood(network, species2alleles, distinctBinaryTrees, nbTreeAndCountAndBinaryIDList, singleAlleleSpecies);
 
                 // Compute theoretical probabilities and real frequencies with trained network and validation data set.
 

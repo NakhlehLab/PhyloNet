@@ -125,7 +125,6 @@ public class GeneTreeProbabilityPseudo {
 
 
     public void computePseudoLikelihood(Network network, List<String> allTriplets, double[][] probs){
-
         if(_articulationNodes==null){
             initialize(network);
         }
@@ -138,10 +137,8 @@ public class GeneTreeProbabilityPseudo {
         int totalTripleNum = allTriplets.size();
         int count = 0;
         while(tripleID < totalTripleNum){
-
             String[] triple = allTriplets.get(tripleID).split("&");
             //if(tripleID % 100 == 0)
-                //System.out.println(tripleID);
             probs[tripleID][0] = calculateTripleProbability(network,triple);
 
             String temp = triple[1];
@@ -149,8 +146,27 @@ public class GeneTreeProbabilityPseudo {
             triple[2] = temp;
             probs[tripleID][1] = calculateTripleProbability(network,triple);
 
-            probs[tripleID][2] = 1-probs[tripleID][0]-probs[tripleID][1];
-            /*
+            probs[tripleID][2] = Math.abs(1- probs[tripleID][0] - probs[tripleID][1]);
+/*
+            temp = triple[0];
+            triple[0] = triple[2];
+            triple[2] = temp;
+            probs[tripleID][2] = calculateTripleProbability(network,triple);
+
+
+            double checkingOne = 0;
+
+
+            for(int i=0; i<3; i++){
+                checkingOne += probs[tripleID][i];
+
+            }
+
+            if(Math.abs(checkingOne-1)>0.0001){
+                System.out.println(checkingOne);
+
+            }
+
             for(double value: probs[tripleID]){
                 System.out.print(value + ",");
             }

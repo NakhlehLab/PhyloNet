@@ -92,10 +92,10 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             MDCInference_DP mdc = new MDCInference_DP();
             Solution sol;
             if(allele2species==null){
-                sol = mdc.inferSpeciesTree(gts, false, 1, false, true, -1).get(0);
+                sol = (Solution)(mdc.inferSpeciesTree(gts, false, 1, false, true, -1).get(0));
             }
             else{
-                sol = mdc.inferSpeciesTree(gts, allele2species, false, 1, false, true, -1).get(0);
+                sol = (Solution)(mdc.inferSpeciesTree(gts, allele2species, false, 1, false, true, -1).get(0));
             }
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(startingTree.toString());

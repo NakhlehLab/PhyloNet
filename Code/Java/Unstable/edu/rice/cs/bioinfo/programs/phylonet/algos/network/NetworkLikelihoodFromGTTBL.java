@@ -223,7 +223,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
     }
 
 
-    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List gts, final List gtCorrespondence){
+    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List gts, final List gtCorrespondence, final Set<String> singleAlleleSpecies){
         boolean continueRounds = true; // keep trying to improve network
 
         if(_pair2time == null){
@@ -549,7 +549,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         return prob;
     }
 
-
+    protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies){}
 
 
     abstract protected double calculateFinalLikelihood(double[] probs, List gtCorrespondences);

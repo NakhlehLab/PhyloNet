@@ -60,7 +60,10 @@ public abstract class InferNetworkPseudoMLFromGTT extends InferNetworkMLFromGTT 
             List summarizedGTs = new ArrayList();
             List gtCorrespondence = new ArrayList();
             _fullLikelihoodCalculator.summarizeData(originalData, allele2species, summarizedGTs, gtCorrespondence);
-            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_fullLikelihoodCalculator, summarizedGTs, gtCorrespondence, species2alleles, resultList);
+            Set<String> singleAlleleSpecies = new HashSet<>();
+            findSingleAlleleSpeciesSet(summarizedGTs, allele2species, singleAlleleSpecies);
+
+            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_fullLikelihoodCalculator, summarizedGTs, gtCorrespondence, species2alleles, singleAlleleSpecies, resultList);
             resultList.clear();
             resultList.addAll(updatedResult);
         }

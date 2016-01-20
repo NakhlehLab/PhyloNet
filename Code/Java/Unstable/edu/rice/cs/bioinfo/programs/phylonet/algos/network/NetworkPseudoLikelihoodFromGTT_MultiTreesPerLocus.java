@@ -304,6 +304,7 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
                 totalWeight += freqs.Item2;
                 for(int i=0; i<probs.length; i++){
                     for(int j=0; j<3; j++){
+                        if(probs[i][j] == 0)return Double.NEGATIVE_INFINITY;
                         probForOneTree *= Math.pow(probs[i][j],freqs.Item1[i][j]);
                     }
                 }

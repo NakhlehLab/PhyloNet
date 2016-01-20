@@ -144,9 +144,9 @@ public class GeneTreeProbabilityPseudo {
             String temp = triple[1];
             triple[1] = triple[2];
             triple[2] = temp;
-            probs[tripleID][1] = calculateTripleProbability(network,triple);
+            probs[tripleID][1] = calculateTripleProbability(network, triple);
 
-            probs[tripleID][2] = Math.abs(1- probs[tripleID][0] - probs[tripleID][1]);
+            probs[tripleID][2] = Math.max(1 - probs[tripleID][0] - probs[tripleID][1], 0);
 /*
             temp = triple[0];
             triple[0] = triple[2];

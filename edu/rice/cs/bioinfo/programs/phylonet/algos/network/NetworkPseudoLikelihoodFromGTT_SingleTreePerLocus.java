@@ -143,6 +143,7 @@ public class NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus extends NetworkPs
         for(Object o: tripletFrequencies){
             double[] freqs = (double[])o;
             for(int i=0; i<3; i++){
+                if(probs[index][i] == 0)return Double.NEGATIVE_INFINITY;
                 totalProb += freqs[i] * Math.log(probs[index][i]);
                 //totalProb *= Math.pow(probs[index][i],freqs[i]);
             }

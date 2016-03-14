@@ -207,7 +207,7 @@ public class SimGTInNetworkByMS {
                 Double height1 = node2height.get(child1.getData()) + child1.getParentDistance(node)*0.5;
                 Double height2 = node2height.get(child2.getData()) + child2.getParentDistance(node)*0.5;
                 if(Math.abs(height1-height2)>epsilon){
-                    throw new RuntimeException("The network is not ultrametric!");
+                    throw new RuntimeException("The network is not ultrametric! (" + node.getName() + ")");
                 }
                 height = Math.max(height1,height2);
                 node2height.put(node.getData(), height);

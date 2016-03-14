@@ -180,12 +180,19 @@ public abstract class InferNetworkML {
         List dataCorrespondence = new ArrayList();
         summarizeData(originalData, allele2species, dataForStartingNetwork, dataForNetworkInference, dataCorrespondence);
 
+
+        String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
+        //String startingNetwork = _startNetwork.toString();
+        dataForStartingNetwork.clear();
+        Network speciesNetwork = Networks.readNetwork(startingNetwork);
+
         Set<String> singleAlleleSpecies = new HashSet<>();
+        findSingleAlleleSpeciesSet(speciesNetwork, species2alleles, singleAlleleSpecies);
+
         if(_optimizeBL){
             _topologyVsParameterOperation[0] = 1;
             _topologyVsParameterOperation[1] = 0;
         }
-        findSingleAlleleSpeciesSet(dataForStartingNetwork, allele2species, singleAlleleSpecies);
 
         NetworkRandomParameterNeighbourGenerator parameterGenerator = getNetworkRandomParameterNeighbourGenerator(dataForNetworkInference, allele2species, singleAlleleSpecies);
         NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], parameterGenerator, _topologyVsParameterOperation[1], _seed);
@@ -198,16 +205,9 @@ public abstract class InferNetworkML {
         } else{
             searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
         }
-        //SimulatedAnnealingSalterPearL searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
         searcher.setLogFile(_logFile);
-        //System.out.print(_intermediateResultFile.getAbsolutePath());
-        //searcher.setIntermediateFile(_intermediateResultFile.getAbsolutePath());
         Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, species2alleles, dataCorrespondence, singleAlleleSpecies);
 
-        String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
-        //String startingNetwork = _startNetwork.toString();
-        dataForStartingNetwork.clear();
-        Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
         if(postOptimization){
             LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_likelihoodCalculator, dataForNetworkInference, dataCorrespondence, species2alleles, singleAlleleSpecies, resultList);
@@ -280,7 +280,7 @@ public abstract class InferNetworkML {
 
 
 
-    abstract protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies);
+    abstract protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies);
 
     abstract protected NetworkRandomParameterNeighbourGenerator getNetworkRandomParameterNeighbourGenerator(List dataForNetworkInference, Map<String,String> allele2species, Set<String> singleAlleleSpecies);
 

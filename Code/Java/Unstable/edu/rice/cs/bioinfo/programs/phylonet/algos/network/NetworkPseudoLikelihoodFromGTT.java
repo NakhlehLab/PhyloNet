@@ -512,37 +512,9 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    protected void findSingleAlleleSpeciesSet(List gts, Map<String, String> allele2species, Set<String> singleAlleleSpecies){
-        if(allele2species==null){
-            for(Object tupleList: gts){
-                for(Object tuple: (ArrayList)tupleList) {
-                    Tree gt = ((MutableTuple<Tree, Double>) tuple).Item1;
-                    for (String leaf : gt.getLeaves()) {
-                        singleAlleleSpecies.add(leaf);
-                    }
-                }
-            }
-        }
-        else{
-            singleAlleleSpecies.addAll(allele2species.values());
-            for(Object tuple: gts){
-                Tree gt = ((MutableTuple<Tree,Double>)tuple).Item1;
-                if(singleAlleleSpecies.size()==0)return;
-                Set<String> speciesVisited = new HashSet<>();
-
-                for(String leaf: gt.getLeaves()){
-                    String species = allele2species.get(leaf);
-                    if(singleAlleleSpecies.contains(species)){
-                        if(speciesVisited.contains(species)){
-                            singleAlleleSpecies.remove(species);
-                        }
-                        else{
-                            speciesVisited.add(species);
-                        }
-                    }
-                }
-
-            }
+    protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){
+        for(Object node: speciesNetwork.getLeaves()){
+            singleAlleleSpecies.add(((NetNode)node).getName());
         }
     }
 

@@ -149,18 +149,8 @@ public class InferMLNetworkFromSequences extends MDCOnNetworkYFFromRichNewickJun
                 }
             }
         }
-        int count = 0;
-        //System.out.println
         for(Map.Entry<String, Integer> entry: alignment2count.entrySet()){
-            //System.out.println(entry.toString());
             distinctSequences.add(new Tuple<char[], Integer>(entry.getKey().toCharArray(), entry.getValue()));
-            //TODO
-/*
-             if(count++==5){
-                 break;
-             }
-*/
-
         }
         return distinctSequences;
     }

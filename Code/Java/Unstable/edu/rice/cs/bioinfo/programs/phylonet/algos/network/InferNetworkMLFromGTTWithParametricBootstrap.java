@@ -25,7 +25,7 @@ public class InferNetworkMLFromGTTWithParametricBootstrap extends InferNetworkML
             public List execute(Network network, Integer numGTs) {
                 SimGTInNetwork simulator = new SimGTInNetwork();
                 simulator.setSeed(_seed);
-                _seed = _seed * 2;
+                if(_seed != null)_seed = _seed * 2;
                 List<List<MutableTuple>> gts = new ArrayList<List<MutableTuple>>();
                 for(Tree tr: simulator.generateGTs(network, species2alleles, numGTs)){
                     gts.add(Arrays.asList(new MutableTuple(tr, 1.0)));

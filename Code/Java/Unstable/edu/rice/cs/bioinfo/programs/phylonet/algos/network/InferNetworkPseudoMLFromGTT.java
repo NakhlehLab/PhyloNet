@@ -22,6 +22,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
@@ -61,7 +62,7 @@ public abstract class InferNetworkPseudoMLFromGTT extends InferNetworkMLFromGTT 
             List gtCorrespondence = new ArrayList();
             _fullLikelihoodCalculator.summarizeData(originalData, allele2species, summarizedGTs, gtCorrespondence);
             Set<String> singleAlleleSpecies = new HashSet<>();
-            findSingleAlleleSpeciesSet(summarizedGTs, allele2species, singleAlleleSpecies);
+            findSingleAlleleSpeciesSet(resultList.get(0).Item1, singleAlleleSpecies);
 
             LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_fullLikelihoodCalculator, summarizedGTs, gtCorrespondence, species2alleles, singleAlleleSpecies, resultList);
             resultList.clear();
@@ -69,5 +70,9 @@ public abstract class InferNetworkPseudoMLFromGTT extends InferNetworkMLFromGTT 
         }
     }
 
-
+    private void findSingleAlleleSpeciesSet(Network network, Set<String> singleAlleleSpecies){
+        for(Object node: network.getLeaves()){
+            singleAlleleSpecies.add(((NetNode)node).getName());
+        }
+    }
 }

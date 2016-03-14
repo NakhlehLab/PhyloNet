@@ -118,7 +118,7 @@ public class GLASSInference
 
 
 	/**
-	 * Infers the species tree from the given list of unrooted gene trees with multiple alleles
+	 * Infers the species tree from the given list of gene trees with multiple alleles
 	 *
 	 * @param 	trees	the list of gene trees from which the species tree is to be
 	 * 					inferred
@@ -176,7 +176,7 @@ public class GLASSInference
 
 
 	/**
-	 * Infers the species tree from the given list of unrooted gene trees with single alleles
+	 * Infers the species tree from the given list of gene trees with single alleles
 	 *
 	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
 	 * @return	the tree inferred

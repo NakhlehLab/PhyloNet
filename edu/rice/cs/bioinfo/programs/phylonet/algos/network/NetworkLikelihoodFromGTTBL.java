@@ -549,7 +549,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         return prob;
     }
 
-    protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies){}
+    protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){}
 
 
     abstract protected double calculateFinalLikelihood(double[] probs, List gtCorrespondences);

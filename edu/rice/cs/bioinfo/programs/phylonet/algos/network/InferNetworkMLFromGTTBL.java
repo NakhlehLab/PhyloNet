@@ -44,7 +44,7 @@ import java.util.*;
 public abstract class InferNetworkMLFromGTTBL extends InferNetworkMLFromGT {
     //Map<UnorderedPair, Double> _pairwiseTimeLimit;
 
-    protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies){
+    protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){
 
     }
 

@@ -43,7 +43,7 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
     protected double _Brent2 = 0.001;
     protected int _numThreads = 1;
     protected boolean _printDetails = false;
-    protected int _numRuns = 1;
+    protected int _numRuns = 5;
 
     //TODO
     protected int _maxNumACs;
@@ -104,7 +104,7 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
         summarizeData(originalData, allele2species, summarizedData, dataCorrespondences);
 
         Set<String> singleAlleleSpecies = new HashSet<>();
-        findSingleAlleleSpeciesSet(summarizedData, allele2species, singleAlleleSpecies);
+        findSingleAlleleSpeciesSet(speciesNetwork, species2alleles, singleAlleleSpecies);
 
         double maxProb = Double.NEGATIVE_INFINITY;
         for(int i=0; i<_numRuns; i++){
@@ -135,6 +135,6 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
 
     abstract protected double computeProbability(Network<Object> speciesNetwork, List summarizedData, Map<String, List<String>> species2alleles, List dataCorrespondences);
 
-    abstract protected void findSingleAlleleSpeciesSet(List dataForNetworkInference, Map<String, String> allele2species, Set<String> singleAlleleSpecies);
+    abstract protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies);
 
 }

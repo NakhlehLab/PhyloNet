@@ -71,7 +71,6 @@ public class MDCURInference_ILP {
 	    List<STITreeCluster<int[]>> allClusters = new ArrayList<STITreeCluster<int[]>>();
 	    index=0;
 		for(Tree tr : trees){
-				//TODO
 				for(TNode n:tr.postTraverse()){
 					((STINode)n).setParentDistance(TMutableNode.NO_DISTANCE);
 				}
@@ -177,7 +176,6 @@ public class MDCURInference_ILP {
 				}
 			}
 			else{
-				//TODO
 				for(TNode n:tr.postTraverse()){
 					((STINode)n).setParentDistance(TMutableNode.NO_DISTANCE);
 				}

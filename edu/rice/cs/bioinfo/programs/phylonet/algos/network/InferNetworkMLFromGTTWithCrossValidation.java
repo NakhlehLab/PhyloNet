@@ -108,11 +108,12 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         List gtCorrespondence = new ArrayList();
         summarizeData(originalGTs, allele2species, gtsForStartingNetwork, gtsForNetworkInference, gtCorrespondence);
 
-        Set<String> singleAlleleSpecies = new HashSet<>();
-        findSingleAlleleSpeciesSet(gtsForStartingNetwork, allele2species, singleAlleleSpecies);
-
         String startingNetwork = getStartNetwork(gtsForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
+        Network speciesNetwork = Networks.readNetwork(startingNetwork);
         gtsForStartingNetwork.clear();
+
+        Set<String> singleAlleleSpecies = new HashSet<>();
+        findSingleAlleleSpeciesSet(speciesNetwork, species2alleles, singleAlleleSpecies);
 
         NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
@@ -124,7 +125,6 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         //searcher.setIntermediateFile(_intermediateResultFile.getAbsolutePath());
 
         Func1<Network, Double> scorer = getScoreFunction(gtsForNetworkInference, species2alleles, gtCorrespondence, singleAlleleSpecies);
-        Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, 1, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
 
 

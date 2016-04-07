@@ -34,22 +34,23 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 10/17/11
  * Time: 3:24 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to compute the minimum number of extra lineages required to reconcile gene trees within a species tree
+ * For all functions related to rooted gene trees, see "Species tree inference by minimizing deep coalescences", PLoS Computational Biology, 2009 for details.
+ * For all functions related to unrooted gene trees, see "Algorithms for MDC-based multi-locus phylogeny inference: Beyond rooted binary gene trees on single alleles", Journal of Computational Biology, 2011 for details.
  */
 public class DeepCoalescencesCounter {
 
-
-
 	/**
-	 * Compute the number of extra lineages contributed by a species tree and a set of gene tree when single allele is contained
+	 * Computes the minimum number of extra lineages given a species tree and a set of gene trees when single allele is sampled per species
 	 *
 	 * @param gts	a list of given gene trees
 	 * @param st	a given species tree
-	 * @param rooted	whether treating the gene trees and species tree rooted or not
+	 * @param rooted	whether treating the gene trees as rooted
+	 * @param bootstrap	threshold of bootstrap value. Branches with lower bootstrap values will be contracted
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -101,12 +102,13 @@ public class DeepCoalescencesCounter {
 
 
 	/**
-	 * Compute the number of extra lineages contributed by a species tree and a set of gene tree when multiple alleles are contained
+	 * Computes the minimum number of extra lineages given a species tree and a set of gene tree when multiple alleles are sampled per species
 	 *
 	 * @param gts	a list of given gene trees
 	 * @param st	a given species tree
-	 * @param taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @param rooted	whether treating the gene trees and species tree rooted or not
+	 * @param taxonMap	Maps gene tree taxa to species tree taxa
+	 * @param rooted	whether treating the gene trees as rooted
+	 * @param bootstrap	threshold of bootstrap value. Branches with lower bootstrap values will be contracted
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -164,63 +166,13 @@ public class DeepCoalescencesCounter {
 	}
 
 
-    /*
-	public static int countExtraCoal(List<MutableTuple<Tree,Double>> gts, Network net, Map<String, String> taxonMap){
-
-		double coal_sum = 0;
-		Map<String,Integer> nname2tamount = new HashMap<String,Integer>();
-		Tree superst = networkToTree(net, nname2tamount);
-		System.out.println(superst);
-		for(MutableTuple<Tree,Double> gt: gts){
-			List<String> gt_taxa = Arrays.asList(gt.Item1.getLeaves());
-			if(taxonMap == null){
-				taxonMap = new HashMap<String,String>();
-				for(String taxon: gt_taxa){
-					taxonMap.put(taxon, taxon);
-				}
-			}
-			List<Map<String,String>> allmappings = new ArrayList<Map<String,String>>();
-			Map<String, String> firstmap = new HashMap<String,String>();
-			firstmap.putAll(taxonMap);
-			allmappings.add(firstmap);
-
-			for(String gtleaf: gt_taxa){
-				String nleaf = taxonMap.get(gtleaf);
-				List<Map<String,String>> temp = new ArrayList<Map<String,String>>();
-				temp.addAll(allmappings);
-				allmappings.clear();
-				for(int j=1; j<=nname2tamount.get(nleaf); j++){
-					String st_leaf = nleaf+"_"+j;
-					for(Map<String,String> mapping: temp){
-						Map<String,String> new_mapping = new HashMap<String,String>();
-						new_mapping.putAll(mapping);
-						new_mapping.put(gtleaf, st_leaf);
-						allmappings.add(new_mapping);
-					}
-				}
-			}
-			int min_coal = Integer.MAX_VALUE;
-			List<Tree> gtlist = new ArrayList<Tree>();
-			for(Map<String,String> mapping: allmappings){
-				gtlist.clear();
-				gtlist.add(gt);
-				int coal = countExtraCoal(gtlist, superst, mapping, true, 1);
-				if(min_coal>coal){
-					min_coal = coal;
-				}
-			}
-			System.out.println(gt);
-			System.out.println(min_coal);
-		}
-		return coal_sum;
-	}
-	*/
 
 	/**
-	 * Compute the number of extra lineages contributed by a cluster in a set of rooted gene trees when single allele is contained
+	 * Computes the minimum number of extra lineages given a cluster (in species tree) and a set of gene trees when single allele is sampled per species
 	 *
 	 * @param trees		a list of given gene trees
 	 * @param cluster	the cluster being computed
+	 * @param rooted	whether treating the gene trees as rooted
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -241,11 +193,12 @@ public class DeepCoalescencesCounter {
 	}
 
 	/**
-	 * Compute the number of extra lineages contributed by a cluster in a set of rooted gene trees when multiple alleles are contained
+	 * Computes the minimum number of extra lineages given a cluster (in species tree) and a set of gene trees when multiple alleles are sampled per species
 	 *
 	 * @param trees		a list of given gene trees
 	 * @param cluster	the cluster being computed
 	 * @param taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param rooted	whether treating the gene trees as rooted
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -264,10 +217,11 @@ public class DeepCoalescencesCounter {
 		return xl;
 	}
 
+
 	/**
-	 * Compute the number of extra lineages contributed by a cluster in a given rooted gene tree when single allele is contained
+	 * Computes the number of extra lineages given a cluster (in a species tree) and a rooted gene tree when single allele is sampled per species
 	 *
-	 * @param tr		a given gene tree
+	 * @param tr		a rooted gene tree
 	 * @param cluster	the cluster being computed
 	 *
 	 * @return the number of extra lineage
@@ -322,6 +276,15 @@ public class DeepCoalescencesCounter {
 		return Math.max(count-1, 0);
 	}
 
+
+	/**
+	 * Computes the number of extra lineages given a cluster (in a species tree) and an unrooted gene tree when single allele is sampled per species
+	 *
+	 * @param tr		a unrooted gene tree
+	 * @param cluster	the cluster being computed
+	 *
+	 * @return the number of extra lineage
+	 */
 	public static int getClusterCoalNum_unrooted(Tree tr, STITreeCluster cluster) {
 		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 		List<String> taxalist = new ArrayList<String>();
@@ -415,12 +378,13 @@ public class DeepCoalescencesCounter {
 		return Math.max(0,coveragelist.size()-1);
 	}
 
+
 	/**
-	 * Compute the number of extra lineages contributed by a cluster in a given rooted gene tree when multiple alleles are contained
+	 * Computes the number of extra lineages given a cluster (in a species tree) and a rooted gene tree when multiple alleles are sampled per species
 	 *
-	 * @param tr		a given gene tree
+	 * @param tr		a rooted gene tree
 	 * @param cluster	the cluster being computed
-	 * @param taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param taxonMap	Maps gene tree taxa to species tree taxa
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -475,7 +439,15 @@ public class DeepCoalescencesCounter {
 	}
 
 
-
+	/**
+	 * Computes the number of extra lineages given a cluster (in a species tree) and an unrooted gene tree when multiple alleles are sampled per species
+	 *
+	 * @param tr		an unrooted gene tree
+	 * @param cluster	the cluster being computed
+	 * @param taxonMap	Maps gene tree taxa to species tree taxa
+	 *
+	 * @return the number of extra lineage
+	 */
 	public static int getClusterCoalNum_unrooted(Tree tr, STITreeCluster cluster, Map<String,String> taxonMap) {
 		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 		List<String> gtTaxalist = new ArrayList<String>();
@@ -563,55 +535,6 @@ public class DeepCoalescencesCounter {
 		}
 		return Math.max(0,coveragelist.size()-1);
 	}
-
-    /*
-	private static Tree networkToTree(Network net, Map<String,Integer> nname2tamount){
-		MutableTree tree = new STITree<Double>();
-		Queue<NetNode<Double>> source = new LinkedList<NetNode<Double>>();
-		Queue<TMutableNode> dest = new LinkedList<TMutableNode>();
-		source.offer(net.getRoot());
-		dest.offer(tree.getRoot());
-		while(!source.isEmpty()){
-			NetNode<Double> parent = source.poll();
-			TMutableNode peer = dest.poll();
-
-			int index = 0;
-			for (NetNode<Double> child : parent.getChildren()) {
-
-				TMutableNode copy;
-				if (child.getName() == NetNode.NO_NAME) {
-					copy = peer.createChild(TNode.NO_NAME);
-				}
-				else {
-					Integer amount = nname2tamount.get(child.getName());
-					if(amount==null){
-						amount = 0;
-					}
-					nname2tamount.put(child.getName(), ++amount);
-					String newname = child.getName() + "_" + amount;
-					copy = peer.createChild(newname);
-
-				}
-				// Update the distance and data for this child.
-				double distance = child.getParentDistance(parent);
-				if (distance == NetNode.NO_DISTANCE) {
-					//copy.setParentDistance(TNode.NO_DISTANCE);
-					copy.setParentDistance(0);
-				}
-				else {
-					copy.setParentDistance(distance);
-				}
-
-				// Continue to iterate over the children of nn and tn.
-				source.offer(child);
-				dest.offer(copy);
-				index ++;
-			}
-		}
-		Trees.removeBinaryNodes(tree);
-		return tree;
-	}
-*/
 
 
 

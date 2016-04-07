@@ -34,11 +34,12 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 11/14/11
  * Time: 1:40 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to infer species tree using GLASS
+ * See "Incomplete lineage sorting: Consistent phylogeny estimation from multiple loci", IEEE/ACM Transactions on Computational Biology and Bioinformatics, 2008.
  */
 public class GLASSInference
 {
@@ -50,6 +51,14 @@ public class GLASSInference
 	}
 
 
+	/**
+	 * Read the pairwise distances from a file
+	 *
+	 * @param inputFile		the input file that contains a distance matrix
+	 *
+	 * @return	the pairwise distance matrix
+	 *
+	 */
 	public static TaxaDistanceMatrix getTaxaDistanceMatrix(File inputFile) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(inputFile));
 		String line = br.readLine().trim();
@@ -118,20 +127,18 @@ public class GLASSInference
 
 
 	/**
-	 * Infers the species tree from the given list of gene trees with multiple alleles
+	 * Infers the species tree from the given list of gene trees with multiple alleles sampled per species using GLASS
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be
-	 * 					inferred
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @return	the tree inferred
-	 *
+	 * @param trees	the list of gene trees from which the species tree is to be inferred. Gene trees must be ultrametric.
+	 * @param taxonMap	Maps gene tree taxa to species tree taxa.
+     *
+	 * @return	the species tree inferred
 	 */
 	public Tree inferSpeciesTree(List<Tree> trees, Map<String,String> taxonMap){
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
-
 
 		LinkedList<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 		ArrayList<STITreeCluster> allClusters = new ArrayList<STITreeCluster>();
@@ -175,13 +182,13 @@ public class GLASSInference
 	}
 
 
-	/**
-	 * Infers the species tree from the given list of gene trees with single alleles
-	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @return	the tree inferred
-	 *
-	 */
+    /**
+     * Infers the species tree from the given list of gene trees with single allele sampled per species using GLASS
+     *
+     * @param trees	the list of gene trees from which the species tree is to be inferred. Gene trees must be ultrametric.
+     *
+     * @return	the species tree inferred
+     */
 	public Tree inferSpeciesTree(List<Tree> trees){
 		LinkedList<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 		ArrayList<STITreeCluster> allClusters = new ArrayList<STITreeCluster>();
@@ -218,7 +225,6 @@ public class GLASSInference
 
 		Map<STITreeCluster,Double> taxonPairTime = computeTaxonPairTime(trees,taxa);
 
-		//System.out.println(taxonPairTime);
 		for (String taxon: taxa){
 			STITreeCluster cluster = new STITreeCluster(taxa);
 			cluster.addLeaf(taxon);
@@ -233,11 +239,13 @@ public class GLASSInference
 	}
 
 
-	/**
-	 * Infers the species tree from the given distances of taxon pairs
-	 * @param 	distanceMatrix	taxa in species tree
-	 * @return	the tree inferred
-	 */
+    /**
+     * Infers the species tree from the given list of gene trees with single allele sampled per species using GLASS
+     *
+     * @param distanceMatrix	a distance matrix from which the species tree is to be inferred. Gene trees must be ultrametric.
+     *
+     * @return the species tree inferred
+     */
 	public Tree inferSpeciesTreeFromTaxa(TaxaDistanceMatrix distanceMatrix) {
 		String[] taxa = distanceMatrix.getTaxa();
 		Map<STITreeCluster,Double> taxonPairTime = distanceMatrix.getDistanceMap();
@@ -258,7 +266,15 @@ public class GLASSInference
 	}
 
 
-	public Tree inferSpeciesTree2(List<SequenceAlignment> sequences){
+
+    /**
+     * Infers the species tree from the given list of sequence alignments with single allele sampled per species using GLASS
+     *
+     * @param sequences	a distance matrix from which the species tree is to be inferred. Gene trees must be ultrametric.
+     *
+     * @return the species tree inferred
+     */
+	public Tree inferSpeciesTreeFromSequenceAlignments(List<SequenceAlignment> sequences){
 		LinkedList<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 		ArrayList<STITreeCluster> allClusters = new ArrayList<STITreeCluster>();
 
@@ -293,7 +309,18 @@ public class GLASSInference
 		return inferredTree;
 	}
 
-	public Tree inferSpeciesTree2(List<SequenceAlignment> sequences,double percentage){
+
+
+    /**
+     * Infers the species tree from the given list of sequence alignments with single allele sampled per species using GLASS
+     * In this method, the bottom pairwise distances are removed.
+     *
+     * @param sequences     a collection of sequence alignments
+     * @param percentage	the percentage of bottom pairwise distances to be removed
+     *
+     * @return	the species tree inferred
+     */
+	public Tree inferSpeciesTreeFromSequenceAlignments(List<SequenceAlignment> sequences,double percentage){
 		LinkedList<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 		ArrayList<STITreeCluster> allClusters = new ArrayList<STITreeCluster>();
 
@@ -328,8 +355,17 @@ public class GLASSInference
 		return inferredTree;
 	}
 
-	//TODO
-	public Tree inferSpeciesTree2(List<SequenceAlignment> sequences, Map<String,String> taxonMap){
+
+
+    /**
+     * Infers the species tree from the given list of sequence alignments with multiple alleles sampled per species using GLASS
+     *
+     * @param sequences	a collection of sequence alignments
+     * @param taxonMap	Maps gene tree taxa to species tree taxa
+     *                  
+     * @return	the species tree inferred
+     */
+	public Tree inferSpeciesTreeFromSequenceAlignments(List<SequenceAlignment> sequences, Map<String,String> taxonMap){
 		LinkedList<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 		ArrayList<STITreeCluster> allClusters = new ArrayList<STITreeCluster>();
 
@@ -345,11 +381,8 @@ public class GLASSInference
 			stTaxa[i] = temp.get(i);
 		}
 
-
 		Map<STITreeCluster,Double> clusterPairDistance = computeSequencePairDistance(sequences,stTaxa,taxonMap);
-
-
-		//System.out.println(clusterPairDistance);
+        
 		for (String taxon: stTaxa){
 			STITreeCluster cluster = new STITreeCluster(stTaxa);
 			cluster.addLeaf(taxon);
@@ -363,7 +396,19 @@ public class GLASSInference
 		return inferredTree;
 	}
 
-	public Tree inferSpeciesTree2(List<SequenceAlignment> sequences, Map<String,String> taxonMap,double percentage){
+
+    
+    /**
+     * Infers the species tree from the given list of sequence alignments with multiple alleles sampled per species using GLASS
+     * In this method, the bottom pairwise distances are removed.
+     * 
+     * @param sequences	a collection of sequence alignments
+     * @param taxonMap	Maps gene tree taxa to species tree taxa
+     * @param percentage	the percentage of bottom pairwise distances to be removed
+     *                      
+     * @return	the species tree inferred
+     */
+	public Tree inferSpeciesTreeFromSequenceAlignments(List<SequenceAlignment> sequences, Map<String,String> taxonMap,double percentage){
 		LinkedList<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 		ArrayList<STITreeCluster> allClusters = new ArrayList<STITreeCluster>();
 
@@ -378,12 +423,9 @@ public class GLASSInference
 		for (int i = 0; i < stTaxa.length; i++) {
 			stTaxa[i] = temp.get(i);
 		}
-
 
 		Map<STITreeCluster,Double> clusterPairDistance = computeSequencePairDistance(sequences,stTaxa,taxonMap,percentage);
 
-
-		//System.out.println(clusterPairDistance);
 		for (String taxon: stTaxa){
 			STITreeCluster cluster = new STITreeCluster(stTaxa);
 			cluster.addLeaf(taxon);
@@ -398,9 +440,11 @@ public class GLASSInference
 	}
 
 
+    /**
+     * Compute Hamming Distance between two sequences
+     */
 	private double computeHammingDistance(String seq1, String seq2){
 		double distance = 0;
-		//double B = 1-(0.3*0.3+0.2*0.2+0.2*0.2+0.3*0.3);
 		double B = 0.75;
 		char[] seq1_array = seq1.toCharArray();
 		char[] seq2_array = seq2.toCharArray();
@@ -418,13 +462,14 @@ public class GLASSInference
 
 
 	/**
-	 * This function is written to compute the distance of taxon pairs from a set of gene trees with multiple alleles
+	 * Compute the minimum pairwise distances from a collection of gene trees with multiple alleles sampled per species
 	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	stTaxa	taxa in species tree
-	 * @param	gtTaxa	taxa in gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @return  maps from taxon pairs to distance
+	 * @param trees	the list of gene trees
+	 * @param stTaxa	taxa in species tree
+	 * @param gtTaxa	taxa in gene trees
+	 * @param taxonMap	maps gene tree taxa to species tree taxa
+     *                      
+	 * @return  pairwise distances
 	 */
 	private Map<STITreeCluster,Double> computeTaxonPairTime(List<Tree> trees, String[] stTaxa, String[] gtTaxa, Map<String,String> taxonMap){
 		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
@@ -444,7 +489,6 @@ public class GLASSInference
 		all.setData(minTime);
 
 		clusters.add(all);
-
 
 		for (Tree tr : trees) {
 			for (STITreeCluster<Double> tc : tr.getClusters(gtTaxa, true)) {
@@ -468,7 +512,6 @@ public class GLASSInference
 			}
 		}
 
-
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -482,7 +525,6 @@ public class GLASSInference
 			}
 		}
 
-
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -495,7 +537,6 @@ public class GLASSInference
 				}
 			}
 		}
-
 
 		Map<STITreeCluster,Double> taxonPairTime = new HashMap<STITreeCluster, Double>();
 		ArrayList<STITreeCluster<Double>> taxonPairs = new ArrayList<STITreeCluster<Double>>();
@@ -511,8 +552,6 @@ public class GLASSInference
 				taxonPairs.add(cl);
 			}
 		}
-
-		//System.out.println(clusters);
 
 		for(STITreeCluster<Double> cl1: clusters){
 			for(STITreeCluster<Double> cl2 : taxonPairs){
@@ -535,11 +574,12 @@ public class GLASSInference
 
 
 	/**
-	 * This function is written to compute the distance of taxon pairs from a set of gene trees with single allele
+	 * Compute pairwise distances from a collection of gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	taxa	taxa in species tree/gene trees
-	 * @return  maps from taxon pairs to distance
+	 * @param trees	the list of gene trees
+	 * @param taxa	taxa in species tree/gene trees
+     *                  
+	 * @return  pairwise distances
 	 */
 	private Map<STITreeCluster,Double> computeTaxonPairTime(List<Tree> trees, String[] taxa){
 		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
@@ -559,7 +599,6 @@ public class GLASSInference
 		all.setData(minTime);
 
 		clusters.add(all);
-
 
 		for (Tree tr : trees) {
 			for (STITreeCluster<Double> tc : tr.getClusters(taxa, true)) {
@@ -606,7 +645,6 @@ public class GLASSInference
 			}
 		}
 
-
 		Map<STITreeCluster,Double> taxonPairTime = new HashMap<STITreeCluster, Double>();
 		ArrayList<STITreeCluster<Double>> taxonPairs = new ArrayList<STITreeCluster<Double>>();
 
@@ -621,8 +659,6 @@ public class GLASSInference
 				taxonPairs.add(cl);
 			}
 		}
-
-		//System.out.println(clusters);
 
 		for(STITreeCluster<Double> cl1: clusters){
 			for(STITreeCluster<Double> cl2 : taxonPairs){
@@ -643,6 +679,15 @@ public class GLASSInference
 		return taxonPairTime;
 	}
 
+
+    /**
+     * Compute pairwise distances from a collection of sequence alignments with single allele sampled per species
+     *
+     * @param sequences	the collection of sequence alignments
+     * @param stTaxa	taxa in species tree
+     *
+     * @return  pairwise distances
+     */
 	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences, String[] stTaxa){
 		Map<STITreeCluster,Double> sequencePairDistance = new HashMap<STITreeCluster,Double>();
 
@@ -666,8 +711,17 @@ public class GLASSInference
 		return sequencePairDistance;
 	}
 
-	//for remove bottom sequences
-	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences, String[] stTaxa,double percentage){
+
+    /**
+     * Compute pairwise distances from a collection of sequence alignments with single allele sampled per species when the bottom pairwise distances are removed
+     *
+     * @param sequences	the collection of sequence alignments
+     * @param stTaxa	taxa in species tree
+     * @param percentage	the percentage of bottom pairwise distances to be removed
+     *
+     * @return  pairwise distances
+     */
+	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences, String[] stTaxa, double percentage){
 		Map<STITreeCluster,List<Double>> sequencePairDistances = new HashMap<STITreeCluster,List<Double>>();
 
 		for(SequenceAlignment sa : sequences){
@@ -703,7 +757,6 @@ public class GLASSInference
 			}
 		}
 
-
 		Map<STITreeCluster,Double> sequencePairDistance = new HashMap<STITreeCluster,Double>();
 		for(Map.Entry<STITreeCluster, List<Double>> entry: sequencePairDistances.entrySet()){
 			List<Double> dist_list = entry.getValue();
@@ -717,7 +770,17 @@ public class GLASSInference
 		return sequencePairDistance;
 	}
 
-	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences,String[] stTaxa,Map<String,String> taxonMap){
+
+    /**
+     * Compute pairwise distances from a collection of sequence alignments with multiple alleles sampled per species
+     *
+     * @param 	sequences	the collection of sequence alignments
+     * @param	stTaxa	taxa in species tree
+     * @param taxonMap	maps gene tree taxa to species tree taxa
+     *
+     * @return  pairwise distances
+     */
+	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences, String[] stTaxa, Map<String,String> taxonMap){
 		Map<STITreeCluster,Double> sequencePairDistance = new HashMap<STITreeCluster,Double>();
 		for(SequenceAlignment sa : sequences){
 			String[] gtTaxa = sa.getTaxa();
@@ -744,7 +807,19 @@ public class GLASSInference
 		return sequencePairDistance;
 	}
 
-	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences,String[] stTaxa,Map<String,String> taxonMap,double percentage){
+
+
+    /**
+     * Compute pairwise distances from a collection of sequence alignments with multiple alleles sampled per species when the bottom pairwise distances are removed
+     *
+     * @param sequences	the collection of sequence alignments
+     * @param stTaxa	taxa in species tree
+     * @param taxonMap	maps gene tree taxa to species tree taxa
+     * @param percentage	the percentage of bottom pairwise distances to be removed
+     *
+     * @return  pairwise distances
+     */
+	private Map<STITreeCluster,Double> computeSequencePairDistance(List<SequenceAlignment> sequences, String[] stTaxa, Map<String,String> taxonMap, double percentage){
 		Map<STITreeCluster,List<Double>> sequencePairDistances = new HashMap<STITreeCluster,List<Double>>();
 		for(SequenceAlignment sa : sequences){
 			String[] gtTaxa = sa.getTaxa();
@@ -798,78 +873,11 @@ public class GLASSInference
 	}
 
 
-	private Map<STITreeCluster,Double> computeSequencePairDistance2(List<SequenceAlignment> sequences,String[] stTaxa,Map<String,String> taxonMap,double percentage){
-		ArrayList<STITreeCluster<Double>> allPairDistance = new ArrayList<STITreeCluster<Double>>();
-		for(SequenceAlignment sa : sequences){
-			String[] gtTaxa = sa.getTaxa();
-			for(int i=0;i<gtTaxa.length;i++){
-				String seq1 = sa.getSequences()[i];
-				String s1 = taxonMap.get(gtTaxa[i]);
-				for(int j=i+1;j<gtTaxa.length;j++){
-					String s2 = taxonMap.get(gtTaxa[j]);
-					if(s1.equals(s2)){
-						continue;
-					}
-					String seq2 = sa.getSequences()[j];
-					Double distance = computeHammingDistance(seq1,seq2);
-					STITreeCluster<Double> cluster = new STITreeCluster<Double>(stTaxa);
-					cluster.addLeaf(s1);
-					cluster.addLeaf(s2);
-					cluster.setData(distance);
-					allPairDistance.add(cluster);
-				}
-			}
-		}
-		return doEliminating(allPairDistance,stTaxa,percentage);
-	}
-
-	private Map<STITreeCluster,Double> doEliminating(ArrayList<STITreeCluster<Double>> allPairDistance,String[] stTaxa,double percentage){
-		for(int i=1;i<allPairDistance.size();i++){
-			STITreeCluster<Double> clwd1 = allPairDistance.get(i);
-			for(int j=0;j<i;j++){
-				STITreeCluster<Double> clwd2 = allPairDistance.get(j);
-				if(clwd1.getData() < clwd2.getData()){
-					allPairDistance.remove(i);
-					allPairDistance.add(j,clwd1);
-					break;
-				}
-			}
-		}
-
-		if(allPairDistance.size()>(stTaxa.length*(stTaxa.length-1)/2)){
-			int eliminate = allPairDistance.size()-(int)(allPairDistance.size()*(1-percentage));
-			for(int i=0;i<eliminate;i++){
-				allPairDistance.remove(0);
-			}
-		}
-
-
-		Map<STITreeCluster,Double> sequencePairDistance = new HashMap<STITreeCluster,Double>();
-		for(int i=0;i<stTaxa.length;i++){
-			for(int j=i+1;j<stTaxa.length;j++){
-				STITreeCluster cl = new STITreeCluster(stTaxa);
-				cl.addLeaf(stTaxa[i]);
-				cl.addLeaf(stTaxa[j]);
-				int index = allPairDistance.indexOf(cl);
-				Double distance;
-				if(index==-1){
-					distance = -1.0;
-				}
-				else{
-					distance = allPairDistance.get(index).getData();
-				}
-				sequencePairDistance.put(cl, distance);
-			}
-		}
-		return sequencePairDistance;
-	}
-
-
 
 	/**
-	 * This function is written to compute the depth of every node in a given tree
+	 * Compute the height of every internal node in a given tree
 	 *
-	 * @param 	tr	a given tree
+	 * @param tr	a given tree
 	 */
 	private void setNodeTime(Tree tr){
 		for(TNode n : tr.postTraverse()){
@@ -888,14 +896,14 @@ public class GLASSInference
 
 
 	/**
-	 * This function is written to merge two clusters having the smallest distance
+	 * Merge two clusters which have the smallest distance
 	 *
-	 * @param 	minClusters		a list of the clusters merged
-	 * @param 	allClusters		a list of all clusters using during merging
-	 * @param 	stTaxa		taxa in species tree
-	 * @param 	taxonPairTime		maps from taxon pair to distance
+	 * @param minClusters   a list of the merged clusters
+	 * @param allClusters	a list of all clusters using during merging
+	 * @param stTaxa	taxa in species tree
+	 * @param taxonPairTime	    maps from taxon pair to distance
 	 */
-	private void clutering(List<STITreeCluster> minClusters,List<STITreeCluster> allClusters,String[] stTaxa,Map<STITreeCluster,Double> taxonPairTime){
+	private void clutering(List<STITreeCluster> minClusters, List<STITreeCluster> allClusters, String[] stTaxa, Map<STITreeCluster,Double> taxonPairTime){
 		double minTime=-1;
 		int mergingClusterA=0, mergingClusterB=0;
 

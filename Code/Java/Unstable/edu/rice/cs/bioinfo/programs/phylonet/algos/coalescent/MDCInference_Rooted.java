@@ -36,35 +36,36 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Than Cuong
  * Date: 11/9/11
  * Time: 3:06 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to use MDC to infer species trees from a collection of ROOTED gene trees
+ * See "Species tree inference by minimizing deep coalescences", PLoS Computational Biology, 2009 for details.
  */
-public class MDCInference_DP
+public class MDCInference_Rooted
 {
 	/**
-	 * Infers the species tree from the given list of rooted gene trees with single allele.
+	 * Infers a species tree from a collection of rooted gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	explore	false if the result is the only one optimal tree
-	 *                  true if the result is a set of trees
-	 * @param   proportion	  specified when explore is set to true
-	 *          			  specifies the range of the number of extra lineages that the set of trees have
-	 * @param   exhaust	  false if clusters are induced from gene trees
-	 * 					  true if clusters all all possible clusters
-	 * @return	tree(s) inferred from the supplied gene trees with the total number of extra lineages
+	 * @param trees     the list of rooted gene trees from which the species tree is to be inferred
+	 * @param explore	false: returns only one of the optimal species tree; dynamic programming is used
+	 *                  true: returns a collection of top species trees; maximum cliques is used
+	 * @param proportion    only specified when explore is set to true
+	 *          			if the optimal species tree has n extra lineages, all the sub-optimal trees that have extra lineages less than (1+proportion/100)*n will be returned with the optimal species tree
+	 * @param exhaust   false: using only clusters induced from gene trees
+	 * 					true: using all possible clusters
+     * @param unresolved    true when allowing returning non-binary species trees
+     * @param time  the maximum time spent on trying to find the optimal resolution from a non-binary species tree
+     *              only specified when unresolved is set to false
+     *
+	 * @return	tree(s) inferred from the gene trees along with the total number of extra lineages
 	 */
 	public List<Solution> inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean explore, double proportion, boolean exhaust, boolean unresolved, double time) {
 
 		if (trees == null || trees.size() == 0) {
 			throw new IllegalArgumentException("empty or null list of trees");
 		}
-
-
-		//Collapse.CollapseDescriptor cd = doCollapse(trees);
-		//System.out.println("after collapse");
 
 		List<String> taxalist = new ArrayList<String>();
         for(MutableTuple<Tree,Double> tr: trees){
@@ -76,17 +77,12 @@ public class MDCInference_DP
 		}
 
 		String[] taxa = new String[taxalist.size()];
-
 		int index = 0;
 		for(String taxon: taxalist){
 			taxa[index++] = taxon;
 		}
 
-
-		//String[] taxa = trees.get(0).getLeaves();
-		// Find the tree with minimum score over all taxa.
 		Map<Integer, List<Vertex>> clusters = new HashMap<Integer, List<Vertex>>();
-
 		double maxEL;
 		if(!exhaust){
 			maxEL = computeTreeClusters(trees, taxa, clusters);
@@ -95,14 +91,12 @@ public class MDCInference_DP
 			maxEL = computeAllClusters(trees, taxa, clusters);
 		}
 		List<Solution> solutions;
-		//System.out.println("after collapse cluster");
 		if(explore){
 			solutions = findTreesByClique(clusters,taxa,proportion);
 		}
-		else{
-			solutions = findTreesByDP(clusters,taxa,maxEL);
-		}
-		//System.out.println("after dp");
+		else {
+            solutions = findTreesByDP(clusters, taxa, maxEL);
+        }
 		if(!unresolved){
 			time = time * 60;
 			for(Solution sol: solutions){
@@ -112,26 +106,27 @@ public class MDCInference_DP
 			}
 		}
 
-		//restoreCollapse(solutions, trees, cd);
 		return solutions;
 	}
 
 
-	/**
-	 * Infers the species tree from the given list of rooted gene trees with multiple alleles.
-	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @param	explore	false if the result is the only one optimal tree
-	 *                  true if the result is a set of trees
-	 * @param   proportion	  specified when explore is set to true
-	 *          			  specifies the range of the number of extra lineages that the set of trees have
-	 * @param   exhaust	  false if clusters are induced from gene trees
-	 * 					  true if clusters all all possible clusters
-	 * @return	tree(s) inferred from the supplied gene trees with the total number of extra lineages
-	 */
-
-	//TODO cd is not correct for taxonmap
+    /**
+     * Infers a species tree from a collection of rooted gene trees with multiple alleles sampled per species
+     *
+     * @param trees     the list of rooted gene trees from which the species tree is to be inferred
+     * @param taxonMap	maps gene tree taxa to species tree taxa
+     * @param explore	false: returns only one of the optimal species tree; dynamic programming is used
+     *                  true: returns a collection of top species trees; maximum cliques is used
+     * @param proportion    only specified when explore is set to true
+     *          			if the optimal species tree has n extra lineages, all the sub-optimal trees that have extra lineages less than (1+proportion/100)*n will be returned with the optimal species tree
+     * @param exhaust   false: using only clusters induced from gene trees
+     * 					true: using all possible clusters
+     * @param unresolved    true when allowing returning non-binary species trees
+     * @param time  the maximum time spent on trying to find the optimal resolution from a non-binary species tree
+     *              only specified when unresolved is set to false
+     *
+     * @return	tree(s) inferred from the gene trees along with the total number of extra lineages
+     */
 	public List<Solution> inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, Map<String, String> taxonMap, boolean explore, double proportion, boolean exhaust, boolean unresolved, double time) {
 		if (trees == null || trees.size() == 0) {
 			System.err.println("Empty list of trees. The function returns a null tree.");
@@ -192,11 +187,28 @@ public class MDCInference_DP
 	}
 
 
+    /**
+     * Collapses common subtrees in a collection of trees
+     *
+     * @param trees     a collection of trees
+     *
+     * @return	the info of those collapsed subtrees
+     */
 	private Collapse.CollapseDescriptor doCollapse(List<Tree> trees){
 		Collapse.CollapseDescriptor cd = Collapse.collapse(trees);
 		return cd;
 	}
 
+
+    /**
+     * Restores collapsed common subtrees
+     *
+     * @param sols   a collection of collapsed species trees
+     * @param gts    a collection of collapsed gene trees
+     * @param cd     the info of those collapsed subtrees
+     *
+     * @return	the info of those collapsed subtrees
+     */
 	private void restoreCollapse(List<Solution> sols, List<Tree> gts, Collapse.CollapseDescriptor cd){
 		for(Solution sol: sols){
 			Tree tr = sol._st;
@@ -212,12 +224,14 @@ public class MDCInference_DP
         }
 	}
 
+
 	/**
-	 * Find the species tree by dynamic programming
+	 * Finds the species tree by dynamic programming
 	 *
-	 * @param 	clusters	clusters with extra lineages
-	 * @param	stTaxa	  taxa expression
-	 * @param   maxEL	  the maximal number of extra lineage
+	 * @param clusters	clusters with extra lineages
+	 * @param stTaxa	  taxa expression
+	 * @param maxEL	  the maximal number of extra lineage
+     *
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
@@ -310,11 +324,12 @@ public class MDCInference_DP
 
 
 	/**
-	 * Find the species tree by finding the maximal cliques
+	 * Finds the species tree by finding the maximal cliques
 	 *
-	 * @param 	cmap	clusters with extra lineages
-	 * @param	stTaxa	  taxa expression
-	 * @param   proportion	the range of the number of extra lineages that the set of trees have
+	 * @param cmap	clusters with extra lineages
+	 * @param stTaxa	  taxa in species tree
+	 * @param proportion	if the optimal species tree has n extra lineages, all the sub-optimal trees that have extra lineages less than (1+proportion/100)*n will be returned with the optimal species tree
+     *
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
@@ -451,90 +466,19 @@ public class MDCInference_DP
 
 
 	/**
-	 * This function infers the species tree using all possible clusters.
-	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @return
-	 */
-	/*
-	public Tree exhaustInferSpeciesTree(List<Tree> trees, Map<String, String> taxonMap) {
-		Map<Integer, List<Vertex>> clusters = new HashMap<Integer, List<Vertex>>();
-		if (trees == null || trees.size() == 0) {
-			System.err.println("Empty list of trees. The function returns a null tree.");
-			return null;
-		}
-
-		List<String> temp1 = new LinkedList<String>();
-		List<String> temp2 = new LinkedList<String>();
-		for (String s : taxonMap.keySet()) {
-			temp1.add(s);	// Gene tree taxa.
-			if (!temp2.contains(taxonMap.get(s))) {
-				temp2.add(taxonMap.get(s));	// Species tree taxa.
-			}
-		}
-
-		String gtTaxa[] = new String[temp1.size()];
-		String stTaxa[] = new String[temp2.size()];
-
-		for (int i = 0; i < gtTaxa.length; i++) {
-			gtTaxa[i] = temp1.get(i);
-		}
-		for (int i = 0; i < stTaxa.length; i++) {
-			stTaxa[i] = temp2.get(i);
-		}
-
-		// Find the tree with the minimum score.
-		// computeTreeClusters(trees, stTaxa, gtTaxa, taxonMap);
-		Integer maxEL = 0;
-		generateClusters(trees, stTaxa, taxonMap, maxEL);
-
-		Vertex all = clusters.get(stTaxa.length).get(0);
-		computeMinCost(clusters,all, maxEL);
-
-		// Build the minimum tree.
-		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
-		Stack<Vertex> minVertices = new Stack<Vertex>();
-		if (all._min_rc != null) {
-			minVertices.push(all._min_rc);
-		}
-		if (all._min_lc != null) {
-			minVertices.push(all._min_lc);
-		}
-
-		while (!minVertices.isEmpty()) {
-			Vertex pe = minVertices.pop();
-
-			minClusters.add(pe._cluster);
-			if (pe._min_rc != null) {
-				minVertices.push(pe._min_rc);
-			}
-			if (pe._min_lc != null) {
-				minVertices.push(pe._min_lc);
-			}
-		}
-
-		return Trees.buildTreeFromClusters(minClusters);
-	}
-
-	*/
-
-	/**
-	 * This function is written to compute clusters induced by gene trees when there are multiple
-	 * gene copies.
+	 * Compute the clusters induced by gene trees when multiple alleles are sampled per species
 	 *
 	 * @param 	trees	the list of gene trees
 	 * @param	stTaxa	taxa in species tree
 	 * @param	gtTaxa	taxa in gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @param	clusters	clusters with the number of extra lineages
-	 * @return  the maximal number of extra lineages
+	 * @param	taxonMap	maps gene tree taxa to species tree taxa.
+	 * @param	clusters	resulting clusters with the number of extra lineages
+     *
+	 * @return  the maximum number of extra lineages
 	 */
 	private double computeTreeClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
 		double maxEL = 0;
-        int total = 0;
         for(MutableTuple<Tree,Double> tr: trees){
-            boolean contain = false;
 			for (STITreeCluster tc : tr.Item1.getClusters(gtTaxa, false)) {
 				// Create clusters that do not contain multiple copies of a taxon.
 				STITreeCluster stCluster = new STITreeCluster(stTaxa);
@@ -542,14 +486,8 @@ public class MDCInference_DP
 					stCluster.addLeaf(taxonMap.get(s));
 				}
 
-                if(stCluster.containsLeaf("S") && stCluster.containsLeaf("M") && stCluster.getClusterSize()==2){
-                    System.out.println(tc);
-                    contain = true;
-                }
-
 				// Added it to the list.
 				int csize = stCluster.getClusterSize();
-
 				if (clusters.containsKey(csize)) {
 					List<Vertex> l = clusters.get(csize);
 					boolean found = false;
@@ -588,9 +526,6 @@ public class MDCInference_DP
 					clusters.put(csize, l);
 				}
 			}
-            if(contain){
-                total += tr.Item2;
-            }
 		}
 
 		// Add the cluster containing all taxa to the map.
@@ -630,13 +565,15 @@ public class MDCInference_DP
 		return maxEL;
 	}
 
+
 	/**
-	 * This function is written to compute clusters induced by gene trees when there is single gene copy.
+	 * Computes clusters induced by gene trees when single allele is sampled per species
 	 *
 	 * @param 	trees	the list of gene trees
 	 * @param	taxa	taxa in species tree/gene trees
-	 * @param	clusters	clusters with the number of extra lineages
-	 * @return  the maximal number of extra lineages
+	 * @param	clusters	resulting clusters with the number of extra lineages
+     *
+	 * @return  the maximum number of extra lineages
 	 */
 	private double computeTreeClusters(List<MutableTuple<Tree,Double>> trees, String taxa[], Map<Integer, List<Vertex>> clusters) {
 		// Compute the list of vertices in the graph, which correspond to the induced clusters.
@@ -719,8 +656,9 @@ public class MDCInference_DP
 		return maxEL;
 	}
 
+
 	/**
-	 * Compute the minimum cost for trees whose leaf set is vertex's cluster.
+	 * Computes the minimum cost for trees whose leaf set is vertex's cluster.
 	 *
 	 * @param	clusters	clusters with the number of extra lineages
 	 * @param	v	the vertex being computed
@@ -791,46 +729,23 @@ public class MDCInference_DP
 				}
 			}
 
-			for(int i=1;i<subClusters.size();i++){
-				Vertex v1 = subClusters.get(i);
-				for(int j=0;j<i;j++){
-					Vertex v2 = subClusters.get(j);
-					if(v1._el_num < v2._el_num){
-						subClusters.remove(v1);
-						subClusters.add(j,v1);
-						break;
-					}
-					else if(v1._el_num == v2._el_num){
-						if(v1._cluster.getClusterSize() > v2._cluster.getClusterSize()){
-							subClusters.remove(v1);
-							subClusters.add(j,v1);
-							break;
-						}
-					}
-				}
-			}
-
-/*
-			for(int i=1;i<subClusters.size();i++){
-				Vertex v1 = subClusters.get(i);
-				for(int j=0;j<i;j++){
-					Vertex v2 = subClusters.get(j);
-					if(v1._cluster.getClusterSize() == v2._cluster.getClusterSize()){
-						if(v1._max_score > v2._max_score){
-							subClusters.remove(v1);
-							subClusters.add(j,v1);
-							break;
-						}
-					}
-					else if(v1._cluster.getClusterSize() < v2._cluster.getClusterSize()){
-						subClusters.remove(v1);
-						subClusters.add(j,v1);
-						break;
-					}
-				}
-			}
-*/
-
+			for(int i=1;i<subClusters.size();i++) {
+                Vertex v1 = subClusters.get(i);
+                for (int j = 0; j < i; j++) {
+                    Vertex v2 = subClusters.get(j);
+                    if (v1._el_num < v2._el_num) {
+                        subClusters.remove(v1);
+                        subClusters.add(j, v1);
+                        break;
+                    } else if (v1._el_num == v2._el_num) {
+                        if (v1._cluster.getClusterSize() > v2._cluster.getClusterSize()) {
+                            subClusters.remove(v1);
+                            subClusters.add(j, v1);
+                            break;
+                        }
+                    }
+                }
+            }
 
 			ArrayList<Vertex> maxSubClusters = new ArrayList<Vertex>();
 			List<Vertex> l1 = clusters.get(1);
@@ -880,12 +795,12 @@ public class MDCInference_DP
 
 
 	/**
-	 * Generate all possible clusters, not just those induced by gene trees.
+	 * Generates all possible clusters, not just those induced by gene trees when multiple alleles are sampled per species
 	 *
-	 * @param trees
-	 * @param stTaxa
-	 * @param taxonMap
-	 * @param clusters
+	 * @param trees     a collection of gene trees
+	 * @param stTaxa    taxa in species tree
+	 * @param taxonMap  maps species tree taxa to gene tree taxa
+	 * @param clusters  resulting clusters with the number of extra lineages
 	 *
 	 * @return the maximal number of clusters
 	 */
@@ -940,11 +855,11 @@ public class MDCInference_DP
 	}
 
 	/**
-	 * Generate all possible clusters, not just those induced by gene trees.
+	 * Generates all possible clusters, not just those induced by gene trees, when single allele is sampled per species
 	 *
-	 * @param trees
-	 * @param stTaxa
-	 * @param clusters
+     * @param trees     a collection of gene trees
+     * @param stTaxa    taxa in species tree
+     * @param clusters  resulting clusters with the number of extra lineages
 	 *
 	 * @return the maximal number of clusters
 	 */
@@ -953,7 +868,9 @@ public class MDCInference_DP
 	}
 
 
-
+    /**
+     * Computes the number of binary resolutions given the number of nodes
+     */
 	private int getResolutionsNumber(int nodeNumber){
 		int total = 1;
 		for(int i=3; i<=nodeNumber; i++){
@@ -962,6 +879,18 @@ public class MDCInference_DP
 		return total;
 	}
 
+
+    /**
+     * Tries all binary resolutions of a non-binary species tree given a collection of gene trees under MDC
+     *
+     * @param tr     a non-binary species tree
+     * @param time     the time limit to run this function
+     * @param taxa    taxa in species tree
+     * @param gts   a collection of gene trees
+     * @param taxonMap  maps species tree taxa to gene tree taxa
+     *
+     * @return the additional number of extra lineages due to resolving the species tree
+     */
 	private double tryBinaryResolutions(Tree tr, double time, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap){
 		List<TNode> nodelist = new ArrayList<TNode>();
 		List<Integer> degreelist = new ArrayList<Integer>();
@@ -1010,6 +939,9 @@ public class MDCInference_DP
 	}
 
 
+    /**
+     * This function is used to generate all resolutions of a non-binary tree
+     */
 	private Solution addMoreLeaves(STITree<Integer> preTree, Integer[] leavesid, int index, Map<Integer, TNode> id2node, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap, double endTime, Map<BitSet, Double> cluster2xl){
 		if(preTree == null){
 			preTree = new STITree<Integer>(false);
@@ -1061,6 +993,10 @@ public class MDCInference_DP
 		return sol;
 	}
 
+
+    /**
+     * This function is used to generate all resolutions of a non-binary tree
+     */
 	private Solution tryAllRootings(Tree subtree, Map<Integer, TNode> id2node, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap, double endTime, Map<BitSet, Double> cluster2xl){
 		Solution sol = new Solution();
 		sol._totalCoals = -1;
@@ -1071,62 +1007,54 @@ public class MDCInference_DP
 					TNode peerNode = id2node.get(id);
 					if(peerNode.isLeaf()){
 						((STINode)replacingNode).setName(peerNode.getName());
-						//STINode<Integer> newNode = ((STINode)replacingNode).createChild(peerNode.getName());
-						//newNode.setData(((STINode<Integer>)peerNode).getData());
 					}
 					else{
 						for(TNode child: peerNode.getChildren()){
 							((STINode)replacingNode).createChild(child);
 						}
 						((STINode)replacingNode).setName("");
-						//((STINode<Integer>)replacingNode).setData(((STINode<Integer>)peerNode).getData());
 					}
 					((STINode<Integer>)replacingNode).setData(((STINode<Integer>)peerNode).getData());
 				}
 			}
-			//Trees.removeBinaryNodes((MutableTree)rootedsubtree);
-			//System.out.println(rootedsubtree.toStringWD());
 			double xl = 0;
 			Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 			for (TNode node : new PostTraversal<Integer>(rootedsubtree.getRoot())) {
-				BitSet bs = new BitSet();
-				if (node.isLeaf()) {
-					for (int i = 0; i < taxa.length; i++) {
-						if (node.getName().equals(taxa[i])) {
-							bs.set(i);
-							break;
-						}
-					}
-					map.put(node, bs);
-				}
-				else {
-					for (TNode child : node.getChildren()) {
-						BitSet childCluster = map.get(child);
-						bs.or(childCluster);
-					}
-					map.put(node, bs);
-				}
-				if(!node.isRoot()){
-					Double el = ((STINode<Double>)node).getData();
-					if(el == null){
-						el = cluster2xl.get(bs);
-						if(el == null){
-							STITreeCluster tc = new STITreeCluster(taxa);
-							tc.setCluster(bs);
-							if(taxonMap==null){
-								el = DeepCoalescencesCounter.getClusterCoalNum(gts, tc, true);
-							}
-							else{
-								el = DeepCoalescencesCounter.getClusterCoalNum(gts, tc, taxonMap, true);
-							}
-							cluster2xl.put(bs, el);
-						}
-						((STINode<Double>)node).setData(el);
-						xl = xl + el;
-					}
-				}
-			}
-			//System.out.println(rootedSubtree);
+                BitSet bs = new BitSet();
+                if (node.isLeaf()) {
+                    for (int i = 0; i < taxa.length; i++) {
+                        if (node.getName().equals(taxa[i])) {
+                            bs.set(i);
+                            break;
+                        }
+                    }
+                    map.put(node, bs);
+                } else {
+                    for (TNode child : node.getChildren()) {
+                        BitSet childCluster = map.get(child);
+                        bs.or(childCluster);
+                    }
+                    map.put(node, bs);
+                }
+                if (!node.isRoot()) {
+                    Double el = ((STINode<Double>) node).getData();
+                    if (el == null) {
+                        el = cluster2xl.get(bs);
+                        if (el == null) {
+                            STITreeCluster tc = new STITreeCluster(taxa);
+                            tc.setCluster(bs);
+                            if (taxonMap == null) {
+                                el = DeepCoalescencesCounter.getClusterCoalNum(gts, tc, true);
+                            } else {
+                                el = DeepCoalescencesCounter.getClusterCoalNum(gts, tc, taxonMap, true);
+                            }
+                            cluster2xl.put(bs, el);
+                        }
+                        ((STINode<Double>) node).setData(el);
+                        xl = xl + el;
+                    }
+                }
+            }
 			if(sol.getCoalNum()==-1 || sol.getCoalNum()>xl){
 				sol._totalCoals = xl;
 				sol._st = rootedsubtree;

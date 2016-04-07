@@ -44,7 +44,7 @@ import java.util.*;
  * Time: 5:11 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MDCURInference_DP
+public class MDCInference_Unrooted
 {
 
 
@@ -88,16 +88,20 @@ public class MDCURInference_DP
 	}
 */
 	/**
-	 * Infers the species tree from the given list of unrooted gene trees with single allele.
+	 * Infers a species tree from a collection of unrooted gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	explore	false if the result is the only one optimal tree
-	 *                  true if the result is a set of trees
-	 * @param   proportion	  specified only when explore is set to true
-	 *          			  specifies the range of the number of extra lineages that the set of trees have
-	 * @param   exhaust	  false if clusters are induced from gene trees
-	 * 					  true if clusters all all possible clusters
-	 * @return	tree(s) inferred from the supplied gene trees with the total number of extra lineages
+	 * @param trees     the list of unrooted gene trees from which the species tree is to be inferred
+	 * @param explore	false: returns only one of the optimal species tree; dynamic programming is used
+	 *                  true: returns a collection of top species trees; maximum cliques is used
+	 * @param proportion    only specified when explore is set to true
+	 *          			if the optimal species tree has n extra lineages, all the sub-optimal trees that have extra lineages less than (1+proportion/100)*n will be returned with the optimal species tree
+	 * @param exhaust   false: using only clusters induced from gene trees
+	 * 					true: using all possible clusters
+	 * @param unresolved    true when allowing returning non-binary species trees
+	 * @param time  the maximum time spent on trying to find the optimal resolution from a non-binary species tree
+	 *              only specified when unresolved is set to false
+	 *
+	 * @return	tree(s) inferred from the gene trees along with the total number of extra lineages
 	 */
 	public List<Solution> inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean explore, double proportion, boolean exhaust, boolean unresolved, double time) {
 		if (trees == null || trees.size() == 0) {
@@ -145,24 +149,29 @@ public class MDCURInference_DP
 				}
 			}
 		}
-		//postprocess(solutions, cd);
 
 		return solutions;
 
 	}
 
+
+
 	/**
-	 * Infers the species tree from the given list of unrooted gene trees with multiple alleles.
+	 * Infers a species tree from a collection of unrooted gene trees with multiple alleles sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @param	explore	false if the result is the only one optimal tree
-	 *                  true if the result is a set of trees
-	 * @param   proportion	  specified when explore is set to true
-	 *          			  specifies the range of the number of extra lineages that the set of trees have
-	 * @param   exhaust	  false if clusters are induced from gene trees
-	 * 					  true if clusters all all possible clusters
-	 * @return	tree(s) inferred from the supplied gene trees with the total number of extra lineages
+	 * @param trees     the list of unrooted gene trees from which the species tree is to be inferred
+	 * @param taxonMap	maps gene tree taxa to species tree taxa
+	 * @param explore	false: returns only one of the optimal species tree; dynamic programming is used
+	 *                  true: returns a collection of top species trees; maximum cliques is used
+	 * @param proportion    only specified when explore is set to true
+	 *          			if the optimal species tree has n extra lineages, all the sub-optimal trees that have extra lineages less than (1+proportion/100)*n will be returned with the optimal species tree
+	 * @param exhaust   false: using only clusters induced from gene trees
+	 * 					true: using all possible clusters
+	 * @param unresolved    true when allowing returning non-binary species trees
+	 * @param time  the maximum time spent on trying to find the optimal resolution from a non-binary species tree
+	 *              only specified when unresolved is set to false
+	 *
+	 * @return	tree(s) inferred from the gene trees along with the total number of extra lineages
 	 */
 	public List<Solution> inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, Map<String, String> taxonMap, boolean explore, double proportion, boolean exhaust, boolean unresolved, double time) {
 		if (trees == null || trees.size() == 0) {
@@ -225,11 +234,14 @@ public class MDCURInference_DP
 		return solutions;
 	}
 
+
+
 	/**
-	 * Find the species tree by dynamic programming
+	 * Finds the species tree by dynamic programming
 	 *
-	 * @param 	clusters	clusters with extra lineages
-	 * @param	stTaxa	  taxa expression
+	 * @param clusters	clusters with extra lineages
+	 * @param stTaxa	  taxa expression
+	 * @param maxXL	  the maximal number of extra lineage
 	 *
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
@@ -321,16 +333,16 @@ public class MDCURInference_DP
 	}
 
 
-	/**
-	 * Find the species tree by finding the maximal cliques
-	 *
-	 * @param 	cmap	clusters with extra lineages
-	 * @param	stTaxa	  taxa expression
-	 * @param   proportion	the range of the number of extra lineages that the set of trees have
-	 *
-	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
-	 *
-	 */
+    /**
+     * Finds the species tree by finding the maximal cliques
+     *
+     * @param cmap	clusters with extra lineages
+     * @param stTaxa	  taxa in species tree
+     * @param proportion	if the optimal species tree has n extra lineages, all the sub-optimal trees that have extra lineages less than (1+proportion/100)*n will be returned with the optimal species tree
+     *
+     * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
+     *
+     */
 	private List<Solution> findTreesByClique(Map<Integer, List<Vertex>> cmap, String[] stTaxa, double proportion){
 		List<Solution> solutions = new LinkedList<Solution>();
 
@@ -385,11 +397,6 @@ public class MDCURInference_DP
 					STITreeCluster<Double> c = clusters.get(id);
 					if(c.getClusterSize()!=stTaxa.length-1 && !cls.contains(id)){
 						sum += c.getData();
-						//STITreeCluster cc = c.complementaryCluster();
-						//int ccID= clusters.indexOf(cc);
-						//sum += clusters.get(ccID).getData();
-						//cls.add(id);
-						//cls.add(ccID);
 					}
 				}
 
@@ -450,17 +457,17 @@ public class MDCURInference_DP
 
 
 
-	/**
-	 * This function is written to compute clusters induced by gene trees when there are multiple
-	 * gene copies.
-	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	stTaxa	taxa in species tree
-	 * @param	gtTaxa	taxa in gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
-	 *
-	 * @return  clusters with the number of extra lineages
-	 */
+    /**
+     * Compute the clusters induced by gene trees when multiple alleles are sampled per species
+     *
+     * @param 	trees	the list of gene trees
+     * @param	stTaxa	taxa in species tree
+     * @param	gtTaxa	taxa in gene trees
+     * @param	taxonMap	maps gene tree taxa to species tree taxa.
+     * @param	clusters	resulting clusters with the number of extra lineages
+     *
+     * @return  the maximum number of extra lineages
+     */
 	private  double computeTreeClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
 		// Compute the list of vertices in the graph, which correspond to the induced clusters.
 		double maxEL = 0;
@@ -547,15 +554,16 @@ public class MDCURInference_DP
 		return maxEL;
 	}
 
-	/**
-	 * This function is written to compute clusters induced by gene trees when there are multiple
-	 * gene copies.
-	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	taxa	taxa in species tree/gene trees
-	 *
-	 * @return  clusters with the number of extra lineages
-	 */
+
+    /**
+     * Computes clusters induced by gene trees when single allele is sampled per species
+     *
+     * @param 	trees	the list of gene trees
+     * @param	taxa	taxa in species tree/gene trees
+     * @param	clusters	resulting clusters with the number of extra lineages
+     *
+     * @return  the maximum number of extra lineages
+     */
 	private double computeTreeClusters(List<MutableTuple<Tree,Double>> trees, String taxa[], Map<Integer, List<Vertex>> clusters) {
 		// Compute the list of vertices in the graph, which correspond to the induced clusters.
 		double maxEL = 0;
@@ -638,28 +646,33 @@ public class MDCURInference_DP
 		return maxEL;
 	}
 
-	/**
-	 * Generate all possible clusters, not just those induced by gene trees.
-	 *
-	 * @param trees
-	 * @param stTaxa
-	 *
-	 * @return resulting clusters
-	 */
+
+
+    /**
+     * Generates all possible clusters, not just those induced by gene trees, when single allele is sampled per species
+     *
+     * @param trees     a collection of gene trees
+     * @param stTaxa    taxa in species tree
+     * @param clusters  resulting clusters with the number of extra lineages
+     *
+     * @return the maximal number of clusters
+     */
 	private double computeAllClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], Map<Integer, List<Vertex>> clusters) {
 		return computeAllClusters(trees, stTaxa, null, null, clusters);
 	}
 
-	/**
-	 * Generate all possible clusters, not just those induced by gene trees.
-	 *
-	 * @param trees
-	 * @param stTaxa
-	 * @param gtTaxa
-	 * @param taxonMap
-	 *
-	 * @return resulting clusters
-	 */
+
+
+    /**
+     * Generates all possible clusters, not just those induced by gene trees when multiple alleles are sampled per species
+     *
+     * @param trees     a collection of gene trees
+     * @param stTaxa    taxa in species tree
+     * @param taxonMap  maps species tree taxa to gene tree taxa
+     * @param clusters  resulting clusters with the number of extra lineages
+     *
+     * @return the maximal number of clusters
+     */
 	private double computeAllClusters(List<MutableTuple<Tree,Double>> trees, String stTaxa[], String gtTaxa[], Map<String, String> taxonMap, Map<Integer, List<Vertex>> clusters) {
 		int n = stTaxa.length;
 		if (n <= 0) {
@@ -721,33 +734,14 @@ public class MDCURInference_DP
 	}
 
 
-	private Collapse.CollapseDescriptor preprocess(List<Tree> trees){
-		Collapse.CollapseDescriptor cd = Collapse.collapse(trees);
-		return cd;
-	}
-
-
-	private void postprocess(List<Solution> sols, Collapse.CollapseDescriptor cd){
-		for(Solution sol: sols){
-			Tree tr = sol._st;
-			Collapse.expand(cd, (MutableTree)tr);
-			for (TNode node : tr.postTraverse()) {
-				if(((STINode<Integer>)node).getData()==null){
-					((STINode<Integer>)node).setData(0);
-				}
-			}
-		}
-	}
-
-
-	/**
-	 * Compute the minimum cost for trees whose leaf set is vertex's cluster.
-	 *
-	 * @param	clusters	clusters with the number of extra lineages
-	 * @param	v	the vertex being computed
-	 * @param	maxEL  the maximal number of extra lineages
-	 * @return
-	 */
+    /**
+     * Computes the minimum cost for trees whose leaf set is vertex's cluster.
+     *
+     * @param	clusters	clusters with the number of extra lineages
+     * @param	v	the vertex being computed
+     * @param	maxEL  the maximal number of extra lineages
+     * @return
+     */
 	private double computeMinCost(Map<Integer, List<Vertex>> clusters, Vertex v, double maxEL) {
 		if (v._max_score != -1) {
 			return v._max_score;
@@ -811,27 +805,6 @@ public class MDCURInference_DP
 				}
 			}
 
-			/*
-			for(int i=1;i<subClusters.size();i++){
-				Vertex v1 = subClusters.get(i);
-				for(int j=0;j<i;j++){
-					Vertex v2 = subClusters.get(j);
-					if(v1._cluster.getClusterSize() == v2._cluster.getClusterSize()){
-						if(v1._max_score > v2._max_score){
-							subClusters.remove(v1);
-							subClusters.add(j,v1);
-							break;
-						}
-					}
-					else if(v1._cluster.getClusterSize() < v2._cluster.getClusterSize()){
-						subClusters.remove(v1);
-						subClusters.add(j,v1);
-						break;
-					}
-				}
-			}
-			*/
-
 			for(int i=1;i<subClusters.size();i++){
 				Vertex v1 = subClusters.get(i);
 				for(int j=0;j<i;j++){
@@ -885,45 +858,23 @@ public class MDCURInference_DP
 					maxSubClusters.add(tv);
 				}
 			}
-			//System.out.println(v);
 			v._min_cost = v._el_num;
 			v._max_score = maxEL - v._min_cost;
 			for(Vertex tv:maxSubClusters){
-			//	System.out.println(tv+" "+tv._min_cost);
 				v._min_cost = v._min_cost + tv._min_cost;
 				v._max_score = v._max_score + tv._max_score;
 			}
-			//System.out.println();
 			v._subcl = maxSubClusters;
 
 		}
-
-
-	/*
-
-		if (v._min_cost == -1) {	// Cannot resolve v as a binary node.
-			// Consider this as a big star.
-			v._min_cost = v._el_num + v._c_el_num;
-			v._max_score = 2*maxEL - v._min_cost;
-			List<Vertex> l1 = clusters.get(1);
-			for (Vertex s : l1) {
-				if (v._cluster.containsCluster(s._cluster)) {
-					if(s._max_score == -1){
-						computeMinCost(clusters,s,maxEL);
-					}
-					v._min_cost += s._min_cost;
-					v._max_score += s._max_score;
-
-				}
-			}
-		}
-*/
 
 		return v._max_score;
 	}
 
 
-
+    /**
+     * Computes the number of binary resolutions given the number of nodes
+     */
 	private int getResolutionsNumber(int nodeNumber){
 		int total = 1;
 		for(int i=3; i<=nodeNumber; i++){
@@ -932,6 +883,19 @@ public class MDCURInference_DP
 		return total;
 	}
 
+
+
+    /**
+     * Tries all binary resolutions of a non-binary species tree given a collection of gene trees under MDC
+     *
+     * @param tr     a non-binary species tree
+     * @param time     the time limit to run this function
+     * @param taxa    taxa in species tree
+     * @param gts   a collection of gene trees
+     * @param taxonMap  maps species tree taxa to gene tree taxa
+     *
+     * @return the additional number of extra lineages due to resolving the species tree
+     */
 	private double tryBinaryResolutions(Tree tr, double time, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap){
 		List<TNode> nodelist = new ArrayList<TNode>();
 		List<Integer> degreelist = new ArrayList<Integer>();
@@ -975,12 +939,14 @@ public class MDCURInference_DP
 				}
 			}
 			addedxl = addedxl + sol.getCoalNum();
-			//System.out.println(tr.toStringWD());
 		}
 		return addedxl;
 	}
 
 
+    /**
+     * This function is used to generate all resolutions of a non-binary tree
+     */
 	private Solution addMoreLeaves(STITree<Integer> preTree, Integer[] leavesid, int index, Map<Integer, TNode> id2node, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap, double endTime, Map<BitSet, Double> cluster2xl){
 		if(preTree == null){
 			preTree = new STITree<Integer>(false);
@@ -1032,6 +998,11 @@ public class MDCURInference_DP
 		return sol;
 	}
 
+
+
+    /**
+     * This function is used to generate all resolutions of a non-binary tree
+     */
 	private Solution tryAllRootings(Tree subtree, Map<Integer, TNode> id2node, String[] taxa, List<MutableTuple<Tree,Double>> gts, Map<String,String> taxonMap, Map<BitSet, Double> cluster2xl){
 		Solution sol = new Solution();
 		sol._totalCoals = -1;
@@ -1042,21 +1013,16 @@ public class MDCURInference_DP
 					TNode peerNode = id2node.get(id);
 					if(peerNode.isLeaf()){
 						((STINode)replacingNode).setName(peerNode.getName());
-						//STINode<Integer> newNode = ((STINode)replacingNode).createChild(peerNode.getName());
-						//newNode.setData(((STINode<Integer>)peerNode).getData());
 					}
 					else{
 						for(TNode child: peerNode.getChildren()){
 							((STINode)replacingNode).createChild(child);
 						}
 						((STINode)replacingNode).setName("");
-						//((STINode<Integer>)replacingNode).setData(((STINode<Integer>)peerNode).getData());
 					}
 					((STINode<Integer>)replacingNode).setData(((STINode<Integer>)peerNode).getData());
 				}
 			}
-			//Trees.removeBinaryNodes((MutableTree)rootedsubtree);
-			//System.out.println(rootedsubtree.toStringWD());
 			double xl = 0;
 			Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
 			for (TNode node : new PostTraversal<Integer>(rootedsubtree.getRoot())) {
@@ -1097,7 +1063,6 @@ public class MDCURInference_DP
 					}
 				}
 			}
-			//System.out.println(rootedSubtree);
 			if(sol.getCoalNum()==-1 || sol.getCoalNum()>xl){
 				sol._totalCoals = xl;
 				sol._st = rootedsubtree;

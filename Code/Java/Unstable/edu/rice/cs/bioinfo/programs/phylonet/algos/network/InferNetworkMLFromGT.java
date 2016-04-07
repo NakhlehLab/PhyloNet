@@ -19,33 +19,15 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.HybridNodeType;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.printing.RichNewickPrinterCompact;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RichNewickReaderAST;
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.parsers.antlr.ast.ANTLRRichNewickParser;
-import edu.rice.cs.bioinfo.library.phylogenetics.FindRoot;
-import edu.rice.cs.bioinfo.library.phylogenetics.GetDirectSuccessors;
-import edu.rice.cs.bioinfo.library.phylogenetics.GetInDegree;
-import edu.rice.cs.bioinfo.library.phylogenetics.PhyloEdge;
-import edu.rice.cs.bioinfo.library.phylogenetics.graphadapters.jung.DirectedGraphToGraphAdapter;
-import edu.rice.cs.bioinfo.library.phylogenetics.rearrangement.network.allNeighbours.NetworkNeighbourhoodRandomWalkGenerator;
-import edu.rice.cs.bioinfo.library.phylogenetics.scoring.network.acceptancetesting.Jung.MDCOnNetworkYFFromRichNewickJung;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.HillClimbResult;
-import edu.rice.cs.bioinfo.library.phylogenetics.search.hillclimbing.network.allNeighbours.AllNeighboursHillClimberFirstBetter;
-import edu.rice.cs.bioinfo.library.programming.Func1;
-import edu.rice.cs.bioinfo.library.programming.Func2;
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -89,7 +71,7 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
                     }
                 }
             }
-            MDCInference_DP mdc = new MDCInference_DP();
+            MDCInference_Rooted mdc = new MDCInference_Rooted();
             Solution sol;
             if(allele2species==null){
                 sol = (Solution)(mdc.inferSpeciesTree(gts, false, 1, false, true, -1).get(0));

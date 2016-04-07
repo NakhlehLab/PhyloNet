@@ -32,21 +32,23 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 11/9/11
  * Time: 4:57 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to infer species trees from a collection of rooted gene trees with branch lengths under MDC
+ *
  */
 public class MDCWithTime {
 
 	/**
-	 * Infers the species tree from the given list of rooted gene trees with single allele by dynamic programming.
+	 * Infers the species tree from a collection of unltrametric rooted gene trees with single allele sampled per species by dynamic programming.
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
+	 * @param 	trees	the collection of ultrametric gene trees (with branch lengths) from which the species tree is to be inferred
+     *
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 */
-	public Solution inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, double bootstrap){
+	public Solution inferSpeciesTree(List<MutableTuple<Tree,Double>> trees){
 		if (trees == null || trees.size() == 0) {
 			System.err.println("Empty list of trees. The function returns a null tree.");
 			return null;
@@ -75,14 +77,15 @@ public class MDCWithTime {
 
 
 	/**
-	 * Infers the species tree from the given list of rooted gene trees with multiple alleles by dynamic programming.
+	 * Infers the species tree from a collection of unltrametric rooted gene trees with multiple alleles sampled per species by dynamic programming.
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param 	trees	the collection of ultrametric gene trees (with branch lengths) from which the species tree is to be inferred
+	 * @param	taxonMap	maps gene tree taxa to species tree taxa.
+     *
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
-	public Solution inferSpeciesTree(List<MutableTuple<Tree,Double>> trees,Map<String,String> taxonMap, double bootstrap){
+	public Solution inferSpeciesTree(List<MutableTuple<Tree,Double>> trees,Map<String,String> taxonMap){
 		if (trees == null || trees.size() == 0) {
 			System.err.println("Empty list of trees. The function returns a null tree.");
 			return null;
@@ -92,7 +95,6 @@ public class MDCWithTime {
 		if(error!=null){
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
-
 
 		List<String> temp1 = new LinkedList<String>();
 		List<String> temp2 = new LinkedList<String>();
@@ -125,11 +127,12 @@ public class MDCWithTime {
 
 
 	/**
-	 * Find the species tree by dynamic programming
+	 * Finds the species tree by dynamic programming
 	 *
-	 * @param 	branches	branches with extra lineages
+	 * @param 	branches	candidate branches with extra lineages that will be used in the species tree
 	 * @param	stTaxa	  taxa expression
 	 * @param   maxEL	  the maximal number of extra lineage
+     *
 	 * @return	the tree inferred from the supplied gene trees with the total number of extra lineages
 	 *
 	 */
@@ -444,10 +447,11 @@ public class MDCWithTime {
 	/**
 	 * Compute the minimum cost for trees whose leaf set is branches's child cluster.
 	 *
-	 * @param	branches	branches with the number of extra lineages
+	 * @param	branches	candidate branches with extra lineages that will be used in the species tree
 	 * @param	br	the branch being computed
 	 * @param	maxEL  the maximal number of extra lineages
-	 * @return
+     *
+	 * @return  maximal number of extra lineages
 	 */
 	private double computeMinCost(Branch br,Map<Integer, List<Branch>> branches, double maxEL){
 		if (br.getMaxScore() != -1) {
@@ -455,7 +459,6 @@ public class MDCWithTime {
 		}
 
 		STITreeCluster<Double> cl = br.getChildCluster();
-		//STITreeCluster<Double> p_cl = br.getParentCluster();
 		int vsize = cl.getClusterSize();
 
 		if (vsize <= 1) {
@@ -498,24 +501,6 @@ public class MDCWithTime {
 				}
 			}
 		}
-/*
-		if (br.getMaxScore() == -1) {	// Cannot resolve v as a binary node.
-			// Consider this as a big star.
-			br.setMinCost(br.getExtraLineage());
-			br.setMaxScore(maxEL - br.getExtraLineage());
-			List<Branch> l1 = branches.get(1);
-			List<Branch> added = new ArrayList<Branch>();
-			for (Branch b : l1) {
-				if(added.contains(b))continue;
-				if (br.getChildCluster().equals(b.getParentCluster())
-						&& br.getChildCluster().getData() >= b.getParentCluster().getData()) {
-					br.setMinCost(br.getMinCost() + b.getMinCost());
-					br.setMaxScore(br.getMaxScore() + b.getMaxScore());
-					added.add(b);
-				}
-			}
-		}
-*/
 
 		if (br._max_score == -1) {	// Cannot resolve v as a binary node.
 
@@ -568,42 +553,6 @@ public class MDCWithTime {
 				}
 			}
 
-
-			/*
-			for(int i=1;i<subBranches.size();i++){
-				Branch b1 = subBranches.get(i);
-				for(int j=0;j<i;j++){
-					Branch b2 = subBranches.get(j);
-					if(b1._el == b2._el){
-						if(b1.getChildCluster().getClusterSize() == b2.getChildCluster().getClusterSize()){
-						    if(b1.getParentCluster().getClusterSize() < b2.getParentCluster().getClusterSize()){
-								subBranches.remove(i);
-								subBranches.add(j,b1);
-								break;
-							}
-							else if(b1.getParentCluster().getClusterSize() == b2.getParentCluster().getClusterSize()){
-								if(b1.equals(b2) && b1.getParentCluster().getData()< b2.getParentCluster().getData()){
-									subBranches.remove(i);
-									subBranches.add(j,b1);
-									break;
-								}
-							}
-						}
-						else if(b1.getChildCluster().getClusterSize() > b2.getChildCluster().getClusterSize()){
-							subBranches.remove(i);
-							subBranches.add(j,b1);
-							break;
-						}
-					}
-					else if(b1._el < b2._el){
-						subBranches.remove(i);
-						subBranches.add(j,b1);
-						break;
-					}
-				}
-			}
-			*/
-
 			ArrayList<Branch> maxSubBranches = new ArrayList<Branch>();
 			for(Branch tb: subBranches){
 				boolean compatible = true;
@@ -650,9 +599,9 @@ public class MDCWithTime {
 
 
 	/**
-	 * Construct the branches with time and their number of extra lineages when single allele is contained
+	 * Constructs the branches with time and their number of extra lineages when single allele is sampled per species
 	 *
-	 * @param	trees	a list of given gene trees
+	 * @param	trees	a list of given gene trees (ultrametric)
 	 * @param	taxa	taxa in species/gene trees
 	 * @param	branches	resulting branches with extra lineages
 	 *
@@ -728,18 +677,9 @@ public class MDCWithTime {
 									break;
 								}
 								else if((ex_b.getExtraLineage() > el) || (ex_b.getExtraLineage() == el && ex_b.getParentCluster().getData() > time)){
-								//else if(ex_b.getExtraLineage() > el){
 									l.add(pos, newBranch);
 									break;
 								}
-								/*
-								else if(ex_b.getExtraLineage() == el){
-									if(ex_b.getParentCluster().getData() > time){
-										ex_b.getParentCluster().setData(time);
-									}
-									break;
-								}
-								*/
 								else{
 									pos++;
 								}
@@ -771,7 +711,6 @@ public class MDCWithTime {
 									newBranch.setExtraLineage(0);
 								}
 								newBranch.setMinCost(-1);
-								//l.add(newBranch);
 								int pos = l.indexOf(newBranch);
 								if(pos == -1){
 									l.add(newBranch);
@@ -809,12 +748,12 @@ public class MDCWithTime {
 
 
 	/**
-	 * Construct the branches with time and their number of extra lineages when multiple alleles are contained
+	 * Constructs the branches with time and their number of extra lineages when multiple alleles are sampled per species
 	 *
-	 * @param	trees	a list of given gene trees
+	 * @param	trees	a list of given gene trees (ultrametric)
 	 * @param	stTaxa	taxa in species tree
 	 * @param	gtTaxa	taxa in gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param	taxonMap	maps gene tree taxa to species tree taxa
 	 * @param	branches	resulting branches with extra lineages
 	 *
 	 * @return	maximal number of extra lineages
@@ -872,7 +811,6 @@ public class MDCWithTime {
 							maxEL = el;
 						}
 						newBranch.setMinCost(-1);
-						//l.add(newBranch);
 						int pos = l.indexOf(newBranch);
 						if(pos == -1){
 							l.add(newBranch);
@@ -930,14 +868,6 @@ public class MDCWithTime {
 											l.add(pos, newBranch);
 											break;
 										}
-										/*
-										else if(ex_b.getExtraLineage() == el){
-											if(ex_b.getParentCluster().getData() > time){
-												ex_b.getParentCluster().setData(time);
-											}
-											break;
-										}
-										*/
 										else{
 											pos++;
 										}
@@ -964,10 +894,10 @@ public class MDCWithTime {
 
 
 	/**
-	 * Revise the time of a branch according to constraints
+	 * Revises the time of a branch (the height of the node that this branch is incident with) according to constraints
 	 *
 	 * @param	br	the branch being revised
-	 * @param	taxonPairTime	minimal coalescence time between taxon pair
+	 * @param	taxonPairTime	minimal pairwise coalescence time
 	 *
 	 */
 	private void reviseTime(Branch br, HashMap<STITreeCluster,Double> taxonPairTime){
@@ -1008,10 +938,10 @@ public class MDCWithTime {
 	}
 
 	/**
-	 * Compute the number of extra lineages contributed by a branch in a set of trees when single allele is contained
+	 * Computes the number of extra lineages contributed by a branch in a species tree and a collection of gene trees when single allele is sampled per species
 	 *
 	 * @param br	the branch being computed
-	 * @param trees		a list of given gene trees
+	 * @param trees	a list of given gene trees
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -1032,10 +962,10 @@ public class MDCWithTime {
 
 
 	/**
-	 * Compute the number of extra lineages contributed by a branch in one tree when single allele is contained
+     * Computes the number of extra lineages contributed by a branch in a species tree and a gene trees when single allele is sampled per species
 	 *
 	 * @param br	the branch being computed
-	 * @param tr		a given gene tree
+	 * @param tr	a given gene tree
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -1084,11 +1014,11 @@ public class MDCWithTime {
 
 
 	/**
-	 * Compute the number of extra lineages contributed by a branch in a set of trees when multiple alleles are contained
+     * Computes the number of extra lineages contributed by a branch in a species tree and a collection of gene trees when multiple alleles are sampled per species
 	 *
 	 * @param br	the branch being computed
 	 * @param trees		a list of given gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param taxonMap	maps gene tree taxa to species tree taxa.
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -1104,11 +1034,11 @@ public class MDCWithTime {
 
 
 	/**
-	 * Compute the number of extra lineages contributed by a branch in one tree when multiple alleles are contained
+     * Computes the number of extra lineages contributed by a branch in a species tree and a collection of gene trees when multiple alleles are sampled per species
 	 *
 	 * @param br	the branch being computed
-	 * @param tr		a given gene tree
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param tr	a given gene tree
+	 * @param taxonMap	maps gene tree taxa to species tree taxa.
 	 *
 	 * @return the number of extra lineage
 	 */
@@ -1123,8 +1053,6 @@ public class MDCWithTime {
 		for (String t : child.getTaxa()) {
 			taxa.add(t);
 		}
-
-
 
 		for (TNode node : tr.postTraverse()) {
 			if (node.isLeaf()) {
@@ -1160,10 +1088,10 @@ public class MDCWithTime {
 
 
 	/**
-	 * Compute the pairwise distance of taxon pairs
+	 * Computes the minimum pairwise distance of taxon pairs
 	 *
-	 * @param 	clusters	a list of all clusters with time
-	 * @param	stTaxa	taxa in species tree
+	 * @param clusters	a list of all clusters with time
+	 * @param stTaxa	taxa in species tree
 	 *
 	 * @return  maps from taxon pairs to distance
 	 */
@@ -1204,33 +1132,19 @@ public class MDCWithTime {
 		return taxonPairTime;
 	}
 
-	/*private void setMinCoalTime(STITreeCluster<Double> tc, List<Tree> trees){
-		double minCoalTime = 0;
-		String leaves[] = tc.getClusterLeaves();
-
-		if(leaves.length==2){
-			minCoalTime = taxonPairTime.get(new TaxonPair(leaves[0],leaves[1]));
-		}
-		else{
-			minCoalTime = tc.computeMinCoalTime(trees);
-		}
-		tc.setData(minCoalTime);
-	}*/
 
 
 	/**
-	 * This function is written to compute clusters induced by gene trees when there is single gene copy
+	 * Computes clusters induced by gene trees when single allele is sampled per species
 	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	taxa	taxa in species tree/gene trees
+	 * @param trees	the list of gene trees
+	 * @param taxa	taxa in species tree/gene trees
 	 *
 	 * @return  clusters with the number of extra lineages
 	 */
 	private List<STITreeCluster<Double>> computeTreeClustersWithTime(List<MutableTuple<Tree,Double>> trees,String taxa[]) {
 		LinkedList<STITreeCluster<Double>> clusters = new LinkedList<STITreeCluster<Double>>();
 
-
-		//Add the cluster containing all taxa to the end of the list.
 		STITreeCluster<Double> all = new STITreeCluster<Double>(taxa);
 		for (String t : taxa) {
 			all.addLeaf(t);
@@ -1262,7 +1176,6 @@ public class MDCWithTime {
 			}
 		}
 
-
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -1276,7 +1189,6 @@ public class MDCWithTime {
 			}
 		}
 
-
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -1289,7 +1201,6 @@ public class MDCWithTime {
 				}
 			}
 		}
-
 
 		 //Add clusters of size 1.
 		for (String t : taxa) {
@@ -1305,13 +1216,12 @@ public class MDCWithTime {
 
 
 	/**
-	 * This function is written to compute clusters with time induced by gene trees when there are multiple
-	 * gene copies.
+     * Computes clusters induced by gene trees when multiple alleles are sampled per species
 	 *
-	 * @param 	trees	the list of gene trees
-	 * @param	stTaxa	taxa in species tree
-	 * @param	gtTaxa	taxa in gene trees
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param trees	the list of gene trees
+	 * @param stTaxa	taxa in species tree
+	 * @param gtTaxa	taxa in gene trees
+	 * @param taxonMap	maps gene tree taxa to species tree taxa.
 	 *
 	 * @return	clusters with the number of extra lineages
 	 */
@@ -1356,7 +1266,6 @@ public class MDCWithTime {
 			}
 		}
 
-
 		//order the clusters by size decreasing
 		for(int i=1;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -1369,7 +1278,6 @@ public class MDCWithTime {
 				}
 			}
 		}
-
 
 		//adjust the time
 		for(int i=0;i<clusters.size();i++){
@@ -1384,7 +1292,6 @@ public class MDCWithTime {
 			}
 		}
 
-
 		//Add clusters of size 1.
 		for (String t : stTaxa) {
 			STITreeCluster<Double> c = new STITreeCluster<Double>(stTaxa);
@@ -1397,8 +1304,9 @@ public class MDCWithTime {
 		return clusters;
 	}
 
+
 	/**
-	 * This function is written to compute the depth of every node in a given tree
+	 * Computes the height of every node in a given tree
 	 *
 	 * @param 	tr	a given tree
 	 */
@@ -1447,10 +1355,6 @@ public class MDCWithTime {
 
 		public STITreeCluster<Double> getParentCluster(){
 			return _parent;
-		}
-
-		public BitSet getChildBitSet(){
-			return _child.getCluster();
 		}
 
 		public BitSet getParentBitSet(){

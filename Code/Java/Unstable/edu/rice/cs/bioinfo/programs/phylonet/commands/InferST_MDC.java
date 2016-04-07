@@ -25,7 +25,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -218,7 +218,7 @@ public class InferST_MDC extends InferSTBase
         tuples.addAll(exp2tree.values());
 
 
-        MDCInference_DP inference = new MDCInference_DP();
+        MDCInference_Rooted inference = new MDCInference_Rooted();
 
 		List<Solution> solutions;
 		if(_taxonMap == null){

@@ -19,19 +19,10 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
 

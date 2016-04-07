@@ -31,25 +31,26 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 10/26/11
  * Time: 4:31 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to refine and/or root gene trees with respect to a species tree under MDC
+ * See "Algorithms for MDC-based multi-locus phylogeny inference: Beyond rooted binary gene trees on single alleles", Journal of Computational Biology, 2011 for details.
  */
 public class GeneTreeRefinement {
+
 	/**
-	 * Refine and root a set of gene trees optimally with respect to a given species tree
+	 * Refines and roots a collection of unrooted non-binary gene trees with respect to a given species tree under maximum parsimony (minimize the total number of extra lineages)
 	 *
-	 * @param gts	a list of given gene trees
-	 * @param st	a given species tree
-	 * @param taxonMap	Maps gene tree taxa to species tree taxa.
-	 * @param rooted	whether treating the gene trees and species tree rooted or not
-	 *
-	 * @return the number of extra lineage
+	 * @param gts	a collection of unrooted non-binary gene trees
+	 * @param st	a given rooted species tree
+	 * @param species2alleles	Maps gene tree taxa to species tree taxa.
+	 * @param rooted	whether treating the gene trees rooted or not. If rooted, only refining will be performed
+     * @param bootstrap	threshold of bootstrap value. Branches with lower bootstrap values will be contracted
 	 */
 	public static void processGeneTrees(List<Tree> gts,Tree st, Map<String, List<String>> species2alleles, boolean rooted, double bootstrap){
-		if(bootstrap<1){
+		if(bootstrap<100){
 			for(Tree tr: gts){
 				if(Trees.handleBootStrapInTree(tr, bootstrap)==-1){
 					throw new IllegalArgumentException("Input gene trees have nodes that don't have bootstrap value");
@@ -60,6 +61,7 @@ public class GeneTreeRefinement {
 		HashSet<STITreeCluster> speciesClusters = null;
 		Tree st_copy = new STITree(st);
 
+        //check if the taxonMap is valid
 		if(species2alleles != null){
 			List<String> taxa_list = new ArrayList<String>();
 			for(Map.Entry<String, List<String>> entry: species2alleles.entrySet()){
@@ -101,62 +103,21 @@ public class GeneTreeRefinement {
 			}
 		}
 
-		/*
-		// for check correctness
-		SymmetricDifference sd = new SymmetricDifference();
-		int[] fn = new int[gts.size()];
-		int[] fp = new int[gts.size()];
-		int index = 0;
-		for(Tree gt: gts){
-			sd.computeDifference(gt, st_copy);
-			fn[index] = sd.getFalseNegativeCount();
-			fp[index] = computeFPUnRootedDistance(gt, st_copy, speciesClusters);
-			//fp[index] = DeepCoalescencesCounter.countExtraCoal(gts, st_copy, rooted, bootstrap);
-			index++;
-		}
-		*/
-
 		if(!rooted){
 			rootGeneTrees(gts, st_copy);
 		}
 		refineRootedGeneTrees(gts, st_copy, speciesClusters);
-
-		/*
-		// for check correctness
-		index = 0;
-		for(Tree gt: gts){
-			//System.out.println(gt);
-			int nfn = computeFNRootedDistance(gt, st_copy);
-			int nfp = computeFPRootedDistance(gt, st_copy, speciesClusters);
-			//int nfp = DeepCoalescencesCounter.countExtraCoal(gts, st_copy, true, bootstrap);
-			if(fp[index]==0){
-				if(nfn!=0 || nfp!=0){
-					System.out.println(path);
-					System.out.println("Error gene trees: " + gt);
-				}
-			}
-			else{
-				if(fp[index]!=nfp || nfn > fn[index]){
-					System.out.println(path);
-					System.out.println("Error gene trees: #" + (index+1) + " " + gt);
-					System.out.println("fp:" + fp[index] + "/" + nfp);
-					System.out.println("fn:" + fn[index] + "/" + nfn);
-				}
-			}
-			index++;
-		}
-		*/
 	}
 
 
 
-	/**
-	 * Refine a set of rooted gene trees with respect to a species tree
-	 *
-	 * @param gts		a set of gene trees
-	 * @param st		a given species tree
-	 *
-	 */
+    /**
+     * Refines a collection of rooted non-binary gene trees with respect to a given species tree under maximum parsimony (minimize the total number of extra lineages)
+     *
+     * @param gts	a collection of unrooted non-binary gene trees
+     * @param st	a given rooted species tree
+     * @param speciesClusters	the set of clusters in the given species tree st
+     */
 	public static void refineRootedGeneTrees(List<Tree> gts, Tree st, HashSet<STITreeCluster> speciesClusters) {
 		String[] st_taxa;
 		if(speciesClusters == null){
@@ -272,13 +233,12 @@ public class GeneTreeRefinement {
 
 
 
-	/**
-	 * Root a set of unrooted gene trees with respect to a species tree
-	 *
-	 * @param gts		a set of gene trees
-	 * @param st		a given species tree
-	 *
-	 */
+    /**
+     * Roots a collection of unrooted gene trees with respect to a given species tree under maximum parsimony (minimize the total number of extra lineages)
+     *
+     * @param gts	a collection of unrooted gene trees
+     * @param st	a given rooted species tree
+     */
 	public static void rootGeneTrees(List<Tree> gts, Tree st) {
 		String[] st_taxa = st.getLeaves();
 		List<STITreeCluster> original_clusters = st.getClusters(st_taxa, false);
@@ -408,7 +368,8 @@ public class GeneTreeRefinement {
 					map.put(node, bs);
 				}
 			}
-			gt.rerootTreeAtNode(max_node);
+            if(!max_node.isRoot())
+                gt.rerootTreeAtEdge(max_node.getID());
 		}
 	}
 

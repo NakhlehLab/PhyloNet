@@ -34,47 +34,24 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 11/15/11
  * Time: 1:55 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to use majority consensus to infer species tree from gene trees
  */
 public class MajorityConsensusInference
 {
 
 	/**
-	 * Returns a taxon map constructed from the contents of the specified file.
+	 * Infer a species tree from a collection of gene trees with single allele sampled per species
 	 *
-	 * @param file			the file whose contents are to be parsed
-	 * @return				a String-to-String allele mapping
-	 * @throws IOException 	if the supplied file could not be opened or read
+	 * @param trees		a collection of gene trees
+	 * @param rooted	whether gene trees are rooted or not
+	 * @param percentage	clusters in gene trees with frequencies higher than this percentage will be included in the inferred species tree
+	 *
+     * @return	the inferred species tree
 	 */
-	public static Map<String, String> getTaxonMapFromFile(File file) throws IOException {
-		Map<String, String> taxonMap = new HashMap<String,String>();
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		try {
-			String line;
-			while ((line = br.readLine()) != null) {
-				String[] mapString = line.trim().split(";");
-				for(String s : mapString) {
-					String species = s.substring(0,s.indexOf(":")).trim();
-					s = s.substring(s.indexOf(":") + 1);
-					String[] alleles = s.split(",");
-					for(String allele:alleles) {
-						allele = allele.trim();
-						if (taxonMap.containsKey(allele))
-							throw new RuntimeException("an allele can only map to one species");
-						taxonMap.put(allele, species);
-					}
-				}
-			}
-		} finally {
-			br.close();
-		}
-		return taxonMap;
-	}
-
 	public Tree inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean rooted, int percentage){
 		if(rooted){
 			return inferSpeciesTreeRooted(trees, percentage);
@@ -84,6 +61,17 @@ public class MajorityConsensusInference
 		}
 	}
 
+
+	/**
+	 * Infer a species tree from a collection of gene trees with multiple alleles sampled per species
+	 *
+	 * @param trees		a collection of gene trees
+	 * @param rooted	whether gene trees are rooted or not
+	 * @param taxonMap	maps gene tree taxa to species tree taxa
+	 * @param percentage	clusters in gene trees with frequencies higher than this percentage will be included in the inferred species tree
+	 *
+	 * @return	the inferred species tree
+	 */
 	public Tree inferSpeciesTree(List<MutableTuple<Tree,Double>> trees, boolean rooted, Map<String, String> taxonMap, int percentage){
 		String error = Trees.checkMapping(trees, taxonMap);
 		if(error!=null){
@@ -98,12 +86,14 @@ public class MajorityConsensusInference
 		}
 	}
 
+
 	/**
-	 * Infers the species tree from the given list of rooted gene trees with single allele.
+	 * Infer a species tree from a collection of rooted gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
+	 * @param trees		a collection of rooted gene trees
+	 * @param percentage	clusters in gene trees with frequencies higher than this percentage will be included in the inferred species tree
 	 *
-	 * @return	inferred species tree
+	 * @return	the inferred species tree
 	 */
     public Tree inferSpeciesTreeRooted(List<MutableTuple<Tree,Double>> trees, int percentage){
         double size = 0;
@@ -195,16 +185,15 @@ public class MajorityConsensusInference
 
 
 	/**
-	 * Infers the species tree from the given list of rooted gene trees with multiple alleles.
+	 * Infer a species tree from a collection of rooted gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param trees		a collection of rooted gene trees
+	 * @param taxonMap	maps gene tree taxa to species tree taxa
+	 * @param percentage	clusters in gene trees with frequencies higher than this percentage will be included in the inferred species tree
 	 *
-	 * @return	inferred species tree
+	 * @return	the inferred species tree
 	 */
     public Tree inferSpeciesTreeRooted(List<MutableTuple<Tree,Double>> trees, Map<String,String> taxonMap, int percentage){
-
-
 		List<String> temp1 = new LinkedList<String>();
 		List<String> temp2 = new LinkedList<String>();
 		for (String s : taxonMap.keySet()) {
@@ -281,16 +270,6 @@ public class MajorityConsensusInference
 
 			//compute cluster frequency inside every tree
 			for(STITreeCluster stcl : cmap.keySet()){
-				/*int totalNum = 0;
-				for(String leaf : stcl.getClusterLeaves()){
-					totalNum += indNum[temp2.indexOf(leaf)];
-				}
-				int appearNum = 0;
-				LinkedList<STITreeCluster> gtcls = cmap.get(stcl);
-				for(STITreeCluster c:gtcls){
-					appearNum += c.getClusterSize();
-				}
-				double frequency = appearNum/(totalNum+0.0);*/
 				int[] num = new int[stTaxa.length];
 				for(int i=0;i<num.length;i++){
 					num[i] = 0;
@@ -305,16 +284,12 @@ public class MajorityConsensusInference
 				}
 
 				double frequency = 0.0;
-
 				for(int i=0;i<indNum.length;i++){
 					if(num[i]!=0){
 						frequency += num[i]/(indNum[i]+0.0);
 					}
 				}
 				frequency = frequency/stcl.getClusterSize();
-
-				//if(frequency>1)System.out.println("wrong");
-
 
 				if(cls.contains(stcl)){
 					STITreeCluster<Double> cl_ex = cls.get(cls.indexOf(stcl));
@@ -328,14 +303,11 @@ public class MajorityConsensusInference
 			}
 		}
 
-
-
 		//order the clusters by its frequency decreasing
 		for(int i=1;i<cls.size();i++){
 			STITreeCluster<Double> cl1 = cls.get(i);
 			for(int j=0;j<i;j++){
 				STITreeCluster<Double> cl2 = cls.get(j);
-//				if((cl2.getData().equals(cl1.getData()) && cl2.getClusterSize() > cl1.getClusterSize())
 				if(cl2.getData() < cl1.getData()){
 					cls.remove(cl1);
 					cls.add(j,cl1);
@@ -344,7 +316,6 @@ public class MajorityConsensusInference
 			}
 		}
 
-		//System.out.println(cls);
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new LinkedList<STITreeCluster>();
 
@@ -365,7 +336,6 @@ public class MajorityConsensusInference
                 }
             }
         }
-
         else{
             for(STITreeCluster<Double> cl: cls){
                 if(cl.getData()/size > percentage/100.0){
@@ -379,14 +349,14 @@ public class MajorityConsensusInference
 
 
 	/**
-	 * Infers the species tree from the given list of unrooted gene trees with single allele.
+	 * Infer a species tree from a collection of unrooted gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
+	 * @param trees		a collection of unrooted gene trees
+	 * @param percentage	clusters in gene trees with frequencies higher than this percentage will be included in the inferred species tree
 	 *
-	 * @return	inferred species tree
+	 * @return	the inferred species tree
 	 */
     public Tree inferSpeciesTreeUnrooted(List<MutableTuple<Tree,Double>> trees, int percentage){
-
         double size = 0;
         Set<String> taxalist = new HashSet<String>();
         for(MutableTuple<Tree,Double> tr: trees){
@@ -426,7 +396,6 @@ public class MajorityConsensusInference
 			}
 		}
 
-
 		//order the clusters by its frequency
 		for(int i=1;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -439,11 +408,7 @@ public class MajorityConsensusInference
 				}
 			}
 		}
-	/*
-		for(STITreeCluster<Integer> c: clusters){
-			System.out.println(c);
-		}
-	 */
+
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new ArrayList<STITreeCluster>();
         if(percentage==0){
@@ -457,11 +422,6 @@ public class MajorityConsensusInference
                 }
                 if(compatible){
                     minClusters.add(c);
-                    /*
-                    if(minClusters.size()==taxa.length-2){
-                        break;
-                    }
-                    */
                 }
             }
         }
@@ -473,20 +433,19 @@ public class MajorityConsensusInference
             }
         }
 
-
 		return Trees.buildTreeFromClusters(minClusters);
     }
 
 
 	/**
-	 * Infers the species tree from the given list of unrooted gene trees with multiple alleles.
+	 * Infer a species tree from a collection of unrooted gene trees with single allele sampled per species
 	 *
-	 * @param 	trees	the list of gene trees from which the species tree is to be inferred
-	 * @param	taxonMap	Maps gene tree taxa to species tree taxa.
+	 * @param trees		a collection of unrooted gene trees
+	 * @param taxonMap	maps gene tree taxa to species tree taxa
+	 * @param percentage	clusters in gene trees with frequencies higher than this percentage will be included in the inferred species tree
 	 *
-	 * @return	inferred species tree
+	 * @return	the inferred species tree
 	 */
-
     public Tree inferSpeciesTreeUnrooted(List<MutableTuple<Tree,Double>> trees, Map<String,String> taxonMap, int percentage){
         List<String> temp1 = new LinkedList<String>();
 		List<String> temp2 = new LinkedList<String>();
@@ -583,32 +542,6 @@ public class MajorityConsensusInference
 			}
 		}
 
-/*
-		int[] changed = new int[clusters.size()];
-		for(int i=0;i<changed.length;i++){
-			changed[i] = 0;
-		}
-		int num_trees = trees.size();
-		for(int i=0;i<clusters.size();i++){
-			if(changed[i]==1)continue;
-			STITreeCluster<Double> cd = clusters.get(i);
-			changed[i] = 1;
-			if(cd.getClusterSize() == stTaxa.length-1){
-				cd.setData(cd.getData()+num_trees);
-			}
-			else{
-
-				int pos = clusters.indexOf(cd.complementaryCluster());
-				if(pos != -1){
-					STITreeCluster<Double> cc = clusters.get(pos);
-					cd.setData(cd.getData()+cc.getData());
-					cc.setData(cd.getData());
-					changed[pos] = 1;
-				}
-			}
-		}
-*/
-
 		//order the clusters by its frequency
 		for(int i=1;i<clusters.size();i++){
 			STITreeCluster<Double> cl1 = clusters.get(i);
@@ -621,11 +554,7 @@ public class MajorityConsensusInference
 				}
 			}
 		}
-/*
-		for(STITreeCluster<Double> c: clusters){
-			System.out.println(c);
-		}
-*/
+
 		//get the clusters for result trees
 		List<STITreeCluster> minClusters = new ArrayList<STITreeCluster>();
 
@@ -655,11 +584,6 @@ public class MajorityConsensusInference
             }
         }
 
-		/*
-		for(STITreeCluster c: minClusters){
-			System.out.println(c);
-		}
-		*/
 		return Trees.buildTreeFromClusters(minClusters);
     }
 

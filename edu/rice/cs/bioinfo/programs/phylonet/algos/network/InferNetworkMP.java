@@ -23,14 +23,13 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -158,7 +157,7 @@ public class InferNetworkMP{
                     }
                 }
             }
-            MDCInference_DP mdc = new MDCInference_DP();
+            MDCInference_Rooted mdc = new MDCInference_Rooted();
             Solution sol;
             if(allele2species==null){
                 sol = mdc.inferSpeciesTree(gts, false, 1, false, true, -1).get(0);

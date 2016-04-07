@@ -131,7 +131,7 @@ public class InferST_MDC_Time extends InferSTBase
                         this._motivatingCommand.getLine(), this._motivatingCommand.getColumn());
             }
             Trees.removeBinaryNodes(newtr);
-            if(_bootstrap<100){
+            if(_bootstrap < 100){
                 if(Trees.handleBootStrapInTree(newtr, _bootstrap)==-1){
                     throw new IllegalArgumentException("Input gene tree " + newtr + " have nodes that don't have bootstrap value");
                 }

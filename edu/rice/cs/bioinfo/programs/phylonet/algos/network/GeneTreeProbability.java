@@ -14,11 +14,14 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 3/13/12
  * Time: 11:31 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to compute the probability of observing a collection of gene trees given a species network based on Mul-tree.
+ * This method uses only topologies of gene trees.
+ * See "The probability of a gene tree topology within a phylogenetic network with applications to hybridization detection”, PLoS Genetics, 2012
+ * The method is an extension of "Gene tree distributions under the coalescent process", Evolution, 2005. Also see this paper for computation details. Variable names are the same as those appeared in the paper.
  */
 
 public class GeneTreeProbability {
@@ -45,25 +48,25 @@ public class GeneTreeProbability {
     }
 
     /**
-     * kliu - paranoid.
-     * Empty out state of this object. Just in case
-     * calculateGTDistribution doesn't do a clean set of variables
-     * over successive calls.
+     * Cleans variables for potential subsequent calls
      */
-    public void emptyState () {
-	_netTaxa.clear();
-	_stTaxa.clear();
-	_nname2tamount.clear();
-	_hname2tnodes.clear();
-	_tname2nname.clear();
-	_printDetails = false;
+    private void emptyState () {
+        _netTaxa.clear();
+        _stTaxa.clear();
+        _nname2tamount.clear();
+        _hname2tnodes.clear();
+        _tname2nname.clear();
+        _printDetails = false;
     }
 
     /**
-     * The public function for calculating the probabilities.
-     * @param	net 	the given network
-     * @param 	gts		the given set of gene trees
-     * @param	allele2species		the mapping from the names of allele to the names of the species. It is used for multiple alleles
+     * Computes the probability of observing a collection of gene trees given a species network
+     *
+     * @param net 	the given species network
+     * @param gts	the given collection of gene trees
+     * @param allele2species	the mapping from the names of alleles to the names of the species, which is used when multiple alleles are sampled per species
+     * @param toPrint	whether to print out the details of computation
+     *
      * @return	a list of probabilities corresponding to the list of gene trees.
      */
     public List<Double> calculateGTDistribution(Network<Double> net, List<Tree> gts, Map<String,String> allele2species, boolean toPrint){
@@ -136,7 +139,6 @@ public class GeneTreeProbability {
                     }
                 }
 
-
                 if(_printDetails){
                     System.out.print("Mapping: ");
                     for(int i=0; i<mapping.length; i++){
@@ -145,9 +147,7 @@ public class GeneTreeProbability {
                     System.out.println();
                 }
 
-
                 List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
-
                 double gtmapprob = 0;
                 for(int[] history: histories){
                     gtmapprob += Double.parseDouble(computeProbability(mapping, history, false));
@@ -172,11 +172,21 @@ public class GeneTreeProbability {
             System.out.println();
             System.out.println("Total probability of all gene trees: "+totalprob);
         }
+        emptyState();
         return problist;
     }
 
 
-    public List<Tuple3<int[],int[],Double>> findOptimalMapping(Network<Double> net, Tree gt, List<String> gtTaxa, Map<String,String> allele2species){
+    /**
+     * Finds the optimal coalescent history of a gene tree given a species network
+     * @param net 	the species network
+     * @param gt	the gene tree
+     * @param gtTaxa	the set of taxa of the gene tree
+     * @param allele2species	the mapping from the names of alleles to the names of the species, which is used when multiple alleles are sampled per species
+     *
+     * @return	the optimal coalescent history. The three-tuple contains the allele mapping, coalescent history and the probability, respectively
+     */
+    public Tuple3<int[],int[],Double> findOptimalMapping(Network<Double> net, Tree gt, List<String> gtTaxa, Map<String,String> allele2species){
         networkToTree(net);
         for(NetNode leaf: net.getLeaves()){
             _netTaxa.add(leaf.getName());
@@ -192,140 +202,105 @@ public class GeneTreeProbability {
         _S = calculateSorR(_mulTree);
         computeNodesUnderHybrid(_mulTree);
 
-        List<Tuple3<int[],int[],Double>> results = new ArrayList<>();
-        //for(Tree gt: gts){
-            if(_printDetails){
-                System.out.println("Gene tree " + gt+" :");
+        if(_printDetails){
+            System.out.println("Gene tree " + gt+" :");
+        }
+        _R = calculateSorR(gt);
+        List<List<String>> allelesList = new ArrayList<List<String>>();
+        for(int i=0; i<_netTaxa.size(); i++){
+            allelesList.add(new ArrayList<String>());
+        }
+        int[] upper = new int[_netTaxa.size()];
+        for(String gtleaf: gtTaxa){
+            String nleaf = gtleaf;
+            if(allele2species!=null){
+                nleaf = allele2species.get(gtleaf);
             }
-            _R = calculateSorR(gt);
-            //List<String> gtTaxa = Arrays.asList(gt.getLeaves());
-            List<List<String>> allelesList = new ArrayList<List<String>>();
+            int index = _netTaxa.indexOf(nleaf);
+            List<String> alleles = allelesList.get(index);
+            if(alleles.size()==0){
+                upper[index] = _nname2tamount.get(nleaf);
+            }
+            alleles.add(gtleaf);
+        }
+
+        List<int[]> mergeNumber = new ArrayList<int[]>();
+        for(List<String> alleles: allelesList){
+            int[] first = new int[alleles.size()];
+            Arrays.fill(first, 1);
+            mergeNumber.add(first);
+        }
+
+        Tuple3<int[],int[],Double> optimalCoalescentHistory = new Tuple3(null, null, -1);
+        do{
+            int[] mapping = new int[gtTaxa.size()];
             for(int i=0; i<_netTaxa.size(); i++){
-                allelesList.add(new ArrayList<String>());
+                String baseName = _netTaxa.get(i);
+                List<String> alleles = allelesList.get(i);
+                int[] subscribes = mergeNumber.get(i);
+                for(int j=0; j<alleles.size(); j++){
+                    mapping[gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
+                }
             }
-            int[] upper = new int[_netTaxa.size()];
-            for(String gtleaf: gtTaxa){
-                String nleaf = gtleaf;
-                if(allele2species!=null){
-                    nleaf = allele2species.get(gtleaf);
+            if(_printDetails){
+                for(int i=0; i<mapping.length; i++){
+                    System.out.print(gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
                 }
-                int index = _netTaxa.indexOf(nleaf);
-                List<String> alleles = allelesList.get(index);
-                if(alleles.size()==0){
-                    upper[index] = _nname2tamount.get(nleaf);
-                }
-                alleles.add(gtleaf);
+                System.out.println();
             }
 
-            List<int[]> mergeNumber = new ArrayList<int[]>();
-            for(List<String> alleles: allelesList){
-                int[] first = new int[alleles.size()];
-                Arrays.fill(first, 1);
-                mergeNumber.add(first);
+            List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
+
+            for(int[] history: histories){
+                double prob = Double.parseDouble(computeProbability(mapping, history, false));
+
+                if(prob > optimalCoalescentHistory.Item3){
+                    optimalCoalescentHistory = new Tuple3(mapping, history, -1);
+                }
+
             }
+            if(_printDetails)
+                System.out.println("");
 
-            double maxProb = -1;
-            //List<int[]> optimalMappings = new ArrayList<int[]>();
-            //List<int[]> optimalHistories = new ArrayList<int[]>();
-            MutableTuple<int[],int[]> optimalCoalescentHistory = new MutableTuple(null,null);
-            //results.add(optimalCoalescentHistory);
-            do{
-                int[] mapping = new int[gtTaxa.size()];
-                for(int i=0; i<_netTaxa.size(); i++){
-                    String baseName = _netTaxa.get(i);
-                    List<String> alleles = allelesList.get(i);
-                    int[] subscribes = mergeNumber.get(i);
-                    for(int j=0; j<alleles.size(); j++){
-                        mapping[gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
-                    }
+        }while(mergeNumberAddOne(mergeNumber,upper));
+
+        if(_printDetails) {
+            System.out.println(_mulTree);
+            System.out.println("Probability:" + optimalCoalescentHistory.Item3);
+            int[] mapping = optimalCoalescentHistory.Item1;
+            int[] history = optimalCoalescentHistory.Item2;
+            System.out.println("Mapping:");
+            for (int j = 0; j < mapping.length; j++) {
+                System.out.print(gtTaxa.get(j) + "->" + _stTaxa.get(mapping[j]) + "\t");
+            }
+            System.out.println();
+            System.out.println("History:");
+            for (int j = 0; j < history.length; j++) {
+                if (history[j] != -1) {
+                    System.out.println(gt.getNode(j).toString() + ":" + _mulTree.getNode(history[j]).getName());
                 }
-                //TODO
-                if(_printDetails){
-                    for(int i=0; i<mapping.length; i++){
-                        System.out.print(gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
-                    }
-                    System.out.println();
-                }
+            }
+            System.out.println();
+        }
 
-                List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
-
-                for(int[] history: histories){
-                    double prob = Double.parseDouble(computeProbability(mapping, history, false));
-                    results.add(new Tuple3<int[], int[], Double>(mapping, history, prob));
-                    /*
-                    if(prob >= maxProb){
-                        if(prob > maxProb){
-                            maxProb = prob;
-                            optimalMappings.clear();
-                            optimalHistories.clear();
-                        }
-                        optimalMappings.add(mapping);
-                        optimalHistories.add(history);                        
-                    }
-                    */
-
-                    if(prob > maxProb){
-                        maxProb = prob;
-                        optimalCoalescentHistory.Item1 = mapping;
-                        optimalCoalescentHistory.Item2 = history;
-                    }
-
-                }
-                if(_printDetails)
-                    System.out.println("");
-
-            }while(mergeNumberAddOne(mergeNumber,upper));
-
-
-               //if(_printDetails){
-                   System.out.println(_mulTree);
-                   System.out.println("Probability:" + maxProb);
-                   //for(int i=0; i<optimalMappings.size(); i++){
-                       int[] mapping = optimalCoalescentHistory.Item1;
-                       int[] history = optimalCoalescentHistory.Item2;
-                       System.out.println("Mapping:");
-                       for(int j=0; j<mapping.length; j++){
-                           System.out.print(gtTaxa.get(j)+"->"+_stTaxa.get(mapping[j])+"\t");
-                       }
-                       System.out.println();
-                       System.out.println("History:");
-                       for(int j=0; j<history.length; j++){
-                           if(history[j] != -1){
-                               System.out.println(gt.getNode(j).toString() + ":" + _mulTree.getNode(history[j]).getName());
-                           }
-                       }
-                   //}
-                   System.out.println();
-               //}
-
-            //allOptimalHistories.add(optimalHistories);
-        //}
-
-        return results;
+        return optimalCoalescentHistory;
     }
 
+
     /**
-     * The public function for calculating the probabilities.
-     * @param	net 	the given network
-     * @param 	gts		the given set of gene trees
-     * @param	allele2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
-     * @return	a list of probabilities corresponding to the list of gene trees.
+     * Computes the expected number of extra lineages of a collection of gene trees given a species network
+     * @param net 	the given species network
+     * @param gts	the given collection of gene trees
+     * @param allele2species	the mapping from the names of alleles to the names of the species, which is used when multiple alleles are sampled per species
+     *
+     * @return	a list of expected number of extra lineages corresponding to the list of gene trees.
      */
     public List<Double> calculateExpectXL(Network<Double> net, List<Tree> gts, Map<String,String> allele2species){
         networkToTree(net);
-        //System.out.println(st.toNewickWD());
-        //System.exit(0);
-
-        //String[] leaves = {"a","b1","b2","b3","c"};
-        //gts = Trees.generateAllBinaryTrees(leaves);
-        //System.out.println(gts.size());
-        //System.exit(0);
-
         for(NetNode leaf: net.getLeaves()){
             _netTaxa.add(leaf.getName());
         }
 
-        //
         for(Map.Entry<String, Integer> entry: _nname2tamount.entrySet()){
             if(entry.getValue() > 1)
                 for(int i=1; i<=entry.getValue(); i++){
@@ -381,8 +356,6 @@ public class GeneTreeProbability {
                     }
                 }
 
-                //TODO
-
                 if(_printDetails){
                     for(int i=0; i<mapping.length; i++){
                         System.out.print(gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
@@ -425,18 +398,22 @@ public class GeneTreeProbability {
 
             }while(mergeNumberAddOne(mergeNumber,upper));
 
-            //System.out.println();
-            //TODO
             expectedXL = expectedXL / gtprob;
-            //System.out.println(expectedXL);
             xllist.add(expectedXL);
-
         }
 
         return xllist;
     }
 
 
+    /**
+     * Computes the coalescent histories of a gene tree under a given allele mapping
+     * @param gt	the given gene tree
+     * @param gtTaxa	the list of taxa in the gene tree
+     * @param gtTaxa	the allele mapping
+     *
+     * @return	a list of coalescent histories
+     */
     private List<int[]> computeHistories(Tree gt, List<String> gtTaxa, int mapping[]){
         List<int[]> histories = new ArrayList<int[]>();
         Map<String,String> aname2tname = new HashMap<String,String>();
@@ -454,6 +431,14 @@ public class GeneTreeProbability {
     }
 
 
+    /**
+     * Computes the probability of a coalescent history under a given allele mapping
+     * @param mapping	the allele mapping
+     * @param history   the coalescent history
+     * @param countXL	whether this method is used for computing expected number of extra lineages; if so, the number of extra lineages will be computed in the meantime
+     *
+     * @return	the probability along with the number of extra lineages if countXL is set to true
+     */
     private String computeProbability(int[] mapping, int[] history, boolean countXL){
         double gtmaphisprob = 1;
         boolean first = true;
@@ -463,7 +448,7 @@ public class GeneTreeProbability {
             String nname = _tname2nname.get(b.getName());
             if(nname != null){
                 if(_hname2tnodes.containsKey(nname)){
-                   continue;
+                    continue;
                 }
             }
 
@@ -479,7 +464,6 @@ public class GeneTreeProbability {
                 xl += Math.max(0, u-c-1);
             }
             if(_printDetails){
-                //System.out.println("not h");
                 String prefix = "*";
                 if(first){
                     prefix = "+";
@@ -571,6 +555,12 @@ public class GeneTreeProbability {
         }
     }
 
+
+    /**
+     * This function is to help enumerate allele mappings
+     *
+     * @return	false if it reaches the end
+     */
     private boolean mergeNumberAddOne(List<int[]> mergeNumber, int[] upper){
         for(int i=0; i<mergeNumber.size(); i++){
             int[] partNumber = mergeNumber.get(i);
@@ -591,8 +581,9 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to convert a network to a multilabel tree.
-     * @param	net 	the given network
+     * Converts a species network to a multi-labeled tree
+     *
+     * @param net 	the given network
      */
 
     private void networkToTree(Network<Double> net){
@@ -605,7 +596,7 @@ public class GeneTreeProbability {
         source.offer(net.getRoot());
         dest.offer((TMutableNode) _mulTree.getRoot());
         int nameid = 1;
-        //long nameid = 0;
+
         while(!source.isEmpty()){
             NetNode<Double> parent = source.poll();
             TMutableNode peer = dest.poll();
@@ -632,7 +623,6 @@ public class GeneTreeProbability {
                 // Update the distance and data for this child.
                 double distance = child.getParentDistance(parent);
                 if (distance == NetNode.NO_DISTANCE) {
-                    //copy.setParentDistance(TNode.NO_DISTANCE);
                     copy.setParentDistance(0);
                 }
                 else {
@@ -646,15 +636,14 @@ public class GeneTreeProbability {
                 // Continue to iterate over the children of nn and tn.
                 source.offer(child);
                 dest.offer(copy);
-                //index ++;
             }
         }
     }
 
 
     /**
-     * The function is to collect all nodes under hybridization so that they can be treated differently when calculating probabilities
-     * @param	st	a tree
+     * Collects all nodes under reticulation nodes which will be treated differently later when calculating probabilities
+     * @param st the given species tree
      */
     private void computeNodesUnderHybrid(Tree st){
         for(Map.Entry<String, Integer> entry: _nname2tamount.entrySet()){
@@ -668,7 +657,7 @@ public class GeneTreeProbability {
 
             if(name != null)
             {
-                 List<TNode> nodelist = _hname2tnodes.get(name);
+                List<TNode> nodelist = _hname2tnodes.get(name);
                 if(nodelist!=null){
                     nodelist.add(node);
                 }
@@ -680,10 +669,11 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to calculate the g_{ij} function.
+     * Calculates the g_{ij} function.
      * @param	length	the branch length
      * @param 	i	the number of lineages in
      * @param	j	the number of lineages out
+     *
      * @return	the resulting probability
      */
     private double gij(double length, int i, int j){
@@ -715,6 +705,7 @@ public class GeneTreeProbability {
      * The function is to calculate factorial
      * @param	start	the first number
      * @param 	end		the last number
+     *
      * @return	the resulting factorial
      */
     private long fact(int start, int end){
@@ -730,14 +721,10 @@ public class GeneTreeProbability {
      * The function is to calculate "N choose K"
      */
     private long choose(int N, int K) {
-        //BigInteger ret = BigInteger.ONE;
         long ret = 1;
         for (int k = 0; k < K; k++) {
-            //ret = ret.multiply(BigInteger.valueOf(N-k))
-            //.divide(BigInteger.valueOf(k+1));
             ret = ret * (N-k) / (k+1);
         }
-        //return ret.longValue();
         return ret;
     }
 
@@ -778,6 +765,10 @@ public class GeneTreeProbability {
     /**
      * The function is to calculate the _M matrix for the given tree.
      * Read the paper "Gene tree distributions under the coalescent process." by James Degnan to for details.
+     *
+     * @param gt the given gene tree
+     * @param st the given species tree
+     * @param allele2species mapping from the names of alleles to the names of the species, which is used when multiple alleles are sampled per species
      */
     private void calculateM(Tree gt, Tree st, Map<String,String> allele2species){
         int ngtnode = gt.getNodeCount();
@@ -842,6 +833,7 @@ public class GeneTreeProbability {
             }
         }
     }
+
 
 
     /**
@@ -945,11 +937,12 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to calculate the number of lineages going into a branch
+     * The function is to calculate the number of lineages going into a branch for a given coalescent history
+     *
      * @param	st		the multilabel species tree
      * @param	node	the node that the branch is incident into
      * @param	mapping		the mapping
-     * @param	history		the coalescent history of the gene tree
+     * @param	history		the given coalescent history of the gene tree
      */
     private int calculateU(Tree st, TNode node, int[] mapping, int[] history){
         int u = 0;
@@ -977,9 +970,9 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to calculate the number of coalescent events in a branch
-     * @param	node	the node that the branch is incident into
-     * @param	history		the coalescent history
+     * The function is to calculate the number of coalescent events in a branch for a given coalescent history
+     * @param node	the node that the branch is incident into
+     * @param history	the coalescent history
      */
     private int calculateC(TNode node, int[] history){
         int c = 0;
@@ -993,9 +986,9 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to calculate the number of possible ordering coalescent events
+     * The function is to calculate the number of all possible ordering coalescent events
      * @param	u	the number of lineages entering the branch
-     * @param	c	the number of coalescent events
+     * @param	c	the number of coalescent events happening on the branch
      */
     private long calculateD(int u, int c){
         long d = 1;
@@ -1010,8 +1003,9 @@ public class GeneTreeProbability {
 
     /**
      * The function is to calculate the number of ways that coalescent events on a branch can occur consistently with the gene tree
-     * @param	c	the number of coalescent events on the branch
-     * @param	history		coalescent history of the gene tree
+     * @param node	the node that the branch is incident into
+     * @param c	the number of coalescent events on the branch
+     * @param history	coalescent history of the gene tree
      */
     private long calculateW(TNode node, int c, int[] history){
         long w = 1;
@@ -1037,8 +1031,9 @@ public class GeneTreeProbability {
     /**
      * The function is to calculate the number of ways that coalescent events on a branch can occur consistently with the gene tree divided by c!
      * It is used for branches under hybridization events.
-     * @param	c	the number of  coalescent events on the branch
-     * @param	history		coalescent history of the gene tree
+     * @param node	the node that the branch is incident into
+     * @param c	the number of  coalescent events on the branch
+     * @param history	coalescent history of the gene tree
      */
     private double calculateHW(TNode node, int c, int[] history){
         double w = 1;
@@ -1061,7 +1056,7 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to _printDetails matrix for debugging
+     * The function is to print a matrix for debugging
      */
     private void printMatrix(boolean[][] matrix){
         for(int i=0; i<matrix.length; i++){
@@ -1078,7 +1073,7 @@ public class GeneTreeProbability {
 
 
     /**
-     * The function is to _printDetails a list of coalescent histories for debugging
+     * The function is to print a list of coalescent histories for debugging
      */
     private void printHistories(List<int[]> histories){
         System.out.println("total size:"+histories.size());
@@ -1092,7 +1087,7 @@ public class GeneTreeProbability {
     }
 
     /**
-     * The function is to _printDetails coalescent histories for debugging
+     * The function is to print a coalescent history for debugging
      */
     private void printHistory(int[] history){
         System.out.print("[");
@@ -1102,6 +1097,10 @@ public class GeneTreeProbability {
         System.out.println("]");
     }
 
+
+    /**
+     * The function is to remove binary nodes of a species network
+     */
     private void removeBinaryNodes(Network<Double> net)
     {
         // Find all binary nodes.

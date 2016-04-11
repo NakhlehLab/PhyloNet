@@ -10,11 +10,13 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 3/13/12
  * Time: 11:31 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to compute the pseudo-likelihood of a collection of triplets given a species network
+ * See “A Maximum Pseudo-likelihood Approach for Phylogenetic Networks”, BMC Genomics, 2015.
+ * Note that for a triplet, there are finite possible lineages, and also finite ways of merging, coalescing and splitting. To speed up the computation, they are hard-coded here.
  */
 
 public class GeneTreeProbabilityPseudo {
@@ -28,7 +30,6 @@ public class GeneTreeProbabilityPseudo {
     private int _currentTripleID;
     private boolean _parallel;
     private int _batchSize = 10;
-    //private List<MutableTuple<String, double[]>> _tripleFrequencies;
 
     /**
      * Constructor that initialize the variables.
@@ -37,36 +38,36 @@ public class GeneTreeProbabilityPseudo {
         _printDetails = false;
     }
 
+    /**
+     * Sets the batch size, which is used for parallel computing
+     */
     public void setBatchSize(int size){
         _batchSize = size;
     }
 
+
+    /**
+     * Gets the next triplet to compute, which is used for parallel computing
+     */
     public synchronized int getNextTripleID(){
         _currentTripleID = _currentTripleID + _batchSize;
         return _currentTripleID-_batchSize;
 
     }
 
+    /**
+     * Sets parallel computing
+     */
     public void setParallel(boolean parallel){
         _parallel = parallel;
     }
 
 
+    /**
+     * Initializes the _mergingMap
+     */
     private void initializeMergingMap() {
         _mergingMap = new HashMap<>();
-        /*
-        _mergingMap.put("0|0",0);
-        _mergingMap.put("0|1",1);
-        _mergingMap.put("0|2",2);
-        _mergingMap.put("0|3",3);
-        _mergingMap.put("0|4",4);
-        _mergingMap.put("0|5",5);
-        _mergingMap.put("0|6",6);
-        _mergingMap.put("0|7",7);
-        _mergingMap.put("0|8",8);
-        _mergingMap.put("0|9",9);
-        _mergingMap.put("0|10",10);
-        */
         _mergingMap.put("1|2",4);
         _mergingMap.put("1|3",5);
         _mergingMap.put("1|6",7);
@@ -76,6 +77,10 @@ public class GeneTreeProbabilityPseudo {
         _mergingMap.put("3|8",9);
     }
 
+
+    /**
+     * Initializes the _splittingMap
+     */
     private void initializeSplittingMap() {
         _splittingMap = new HashMap<>();
         _splittingMap.put(0,Arrays.asList(new Tuple<>(0,0)));
@@ -92,7 +97,9 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
-
+    /**
+     * Initializes the _coalescingMap
+     */
     private void initializeCoalescingMap() {
         _coalescingMap = new HashMap<>();
         _coalescingMap.put(0,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(0,new Tuple<>(0,0))));
@@ -103,12 +110,15 @@ public class GeneTreeProbabilityPseudo {
         _coalescingMap.put(5,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(5,new Tuple<>(2,2))));
         _coalescingMap.put(6,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(6,new Tuple<>(2,2))));
         _coalescingMap.put(7,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(7,new Tuple<>(3,3)),new Tuple<Integer, Tuple<Integer, Integer>>(9,new Tuple<>(3,2)),new Tuple<Integer, Tuple<Integer, Integer>>(10,new Tuple<>(3,1))));
-        _coalescingMap.put(8,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(8,new Tuple<>(1,1))));
-        _coalescingMap.put(9,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(9,new Tuple<>(2,2)),new Tuple<Integer, Tuple<Integer, Integer>>(10,new Tuple<>(2,1))));
-        _coalescingMap.put(10,Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(10,new Tuple<>(1,1))));
+        _coalescingMap.put(8, Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(8, new Tuple<>(1, 1))));
+        _coalescingMap.put(9, Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(9, new Tuple<>(2, 2)), new Tuple<Integer, Tuple<Integer, Integer>>(10, new Tuple<>(2, 1))));
+        _coalescingMap.put(10, Arrays.asList(new Tuple<Integer, Tuple<Integer, Integer>>(10, new Tuple<>(1, 1))));
     }
 
 
+    /**
+     * Initializes all three maps that are used in the computation
+     */
     public void initializeMaps(){
         initializeMergingMap();
         initializeSplittingMap();
@@ -116,6 +126,9 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
+    /**
+     * Do all the pre-processing
+     */
     public void initialize(Network network){
         initializeMaps();
         computeArticulationNode(network);
@@ -123,7 +136,13 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
-
+    /**
+     * Computes the pseudo-likelihood of a species network
+     *
+     * @param network 	the given species network
+     * @param allTriplets	a collection of triplets
+     * @param probs	the resulting probabilities
+     */
     public void computePseudoLikelihood(Network network, List<String> allTriplets, double[][] probs){
         if(_articulationNodes==null){
             initialize(network);
@@ -138,56 +157,13 @@ public class GeneTreeProbabilityPseudo {
         int count = 0;
         while(tripleID < totalTripleNum){
             String[] triple = allTriplets.get(tripleID).split("&");
-            //if(tripleID % 100 == 0)
             probs[tripleID][0] = calculateTripleProbability(network,triple);
 
             String temp = triple[1];
             triple[1] = triple[2];
             triple[2] = temp;
             probs[tripleID][1] = calculateTripleProbability(network, triple);
-
             probs[tripleID][2] = Math.max(1 - probs[tripleID][0] - probs[tripleID][1], 0);
-/*
-            temp = triple[0];
-            triple[0] = triple[2];
-            triple[2] = temp;
-            probs[tripleID][2] = calculateTripleProbability(network,triple);
-
-
-            double checkingOne = 0;
-
-
-            for(int i=0; i<3; i++){
-                checkingOne += probs[tripleID][i];
-
-            }
-
-            if(Math.abs(checkingOne-1)>0.0001){
-                System.out.println(checkingOne);
-
-            }
-
-            for(double value: probs[tripleID]){
-                System.out.print(value + ",");
-            }
-            */
-/*
-            temp = triple[0];
-            triple[0] = triple[2];
-            triple[2] = temp;
-            probs[tripleID][2] = calculateTripleProbability(network,triple);
-            double checkingOne = 0;
-
-
-            for(int i=0; i<3; i++){
-                checkingOne += probs[tripleID][i];
-
-            }
-
-            if(Math.abs(checkingOne-1)>0.0001){
-                throw new RuntimeException(Arrays.toString(probs[tripleID]));
-            }
-*/
 
             if(_parallel){
                 count++;
@@ -208,7 +184,14 @@ public class GeneTreeProbabilityPseudo {
 
 
 
-
+    /**
+     * Computes the probability of a triplet given a species network
+     *
+     * @param network 	the given species network
+     * @param triple	the given triplet
+     *
+     * @return	the resulting probability
+     */
     private double calculateTripleProbability(Network network, String[] triple) {
         if (_printDetails) {
             System.out.println();
@@ -238,7 +221,6 @@ public class GeneTreeProbabilityPseudo {
                     CACs = new HashMap<>();
                     CACs.put(index + 1, Arrays.asList(config));
                 }
-                //t5 += (System.currentTimeMillis()-start)/1000.0;
             } else if (node.isNetworkNode()) {
                 CACs = edge2ACMinus.get(new Tuple<>(node, (NetNode) (node.getChildren().iterator().next())));
             } else {
@@ -271,7 +253,6 @@ public class GeneTreeProbabilityPseudo {
                 } else if (AC1 != null && AC2 != null) {
                     CACs = new HashMap<>();
                     boolean isArticulation = _lowestArticulationNodes.contains(node);
-                    //boolean isArticulation = false;
                     for (Map.Entry<Integer, List<Configuration>> entry1 : AC1.entrySet()) {
                         int configLineages1 = entry1.getKey();
                         for (Map.Entry<Integer, List<Configuration>> entry2 : AC2.entrySet()) {
@@ -346,22 +327,19 @@ public class GeneTreeProbabilityPseudo {
                 System.out.println("}");
             }
 
-
-
             //set AC- for a node
             if(CACs!=null) {
                 if (CACs.containsKey(7) && _articulationNodes.contains(node)) {
-                    totalProb = CACs.get(7).get(0)._totalProb/3;
-                    if(CACs.containsKey(9)){
+                    totalProb = CACs.get(7).get(0)._totalProb / 3;
+                    if (CACs.containsKey(9)) {
                         totalProb += CACs.get(9).get(0)._totalProb;
                     }
-                    if(CACs.containsKey(10)){
+                    if (CACs.containsKey(10)) {
                         totalProb += CACs.get(10).get(0)._totalProb;
                     }
 
                     break;
                 }
-
 
                 if (node.isNetworkNode()) {
                     Map<Integer, List<Configuration>> ACplus1 = new HashMap<>();
@@ -384,7 +362,6 @@ public class GeneTreeProbabilityPseudo {
                         if (_printDetails) {
                             System.out.print("ACMinus: {");
                             for (Map.Entry<Integer, List<Configuration>> entry : ACMinus.entrySet()) {
-                                //System.out.print(entry.getKey() + ": ");
                                 for (Configuration config : entry.getValue()) {
                                     System.out.print(config.toString(triple, entry.getKey())+", ");
                                 }
@@ -418,11 +395,18 @@ public class GeneTreeProbabilityPseudo {
             }
 
         }
-        //System.out.println(t1 + " " + t2 + " " + t3+ " " + t4+ " " + t5+ " " + t6);
         return totalProb;
-
     }
 
+
+    /**
+     * Computes the AC- given the CACs on a branch (all possible lineages along with their probabilities when leaving a branch given all possible lineages entering a branch)
+     *
+     * @param CACs 	the given CACs, which are the lineages entering a branch
+     * @param ACMinus	the resulting AC-, which are the lineages leaving a branch
+     * @param bl	the length of the branch
+     * @param inheritanceProb	the inheritance probability of the branch
+     */
     private void computeACMinus(Map<Integer, List<Configuration>> CACs, Map<Integer, List<Configuration>> ACMinus, double bl, double inheritanceProb){
 
         Map<Integer, Map<Configuration,Configuration>> ACMinusMap = new HashMap<>();
@@ -470,6 +454,14 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
+    /**
+     * Computes the ACs after splitting at a reticulation node
+     *
+     * @param CACs 	the given CACs, which are the lineages right before entering a reticulation node
+     * @param netNodeID	the reticulation node
+     * @param ACplus1	the ACs entering one of branch incident with the reticulation node
+     * @param ACplus2	the ACs entering another of branch incident with the reticulation node
+     */
     private void splittingAtNetworkNode(Map<Integer, List<Configuration>> CACs, int netNodeID, Map<Integer,List<Configuration>> ACplus1, Map<Integer,List<Configuration>> ACplus2){
         int netIndex = 1;
         for(Map.Entry<Integer,List<Configuration>> entry: CACs.entrySet()){
@@ -563,18 +555,9 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
-    private double chooseD(int N, int K) {
-        double ret = 1.0;
-        for (int k = 0; k < K; k++) {
-            //ret = ret.multiply(BigInteger.valueOf(N-k))
-            //.divide(BigInteger.valueOf(k+1));
-            ret = ret*((N-k+0.0)/(k+1));
-        }
-
-        return ret;
-    }
-
-
+    /**
+     * Computes the factorial from start to end
+     */
     private double fact(int start, int end){
         double result = 1;
         for(int i=start; i<=end; i++){
@@ -585,6 +568,9 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
+    /**
+     * Computes all articulation nodes of a given network
+     */
     private void computeArticulationNode(Network net){
         _articulationNodes = new HashSet<>();
         _lowestArticulationNodes = new HashSet<NetNode>();
@@ -635,6 +621,9 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
+    /**
+     * This function is to help calculate articulation nodes
+     */
     private static  boolean isValidNetwork(Network net, NetNode ignoreNode){
         Set<NetNode> visited = new HashSet<NetNode>();
         Set<NetNode> seen = new HashSet<NetNode>();
@@ -655,10 +644,12 @@ public class GeneTreeProbabilityPseudo {
     }
 
 
+    /**
+     * This class is to represent the concept of ancestral configuration
+     */
     private class Configuration{
         private double _totalProb;
         int[] _netNodeIndex;
-
 
         public Configuration(){
             _netNodeIndex = new int[_netNodeNum];
@@ -752,9 +743,6 @@ public class GeneTreeProbabilityPseudo {
             _netNodeIndex[net] = index;
         }
 
-        public void setNetNodeChoice(int[] choice){
-            _netNodeIndex = choice.clone();
-        }
 
         public void clearNetNodeChoice(){
             Arrays.fill(_netNodeIndex, 0);

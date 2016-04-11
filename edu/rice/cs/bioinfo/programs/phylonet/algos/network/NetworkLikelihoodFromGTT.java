@@ -311,8 +311,6 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
             } catch (InterruptedException ignore) {}
         }
 
-        _maxNumACs = gtp._maxNumACs;
-
         double prob = calculateFinalLikelihood(probs, gtCorrespondences);
         return prob;
     }
@@ -337,8 +335,6 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                 myThreads[i].join();
             } catch (InterruptedException ignore) {}
         }
-
-        _maxNumACs = gtp._maxNumACs;
 
         return calculateFinalLikelihood(probs, gtCorrespondences);
     }

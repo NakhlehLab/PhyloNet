@@ -157,10 +157,10 @@ public class InferST_MDC_Time extends InferSTBase
 
 		Solution s;
 		if(_taxonMap == null){
-			s = inference.inferSpeciesTree(tuples, _bootstrap);
+			s = inference.inferSpeciesTree(tuples);
 		}
 		else{
-			s = inference.inferSpeciesTree(tuples,_taxonMap, _bootstrap);
+			s = inference.inferSpeciesTree(tuples,_taxonMap);
 		}
 
         String tree = s._st.toStringWD();

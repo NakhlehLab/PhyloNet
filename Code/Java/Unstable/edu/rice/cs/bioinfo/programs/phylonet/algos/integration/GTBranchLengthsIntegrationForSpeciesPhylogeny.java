@@ -346,7 +346,7 @@ public class GTBranchLengthsIntegrationForSpeciesPhylogeny {
 
             GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(_network, _gtList, _species2alleles);
             if(_articulateNodes!=null){
-                gtp.setTotalNodes(_articulateNodes);
+                gtp.setArticulateNodes(_articulateNodes);
             }
             double[] probs = new double[1];
             gtp.calculateGTDistribution(probs);

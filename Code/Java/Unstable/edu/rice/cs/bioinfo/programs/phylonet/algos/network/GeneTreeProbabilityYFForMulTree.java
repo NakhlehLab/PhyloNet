@@ -34,25 +34,39 @@ import java.util.*;
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 5/10/12
- * Time: 2:31 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ * Date: 3/13/12
+ * Time: 11:31 AM
+ *
+ * This class is to compute the probability of observing a gene tree given a Multree based on ancestral configurations
+ * This method uses only topologies of gene trees.
+ * See "Fast Algorithms and Heuristics for Phylogenomics under ILS and Hybridization”, BMC Bioinformatics, 2013.
+ * The method is an extension of "Coalescent-based Species Tree Inference from Gene Tree Topologies Under Incomplete Lineage Sorting by Maximum Likelihood", Evolution, 2012. Also see this paper for computation details. Variable names are the same as those appeared in the paper.
  */
 public class GeneTreeProbabilityYFForMulTree {
     Set<NetNode> _firstArticulationNodes;
     boolean _printDetails = false;
     int _netNodeNum;
 
-    public void setArticulationNodes(Set<NetNode> articulationNodes){
-        _firstArticulationNodes = articulationNodes;
-    }
-
+    /**
+     * Sets printing option
+     */
     public void setPrintDetails(boolean p){
         _printDetails = p;
     }
 
+
+    /**
+     * Computes the probability of observing a gene tree given a Multree
+     *
+     * @param network 	the given species network
+     * @param mulTree	the Multree corresponding to the network
+     * @param netLeaf2treeLeaves	the mapping from the leaves of the species network to the leaves of the Multree
+     * @param alleleMapping     the mapping from the names of the species from the list of sampled alleles, which is used when multiple alleles are sampled per species
+     * @param gt the given gene tree
+     *
+     * @return	a list of probabilities corresponding to the list of gene trees.
+     */
     public double calculateProbability(Network<Object> network, Tree mulTree, Map<NetNode,List<TNode>> netLeaf2treeLeaves, Map<String, List<String>> alleleMapping, Tree gt){
         if(_printDetails){
             System.out.println("Network: " + network);
@@ -64,7 +78,6 @@ public class GeneTreeProbabilityYFForMulTree {
 
 
         if(_firstArticulationNodes == null) {
-            //_firstArticulationNodes = new HashSet<>();
             _firstArticulationNodes = Networks.getLowestArticulationNodes((Network) network);
         }
         _netNodeNum = network.getReticulationCount();
@@ -93,10 +106,10 @@ public class GeneTreeProbabilityYFForMulTree {
                 computeLeafNodeCACs(node, mulTreeNodes, alleleMapping, gtTaxa, gtTaxaSet, gtClusters, CACs);
             }
             else if(node.isTreeNode()){
-                processInternalTreeNodeCACs(node, node2ACMinus, CACs);
+                computeInternalTreeNodeCACs(node, node2ACMinus, CACs);
             }
             else{
-                processReticulationNodeCACs(node, node2ACMinus, CACs, reticulationID);
+                computeReticulationNodeCACs(node, node2ACMinus, CACs, reticulationID);
                 reticulationID++;
             }
 
@@ -111,7 +124,6 @@ public class GeneTreeProbabilityYFForMulTree {
                     }
                     System.out.println();
                 }
-                //System.out.println();
             }
 
             //compute AC Minus
@@ -156,6 +168,18 @@ public class GeneTreeProbabilityYFForMulTree {
         return gtProb;
     }
 
+
+    /**
+     * Computes the CACs for leaves
+     *
+     * @param node 	        the leaf node in the original network
+     * @param mulTreeNodes  the corresponding leaf nodes in the multree
+     * @param alleleMapping	the mapping from the names of species to the list of sampled alleles, which is used when multiple alleles are sampled per species
+     * @param gtTaxa	    taxa in the gene tree
+     * @param gtTaxaSet	    taxa in the gene tree
+     * @param gtClusters	all clusters in the gene tree
+     * @param CACs	        the resulting CACs
+     */
     private void computeLeafNodeCACs(NetNode node, List<TNode> mulTreeNodes, Map<String, List<String>> alleleMapping, String[] gtTaxa, Set<String> gtTaxaSet, List<STITreeCluster> gtClusters, Map<NetNode,List<Configuration>> CACs){
         Configuration config = new Configuration();
         for(TNode mtNode: mulTreeNodes){
@@ -177,7 +201,15 @@ public class GeneTreeProbabilityYFForMulTree {
     }
 
 
-    private void processInternalTreeNodeCACs(NetNode node, Map<NetNode, Map<NetNode,List<Configuration>>> node2ACMinus, Map<NetNode,List<Configuration>> CACs){
+
+    /**
+     * Computes the CACs for internal tree nodes by merging two AC- sets
+     *
+     * @param node 	        the internal tree node in the original network
+     * @param node2ACMinus  ACMinus on the outgoing edges of the node that are used to compute CACs
+     * @param CACs	        the resulting CACs
+     */
+    private void computeInternalTreeNodeCACs(NetNode node, Map<NetNode, Map<NetNode,List<Configuration>>> node2ACMinus, Map<NetNode,List<Configuration>> CACs){
         Iterator<NetNode> childNode = node.getChildren().iterator();
         List<Configuration> AC1 = node2ACMinus.get(childNode.next()).get(node);
         List<Configuration> AC2 = node2ACMinus.get(childNode.next()).get(node);
@@ -218,7 +250,15 @@ public class GeneTreeProbabilityYFForMulTree {
     }
 
 
-    private void processReticulationNodeCACs(NetNode node, Map<NetNode, Map<NetNode,List<Configuration>>> node2ACMinus, Map<NetNode,List<Configuration>> CACs, int reticulationID){
+    /**
+     * Computes the CACs for reticulation nodes by splitting an AC- set
+     *
+     * @param node 	        the reticulation node in the original network
+     * @param node2ACMinus  ACMinus on the outgoing edges of the node that are used to compute CACs
+     * @param CACs	        the resulting CACs
+     * @param reticulationID    id of the reticulation node
+     */
+    private void computeReticulationNodeCACs(NetNode node, Map<NetNode, Map<NetNode,List<Configuration>>> node2ACMinus, Map<NetNode,List<Configuration>> CACs, int reticulationID){
         Iterator<NetNode> parentNode = node.getParents().iterator();
         NetNode[] parents = new NetNode[2];
         for(int i=0; i<2; i++){
@@ -255,6 +295,17 @@ public class GeneTreeProbabilityYFForMulTree {
     }
 
 
+    /**
+     * Computes the AC- given the CACs on a branch (all possible lineages along with their probabilities when leaving a branch given all possible lineages entering a branch)
+     *
+     * @param CACs 	the given CACs, which are the lineages entering a branch
+     * @param distance	the length of the branch
+     * @param hybridProb	the inheritance probability of the branch
+     * @param child2parent  maps from a child cluster/node to its parent cluster/node (induced from the gene tree topology)
+     * @param R     a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     * @param gtClusters    all clusters in the gene tree
+     * @param ACMinus	the resulting AC-, which are the lineages leaving a branch
+     */
     private void computeACMinus(List<Configuration> CACs, double distance, double hybridProb, Map<Integer, Integer> child2parent, boolean[][] R, List<STITreeCluster> gtClusters, List<Configuration> ACMinus){
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus = new HashMap<Integer, Map<Configuration, Configuration>>();
         for (Configuration origConfig: CACs) {
@@ -269,7 +320,6 @@ public class GeneTreeProbabilityYFForMulTree {
                 cconfig.setProbability(origConfig.getProbability());
                 double prob = Math.max(0, computeProbability(origConfig, cconfig, weight, distance, hybridProb, gtClusters));
                 cconfig.setProbability(Math.max(0, prob * origConfig.getProbability()));
-                //ACMinus.add(cconfig);
 
                 int code = cconfig.getLineages().size() * cconfig.getAllLineages().size();
                 Map<Configuration, Configuration> existingACMinus = shape2ACminus.get(code);
@@ -328,6 +378,15 @@ public class GeneTreeProbabilityYFForMulTree {
     }
 
 
+    /**
+     * Computes final probability at the root of the network/multree
+     *
+     * @param root          the root of the network/multree
+     * @param child2parent  maps from a child cluster/node to its parent cluster/node (induced from the gene tree topology)
+     * @param R             a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     * @param gtClusters    all clusters in the gene tree
+     * @param CACs 	        the ancestral configurations entering a branch
+     */
     private double computeFinalProbAtRoot(TNode root, Map<Integer, Integer> child2parent, boolean[][] R, List<STITreeCluster> gtClusters, List<Configuration> CACs){
         double gtProb = 0;
         Configuration rootConfig = new Configuration();
@@ -357,7 +416,13 @@ public class GeneTreeProbabilityYFForMulTree {
 
 
 
-
+    /**
+     * This function is to pre-process a gene tree, especially getting the ancestral relationships
+     *
+     * @param gt 	the gene tree to be processed
+     * @param child2parent  the resulting mapping from a child cluster/node to its parent cluster/node (induced from the gene tree topology)
+     * @param gtClusters    the resulting list of clusters in the gene tree
+     */
     private void processGT(Tree gt, String[] gtTaxa, Map<Integer,Integer> child2parent,List<STITreeCluster> gtClusters){
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         int index = 0;
@@ -389,8 +454,6 @@ public class GeneTreeProbabilityYFForMulTree {
 
 
 
-
-
     /**
      * The function is to calculate the _R matrix for the given tree.
      * Read the paper "Gene tree distributions under the coalescent process." by James Degnan to for details.
@@ -414,14 +477,22 @@ public class GeneTreeProbabilityYFForMulTree {
 
 
 
-
-
-
+    /**
+     * Computes the probability of a given ancestral configuration coalescing into another given one
+     *
+     * @param preConfig 	the original ancestral configuration
+     * @param coalescedConfig     the ancestral configuration that the original one is coalescing into
+     * @param w     weight
+     * @param distance 	the branch length
+     * @param portion	the inheritance probability
+     * @param gtClusters    all clusters in the gene tree
+     *
+     * @return the probability
+     */
     private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion, List<STITreeCluster> gtClusters){
         double prob = 1.0;
         int u = preConfig.getLineageCount();
         int v = coalescedConfig.getLineageCount();
-        //prob = Math.pow(portion, u);
         if(distance == 0 && u != v){
             if(_printDetails){
                 System.out.println(preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": g"+u+v+"(0)=0");
@@ -494,6 +565,12 @@ public class GeneTreeProbabilityYFForMulTree {
         return result;
     }
 
+
+    /**
+     * The function is to calculate the number of all possible ordering coalescent events
+     * @param	u	the number of lineages entering the branch
+     * @param	c	the number of coalescent events happening on the branch
+     */
     private double calculateD(int u, int c){
         double d = 1;
         if(c!=0){
@@ -504,11 +581,13 @@ public class GeneTreeProbabilityYFForMulTree {
         return d;
     }
 
+
+    /**
+     * The function is to calculate "N choose K"
+     */
     private double chooseD(int N, int K) {
         double ret = 1.0;
         for (int k = 0; k < K; k++) {
-            //ret = ret.multiply(BigInteger.valueOf(N-k))
-            //.divide(BigInteger.valueOf(k+1));
             ret = ret*((N-k+0.0)/(k+1));
         }
 
@@ -516,42 +595,33 @@ public class GeneTreeProbabilityYFForMulTree {
     }
 
 
+    /**
+     * The function is to calculate the number of ways (weight) that coalescent events on a branch can occur consistently with the gene tree
+     * @param coalEvents	the coalescent events happened on the branch
+     * @param R     the ancestral relationships of nodes in a gene tree
+     */
     private double calculateW(Set<Integer> coalEvents, boolean[][] R){
-        //System.out.println(coalEvents);
         double w = 1.0;
-        w = w*fact(1, coalEvents.size());
-        //System.out.print(fact(1, coalEvents.cardinality()));
+        w = w * fact(1, coalEvents.size());
         for (int i: coalEvents) {
             int a = 0;
             for (int j: coalEvents) {
                 if(i!=j && R[i][j])
                     a++;
             }
-            //System.out.print(" * " + 1.0/(1 + a));
-            w = w*(1.0/(1 + a));
+            w = w * (1.0/(1 + a));
         }
-        //System.out.println();
         return w;
     }
 
 
-    private double calculateD(Set<Integer> coalEvents, boolean[][] R){
-        double w = 1.0;
-        w = w*fact(1, coalEvents.size());
-        //System.out.print(fact(1, coalEvents.cardinality()));
-        for (int i: coalEvents) {
-            int a = 0;
-            for (int j: coalEvents) {
-                if(i!=j && R[i][j])
-                    a++;
-            }
-            //System.out.print(" * " + 1.0/(1 + a));
-            w = w*(1.0/(1 + a));
-        }
-        //System.out.println();
-        return w;
-    }
-
+    /**
+     * The function is to calculate factorial
+     * @param	start	the first number
+     * @param 	end		the last number
+     *
+     * @return	the resulting factorial
+     */
     private double fact(int start, int end){
         double result = 1;
         for(int i=start; i<=end; i++){
@@ -561,45 +631,10 @@ public class GeneTreeProbabilityYFForMulTree {
         return result;
     }
 
-    private List<boolean[]> getSelected(int n, int m){
-        List<boolean[]> selectedList = new ArrayList<boolean[]>();
-        int[] order = new int[m+1];
-        for(int i=0; i<=m; i++){
-            order[i] = i-1;
-        }
-        int k = m;
-        boolean flag = true;
-        while(order[0] == -1){
-            if(flag){
-                boolean[] bs = new boolean[n];
-                for(int i=1; i<=m; i++){
-                    bs[order[i]] = true;
-                }
-                selectedList.add(bs);
-                flag = false;
-            }
 
-            order[k]++;
-            if(order[k] == n){
-                order[k--] = 0;
-                continue;
-            }
-
-            if(k < m){
-                order[++k] = order[k-1];
-                continue;
-            }
-
-            if(k == m)
-                flag = true;
-        }
-
-        return selectedList;
-    }
-
-
-
-
+    /**
+     * This class is to represent the concept of ancestral configuration
+     */
     private class Configuration{
         private Map<TNode,HashSet<Integer>> _lineages;
         private double _totalProb;
@@ -749,7 +784,6 @@ public class GeneTreeProbabilityYFForMulTree {
             return exp;
         }
 
-
         public void clearCoalEvents(){
             if(_coalEvents==null){
                 _coalEvents = new HashSet<Integer>();
@@ -772,8 +806,6 @@ public class GeneTreeProbabilityYFForMulTree {
             }
             _coalEvents.addAll(events);
         }
-
-
 
         public boolean equals(Object o) {
             if(!(o instanceof Configuration)){

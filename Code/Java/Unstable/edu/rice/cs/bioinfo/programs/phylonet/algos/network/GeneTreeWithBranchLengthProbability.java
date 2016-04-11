@@ -6,12 +6,15 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.*;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 5/10/12
- * Time: 3:32 PM
- * To change this template use File | Settings | File Templates.
- */
+ * Created by Yun Yu
+ * Date: 3/13/12
+ * Time: 11:31 AM
+ *
+ * This class is to compute the probability of observing a collection of gene trees given a species network based on multrees
+ * This method uses both the topologies and the branch lengths of gene trees.
+ * The input gene trees need to be ultrametric.
+ * */
+
 public class GeneTreeWithBranchLengthProbability {
     boolean _printDetail;
     private List<String> _netTaxa;
@@ -24,6 +27,7 @@ public class GeneTreeWithBranchLengthProbability {
     private Tree _st;
     private double[] _stAges;
 
+
     public GeneTreeWithBranchLengthProbability(){
         _printDetail = false;
         _netTaxa = new ArrayList<String>();
@@ -35,6 +39,10 @@ public class GeneTreeWithBranchLengthProbability {
 
     }
 
+
+    /**
+     * Sets printing option
+     */
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
@@ -43,19 +51,15 @@ public class GeneTreeWithBranchLengthProbability {
 
     /**
      * The public function for calculating the probabilities.
+     *
      * @param	net 	the given network
      * @param 	gts		the given set of gene trees
      * @param	allele2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
+     *
      * @return	a list of probabilities corresponding to the list of gene trees.
      */
     public List<Double> calculateGTDistribution(Network<Double> net, List<Tree> gts, Map<String,String> allele2species){
         networkToTree(net);
-        //System.out.println(_st.toNewickWD());
-        //System.exit(0);
-        //String[] leaves = {"A","B","C","D","E","F","G","H","I","J"};
-        //gts = Trees.generateAllBinaryTrees(leaves);
-        //System.out.println(gts.size());
-        //System.exit(0);
 
         for(NetNode leaf: net.getLeaves()){
             _netTaxa.add(leaf.getName());
@@ -77,15 +81,16 @@ public class GeneTreeWithBranchLengthProbability {
 
     /**
      * The actual calculation of the gene tree probabilities in the network
+     *
      * @param 	gts		the given set of gene trees
      * @param	allele2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
+     *
      * @return	a list of probabilities corresponding to the list of gene trees.
      */
 
     private List<Double> performCalculating(List<Tree> gts, Map<String,String> allele2species){
         List<Double> problist = new ArrayList<Double>();
         for(Tree gt: gts){
-            //System.out.println(gt.toNewick()+": ");
             List<String> gtTaxa = Arrays.asList(gt.getLeaves());
             List<List<String>> allelesList = new ArrayList<List<String>>();
             for(int i=0; i<_netTaxa.size(); i++){
@@ -174,7 +179,6 @@ public class GeneTreeWithBranchLengthProbability {
                 }
                 for(Map.Entry<String,List<TNode>> entry: _hname2tnodes.entrySet()){
                     int sumU = 0;
-                    int sumC = 0;
                     List<Integer> nodelist = new ArrayList<Integer>();
                     TNode node = null;
                     for(TNode hnode: entry.getValue()){
@@ -196,9 +200,7 @@ public class GeneTreeWithBranchLengthProbability {
                             }
                         }
                         sumU += u;
-                        sumC += c;
                     }
-
                     gtmapprob *= calculateBranchCoalProb(node, gtNodeAges, nodelist, sumU);
                 }
                 gtprob += gtmapprob;
@@ -211,14 +213,17 @@ public class GeneTreeWithBranchLengthProbability {
             if(_printDetail){
                 System.out.println();
             }
-            //System.out.println(gtprob);
             problist.add(gtprob);
         }
-        //System.out.println("total probability:"+totalprob);
         return problist;
     }
 
 
+    /**
+     * This function is to help enumerate allele mappings
+     *
+     * @return	false if it reaches the end
+     */
     private boolean mergeNumberAddOne(List<int[]> mergeNumber, int[] upper){
         for(int i=0; i<mergeNumber.size(); i++){
             int[] partNumber = mergeNumber.get(i);
@@ -238,9 +243,10 @@ public class GeneTreeWithBranchLengthProbability {
     }
 
 
+
     /**
      * The function is to convert a network to a multilabel tree.
-     * @param	net 	the given network
+     * @param net 	the given network
      */
     private void networkToTree(Network<Double> net){
         removeBinaryNodes(net);
@@ -256,7 +262,6 @@ public class GeneTreeWithBranchLengthProbability {
             TMutableNode peer = dest.poll();
 
             for (NetNode<Double> child : parent.getChildren()) {
-
                 TMutableNode copy;
                 if (child.getName().equals(NetNode.NO_NAME)) {
                     child.setName("hnode" + (nameid++));
@@ -279,7 +284,6 @@ public class GeneTreeWithBranchLengthProbability {
                 // Update the distance and data for this child.
                 double distance = child.getParentDistance(parent);
                 if (distance == NetNode.NO_DISTANCE) {
-                    //copy.setParentDistance(TNode.NO_DISTANCE);
                     copy.setParentDistance(0);
                 }
                 else {
@@ -298,8 +302,8 @@ public class GeneTreeWithBranchLengthProbability {
 
 
     /**
-     * The function is to collect all nodes under hybridization so that they can be treated differently when calculating probabilities
-     * @param	st	a tree
+     * The function is to collect all nodes under reticulations which will be treated differently later when calculating probabilities
+     * @param st	a tree
      */
     private void computeNodesUnderHybrid(Tree st){
         for(Map.Entry<String, Integer> entry: _nname2tamount.entrySet()){
@@ -318,7 +322,16 @@ public class GeneTreeWithBranchLengthProbability {
     }
 
 
-    private int[] findCoalescentHistory(Tree gt, double[] gtNodeAges, Map<String,String> allele2species){
+    /**
+     * Computes the coalescent history of a gene tree under a given allele mapping
+     *
+     * @param gt	        the given gene tree
+     * @param gtNodeAges    the heights of all nodes of the gene trees
+     * @param mulName2netName	the mapping from the leaves in the multree to the leaves in the species network
+     *
+     * @return  resulting coalescent history
+     */
+    private int[] findCoalescentHistory(Tree gt, double[] gtNodeAges, Map<String,String> mulName2netName){
         int[] history = new int[gt.getNodeCount()];
         Arrays.fill(history, -1);
         Map<Integer, BitSet> gtId2bs = new HashMap<Integer, BitSet>();
@@ -326,7 +339,7 @@ public class GeneTreeWithBranchLengthProbability {
         for (TNode node : gt.postTraverse()) {
             BitSet gtBs = new BitSet(_stTaxa.size());
             if (node.isLeaf()) {
-                String name = allele2species.get(node.getName());
+                String name = mulName2netName.get(node.getName());
                 gtBs.set(_stTaxa.indexOf(name));
             }
             else {
@@ -355,9 +368,9 @@ public class GeneTreeWithBranchLengthProbability {
             }
             gtId2bs.put(node.getID(), gtBs);
         }
-        //printHistory(history);
         return history;
     }
+
 
     /**
      * The function is to calculate the _R matrix for the given tree.
@@ -391,6 +404,9 @@ public class GeneTreeWithBranchLengthProbability {
     }
 
 
+    /**
+     * The function is to compute all the nodes in the multree along with their height
+     */
     private void generateSTNodesList(){
         _stAges = new double[_st.getNodeCount()];
         Map<Integer, BitSet> id2bs = new HashMap<Integer, BitSet>();
@@ -422,6 +438,10 @@ public class GeneTreeWithBranchLengthProbability {
 
     }
 
+
+    /**
+     * The function is to compute the heights of the nodes in a given gene tree
+     */
     private double[] getGTNodeAges(Tree gt){
         double[] ages = new double[gt.getNodeCount()];
 
@@ -443,10 +463,10 @@ public class GeneTreeWithBranchLengthProbability {
 
 
     /**
-     * The function is to calculate the number of lineages going into a branch
-     * @param	node	the node that the branch is incident into
-     * @param	mapping		the mapping
-     * @param	history		the coalescent history of the gene tree
+     * The function is to calculate the number of lineages going into a branch given an allele mapping and a coalescent history
+     * @param node          the node that the branch is incident into
+     * @param mapping		the allele mapping
+     * @param history		the coalescent history
      */
     private int calculateU(TNode node, int[] mapping, int[] history){
         int u = 0;
@@ -474,9 +494,10 @@ public class GeneTreeWithBranchLengthProbability {
 
 
     /**
-     * The function is to calculate the number of coalescent events in a branch
-     * @param	node	the node that the branch is incident into
-     * @param	history		the coalescent history
+     * Calculates the number of coalescent events on a branch given a coalescent history
+     * @param node      the node that the branch is incident with
+     * @param history	the coalescent history
+     * @param nodelist	the gene tree nodes corresponding to those coalescent events happening on the branch
      */
     private int calculateC(TNode node, int[] history, List<Integer> nodelist){
         int c = 0;
@@ -490,10 +511,16 @@ public class GeneTreeWithBranchLengthProbability {
     }
 
 
+    /**
+     * Calculates the probability of a list of coalescent events happending on a branch
+     * @param node          the node that the branch is incident with
+     * @param gtNodeAges	the heights of all nodes of the gene trees
+     * @param nodelist	    the gene tree nodes corresponding to those coalescent events happening on the branch
+     * @param u             the number of lineages entering the branch
+     */
     private double calculateBranchCoalProb(TNode node, double[] gtNodeAges, List<Integer> nodelist, int u){
         double prob = 1;
         List<Double> coalTimes = new ArrayList<Double>();
-        //System.out.println(node);
         double lowTao = _stAges[node.getID()];
         for(int id: nodelist){
             double gtAge = gtNodeAges[id];
@@ -518,20 +545,18 @@ public class GeneTreeWithBranchLengthProbability {
         }
 
         if(u != 1){
-            //System.out.println(node.isRoot());
             double highTao = _stAges[node.getParent().getID()];
             prob *= Math.exp((-1)*(highTao-lowTao)*u*(u-1)/2);
             if(_printDetail){
                 System.out.print("*exp(-" + u*(u-1) + "*" + (highTao-lowTao) + "/2)");
             }
         }
-        //System.out.println();
         return prob;
     }
 
 
     /**
-     * The function is to _printDetail matrix for debugging
+     * The function is to print a matrix for debugging
      */
     private void printMatrix(boolean[][] matrix){
         for(int i=0; i<matrix.length; i++){
@@ -549,7 +574,7 @@ public class GeneTreeWithBranchLengthProbability {
 
 
     /**
-     * The function is to _printDetail coalescent histories for debugging
+     * The function is to print coalescent histories for debugging
      */
     private void printHistory(int[] history){
         System.out.print("[");
@@ -560,6 +585,9 @@ public class GeneTreeWithBranchLengthProbability {
     }
 
 
+    /**
+     * The class is to store some infos of a node
+     */
     private class NodeInfo{
         public int _id;
         public BitSet _bs;
@@ -577,6 +605,9 @@ public class GeneTreeWithBranchLengthProbability {
     }
 
 
+    /**
+     * The function is to remove binary nodes of a species network
+     */
     private void removeBinaryNodes(Network<Double> net)
     {
         // Find all binary nodes.

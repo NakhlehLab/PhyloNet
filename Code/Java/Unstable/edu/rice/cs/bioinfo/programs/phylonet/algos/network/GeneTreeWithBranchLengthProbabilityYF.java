@@ -17,113 +17,110 @@ import java.util.*;
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 5/10/12
- * Time: 10:57 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ * Date: 3/13/12
+ * Time: 11:31 AM
+ *
+ * This class is to compute the probability of observing a collection of gene trees given a species network based on multrees
+ * This method uses both the topologies and the branch lengths of gene trees.
+ * The input gene trees need to be ultrametric.
+ * See "Maximum Likelihood Inference of Reticulate Evolutionary Histories", Proceedings of the National Academy of Sciences, 2014
  */
+
 public class GeneTreeWithBranchLengthProbabilityYF {
     Map<Integer, Double> _netNode2time;
-    //String[] _netTaxa;
     Set<NetNode> _articulateNodes;
     boolean _printDetail = false;
     int _netNodeNum;
     int _totalNodeNum;
-
     boolean _parallel = false;
     int _currentTreeID = 0;
     int _totalTree;
-
     Network _network;
     List<Tree> _gts;
     Map<String, List<String>> _species2alleles;
-
-    //int _binNumber = 1;
-    //int _sampleSize = 10000;
+    int _batchSize;
 
 
+    /**
+     * Constructor that initialize the variables.
+     *
+     * @param network 	the given species network
+     * @param gts	the given collection of gene trees
+     * @param species2alleles	the mapping from a species to the list of alleles sampled, which is used when multiple alleles are sampled per species
+     */
     public GeneTreeWithBranchLengthProbabilityYF(Network network, List<Tree> gts, Map<String, List<String>> species2alleles){
         _network = network;
         _gts = gts;
         _species2alleles = species2alleles;
         _totalTree = gts.size();
+        _batchSize = 1;
         processNetwork();
     }
 
+    /**
+     * Sets parallel computing
+     */
     public void setParallel(boolean parallel){
         _parallel = parallel;
     }
 
-    public void setTotalNodes(Set<NetNode> articulateNodes){
+
+    /**
+     * Sets the articulate nodes
+     */
+    public void setArticulateNodes(Set<NetNode> articulateNodes){
         _articulateNodes = articulateNodes;
     }
-    
 
-    public synchronized int getNextTreeID(int batchSize){
-        //System.out.println("In calculation:" + Thread.currentThread().getId() + ":");
-        _currentTreeID = _currentTreeID + batchSize;
-        //System.out.println("In calculation:" + Thread.currentThread().getId() + ":" + _currentTreeID);
-        return _currentTreeID - batchSize;
+
+    /**
+     * Gets the next triplet to compute, which is used for parallel computing
+     */
+    public synchronized int getNextTreeID(){
+        _currentTreeID = _currentTreeID + _batchSize;
+        return _currentTreeID - _batchSize;
     }
 
+    /**
+     * Sets printing option
+     */
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
 
-    /*
-    public void setIntegralParameter(int binNumber, int sampleSize){
-        _binNumber = binNumber;
-        _sampleSize = sampleSize;
+    /**
+     * Sets the batch size, which is used for parallel computing
+     */
+    public void setBatchSize(int size){
+        _batchSize = size;
     }
-    */
 
+
+
+    /**
+     * Computes the probability of observing a collection of gene trees given a species network
+     */
     public void calculateGTDistribution(double[] resultProbs){
-        calculateGTDistribution(1, resultProbs);
-    }
-
-    public void calculateGTDistribution(int batchSize, double[] resultProbs){
-        //System.out.println(gts.size());
-        //System.exit(0);
         int treeID = 0;
         if(_parallel){
-            treeID = getNextTreeID(batchSize);
+            treeID = getNextTreeID();
         }
 
         int count = 0;
         while(treeID < _totalTree){
             Tree gt = _gts.get(treeID);
-            /*
-            for(TNode node: gt.postTraverse()){
-                if(!node.isRoot() && node.getParentDistance()<0){
-                    resultProbs[treeID] = 0;
-                    break;
-                }
-            }
-            */
-
             resultProbs[treeID] = computeBinaryGTProbability(gt);
-                /*
-                if (!Trees.isBinary(gt)) {
-                    GTBranchLengthsIntegrationForSpeciesPhylogeny integral = new GTBranchLengthsIntegrationForSpeciesPhylogeny(_network, gt, _species2alleles);
-                    integral.setArticulateNodes(_articulateNodes);
-                    resultProbs[treeID] = integral.computeLikelihoodWithIntegral(_binNumber, _sampleSize);
-                } else {
-                    resultProbs[treeID] = computeBinaryGTProbability(gt);
-                }
-                */
 
-
-            //System.out.println(gt + ": " + gtProb);
             if(_printDetail){
                 System.out.println();
                 System.out.println(gt + ": " + resultProbs[treeID]);
             }
 
             if(_parallel){
-                count++;
-                if(count == batchSize) {
-                    treeID = getNextTreeID(batchSize);
+                count ++;
+                if(count == _batchSize) {
+                    treeID = getNextTreeID();
                     count = 0;
 
                 }
@@ -137,8 +134,21 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         }
     }
 
-    private List<Configuration> computeAC(NetNode<Integer> node, String[] gtTaxa, Set<String> gtTaxaSet, HashMap<Tuple<Integer,Integer>, List<Configuration>> edge2ACminus, HashSet<IntArray> invalidConfigs, List<STITreeCluster<Double>> gtClusters){
 
+
+    /**
+     * Computes the CAC at a node given the AC- on its outgoing branches
+     *
+     * @param node          the node that the CAC is at
+     * @param gtTaxa	    the gene tree taxa
+     * @param gtTaxaSet     the gene tree taxa
+     * @param edge2ACminus  AC- for different edges
+     * @param invalidConfigs    the set of invalid configurations that can be ignored
+     * @param gtClusters    all clusters in the gene tree
+     *
+     * @return the CACs
+     */
+    private List<Configuration> computeAC(NetNode<Integer> node, String[] gtTaxa, Set<String> gtTaxaSet, HashMap<Tuple<Integer,Integer>, List<Configuration>> edge2ACminus, HashSet<IntArray> invalidConfigs, List<STITreeCluster<Double>> gtClusters){
         List<Configuration> CACs =  new ArrayList<Configuration>();
         if(node.isLeaf()){
             Configuration config = new Configuration();
@@ -194,7 +204,6 @@ public class GeneTreeWithBranchLengthProbabilityYF {
                                     CACs.add(mergedConfig);
                                 }
                                 else{
-                                    //System.out.println(mergedConfig);
                                     Configuration exist = CACs.get(index);
                                     exist.addTotalProbability(mergedConfig._totalProb);
                                 }
@@ -218,13 +227,25 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         return CACs;
     }
 
+
+    /**
+     * Computes the AC- given the CACs on a branch (all possible lineages along with their probabilities when leaving a branch given all possible lineages entering a branch)
+     *
+     * @param node          the node that target branch is incident with
+     * @param netNodeIndex  id if the node is a reticulation node
+     * @param edge2ACminus  the resulting AC-
+     * @param invalidConfigs    the set of invalid configurations
+     * @param CACs 	the given CACs, which are the lineages entering a branch
+     * @param R     a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     * @param gtClusters    all clusters in the gene tree
+     *
+     * @return the probability of coalescing into this AC-
+     */
     private double computeACMinus(NetNode<Integer> node, int netNodeIndex, HashMap<Tuple<Integer,Integer>, List<Configuration>> edge2ACminus, HashSet<IntArray> invalidConfigs, List<STITreeCluster<Double>> gtClusters, List<Configuration> CACs, boolean[][] R){
         //set AC- for a node
         double lowTau = _netNode2time.get(node.getData());
         double gtProb = 0;
         if(node.isRoot()){
-            Configuration rootConfig = new Configuration();
-            rootConfig.addLineage(gtClusters.size()-1, gtClusters);
             for(Configuration preConfig: CACs){
                 Configuration postConfig = new Configuration(preConfig);
                 calculateProbability(lowTau, Double.MAX_VALUE, postConfig, 1, gtClusters, R);
@@ -358,15 +379,15 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         return gtProb;
     }
 
+
+    /**
+     * Computes the probability of observing a given gene tree with its branch lengths given a species network
+     */
     private double computeBinaryGTProbability(Tree gt){
         double gtProb = 0;
         String[] gtTaxa = gt.getLeaves();
         List<STITreeCluster<Double>> gtClusters = new ArrayList<STITreeCluster<Double>>();
         boolean[][] R = processGT(gt, gtTaxa, gtClusters);
-
-        //computeR();
-        //HashMap<NetNode, BitSet> node2events = computeLowestEvents(gt, network, species2alleles);
-
         HashSet<String> gtTaxaSet = new HashSet<String>();
         Collections.addAll(gtTaxaSet, gtTaxa);
 
@@ -392,6 +413,20 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         return gtProb;
     }
 
+
+
+    /**
+     * Computes the probability of a given ancestral configuration entering a branch coalescing
+     * Assume the branch is (b1, b2)
+     *
+     * @param lowTau 	height of node b2
+     * @param highTau   height of node b1
+     * @param config    the original ancestral configuration entering the branch
+     * @param gtClusters    all clusters in the gene tree
+     * @param R     a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     *
+     * @return the probability
+     */
     private void calculateProbability(double lowTau, double highTau, Configuration config, double gamma, List<STITreeCluster<Double>> gtClusters, boolean R[][]){
         boolean hasPrint = false;
         int u = config.getLineageCount();
@@ -427,16 +462,11 @@ public class GeneTreeWithBranchLengthProbabilityYF {
                 temp.and(gtCl.getCluster());
 
                 if(temp.cardinality() != 0){ // not disjoint
-                    //temp = (BitSet) config._coverage.clone();
-                    //temp.and(gtCl.getCluster());
                     if(temp.equals(gtCl.getCluster())){  //contains
                         config.mergeCluster(index, R);
                         prob *= Math.exp((-1)*(coalTime-lowTau)*u*(u-1)/2);
-                        //System.out.println(Math.exp((-1)*(coalTime-lowTau)*u*(u-1)/2));
-                        //prob *= Math.exp((-1)*(coalTime-lowTau)*u*(u-1));
                         if(_printDetail){
                             System.out.print("*exp(-" + u*(u-1)/2 + "*" + (coalTime-lowTau) + ")");
-                            //System.out.print("*exp(-" + u*(u-1)/2 + "*" + (coalTime-lowTau) + ")");
                             hasPrint = true;
                         }
                         lowTau = coalTime;
@@ -456,10 +486,8 @@ public class GeneTreeWithBranchLengthProbabilityYF {
 
         if(u != 1){
             prob *= Math.exp((-1)*(highTau-lowTau)*u*(u-1)/2);
-            //prob *= Math.exp((-1)*(highTau-lowTau)*u*(u-1));
             if(_printDetail){
                 System.out.print("*exp(-" + u*(u-1)/2 + "*" + (highTau-lowTau) + ")");
-                //System.out.print("*exp(-" + u*(u-1) + "*" + (highTau-lowTau) + ")");
                 hasPrint = true;
             }
         }
@@ -496,6 +524,9 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
 
 
+    /**
+     * This function is to pre-process a network, including removing binary nodes, getting information of nodes
+     */
     private void processNetwork(){
         removeBinaryNodes(_network);
         _netNodeNum = 0;
@@ -527,6 +558,15 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
 
 
+
+    /**
+     * This function is to pre-process a gene tree, especially getting the ancestral relationships
+     *
+     * @param gt 	the gene tree to be processed
+     * @param gtClusters    the resulting list of clusters in the gene tree
+     *
+     * @return  a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     */
     private boolean[][] processGT(Tree gt, String[] gtTaxa, List<STITreeCluster<Double>> gtClusters){
         Map<TNode, STITreeCluster> map = new HashMap<TNode, STITreeCluster>();
         for (TNode node : gt.postTraverse()) {
@@ -568,7 +608,9 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
 
 
-
+    /**
+     * This function is to remove binary nodes of a network
+     */
     private void removeBinaryNodes(Network<Integer> net)
     {
         // Find all binary nodes.
@@ -596,77 +638,9 @@ public class GeneTreeWithBranchLengthProbabilityYF {
     }
 
 
-
-
-/*
-    private void computeArticulateNodes(Network<Integer> net){
-        //List<Integer> leaves = new ArrayList<Integer>();
-        List<NetNode> allTotalNodes = new ArrayList<NetNode>();
-        _articulateNodes = new HashSet<NetNode>();
-        for(NetNode<Integer> node: Networks.postTraversal(net)){
-            if(node.isLeaf()){
-                //leaves.add(id);
-                allTotalNodes.add(node);
-            }
-
-            else if(node.isRoot()){
-                boolean ftotal = true;
-                for(NetNode<Integer> child: node.getChildren()){
-                    if(!allTotalNodes.contains(child.getData())){
-                        ftotal = false;
-                        break;
-                    }
-                }
-                if(!ftotal){
-                    _articulateNodes.add(node);
-                }
-
-            }
-            else if(node.isTreeNode()){
-                boolean ftotal = true;
-                for(NetNode<Integer> child: node.getChildren()){
-                    if(!allTotalNodes.contains(child.getData())){
-                        ftotal = false;
-                        break;
-                    }
-                }
-                if(ftotal){
-                    allTotalNodes.add(node);
-                }else{
-                    NetNode parent = node.getParents().iterator().next();
-                    double distance = node.getParentDistance(parent);
-                    parent.removeChild(node);
-                    boolean disconnect = isValidNetwork(net);
-                    parent.adoptChild(node, distance);
-                    if (disconnect) {
-                        _articulateNodes.add(node);
-                        allTotalNodes.add(node);
-                    }
-                }
-
-            }
-        }
-    }
-
-    private boolean isValidNetwork(Network<Integer> net){
-        Set<NetNode> visited = new HashSet<NetNode>();
-        Set<NetNode> seen = new HashSet<NetNode>();
-        for(NetNode<Integer> node: net.bfs()){
-            if(node.getIndeg()==1 && node.getOutdeg()==1) return false;
-            visited.add(node);
-            for(NetNode<Integer> parent: node.getParents()){
-                seen.add(parent);
-            }
-            for(NetNode<Integer> child: node.getChildren()){
-                seen.add(child);
-            }
-        }
-        return visited.size()==seen.size();
-    }
-
-
-*/
-
+    /**
+     * The function is to help split lineages at a reticulation node
+     */
     private List<boolean[]> getSelected(int n, int m){
         List<boolean[]> selectedList = new ArrayList<boolean[]>();
         int[] order = new int[m+1];
@@ -703,12 +677,16 @@ public class GeneTreeWithBranchLengthProbabilityYF {
         return selectedList;
     }
 
+
+
+    /**
+     * This class is to represent the concept of ancestral configuration
+     */
     private class Configuration{
         private HashSet<Integer> _lineages;
         private double _totalProb;
         private BitSet _coverage;
         int[] _netNodeIndex;
-        //private Set<Integer> _coalEvents;
 
         public Configuration(){
             _lineages = new HashSet<Integer>();
@@ -829,6 +807,11 @@ public class GeneTreeWithBranchLengthProbabilityYF {
 
     }
 
+
+
+    /**
+     * This class is to help store the invalid ancestral configurations
+     */
     class IntArray{
         int[] _data;
         int _code;

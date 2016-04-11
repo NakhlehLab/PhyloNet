@@ -33,17 +33,19 @@ import java.util.*;
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
+ * Created by yy9
  * Date: 5/10/12
  * Time: 2:31 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to compute the probability of observing a collection of gene trees given a species network based on ancestral configuration
+ * This method uses only topologies of gene trees. It caches all ancestral configurations for speeding up future update.
+ * See "Fast Algorithms and Heuristics for Phylogenomics under ILS and Hybridization”, BMC Bioinformatics, 2013.
+ * The method is an extension of "Coalescent-based Species Tree Inference from Gene Tree Topologies Under Incomplete Lineage Sorting by Maximum Likelihood", Evolution, 2012. Also see this paper for computation details. Variable names are the same as those appeared in the paper.
  */
 public class GeneTreeProbabilityYF_Cached {
     Set<NetNode> _totalCoverNodes;
     boolean _printDetails = false;
     int _netNodeNum;
-    //List<STITreeCluster> _gtClusters;
     boolean[][] _M;
     Map<NetNode, Integer> _node2ID;
     boolean _parallel = false;
@@ -51,25 +53,34 @@ public class GeneTreeProbabilityYF_Cached {
     int _totalTree;
     boolean _preProcessed = false;
 
-    int _maxNumACs = 0;
 
-
+    /**
+     * Sets parallel computing
+     */
     public void setParallel(boolean parallel){
         _parallel = parallel;
     }
 
-    public void setTotalNodes(Set<NetNode> totalCoverNodes){
-        _totalCoverNodes = totalCoverNodes;
-    }
 
+    /**
+     * Sets printing option
+     */
     public void setPrintDetails(boolean p){
         _printDetails = p;
     }
 
+
+    /**
+     * Gets the next triplet to compute, which is used for parallel computing
+     */
     public synchronized int getNextTreeID(){
         return _currentTreeID++;
     }
 
+
+    /**
+     * Do all the pre-processing
+     */
     public void preProcess(Network network, List<Tree> gts, boolean fromScratch){
         _totalTree = gts.size();
         processNetwork(network, _totalTree, fromScratch);
@@ -77,6 +88,14 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * Computes the probability of observing a collection of gene trees given a species network from scratch
+     *
+     * @param network 	the given species network
+     * @param gts	the given collection of gene trees
+     * @param species2alleles	the mapping from a species to the list of alleles sampled, which is used when multiple alleles are sampled per species
+     * @param resultProbs	the resulting probabilities
+     */
     public void calculateGTDistribution(Network<CoalescePattern[]> network, List<Tree> gts, Map<String, List<String>> species2alleles, double resultProbs[]){
         if(!_preProcessed){
             preProcess(network, gts, true);
@@ -87,12 +106,7 @@ public class GeneTreeProbabilityYF_Cached {
             treeID = getNextTreeID();
         }
 
-
-        //List<Long> runningTime = new ArrayList<>();
-        //System.out.println(Arrays.toString(resultProbs));
         while(treeID < _totalTree){
-            //long startTime = System.currentTimeMillis();
-            //System.out.println("Computing tree" + treeID);
             Tree gt = gts.get(treeID);
             double gtProb = 0;
             String[] gtTaxa = gt.getLeaves();
@@ -107,12 +121,9 @@ public class GeneTreeProbabilityYF_Cached {
             }
 
             int netNodeIndex = 0;
-
             for(NetNode<CoalescePattern[]> node: Networks.postTraversal(network)){
-                //long start = System.currentTimeMillis();
                 CoalescePattern cp = new CoalescePattern();
                 node.getData()[treeID] = cp;
-                //t6 += (System.currentTimeMillis()-start)/1000.0;
                 if(_printDetails){
                     System.out.println();
                     System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
@@ -144,9 +155,7 @@ public class GeneTreeProbabilityYF_Cached {
                     tempList.add(config);
                     sizeOneConfigs.put(config._lineages, tempList);
                     CACs.add(sizeOneConfigs);
-                    //start = System.currentTimeMillis();
                     cp.addACs(node.getParents().iterator().next(), tempList);
-                    //t5 += (System.currentTimeMillis()-start)/1000.0;
                 }
                 else{
                     if(node.isNetworkNode()){
@@ -155,40 +164,6 @@ public class GeneTreeProbabilityYF_Cached {
                         List<Configuration> ACMinus = childCP._ACMinuss.get(node);
                         temp.put(null,ACMinus);
                         CACs.add(temp);
-                        //cp.addACs(null, ACMinus);
-                        /*
-                        List<Integer> configSizeList = new ArrayList<Integer>();
-                        for(Configuration config: edge2ACminus.remove(edge)){
-                            int numLin = config._lineages.size();
-                            List<Configuration> sameLineageConfigs;
-                            int sizeIndex = configSizeList.indexOf(numLin);
-                            if(sizeIndex == -1){
-                                int pos = 0;
-                                for(Integer size: configSizeList){
-                                    if(size >= numLin){
-                                        break;
-                                    }
-                                    pos++;
-                                }
-                                sameLineageConfigs = new ArrayList<Configuration>();
-                                Map<Set<Integer>, List<Configuration>> sameSizelineages2configs = new HashMap<Set<Integer>, List<Configuration>>();
-                                sameSizelineages2configs.put(config._lineages,sameLineageConfigs);
-                                CACs.add(pos, sameSizelineages2configs);
-                                configSizeList.add(pos, numLin);
-                            }
-                            else{
-                                Map<Set<Integer>, List<Configuration>> sameSizelineages2configs = CACs.get(sizeIndex);
-                                sameLineageConfigs = sameSizelineages2configs.get(config._lineages);
-                                if(sameLineageConfigs==null){
-                                    sameLineageConfigs = new ArrayList<Configuration>();
-                                    sameSizelineages2configs.put(config._lineages,sameLineageConfigs);
-                                }
-                            }
-                            sameLineageConfigs.add(config);
-
-                        }
-                        */
-
                     }
                     else{
                         Iterator<NetNode<CoalescePattern[]>> childNode = node.getChildren().iterator();
@@ -202,13 +177,6 @@ public class GeneTreeProbabilityYF_Cached {
                             for(Configuration config2: AC2){
                                 if(config1.isCompatible(config2)){
                                     Configuration mergedConfig = new Configuration(config1, config2);
-                                    //mergedConfigs.add(mergedConfig);
-
-                                    /*
-                                    if(mergedConfig._totalProb <=0 ){
-                                        continue;
-                                    }
-                                    */
                                     int numLin = mergedConfig._lineages.size();
                                     List<Configuration> sameLineageConfigs;
                                     int sizeIndex = configSizeList.indexOf(numLin);
@@ -258,26 +226,13 @@ public class GeneTreeProbabilityYF_Cached {
                             }
                         }
                         if(node.isRoot()){
-                            //start = System.currentTimeMillis();
                             cp.addACs(null, mergedConfigList);
-                            //t5 += (System.currentTimeMillis()-start)/1000.0;
                         }
                         else{
-                            //start = System.currentTimeMillis();
                             cp.addACs(node.getParents().iterator().next(), mergedConfigList);
-                            //t5 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
                 }
-
-                int count = 0;
-                for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
-                    for(List<Configuration> configList: lineages2configs.values()){
-                        count += configList.size();
-                    }
-                }
-                _maxNumACs = Math.max(count, _maxNumACs);
-
 
                 if(_printDetails){
                     System.out.print("AC: {");
@@ -291,7 +246,6 @@ public class GeneTreeProbabilityYF_Cached {
                     System.out.println("}");
                 }
 
-
                 //set AC- for a node
                 if(node.isRoot()){
                     Configuration rootConfig = new Configuration();
@@ -301,9 +255,7 @@ public class GeneTreeProbabilityYF_Cached {
                             for(Configuration preConfig: configList){
                                 if(preConfig.getLineageCount()==1){
                                     gtProb += preConfig._totalProb;
-                                    //start = System.currentTimeMillis();
                                     rootConfig.addUncoalescedConfiguration(preConfig, 1, 1);
-                                    //t1 += (System.currentTimeMillis()-start)/1000.0;
                                 }else{
                                     Set<Integer> events = new HashSet<Integer>();
                                     events.add(gtClusters.size()-1);
@@ -318,9 +270,7 @@ public class GeneTreeProbabilityYF_Cached {
                                     double weight = calculateW(events, R);
                                     double prob = Math.max(0, computeProbability(preConfig, rootConfig, weight, -1, 1, gtClusters));
                                     gtProb += Math.max(0, prob*preConfig._totalProb);
-                                    //start = System.currentTimeMillis();
                                     rootConfig.addUncoalescedConfiguration(preConfig, weight, prob);
-                                    //t1 += (System.currentTimeMillis()-start)/1000.0;
                                 }
 
                             }
@@ -329,18 +279,13 @@ public class GeneTreeProbabilityYF_Cached {
                     }
                     List<Configuration> temp = new ArrayList<Configuration>();
                     temp.add(rootConfig);
-                    //start = System.currentTimeMillis();
                     cp.addACMinuss(null, temp);
-                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                 }
                 else if(node.isTreeNode()){
                     double distance = node.getParentDistance(node.getParents().iterator().next());
                     List<Configuration> ACminus = new ArrayList<Configuration>();
                     computeACMinus(CACs, distance, 1, child2parent, R, gtClusters, ACminus);
-                    //start = System.currentTimeMillis();
                     cp.addACMinuss(node.getParents().iterator().next(),ACminus);
-
-                    _maxNumACs = Math.max(_maxNumACs, ACminus.size());
                     if(_printDetails){
                         System.out.print("ACminus: {");
                         for(Configuration config: ACminus){
@@ -467,9 +412,7 @@ public class GeneTreeProbabilityYF_Cached {
                             }
                         }
                     }
-                    //start = System.currentTimeMillis();
                     cp.setConfig2splitedConfigs(config2splitedConfigs);
-                    //t3 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("CAC after: {");
                         for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
@@ -501,9 +444,7 @@ public class GeneTreeProbabilityYF_Cached {
                             temp.addAll(configs);
                         }
                     }
-                    //start = System.currentTimeMillis();
                     cp.addACs(parentNode1, temp);
-                    //t5 += (System.currentTimeMillis()-start)/1000.0;
                     NetNode<CoalescePattern[]> parentNode2 = it.next();
                     double distance2 = node.getParentDistance(parentNode2);
                     double hybridProb2 = node.getParentProbability(parentNode2);
@@ -514,15 +455,11 @@ public class GeneTreeProbabilityYF_Cached {
                             temp.addAll(configs);
                         }
                     }
-                    //start = System.currentTimeMillis();
                     cp.addACs(parentNode2, temp);
-                    //t5 += (System.currentTimeMillis()-start)/1000.0;
                     List<Configuration> ACminus1 = new ArrayList<Configuration>();
                     List<Configuration> ACminus2 = new ArrayList<Configuration>();
                     computeTwoACMinus(newCACs1, distance1, hybridProb1, newCACs2, distance2, hybridProb2,child2parent, R, gtClusters, ACminus1, ACminus2);
-                    //start = System.currentTimeMillis();
                     cp.addACMinuss(parentNode1, ACminus1);
-                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("ACminus to " + parentNode1.getName()+ ":  {");
                         for(Configuration config: ACminus1){
@@ -531,11 +468,7 @@ public class GeneTreeProbabilityYF_Cached {
                         System.out.println("}");
                     }
 
-
-                    _maxNumACs = Math.max(_maxNumACs, ACminus1.size());
-                    //start = System.currentTimeMillis();
                     cp.addACMinuss(parentNode2, ACminus2);
-                    //t4 += (System.currentTimeMillis()-start)/1000.0;
                     if(_printDetails){
                         System.out.print("ACminus to " + parentNode2.getName()+ ":  {");
                         for(Configuration config: ACminus2){
@@ -553,31 +486,31 @@ public class GeneTreeProbabilityYF_Cached {
             if(_printDetails){
                 System.out.println("The probability of this gene tree is:" + gtProb);
             }
-            //System.out.println(Thread.currentThread().getId() + " ends #" + treeID);
             if(_parallel){
                 treeID = getNextTreeID();
             }
             else{
                 treeID++;
             }
-
-            //runningTime.add(System.currentTimeMillis()-startTime);
-
         }
-
-        //System.out.println(runningTime);
-        //System.out.println(Arrays.toString(resultProbs));
-
     }
 
 
+
+    /**
+     * Computes the probability of observing a collection of gene trees given a species network
+     * Note that the computation is not from scratch; it's updating the probabilities saved in cached ancestral configurations
+     *
+     * @param network 	the given species network
+     * @param gts	    the given collection of gene trees
+     * @param editedChilds	    the nodes whose branch lengths or inheritance probabilities have been changed
+     * @param editedParents     the parent nodes whose children's branch lengths or inheritance probabilities have been changed
+     */
     public void calculateGTDistribution(Network<CoalescePattern[]> network, List<Tree> gts, Set<NetNode> editedChilds, Set<NetNode> editedParents, double[] probs){
         if(!_preProcessed){
             preProcess(network, gts, false);
         }
 
-        //int childID = _node2ID.get(editedChild);
-        //int parentID = editedParent==null ? childID : _node2ID.get(editedParent);
         Set<Integer> childIDSet = new HashSet<Integer>();
         for(NetNode editedChild: editedChilds){
             childIDSet.add(_node2ID.get(editedChild));
@@ -594,15 +527,7 @@ public class GeneTreeProbabilityYF_Cached {
         }
 
         while(treeID < _totalTree){
-            //System.out.println("Updating tree" + treeID);
             double gtProb = 0;
-            /*
-
-            String[] gtTaxa = gt.getLeaves();
-            Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
-            processGT(gt, gtTaxa, child2parent);
-            computeR();
-            */
             List<STITreeCluster> gtClusters = null;
             if(_printDetails){
                 Tree gt = gts.get(treeID);
@@ -618,7 +543,6 @@ public class GeneTreeProbabilityYF_Cached {
                 int nodeID = _node2ID.get(node);
                 boolean unchange = !childIDSet.contains(nodeID);
                 if(unchange){
-                    //System.out.println(parentIDSet);
                     for(int editedParentID: parentIDSet){
                         if(_M[nodeID][editedParentID]){
                             unchange = false;
@@ -784,13 +708,24 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+
+    /**
+     * Computes the AC- given the CACs on a branch (all possible lineages along with their probabilities when leaving a branch given all possible lineages entering a branch)
+     *
+     * @param CACs 	the given CACs, which are the lineages entering a branch
+     * @param distance	the length of the branch
+     * @param hybridProb	the inheritance probability of the branch
+     * @param child2parent  maps from a child cluster/node to its parent cluster/node (induced from the gene tree topology)
+     * @param R     a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     * @param gtClusters    all clusters in the gene tree
+     * @param ACminus	the resulting AC-, which are the lineages leaving a branch
+     */
     private void computeACMinus(List<Map<Set<Integer>,List<Configuration>>> CACs, double distance, double hybridProb, Map<Integer, Integer> child2parent, boolean[][] R, List<STITreeCluster> gtClusters, List<Configuration> ACminus){
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus = new HashMap<Integer, Map<Configuration, Configuration>>();
         for (Map<Set<Integer>, List<Configuration>> lineages2configs : CACs) {
             for (List<Configuration> sameLineageConfigs : lineages2configs.values()) {
 
                 Configuration origConfig = sameLineageConfigs.get(0);
-
                 Stack<Configuration> configStack = new Stack<Configuration>();
                 Configuration configCopy = new Configuration(origConfig);
                 configCopy.clearCoalEvents();
@@ -799,15 +734,8 @@ public class GeneTreeProbabilityYF_Cached {
 
                 while (!configStack.empty()) {
                     Configuration cconfig = configStack.pop();
-                    //boolean allNegative = true;
                     double weight = calculateW(cconfig._coalEvents, R);
                     double prob = Math.max(0, computeProbability(origConfig, cconfig, weight, distance, hybridProb, gtClusters));
-                    /*
-                    cconfig._prob = prob * origConfig._prob;
-                    if (cconfig._prob > 0) {
-                        allNegative = false;
-                    }
-                    */
                     int code = cconfig._lineages.size();
                     for (int lin : cconfig._lineages) {
                         if (lin != 0) {
@@ -818,12 +746,6 @@ public class GeneTreeProbabilityYF_Cached {
                     boolean ffirst = true;
                     for(Configuration config: sameLineageConfigs){
                         double newProb = Math.max(0,prob*config._totalProb);
-                        /*
-                        if(newProb<=0){
-                            continue;
-                        }
-                        allNegative = false;
-                        */
                         Configuration cconfigCopy;
                         if(ffirst){
                             cconfigCopy = cconfig;
@@ -841,22 +763,16 @@ public class GeneTreeProbabilityYF_Cached {
                             Configuration ccExisting = cc.get(cconfigCopy);
                             if (ccExisting != null) {
                                 ccExisting.addTotalProbability(cconfigCopy._totalProb);
-                                //long start = System.currentTimeMillis();
                                 ccExisting.addUncoalescedConfiguration(config, weight, prob);
-                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             } else {
                                 cc.put(cconfigCopy, cconfigCopy);
-                                //long start = System.currentTimeMillis();
                                 cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
-                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             }
                         } else {
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus.put(code, cc);
-                            //long start = System.currentTimeMillis();
                             cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
-                            //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
 
@@ -913,10 +829,25 @@ public class GeneTreeProbabilityYF_Cached {
             ACminus.addAll(cc.values());
         }
 
-
     }
 
 
+
+    /**
+     * Computes the two AC- given the two CACs at a reticulation node (all possible lineages along with their probabilities when leaving a branch given all possible lineages entering a branch)
+     * Assumes the two reticulation edges incident with the reticulation node are called edge #1 and edge #2 respectively.
+     *
+     * @param CACs1 	the given CACs on edge #1, which are the lineages entering a branch
+     * @param distance1     the length of edge #1
+     * @param hybridProb1	the inheritance probability of edge #1
+     * @param CACs2 	the given CACs on edge #2, which are the lineages entering a branch
+     * @param distance2     the length of edge #2
+     * @param hybridProb2	the inheritance probability of edge #2
+     * @param child2parent  maps from a child cluster/node to its parent cluster/node (induced from the gene tree topology)
+     * @param R     a matrix that keeps the ancestral relationships of all the nodes in a gene tree
+     * @param gtClusters    all clusters in the gene tree
+     * @param ACminus1	the resulting AC- on edge #1, which are the lineages leaving a branch
+     */
     private void computeTwoACMinus(List<Map<Set<Integer>,List<Configuration>>>CACs1, double distance1, double hybridProb1, List<Map<Set<Integer>,List<Configuration>>>CACs2, double distance2, double hybridProb2,Map<Integer, Integer> child2parent, boolean[][] R, List<STITreeCluster> gtClusters, List<Configuration> ACminus1, List<Configuration> ACminus2){
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus1 = new HashMap<Integer, Map<Configuration, Configuration>>();
         Map<Integer, Map<Configuration, Configuration>> shape2ACminus2 = new HashMap<Integer, Map<Configuration, Configuration>>();
@@ -929,7 +860,6 @@ public class GeneTreeProbabilityYF_Cached {
                 List<Configuration> sameLineageConfigs1 = configIt1.next();
                 List<Configuration> sameLineageConfigs2 = configIt2.next();
                 Configuration origConfig1 = sameLineageConfigs1.get(0);
-                //Configuration origConfig2 = sameLineageConfigs2.get(0);
 
                 Stack<Configuration> configStack = new Stack<Configuration>();
                 Configuration configCopy = new Configuration(origConfig1);
@@ -945,8 +875,6 @@ public class GeneTreeProbabilityYF_Cached {
                             code *= lin;
                         }
                     }
-                    //boolean allNegative = true;
-                    //double prob = computeProbability(origConfig1, cconfig, distance1, hybridProb1);
                     String[] forPrint = new String[2];
                     double weight = calculateW(cconfig._coalEvents, R);
                     double probCommon = computeProbabilityPart1(origConfig1, cconfig, weight, forPrint, gtClusters);
@@ -955,12 +883,6 @@ public class GeneTreeProbabilityYF_Cached {
                     boolean ffirst = true;
                     for(Configuration config: sameLineageConfigs1){
                         double newProb = Math.max(0,prob*config._totalProb);
-                        /*
-                        if(newProb<=0){
-                            continue;
-                        }
-                        allNegative = false;
-                        */
                         Configuration cconfigCopy;
                         if(ffirst){
                             cconfigCopy = cconfig;
@@ -976,36 +898,23 @@ public class GeneTreeProbabilityYF_Cached {
                             Configuration existing = cc.get(cconfigCopy);
                             if (existing != null) {
                                 existing.addTotalProbability(cconfigCopy._totalProb);
-                                //long start = System.currentTimeMillis();
                                 existing.addUncoalescedConfiguration(config, weight, prob);
-                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             } else {
                                 cc.put(cconfigCopy, cconfigCopy);
-                                //long start = System.currentTimeMillis();
                                 cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
-                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             }
                         } else {
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus1.put(code, cc);
-                            //long start = System.currentTimeMillis();
                             cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
-                            //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
 
                     prob = Math.max(0, computeProbabilityPart2(probCommon, origConfig1.getLineageCount(), cconfig.getLineageCount(), distance2, hybridProb2, forPrint));
 
-                    //prob = computeProbability(origConfig2, cconfig, distance2, hybridProb2);
                     for(Configuration config: sameLineageConfigs2){
                         double newProb = Math.max(0,prob*config._totalProb);
-                        /*
-                        if(newProb<=0){
-                            continue;
-                        }
-                        allNegative = false;
-                        */
                         Configuration cconfigCopy = new Configuration(cconfig);
                         cconfigCopy.setNetNodeChoice(config._netNodeIndex);
                         cconfigCopy.setTotalProbability(newProb);
@@ -1015,29 +924,18 @@ public class GeneTreeProbabilityYF_Cached {
                             Configuration existing = cc.get(cconfigCopy);
                             if (existing != null) {
                                 cc.get(cconfigCopy).addTotalProbability(cconfigCopy._totalProb);
-                                //long start = System.currentTimeMillis();
                                 existing.addUncoalescedConfiguration(config, weight, prob);
-                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             } else {
                                 cc.put(cconfigCopy, cconfigCopy);
-                                //long start = System.currentTimeMillis();
                                 cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
-                                //t1 += (System.currentTimeMillis()-start)/1000.0;
                             }
                         } else {
                             cc = new HashMap<Configuration, Configuration>();
                             cc.put(cconfigCopy, cconfigCopy);
                             shape2ACminus2.put(code, cc);
-                            //long start = System.currentTimeMillis();
                             cconfigCopy.addUncoalescedConfiguration(config, weight, prob);
-                            //t1 += (System.currentTimeMillis()-start)/1000.0;
                         }
                     }
-                    /*
-                    if(allNegative){
-                        continue;
-                    }
-*                   */
 
                     Map<Integer, List<Integer>> parent2children = new HashMap<Integer, List<Integer>>();
                     for(int i: cconfig._lineages)
@@ -1100,6 +998,10 @@ public class GeneTreeProbabilityYF_Cached {
 
     }
 
+
+    /**
+     * This function is to pre-process a network, including removing binary nodes, getting information of nodes
+     */
     private void processNetwork(Network<CoalescePattern[]> net, int totalNumGTs, boolean fromScratch){
         if(fromScratch){
             removeBinaryNodes(net);
@@ -1148,6 +1050,13 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * This function is to pre-process a gene tree, especially getting the ancestral relationships
+     *
+     * @param gt 	the gene tree to be processed
+     * @param child2parent  the resulting mapping from a child cluster/node to its parent cluster/node (induced from the gene tree topology)
+     * @param gtClusters    the resulting list of clusters in the gene tree
+     */
     private void processGT(Tree gt, String[] gtTaxa, Map<Integer,Integer> child2parent,List<STITreeCluster> gtClusters){
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         int index = 0;
@@ -1177,6 +1086,9 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * This function is to remove binary nodes of a network
+     */
     public static void removeBinaryNodes(Network net)
     {
         // Find all binary nodes.
@@ -1226,77 +1138,6 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
-/*
-    public static Set<NetNode> computeNodeCoverage(Network net){
-        //List<Integer> leaves = new ArrayList<Integer>();
-        Network<Object> network = net;
-        List<NetNode> allTotalNodes = new ArrayList<NetNode>();
-        Set<NetNode> totalCoverNodes = new HashSet<NetNode>();
-        for(NetNode<Object> node: Networks.postTraversal(network)){
-            if(node.isLeaf()){
-                //leaves.add(id);
-                allTotalNodes.add(node);
-            }
-
-            else if(node.isRoot()){
-                boolean ftotal = true;
-                for(NetNode child: node.getChildren()){
-                    if(!allTotalNodes.contains(child)){
-                        ftotal = false;
-                        break;
-                    }
-                }
-                if(!ftotal){
-                    totalCoverNodes.add(node);
-                }
-
-            }
-            else if(node.isTreeNode()){
-                boolean ftotal = true;
-                for(NetNode child: node.getChildren()){
-                    if(!allTotalNodes.contains(child)){
-                        ftotal = false;
-                        break;
-                    }
-                }
-                if(ftotal){
-                    allTotalNodes.add(node);
-                }else{
-                    NetNode parent = node.getParents().iterator().next();
-                    double distance = node.getParentDistance(parent);
-                    parent.removeChild(node);
-                    boolean disconnect = isValidNetwork(net, parent);
-                    parent.adoptChild(node, distance);
-                    if (disconnect) {
-                        totalCoverNodes.add(node);
-                        allTotalNodes.add(node);
-                    }
-                }
-
-            }
-        }
-        return totalCoverNodes;
-    }
-
-    private static boolean isValidNetwork(Network<Object> net, NetNode ignoreNode){
-        Set<NetNode> visited = new HashSet<NetNode>();
-        Set<NetNode> seen = new HashSet<NetNode>();
-        for(NetNode<Object> node: net.bfs()){
-            if(node.getIndeg()==1 && node.getOutdeg()==1 && node!=ignoreNode){
-                return false;
-            }
-            visited.add(node);
-            for(NetNode parent: node.getParents()){
-                seen.add(parent);
-            }
-            for(NetNode child: node.getChildren()){
-                seen.add(child);
-            }
-        }
-        return visited.size()==seen.size();
-    }
-*/
-
 
     /**
      * The function is to calculate the _R matrix for the given tree.
@@ -1321,9 +1162,18 @@ public class GeneTreeProbabilityYF_Cached {
 
 
 
-
-
-
+    /**
+     * Computes the probability of a given ancestral configuration coalescing into another given one
+     *
+     * @param preConfig 	the original ancestral configuration
+     * @param coalescedConfig     the ancestral configuration that the original one is coalescing into
+     * @param w     weight
+     * @param distance 	the branch length
+     * @param portion	the inheritance probability
+     * @param gtClusters    all clusters in the gene tree
+     *
+     * @return the probability
+     */
     private double computeProbability(Configuration preConfig, Configuration coalescedConfig, double w, double distance, double portion, List<STITreeCluster> gtClusters){
         double prob = 1;
         int u = preConfig.getLineageCount();
@@ -1365,6 +1215,18 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * Computes the probability of a given ancestral configuration coalescing into another given one - part1
+     * Splitting this into two parts is for computing ACMinus at a reticulation node
+     *
+     * @param preConfig 	the original ancestral configuration
+     * @param coalescedConfig     the ancestral configuration that the original one is coalescing into
+     * @param w     weight
+     * @param forPrint 	the information for printing
+     * @param gtClusters    all clusters in the gene tree
+     *
+     * @return the probability
+     */
     private double computeProbabilityPart1(Configuration preConfig, Configuration coalescedConfig, double w, String[] forPrint, List<STITreeCluster> gtClusters){
         double prob;
         forPrint[0] = preConfig.toString(gtClusters)+"->"+coalescedConfig.toString(gtClusters)+ ": ";
@@ -1380,6 +1242,20 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+
+    /**
+     * Computes the probability of a given ancestral configuration coalescing into another given one - part2
+     * Splitting this into two parts is for computing ACMinus at a reticulation node
+     *
+     * @param prob 	the probability returned from part1
+     * @param u the number of extra lineages entering a branch
+     * @param v the number of extra lineages leaving a branch
+     * @param distance 	the branch length
+     * @param hybridProb	the inheritance probability
+     * @param forPrint 	the information for printing
+     *
+     * @return the probability
+     */
     private double computeProbabilityPart2(double prob, int u, int v, double distance, double hybridProb, String[] forPrint){
         prob *= Math.pow(hybridProb, u);
         if(u == v && (u == 1 || u == 0)){
@@ -1408,6 +1284,8 @@ public class GeneTreeProbabilityYF_Cached {
         prob *= gij;
         return prob;
     }
+
+
 
     /**
      * The function is to calculate the g_{ij} function.
@@ -1444,6 +1322,13 @@ public class GeneTreeProbabilityYF_Cached {
         return result;
     }
 
+
+
+    /**
+     * The function is to calculate the number of all possible ordering coalescent events
+     * @param	u	the number of lineages entering the branch
+     * @param	c	the number of coalescent events happening on the branch
+     */
     private double calculateD(int u, int c){
         double d = 1;
         if(c!=0){
@@ -1454,11 +1339,13 @@ public class GeneTreeProbabilityYF_Cached {
         return d;
     }
 
+
+    /**
+     * The function is to calculate "N choose K"
+     */
     private double chooseD(int N, int K) {
         double ret = 1.0;
         for (int k = 0; k < K; k++) {
-            //ret = ret.multiply(BigInteger.valueOf(N-k))
-            //.divide(BigInteger.valueOf(k+1));
             ret = ret*((N-k+0.0)/(k+1));
         }
 
@@ -1466,42 +1353,34 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * The function is to calculate the number of ways (weight) that coalescent events on a branch can occur consistently with the gene tree
+     * @param coalEvents	the coalescent events happened on the branch
+     * @param R     the ancestral relationships of nodes in a gene tree
+     */
     private double calculateW(Set<Integer> coalEvents, boolean[][] R){
-        //System.out.println(coalEvents);
         double w = 1.0;
         w = w*fact(1, coalEvents.size());
-        //System.out.print(fact(1, coalEvents.cardinality()));
         for (int i: coalEvents) {
             int a = 0;
             for (int j: coalEvents) {
                 if(i!=j && R[i][j])
                     a++;
             }
-            //System.out.print(" * " + 1.0/(1 + a));
             w = w*(1.0/(1 + a));
         }
-        //System.out.println();
         return w;
     }
 
 
-    private double calculateD(Set<Integer> coalEvents, boolean[][] R){
-        double w = 1.0;
-        w = w*fact(1, coalEvents.size());
-        //System.out.print(fact(1, coalEvents.cardinality()));
-        for (int i: coalEvents) {
-            int a = 0;
-            for (int j: coalEvents) {
-                if(i!=j && R[i][j])
-                    a++;
-            }
-            //System.out.print(" * " + 1.0/(1 + a));
-            w = w*(1.0/(1 + a));
-        }
-        //System.out.println();
-        return w;
-    }
 
+    /**
+     * The function is to calculate factorial
+     * @param	start	the first number
+     * @param 	end		the last number
+     *
+     * @return	the resulting factorial
+     */
     private double fact(int start, int end){
         double result = 1;
         for(int i=start; i<=end; i++){
@@ -1511,6 +1390,10 @@ public class GeneTreeProbabilityYF_Cached {
         return result;
     }
 
+
+    /**
+     * The function is to help split lineages at a reticulation node
+     */
     private List<boolean[]> getSelected(int n, int m){
         List<boolean[]> selectedList = new ArrayList<boolean[]>();
         int[] order = new int[m+1];
@@ -1548,6 +1431,9 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * This class is to help cache all the coalescing information for fast future update
+     */
     public class CoalescePattern{
         private Map<NetNode, List<Configuration>> _ACMinuss;
         private Map<NetNode, List<Configuration>> _ACs; //for network node
@@ -1569,17 +1455,6 @@ public class GeneTreeProbabilityYF_Cached {
         }
 
         public void addACs(NetNode parent, List<Configuration> ACs){
-            /*
-            List<Configuration> existings = _ACs.get(parent);
-            if(existings == null){
-                List<Configuration> copy = new ArrayList<Configuration>();
-                copy.addAll(ACs);
-                _ACs.put(parent, copy);
-            }
-            else{
-                existings.addAll(ACs);
-            }
-            */
             _ACs.put(parent, ACs);
         }
 
@@ -1593,6 +1468,9 @@ public class GeneTreeProbabilityYF_Cached {
     }
 
 
+    /**
+     * This class is to help cache all the coalescing information for fast future update
+     */
     private class CoalescingInfo{
         Configuration _uncoalescedConfig;
         double _coalWeight;
@@ -1607,7 +1485,9 @@ public class GeneTreeProbabilityYF_Cached {
 
 
 
-
+    /**
+     * This class is to represent the concept of ancestral configuration
+     */
     private class Configuration{
         private HashSet<Integer> _lineages;
         private double _totalProb;
@@ -1754,18 +1634,6 @@ public class GeneTreeProbabilityYF_Cached {
             }
             return sum;
         }
-
-        /*
-        public void addChildConfigs(Configuration config1, Configuration config2){
-            if(_childConfigs==null){
-                _childConfigs = new ArrayList<Configuration[]>();
-            }
-            Configuration[] configPair = new Configuration[2];
-            configPair[0] = config1;
-            configPair[1] = config2;
-            _childConfigs.add(configPair);
-        }
-        */
 
         public boolean equals(Object o) {
             if(!(o instanceof Configuration)){

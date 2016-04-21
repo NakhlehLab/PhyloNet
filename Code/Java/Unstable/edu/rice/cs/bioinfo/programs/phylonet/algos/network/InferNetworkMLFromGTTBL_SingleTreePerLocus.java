@@ -29,17 +29,32 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created with Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of InferNetworkMLFromGTTBL. It handles the cases each locus has single gene tree.
  */
 public class InferNetworkMLFromGTTBL_SingleTreePerLocus extends InferNetworkMLFromGTTBL {
+
+    /**
+     * Constructor of the class
+     */
     public InferNetworkMLFromGTTBL_SingleTreePerLocus(){
         _likelihoodCalculator = new NetworkLikelihoodFromGTTBL_SingleTreePerLocus();
     }
 
+
+    /**
+     * This function is to summarize the input gene trees
+     * Since branch lengths of gene trees are used, every gene tree is distinct
+     *
+     * @param originalGTs               original input data
+     * @param allele2species            mapping from allele to species which it is sampled from
+     * @param gtsForStartingNetwork    data for inferring the starting network
+     * @param gtsForInferNetwork       (distinct) data used during the search
+     * @param treeCorrespondences       relationships between the original data and the data in dataForInferNetwork
+     */
     protected void summarizeData(List originalGTs, Map<String, String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences) {
         for (Object list : originalGTs) {
             for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>) list) {

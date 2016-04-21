@@ -585,7 +585,6 @@ public class GeneTreeProbability {
      *
      * @param net 	the given network
      */
-
     private void networkToTree(Network<Double> net){
         removeBinaryNodes(net);
         _mulTree = new STITree<Double>();

@@ -35,21 +35,37 @@ import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 
 import java.util.*;
 
+
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class inherits from NetworkLikelihood.
+ * It calculates the pseudo-likelihood of a species network when the input is a collection of gene trees (only topologies are used)
+ *
+ * See "A Maximum Pseudo-likelihood Approach for Phylogenetic Networks", BMC Genomics, 2015
  */
 public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     private int _batchSize;
 
+
+    /**
+     * Sets the batch size, which is used for parallel computing
+     */
     public void setBatchSize(int size){
         _batchSize = size;
     }
 
 
+
+    /**
+     * This function is to compute the frequencies of triplets of one gene tree when single allele is sampled per species
+     *
+     * @param gt     the gene tree
+     *
+     * @return   mapping from triplet to frequencies
+     */
     public static Map<String, double[]> computeTripleFrequenciesFromSingleGT(Tree gt){
         List<String> taxaList = new ArrayList<>();
         Map<String,Integer> pairwiseDepths = new HashMap<>();
@@ -59,7 +75,6 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             int depth = 0;
             List<String> leaves = new ArrayList<>();
             if(node.isLeaf()){
-                //leaves.add(taxon2ID.get(node.getName()));
                 leaves.add(node.getName());
                 taxaList.add(node.getName());
             }
@@ -137,12 +152,19 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
+
+    /**
+     * This function is to compute the frequencies of triplets of one gene tree when multiple alleles are sampled per species
+     *
+     * @param gt     the gene tree
+     *
+     * @return   mapping from triplet to frequencies
+     */
     public static Map<String, double[]>  computeTripleFrequenciesFromSingleGT(Tree gt, Map<String,String> allele2species){
         Set<String> allAlleles = new HashSet<>();
         for(String allele: gt.getLeaves()){
             allAlleles.add(allele);
         }
-
 
         Map<TNode,Set<String>> node2leaves = new HashMap<>();
         Map<String, double[]> triple2counts = new HashMap<>();
@@ -161,7 +183,6 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                 }
 
                 allAlleles.removeAll(leavesUnder);
-
                 for(int i=0; i<childLeavesList.size(); i++){
                     Set<String> childLeaves1 = childLeavesList.get(i);
                     for(int j=i+1; j<childLeavesList.size(); j++){
@@ -201,14 +222,21 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                     }
 
                 }
-
                 allAlleles.addAll(leavesUnder);
             }
-
         }
         return triple2counts;
     }
 
+
+    /**
+     * This function is to add equal frequencies for a triplet which is used for non-binary node
+     *
+     * @param species1
+     * @param species2
+     * @param species3          the triplets
+     * @param triple2counts     a map storing the frequencies
+     */
     private static void addEqualFrequency(String species1, String species2, String species3, Map<String, double[]> triple2counts) {
         String[] forSort = new String[3];
         forSort[0] = species1;
@@ -227,7 +255,14 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-
+    /**
+     * This function is to add non-equal frequencies for a triplet which is used for binary node
+     *
+     * @param species1
+     * @param species2
+     * @param species3          the triplets
+     * @param triple2counts     a map storing the frequencies
+     */
     private static void addHighestFrequency(String species1, String species2, String species3, Map<String, double[]> triple2counts) {
         int index = 0;
         String[] forSort = new String[3];
@@ -253,7 +288,20 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
         frequency[index] ++;
     }
 
-    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List tripleFrequencies, final List gtCorrespondence, final Set<String> singleAlleleSpecies){
+
+
+    /**
+     * This function is to optimize the branch lengths and inheritance probabilities of a given species network
+     *
+     * @param speciesNetwork            the species network
+     * @param species2alleles           mapping from species to alleles which they is sampled from
+     * @param allTriplets               all triplets
+     * @param tripletFrequencies        triplet frequencies
+     * @param singleAlleleSpecies       to help identify which branch lengths in the species network can be ignored
+     *
+     * @return likelihood of the species network after its branch lengths and inheritance probabilities are optimized
+     */
+    protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List allTriplets, final List tripletFrequencies, final Set<String> singleAlleleSpecies){
         boolean continueRounds = true; // keep trying to improve network
 
         for(NetNode<Object> node: speciesNetwork.dfs()){
@@ -267,7 +315,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
         Set<NetNode> node2ignoreForBL = findEdgeHavingNoBL(speciesNetwork);
 
-        double initalProb = computeProbability(speciesNetwork, tripleFrequencies, species2alleles, gtCorrespondence);
+        double initalProb = computeProbability(speciesNetwork, allTriplets, tripletFrequencies, species2alleles);
         if(_printDetails)
             System.out.println(speciesNetwork.toString() + " : " + initalProb);
 
@@ -303,8 +351,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
                                     child.setParentDistance(parent, suggestedBranchLength);
 
-                                    double lnProb = computeProbability(speciesNetwork, tripleFrequencies, species2alleles, gtCorrespondence);
-                                    //System.out.println(speciesNetwork + ": " + lnProb);
+                                    double lnProb = computeProbability(speciesNetwork, allTriplets, tripletFrequencies, species2alleles);
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
                                         lnGtProbOfSpeciesNetwork.setContents(lnProb);
@@ -354,8 +401,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                                 child.setParentProbability(hybridParent1, suggestedProb);
                                 child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                                double lnProb = computeProbability(speciesNetwork, tripleFrequencies, species2alleles, gtCorrespondence);
-                                //System.out.println(speciesNetwork + ": " + lnProb);
+                                double lnProb = computeProbability(speciesNetwork, allTriplets, tripletFrequencies, species2alleles);
                                 if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                 {
 
@@ -387,8 +433,6 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
             }
 
-
-            // add hybrid probs to hybrid edges
             Collections.shuffle(assigmentActions);
 
             for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
@@ -417,11 +461,14 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
-        //System.out.println(speciesNetwork + " " + lnGtProbOfSpeciesNetwork.getContents());
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
 
+
+    /**
+     * This class is for computing the likelihood in parallel
+     */
     protected class MyThread extends Thread{
         Network _network;
         GeneTreeProbabilityPseudo _calculator;
@@ -444,12 +491,17 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
 
 
 
-
-    protected double computeProbability(Network<Object> speciesNetwork, List allTriplets, Map<String, List<String>> species2alleles, List tripleFrequencies) {
-        /*
-        GeneTreeProbabilityPseudo likelihood = new GeneTreeProbabilityPseudo();
-        double prob = likelihood.computePseudoLikelihood(speciesNetwork, tripleFrequencies);
-        */
+    /**
+     * This function is to compute the likelihood
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param allTriplets           all triplets
+     * @param tripleFrequencies     the triplets frequencies
+     *
+     * @return likelihood
+     */
+    protected double computeProbability(Network<Object> speciesNetwork, List allTriplets, List tripleFrequencies, Map<String, List<String>> species2alleles) {
         GeneTreeProbabilityPseudo calculator = new GeneTreeProbabilityPseudo();
         if(_numThreads!=0){
             int batchSize = allTriplets.size()/_numThreads;
@@ -461,7 +513,6 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
         calculator.initialize(speciesNetwork);
         double[][] probs = new double[allTriplets.size()][3];
         Thread[] myThreads = new Thread[_numThreads];
-        //System.out.println(speciesNetwork);
         if(_numThreads>1) {
             calculator.setParallel(true);
             for (int i = 0; i < _numThreads; i++) {
@@ -486,38 +537,41 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
             }
         }
         double totalProb = calculateFinalLikelihood(probs, tripleFrequencies);
-        //System.out.println(speciesNetwork);
-        //System.out.println(totalProb);
         return totalProb;
     }
 
+
+    /**
+     * This function is to calculate the final log likelihood using the correspondences between the summarized data and the original data
+     *
+     * @param probs               the probabilities of each summarized data respectively
+     * @param tripleFrequencies   triplet frequencies
+     */
     abstract protected double calculateFinalLikelihood(double[][] probs, List tripleFrequencies);
 
 
-    public List gettingTripleFrequencies(Network speciesNetwork, List originalData, Map<String,List<String>> species2alleles){
-        Map<String,String> allele2species = null;
-        if(species2alleles!=null){
-            allele2species = new HashMap<String, String>();
-            for(Map.Entry<String,List<String>> entry: species2alleles.entrySet()){
-                for(String allele: entry.getValue()){
-                    allele2species.put(allele, entry.getKey());
-                }
-            }
-        }
-
-        List dataCorrespondences = new ArrayList();
-        List summarizedData = new ArrayList();
-        summarizeData(originalData, allele2species, summarizedData, dataCorrespondences);
-        return summarizedData;
-    }
-
-
+    /**
+     * This function is to help find the set of branches whose lengths cannot be estimated so that they can be ignored during the inference
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param singleAlleleSpecies   species that have only one allele sampled from it
+     */
     protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){
         for(Object node: speciesNetwork.getLeaves()){
             singleAlleleSpecies.add(((NetNode)node).getName());
         }
     }
 
+
+
+    /**
+     * This function is to find the set of branches whose lengths cannot be estimated so that they can be ignored during the inference
+     *
+     * @param network    the species network
+     *
+     * @return  species that have only one allele sampled from it
+     */
     private Set<NetNode> findEdgeHavingNoBL(Network network) {
         Set<NetNode> node2ignore = new HashSet<>();
         Map<NetNode, Set<String>> node2leaves = new HashMap<>();

@@ -30,15 +30,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of NetworkLikelihoodFromGTT. It handles the cases each locus has multiple gene trees.
  */
 public class NetworkLikelihoodFromGTT_MultiTreesPerLocus extends NetworkLikelihoodFromGTT {
 
-
+    /**
+     * This function is to summarize the input gene trees
+     *
+     * @param originalGTs               original input gene trees
+     * @param allele2species            mapping from allele to species which it is sampled from
+     * @param summarizedGTs             summarized gene trees
+     * @param treeCorrespondences       relationships between the original gene trees and the gene trees in summarizedGTs
+     */
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List summarizedGTs, List treeCorrespondences){
         int treeID = 0;
         Map<String, Integer> tree2Info = new HashMap<String, Integer>();
@@ -74,22 +81,16 @@ public class NetworkLikelihoodFromGTT_MultiTreesPerLocus extends NetworkLikeliho
 
             }
             treeCorrespondences.add(infoList);
-            /*
-            for(MutableTuple<Integer,Double> info: infoList){
-                System.out.println(info.Item1+": " +info.Item2);
-            }
-            System.out.println();
-            */
         }
-    /*
-        int index = 0;
-        for(Object o: summarizedGTs){
-            System.out.println(index++ + ": " + o.toString());
-        }
-*/
     }
 
 
+    /**
+     * This function is to calculate the final log likelihood using the correspondences between the summarized gene trees and the original gene trees
+     *
+     * @param probList            the probabilities of each summarized gene tree respectively
+     * @param gtCorrespondences   the correspondences between the summarized gene trees and the original gene trees
+     */
     protected double calculateFinalLikelihood(double[] probList, List gtCorrespondences){
         double totalProb = 0;
         for(Object o: gtCorrespondences){

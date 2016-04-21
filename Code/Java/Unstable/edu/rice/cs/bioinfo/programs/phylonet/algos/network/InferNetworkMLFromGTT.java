@@ -19,22 +19,33 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
 
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.HillClimberBase;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
 
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created with Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of InferNetworkMLFromGT. It uses topologies of gene trees as input data to infer species networks.
  */
 public abstract class InferNetworkMLFromGTT extends InferNetworkMLFromGT {
 
+    /**
+     * This function is to find the set of branches whose lengths cannot be estimated so that they can be ignored during the inference
+     * In this case, branches incident with nodes who has only one leaf node (with only one allele sampled from this node) under it do not have any information about the lengths, so they can be ignored during the inference
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param singleAlleleSpecies   species that have only one allele sampled from it
+     */
     protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){
         for(Object node: speciesNetwork.getLeaves()){
             String species = ((NetNode)node).getName();
@@ -44,8 +55,23 @@ public abstract class InferNetworkMLFromGTT extends InferNetworkMLFromGT {
     }
 
 
+    /**
+     * This function is to obtain the random parameter generator for a species network
+     *
+     * @param dataForNetworkInference   (distinct) data used for network inference
+     * @param allele2species            mapping from allele to the species it is sampled from
+     * @param singleAlleleSpecies       species that have only one allele sampled from each
+     */
     protected NetworkRandomParameterNeighbourGenerator getNetworkRandomParameterNeighbourGenerator(List dataForNetworkInference, Map<String,String> allele2species, Set<String> singleAlleleSpecies){
         return new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies);
+    }
+
+
+    /**
+     * This function is to obtain the searching strategy which is simulated annealing in this case where branch lengths are sampled
+     */
+    protected HillClimberBase getSearchingStrategy(Comparator<Double> comparator, NetworkRandomNeighbourGenerator allNeighboursStrategy){
+        return new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
     }
 
 }

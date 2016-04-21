@@ -33,16 +33,27 @@ import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class inherits from NetworkLikelihood.
+ * It calculates the likelihood of a species network when the input is a collection of gene trees (both their topologies and branch lengths are used)
+ *
+ * See "Maximum Likelihood Inference of Reticulate Evolutionary Histories", Proceedings of the National Academy of Sciences, 2014
  */
 public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
     protected Map<UnorderedPair, Double> _pair2time = null;
 
 
+    /**
+     * This function is to compute the temporal constraints which are the minimum pairwise distances from gene trees
+     *
+     * @param trees             gene trees
+     * @param species2alleles           mapping from species to alleles which they is sampled from
+     *
+     * @return likelihood of the species network after its branch lengths and inheritance probabilities are optimized
+     */
     private void computePairwiseCoalesceTime(List<Tree> trees, Map<String,List<String>> species2alleles){
         _pair2time = new HashMap<UnorderedPair, Double>();
 
@@ -97,6 +108,13 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
 
 
 
+    /**
+     * This function is to initialize the branch lengths and inheritance probabilities of the species network s.t. the temporal constraints will be met
+     *
+     * @param speciesNetwork       species network
+     * @param node2constraints     the temporal constraints
+     * @param node2height          the resulting heights of all internal nodes
+     */
     private void initializeNetwork(Network<Object> speciesNetwork, Map<NetNode, Double> node2constraints, Map<NetNode<Object>, Double> node2height){
         Map<NetNode, Integer> node2depth = new Hashtable<NetNode, Integer>();
         Map<NetNode, Integer> node2ID = new Hashtable<NetNode, Integer>();
@@ -174,7 +192,6 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
             if(currentHeight >= minParent || (currentHeight==-1 && minParent!=Double.MAX_VALUE)){
                 int depthDiff = maxParentDepth - node2depth.get(node) + 1;
                 currentHeight = maxChild + (minParent - maxChild)/depthDiff;
-                //currentHeight = Math.round((maxChild + (minParent - maxChild)/depthDiff)*1000000)/1000000.0;
                 node2height.put(node, currentHeight);
             }
             else if(currentHeight==-1 && minParent==Double.MAX_VALUE){
@@ -184,8 +201,6 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         }
 
         double overallMin = 0;
-
-
         for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(speciesNetwork)){
             if(node.isLeaf())continue;
             double updatedHeight = node2height.get(node)-overallMin;
@@ -205,9 +220,6 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
             }
         }
 
-
-        //System.out.println(speciesNetwork);
-
         for(NetNode<Object> node: speciesNetwork.bfs()){
             double height = node2height.get(node);
             if(height<0){
@@ -223,6 +235,17 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
     }
 
 
+    /**
+     * This function is to optimize the branch lengths and inheritance probabilities of a given species network
+     *
+     * @param speciesNetwork            the species network
+     * @param species2alleles           mapping from species to alleles which they is sampled from
+     * @param gts                       summarized data
+     * @param singleAlleleSpecies       to help identify which branch lengths in the species network can be ignored
+     * @param gtCorrespondence          relationships between the original data and the data in dataForInferNetwork
+     *
+     * @return likelihood of the species network after its branch lengths and inheritance probabilities are optimized
+     */
     protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List gts, final List gtCorrespondence, final Set<String> singleAlleleSpecies){
         boolean continueRounds = true; // keep trying to improve network
 
@@ -236,7 +259,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         final Map<NetNode<Object>, Double> node2height = new Hashtable<NetNode<Object>, Double>();
         initializeNetwork(speciesNetwork, node2constraints, node2height);
 
-        double initialProb = computeProbability(speciesNetwork, gts, species2alleles, gtCorrespondence);
+        double initialProb = computeProbability(speciesNetwork, gts, gtCorrespondence, species2alleles);
 
         final Container<Double> lnGtProbOfSpeciesNetwork = new Container<Double>(initialProb);  // records the GTProb of the network at all times
         final Container<Map<NetNode<Object>, Double>> node2heightContainer = new Container<Map<NetNode<Object>, Double>>(node2height);
@@ -267,7 +290,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                                 child.setParentProbability(hybridParent1, suggestedProb);
                                 child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
-                                double lnProb = computeProbability(speciesNetwork, gts, species2alleles, gtCorrespondence);
+                                double lnProb = computeProbability(speciesNetwork, gts, gtCorrespondence, species2alleles);
                                 if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                 {
 
@@ -348,7 +371,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                                 }
 
 
-                                double lnProb = computeProbability(speciesNetwork, gts, species2alleles, gtCorrespondence);
+                                double lnProb = computeProbability(speciesNetwork, gts, gtCorrespondence, species2alleles);
 
                                 //System.out.print("suggest: "+ suggestedHeight + " " + lnProb + " vs. " + lnGtProbOfSpeciesNetwork.getContents() + ": ");
                                 if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
@@ -417,12 +440,17 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
             }
         }
 
-        //System.out.print("\n" + lnGtProbOfSpeciesNetwork.getContents() + ": " + speciesNetwork);
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
 
 
+    /**
+     * This function is to compute the upper bound of the heights of nodes according to the temporal constraints
+     *
+     * @param network             the species network
+     * @param node2constraints    temporal constraints
+     */
     private void computeNodeHeightUpperbound(Network network, Map<NetNode, Double> node2constraints){
         Map<NetNode, Set<String>> node2taxa = new HashMap<>();
         for(Object o: Networks.postTraversal(network)){
@@ -481,12 +509,19 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
         }
     }
 
+
+
+    /**
+     * This function is to compute the ancestral relationships among nodes of a given species network
+     *
+     * @param net        the species network
+     * @param node2ID    id of nodes
+     */
     private boolean[][] computeM(Network<Object> net, Map<NetNode, Integer> node2ID){
         int numNodes = node2ID.size();
         boolean[][] M = new boolean[numNodes][numNodes];
         for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(net)){
             int pID = node2ID.get(node);
-            //M[pID][pID] = false;
             for(NetNode child: node.getChildren()){
                 int cID = node2ID.get(child);
                 M[pID][cID] = true;
@@ -501,7 +536,9 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
     }
 
 
-
+    /**
+     * This class is for computing the likelihood in parallel
+     */
     private class MyThreadFromScratch extends Thread{
         GeneTreeWithBranchLengthProbabilityYF _gtp;
         double[] _probs;
@@ -512,7 +549,6 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
             _gtp = gtp;
         }
 
-
         public void run() {
             _gtp.calculateGTDistribution(_probs);
 
@@ -520,11 +556,19 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
     }
 
 
-    protected double computeProbability(Network<Object> speciesNetwork, List geneTrees, Map<String, List<String>> species2alleles, List gtCorrespondences) {
+    /**
+     * This function is to compute the likelihood
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param gtCorrespondences     the correspondences between the summarized gene trees and the original gene trees
+     *
+     * @return likelihood
+     */
+    protected double computeProbability(Network<Object> speciesNetwork, List geneTrees, List gtCorrespondences, Map<String, List<String>> species2alleles) {
         double[] probArray = new double[geneTrees.size()];
 
         GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(speciesNetwork, geneTrees, species2alleles);
-        //
         if(_numThreads==1){
             gtp.calculateGTDistribution(probArray);
         }
@@ -544,17 +588,32 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
                 }
             }
         }
-
         double prob = calculateFinalLikelihood(probArray, gtCorrespondences);
         return prob;
     }
 
+
+    /**
+     * This function is to find the set of branches whose lengths cannot be estimated so that they can be ignored during the inference
+     * In this case, none of the branches whose lengths can be ignored during the inference
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param singleAlleleSpecies   species that have only one allele sampled from it
+     */
     protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){}
 
 
-    abstract protected double calculateFinalLikelihood(double[] probs, List gtCorrespondences);
+
+
+    /**
+     * This function is to calculate the final log likelihood using the correspondences between the summarized data and the original data
+     *
+     * @param probs               the probabilities of each summarized data respectively
+     * @param dataCorrespondences   the correspondences between the summarized data and the original data
+     */
+    abstract protected double calculateFinalLikelihood(double[] probs, List dataCorrespondences);
 
 
 
-    
 }

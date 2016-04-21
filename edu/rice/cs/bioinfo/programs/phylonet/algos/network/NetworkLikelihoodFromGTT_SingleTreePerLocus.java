@@ -28,16 +28,24 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of NetworkLikelihoodFromGTT. It handles the cases each locus has one gene tree.
  */
 public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikelihoodFromGTT{
 
 
-    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForInferNetwork, List treeCorrespondences){
+    /**
+     * This function is to summarize the input gene trees
+     *
+     * @param originalGTs               original input gene trees
+     * @param allele2species            mapping from allele to species which it is sampled from
+     * @param summarizedGTs             summarized gene trees
+     * @param treeCorrespondences       relationships between the original gene trees and the gene trees in summarizedGTs
+     */
+    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List summarizedGTs, List treeCorrespondences){
         Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
         Map<String,Integer> exp2ID = new HashMap<String, Integer>();
         for(Object list: originalGTs) {
@@ -55,8 +63,8 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
                         String btrExp = Trees.getLexicographicNewickString(btr, allele2species);
                         Integer index = exp2ID.get(btrExp);
                         if (index == null) {
-                            index = gtsForInferNetwork.size();
-                            gtsForInferNetwork.add(btr);
+                            index = summarizedGTs.size();
+                            summarizedGTs.add(btr);
                             binaryIDs.add(index);
                             exp2ID.put(btrExp, index);
                         } else {
@@ -72,6 +80,12 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
     }
 
 
+    /**
+     * This function is to calculate the final log likelihood using the correspondences between the summarized gene trees and the original gene trees
+     *
+     * @param probList            the probabilities of each summarized gene tree respectively
+     * @param gtCorrespondences   the correspondences between the summarized gene trees and the original gene trees
+     */
     protected double calculateFinalLikelihood(double[] probList, List gtCorrespondences){
         double totalProb = 0;
         for(Object o: gtCorrespondences){
@@ -80,11 +94,8 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
             for(int id: tuple.Item2){
                 totalProbForOneTree += probList[id];
             }
-
             totalProb += Math.log(totalProbForOneTree) * tuple.Item1.Item2;
-            //totalProb += totalProbForOneTree;
         }
-        //System.out.println(totalProb);
         return totalProb;
     }
 

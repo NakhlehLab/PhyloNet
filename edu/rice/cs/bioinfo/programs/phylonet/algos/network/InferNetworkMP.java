@@ -36,14 +36,16 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
+import java.io.File;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is to infer species networks from gene trees under MDC criterion
+ * See "Parsimonious Inference of Hybridization in the Presence of Incomplete Lineage Sorting", Systematic Biology, 2013.
  */
 public class InferNetworkMP{
     protected int _maxFailure = 100;
@@ -53,12 +55,59 @@ public class InferNetworkMP{
     private Set<String> _fixedHybrid = new HashSet<String>();
     protected Network<Object> _startNetwork = null;
     private int _numProcessors = 1;
-    protected double[] _operationWeight = {0.1,0.1,0.15,0.55,0.15,0.15};
-    private int _numRuns = 1;
+    protected double[] _operationWeights = {0.1,0.1,0.15,0.55,0.15,0.15};
+    private int _numRuns = 5;
+    protected File _logFile = null;
+    protected File _intermediateResultFile = null;
     private Long _seed = null;
 
 
-    public void setSearchParameter(long maxExaminations, int maxFailure, int moveDiameter, int reticulationDiameter, Network startNetwork, Set<String> fixedHybrid, int numProcessors, double[] operationWeight, int numRuns, Long seed){
+    /**
+     * This function is to set the log file, which saves every network tried along with their likelihood during the search
+     */
+    public void setLogFile(File file){
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            }catch (Exception e){
+                System.err.println(e.getMessage());
+                e.getStackTrace();
+            }
+        }
+        _logFile = file;
+    }
+
+
+    /**
+     * This function is to set the intermediate result file, which saves the results from every run
+     */
+    public void setIntermediateResultFile(File file){
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            }catch (Exception e){
+                System.err.println(e.getMessage());
+                e.getStackTrace();
+            }
+        }
+        _intermediateResultFile = file;
+    }
+
+    /**
+     * This function is to set all parameters used during the search
+     *
+     * @param maxExaminations       the maximal number of networks examined during the search; can be used as one of the termination criterion of the search
+     * @param maxFailure            the maximal number of consecutive failures during the search before terminating the search; used only in hill climbing
+     * @param moveDiameter          the maximal diameter of a move when rearranging a species network
+     * @param reticulationDiameter  the maximal diameter of a reticulation in a species network
+     * @param numProcessors         the number of threads for parallel computing
+     * @param startNetwork          the starting network for search
+     * @param fixedHybrid           the species under reticulations in the species network
+     * @param operationWeights       the weights for different moves for network rearrangement during the search
+     * @param numRuns               the number of independent runs for the search
+     * @param seed                  seed for randomness
+     */
+    public void setSearchParameter(long maxExaminations, int maxFailure, int moveDiameter, int reticulationDiameter, Network startNetwork, Set<String> fixedHybrid, int numProcessors, double[] operationWeights, int numRuns, Long seed){
         _maxExaminations = maxExaminations;
         _moveDiameter = moveDiameter;
         _reticulationDiameter = reticulationDiameter;
@@ -66,39 +115,65 @@ public class InferNetworkMP{
         _maxFailure = maxFailure;
         _fixedHybrid = fixedHybrid;
         _numProcessors = numProcessors;
-        _operationWeight = operationWeight;
+        _operationWeights = operationWeights;
         _numRuns = numRuns;
         _seed = seed;
     }
 
 
-
-    private void checkNetworkWithHybrids(Network<Object> startNetwork){
-        if(startNetwork == null || _fixedHybrid.size() == 0){
-            return;
+    /**
+     * Checks if the user-specified hybrid species are under reticulation nodes in the species network
+     */
+    private void checkNetworkWithHybrids(Network<Object> startNetwork, Set<String> existingHybrids){
+        if(_fixedHybrid.size() == 0) return;
+        Map<NetNode, Set<NetNode>> node2children = new HashMap<>();
+        Set<NetNode> reticulationNodes = new HashSet<>();
+        for(Object o: Networks.postTraversal(startNetwork)){
+            NetNode node = (NetNode)o;
+            Set<NetNode> childrenSet = new HashSet<>();
+            node2children.put(node, childrenSet);
+            if(node.isNetworkNode()){
+                reticulationNodes.add(node);
+            }
+            for(Object child: node.getChildren()){
+                childrenSet.add((NetNode)child);
+                childrenSet.addAll(node2children.get(child));
+            }
         }
-
-        if(startNetwork != null){
-            for(NetNode<Object> node: startNetwork.getNetworkNodes()){
-                NetNode hybridSpecies = node.getChildren().iterator().next();
-                if(!(hybridSpecies.isLeaf() && _fixedHybrid.contains(hybridSpecies.getName()))){
-                    throw new IllegalArgumentException("The starting network contains hybrid that is not in the specified hybrid set.");
+        for(NetNode reticulation: reticulationNodes){
+            for(NetNode child: node2children.get(reticulation)){
+                if(child.isLeaf()){
+                    if(!_fixedHybrid.contains(child.getName())) {
+                        throw new IllegalArgumentException("The starting network contains hybrid that is not in the specified hybrid set.");
+                    }else{
+                        existingHybrids.add(child.getName());
+                    }
                 }
             }
         }
     }
 
 
+    /**
+     * This function is to infer a species network from a collection of gene trees
+     *
+     * @param gts                   the gene trees used to infer the species networks
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param maxReticulations      the maximal number of reticulations in the inferred species network
+     * @param numSol                number of solutions requested to return
+     */
     public List<Tuple<Network,Double>> inferNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol){
         LinkedList<Tuple<Network, Double>> resultList = new LinkedList<>();
         String startingNetwork = getStartNetwork(gts, species2alleles,_fixedHybrid, _startNetwork);
-
-        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_operationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), 1, new NonUltrametricNetworkRandomParameterNeighbourGenerator(), 0, _seed);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_operationWeights, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), 1, new NonUltrametricNetworkRandomParameterNeighbourGenerator(), 0, _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
         SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+        searcher.setLogFile(_logFile);
+        searcher.setIntermediateResultFile(_intermediateResultFile);
         Func1<Network, Double> scorer = getScoreFunction(gts, species2alleles);
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
+
         //To set inheritance probability
         if(_numProcessors != 1){
             for(Tuple<Network, Double> tuple: resultList){
@@ -111,6 +186,12 @@ public class InferNetworkMP{
 
 
 
+    /**
+     * Creates reticulation for user-specified hybrid species in a species network
+     *
+     * @param network   the species network
+     * @param hybrid    the user-specified hybrid species
+     */
     protected void createHybrid(Network<Object> network, String hybrid){
         List<Tuple<NetNode,NetNode>> edgeList = new ArrayList<Tuple<NetNode,NetNode>>();
         Tuple<NetNode,NetNode> destinationEdge = null;
@@ -130,7 +211,7 @@ public class InferNetworkMP{
         }
 
         int numEdges = edgeList.size();
-        Tuple<NetNode,NetNode> sourceEdge = edgeList.get((int)(Math.random() * numEdges));
+        Tuple<NetNode,NetNode> sourceEdge = edgeList.get((int) (Math.random() * numEdges));
         NetNode insertedSourceNode = new BniNetNode();
         insertedSourceNode.adoptChild(sourceEdge.Item2, NetNode.NO_DISTANCE);
         sourceEdge.Item1.removeChild(sourceEdge.Item2);
@@ -143,9 +224,19 @@ public class InferNetworkMP{
     }
 
 
+    /**
+     * This function is to obtain starting network for the search
+     * MDC on trees is used by default
+     *
+     * @param gts                 gene trees for inferring the starting network
+     * @param species2alleles     mapping from species to alleles sampled from it
+     * @param hybridSpecies       species under reticulation nodes in the species network
+     * @param startingNetwork     starting network if specified by the users
+     *
+     * @return  starting network
+     */
     private String getStartNetwork(List<MutableTuple<Tree,Double>> gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
-        checkNetworkWithHybrids(startingNetwork);
-
+        Set<String> existingHybrids = new HashSet<>();
         if(startingNetwork == null){
             Map<String,String> allele2species = null;
             if(species2alleles!=null){
@@ -167,22 +258,28 @@ public class InferNetworkMP{
             }
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = Networks.readNetwork(startingTree.toString());
+        }else{
+            checkNetworkWithHybrids(startingNetwork, existingHybrids);
         }
 
         for(String hybrid: hybridSpecies){
-            createHybrid(startingNetwork, hybrid);
+            if(!existingHybrids.contains(hybrid))
+                createHybrid(startingNetwork, hybrid);
         }
 
         Networks.removeAllParameters(startingNetwork);
         Networks.autoLabelNodes(startingNetwork);
 
         String newNetwork = startingNetwork.toString();
-
         return newNetwork;
 
     }
 
 
+    /**
+     * This function is to compare two likelihood scores
+     * As a maximum parsimony score, the smaller the better
+     */
     private Comparator<Double> getDoubleScoreComparator(){
         return new Comparator<Double>() {
             public int compare(Double o1, Double o2)
@@ -194,7 +291,15 @@ public class InferNetworkMP{
 
 
 
-    private int[] computeXLParallel(Network network, List<MutableTuple<Tree,Double>> gts, Map<String, List<String>> species2alleles, int[] xls){
+    /**
+     * This function is to compute the parsimony score (the number of extra lineages) resulting from a species network and a collection of gene trees in parallel
+     *
+     * @param network           the species network
+     * @param gts               gene trees for inferring the starting network
+     * @param species2alleles   mapping from species to alleles sampled from it
+     * @param xls               the results; has one to one correspondence to gts
+     */
+    private void computeXLParallel(Network network, List<MutableTuple<Tree,Double>> gts, Map<String, List<String>> species2alleles, int[] xls){
         Thread[] myThreads = new Thread[_numProcessors];
 
         MDCOnNetworkYF mdc = new MDCOnNetworkYF();
@@ -206,18 +311,22 @@ public class InferNetworkMP{
             myThreads[i].start();
         }
 
-        for(int i=0; i<_numProcessors; i++){
+        for(int i=0; i<_numProcessors; i++) {
             try {
                 myThreads[i].join();
-            } catch (InterruptedException ignore) {}
+            } catch (InterruptedException ignore) {
+            }
         }
-
-        return xls;
 
     }
 
 
-
+    /**
+     * This function is to get the function for calculating parsimony score of a candidate network during the search
+     *
+     * @param gts               the input gene trees
+     * @param species2alleles   mapping from species to alleles sampled from it
+     */
     private Func1<Network, Double> getScoreFunction(final List<MutableTuple<Tree,Double>> gts, final Map<String, List<String>> species2alleles){
         return new Func1<Network, Double>() {
             public Double execute(Network network) {
@@ -235,7 +344,6 @@ public class InferNetworkMP{
                 for(int score: scores){
                     total += score * weightIt.next().Item2;
                 }
-
                 return total;
 
             }
@@ -244,6 +352,9 @@ public class InferNetworkMP{
 
 
 
+    /**
+     * This class is for computing the parsimony score of a species network in parallel
+     */
     private class MyThread extends Thread{
         Network _speciesNetwork;
         List<MutableTuple<Tree,Double>> _geneTrees;
@@ -259,7 +370,6 @@ public class InferNetworkMP{
             _xls = xls;
             _mdc = mdc;
         }
-
 
         public void run() {
             _mdc.countExtraCoal(_speciesNetwork, _geneTrees, _species2alleles, _xls);

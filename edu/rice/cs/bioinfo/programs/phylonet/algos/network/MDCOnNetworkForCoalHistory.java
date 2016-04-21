@@ -12,22 +12,39 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClust
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 5/9/12
- * Time: 1:07 PM
- * To change this template use File | Settings | File Templates.
+ * Created with Yun Yu
+ * Date: 2/11/13
+ * Time: 11:40 AM
+ *
+ * This class is to count the number of extra lineages given a gene tree and its coalescent history within the branches of a multree
+ *
+ * See "Parsimonious Inference of Hybridization in the Presence of Incomplete Lineage Sorting", Systematic Biology, 2013.
  */
 public class MDCOnNetworkForCoalHistory {
     boolean _printDetail = false;
 
+
+    /**
+     * This function is for setting the option of printing details
+     */
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
 
 
 
-
+    /**
+     * This is the main function for counting the number of extra lineages given a gene tree and its coalescent history within the branches of a multree
+     *
+     * @param mulTree 	            the multree
+     * @param gt		            the gene tree
+     * @param alleleMapping	        the mapping from alleles to the species they are sampled from
+     * @param tname2nname           the mapping from leaves in multree to leaves in original network
+     * @param coalHistoryMapping    the coalescent history
+     * @param mulTreeMatrix         a matrix that stores the ancestral relationships among nodes in multree
+     *
+     * @return	the number of extra lineages
+     */
     public int countExtraCoal(Tree mulTree, Tree gt, Map<String, String> alleleMapping, Map<String,String> tname2nname, Map<TNode, Integer> coalHistoryMapping, boolean[][] mulTreeMatrix){
         int sum = 0;
         String[] stTaxa = mulTree.getLeaves();
@@ -59,7 +76,6 @@ public class MDCOnNetworkForCoalHistory {
             c.setCluster(bs);
 
             int el = getClusterCoalNum(gt, c, node.getID(), alleleMapping, coalHistoryMapping, mulTreeMatrix);
-            //System.out.println(c + ":" + el);
             String tname = node.getName();
             if(tname!=null && tname2nname.containsKey(tname)){
                 String nname = tname2nname.get(tname);
@@ -72,7 +88,6 @@ public class MDCOnNetworkForCoalHistory {
             }
             else{
                 sum += Math.max(0, el-1);
-                //System.out.println(node.toString() + ":" + Math.max(0, el-1));
             }
 
 
@@ -80,18 +95,30 @@ public class MDCOnNetworkForCoalHistory {
 
         for(Map.Entry<String, Integer> entry: nname2xl.entrySet()){
             sum += Math.max(0, entry.getValue()-1);
-            //System.out.println(entry.getKey() + ":" + Math.max(0, entry.getValue()-1));
         }
 
         return sum;
     }
 
+
+
+    /**
+     * This function is to count the minimal number of extra lineages given a gene tree and a cluster in the multree
+     *
+     * @param tr 	                the gene tree
+     * @param cluster		        the cluster in multree
+     * @param mulTreeNodeID	        the node that the cluster is induced from
+     * @param alleleMapping         the mapping from alleles to the species they are sampled from
+     * @param coalHistoryMapping    the coalescent history
+     * @param mulTreeMatrix         a matrix that stores the ancestral relationships among nodes in multree
+     *
+     * @return	the number of extra lineages
+     */
     private int getClusterCoalNum(Tree tr, STITreeCluster cluster, int mulTreeNodeID, Map<String, String> alleleMapping, Map<TNode, Integer> coalHistoryMapping, boolean[][] mulTreeMatrix) {
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         List<String> taxa = new LinkedList<String>();	// List of species taxa.
 
         Collections.addAll(taxa, cluster.getTaxa());
-
         int count = 0;
         for (TNode node : tr.postTraverse()) {
             if (node.isLeaf()) {
@@ -107,30 +134,15 @@ public class MDCOnNetworkForCoalHistory {
             else {
                 int coalNodeID = coalHistoryMapping.get(node);
                 BitSet bs = new BitSet(taxa.size());
-                //int intersect = 0;
-                //int childCount = node.getChildCount();
                 for (TNode child : node.getChildren()) {
                     BitSet v = map.get(child);
                     bs.or(v);
-                    /*
-                    if(childCount>2){
-                        if(cluster.containsCluster(v)){
-                            intersect ++;
-                        }
-                    }
-                    */
                 }
 
                 if (cluster.containsCluster(bs) && mulTreeMatrix[mulTreeNodeID][coalNodeID]) {
                     count -= node.getChildCount();
                     count++;
                 }
-                /*
-                else if(intersect>1){
-                    count -= intersect;
-                    count ++;
-                }
-                */
 
                 map.put(node, bs);
             }

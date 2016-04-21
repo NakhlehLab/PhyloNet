@@ -41,8 +41,7 @@ import java.io.FileWriter;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Jianrong Dong
  * Date: 2/11/13
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
@@ -61,7 +60,6 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
 
                 double score = computeLikelihood(speciesNetwork, species2alleles, summarizedData, dataCorrespondences, singleAlleleSpecies);
 
-                //System.out.println(speciesNetwork + ": " + score);
                 // A score can be lower than the scores that I currently have in the
                 // optimal score list, but it is still the best score
                 // maybe for a lower reticulation network. Therefore, I just
@@ -115,7 +113,7 @@ public class InferNetworkMLFromGTTWithCrossValidation extends InferNetworkMLFrom
         Set<String> singleAlleleSpecies = new HashSet<>();
         findSingleAlleleSpeciesSet(speciesNetwork, species2alleles, singleAlleleSpecies);
 
-        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeights, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies), _topologyVsParameterOperation[1], _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
         //SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
 

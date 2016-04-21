@@ -31,35 +31,29 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created with Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of InferNetworkML. It's a version that uses gene trees as input data to infer species networks.
+ *
+ * See "Maximum Likelihood Inference of Reticulate Evolutionary Histories", Proceedings of the National Academy of Sciences, 2014
  */
 public abstract class InferNetworkMLFromGT extends InferNetworkML {
 
-
-    private void checkNetworkWithHybrids(Network<Object> startNetwork){
-        if(startNetwork == null || _fixedHybrid.size() == 0){
-            return;
-        }
-
-        if(startNetwork != null){
-            for(NetNode<Object> node: startNetwork.getNetworkNodes()){
-                NetNode hybridSpecies = node.getChildren().iterator().next();
-                if(!(hybridSpecies.isLeaf() && _fixedHybrid.contains(hybridSpecies.getName()))){
-                    throw new IllegalArgumentException("The starting network contains hybrid that is not in the specified hybrid set.");
-                }
-            }
-        }
-    }
-
-
-
+    /**
+     * This function is to obtain starting network for the search
+     * MDC on trees is used by default
+     *
+     * @param gts                 gene trees for inferring the starting network
+     * @param species2alleles     mapping from species to alleles sampled from it
+     * @param hybridSpecies       species under reticulation nodes in the species network
+     * @param startingNetwork     starting network if specified by the users
+     *
+     * @return  starting network
+     */
     protected String getStartNetwork(List gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
-        checkNetworkWithHybrids(startingNetwork);
-
+        Set<String> existingHybrids = new HashSet<>();
         if(startingNetwork == null){
             Map<String,String> allele2species = null;
             if(species2alleles!=null){
@@ -81,18 +75,14 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             }
             Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
             startingNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(startingTree.toString());
-
+        }else{
+            checkNetworkWithHybrids(startingNetwork, existingHybrids);
         }
-
-
 
         for(String hybrid: hybridSpecies){
-            createHybrid(startingNetwork, hybrid);
+            if(!existingHybrids.contains(hybrid))
+                createHybrid(startingNetwork, hybrid);
         }
-
-
-        //Networks.removeAllParameters(startingNetwork);
-        //Networks.autoLabelNodes(startingNetwork);
 
         for(NetNode<Object> node: startingNetwork.dfs()){
             for(NetNode<Object> parent: node.getParents()){
@@ -105,40 +95,11 @@ public abstract class InferNetworkMLFromGT extends InferNetworkML {
             }
         }
 
-        //System.out.println(startingNetwork.toString());
         return startingNetwork.toString();
     }
 
-    private void createHybrid(Network<Object> network, String hybrid){
-        List<Tuple<NetNode,NetNode>> edgeList = new ArrayList<Tuple<NetNode,NetNode>>();
-        Tuple<NetNode,NetNode> destinationEdge = null;
-        for(NetNode<Object> node: edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(network)){
-            for(NetNode child: node.getChildren()){
-                if(child.isLeaf() && child.getName().equals(hybrid)){
-                    if(node.isNetworkNode()){
-                        return;
-                    }
-                    destinationEdge = new Tuple<NetNode, NetNode>(node, child);
-                }
-                else{
-                    edgeList.add(new Tuple<NetNode, NetNode>(node, child));
-                }
-            }
 
-        }
 
-        int numEdges = edgeList.size();
-        Tuple<NetNode,NetNode> sourceEdge = edgeList.get((int)(Math.random() * numEdges));
-        NetNode insertedSourceNode = new BniNetNode();
-        insertedSourceNode.adoptChild(sourceEdge.Item2, NetNode.NO_DISTANCE);
-        sourceEdge.Item1.removeChild(sourceEdge.Item2);
-        sourceEdge.Item1.adoptChild(insertedSourceNode, NetNode.NO_DISTANCE);
-        NetNode insertedDestinationNode = new BniNetNode();
-        insertedDestinationNode.adoptChild(destinationEdge.Item2, NetNode.NO_DISTANCE);
-        destinationEdge.Item1.removeChild(destinationEdge.Item2);
-        destinationEdge.Item1.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
-        insertedSourceNode.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
-    }
 
 
 

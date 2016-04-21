@@ -34,14 +34,29 @@ import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class inherits from NetworkLikelihood.
+ * It calculates the likelihood of a species network when the input is a collection of gene trees (only topologies are used)
+ *
+ * See "Maximum Likelihood Inference of Reticulate Evolutionary Histories", Proceedings of the National Academy of Sciences, 2014
  */
 public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
+
+    /**
+     * This function is to optimize the branch lengths and inheritance probabilities of a given species network
+     *
+     * @param speciesNetwork            the species network
+     * @param species2alleles           mapping from species to alleles which they is sampled from
+     * @param distinctTrees             summarized data
+     * @param singleAlleleSpecies       to help identify which branch lengths in the species network can be ignored
+     * @param gtCorrespondence          relationships between the original data and the data in dataForInferNetwork
+     *
+     * @return likelihood of the species network after its branch lengths and inheritance probabilities are optimized
+     */
     protected double findOptimalBranchLength(final Network<Object> speciesNetwork, final Map<String, List<String>> species2alleles, final List distinctTrees, final List gtCorrespondence, final Set<String> singleAlleleSpecies){
         boolean continueRounds = true; // keep trying to improve network
         for(NetNode<Object> node: speciesNetwork.dfs()){
@@ -89,9 +104,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                                     double incumbentBranchLength = child.getParentDistance(parent);
 
                                     child.setParentDistance(parent, suggestedBranchLength);
-
                                     double lnProb = updateProbabilityForCached(speciesNetwork, distinctTrees, gtCorrespondence, child, parent);
-                                    //System.out.println(speciesNetwork + ": " + lnProb);
                                     if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // did improve, keep change
                                     {
                                         lnGtProbOfSpeciesNetwork.setContents(lnProb);
@@ -143,7 +156,6 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                                 child.setParentProbability(hybridParent2, 1.0 - suggestedProb);
 
                                 double lnProb = updateProbabilityForCached(speciesNetwork, distinctTrees, gtCorrespondence, child, null);
-                                //System.out.println(speciesNetwork + ": " + lnProb);
                                 if(lnProb > lnGtProbOfSpeciesNetwork.getContents()) // change improved GTProb, keep it
                                 {
 
@@ -174,12 +186,8 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                             System.out.println(speciesNetwork.toString() + " : " + lnGtProbOfSpeciesNetwork.getContents());
                     }
                 });
-
-
             }
 
-
-            // add hybrid probs to hybrid edges
             Collections.shuffle(assigmentActions);
 
             for(Proc assigment : assigmentActions)   // for each change attempt, perform attempt
@@ -208,11 +216,15 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
                 throw new IllegalStateException("Should never have decreased prob.");
             }
         }
-        //System.out.println("\n" + lnGtProbOfSpeciesNetwork.getContents() + ": " + speciesNetwork);
         return lnGtProbOfSpeciesNetwork.getContents();
     }
 
 
+
+    /**
+     * This class is for using parallel to compute the likelihood when the intermediate ancestral configurations are not stored
+     * It is slow for updating probabilities afterwards but needs less memory
+     * */
     private class MyThreadNonCached extends Thread{
         GeneTreeProbabilityYF _gtp;
         Network _speciesNetwork;
@@ -237,7 +249,10 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-
+    /**
+     * This class is for using parallel to compute the likelihood from scratch when the intermediate ancestral configurations are stored
+     * It is fast for updating probabilities afterwards but needs more memory
+     * */
     private class MyThreadFromScratchForCached extends Thread{
         GeneTreeProbabilityYF_Cached _gtp;
         Network _speciesNetwork;
@@ -263,8 +278,9 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
 
 
-
-
+    /**
+     * This class is for using parallel to update the likelihood using stored intermediate ancestral configurations
+     * */
     private class MyThreadFromNonScratchForCached extends Thread{
         Network _speciesNetwork;
         List<Tree> _gts;
@@ -291,7 +307,17 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    protected double computeProbability(Network<Object> speciesNetwork, List distinctTrees, Map<String, List<String>> species2alleles, List gtCorrespondences) {
+    /**
+     * This function is to use single thread to compute the likelihood without caching intermediate ancestral configurations
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param distinctTrees         summarized gene trees
+     * @param gtCorrespondences     the correspondences between the summarized gene trees and the original gene trees
+     *
+     * @return likelihood
+     */
+    protected double computeProbability(Network<Object> speciesNetwork, List distinctTrees, List gtCorrespondences, Map<String, List<String>> species2alleles) {
         double[] probs = new double[distinctTrees.size()];
         Thread[] myThreads = new Thread[_numThreads];
 
@@ -316,6 +342,17 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
+
+    /**
+     * This function is to use single thread to compute the likelihood from scratch when caching intermediate ancestral configurations
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param distinctTrees         summarized gene trees
+     * @param gtCorrespondences     the correspondences between the summarized gene trees and the original gene trees
+     *
+     * @return likelihood
+     */
     protected double computeProbabilityForCached(Network<Object> speciesNetwork, List distinctTrees, Map<String, List<String>> species2alleles, List gtCorrespondences) {
         double[] probs = new double[distinctTrees.size()];
         Thread[] myThreads = new Thread[_numThreads];
@@ -341,6 +378,17 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
 
 
 
+    /**
+     * This function is to use single thread to update the likelihood using cached intermediate ancestral configurations
+     *
+     * @param speciesNetwork        the species network
+     * @param geneTrees             summarized gene trees
+     * @param gtCorrespondences     the correspondences between the summarized gene trees and the original gene trees
+     * @param child                 the tail of the branch whose length or inheritance probability has been changed
+     * @param parent                the head of the branch whose length or inheritance probability has been changed
+     *
+     * @return likelihood
+     */
     private double updateProbabilityForCached(Network speciesNetwork, List<Tree> geneTrees, final List gtCorrespondences, NetNode child, NetNode parent) {
         Set<NetNode> childNodes = new HashSet<NetNode>();
         childNodes.add(child);
@@ -373,11 +421,18 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
         }
 
         double probability = calculateFinalLikelihood(probs, gtCorrespondences);
-        //System.out.println(speciesNetwork.toString() + ": " + probability);
         return probability;
     }
 
 
+
+    /**
+     * This function is to help find the set of branches whose lengths cannot be estimated so that they can be ignored during the inference
+     *
+     * @param speciesNetwork        the species network
+     * @param species2alleles       mapping from species to alleles sampled from it
+     * @param singleAlleleSpecies   species that have only one allele sampled from it
+     */
     protected void findSingleAlleleSpeciesSet(Network speciesNetwork, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies){
         for(Object node: speciesNetwork.getLeaves()){
             String species = ((NetNode)node).getName();
@@ -386,6 +441,13 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
         }
     }
 
+
+    /**
+     * This function is to find the set of branches whose lengths cannot be estimated so that they can be ignored during the inference
+     *
+     * @param network               the species network
+     * @param singleAlleleSpecies   species that have only one allele sampled from it
+     */
     private Set<NetNode> findEdgeHavingNoBL(Network network, Set<String> singleAlleleSpecies) {
         Set<NetNode> node2ignore = new HashSet<>();
         Map<NetNode, Set<String>> node2leaves = new HashMap<>();
@@ -412,7 +474,15 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
     }
 
 
-    abstract protected double calculateFinalLikelihood(double[] probs, List gtCorrespondences);
+
+
+    /**
+     * This function is to calculate the final log likelihood using the correspondences between the summarized data and the original data
+     *
+     * @param probs               the probabilities of each summarized data respectively
+     * @param dataCorrespondences   the correspondences between the summarized data and the original data
+     */
+    abstract protected double calculateFinalLikelihood(double[] probs, List dataCorrespondences);
 
 
 }

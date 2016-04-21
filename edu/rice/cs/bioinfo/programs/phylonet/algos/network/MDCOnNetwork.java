@@ -12,30 +12,40 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeClust
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 5/9/12
- * Time: 1:07 PM
- * To change this template use File | Settings | File Templates.
+ * Created with Yun Yu
+ * Date: 2/11/13
+ * Time: 11:40 AM
+ *
+ * This class is to count the minimal number of extra lineages required for reconciling a collection of gene trees within the branches of a given species network
+ * It is based on multree
+ * See "Parsimonious Inference of Hybridization in the Presence of Incomplete Lineage Sorting", Systematic Biology, 2013.
  */
 public class MDCOnNetwork {
     boolean _printDetail = false;
 
+
+    /**
+     * This function is for setting the option of printing details
+     */
     public void setPrintDetails(boolean p){
         _printDetail = p;
     }
+
+
+
     /**
-     * The public function for calculating the probabilities.
-     * @param	net 	the given network
-     * @param 	gts		the given set of gene trees
-     * @param	alleles2species		the mapping from the names of allels to the names of the species. It is used for multiple alleles
-     * @return	a list of probabilities corresponding to the list of gene trees.
+     * This is the main function for counting the minimal number of extra lineages required for reconciling a collection of gene trees within the branches of a given species network
+     *
+     * @param	net 	the given species network
+     * @param 	gts		the collection of gene trees
+     * @param	alleles2species		the mapping from alleles to the species they are sampled from
+     *
+     * @return	the resulting number of extra lineages which have one-to-one correspondence with gene trees in gts
      */
     public List<Integer> countExtraCoal(Network net, List<MutableTuple<Tree,Double>> gts, Map<String, String> alleles2species){
         List<Integer> xlList = new ArrayList<Integer>();
         Map<String,Integer> nname2tamount = new HashMap<String,Integer>();
         Tree superst = networkToTree(net, nname2tamount);
-        //System.out.println(superst.toNewickWD());
         Map<String,String> tname2nname = new HashMap<String,String>();
 
         for(Map.Entry<String, Integer> entry: nname2tamount.entrySet()){
@@ -58,7 +68,6 @@ public class MDCOnNetwork {
 
             List<String> netTaxa = new ArrayList<String>();
             List<List<String>> allelesList = new ArrayList<List<String>>();
-            //List<Integer> alleleNum = new ArrayList<Integer>();
             List<Integer> upper = new ArrayList<Integer>();
             for(String gtleaf: gtTaxa){
                 String nleaf = alleles2species.get(gtleaf);
@@ -100,12 +109,16 @@ public class MDCOnNetwork {
 
             }while(mergeNumberAddOne(mergeNumber,upper));
 
-            //System.out.println(gt +": " + min_coal + " extra lineages");
             xlList.add(minCoal);
         }
         return xlList;
     }
 
+
+
+    /**
+     * This function is to help enumerating allele mappings
+     */
     private boolean mergeNumberAddOne(List<int[]> mergeNumber, List<Integer> upper){
         for(int i=0; i<mergeNumber.size(); i++){
             int[] partNumber = mergeNumber.get(i);
@@ -125,11 +138,13 @@ public class MDCOnNetwork {
     }
 
 
-    /**
-     * The function is to convert a network to a multilabel tree.
-     * @param	net 	the given network
-     */
 
+    /**
+     * The function is to convert a network to a multilabel tree
+     *
+     * @param net 	            the species network to convert
+     * @param nname2tamount     mappings from taxa in the species network to the number of copies of that leaf in the resulting mul-trees
+     */
     private Tree networkToTree(Network<Double> net, Map<String,Integer> nname2tamount){
         removeBinaryNodes(net);
         Tree st = new STITree<Double>();
@@ -138,12 +153,10 @@ public class MDCOnNetwork {
         source.offer(net.getRoot());
         dest.offer((TMutableNode)st.getRoot());
         long nameid = System.currentTimeMillis();
-        //long nameid = 0;
         while(!source.isEmpty()){
             NetNode<Double> parent = source.poll();
             TMutableNode peer = dest.poll();
             for (NetNode<Double> child : parent.getChildren()) {
-
                 TMutableNode copy;
                 if (child.getName().equals(NetNode.NO_NAME)) {
                     child.setName("hnode" + (nameid++));
@@ -162,7 +175,6 @@ public class MDCOnNetwork {
 
                 double distance = child.getParentDistance(parent);
                 if (distance == NetNode.NO_DISTANCE) {
-                    //copy.setParentDistance(TNode.NO_DISTANCE);
                     copy.setParentDistance(0);
                 }
                 else {
@@ -173,11 +185,23 @@ public class MDCOnNetwork {
                 dest.offer(copy);
             }
         }
-        //Trees.removeBinaryNodes((MutableTree)st);
         return st;
     }
 
-    private int countExtraCoal(Tree gt,Tree st, Map<String, String> taxonMap, Map<String,String> tname2nname){
+
+
+
+    /**
+     * This function is to count the minimal number of extra lineages required for reconciling a gene tree within the branches of a given species network
+     *
+     * @param gt   	        the given gene tree
+     * @param st		    the multree
+     * @param taxonMap	    the mapping from alleles to the species they are sampled from
+     * @param tname2nname   the mapping from leaves in multree to leaves in original network
+     *
+     * @return	the number of extra lineages
+     */
+    private int countExtraCoal(Tree gt, Tree st, Map<String, String> taxonMap, Map<String,String> tname2nname){
         int sum = 0;
         String[] stTaxa = st.getLeaves();
 
@@ -212,7 +236,6 @@ public class MDCOnNetwork {
 
             if(c.getClusterSize()<stTaxa.length){
                 int el = getClusterCoalNum(gt, c, taxonMap);
-                //System.out.println(c + ":" + el);
                 String tname = node.getName();
                 if(tname!=null && tname2nname.containsKey(tname)){
                     String nname = tname2nname.get(tname);
@@ -236,6 +259,17 @@ public class MDCOnNetwork {
         return sum;
     }
 
+
+
+    /**
+     * This function is to count the minimal number of extra lineages given a gene tree and a cluster in the species tree
+     *
+     * @param tr   	        the given gene tree
+     * @param cluster		the cluster in the species tree
+     * @param taxonMap	    the mapping from alleles to the species they are sampled from
+     *
+     * @return	the number of extra lineages
+     */
     private int getClusterCoalNum(Tree tr, STITreeCluster cluster, Map<String, String> taxonMap) {
         Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
         List<String> taxa = new LinkedList<String>();	// List of species taxa.
@@ -284,6 +318,11 @@ public class MDCOnNetwork {
     }
 
 
+
+
+    /**
+     * The function is to remove binary nodes of a species network
+     */
     private void removeBinaryNodes(Network<Double> net)
     {
         // Find all binary nodes.

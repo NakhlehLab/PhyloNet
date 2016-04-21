@@ -31,80 +31,31 @@ import java.io.StringReader;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created with Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of InferNetworkMLFromGTT. It handles the cases each locus has single gene tree.
  */
 public class InferNetworkMLFromGTT_SingleTreePerLocus extends InferNetworkMLFromGTT {
-    public int _MLCounter = 0;
 
-
+    /**
+     * Constructor of the class
+     */
     public InferNetworkMLFromGTT_SingleTreePerLocus(){
         _likelihoodCalculator = new NetworkLikelihoodFromGTT_SingleTreePerLocus();
     }
 
-/*
-    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
-        Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
-        Map<String,Integer> exp2ID = new HashMap<String, Integer>();
-        for(Object list: originalGTs) {
-            for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>)list) {
-                for (TNode node : gtTuple.Item1.getNodes()) {
-                    node.setParentDistance(TNode.NO_DISTANCE);
-                }
-                String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
-                MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
-                if (existingTuple == null) {
-                    existingTuple = gtTuple;
-                    exp2tree.put(exp, existingTuple);
-                    Set<Integer> binaryIDs = new HashSet<Integer>();
-                    for (Tree btr : Trees.getAllBinaryResolution(gtTuple.Item1)) {
-                        String btrExp = Trees.getLexicographicNewickString(btr, allele2species);
-                        Integer index = exp2ID.get(btrExp);
-                        if (index == null) {
-                            index = gtsForInferNetwork.size();
-                            gtsForInferNetwork.add(btr);
-                            binaryIDs.add(index);
-                            exp2ID.put(btrExp, index);
-                        } else {
-                            binaryIDs.add(index);
-                        }
-                    }
-                    treeCorrespondences.add(new Tuple<MutableTuple<Tree, Double>, Set<Integer>>(gtTuple, binaryIDs));
 
-                } else {
-                    existingTuple.Item2 += gtTuple.Item2;
-                }
-
-            }
-        }
-
-        gtsForStartingNetwork.addAll(exp2tree.values());
-
-        String[] taxa = {"a","b","c","d","e","f"};
-        for(Tree gt: Trees.generateAllBinaryTrees(taxa)){
-            try{
-                NewickReader nr = new NewickReader(new StringReader(gt.toString()));
-                Tree tr = nr.readTree();
-                String exp = Trees.getLexicographicNewickString(tr, null);
-                if(!exp2tree.containsKey(exp)){
-                    int index = gtsForInferNetwork.size();
-                    Set<Integer> indexSet = new HashSet<>();
-                    indexSet.add(index);
-                    gtsForInferNetwork.add(tr);
-                    treeCorrespondences.add(new Tuple<MutableTuple<Tree, Double>, Set<Integer>>(new MutableTuple<Tree, Double>(tr,0.0), indexSet));
-                }
-            }catch (Exception e){
-
-            }
-        }
-        //System.out.println();
-    }
-*/
-
-
+    /**
+     * This function is to summarize the input gene trees by finding the distinct gene tree topologies
+     *
+     * @param originalGTs               original input data
+     * @param allele2species            mapping from allele to species which it is sampled from
+     * @param gtsForStartingNetwork    data for inferring the starting network
+     * @param gtsForInferNetwork       (distinct) data used during the search
+     * @param treeCorrespondences       relationships between the original data and the data in dataForInferNetwork
+     */
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
         Map<String, MutableTuple<Tree,Double>> exp2tree = new HashMap<String, MutableTuple<Tree, Double>>();
         Map<String,Integer> exp2ID = new HashMap<String, Integer>();

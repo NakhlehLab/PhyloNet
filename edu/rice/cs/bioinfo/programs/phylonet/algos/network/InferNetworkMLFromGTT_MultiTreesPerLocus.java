@@ -31,30 +31,39 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created with Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of InferNetworkMLFromGTT. It handles the cases each locus has multiple gene trees.
  */
 public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFromGTT {
+
+    /**
+     * Constructor of the class
+     */
     public InferNetworkMLFromGTT_MultiTreesPerLocus(){
         _likelihoodCalculator = new NetworkLikelihoodFromGTT_MultiTreesPerLocus();
     }
 
-    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List dataForStartingNetwork, List dataForInferNetwork, List treeCorrespondences){
+
+    /**
+     * This function is to summarize the input gene trees by finding the distinct gene tree topologies
+     *
+     * @param originalGTs               original input data
+     * @param allele2species            mapping from allele to species which it is sampled from
+     * @param gtsForStartingNetwork    data for inferring the starting network
+     * @param gtsForInferNetwork       (distinct) data used during the search
+     * @param treeCorrespondences       relationships between the original data and the data in dataForInferNetwork
+     */
+    protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForStartingNetwork, List gtsForInferNetwork, List treeCorrespondences){
         int treeID = 0;
         Map<String, MutableTuple<Integer,Double>> tree2Info = new HashMap<String, MutableTuple<Integer,Double>>();
-        //int index = 0;
         for(Object o: originalGTs) {
-            //System.out.println(index++);
             List<MutableTuple<Tree,Double>> treesForOneLocus = (List<MutableTuple<Tree,Double>>)o;
             Map<String, Integer> tree2infoIndex = new HashMap<String, Integer>();
             List<MutableTuple<Integer,Double>> infoList = new ArrayList<MutableTuple<Integer, Double>>();
-            //int index = 0;
             for (MutableTuple<Tree, Double> gtTuple : treesForOneLocus) {
-                //System.out.println(index++);
-                //MutableTuple<Integer,Double> info = new MutableTuple<Integer, Double>(-1,gtTuple.Item2);
                 for (TNode node : gtTuple.Item1.getNodes()) {
                     node.setParentDistance(TNode.NO_DISTANCE);
                 }
@@ -62,8 +71,8 @@ public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFrom
                 MutableTuple<Integer,Double> existingInfo = tree2Info.get(exp);
                 if (existingInfo == null) {
                     existingInfo = new MutableTuple<Integer,Double>(treeID, gtTuple.Item2);
-                    dataForStartingNetwork.add(gtTuple);
-                    dataForInferNetwork.add(gtTuple.Item1);
+                    gtsForStartingNetwork.add(gtTuple);
+                    gtsForInferNetwork.add(gtTuple.Item1);
                     tree2Info.put(exp, existingInfo);
                     tree2infoIndex.put(exp, infoList.size());
                     infoList.add(new MutableTuple(treeID, gtTuple.Item2));
@@ -84,24 +93,12 @@ public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFrom
 
             }
             treeCorrespondences.add(infoList);
-            /*
-            for(MutableTuple<Integer,Double> info: infoList){
-                System.out.println(info.Item1+": " +info.Item2);
-            }
-            System.out.println();
-            */
         }
 
         for(MutableTuple<Integer,Double> info: tree2Info.values()){
-            MutableTuple<Integer,Double> tuple = (MutableTuple<Integer,Double>)dataForStartingNetwork.get(info.Item1);
+            MutableTuple<Integer,Double> tuple = (MutableTuple<Integer,Double>)gtsForStartingNetwork.get(info.Item1);
             tuple.Item2 = info.Item2;
         }
-/*
-        int index = 0;
-        for(Object o: dataForInferNetwork){
-            System.out.println(index++ + ": " + o.toString());
-        }
-*/
     }
 
 

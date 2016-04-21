@@ -27,15 +27,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: yy9
+ * Created by Yun Yu
  * Date: 2/11/13
  * Time: 11:40 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is a subclass of NetworkLikelihoodFromGTTBL. It handles the cases each locus has one gene tree.
  */
 public class NetworkLikelihoodFromGTTBL_SingleTreePerLocus extends NetworkLikelihoodFromGTTBL {
 
 
+    /**
+     * This function is to summarize the input gene trees
+     *
+     * @param originalGTs               original input gene trees
+     * @param allele2species            mapping from allele to species which it is sampled from
+     * @param gtsForInferNetwork        summarized gene trees
+     * @param treeCorrespondences       relationships between the original gene trees and the gene trees in summarizedGTs
+     */
     protected void summarizeData(List originalGTs, Map<String,String> allele2species, List gtsForInferNetwork, List treeCorrespondences){
         for(Object list: originalGTs) {
             for (MutableTuple<Tree, Double> gtTuple : (List<MutableTuple<Tree, Double>>)list) {
@@ -46,6 +54,13 @@ public class NetworkLikelihoodFromGTTBL_SingleTreePerLocus extends NetworkLikeli
     }
 
 
+
+    /**
+     * This function is to calculate the final log likelihood using the correspondences between the summarized gene trees and the original gene trees
+     *
+     * @param probList            the probabilities of each summarized gene tree respectively
+     * @param gtCorrespondences   the correspondences between the summarized gene trees and the original gene trees
+     */
     protected double calculateFinalLikelihood(double[] probList, List gtCorrespondences){
         double totalProb = 0;
         Iterator weight = gtCorrespondences.iterator();

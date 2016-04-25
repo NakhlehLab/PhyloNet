@@ -38,11 +38,12 @@ import java.io.ByteArrayInputStream;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 11/2/11
  * Time: 10:47 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is for simulating gene trees within branches of a given species networks
+ * Note that the gene trees generated do NOT have branch lengths
  */
 public class SimGTInNetwork
 {
@@ -51,10 +52,24 @@ public class SimGTInNetwork
     private Random _random;
     private Long _seed = null;
 
+    /**
+     * This function is to set seed to control the randomness
+     */
     public void setSeed(Long seed){
         _seed = seed;
     }
 
+
+
+    /**
+     * This is the main function for generating gene trees given a species network
+     *
+     * @param network           the species network that the gene trees are generated from
+     * @param species2alleles   mapping from species to alleles sampled from it
+     * @param numGTs            the number of gene trees need to be generated
+     *
+     * @return   the list of simulated gene trees
+     */
     public List<Tree> generateGTs(Network network, Map<String, List<String>> species2alleles, int numGTs){
         if(_seed == null){
             _random = new Random();
@@ -73,7 +88,6 @@ public class SimGTInNetwork
             }
         }
 		for(int i=0; i<numGTs; i++){
-            //System.out.println("\n\nConstructing gt#" + (i+1) +" ...");
             if(_printDetails){
                 System.out.println("\n\nConstructing gt#" + (i+1) +" ...");
             }
@@ -93,7 +107,6 @@ public class SimGTInNetwork
                         TNode newNode = root.createChild(allele);
                         geneLineages.add(newNode);
                     }
-                    //netNode2geneLineages.put(node, geneLineages);
                 }
                 else{
                     for(Object childObject: node.getChildren()){
@@ -162,13 +175,21 @@ public class SimGTInNetwork
 
             }
             Trees.removeBinaryNodes(gt);
-            //System.out.println();
             gts.add(gt);
         }
 
         return gts;
 	}
 
+
+    /**
+     * This function is to randomly coalesce lineages on a branch
+     *
+     * @param geneLineages     gene lineages entering a branch
+     * @param gijMap           pre-computed gij values
+     * @param length           length of the branch
+     * @param root             the root of the gene tree
+     */
     private void randomlyCoalGeneLineages(List<TNode> geneLineages, Map<Integer, double[]> gijMap, double length, STINode root){
         if(geneLineages.size()<2) return;
         int glInNum = geneLineages.size();
@@ -180,8 +201,18 @@ public class SimGTInNetwork
         }
         int glOutNum = getRandomNumber(gijCache);
         randomlyCoalGeneLineages(geneLineages, glInNum, glOutNum, root);
-}
+    }
 
+
+
+    /**
+     * This function is to randomly coalesce lineages on a branch with a specified number of coalescent events
+     *
+     * @param geneLineages     gene lineages entering a branch
+     * @param glInNum          the number of gene lineages entering the branch
+     * @param glOutNum         the number of gene lineages leaving the branch
+     * @param root             the root of the gene tree
+     */
     private void randomlyCoalGeneLineages(List<TNode> geneLineages, int glInNum, int glOutNum, STINode root){
         if(glInNum < glOutNum){
             return;
@@ -207,6 +238,10 @@ public class SimGTInNetwork
     }
 
 
+
+    /**
+     * This function is to get random number of lineages leaving a branch according to their probabilities
+     */
     private int getRandomNumber(double[] cache){
         double random = _random.nextDouble();
         int coalNum = -1;
@@ -219,6 +254,14 @@ public class SimGTInNetwork
         return coalNum;
     }
 
+
+
+    /**
+     * This function is to compute the gij value for a branch length
+     *
+     * @param cache     the resulting gij values
+     * @param length    the branch length
+     */
     private void calculateGij(double[] cache, double length){
         if(length == NetNode.NO_DISTANCE){
             throw new RuntimeException("The network has branch that doesn't have branch length.");
@@ -229,10 +272,18 @@ public class SimGTInNetwork
             total += gij(length, i, j);
             cache[j-1] = total;
         }
-        //cache[i-1] = 1;
     }
 
 
+    /**
+     * The function is to calculate the g_{ij} function.
+     *
+     * @param	length	the branch length
+     * @param 	i	the number of lineages in
+     * @param	j	the number of lineages out
+     *
+     * @return	the resulting probability
+     */
     private double gij(double length, int i, int j){
         if(length==0){
             if(i==j)
@@ -254,7 +305,13 @@ public class SimGTInNetwork
     }
 
 
-
+    /**
+     * The function is to calculate factorial
+     * @param	start	the first number
+     * @param 	end		the last number
+     *
+     * @return	the resulting factorial
+     */
     private double fact(int start, int end){
         double result = 1;
         for(int i=start; i<=end; i++){
@@ -264,38 +321,6 @@ public class SimGTInNetwork
         return result;
     }
 
-    private List<Tree> summarizeGTs(List<Tree> originalGTs){
-        List<Tree> distinctGTs = new ArrayList<Tree>();
-        for(Tree gt: originalGTs){
-            boolean exist = false;
-            for(Tree exgt: distinctGTs){
-                if(Trees.haveSameRootedTopology(gt, exgt)){
-                    ((STINode<Integer>)exgt.getRoot()).setData(((STINode<Integer>)exgt.getRoot()).getData()+1);
-                    exist = true;
-                    break;
-                }
-            }
-            if(!exist){
-                ((STINode<Integer>)gt.getRoot()).setData(1);
-                for(TNode node: gt.getNodes()){
-                    node.setParentDistance(TNode.NO_DISTANCE);
-                }
-                distinctGTs.add(gt);
-            }
-        }
-        for(int i=0; i<distinctGTs.size(); i++){
-            Tree tr1 = distinctGTs.get(i);
-            int count1 = ((STINode<Integer>)tr1.getRoot()).getData();
-            for(int j=0; j<i; j++){
-                int count2 = ((STINode<Integer>)distinctGTs.get(j).getRoot()).getData();
-                if(count2 < count1){
-                    distinctGTs.remove(i);
-                    distinctGTs.add(j,tr1);
-                    break;
-                }
-            }
-        }
-        return distinctGTs;
-    }
+
 
 }

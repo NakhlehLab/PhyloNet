@@ -23,47 +23,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Matt
+ * Created by Yun Yu
  * Date: 11/2/11
  * Time: 10:47 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * This class is for generating gene trees in "Coalescent histories on phylogenetic networks and detection of hybridization despite incomplete lineage sorting." Systematic Biology, 2011.
  */
 public class SimGTInNetwork2010
 {
-    private double t1, t2, gamma;
-	private int n;
-	private String output;
-
-	public double g22(double t){
-		return Math.exp((-1)*t);
-	}
-
-	public double g21(double t){
-		return 1-Math.exp((-1)*t);
-	}
-
-	public double g32(double t){
-		return 3.0/2*Math.exp((-1)*t) - 3.0/2*Math.exp((-3)*t);
-	}
-
-	public double g33(double t){
-		return Math.exp((-3)*t);
-	}
-
-	public double g31(double t){
-		return 1-g32(t)-g33(t);
-	}
 
 
-
-
+    /**
+     * Random number generator
+     */
 	public double exprnd(double mean){
 		 double u = Math.random();
 	     return -(mean * Math.log(u));
 	}
 
 
+    /**
+     * This is the main function for generating gene trees
+     *
+     * @param n     number of gene trees
+     * @param t1    see paper
+     * @param t2    see paper
+     * @param gamma see paper
+     */
 	public String[] generateGTs(double t1, double t2, double gamma, int n){
 		double x1,x2,x3;
 		String gtexp = "";

@@ -11,12 +11,20 @@ import java.util.Random;
 
 /**
  * Created by yunyu on 11/3/14.
+ *
+ * This class is a subclass of SimpleHillClimbing
+ * It implements the simulated annealing
+ *
+ * See "A Maximum Pseudo-likelihood Approach for Phylogenetic Networks", BMC Genomics, 2015.
  */
 public abstract class SimulatedAnnealingBase extends SimpleHillClimbing {
     Random _random;
     protected double _temperature = -1;
 
 
+    /**
+     * Constructor / Initializer
+     */
     public SimulatedAnnealingBase(Comparator<Double> scoreComparator, NetworkNeighbourhoodGenerator generator, Long seed) {
         super(scoreComparator, generator);
         initializeTemperature();
@@ -28,6 +36,14 @@ public abstract class SimulatedAnnealingBase extends SimpleHillClimbing {
     }
 
 
+    /**
+     * This function is to propose a random neighbor of the current network and compute its score
+     *
+     * @param currentNetwork    the current species network which will be rearranged in this function
+     * @param getScore          the function that computes the score of a candidate species network
+     *
+     * @return  the score of the proposed network
+     */
     protected double computeRandomNeighborScore(Network currentNetwork, Func1<Network, Double> getScore) {
         double newScore = super.computeRandomNeighborScore(currentNetwork, getScore);
         updateTemperature();
@@ -35,6 +51,9 @@ public abstract class SimulatedAnnealingBase extends SimpleHillClimbing {
     }
 
 
+    /**
+     * This function is to decide whether the proposed species network should be accepted
+     */
     protected boolean makeAcceptanceDecision(double currentScore, double newScore){
         if(printDetails()){
             System.out.println("Temperature: " + _temperature);
@@ -53,26 +72,36 @@ public abstract class SimulatedAnnealingBase extends SimpleHillClimbing {
             }
             double acceptanceRatio = Math.exp((newScore-currentScore)/_temperature);
             double random = _random.nextDouble();
-            if(random<acceptanceRatio){
+            if(random < acceptanceRatio){
                 if(printDetails()){
                     System.out.println("Accept: " + random + " < " + acceptanceRatio);
-                    //System.out.println();
                 }
                 return true;
             }
             else {
                 if(printDetails()){
                     System.out.println("Reject: " + random + " > " + acceptanceRatio);
-                    //System.out.println();
                 }
                 return false;
             }
         }
     }
 
+
+    /**
+     * This function is to update the temperature
+     */
     protected abstract void updateTemperature();
 
+
+    /**
+     * This function is to initialize the temperature
+     */
     protected abstract void initializeTemperature();
 
+
+    /**
+     * This function is to decide whether the search should be terminated
+     */
     protected abstract boolean concludeSearch();
 }

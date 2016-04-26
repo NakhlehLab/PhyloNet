@@ -13,21 +13,43 @@ import java.util.*;
 
 /**
  * Created by yunyu on 11/6/14.
+ *
+ * This class is a subclass of searchBase
+ * It implements the genetic algorithm for search
  */
 public abstract class GeneticAlgorithmBase extends SearchBase{
     private int _maxGenerations;
     private int _generationCounter = 1;
 
+
+    /**
+     * Constructor / Initializer
+     */
     public GeneticAlgorithmBase(Comparator<Double> scoreComparator){
         super(scoreComparator);
 
     }
 
+
+    /**
+     * This function is to reset the number of generations
+     */
     protected void clearGenerationCounter(){
         _generationCounter = 1;
     }
 
 
+
+    /**
+     * This function is to search the network space for one round
+     *
+     * @param startNetworks             the starting generations
+     * @param getScore                  the function that computes the score of a candidate species network
+     * @param numOptimums               the number of optimal species networks to return
+     * @param maxGenerations            the maximal number of generations for the search; served as stopping criterion
+     * @param scoreEachTopologyOnce     indicate whether each network topology only need to be evaluated once
+     * @param resultList                the resulting species networks along with their scores
+     */
     public void search(List<Network> startNetworks, Func1<Network,Double> getScore, int numOptimums, int maxGenerations, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList){
         _maxGenerations = maxGenerations;
         _optimalNetworks = resultList;
@@ -48,12 +70,16 @@ public abstract class GeneticAlgorithmBase extends SearchBase{
 
 
 
-
+    /**
+     * This is the main function to search the network space for one round
+     *
+     * @param currentGeneration         the current generation along with their scores
+     * @param getScore                  the function that computes the score of a candidate species network     the resulting species networks along with their scores
+     */
     protected void search(LinkedList<MutableTuple<Network,Double>> currentGeneration, Func1<Network,Double> getScore)
     {
         while(!concludeSearch())
         {
-            //System.out.println("Generation #" + _generationCounter+":");
             if(printDetails()){
                 System.out.println("Generation #" + _generationCounter+":");
                 for(MutableTuple<Network,Double> individual: currentGeneration){
@@ -70,6 +96,12 @@ public abstract class GeneticAlgorithmBase extends SearchBase{
         }
     }
 
+
+    /**
+     * This function is to update the caches and results
+     *
+     * @param currentGeneration     the current generation along with their scores
+     */
     private void updateResults(LinkedList<MutableTuple<Network,Double>> currentGeneration){
         for(MutableTuple<Network,Double> individual: currentGeneration){
             super.updateCashedResults(individual.Item1, individual.Item2);
@@ -77,39 +109,33 @@ public abstract class GeneticAlgorithmBase extends SearchBase{
         }
     }
 
-    protected abstract LinkedList<MutableTuple<Network,Double>> generateNextGeneration(LinkedList<MutableTuple<Network,Double>> currentGenerations);
 
-    /*
-    protected abstract LinkedList<MutableTuple<Network,Double>> selectIndividualsForNextGenerations(LinkedList<MutableTuple<Network,Double>> currentGenerations);
+    /**
+     * This function is to generate the next generation based on the current generation
+     *
+     * @param currentGeneration     the current generation along with their scores
+     */
+    protected abstract LinkedList<MutableTuple<Network,Double>> generateNextGeneration(LinkedList<MutableTuple<Network,Double>> currentGeneration);
 
-    protected abstract void doMutations(List<MutableTuple<Network,Double>> currentGenerations);
 
-    protected abstract void doRecombinations(List<MutableTuple<Network,Double>> currentGenerations);
-    */
 
+    /**
+     * This function is to compute the scores for each of the species network in the current generation
+     *
+     * @param currentGeneration     the current generation along with their scores
+     */
     protected void computeScoresForOneGeneration(LinkedList<MutableTuple<Network,Double>> currentGeneration, Func1<Network,Double> getScore){
         for(MutableTuple<Network,Double> individual: currentGeneration){
             individual.Item2 = getScore.execute(individual.Item1);
         }
-        /*
-        //Sorting all individuals
-        for(int i=0; i<currentGeneration.size(); i++){
-            MutableTuple<Network,Double> individual1 = currentGeneration.get(i);
-            for(int j=0;j<i;j++){
-                MutableTuple<Network,Double> individual2 = currentGeneration.get(j);
-                if(compareTwoScores(individual1.Item2, individual2.Item2)>0){
-                    currentGeneration.remove(individual1);
-                    currentGeneration.add(j,individual1);
-                    break;
-                }
-            }
-        }
-        */
-
     }
 
+
+    /**
+     * This function is to decide whether the search should be terminated
+     */
     protected boolean concludeSearch(){
-        return _generationCounter>=_maxGenerations;
+        return _generationCounter >= _maxGenerations;
     }
 
 }

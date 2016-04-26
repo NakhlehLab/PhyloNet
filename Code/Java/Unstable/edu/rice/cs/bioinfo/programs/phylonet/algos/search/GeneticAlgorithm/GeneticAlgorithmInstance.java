@@ -12,6 +12,9 @@ import java.util.*;
 
 /**
  * Created by yunyu on 11/6/14.
+ *
+ * This class is a subclass of GeneticAlgorithmBase
+ * It implements the genetic algorithm for search
  */
 public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     private double _topologyMutationProb;
@@ -25,15 +28,21 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     private Random _random;
     private int _generationSize;
 
-    /*public GeneticAlgorithmInstance(Comparator<Double> scoreComparator, double topologyMutationProb, double recombinationProb, double parameterMutationProportion){
-        super(scoreComparator);
-        _topologyMutationProb = topologyMutationProb;
-        _recombinationProb = recombinationProb;
-        _parameterMutationProportion = parameterMutationProportion;
-        //_kOverN = kOverN;
-    }
-    */
 
+    /**
+     * Constructor / Initializer
+     *
+     * @param generationSize        the generation size
+     * @param scoreComparator       the comparator to compare two scores
+     * @param parametersMutator     the class to mutate branch lengths and inheritance probabilities of a species network
+     * @param parameterMutationProportion     the proportion of parameters to mutate
+     * @param topologyMutator       the class to mutate the topology of a species network
+     * @param topologyMutationProb  the probability to mutate the topology
+     * @param recombiner            the class to recombine two species networks
+     * @param recombinationProb     the probability to do recombination
+     * @param k                     the k networks in the next generation from mutating the optimal one in the current generation
+     * @param seed                  the seed to control the randomness
+     */
     public GeneticAlgorithmInstance(int generationSize, Comparator<Double> scoreComparator, NetworkRandomParameterNeighbourGenerator parametersMutator,double parameterMutationProportion, NetworkRandomTopologyNeighbourGenerator topologyMutator, double topologyMutationProb, TwoNetworkRandomPDGGenerator recombiner, double recombinationProb, int k, Long seed){
         super(scoreComparator);
         _generationSize = generationSize;
@@ -47,7 +56,6 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
                 return Math.max(1,(int)(input*_parameterMutationProportion));
             }
         });
-        //_kOverN = kOverN;
         _parametersMutationMaker = parametersMutator;
         _topologyMutationMaker = topologyMutator;
         _recombinationMaker = recombiner;
@@ -58,14 +66,14 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
         else{
             _random = new Random(seed);
         }
-        double p = 2.0/(generationSize*(generationSize+1));
+        double p = 2.0 / (generationSize * (generationSize + 1));
         _leaveOffspringProb = new double[generationSize];
         int shares = generationSize;
         for(int i=0; i<generationSize; i++){
-            if(i==generationSize-1){
+            if(i == generationSize - 1){
                 _leaveOffspringProb[i] = 1;
             }
-            _leaveOffspringProb[i] = p*(shares--);
+            _leaveOffspringProb[i] = p * (shares--);
             if(i!=0){
                 _leaveOffspringProb[i] += _leaveOffspringProb[i-1];
             }
@@ -73,10 +81,12 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
 
     }
 
-    public GeneticAlgorithmInstance(int generationSize, Comparator<Double> scoreComparator, NetworkRandomParameterNeighbourGenerator parametersMutator, double parameterMutationProportion, NetworkRandomTopologyNeighbourGenerator topologyMutator, double topologyMutationProb, TwoNetworkRandomPDGGenerator recombiner, double recombinationProb, int k){
-        this(generationSize,scoreComparator, parametersMutator, parameterMutationProportion, topologyMutator, topologyMutationProb, recombiner, recombinationProb, k, null);
-    }
 
+    /**
+     * This function is to generate next generations by selecting individuals from current generation using ranking
+     *
+     * @param currentGenerations    the current generation
+     */
     private LinkedList<MutableTuple<Network,Double>> selectIndividualsForNextGenerationsUsingRanking(LinkedList<MutableTuple<Network,Double>> currentGenerations){
         LinkedList<MutableTuple<Network,Double>> nextGeneration = new LinkedList<>();
         MutableTuple<Network,Double> bestNetwork = currentGenerations.getFirst();
@@ -91,6 +101,12 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     }
 
 
+
+    /**
+     * This function is to generate next generations by selecting individuals from current generation using fitness
+     *
+     * @param currentGenerations    the current generation
+     */
     private LinkedList<MutableTuple<Network,Double>> selectIndividualsForNextGenerationsUsingFitness(LinkedList<MutableTuple<Network,Double>> currentGenerations){
         LinkedList<MutableTuple<Network,Double>> nextGeneration = new LinkedList<>();
         MutableTuple<Network,Double> bestNetwork = currentGenerations.getFirst();
@@ -123,11 +139,16 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
         return nextGeneration;
     }
 
+
+
+    /**
+     * This function is to generate a random parent ID
+     */
     private int getRandomParentID(){
         double random = _random.nextDouble();
         int parentID = 0;
-        for(; parentID<_leaveOffspringProb.length; parentID++){
-            if(random<_leaveOffspringProb[parentID]){
+        for(; parentID < _leaveOffspringProb.length; parentID++){
+            if(random < _leaveOffspringProb[parentID]){
                 break;
             }
         }
@@ -135,6 +156,9 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     }
 
 
+    /**
+     * This function is to generate a random parent ID excluding a specified one
+     */
     private int getRandomParentID(int excludeID){
         int parentID;
         do{
@@ -144,6 +168,13 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     }
 
 
+    /**
+     * This function is to generate next generations from current generation
+     *
+     * @param currentGenerations    the current generation
+     *
+     * @return     the next generation
+     */
     protected LinkedList<MutableTuple<Network,Double>> generateNextGeneration(LinkedList<MutableTuple<Network,Double>> currentGenerations){
         LinkedList<MutableTuple<Network,Double>> nextGenerations = selectIndividualsForNextGenerationsUsingRanking(currentGenerations);
         doMutations(nextGenerations);
@@ -152,6 +183,12 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     }
 
 
+
+    /**
+     * This function is to perform mutations on the current generations
+     *
+     * @param currentGenerations    the current generation
+     */
     private void doMutations(List<MutableTuple<Network,Double>> currentGenerations) {
         boolean first = true;
         for(MutableTuple<Network,Double> individual: currentGenerations){
@@ -159,42 +196,34 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
                 first = false;
                 continue;
             }
-            //System.out.print("Parameter change: ");
             _parametersMutationMaker.mutateNetwork(individual.Item1);
-            //System.out.println("Done");
 
-            if(_random.nextDouble()<_topologyMutationProb){
-                //System.out.print("Topology change: ");
+            if(_random.nextDouble()<_topologyMutationProb) {
                 _topologyMutationMaker.mutateNetwork(individual.Item1);
-                //System.out.println("Done");
-            }
-            else{
-                //_parametersMutationMaker.mutateNetwork(individual.Item1);
             }
         }
     }
 
 
+
+    /**
+     * This function is to perform recombinations
+     *
+     * @param parentGenerations     the parent generation
+     * @param currentGenerations    the current generation
+     */
     private void doRecombinations(List<MutableTuple<Network,Double>> parentGenerations, List<MutableTuple<Network,Double>> currentGenerations) {
         int index = 0;
         for(MutableTuple<Network,Double> individual: currentGenerations) {
             if (index != 0) {
                 if (_random.nextDouble() < _recombinationProb) {
-                    //System.out.print("recombination: ");
                     Network newOffspring = parentGenerations.get(getRandomParentID(index)).Item1.clone();
                     Networks.autoLabelNodes(individual.Item1);
                     Networks.autoLabelNodes(newOffspring);
-                    //System.out.println("Parent #1: " + individual.Item1.toString());
-                    //System.out.println("Parent #2: " + newOffspring.toString());
                     boolean success = _recombinationMaker.mutateNetwork(individual.Item1, newOffspring);
                     if(success){
                         individual.Item1 = newOffspring;
-                        //System.out.println("Offspring: " + newOffspring.toString());
                     }
-                    else{
-                        //System.out.println("Cannot do recombination!\n");
-                    }
-                    //System.out.println("Done");
                 }
             }
             index++;
@@ -203,10 +232,13 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
 
 
 
-
+    /**
+     * This function is to compute the scores for each of the species network in the current generation
+     *
+     * @param currentGeneration     the current generation along with their scores
+     */
     protected void computeScoresForOneGeneration(LinkedList<MutableTuple<Network,Double>> currentGeneration, Func1<Network,Double> getScore){
         super.computeScoresForOneGeneration(currentGeneration, getScore);
-        //Sorting all individuals
         for(int i=0; i<currentGeneration.size(); i++){
             MutableTuple<Network,Double> individual1 = currentGeneration.get(i);
             for(int j=0;j<i;j++){
@@ -221,6 +253,17 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
     }
 
 
+
+    /**
+     * This function is to search the network space
+     *
+     * @param startNetwork              the starting network
+     * @param getScore                  the function that computes the score of a candidate species network
+     * @param numOptimums               the number of optimal species networks to return
+     * @param maxGenerations            the maximal number of generations for the search; served as stopping criterion
+     * @param scoreEachTopologyOnce     indicate whether each network topology only need to be evaluated once
+     * @param resultList                the resulting species networks along with their scores
+     */
     public void search(Network startNetwork, Func1<Network,Double> getScore, int numOptimums, int numRuns, int maxGenerations, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList){
         for(int i=0; i<numRuns; i++) {
             List<Network> initialGeneration = initializeInitialGeneration(startNetwork.clone());
@@ -229,8 +272,16 @@ public class GeneticAlgorithmInstance extends GeneticAlgorithmBase{
         }
     }
 
-    private List<Network> initializeInitialGeneration(Network startNetwork){
 
+
+    /**
+     * This function is to generate an initial generation from the starting network
+     *
+     * @param startNetwork  the starting network
+     *
+     * @return  the initial generation
+     */
+    private List<Network> initializeInitialGeneration(Network startNetwork){
         List<Network> initialGeneration = new ArrayList<>();
         initialGeneration.add(startNetwork);
         double[] threshold = {_generationSize*0.4, _generationSize*0.3, _generationSize*0.2,  _generationSize*0.1};

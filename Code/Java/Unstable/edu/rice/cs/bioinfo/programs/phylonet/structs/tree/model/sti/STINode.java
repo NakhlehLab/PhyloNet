@@ -31,9 +31,7 @@ import java.util.List;
 
 
 public class STINode<D extends Object> implements TMutableNode {
-
 	private D _data;
-	
 	protected STITree<D> _tree;
 	protected boolean _valid = true;
 	protected int _id;
@@ -41,8 +39,12 @@ public class STINode<D extends Object> implements TMutableNode {
 	protected STINode<D> _parent;
 	protected LinkedList<STINode<D>> _children = new LinkedList<STINode<D>>();
 	protected double _distance = TMutableNode.NO_DISTANCE;
+
 	
-	// package-scope constructor
+	
+	/**
+	 * Constructor
+	 */
 	protected STINode(STITree<D> tree, int id, String name, STINode<D> parent, D data) {
 		if (tree != null) {
 			while (tree._nodes.containsKey(id)) {
@@ -64,8 +66,11 @@ public class STINode<D extends Object> implements TMutableNode {
 			System.err.println("STINode: Inconsistent _node_set and _nodes");
 		}
 	}
-	
-	// methods
+
+
+    /**
+     * This function computes the depth of this node
+     */
 	public int getHeight() {
 		if(this.isLeaf()) {
 			return 1;
@@ -79,11 +84,14 @@ public class STINode<D extends Object> implements TMutableNode {
 					max_height = h;
 				}
 			}
-			
 			return max_height + 1;
 		}
 	}
-	
+
+
+    /**
+     * This function returns the siblings of this node
+     */
 	public List<TNode> getSiblings(){
 		List<TNode> siblings = new ArrayList<TNode>();
 		for(TNode n :this.getParent().getChildren()){
@@ -93,26 +101,48 @@ public class STINode<D extends Object> implements TMutableNode {
 		}
 		return siblings;
 	}
-	
+    
+    
+    /**
+     * This function returns the data of this node
+     */
 	public D getData() { return _data; }
-	
-	public void setData(D data) { _data = data; } 
-	
+
+    
+    /**
+     * This function sets the data of this node
+     */
+	public void setData(D data) { _data = data; }
+
+
+    /**
+     * This function returns if this node is valid or not
+     */
 	public boolean isValid() {
 		return _valid;
 	}
-	
+
+
+    /**
+     * This function returns the id of this node
+     */
 	public int getID() {
 		return _id;
 	}
-	
+
+
+    /**
+     * This function returns the name of this node
+     */
 	public String getName() {
 		return _name;
 	}
 
-	/**
-	 * Duplicate node names are not allowed.
-	 */
+    
+    /**
+     * This function sets the name of this node
+     * Duplicate names are not allowed
+     */
 	public void setName(String name) {
 		if(!name.equals(STITree.NO_NAME) && _tree._name2node.containsKey(name)) {
 			throw new RuntimeException("Illegal assignment of duplicate node name '" + name + "'");
@@ -125,6 +155,10 @@ public class STINode<D extends Object> implements TMutableNode {
 		_tree._name2node.put(_name, this);
 	}
 
+
+    /**
+     * This function returns the tree this node belongs to
+     */
 	public STITree<D> getTree() {
 		if(_valid) {
 			return _tree;
@@ -133,14 +167,26 @@ public class STINode<D extends Object> implements TMutableNode {
 		}
 	}
 
+
+    /**
+     * This function returns the parent of this node
+     */
 	public STINode<D> getParent() {
 		return _parent;
 	}
 
+
+    /**
+     * This function creates a child with no name of this node
+    */
 	public STINode<D> createChild() {
 		return createChild(STITree.NO_NAME);
 	}
 
+
+    /**
+     * This function creates a child with unique name of this node
+     */
     public STINode<D> createChildWithUniqueName()
     {
         String prefix = "n";
@@ -156,6 +202,10 @@ public class STINode<D extends Object> implements TMutableNode {
         }
     }
 
+
+    /**
+     * This function creates a child with name <code>name<code/>
+     */
 	public STINode<D> createChild(String name) {
 		
 		STINode<D> child = new STINode<D>(_tree, _tree._next_node_id++, name, this, null);
@@ -167,6 +217,10 @@ public class STINode<D extends Object> implements TMutableNode {
 		return child;
 	}
 
+
+    /**
+     * This function adopts a child with <code>nchild<code/>
+     */
 	public void adoptChild(TMutableNode nchild) {
 		STINode<D> child = (STINode<D>) nchild;
 
@@ -185,9 +239,7 @@ public class STINode<D extends Object> implements TMutableNode {
 
 		// sanity check to make sure that the child is a member of this tree
 		assert child._tree == _tree;
-
-
-		
+        
 		if(child._parent == this) {
 			return;
 		}
@@ -202,6 +254,10 @@ public class STINode<D extends Object> implements TMutableNode {
 		_tree._leaf_count = STITree.UNCOUNTED;
 	}
 
+
+    /**
+     * This function sets the parent <code>newParent<code/> of this node
+     */
     public void setParent(TMutableNode newParent)
     {
         if(isRoot())
@@ -214,6 +270,10 @@ public class STINode<D extends Object> implements TMutableNode {
         newParent.adoptChild(this);
     }
 
+
+    /**
+     * This function removes edge <code>adjacentNode<code/> adjacent to this node
+     */
     public void removeEdge(TMutableNode adjacentNode)
     {
         if(adjacentNode.equals(_parent))
@@ -240,6 +300,10 @@ public class STINode<D extends Object> implements TMutableNode {
         }
     }
 
+
+    /**
+     * This function removes child <code>child<code/> while adopting all its children if <code>adopt_all</code> is set to true
+     */
 	public void removeChild(TMutableNode child, boolean adopt_all) {
 		STINode<D> batichild = (STINode<D>) child;
 		
@@ -267,6 +331,7 @@ public class STINode<D extends Object> implements TMutableNode {
 		
 		_tree._leaf_count = STITree.UNCOUNTED;
 	}
+    
 
 	/**
 	 * This method removes the node and any children it has from the STITree object.
@@ -291,30 +356,35 @@ public class STINode<D extends Object> implements TMutableNode {
 		_tree._leaf_count = STITree.UNCOUNTED;
 		_valid = false;
 	}
-	
-protected void removeSelf2(boolean iterator) {
-		
-		// remove us as a child
-		if(_parent != null && iterator) {
-			_parent._children.remove(this);
-		}
-		
-		// remove our children
-		if(!isLeaf()) {
-			Iterator i = new LinkedList<STINode<D>>(_children).iterator();
-			
-			while(i.hasNext()) {
-				((STINode) i.next()).removeSelf2(false);
-			}
-		}
-		
-		_tree.removeNodeRecord(this);
-		
-		_tree._leaf_count = STITree.UNCOUNTED;
-		_valid = false;
-	}
-	
-	
+
+
+    /**
+     * This method removes the node and any children it has from the STITree object.
+     */
+    private void removeSelf2(boolean iterator) {
+        // remove us as a child
+        if(_parent != null && iterator) {
+            _parent._children.remove(this);
+        }
+
+        // remove our children
+        if(!isLeaf()) {
+            Iterator i = new LinkedList<STINode<D>>(_children).iterator();
+
+            while(i.hasNext()) {
+                ((STINode) i.next()).removeSelf2(false);
+            }
+        }
+
+        _tree.removeNodeRecord(this);
+
+        _tree._leaf_count = STITree.UNCOUNTED;
+        _valid = false;
+    }
+
+    /**
+     * This method returns all children of this node
+     */
 	public Iterable<STINode<D>> getChildren() {
 		return new Iterable<STINode<D>>() {
 			public Iterator<STINode<D>> iterator() {
@@ -323,6 +393,10 @@ protected void removeSelf2(boolean iterator) {
 		};
 	}
 
+
+    /**
+     * This method returns all nodes adjacent to this node
+     */
     public Iterable<STINode<D>> getAdjacentNodes()
     {
         if(isRoot())
@@ -341,11 +415,12 @@ protected void removeSelf2(boolean iterator) {
 
             return accum;
         }
-
-
-
     }
 
+
+    /**
+     * This method returns the number of nodes adjacent to this node
+     */
     public int getAdjacentNodeCount()
     {
         if(isRoot())
@@ -356,23 +431,34 @@ protected void removeSelf2(boolean iterator) {
         {
             return getChildCount() + 1;
         }
-
     }
-	
+
+
+    /**
+     * This method removes all children of this node
+     */
 	public List<STINode<D>> removeAllChildren(){
 		List<STINode<D>> children = new ArrayList<STINode<D>>(_children);
 		for(STINode<D> child: children){			
 			_children.remove(child);		
-			child.removeSelf2(true);				
+			child.removeSelf2(true);
 			_tree._leaf_count = STITree.UNCOUNTED;
 		}
 		return children;
 	}
 
+
+    /**
+     * This method get the number of children of this node
+     */
 	public int getChildCount() {
 		return _children.size();
 	}
 
+
+    /**
+     * This method gets the number of degrees of this node (indegree + outdegree)
+     */
     public int getDegree()
     {
         if(isRoot())
@@ -385,16 +471,27 @@ protected void removeSelf2(boolean iterator) {
         }
     }
 
+
+    /**
+     * This method returns whether this node is leaf or not
+     */
 	public boolean isLeaf() {
 		return _children.isEmpty();
 	}
 
+
+    /**
+     * This method returns whether this node is root or not
+     */
 	public boolean isRoot() {
 		return (_parent == null);
 	}
-	
+
+
+    /**
+     * This method makes this node the root of the tree
+     */
 	public void makeRoot() {
-		
 		if(this == _tree._root) {
 			return;
 		}
@@ -434,14 +531,26 @@ protected void removeSelf2(boolean iterator) {
 		_tree._leaf_count = STITree.UNCOUNTED;
 	}
 
+
+    /**
+     * This method returns the length of the branch incident with this node
+     */
 	public double getParentDistance() {
 		return _distance;
 	}
 
+
+    /**
+     * This method sets the length of the branch incident with this node
+     */
 	public void setParentDistance(double distance) {
 		_distance = distance;
 	}
-	
+
+
+    /**
+     * This method returns the the number of leaves under this node
+     */
 	public int getLeafCount() {
 		
 		if(isLeaf()) {
@@ -459,10 +568,18 @@ protected void removeSelf2(boolean iterator) {
 		}
 	}
 
+
+    /**
+     * This method removes the node itself
+     */
 	public void removeNode() {
 		removeSelf();
 	}
 
+
+    /**
+     * This method returns the newick string of this node
+     */
 	public String toNewick() {
 		synchronized(STITree.SWRITER) {
 			STITree.SWRITER.reset();
@@ -472,9 +589,12 @@ protected void removeSelf2(boolean iterator) {
 			return STITree.SWRITER.toString();
 		}
 	}
-	
+
+
+    /**
+     * This method creates a child node <code>clade</code>
+     */
 	public TMutableNode createChild(TNode clade) {
-	
 		STINode<D> node = createChild(clade.getName());
         node.setParentDistance(clade.getParentDistance());
 		if(((STINode<D>)clade).getData()!=null){
@@ -487,8 +607,7 @@ protected void removeSelf2(boolean iterator) {
 		
 		return node;
 	}
-	
-	//private void
+
 
 	/**
 	 * The string version of a node is its name, if it has one.  If it doesn't have a name, then
@@ -501,7 +620,11 @@ protected void removeSelf2(boolean iterator) {
 			return toNewick();
 		}
 	}
-	
+
+
+    /**
+     * This method returns the newick string of this node
+     */
 	public String toString(int format) {
 		switch(format) {
 		case Tree.NEWICK_FORMAT:
@@ -510,9 +633,12 @@ protected void removeSelf2(boolean iterator) {
 			throw new RuntimeException("Unknown format " + format);
 		}
 	}
-	
+
+
+    /**
+     * This method returns whether this node is an ancestor of n
+     */
 	public boolean isAncestor(TNode n) {
-		
 		while(n != null) {
 			if(n == this) {
 				return true;
@@ -520,12 +646,13 @@ protected void removeSelf2(boolean iterator) {
 			
 			n = n.getParent();
 		}
-		
 		return false;
 	}
 
 
-	
+    /**
+     * This method returns all the leaves under this node
+     */
 	public Iterable<TNode> getLeaves() {
 		PostTraversal<D> traversal = new PostTraversal<D>(this);
 		List<TNode> leaves = new LinkedList<TNode>();
@@ -538,38 +665,20 @@ protected void removeSelf2(boolean iterator) {
 		
 		return leaves;
 	}
-	
+
+
+    /**
+     * This method returns nodes in the post traversal order
+     */
 	public Iterable<TNode> postTraverse() {
 		return new PostTraversal<D>(this);
 	}
 
-    public boolean switchChildren(STINode<D> child1, STINode<D> child2){
-        int id1 = _children.indexOf(child1);
-        int id2 = _children.indexOf(child2);
-        if(id1!=-1 && id2!=-1 && id1!=id2){
-            if(id1 < id2){
-                _children.remove(id2);
-                _children.add(id1, child2);
-                _children.remove(id1+1);
-                _children.add(id2, child1);
-            }
-            else{
-                _children.remove(id1);
-                _children.add(id2, child1);
-                _children.remove(id2+1);
-                _children.add(id1, child2);
-            }
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
+
 
     /*
     Sort the child list. Use it with caution! Make sure than the orderedChildren contains the same children
     */
-
     public boolean sortChildren(List<STINode<D>> orderedChildren){
         if(orderedChildren.size()!=_children.size()){
             return false;

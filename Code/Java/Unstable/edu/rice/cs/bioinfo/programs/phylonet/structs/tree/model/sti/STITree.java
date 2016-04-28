@@ -152,20 +152,36 @@ public class STITree<D extends Object> implements MutableTree {
 		
 		copyNode(root, _root);
 	}
-	
-	// methods
+
+	/**
+	 * Returns the depth of the tree
+	 */
 	public int getHeight() {
 		return _root.getHeight();
 	}
-	
+
+
+	/**
+	 * Returns the name of the tree
+	 */
 	public String getName() {
 		return _name;
 	}
-	
+
+
+	/**
+	 * Sets the name of the tree
+	 */
 	public void setName(String name) {
 		_name = name;
 	}
-	
+
+
+	/**
+	 * Copies a node
+	 * @param src 	source node
+	 * @param cpy	the copy of the source node <code>src</code>
+	 */
 	protected void copyNode(TNode src, STINode<D> cpy) {
 		// copy the parent distance
 		cpy.setParentDistance(src.getParentDistance());
@@ -179,25 +195,39 @@ public class STITree<D extends Object> implements MutableTree {
 			}
 			
 			cpy.adoptChild(cpy_child);
-			
 			copyNode(src_child, cpy_child);
 		}
 	}
-	
+
+
+	/**
+	 * Returns whether the tree is rooted
+	 */
 	public boolean isRooted() {
 		return _is_rooted;
 	}
-	
+
+
+	/**
+	 * Returns the root of the tree
+	 */
 	public STINode<D> getRoot() {
 		return _root;
 	}
 
+
+	/**
+	 * Returns the total number of nodes in the tree
+	 */
 	public int getNodeCount() {
 		return _nodes.size();
 	}
 
+
+	/**
+	 * Returns the number of leaves in the tree
+	 */
 	public int getLeafCount() {
-		
 		if(_root == null) {
 			return 0;
 		}
@@ -208,7 +238,11 @@ public class STITree<D extends Object> implements MutableTree {
 		
 		return _leaf_count;
 	}
-	
+
+
+	/**
+	 * Returns the taxa of the tree
+	 */
 	public String[] getLeaves(){
 		String[] leaves = new String[getLeafCount()];
 		int index = 0;
@@ -218,10 +252,18 @@ public class STITree<D extends Object> implements MutableTree {
 		return leaves;
 	}
 
+
+	/**
+	 * Returns the node in the tree whose id is <code>id</code>
+	 */
 	public STINode<D> getNode(int id) {
 		return _nodes.get(new Integer(id));
 	}
-	
+
+
+	/**
+	 * Returns all nodes in the tree
+	 */
 	public Iterable<STINode<D>> getNodes() {
 		return new Iterable<STINode<D>>() {
 			public Iterator<STINode<D>> iterator() {
@@ -230,18 +272,14 @@ public class STITree<D extends Object> implements MutableTree {
 		};
 	}
 
+
+	/**
+	 * Removes all records of node <code>node</code> in the tree
+	 */
 	protected void removeNodeRecord(STINode<D> node) {
 		_nodes.remove(node.getID());
 		_node_set.remove(node);
 		_name2node.remove(node.getName());
-
-		/*
-		 * All recursion is handled by the removeNode method in STINode
-		// remove all the node's children
-		for(STINode<D> child : node.getChildren()) {
-			removeNode(child);
-		}
-		*/
 		
 		if (_nodes.size() != _node_set.size()) {
 			System.err.println("removeNode: Inconsistent _nodes and _node_set");
@@ -249,11 +287,19 @@ public class STITree<D extends Object> implements MutableTree {
 		
 		return;
 	}
-	
+
+
+	/**
+	 * Returns the node whose name is <code>name</code>
+	 */
 	public STINode<D> getNode(String name) {
 		return _name2node.get(name);
 	}
-	
+
+
+	/**
+	 * Removes the node whose name is <code>name</code>
+	 */
 	public void removeNode(String name){
 		STINode node = getNode(name);
         if(node!=null){
@@ -324,56 +370,74 @@ public class STITree<D extends Object> implements MutableTree {
 		return;
 	}
 
+
+	/**
+	 * Returns whether this tree is empty
+	 */
 	public boolean isEmpty() {
 		return (getLeafCount() == 0);
 	}
 
+
+	/**
+	 * Creates the root of this tree
+	 */
 	public STINode<D> createRoot() {
-		
 		if(_root != null) {
 			throw new RuntimeException("createRoot called on non-empty tree");
 		}
-		
 		_root = new STINode<D>(this,_next_node_id++, NO_NAME, null,null);
 		
 		return _root;
 	}
-	
+
+
+	/**
+	 * Sets whether this tree is rooted
+	 */
 	public void setRooted(boolean rooted) {
 		_is_rooted = rooted;
 	}
-	
+
+
+	/**
+	 * Generates all possible rootings of this tree
+	 */
 	public List<Tree> getAllRootingTrees(){
 		List<Tree> rerootingTrees = new ArrayList<Tree>();
-		//int num_trees = 2*getLeafCount()-3;
-		//int index=1;
 		for(TNode node: postTraverse()){
 			if(!node.isRoot() && !(node.getParent().isRoot())){
 				Tree modified = new STITree<D>(this);
-				/*for(TNode n:modified.postTraverse()){
-					((STINode)n).setParentDistance(TMutableNode.NO_DISTANCE);
-				}*/
 				modified.rerootTreeAtEdge(node.getID());
-				/*if(!Trees.isBinary(modified))
-					System.out.println("Error");*/
 				rerootingTrees.add(modified);
 			}
 		}
 		rerootingTrees.add(new STITree<D>(this));
 		return rerootingTrees;
 	}
-	
+
+
+	/**
+	 * Reroot this tree at edge incident with node whose id is <code>nodeID</code>
+	 */
 	public void rerootTreeAtEdge(int nodeID){
 		rerootTreeAtEdge(this.getNode(nodeID));
 	}
-	
+
+
+	/**
+	 * Reroot this tree at edge incident with node whose name is <code>nodeName</code>
+	 */
 	public void rerootTreeAtEdge(String nodeName){
 		rerootTreeAtEdge(this.getNode(nodeName));
 	}
-	
+
+
+	/**
+	 * Reroot this tree at edge incident with node <code>node</code>
+	 */
 	public void rerootTreeAtEdge(TNode node){
 		doRerooting(node.getParent());
-		//_root.removeAllChildren()
 		List<TNode> siblinglist = ((STINode)node).getSiblings();
 		STINode newnode = _root.createChild();
 		for(Object o: siblinglist){
@@ -381,7 +445,11 @@ public class STITree<D extends Object> implements MutableTree {
 		}
         Trees.removeBinaryNodes(this);
     }
-	
+
+
+	/**
+	 * Reroot this tree at node <code>node</code>
+	 */
 	public void rerootTreeAtNode(TNode node){
 		if(!_node_set.contains(node)){
 			throw new RuntimeException("node " + node + " is not in the tree "+ this.toNewick());
@@ -399,6 +467,9 @@ public class STITree<D extends Object> implements MutableTree {
 	}
 
 
+	/**
+	 * Reroot this tree at node <code>node</code>
+	 */
     private void doRerooting(TNode node){
         STINode parent = (STINode)(node.getParent());
         if(parent == null){
@@ -419,19 +490,20 @@ public class STITree<D extends Object> implements MutableTree {
         _root=((STINode)node);
         _root._parent = null;
     }
-	
+
+
+	/**
+	 * Returns a random node in this tree
+	 * @param include_leaves	whether the leaves should be included
+	 * @param include_root		whether the root should be included
+	 */
 	public STINode<D> selectRandomNode(boolean include_leaves, boolean include_root) {
-		
 		int idx = (int) Math.floor(Math.random() * _node_set.size());
-		
 		Iterator<STINode<D>> it = _node_set.iterator();
-		
 		for(int i = 0; i < idx; i++) {
 			it.next();
 		}
-		
 		STINode<D> n = it.next();
-		
 		if(!include_leaves && n.isLeaf()) {
 			return selectRandomNode(include_leaves, include_root);
 		} else if(!include_root && n.isRoot()) {
@@ -441,6 +513,10 @@ public class STITree<D extends Object> implements MutableTree {
 		}
 	}
 
+
+	/**
+	 * Returns the newick string of this tree
+	 */
 	public String toNewick() {
 		synchronized(SWRITER) {
 			SWRITER.reset();
@@ -449,7 +525,10 @@ public class STITree<D extends Object> implements MutableTree {
 			return SWRITER.toString();
 		}
 	}
-	
+
+	/**
+	 * Returns the newick string of this tree with data shown
+	 */
 	public String toNewickWD() {
 		synchronized(SWRITER) {
 			SWRITER.reset();
@@ -458,11 +537,22 @@ public class STITree<D extends Object> implements MutableTree {
 			return SWRITER.toString();
 		}
 	}
-	
+
+	/**
+	 * Returns the newick string of this tree
+	 */
 	public String toString() { return toNewick(); }
-	
+
+
+	/**
+	 * Returns the newick string of this tree with data shown
+	 */
 	public String toStringWD() { return toNewickWD(); }
 
+
+	/**
+	 * Returns the newick string of this tree
+	 */
 	public String toString(int format) {
 		switch(format) {
 		case Tree.NEWICK_FORMAT:
@@ -559,57 +649,9 @@ public class STITree<D extends Object> implements MutableTree {
 		
 		return clusters;
 	}
-	
-	/*
-	public List<STITreeCluster> getClusters(String leaves[]) {
-		PostTraversal<D> traversal = new PostTraversal<D>(_root);
-		List<STITreeCluster> clusters = new LinkedList<STITreeCluster>();
-		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
-		
-		if (leaves == null) {
-			int i = 0;
-			leaves = new String[getLeafCount()];
-			for (TNode node : getNodes()) {
-				if (node.isLeaf()) {
-					leaves[i++] = node.getName();
-				}
-			}
-		}
-		
-		for (TNode node : traversal) {
-			BitSet bs = new BitSet();
-			
-			if (node.isLeaf()) {
-				for (int i = 0; i < leaves.length; i++) {
-					if (node.getName().equals(leaves[i])) {
-						bs.set(i);
-						break;
-					}
-				}
-				
-				map.put(node, bs);
-			}
-			else {
-				for (TNode child : node.getChildren()) {
-					BitSet childCluster = map.get(child);
-					bs.or(childCluster);
-				}
-				
-				map.put(node, bs);
-			}
-			
-			if (bs.cardinality() > 1 && bs.cardinality() < leaves.length) {
-				STITreeCluster tc = new STITreeCluster(leaves);
-				tc.setCluster(bs);
-				clusters.add(tc);
-			}
-		}
-		
-		return clusters;
-	}
-	*/
-	
-		/**
+
+
+	/**
 	 * Compute all bipartitions in the tree.
 	 * 
 	 * @param leaves: A list of leaves in the tree. If this is null, then the function will create a list of 
@@ -687,7 +729,13 @@ public class STITree<D extends Object> implements MutableTree {
 		}
 		return bipartitions;		
 	}
-	
+
+
+	/**
+	 * Computes all clusters induced by bipartitions
+	 * @param leaves	the taxa set of this tree
+	 * @param gen		whether generating all possible resolutions for non-binary nodes
+	 */
 	public List<STITreeCluster> getBipartitionClusters(String leaves[], boolean gen){
 		List<STITreeCluster> biClusters = new LinkedList<STITreeCluster>();
 		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
@@ -724,8 +772,6 @@ public class STITree<D extends Object> implements MutableTree {
 				}
 			}
 		}
-		//PostTraversal<D> traversal = new PostTraversal<D>(_root);
-		//System.out.println(leaves.length);
 		for (TNode node : this.postTraverse()) {
 			BitSet bs = new BitSet(leaves.length);
 			if (node.isLeaf()) {
@@ -818,8 +864,11 @@ public class STITree<D extends Object> implements MutableTree {
 		
 		return biClusters;				
 	}
-	
-	
+
+
+	/**
+	 * Computes the gsi value of this tree
+	 */
 	public double gsi(String leaves[]){
 		int groupNumber = leaves.length-1;
 		if(groupNumber < 1){

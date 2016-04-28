@@ -112,6 +112,10 @@ public interface TNode {
 	 */
 	public int getLeafCount();
 
+
+	/**
+	 * @return the siblings of this node.
+	 */
 	public List<TNode> getSiblings();
 
 	/**

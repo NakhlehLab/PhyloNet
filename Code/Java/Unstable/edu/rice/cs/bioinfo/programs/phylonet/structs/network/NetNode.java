@@ -74,7 +74,7 @@ public interface NetNode<T> extends Serializable {
 	public double getParentDistance(NetNode<T> parent);
 
     /**
-     * Returns the probability property of the edge between this node and the given parent.
+     * Returns the inheritance probability property of the edge between this node and the given parent.
      *
      * @param parent The parent that defines the in-edge to this node containing the desired probability property.
      * @return  The [0...1] probability property.
@@ -83,7 +83,7 @@ public interface NetNode<T> extends Serializable {
     public double getParentProbability(NetNode<T> parent);
 
     /**
-     * Sets the probability property of the edge between this node and the given parent.
+     * Sets the inheritance probability property of the edge between this node and the given parent.
      *
      * @param parent The parent that defines the in-edge to this node containing the desired probability property.
      * @param  probability The new probability value.
@@ -151,6 +151,9 @@ public interface NetNode<T> extends Serializable {
 	public boolean removeChild(NetNode<T> child);
 
 
+	/**
+	 * This function removes the node itself
+	 */
     public void removeItself();
 
 

@@ -278,6 +278,9 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
     }
 
 
+	/**
+	 * Returns the string representation
+	 */
     public String toString(){
         RnNewickPrinter<T> rnNewickPrinter = new RnNewickPrinter<T>();
         StringWriter sw = new StringWriter();

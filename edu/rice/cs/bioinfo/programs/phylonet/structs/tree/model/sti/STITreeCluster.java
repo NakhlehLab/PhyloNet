@@ -33,8 +33,6 @@ public class STITreeCluster<D extends Object> {
     private D _data;
 
 
-	//protected STITreeCluster(){}
-
 
 	/**
 	 * Create an empty cluster.
@@ -86,14 +84,26 @@ public class STITreeCluster<D extends Object> {
 		}
 	}
 
+
+	/**
+	 * Returns the cluster
+	 */
 	public BitSet getCluster() {
 		return _cluster;
 	}
 
+
+	/**
+	 * Returns the size of the cluster
+	 */
 	public int getClusterSize() {
 		return _cluster.cardinality();
 	}
 
+
+	/**
+	 * Duplicates this cluster
+	 */
     public STITreeCluster<D> duplicate(){
         STITreeCluster<D> newCluster = new STITreeCluster<D>(_taxa);
         newCluster.setCluster(_cluster);
@@ -103,8 +113,6 @@ public class STITreeCluster<D extends Object> {
 
 	/**
 	 * Get the set of leaves in this cluster.
-	 *
-	 * @return
 	 */
 	public String[] getClusterLeaves() {
 		assert(_taxa != null && _taxa.length > 0);
@@ -123,7 +131,7 @@ public class STITreeCluster<D extends Object> {
 	/**
 	 * Add a leaf to this cluster.
 	 *
-	 * @param l
+	 * @param l		the name of the new leaf to be added
 	 */
 	public void addLeaf(String l) {
 		int i = 0;
@@ -143,8 +151,7 @@ public class STITreeCluster<D extends Object> {
 	 * Check if another cluster is equal to this cluster. This function assumes two clusters in
 	 * comparison use the same set of taxa as well as taxon orderings.
 	 *
-	 * @param Another cluster.
-	 * @return
+	 * @param o cluster.
 	 */
 	public boolean equals(Object o) {
 
@@ -168,9 +175,14 @@ public class STITreeCluster<D extends Object> {
 		}
 	}
 
+
+	/**
+	 * Returns the hash code of this cluster
+	 */
 	public int hashCode(){
 		return _cluster.hashCode()+_taxa.hashCode();
 	}
+
 
 	/**
 	 * Check if another cluster is compatible with this cluster. This function assumes that the two
@@ -334,13 +346,21 @@ public class STITreeCluster<D extends Object> {
 		return cc;
 	}
 
+	/**
+	 * Sets the data of this cluster
+	 */
     public void setData(D data){
         _data = data;
     }
 
+
+	/**
+	 * Returns the data of this cluster
+	 */
     public D getData(){
         return _data;
     }
+
 
 	/**
 	 * Returns the string representation of this cluster.
@@ -361,39 +381,4 @@ public class STITreeCluster<D extends Object> {
 		return out.toString();
 	}
 
-//	public STITreeCluster() {
-//		_leaves = null;
-//		_cluster = null;
-//	}
-//
-//	/**
-//	 * Creates a new empty cluster.
-//	 *
-//	 * @param leaves
-//	 */
-//	public STITreeCluster(String leaves[]) {
-//		_leaves = leaves;
-//		_cluster = null;
-//	}
-//
-//	public STITreeCluster(String leaves[], BitSet c) {
-//		_leaves = leaves;
-//		_cluster = c;
-//	}
-//
-//	public void setLeaves(String leaves[]) {
-//		_leaves = leaves;
-//	}
-//
-//	public String[] getLeaves() {
-//		return _leaves;
-//	}
-//
-//	public void setCluster(BitSet c) {
-//		_cluster = c;
-//	}
-//
-//	public BitSet getCluster() {
-//		return _cluster;
-//	}
 }

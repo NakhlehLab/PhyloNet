@@ -32,26 +32,39 @@ public interface MutableTree extends Tree {
 	 * Set the name of the tree.
 	 */
 	public void setName(String name);
-	
+
+	/**
+	 * Prune the tree so that it only contains leaves whose names are in the set <code>leaf_names</code>.
+	 */
 	public void constrainByLeaves(Iterable<String> leaf_names);
-	
+
 	/**
 	 * In an empty tree, this method creates a new node which is the root.
-	 * 
-	 * @return the new root.
-	 * 
-	 * @throws RuntimeException if the tree is not empty.
 	 */
 	public TMutableNode createRoot();
 
-	// overridden Tree methods
+	/**
+	 * Return the root
+	 */
 	public TMutableNode getRoot();
-	
+
+	/**
+	 * Return the node whose id is given by <code>id</code>
+	 */
 	public TMutableNode getNode(int id);
-	
+
+	/**
+	 * Return the node whose name is given by <code>name</code>
+	 */
 	public TMutableNode getNode(String name);
-	
+
+	/**
+	 * Return all nodes in this tree
+	 */
 	public Iterable<? extends TMutableNode> getNodes();
-	
+
+	/**
+	 * Return the string representation of this tree with its Data
+	 */
 	public String toStringWD();
 }

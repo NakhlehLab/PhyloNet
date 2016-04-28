@@ -176,12 +176,17 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+
+	/**
+	 * This function checks whether the node has a certain parent
+	 * */
     public boolean hasParent(NetNode<T> parent){
         if(this.isRoot()){
             return false;
         }
         return _parents.contains(parent);
     }
+
 
 	/**
 	 * This function returns the number of parent of a node.
@@ -209,7 +214,6 @@ public class BniNetNode<T> implements NetNode<T> {
             return (_children.size());
         }
     }
-
 
 
 	/**
@@ -242,6 +246,8 @@ public class BniNetNode<T> implements NetNode<T> {
 		_data = data;
 	}
 
+
+
 	/**
 	 * This function changes the name of this node.
 	 *
@@ -251,6 +257,8 @@ public class BniNetNode<T> implements NetNode<T> {
 	{
 		_name = name;
 	}
+
+
 
 	/**
 	 * This functions sets the distance from this calling node to <code>parent</code> with
@@ -277,6 +285,8 @@ public class BniNetNode<T> implements NetNode<T> {
 			return true;
 		}
 	}
+
+
 
 	/**
 	 * This function connects an existing node (the node that makes a call to this
@@ -345,9 +355,6 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 		_children.remove(index);
 
-		//_parent_probabiliites.remove(index);
-        //_parent_support.remove(index);
-		// Delete link from child to this node.
 		BniNetNode<T> ref = (BniNetNode<T>) child;
 		int i = ref._parents.indexOf(this);
 
@@ -358,6 +365,14 @@ public class BniNetNode<T> implements NetNode<T> {
 		return true;
 	}
 
+
+	/**
+	 * This function makes <code>parent</code> no longer a parent of this node.
+	 *
+	 * @param parent: The node to be removed.
+	 *
+	 * @return: <code>true</code> if <code>parent</code> is indeed a parent of this node.
+	 */
     public boolean removeParent(NetNode<T> parent){
         assert(parent instanceof BniNetNode);
 
@@ -369,8 +384,6 @@ public class BniNetNode<T> implements NetNode<T> {
         if(index == -1){
             return false;	// child is not in the list _children; exit.
         }
-
-
         _parents.remove(index);
         _parent_distances.remove(index);
         _parent_probabiliites.remove(index);
@@ -397,18 +410,10 @@ public class BniNetNode<T> implements NetNode<T> {
         return true;
     }
 
-    /*
-    //For InferNetworkUsingGLASS only and the node does not have parent
-    public boolean removeItself2()
-    {
 
-        for(NetNode<T> child: _children){
-            ((BniNetNode)child).removeParent(this);
-        }
-        return true;
-    }
-    */
-
+	/**
+	 * This function removes the node itself
+	 */
     public void removeItself()
     {
         if(_children!=null){
@@ -432,6 +437,13 @@ public class BniNetNode<T> implements NetNode<T> {
     }
 
 
+	/**
+	 * This functions sets the inheritance probability from this calling node to <code>parent</code> with
+	 * the new value <code>probability</code>.
+	 *
+	 * @param parent: 		A parent of this node that it wants to modify the distance.
+	 * @param probability: 	New value for the inheritance probability from this node to <code>parent</code>.
+	 */
 	public void setParentProbability(NetNode<T> parent, double probability)
 	{
 
@@ -451,12 +463,19 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+
+	/**
+	 * This function returns the inheritance probability from this node to one of its parent.
+	 *
+	 * @param parent: The parent node that we want to compute the inheritance probability from this node to it.
+
+	 * @return the inheritance probability from this node to <code>parent</code>.
+	 */
     public double getParentProbability(NetNode<T> parent)
     {
 		int i = _parents.indexOf(parent);
 
 		if (i == -1) {	// parent is not a parent of this node. Operation failed.
-
             throw new IllegalArgumentException("Passed parent is not a parent of the node.");
 		}
 		else {
@@ -464,15 +483,16 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+
+	/**
+	 * This functions sets the support from this calling node to <code>parent</code> with
+	 * the new value <code>probability</code>.
+	 *
+	 * @param parent: 		A parent of this node that it wants to modify the distance.
+	 * @param support: 	New value for the support from this node to <code>parent</code>.
+	 */
     public void setParentSupport(NetNode<T> parent, double support)
 	{
-        /*
-        if(support < 0 || support > 100)
-        {
-            throw new IllegalArgumentException("Support values must be between zero and one hundred.  Found: " + support);
-        }
-        */
-
 		int i = _parents.indexOf(parent);
 
 		if (i == -1) {	// parent is not a parent of this node. Operation failed.
@@ -486,6 +506,14 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+
+	/**
+	 * This function returns the support from this node to one of its parent <code>parent</code>.
+	 *
+	 * @param parent: The parent node that we want to compute the support from this node to it.
+
+	 * @return the support from this node to <code>parent</code>.
+	 */
     public double getParentSupport(NetNode<T> parent)
     {
 		int i = _parents.indexOf(parent);

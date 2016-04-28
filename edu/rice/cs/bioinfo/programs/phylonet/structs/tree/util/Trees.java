@@ -120,6 +120,10 @@ public class Trees {
 		return null;
 	}
 
+
+	/**
+	 * This function counts the number of leaves under node <code>n</code>.
+	 */
 	public static final int getLeafCount(TNode n) {
 		if(n.isLeaf()) {
 			return 1;
@@ -134,8 +138,9 @@ public class Trees {
 		}
 	}
 
+
 	/**
-	 * Scale the branch lengths of the tree by a specified amount.
+	 * Scale the branch lengths of the tree by <code>scaling</code>.
 	 */
 	public static final void scaleBranchLengths(MutableTree tree, double scaling) {
 		for(TMutableNode n : tree.getNodes()) {
@@ -146,6 +151,7 @@ public class Trees {
 
 		return;
 	}
+
 
 	/**
 	 * Apply a labeling to ensure that all nodes are labeled in the tree.  Any node
@@ -208,8 +214,9 @@ public class Trees {
 	}
 
 
-
-
+	/**
+	 * Remove all binary children of node <code>node</code>
+	 */
 	private static final void removeBinaryChildren(TMutableNode node) {
 
 		// copy iterator
@@ -230,13 +237,8 @@ public class Trees {
 
 
 	/**
-	 * compute if a tree is binary
-	 *
-	 * @param tree
-	 * @return true if the tree is binary
-	 * @author yy9
+	 * This function checks if a tree is binary
      */
-
 	public static final boolean isBinary(Tree tree){
 		for(TNode node: tree.getNodes()){
 			if(!node.isLeaf()){
@@ -249,14 +251,10 @@ public class Trees {
 		return true;
 	}
 
-    /**
-     * compute if a tree is ultrametric
-     *
-     * @param tree
-     * @return true if the tree is ultrametric
-     * @author yy9
-     */
 
+    /**
+     * This function checks if a tree is ultrametric
+     */
     public static final boolean isUltrametric(Tree tree, double epsilon){
         Map<TNode, Double> node2height = new Hashtable<TNode, Double>();
         for(TNode node: tree.postTraverse()){
@@ -320,6 +318,11 @@ public class Trees {
 		return true;
 	}
 
+
+
+	/**
+	 * This function generates a random tree on taxa <code>leaves</code>
+	 */
     public static final Tree generateRandomTree(String[] leaves){
         String prefix = "PhyloNetTemp";
         Tree tree = new STITree();
@@ -743,6 +746,10 @@ public class Trees {
 		return clusters;
 	}
 
+
+	/**
+	 * This function generates all binary resolutions of a tree <code>tr</code>
+	 */
 	public static List<Tree> getAllBinaryResolution(Tree tr){
 		List<Tree> resolvedTrees = new ArrayList<Tree>();
 		//Map<TNode, List<Tree>> node2tree = new HashMap<TNode, List<Tree>>();
@@ -859,6 +866,11 @@ public class Trees {
 		return resolvedTrees;
 	}
 
+
+
+	/**
+	 * This function generates a random binary resolution of a tree <code>tr</code>
+	 */
     public static final Tree generateRandomBinaryResolution(Tree tree){
         Tree newTree = new STITree(tree);
         List<TNode> nonBinaryNodes = new ArrayList<TNode>();
@@ -874,7 +886,6 @@ public class Trees {
                 for(TNode child: node.getChildren()){
                     childNodes.add(child);
                 }
-                //int childCount = node.getChildCount();
                 while(childNodes.size()>2){
                     int child1ID = (int)(Math.random()*childNodes.size());
                     int child2ID = child1ID;
@@ -970,6 +981,11 @@ public class Trees {
 		return alltrees;
 	}
 
+
+
+	/**
+	 * This function checks if the given allele/species mapping is valid
+	 */
 	public static String checkMapping(List trees, Map<String,String> taxonMap){
 		String error = null;
 		for(Object o: trees){
@@ -1022,6 +1038,9 @@ public class Trees {
 	}
 
 
+	/**
+	 * This function checks if two trees have the same topology
+	 */
     public static boolean haveSameRootedTopology(Tree t1, Tree t2){
         if(!leafSetsAgree(t1,t2)){
             return false;
@@ -1040,17 +1059,19 @@ public class Trees {
         return true;
     }
 
+
+
+	/**
+	 * This function generates a random tree which is <code>numMoves<code/> away from tree <code>tree</code>
+	 */
     public static Tree generateRandomSPRNeighbor(Tree tree, int numMoves){
         STITree neighbor = new STITree(tree);
         for(int i=0; i<numMoves; i++){
             STINode edgeToPrune = neighbor.selectRandomNode(true, false);
-            //System.out.print("Attach " + edgeToPrune + " to ");
             STITree temp = new STITree(edgeToPrune);
             edgeToPrune.removeNode();
             Trees.removeBinaryNodes(neighbor);
             STINode edgeToAttachChild = neighbor.selectRandomNode(true, true);
-            //STINode edgeToAttachChild = neighbor.getNode("R");
-            //System.out.println(edgeToAttachChild);
             if(edgeToAttachChild.isRoot()){
                 if(neighbor.getRoot().isLeaf()){
                     String leafName = neighbor.getRoot().getName();
@@ -1071,12 +1092,15 @@ public class Trees {
                 insertedNode.adoptChild(edgeToAttachChild);
                 insertedNode.createChild(temp.getRoot());
             }
-            //System.out.println(neighbor);
         }
         return neighbor;
     }
 
 
+
+	/**
+	 * This function rearranges a tree <code>tree</code> to its lexicographic order
+	 */
     public static void convertToLexicographicTree(Tree tree){
         Map<TNode, String> node2minLeaf = new HashMap<TNode, String>();
         for(TNode node: tree.postTraverse()){
@@ -1095,27 +1119,27 @@ public class Trees {
                     }
                     children.add(i, child);
                 }
-                //System.out.println(node);
                 ((STINode)node).sortChildren(children);
-                //System.out.println(node);
                 node2minLeaf.put(node, node2minLeaf.get(children.get(0)));
             }
         }
     }
 
+
+
+	/**
+	 * This function rearranges a tree <code>tree</code> to its lexicographic order
+	 */
     public static void convertToLexicographicTree(Tree tree, Map<String,String> allele2Species){
         Map<TNode, String> node2leaves = new HashMap<TNode, String>();
         for(TNode node: tree.postTraverse()){
             if(node.isLeaf()){
                 if(allele2Species == null){
                     node2leaves.put(node, node.getName());
-                    //System.out.println("Put " + node.getName() + ": " + node.getName());
                 }
                 else{
                     node2leaves.put(node, allele2Species.get(node.getName()));
-                    //System.out.println("Put " + node.getName() + ": " + allele2Species.get(node.getName()));
                 }
-
             }
             else{
                 List<TNode> children = new ArrayList<TNode>();
@@ -1123,8 +1147,6 @@ public class Trees {
                     String minLeaf = node2leaves.get(child);
                     int i = 0;
                     for(; i<children.size(); i++){
-                        //System.out.println("Get " + children.get(i).getName() + ": " + node2leaves.get(children.get(i)));
-                            //System.out.println(minLeaf + " vs. " + node2leaves.get(children.get(i)));
                         if(minLeaf.compareTo(node2leaves.get(children.get(i)))<0){
                             break;
                         }
@@ -1140,23 +1162,19 @@ public class Trees {
                         leaves = leaves + "/" + node2leaves.get(child);
                     }
                 }
-                //System.out.println(node);
                 ((STINode)node).sortChildren(children);
-                //System.out.println(node);
                 node2leaves.put(node, leaves);
-                //System.out.println("Put " + node.getName() + ": " + leaves);
             }
         }
-
-        //System.out.println();
-        //System.out.println();
     }
 
-    //For topology only
+
+	/**
+	 * This function generates a tree's representation in lexicographic order
+	 */
     public static String getLexicographicNewickString(Tree tree, Map<String,String> allele2Species){
         convertToLexicographicTree(tree, allele2Species);
         String treeExp = tree.toString();
-        //System.out.println(treeExp);
         if(allele2Species!=null){
             for(Map.Entry<String,String> entry: allele2Species.entrySet()){
                 String allele = entry.getKey();
@@ -1182,6 +1200,9 @@ public class Trees {
     }
 
 
+	/**
+	 * This function reads a tree from its representation
+	 */
     public static Tree readTree(String exp){
         try {
             NewickReader nr = new NewickReader(new StringReader(exp));

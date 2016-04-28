@@ -116,13 +116,24 @@ public interface TMutableNode extends TNode {
 	 * Reorganize the tree to which this node belongs so that this node is the root of the tree.
 	 */
 	public void makeRoot();
-	
-	// overriden methods from TNode
+
+	/**
+	 * Returns all children of this node
+	 */
 	public Iterable<? extends TMutableNode> getChildren();
 
+	/**
+	 * Returns all adjacent nodes of this node
+	 */
     public Iterable<? extends TMutableNode> getAdjacentNodes();
-	
+
+	/**
+	 * Returns the parent of this node
+	 */
 	public TMutableNode getParent();
-	
+
+	/**
+	 * Return the tree to which this node belongs.
+	 */
 	public MutableTree getTree();
 }

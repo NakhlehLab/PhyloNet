@@ -81,34 +81,6 @@ public class Networks
 		}
 	}
 
-/*
-	public static <T> void removeBinaryNodes(Network<T> net)
-	{
-		// Find all binary nodes.
-		List<NetNode<T>> binary_nodes = new LinkedList<NetNode<T>>();
-		for (NetNode<T> node : net.bfs()) {
-            //System.out.println(node.getName() + " " + node.getIndeg() + " " + node.getOutdeg());
-			if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
-				binary_nodes.add(node);
-			}
-		}
-
-		// Remove them.
-		for (NetNode<T> node : binary_nodes) {
-			NetNode<T> parent = node.getParents().iterator().next();	// Node's only parent.
-			NetNode<T> child = node.getChildren().iterator().next();	// Node's only child.
-			double distance = node.getParentDistance(parent) + child.getParentDistance(node);
-			double inheritanceProb = child.getParentProbability(node);
-            //System.out.println("removing " + node.getName());
-			parent.removeChild(node);
-            //System.out.println("removing " + child.getName());
-			node.removeChild(child);
-			parent.adoptChild(child, distance);
-            child.setParentProbability(parent, inheritanceProb);
-		}
-	}
-    */
-
 
     /**
      * This function removes all binary nodes from the network.
@@ -118,15 +90,12 @@ public class Networks
         do{
             update = false;
             for (NetNode<T> node : net.bfs()) {
-                //System.out.println(node.getName() + " " + node.getIndeg() + " " + node.getOutdeg());
                 if (node.getIndeg() == 1 && node.getOutdeg() == 1) {
                     NetNode<T> parent = node.getParents().iterator().next();    // Node's only parent.
                     NetNode<T> child = node.getChildren().iterator().next();    // Node's only child.
                     double distance = node.getParentDistance(parent) + child.getParentDistance(node);
                     double inheritanceProb = child.getParentProbability(node);
-                    //System.out.println("removing " + node.getName());
                     parent.removeChild(node);
-                    //System.out.println("removing " + child.getName());
                     node.removeChild(child);
                     parent.adoptChild(child, distance);
                     child.setParentProbability(parent, inheritanceProb);
@@ -140,6 +109,7 @@ public class Networks
             }
         }while(update);
     }
+
 
 	/**
 	 * This function creates a dummy network, which contains just the root and a set of leaves
@@ -157,6 +127,7 @@ public class Networks
 
 		return new BniNetwork<T>(root);
 	}
+
 
 	/**
 	 * This function returns a list of trees decomposed from the network.
@@ -255,7 +226,7 @@ public class Networks
 	}
 
 	/**
-	 * This function compute the cluster-based distance between two networks.
+	 * This function computes the softwired-cluster distance between two networks.
 	 *
 	 * @param net1, net2: The two networks to be compared.
 	 *
@@ -277,6 +248,13 @@ public class Networks
 	}
 
 
+	/**
+	 * This function computes the softwired-cluster distance given two lists of softwired clusters
+	 *
+	 * @param clusters1, clusters2: The two lists of softwired clusters to be compared.
+	 *
+	 * @return [fasle-negative, false-positive, average]
+	 */
 	public static <T> double[] computeSoftwiredClusterDistance(List<NetworkCluster<T>> clusters1, List<NetworkCluster<T>> clusters2)
 	{
 		double fn = (clusters1.size() == 0) ? 0.0 : (double) computeSoftwiredClusterDiff(clusters1, clusters2) / clusters1.size();
@@ -287,8 +265,26 @@ public class Networks
 	}
 
 
+
+
     /**
-     * This function compute the cluster-based distance between two networks.
+     * This function computes the number of softwired clusters in <code>models</code> that are not in <code>refs</code>.
+     */
+    private static <T> int computeSoftwiredClusterDiff(List<NetworkCluster<T>> models, List<NetworkCluster<T>> refs)
+    {
+        int diff = 0;
+        for (NetworkCluster<T> nc : models) {
+            if (!refs.contains(nc)) {
+                diff++;
+            }
+        }
+
+        return diff;
+    }
+
+
+    /**
+     * This function compute the hardwired-cluster distance between two networks.
      *
      * @param net1, net2: The two networks to be compared.
      *
@@ -310,6 +306,14 @@ public class Networks
     }
 
 
+
+    /**
+     * This function computes the hardwired-cluster distance given two lists of softwired clusters
+     *
+     * @param clusters1, clusters2: The two lists of softwired clusters to be compared.
+     *
+     * @return [fasle-negative, false-positive, average]
+     */
     public static <T> double[] computeHardwiredClusterDistance(List<Set<String>> clusters1, List<Set<String>> clusters2)
     {
         double fn = (clusters1.size() == 0) ? 0.0 : (double) computeHardwiredClusterDiff(clusters1, clusters2) / clusters1.size();
@@ -319,35 +323,10 @@ public class Networks
         return new double[] {fn, fp, avg};
     }
 
-    /*
-    private static Set<String> convertHardwiredClustersToStringRepresentatives(List<Set<String>> clusters){
-        Set<String> representatives = new HashSet<String>();
-        for(Set<String> cluster: clusters){
-            Arrays.so
-        }
-        return representatives;
-    }
-    */
 
 
     /**
-	 * This function computes the number of clusters in <code>models</code> that are not in <code>refs</code>.
-	 */
-	private static <T> int computeSoftwiredClusterDiff(List<NetworkCluster<T>> models, List<NetworkCluster<T>> refs)
-	{
-		int diff = 0;
-		for (NetworkCluster<T> nc : models) {
-			if (!refs.contains(nc)) {
-				diff++;
-			}
-		}
-
-		return diff;
-	}
-
-
-    /**
-     * This function computes the number of clusters in <code>models</code> that are not in <code>refs</code>.
+     * This function computes the number of hardwired clusters in <code>models</code> that are not in <code>refs</code>.
      */
     private static <T> int computeHardwiredClusterDiff(List<Set<String>> models, List<Set<String>> refs)
     {
@@ -385,6 +364,14 @@ public class Networks
 	}
 
 
+
+    /**
+     * This function computes the tripartition-based distance given two lists of partitions
+     *
+     * @param partitions1, partitions2: Two lists of partitions to be compared.
+     *
+     * @return [fasle-negative, false-positive, average]
+     */
 	public static <T> double[] computeTripartitionDistance(List<NetworkTripartition<T>> partitions1, List<NetworkTripartition<T>> partitions2)
 	{
 		// Count the number tripartitions in the models.
@@ -404,6 +391,8 @@ public class Networks
 		return new double[] {fn, fp, avg};
 	}
 
+
+
 	/**
 	 * This function computes the number of tripartitions in <code>models</code> that are not in <code>refs</code>.
 	 */
@@ -419,6 +408,15 @@ public class Networks
 		return diff;
 	}
 
+
+
+    /**
+     * This function computes the normalized tree-based distance between two networks
+     *
+     * @param net1, net2: Two networks to be compared.
+     *
+     * @return [fasle-negative, false-positive, average]
+     */
 	public static <T> double[] computeNormalizedTreeDistance(Network<T> net1, Network<T> net2)
 	{
 		// Get the trees in the two networks.
@@ -435,6 +433,15 @@ public class Networks
 		return computeNormalizedTreeDistance(trees1, trees2);
 	}
 
+
+
+    /**
+     * This function computes the normalized tree-based distance between two networks given two lists of contained trees
+     *
+     * @param trees1, trees2: Two lists of contained trees of the two networks under comparison
+     *
+     * @return [fasle-negative, false-positive, average]
+     */
 	public static <T> double[] computeNormalizedTreeDistance(List<Tree> trees1, List<Tree> trees2)
 	{
 		// Initialize a bipartite graph with nodes corresponding to trees in the two networks.
@@ -474,6 +481,7 @@ public class Networks
 		return new double[] {fnDist, fpDist, avgDist};
 	}
 
+
 	/**
 	 * This function computes the tree-based distance between two networks.
 	 *
@@ -497,8 +505,9 @@ public class Networks
 		return computeTreeDistance(trees1, trees2);
 	}
 
+
 	/**
-	 * This function computes the tree-based distance between two networks represented
+	 * This function computes the tree-based distance between two networks given the two lists of contained trees
 	 * as two lists of trees.
 	 *
 	 * @param trees1 tree2 lists of trees induced by two networks.
@@ -544,8 +553,9 @@ public class Networks
 		return new double[] {fnDist, fpDist, avgDist};
 	}
 
+
 	/**
-	 * This function computes the parsimony for a network N and and a list of sequences.
+	 * This function computes the parsimony for a network N and a list of sequences.
 	 *
 	 * @param net: The network to compute the parsimony.
 	 * @param seq: Raw sequence input string.
@@ -571,6 +581,7 @@ public class Networks
 		// Ready to compute the parsimony.
 		return computeParsimony(net, sa, bsize);
 	}
+
 
 	/**
 	 * This function computes the parsimony for a network N and and a list of sequences.
@@ -625,13 +636,25 @@ public class Networks
 	}
 
 
+    /**
+     * This function checks if two networks have the same topology
+     *
+     * @param net1, net2: The two networks under comparison
+     */
     public static <T> boolean hasTheSameTopology(Network<T> net1, Network<T> net2)
     {
         NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
         return metric.computeDistanceBetweenTwoNetworks(net1,net2)==0;
     }
 
-    //With respect to topology only
+
+    /**
+     * This function adds <code>numReticulations</code> random reticulations to a given network
+     * Note that the function now adds reticulations without dealing with branch lengths or inheritance probabilities
+     *
+     * @param network:  the given network
+     * @param numReticulations:     the number of reticulations to add
+     */
     public static <T> void addRandomReticulationEdge(Network<T> network, int numReticulations){
         for(int i=0; i<numReticulations; i++){
             addRandomReticulationEdge(network);
@@ -639,33 +662,10 @@ public class Networks
     }
 
 
-    public static <T> Network<T> readNetwork(String networkExp){
-        try{
-            RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
-            reader.setHybridSumTolerance(BigDecimal.valueOf(0.0001));
-            NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
-            RichNewickReadResult<edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks> readResult = reader.read(new ByteArrayInputStream(networkExp.getBytes()));
-            return  transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());
-        }catch (Exception e){
-            System.err.println(e.getMessage());
-            e.getStackTrace();
-        }
-        return null;
-    }
-
-
-    public static <T> void removeAllParameters (Network<T> network){
-        for(NetNode<T> parent: network.bfs()){
-            for(NetNode<T> child: parent.getChildren()){
-                child.setParentDistance(parent, NetNode.NO_DISTANCE);
-                child.setParentProbability(parent, NetNode.NO_PROBABILITY);
-                child.setParentSupport(parent, NetNode.NO_SUPPORT);
-            }
-        }
-    }
-
-
-
+    /**
+     * This function adds one random reticulation to a given network
+     * Note that the function now adds reticulations without dealing with branch lengths or inheritance probabilities
+     */
     private static <T> void addRandomReticulationEdge(Network<T> network){
         List<Tuple<NetNode<T>,NetNode<T>>> edgeList = new ArrayList<Tuple<NetNode<T>,NetNode<T>>>();
         Map<NetNode<T>, Integer> node2id = new HashMap<NetNode<T>, Integer>();
@@ -695,12 +695,10 @@ public class Networks
         int numEdges = edgeList.size();
         int sourceEdgeId = (int)(Math.random() * numEdges);
         Tuple<NetNode<T>,NetNode<T>> sourceEdge = edgeList.get(sourceEdgeId);
-        //System.out.println("Source Edge:(" + sourceEdge.Item1.getName()+ "," +sourceEdge.Item2.getName()+ ")");
         int sourceEdgeChildID = node2id.get(sourceEdge.Item2);
         Tuple<NetNode<T>,NetNode<T>> destinationEdge;
         do{
             destinationEdge = edgeList.get((int)(Math.random() * numEdges));
-            //System.out.println("Destination Edge:(" + destinationEdge.Item1.getName()+ "," +destinationEdge.Item2.getName()+ ")");
         }while(matrix[node2id.get(destinationEdge.Item2)][sourceEdgeChildID]);
         NetNode<T> insertedSourceNode = new BniNetNode<T>();
         insertedSourceNode.adoptChild(sourceEdge.Item2, NetNode.NO_DISTANCE);
@@ -716,10 +714,43 @@ public class Networks
 
 
     /**
-     * This function computes the set of lowest articulation nodes in a networks whose has at
-     * least one child node that is not articulation node
-     * @param net, sa: The network
-     * * @return: The set of articulation nodes
+     * This function reads a network from its string representation
+     */
+    public static <T> Network<T> readNetwork(String networkExp){
+        try{
+            RichNewickReaderAST reader = new RichNewickReaderAST(ANTLRRichNewickParser.MAKE_DEFAULT_PARSER);
+            reader.setHybridSumTolerance(BigDecimal.valueOf(0.0001));
+            NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
+            RichNewickReadResult<edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.Networks> readResult = reader.read(new ByteArrayInputStream(networkExp.getBytes()));
+            return  transformer.makeNetwork(readResult.getNetworks().Networks.iterator().next());
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+            e.getStackTrace();
+        }
+        return null;
+    }
+
+
+
+    /**
+     * This function removes all branch lengths and inheritance probabilities from a given network
+     */
+    public static <T> void removeAllParameters (Network<T> network){
+        for(NetNode<T> parent: network.bfs()){
+            for(NetNode<T> child: parent.getChildren()){
+                child.setParentDistance(parent, NetNode.NO_DISTANCE);
+                child.setParentProbability(parent, NetNode.NO_PROBABILITY);
+                child.setParentSupport(parent, NetNode.NO_SUPPORT);
+            }
+        }
+    }
+
+
+
+    /**
+     * This function computes the set of lowest articulation nodes in a network who has at least one child node that is not articulation node
+     * @param net: The network
+     * @return: The set of articulation nodes
      */
 
     public static <T> Set<NetNode<T>> getLowestArticulationNodes(Network<T> net){
@@ -772,12 +803,10 @@ public class Networks
 
 
     /**
-     * This function computes the set of articulation nodes in a networks whose has at
-     * least one child node that is not articulation node
-     * @param net, sa: The network
-     * * @return: The set of articulation nodes
+     * This function computes the set of all articulation nodes in a network
+     * @param net: The network
+     * @return: The set of articulation nodes
      */
-
     public static <T> Set<NetNode<T>> getAllArticulationNodes(Network<T> net){
         Set<NetNode<T>> articulationNodes = new HashSet<>();
         for(NetNode<T> node: Networks.postTraversal(net)){
@@ -812,10 +841,10 @@ public class Networks
 
 
 
-
-
-
-    public static <T> boolean isDisconnectedNetwork(Network<T> net, NetNode<T> ignoreNode){
+    /**
+     * This function is to help compute articulate nodes
+     */
+    private static <T> boolean isDisconnectedNetwork(Network<T> net, NetNode<T> ignoreNode){
         Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
         Set<NetNode<T>> seen = new HashSet<NetNode<T>>();
         for(NetNode<T> node: Networks.postTraversal(net)){
@@ -835,7 +864,9 @@ public class Networks
     }
 
 
-
+    /**
+     * This function returns nodes in a network in post traversal order
+     */
     public static <T> List<NetNode<T>> postTraversal(Network<T> net){
         Stack<NetNode<T>> stack = new Stack<NetNode<T>>();
         List<NetNode<T>> searchedNodes = new ArrayList<NetNode<T>>();
@@ -864,11 +895,13 @@ public class Networks
                 }
             }
         }
-
         return searchedNodes;
     }
 
 
+    /**
+     * This function checks if a network contains cycle
+     */
     public static <T> boolean hasCycle(Network<T> net) {
         NetNode<T> root = net.getRoot();
         Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
@@ -877,9 +910,12 @@ public class Networks
         return false;
     }
 
+
+    /**
+     * This function returns nodes in a network in dfs order
+     */
     private static <T> boolean dfs(NetNode<T> node, Set<NetNode<T>> visited,
                                    Set<NetNode<T>> stacked) {
-
         if(stacked.contains(node)) return true;
         if(visited.contains(node)) return false;
 
@@ -893,7 +929,9 @@ public class Networks
     }
 
 
-
+    /**
+     * This function computes the maximal load of a network
+     */
     public static <T> double computeMaxLoad(Network<T> network, Map<String, List<String>> species2alleles){
         NetworkLoad networkLoad = new NetworkLoad();
         return networkLoad.computeMaxLoad(network, species2alleles);

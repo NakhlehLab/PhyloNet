@@ -10,24 +10,39 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 6/7/12
- * Time: 9:26 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ *
+ * This class is for generating a neighbor of a species network by mutating it
  */
 public abstract class NetworkNeighbourhoodGenerator{
     protected boolean _printDetails = false;
 
+    /**
+     * This function is to undo the last rearrangement move
+     */
     public abstract void undo();
 
+
+    /**
+     * This function is to mutate the current network in order to generate its neighbor
+     */
     public abstract void mutateNetwork(Network network);
 
+
+    /**
+     * This function is to print an edge
+     */
     protected String printEdge(Tuple<NetNode, NetNode> edge) {
         return "(" + edge.Item1.getName() + "," + edge.Item2.getName() + ")";
     }
 
 
+    /**
+     * This function is to check if the given species network is valid
+     *
+     * @param network   the given species network
+     * @param leaves    the set of leaves that the given network <code>network</code> should have
+     */
     protected boolean isNetworkValid(Network network, Set<String> leaves){
         int count = 0;
         for(Object leaf: network.getLeaves()){
@@ -63,8 +78,12 @@ public abstract class NetworkNeighbourhoodGenerator{
     }
 
 
-
-
+    /**
+     * This function is to check if the given species network has a set of species as hybrids
+     *
+     * @param network   the given species network
+     * @param requiredHybridSet    the set of taxa that should be placed as hybrid species
+     */
     protected boolean checkHybrid(Network network, Set<String> requiredHybridSet){
         if(requiredHybridSet==null) return true;
         Map<NetNode, Set<NetNode>> node2children = new HashMap<>();

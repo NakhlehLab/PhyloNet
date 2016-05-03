@@ -10,7 +10,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import java.util.Random;
 
 /**
- * Created by yunyu on 10/20/14.
+ * Created by Yun Yu
+ *
+ * This class is for network rearrangement
  */
 public abstract class NetworkRearrangementOperation {
     protected Network _network;
@@ -23,10 +25,22 @@ public abstract class NetworkRearrangementOperation {
     protected Tuple<NetNode,NetNode> _destinationEdge;
     protected double[] _destinationEdgeBrlens;
     protected double[] _destinationEdgeInheriProbs;
-    protected Random _random;
-    //protected double _maxBrlen = 6;
 
 
+    /**
+     * This function is set the parameters
+     *
+     * @param network               the species network to be rearranged
+     * @param targetEdge            the target edge that is involved in this rearrangement
+     * @param targetEdgeBrlen       the branch length of <code>targetEdge</code>
+     * @param targetEdgeInheriProb  the inheritance probability of <code>targetEdge</code>
+     * @param sourceEdge            the source edge that is involved in this rearrangement
+     * @param sourceEdgeBrlens      the branch lengths of <code>sourceEdge</code>
+     * @param sourceEdgeInheriProbs the inheritance probabilities of <code>sourceEdge</code>
+     * @param destinationEdge       the source edge that is involved in this rearrangement
+     * @param destinationEdgeBrlens      the branch lengths of <code>destinationEdge</code>
+     * @param destinationEdgeInheriProbs the inheritance probabilities of <code>destinationEdge</code>
+     */
     public void setParameters(Network network, Tuple<NetNode,NetNode> targetEdge, double targetEdgeBrlen, double targetEdgeInheriProb, Tuple<NetNode,NetNode> sourceEdge, double[] sourceEdgeBrlens, double[] sourceEdgeInheriProbs, Tuple<NetNode,NetNode> destinationEdge, double[] destinationEdgeBrlens, double[] destinationEdgeInheriProbs){
         _network = network;
         _targetEdge = targetEdge;
@@ -41,6 +55,14 @@ public abstract class NetworkRearrangementOperation {
     }
 
 
+    /**
+     * This function is set the parameters
+     *
+     * @param network               the species network to be rearranged
+     * @param targetEdge            the target edge that is involved in this rearrangement
+     * @param sourceEdge            the source edge that is involved in this rearrangement
+     * @param destinationEdge       the source edge that is involved in this rearrangement
+     */
     public void setParameters(Network network, Tuple<NetNode,NetNode> targetEdge, Tuple<NetNode,NetNode> sourceEdge, Tuple<NetNode,NetNode> destinationEdge){
         _network = network;
         _targetEdge = targetEdge;
@@ -54,22 +76,15 @@ public abstract class NetworkRearrangementOperation {
         _destinationEdgeInheriProbs = null;
     }
 
-    protected double combineInheritanceProbability(double[] probs){
-        if(probs[0] == NetNode.NO_PROBABILITY && probs[1] == NetNode.NO_PROBABILITY){
-            return NetNode.NO_PROBABILITY;
-        }
-        else if(probs[0] == NetNode.NO_PROBABILITY){
-            return probs[1];
-        }
-        else if(probs[1] == NetNode.NO_PROBABILITY){
-            return probs[0];
-        }
-        else{
-            return probs[0]*probs[1];
-        }
-    }
 
-
+    /**
+     * This function is to insert a node to an edge
+     *
+     * @param node          the node to be inserted
+     * @param edge          the edge that the node is to be inserted on
+     * @param brlens        the branch lengths of the two edges after insertion
+     * @param inheriProbs   the inheritance probabilities of the two edges after insertion
+     */
     protected void addNodeToAnEdge(NetNode node, Tuple<NetNode, NetNode> edge, double[] brlens, double[] inheriProbs){
         edge.Item1.adoptChild(node, brlens[0]);
         node.setParentProbability(edge.Item1, inheriProbs[0]);
@@ -84,6 +99,14 @@ public abstract class NetworkRearrangementOperation {
         }
     }
 
+
+    /**
+     * This function is to randomly partition an edge
+     *
+     * @param edge          the edge that is to be randomly partitioned
+     * @param brlens        the resulting branch lengths after partitioning
+     * @param inheriProbs   the resulting inheritance probabilities of the two edges after partitioning
+     */
     protected void randomlyPartitionAnEdge(Tuple<NetNode, NetNode> edge, double[] brlens, double[] inheriProbs){
         double originalBrlen = edge.Item2.getParentDistance(edge.Item1);
         if(originalBrlen == NetNode.NO_DISTANCE){
@@ -98,6 +121,15 @@ public abstract class NetworkRearrangementOperation {
         inheriProbs[1] = edge.Item2.getParentProbability(edge.Item1);
     }
 
+
+    /**
+     * This function is to remove a node from an edge
+     *
+     * @param node          the node to be removed
+     * @param edge          the edge that the node is to be removed from
+     * @param brlens        the original branch lengths before removing
+     * @param inheriProbs   the original inheritance probabilities before removing
+     */
     protected void removeNodeFromAnEdge(NetNode node, Tuple<NetNode,NetNode> edge, double[] brlens, double[] inheriProbs){
         brlens[1] = edge.Item2.getParentDistance(node);
         inheriProbs[1] = edge.Item2.getParentProbability(node);
@@ -112,6 +144,14 @@ public abstract class NetworkRearrangementOperation {
     }
 
 
+    /**
+     * This function is to find the parent node and another child node of a given node
+     *
+     * @param node      the given node
+     * @param child     one of the children of <code>node</code>
+     *
+     * @return  a tuple which contains the parent of <code>node</code> and the child of <code>node</code> which is not <code>child</code>
+     */
     protected Tuple<NetNode,NetNode> findParentAndAnotherChild(NetNode node, NetNode child){
         if(node.getParentCount()>1){
             throw new RuntimeException(node.getName() + " should have zero or one parent");
@@ -133,6 +173,14 @@ public abstract class NetworkRearrangementOperation {
     }
 
 
+    /**
+     * This function is to find the child node and another parent node of a given node
+     *
+     * @param node      the given node
+     * @param parent    one of the parents of <code>node</code>
+     *
+     * @return  a tuple which contains the parent of <code>node</code> which is not <code>parent</code> and the child of <code>node</code>
+     */
     protected Tuple<NetNode,NetNode> findAnotherParentAndChild(NetNode node, NetNode parent){
         if(node.getParentCount()!=2){
             throw new RuntimeException(node.getName() + " should have zero or one parent");
@@ -151,7 +199,17 @@ public abstract class NetworkRearrangementOperation {
     }
 
 
+    /**
+     * This function is to perform the operation
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     abstract public boolean performOperation();
 
+
+    /**
+     * This function is to undo the operation
+     */
     abstract public void undoOperation();
 }

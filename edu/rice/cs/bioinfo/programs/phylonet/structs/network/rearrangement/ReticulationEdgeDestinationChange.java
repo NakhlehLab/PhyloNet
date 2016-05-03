@@ -6,14 +6,19 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 6/12/12
- * Time: 4:30 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkRearrangementOperation.
+ * It changes the tail of an edge
  */
 public class ReticulationEdgeDestinationChange extends NetworkRearrangementOperation{
 
+    /**
+     * This is the main function for changing the tail of an edge
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
         if(_sourceEdge == null){
             _sourceEdge = findAnotherParentAndChild(_targetEdge.Item2, _targetEdge.Item1);
@@ -34,13 +39,15 @@ public class ReticulationEdgeDestinationChange extends NetworkRearrangementOpera
         return true;
     }
 
+
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         ReticulationEdgeDestinationChange undo = new ReticulationEdgeDestinationChange();
         undo.setParameters(_network, _targetEdge, -1, -1, _destinationEdge, _destinationEdgeBrlens, _destinationEdgeInheriProbs, _sourceEdge, _sourceEdgeBrlens, _sourceEdgeInheriProbs);
         undo.performOperation();
     }
-    
-
 
 
 }

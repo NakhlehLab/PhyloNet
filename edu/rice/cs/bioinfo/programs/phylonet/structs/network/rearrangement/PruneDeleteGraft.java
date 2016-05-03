@@ -10,38 +10,54 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import java.util.*;
 
 /**
- * Created by yunyu on 11/7/14.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkRearrangementOperation.
+ * It mutates a network by re-grafting the the sub-network rooted at <code>targetNode</code> to a random edge
  */
-public class PruneDeleteGraft extends NetworkRearrangementOperation{
+public class PruneDeleteGraft extends NetworkRearrangementOperation {
 
-    public void setParameters(Network network, Tuple<NetNode,NetNode> targetNode){
+    /**
+     * This function is to set parameters
+     *
+     * @param network   the network
+     * @param targetNode    a node in <code>network</code>
+     */
+    public void setParameters(Network network, Tuple<NetNode, NetNode> targetNode) {
         _network = network;
         _targetEdge = targetNode;
     }
 
-    public void undoOperation(){
+
+    /**
+     * This function is to undo the operation
+     */
+    public void undoOperation() {
     }
 
-    public boolean performOperation(){
+
+    /**
+     * This is the main function for mutating the network
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
+    public boolean performOperation() {
         List<NetNode> parents = new ArrayList<>();
-        for(Object parent: _targetEdge.Item1.getParents()){
-            parents.add((NetNode)parent);
+        for (Object parent : _targetEdge.Item1.getParents()) {
+            parents.add((NetNode) parent);
         }
-        for(NetNode parent: parents){
+        for (NetNode parent : parents) {
             parent.removeChild(_targetEdge.Item1);
         }
-        for(Object child: _targetEdge.Item1.getChildren()){
-            if(child!=_targetEdge.Item2) {
-                _targetEdge.Item1.removeChild((NetNode)child);
+        for (Object child : _targetEdge.Item1.getChildren()) {
+            if (child != _targetEdge.Item2) {
+                _targetEdge.Item1.removeChild((NetNode) child);
             }
         }
-        Network tempNet = new BniNetwork((BniNetNode)_targetEdge.Item1);
-        //System.out.println(tempNet.toString());
-        //Set<String> leafSet = new HashSet<>();
-        for(Object leaf: tempNet.getLeaves()){
-            //System.out.println("Removing leaf " + ((NetNode)leaf).getName());
+        Network tempNet = new BniNetwork((BniNetNode) _targetEdge.Item1);
+        for (Object leaf : tempNet.getLeaves()) {
             deleteNode(_network, _network.findNode(((NetNode) leaf).getName()));
-            //System.out.println(_network);
         }
         graftToRandomEdge(_network, _targetEdge.Item1);
 
@@ -49,82 +65,76 @@ public class PruneDeleteGraft extends NetworkRearrangementOperation{
     }
 
 
-    private void adjustNetwork(Network network){
-
-        //System.out.print(network);
-
-
+    /**
+     * This function is for adjusting the network (i.e., removing binary nodes)
+     */
+    private void adjustNetwork(Network network) {
         Set<NetNode> leaves = new HashSet<>();
-        for(Object nodeO: network.getLeaves()){
-            NetNode node = (NetNode)nodeO;
-            if(!node.isNetworkNode()){
+        for (Object nodeO : network.getLeaves()) {
+            NetNode node = (NetNode) nodeO;
+            if (!node.isNetworkNode()) {
                 leaves.add(node);
             }
         }
 
         boolean update;
-        do{
+        do {
             update = false;
-            for(Object nodeO: Networks.postTraversal(network)){
-                NetNode node = (NetNode)nodeO;
-                if(node.isLeaf() && !leaves.contains(node)){
+            for (Object nodeO : Networks.postTraversal(network)) {
+                NetNode node = (NetNode) nodeO;
+                if (node.isLeaf() && !leaves.contains(node)) {
                     node.removeItself();
                     update = true;
                     break;
                 }
             }
-            //System.out.println("Before: " + network);
             Networks.removeBinaryNodes(network);
-            //System.out.println("Here:" + network);
-        }while(update);
+        } while (update);
 
         NetNode root = network.getRoot();
-        while(root.getChildCount()==1){
-            NetNode child = (NetNode)root.getChildren().iterator().next();
-            if(!child.isLeaf()) {
+        while (root.getChildCount() == 1) {
+            NetNode child = (NetNode) root.getChildren().iterator().next();
+            if (!child.isLeaf()) {
                 root.removeChild(child);
                 root = child;
-            }
-            else{
+            } else {
                 break;
             }
         }
 
         network.resetRoot(root);
-
-        for(Object nodeO: network.getNetworkNodes()){
-            NetNode node = (NetNode)nodeO;
-            if(node.isTreeNode() && !node.isRoot()){
-                NetNode parentNode = (NetNode)(node.getParents().iterator().next());
+        for (Object nodeO : network.getNetworkNodes()) {
+            NetNode node = (NetNode) nodeO;
+            if (node.isTreeNode() && !node.isRoot()) {
+                NetNode parentNode = (NetNode) (node.getParents().iterator().next());
                 node.setParentProbability(parentNode, NetNode.NO_PROBABILITY);
             }
         }
 
-        //System.out.println("done");
-
     }
 
-    private void graftToRandomEdge(Network network, NetNode toGraft){
-        List<Tuple<NetNode,NetNode>> allEdges = new ArrayList<>();
-        for(Object nodeO: Networks.postTraversal(network)){
-            NetNode node = (NetNode)nodeO;
-            for(Object childO: node.getChildren()){
-                NetNode childNode = (NetNode)childO;
-                Tuple<NetNode,NetNode> edge = new Tuple<>(node, childNode);
+
+    /**
+     * This function is to graft the node <code>toGraft</code> to an random edge of network <code>network</code>
+     */
+    private void graftToRandomEdge(Network network, NetNode toGraft) {
+        List<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
+        for (Object nodeO : Networks.postTraversal(network)) {
+            NetNode node = (NetNode) nodeO;
+            for (Object childO : node.getChildren()) {
+                NetNode childNode = (NetNode) childO;
+                Tuple<NetNode, NetNode> edge = new Tuple<>(node, childNode);
                 allEdges.add(edge);
             }
         }
-        if(allEdges.size()==1){
-            Tuple<NetNode,NetNode> onlyEdge = allEdges.get(0);
+        if (allEdges.size() == 1) {
+            Tuple<NetNode, NetNode> onlyEdge = allEdges.get(0);
             toGraft.adoptChild(onlyEdge.Item2, onlyEdge.Item2.getParentDistance(onlyEdge.Item1));
             onlyEdge.Item1.removeChild(onlyEdge.Item2);
             network.resetRoot(toGraft);
-        }
-        else {
+        } else {
             Random random = new Random();
-            //System.out.println("After delete: " + network.toString());
             Tuple<NetNode, NetNode> sourceEdge = allEdges.get(random.nextInt(allEdges.size()));
-            //System.out.println("Regraft to edge: (" + sourceEdge.Item1.getName() + "," + sourceEdge.Item2.getName() + ")\n");
 
             double[] brlens = new double[2];
             double[] inheriProbs = new double[2];
@@ -133,76 +143,31 @@ public class PruneDeleteGraft extends NetworkRearrangementOperation{
         }
     }
 
-/*
-    private void deleteNode(Network network, NetNode node){
-        System.out.println(node.getName());
-        List<Object> parents = new ArrayList<>();
-        for(Object parent: node.getParents()){
-            parents.add(parent);
-        }
-        for(Object parent: parents){
-            NetNode parentNode = (NetNode)parent;
-            if(parentNode.isNetworkNode()){
-                deleteNode(network, parentNode);
-            }
-            else{
-                Tuple<NetNode,NetNode> source = findParentAndAnotherChild(parentNode, node);
-                if(source.Item1!=null){
-                    double[] temp1 = new double[2];
-                    double[] temp2 = new double[2];
-                    removeNodeFromAnEdge(parentNode,source,temp1,temp2);
-                    if(source.Item2.isNetworkNode()){
-                        Tuple<NetNode,NetNode> further = findAnotherParentAndChild(source.Item2, source.Item1);
-                        removeNodeFromAnEdge(source.Item2,further,temp1,temp2);
-                        source.Item1.removeChild(source.Item2);
-                    }
-                }
-                else{
-                    parentNode.removeChild(node);
-                }
 
-            }
-        }
-        System.out.println(network);
-    }
-*/
-private void deleteNode(Network network, NetNode node){
-    do{
-        NetNode parentNode = (NetNode)(node.getParents().iterator().next());
-        if(parentNode.isNetworkNode()){
-            parentNode.removeChild(node);
-            break;
-        }
-        else{
-            Tuple<NetNode,NetNode> temp = findParentAndAnotherChild(parentNode, node);
-            if(temp.Item2.isNetworkNode()){
-                parentNode.removeChild(temp.Item2);
-                parentNode.removeChild(node);
-            }
-            else{
+    /**
+     * This function is to delete node <code>node</code> in network <code>network</code>
+     */
+    private void deleteNode(Network network, NetNode node) {
+        do {
+            NetNode parentNode = (NetNode) (node.getParents().iterator().next());
+            if (parentNode.isNetworkNode()) {
                 parentNode.removeChild(node);
                 break;
+            } else {
+                Tuple<NetNode, NetNode> temp = findParentAndAnotherChild(parentNode, node);
+                if (temp.Item2.isNetworkNode()) {
+                    parentNode.removeChild(temp.Item2);
+                    parentNode.removeChild(node);
+                } else {
+                    parentNode.removeChild(node);
+                    break;
+                }
             }
-        }
-        node = parentNode;
-    }while(true);
+            node = parentNode;
+        } while (true);
 
-    adjustNetwork(network);
-}
-
-
-
-
-    public static void main(String[] args){
-        Network network = Networks.readNetwork(" ((((e:1.0,d:1.0)I5:1.1236846065108836,f:1.0)I4:1.486119306006081)I2#H1:1.0981674846410259::0.26353934643510035,(a:3.748252512132769,((b:1.1252926387906674,c:2.61086859954818)I1:0.5945071891725606,I2#H1:0.036486372127869995::0.7364606535648996)I8:0.9079903913505394)I3:1.203317552596218)I0;");
-        PruneDeleteGraft pdg = new PruneDeleteGraft();
-        NetNode node = network.findNode("d");
-        pdg.deleteNode(network,node);
-        node = network.findNode("f");
-        pdg.deleteNode(network,node);
-        node = network.findNode("e");
-        pdg.deleteNode(network,node);
-        System.out.println(network);
+        adjustNetwork(network);
     }
+
 
 }

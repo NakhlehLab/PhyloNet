@@ -9,11 +9,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 6/7/12
- * Time: 9:26 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkNeighbourhoodGenerator.
+ * It generates a random neighbor of a given network by changing its topology
  */
 public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoodGenerator{
     private double[] _operationProbabilities;
@@ -32,6 +31,16 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
 
 
 
+    /**
+     * Constructor of this class
+     *
+     * @param probabilities         the weights of different rearrangement moves
+     * @param maxReticulations      the maximum number of reticulations allowed
+     * @param moveDiameterLimit     the maximum diameter for random move
+     * @param reticulationDiameterLimit           the maximum diameter for a reticulation (the distance between two parents)
+     * @param fixedHybrid           the user-specified set of hybrid species
+     * @param seed                  the seed for controlling randomness
+     */
     public NetworkRandomTopologyNeighbourGenerator(double[] probabilities, int maxReticulations, int moveDiameterLimit, int reticulationDiameterLimit, Set<String> fixedHybrid, Long seed)
     {
         _networkOperators = new NetworkRearrangementOperation[6];
@@ -70,17 +79,9 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
-    public NetworkRandomTopologyNeighbourGenerator(double[] probabilities, int maxReticulations, Long seed){
-        this(probabilities, maxReticulations, -1, -1, null, seed);
-    }
-
-    public NetworkRandomTopologyNeighbourGenerator(double[] probabilities, int maxReticulations){
-        this(probabilities, maxReticulations, null);
-    }
-
-
-
-
+    /**
+     * This function is to mutate the current network by changing its topology
+     */
     public void mutateNetwork(Network network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allRemovableReticulationEdges = new ArrayList<>();
@@ -96,7 +97,6 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
             }
             computeNodeDistances(network);
         }
-        //System.out.println("#reticulationEdges:"+allReticulationEdges.size());
         if(_printDetails){
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("Before rearrangement: "+ network.toString());
@@ -139,16 +139,21 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
             System.out.println("After rearrangement: " + network.toString());
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         }
-
-        //rearrangementComputed.execute(network,_operationID, new Tuple3(_targetEdge,_sourceEdge,_destinationEdge));
-        //_networkOperators[_operationID].undoOperation();
     }
 
+
+    /**
+     * This function is to undo the last rearrangement move
+     */
     public void undo(){
         _networkOperators[_operationID].undoOperation();
     }
 
 
+
+    /**
+     * This function is to compute the distance between every pair of nodes in the network
+     */
     private void computeNodeDistances(Network network){
         _nodeDistanceMatrix = new int[_node2ID.size()][_node2ID.size()];
         HashMap<NetNode, List<Tuple<NetNode,Integer>>> node2children = new HashMap<NetNode, List<Tuple<NetNode,Integer>>>();
@@ -196,8 +201,13 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
+    /**
+     * This function is to generate the next random rearrangement
+     *
+     * @param incrementHybrid   whether adding reticulations is allowed
+     * @param decrementHybrid   whether deleting reticulations is allowed
+     */
     private int getNextOperationID(boolean incrementHybrid, boolean decrementHybrid){
-
         boolean stop;
         int operationID = -1;
         do{
@@ -209,7 +219,6 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
                     break;
                 }
             }
-
             if((operationID == 0 && !incrementHybrid) || ((operationID == 1||operationID == 2) && !decrementHybrid)){
                 stop = false;
             }
@@ -219,8 +228,15 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
-
-
+    /**
+     * This function is to gather the information about the network
+     *
+     * @param network       the given species network
+     * @param allEdges      all edges in the species network
+     * @param removableReticulationEdges      all reticulation edges that can be removed
+     *                                        note that a reticulation edge can be removed only if removing it reduces the number of reticulations in the network by one
+     * @param increaseReticulations     whether adding reticulations is allowed
+     */
     private void getNetworkInfo(Network network, Set<String> taxa, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges, Ref<Boolean> increaseReticulations){
         int numReticulations = 0;
         for(Object nodeO: Networks.postTraversal(network)){
@@ -251,6 +267,16 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
         }
     }
 
+
+    /**
+     * This function is to set the next move
+     *
+     * @param network       the given species network
+     * @param allEdges      all edges in the species network
+     * @param allRemovableReticulationEdges      all reticulation edges that can be removed
+     *                                        note that a reticulation edge can be removed only if removing it reduces the number of reticulations in the network by one
+     * @param previousTriedEdges     all edges that have been tried
+     */
     private boolean setNextMove(Network network, ArrayList<Tuple<NetNode,NetNode>> allEdges, ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> previousTriedEdges){
         boolean successMove = true;
         switch(_operationID){
@@ -280,6 +306,12 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
+    /**
+     * This function is to set parameters for adding reticulation edge
+     *
+     * @param allEdges      all edges in the species network
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
     private boolean setParametersForReticulationEdgeAddition(ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _targetEdge = null;
         int size = allEdges.size();
@@ -315,6 +347,15 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
         return true;
     }
 
+
+
+    /**
+     * This function is to set parameters for deleting reticulation edge
+     *
+     * @param allRemovableReticulationEdges   all reticulation edges in the species network that can be removed
+     *                                        note that a reticulation edge can be removed only if removing it reduces the number of reticulations in the network by one
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
     private boolean setParametersForReticulationEdgeDeletion(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         _destinationEdge = null;
@@ -335,6 +376,14 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
+    /**
+     * This function is to set parameters for changing the tail of a reticulation edge
+     *
+     * @param allRemovableReticulationEdges   all reticulation edges in the species network that can be edited
+     *                                        note that a reticulation edge can be edited only if editing it without deleting does not change the number of reticulations in the network
+     * @param allEdges      all edges in the species network
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
     private boolean setParametersForReticulationEdgeDestinationChange(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         int reticulationEdgeSize = allRemovableReticulationEdges.size();
@@ -375,7 +424,6 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
 
             if(_destinationEdge.Item2.equals(_targetEdge.Item1) || _destinationEdge.Item1.equals(_targetEdge.Item1)
                     || _destinationEdge.Item2.equals(_targetEdge.Item2) || _destinationEdge.Item1.equals(_targetEdge.Item2)){
-                //edgesTried.add(edgeTuple);
                 endSampling = false;
                 continue;
             }
@@ -388,6 +436,13 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
         return true;
     }
 
+
+    /**
+     * This function is to set parameters for changing the head of a reticulation edge
+     *
+     * @param allEdges      all edges in the species network
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
     private boolean setParametersForEdgeSourceChange(ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         int allEdgeSize = allEdges.size();
@@ -399,9 +454,7 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
             }
             endSampling = true;
             int targetID = _random.nextInt(allEdgeSize);
-            //int targetID = 5;
             _targetEdge = allEdges.get(targetID);
-            //System.out.print("Target: " + printEdge(_targetEdge));
 
             if(_targetEdge.Item1.isNetworkNode()){
                 for(int i=0; i<allEdgeSize; i++){
@@ -413,11 +466,9 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
             }
 
             int destinationID = targetID;
-            //int destinationID = 2;
             while(targetID==destinationID){
                 destinationID = _random.nextInt(allEdgeSize);
             }
-            //System.out.println(" Destination: " + printEdge(_destinationEdge));
 
             int tupleID = (int)(Math.pow(10,new String(allEdgeSize+"").length()))*targetID + destinationID;
             if(edgesTried.contains(tupleID)){
@@ -473,6 +524,14 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
+
+    /**
+     * This function is to set parameters for flipping the direction of a reticulation edge
+     *
+     * @param allRemovableReticulationEdges   all reticulation edges in the species network that can be edited
+     *                                        note that a reticulation edge can be edited only if editing it without deleting does not change the number of reticulations in the network
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
     private boolean setParametersForReticulationFlip(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         _destinationEdge = null;
@@ -501,6 +560,13 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
+    /**
+     * This function is to set parameters for replacing a reticulation edge
+     *
+     * @param allRemovableReticulationEdges   all reticulation edges in the species network that can be replaced
+     *                                        note that a reticulation edge can be edited only if replacing it does not change the number of reticulations in the network
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
     private boolean setParametersForReticulationEdgeReplace(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         int size = allRemovableReticulationEdges.size();
         int randomID;
@@ -523,7 +589,6 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
             endSampling = true;
             int sourceID = _random.nextInt(size);
             _sourceEdge = allEdges.get(sourceID);
-            //System.out.println("Trying source edge " + printEdge(_sourceEdge));
             if(_sourceEdge.Item1 == _targetEdge.Item1 || _sourceEdge.Item2 == _targetEdge.Item1){
                 endSampling = false;
             }
@@ -533,7 +598,6 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
                     destinationID = _random.nextInt(size);
                 }
                 _destinationEdge = allEdges.get(destinationID);
-                //System.out.println("Trying destination edge " + printEdge(_destinationEdge));
                 if(_destinationEdge.Item1 == _targetEdge.Item2 || _destinationEdge.Item2 == _targetEdge.Item2){
                     endSampling = false;
                 }
@@ -543,19 +607,6 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
                             endSampling = false;
 
                         }
-                        /*
-                        else{
-
-                            NetNode otherParent = null;
-                            for(Object parent: _targetEdge.Item2.getParents()){
-                                if(parent != _targetEdge.Item1){
-                                    otherParent = (NetNode)parent;
-                                }
-                            }
-                            _sourceEdge = new Tuple<>(otherParent, (NetNode)_targetEdge.Item2.getChildren().iterator().next());
-                        }
-                        */
-
                     }
                     else{
                         if(_reticulationDiameterLimit!=-1){
@@ -582,7 +633,15 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     }
 
 
-
+    /**
+     * This function is to perform the rearrangement move
+     *
+     * @param network       the network to be mutated
+     * @param operation     the rearrangement operation that to be performed
+     * @param targetEdge    the target edge that is involved in this move
+     * @param sourceEdge    the source edge that is involved in this move
+     * @param destinationEdge    the destination edge that is involved in this move
+     */
     public void performRearrangement(Network network, Integer operation, Tuple<NetNode,NetNode> targetEdge, Tuple<NetNode,NetNode> sourceEdge, Tuple<NetNode,NetNode> destinationEdge){
         _networkOperators[operation].setParameters(network, targetEdge, sourceEdge, destinationEdge);
         _networkOperators[operation].performOperation();

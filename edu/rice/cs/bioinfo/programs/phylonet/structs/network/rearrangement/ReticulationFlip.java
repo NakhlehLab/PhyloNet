@@ -6,14 +6,20 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 6/7/12
- * Time: 10:56 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkRearrangementOperation.
+ * It flips the direction of an reticulation edge
  */
 public class ReticulationFlip extends NetworkRearrangementOperation {
 
+
+    /**
+     * This is the main function for flipping the direction an reticulation edge
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
         if(_targetEdge.Item1.isRoot()){
             return false;
@@ -37,35 +43,13 @@ public class ReticulationFlip extends NetworkRearrangementOperation {
     }
 
 
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         ReticulationFlip undo = new ReticulationFlip();
         undo.setParameters(_network, _targetEdge, _targetEdgeBrlen, _targetEdgeInheriProb, _destinationEdge, null, null, _sourceEdge, null, null);
         undo.performOperation();
     }
 
-
-
-
-
-    /*
-    public void updateNode2Ancestors(Map<N,Set<N>> node2Ancestors){
-        Tuple<N,N> nodesOfSourceEdge = _network.getNodesOfEdge(_sourceEdge);
-        Tuple<N,N> nodesOfDestinationEdge = _network.getNodesOfEdge(_destinationEdge);
-
-
-        FindSuccessors<N,E> findSuccessors = new FindSuccessors<N,E>();
-        for(N node : findSuccessors.execute(_network, nodesOfSourceEdge.Item1)){
-            node2Ancestors.get(node).remove(_nodesOfTargetEdge.Item1);
-        }
-
-        for(N node : findSuccessors.execute(_network, nodesOfDestinationEdge.Item1)){
-            node2Ancestors.get(node).remove(_nodesOfTargetEdge.Item2);
-            node2Ancestors.get(node).remove(_nodesOfTargetEdge.Item1);
-            node2Ancestors.get(node).removeAll(node2Ancestors.get(_nodesOfTargetEdge.Item1));
-        }
-
-        node2Ancestors.remove(_nodesOfTargetEdge.Item1);
-        node2Ancestors.remove(_nodesOfTargetEdge.Item2);
-    }
-    */
 }

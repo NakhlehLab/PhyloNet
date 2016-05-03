@@ -7,12 +7,20 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 /**
- * Created by yunyu on 10/20/14.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkRearrangementOperation.
+ * It adds an reticulation edge to the network
  */
 public class ReticulationEdgeAddition extends NetworkRearrangementOperation{
 
+    /**
+     * This is the main function for add an reticulation edge
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
-
         if(_targetEdge == null) {
             _targetEdge = new Tuple<>((NetNode)new BniNetNode(), (NetNode)new BniNetNode());
         }
@@ -51,6 +59,10 @@ public class ReticulationEdgeAddition extends NetworkRearrangementOperation{
         return true;
     }
 
+
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         ReticulationEdgeDeletion undo = new ReticulationEdgeDeletion();
         undo.setParameters(_network, _targetEdge, -1, -1, null, _sourceEdgeBrlens, _sourceEdgeInheriProbs, null, _destinationEdgeBrlens, _destinationEdgeInheriProbs);

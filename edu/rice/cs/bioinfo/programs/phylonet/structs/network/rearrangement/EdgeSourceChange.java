@@ -9,10 +9,19 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import java.util.Arrays;
 
 /**
- * Created by yunyu on 10/20/14.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkRearrangementOperation.
+ * It changes the head of an edge
  */
 public class EdgeSourceChange extends NetworkRearrangementOperation{
 
+    /**
+     * This is the main function for changing the head of an edge
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
         if(_sourceEdge == null){
             _sourceEdge = findParentAndAnotherChild(_targetEdge.Item1, _targetEdge.Item2);
@@ -44,9 +53,12 @@ public class EdgeSourceChange extends NetworkRearrangementOperation{
             _network.resetRoot(_targetEdge.Item1);
         }
         return true;
-
     }
 
+
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         setParameters(_network, _targetEdge, -1, -1, null, null, null, _sourceEdge, _sourceEdgeBrlens, _sourceEdgeInheriProbs);
         performOperation();

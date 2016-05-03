@@ -1,9 +1,19 @@
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement;
 
 /**
- * Created by yunyu on 10/29/14.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of EdgeParameterChange.
+ * It changes the branch length of an edge
  */
 public class EdgeLengthChange extends EdgeParameterChange{
+
+    /**
+     * This is the main function for changing the branch length of an edge
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
         double newBranchLength = _targetEdgeBrlen;
         if(newBranchLength==-1){
@@ -14,6 +24,9 @@ public class EdgeLengthChange extends EdgeParameterChange{
         return true;
     }
 
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         performOperation();
     }

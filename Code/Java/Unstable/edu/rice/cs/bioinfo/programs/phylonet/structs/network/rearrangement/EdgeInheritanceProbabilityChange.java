@@ -3,10 +3,19 @@ package edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 
 /**
- * Created by yunyu on 10/29/14.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of EdgeParameterChange.
+ * It changes the inheritance probability of an edge
  */
 public class EdgeInheritanceProbabilityChange extends EdgeParameterChange{
 
+    /**
+     * This is the main function for changing parameters of an edge
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
         double newInheritanceProbability = _targetEdgeInheriProb;
         if(newInheritanceProbability==-1){
@@ -19,6 +28,9 @@ public class EdgeInheritanceProbabilityChange extends EdgeParameterChange{
         return true;
     }
 
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         performOperation();
     }

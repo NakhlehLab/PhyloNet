@@ -9,20 +9,34 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import java.util.*;
 
 /**
- * Created by yunyu on 6/25/15.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of EdgeParameterChange.
+ * It changes the height of a node
  */
 public class NodeHeightChange extends EdgeParameterChange{
     private Network _network;
     private Map<UnorderedPair, Double> _pairwiseTimeLimit;
 
+    /**
+     * Constructor of this class
+     */
     public NodeHeightChange(Map<UnorderedPair, Double> pairwiseTimeLimit){
         _pairwiseTimeLimit = pairwiseTimeLimit;
     }
 
+
+    /**
+     * This function is to read in the original network
+     */
     public void setInfo(Network network){
         _network = network;
     }
 
+
+    /**
+     * This function is to compute the boundaries of the height of a given node
+     */
     private Tuple<Double,Double> computeBounds(NetNode targetNode){
         Map<NetNode, Double> node2height = new HashMap<>();
         Map<NetNode, Set<String>> node2taxa = new HashMap<>();
@@ -96,10 +110,16 @@ public class NodeHeightChange extends EdgeParameterChange{
         return new Tuple<>(lowerBound,upperBound);
     }
 
+
+    /**
+     * This is the main function for changing the height of a node
+     *
+     * @return  whether the operation is performed successfully
+     *          returns false when the resulting network is invalid
+     */
     public boolean performOperation(){
         double newNodeHeight = _targetEdgeBrlen;
         if(newNodeHeight==-1){
-            //_targetEdgeBrlen = _targetEdge.Item2.getParentDistance(_targetEdge.Item1);
             Tuple<Double,Double> bounds = computeBounds(_targetEdge.Item2);
             newNodeHeight = drawRandomParameter(_targetEdgeBrlen, bounds.Item1, bounds.Item2);
         }
@@ -108,6 +128,9 @@ public class NodeHeightChange extends EdgeParameterChange{
     }
 
 
+    /**
+     * This function is to undo the operation
+     */
     public void undoOperation(){
         performOperation();
     }

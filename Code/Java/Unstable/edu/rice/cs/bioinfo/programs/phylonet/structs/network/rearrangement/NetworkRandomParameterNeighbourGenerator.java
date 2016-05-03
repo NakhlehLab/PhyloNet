@@ -11,11 +11,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 6/7/12
- * Time: 9:26 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkNeighbourhoodGenerator.
+ * It generates a random neighbor of a given network by changing its parameters
  */
 public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNeighbourhoodGenerator {
     protected EdgeParameterChange _lengthChanger;
@@ -25,6 +24,12 @@ public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNe
     private Random _random;
 
 
+    /**
+     * Constructor of this class
+     *
+     * @param numParametersToChange      the function that calculates the number of parameters to change in one move
+     * @param seed      the seed for controlling randomness
+     */
     public NetworkRandomParameterNeighbourGenerator(Func1<Integer, Integer> numParametersToChange, Long seed) {
         _numParametersToChange = numParametersToChange;
         if (seed != null) {
@@ -34,11 +39,21 @@ public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNe
         }
     }
 
+
+    /**
+     * Constructor of this class
+     *
+     * @param numParametersToChange      the function that calculates the number of parameters to change in one move
+     */
     public NetworkRandomParameterNeighbourGenerator(Func1<Integer, Integer> numParametersToChange) {
         this(numParametersToChange, null);
     }
 
 
+    /**
+     * Constructor of this class
+     * Note that here the default is set to change 2 parameters at a time
+     */
     public NetworkRandomParameterNeighbourGenerator() {
         this(new Func1<Integer, Integer>() {
             @Override
@@ -49,16 +64,26 @@ public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNe
     }
 
 
+    /**
+     * This function is to set the function that calculates the number of parameters to change in one move
+     */
     public void setParametersToChange(Func1<Integer, Integer> numParametersToChange){
         _numParametersToChange = numParametersToChange;
     }
 
+
+    /**
+     * This function is to set the size of the window when changing the parameters
+     */
     public void setWindowSize(double window){
         _lengthChanger.setWindowSize(window);
         _inheriProbChanger.setWindowSize(window);
     }
 
 
+    /**
+     * This function is to mutate the network by changing its parameters
+     */
     public void mutateNetwork(Network network) {
         if(_printDetails){
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -97,11 +122,12 @@ public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNe
             System.out.println("After rearrangement: " + network.toString());
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         }
-        //rearrangementComputed.execute(network,_operationID, new Tuple3(_targetEdge,_sourceEdge,_destinationEdge));
-        //_networkOperators[_operationID].undoOperation();
-
     }
 
+
+    /**
+     * This function is to undo the last move
+     */
     public void undo() {
         for(Tuple<Tuple<Tuple<NetNode, NetNode>, Boolean>, Double> selectEdgeInfo: _edgeChanged){
             if(selectEdgeInfo.Item1.Item2){
@@ -116,9 +142,12 @@ public abstract class NetworkRandomParameterNeighbourGenerator extends NetworkNe
     }
 
 
+    /**
+     * This function is to get all parameters of the network
+     *
+     * @param network   the species network
+     * @param allEdges  all edges in the species network
+     */
     abstract protected void getAllParameters(Network network, ArrayList<Tuple<Tuple<NetNode, NetNode>, Boolean>> allEdges);
-
-
-
 
 }

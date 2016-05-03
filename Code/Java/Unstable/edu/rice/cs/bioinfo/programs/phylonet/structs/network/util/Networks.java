@@ -844,7 +844,7 @@ public class Networks
     /**
      * This function is to help compute articulate nodes
      */
-    private static <T> boolean isDisconnectedNetwork(Network<T> net, NetNode<T> ignoreNode){
+    public static <T> boolean isDisconnectedNetwork(Network<T> net, NetNode<T> ignoreNode){
         Set<NetNode<T>> visited = new HashSet<NetNode<T>>();
         Set<NetNode<T>> seen = new HashSet<NetNode<T>>();
         for(NetNode<T> node: Networks.postTraversal(net)){

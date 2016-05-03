@@ -6,11 +6,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import java.util.Random;
 
 /**
- * Created by IntelliJ IDEA.
- * User: yy9
- * Date: 6/7/12
- * Time: 9:26 PM
- * To change this template use File | Settings | File Templates.
+ * Created by Yun Yu
+ *
+ * This class is a subclass of NetworkNeighbourhoodGenerator.
+ * It generates a random neighbor of a given network (topology-wise or parameter-wise)
  */
 public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerator{
     private NetworkNeighbourhoodGenerator _topologyMutate;
@@ -20,6 +19,9 @@ public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerat
     private int _previousOperation;
 
 
+    /**
+     * This function is to undo the last rearrangement move
+     */
     public void undo(){
         if(_previousOperation == 0){
             _topologyMutate.undo();
@@ -29,10 +31,24 @@ public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerat
         }
     }
 
+
+    /**
+     * This function is to set the window size for changing parameters
+     */
     public void setParameterWindowSize(double window){
         ((NetworkRandomParameterNeighbourGenerator)_parameterMutate).setWindowSize(window);
     }
 
+
+    /**
+     * Constructor of this class
+     *
+     * @param topologyMutate    the class for mutating topology of the network
+     * @param weight1           the weight of choosing topology change
+     * @param parameterMutate   the class for mutating parameters of the network
+     * @param weight2           the weight of choosing parameter change
+     * @param seed              the seed for randomness
+     */
     public NetworkRandomNeighbourGenerator(NetworkNeighbourhoodGenerator topologyMutate, double weight1, NetworkNeighbourhoodGenerator parameterMutate, double weight2, Long seed)
     {
         _topologyMutate = topologyMutate;
@@ -45,6 +61,10 @@ public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerat
         }
     }
 
+
+    /**
+     * This function is to randomly mutate the current network (topology or parameters)
+     */
     public void mutateNetwork(Network network){
         if(_random.nextDouble()<_operationProbability){
             _topologyMutate.mutateNetwork(network);
@@ -56,17 +76,22 @@ public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerat
         }
     }
 
+
+    /**
+     * This function is to randomly mutate the parameters of the current network
+     */
     public void mutateNetworkParameter(Network network){
         _parameterMutate.mutateNetwork(network);
         _previousOperation = 1;
     }
 
+
+    /**
+     * This function is to get the type of last mutation (topology or parameters)
+     */
     public int getOperationType(){
         return _previousOperation;
     }
 
-    public void setOperationType(int type){
-        _previousOperation = type;
-    }
 
 }

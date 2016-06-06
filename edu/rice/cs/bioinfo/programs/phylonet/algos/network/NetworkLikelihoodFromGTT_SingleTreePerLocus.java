@@ -56,7 +56,7 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
                 String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
                 MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
                 if (existingTuple == null) {
-                    existingTuple = gtTuple;
+                    existingTuple = new MutableTuple<>(gtTuple.Item1, gtTuple.Item2);
                     exp2tree.put(exp, existingTuple);
                     Set<Integer> binaryIDs = new HashSet<Integer>();
                     for (Tree btr : Trees.getAllBinaryResolution(gtTuple.Item1)) {
@@ -71,7 +71,7 @@ public class NetworkLikelihoodFromGTT_SingleTreePerLocus extends NetworkLikeliho
                             binaryIDs.add(index);
                         }
                     }
-                    treeCorrespondences.add(new Tuple<MutableTuple<Tree, Double>, Set<Integer>>(gtTuple, binaryIDs));
+                    treeCorrespondences.add(new Tuple<MutableTuple<Tree, Double>, Set<Integer>>(existingTuple, binaryIDs));
                 } else {
                     existingTuple.Item2 += gtTuple.Item2;
                 }

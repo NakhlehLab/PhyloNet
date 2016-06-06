@@ -69,8 +69,7 @@ public class InferNetworkPseudoMLFromGTT_SingleTreePerLocus extends InferNetwork
                 String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
                 MutableTuple<Tree, Double> existingTuple = exp2tree.get(exp);
                 if (existingTuple == null) {
-                    existingTuple = gtTuple;
-                    exp2tree.put(exp, existingTuple);
+                    exp2tree.put(exp, new MutableTuple<>(gtTuple.Item1, gtTuple.Item2));
 
                 } else {
                     existingTuple.Item2 += gtTuple.Item2;

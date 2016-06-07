@@ -2,7 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_DP;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.NetworkLikelihoodFromGTT_SingleTreePerLocus;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -22,7 +22,7 @@ public class GTTLikelihood_SinglePerLocus extends NetworkLikelihoodFromGTT_Singl
 
     public double computeProbability(Network<Object> speciesNetwork, List distinctTrees,
                                      Map<String,List<String>> species2alleles, List gtCorrespondences) {
-        return super.computeProbability(speciesNetwork, distinctTrees, species2alleles, gtCorrespondences);
+        return super.computeProbability(speciesNetwork, distinctTrees, gtCorrespondences, species2alleles);
     }
 
 
@@ -79,7 +79,7 @@ public class GTTLikelihood_SinglePerLocus extends NetworkLikelihoodFromGTT_Singl
                 }
             }
         }
-        MDCInference_DP mdc = new MDCInference_DP();
+        MDCInference_Rooted mdc = new MDCInference_Rooted();
 
         List<Solution> solutions = (allele2species==null) ?
                 mdc.inferSpeciesTree(gts, false, 1, false, true, -1) :

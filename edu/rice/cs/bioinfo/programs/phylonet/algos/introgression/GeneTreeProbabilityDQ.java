@@ -3,7 +3,6 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.introgression;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMC.main.temp.MDCOnNetworkForCoalHistory;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TMutableNode;

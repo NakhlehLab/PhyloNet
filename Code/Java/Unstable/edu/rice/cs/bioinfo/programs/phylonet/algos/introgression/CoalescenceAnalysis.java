@@ -24,10 +24,12 @@ public class CoalescenceAnalysis {
 
 
     public String computeIntrogressionRate() {
+
         Network net = Networks.readNetwork(_network.toString());
         StringBuilder sb = new StringBuilder("\n");
         sb.append(net.toString());
         sb.append("\n");
+
         // Process Network
         Map<Double, Double> rateMapping = new HashMap<>();
         Map<Double, String> edgeMapping = new HashMap<>();
@@ -41,6 +43,7 @@ public class CoalescenceAnalysis {
                 map.put(node.getParentProbability(par), node);
             }
         }
+
         int i = map.size();
         for(Double d : map.keySet()) {
             NetNode<Double> node = map.get(d);
@@ -56,6 +59,7 @@ public class CoalescenceAnalysis {
             }
             i--;
         }
+
         // computation
         for(List<MutableTuple<Tree,Double>> gtPerLocus : _geneTrees) {
             List<Tree> input = new ArrayList<>();
@@ -85,7 +89,9 @@ public class CoalescenceAnalysis {
             }
             sb.append(report(result, totalProb, edgeMapping));
         }
+
         return sb.toString();
+
     }
 
     private String report(Map<Double,Double> map, double div, Map<Double, String> edges) {

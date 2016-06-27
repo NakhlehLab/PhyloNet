@@ -158,7 +158,7 @@ public class NetworkPrior {
     }
 
     public boolean isValid(Network network) {
-        if(!Networks.isDisconnectedNetwork(network, null) || Networks.hasCycle(network))return false;
+        if(Networks.hasCycle(network) || !Networks.isDisconnectedNetwork(network, null))return false;
         List<Object> networkLeafNode, networkDFSNode;
         try{
             networkLeafNode = IterableHelp.toList(network.getLeaves());

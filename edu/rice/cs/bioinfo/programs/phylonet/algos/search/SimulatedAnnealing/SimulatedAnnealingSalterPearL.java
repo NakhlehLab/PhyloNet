@@ -137,14 +137,14 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
      */
     protected void initializeParameters(Network currentNetwork, double initialScore){
         int ntaxa = currentNetwork.getLeafCount();
-        _maxUninvestigatedProposals = 100 * ntaxa;
+        _maxUninvestigatedProposals = 50 * ntaxa;
         _consecutiveUninvestigatedProposals=0;
         _investigatedProposalThreshold = (int) (Math.log(0.05) / (ntaxa * Math.log(1.0 - (1.0 / ntaxa)))) + 1;
         _investigatedProposalThreshold *= ntaxa;
         if (scoreEachTopologyOnce()) {
-            _investigatedProposalThreshold *= 4;
+            _investigatedProposalThreshold *= 2;
         } else {
-            _investigatedProposalThreshold *= 12;
+            _investigatedProposalThreshold *= 8;
         }
         _U = Math.abs(initialScore) / 4;
         setBeta(initialScore, ntaxa, 2000);
@@ -189,7 +189,7 @@ public class SimulatedAnnealingSalterPearL extends SimulatedAnnealingBase{
         double alpha = 0.5;
         _beta = c/((1-alpha)*n + alpha*(-lnl)/m);
         */
-        _beta = 0.01;
+        _beta = 0.05;
     }
 
 

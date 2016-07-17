@@ -791,6 +791,8 @@ public class InferNetworkFromParentalTrees {
                             for(int i = 0 ; i < subMountPoint ; i++)
                                 connectNode = connectNode.getParents().iterator().next();
 
+                            //TODO: Maybe bug when encounter partial SubGroup first
+
                             if(tuple.Item1.equals(subgroup) && reticulatePart.getRoot() != network.getRoot()) {
                                 connectNode.adoptChild(reticulatePart.getRoot(), NetNode.NO_DISTANCE);
                             } else {

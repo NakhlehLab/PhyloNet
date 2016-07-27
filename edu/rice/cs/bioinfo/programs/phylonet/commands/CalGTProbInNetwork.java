@@ -20,6 +20,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.*;
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.RootageQualifierNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
@@ -389,9 +390,12 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                     }
                 });
 
+                boolean rooted = true;
+                if(geneTree.RootageQualifier instanceof RootageQualifierNonEmpty)
+                    rooted = ((RootageQualifierNonEmpty)(geneTree.RootageQualifier)).isRooted();
                 String phylonetGeneTree = NetworkTransformer.toENewickTree(geneTree);
                 NewickReader nr = new NewickReader(new StringReader(phylonetGeneTree));
-                STITree<Double> newtr = new STITree<Double>(true);
+                STITree<Double> newtr = new STITree<Double>(rooted);
 
                 try {
                     nr.readTree(newtr);

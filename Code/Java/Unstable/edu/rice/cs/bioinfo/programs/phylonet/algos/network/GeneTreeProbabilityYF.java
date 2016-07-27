@@ -108,376 +108,375 @@ public class GeneTreeProbabilityYF {
         }
 
         while(treeID < _totalTree){
-            Tree gt = gts.get(treeID);
+            Tree oneGT = gts.get(treeID);
+            List<Tree> allRootingGT = new ArrayList<>();
+            if(oneGT.isRooted())
+                allRootingGT.add(oneGT);
+            else
+                allRootingGT = oneGT.getAllRootingTrees();
             double gtProb = 0;
-            String[] gtTaxa = gt.getLeaves();
-            Map<Integer,Integer> child2parent = new HashMap<Integer, Integer>();
-            List<STITreeCluster> gtClusters = new ArrayList<STITreeCluster>();
-            processGT(gt, gtTaxa, child2parent, gtClusters);
-            boolean[][] R = computeR(gtClusters);
 
-            HashSet<String> gtTaxaSet = new HashSet<String>();
-            for(String taxon: gtTaxa){
-                gtTaxaSet.add(taxon);
-            }
+            for(Tree gt : allRootingGT) {
 
-            int netNodeIndex = 0;
-            Map<NetNode, Map<NetNode,List<Configuration>>> node2ACMinus = new HashMap<>();
+                String[] gtTaxa = gt.getLeaves();
+                Map<Integer, Integer> child2parent = new HashMap<Integer, Integer>();
+                List<STITreeCluster> gtClusters = new ArrayList<STITreeCluster>();
+                processGT(gt, gtTaxa, child2parent, gtClusters);
+                boolean[][] R = computeR(gtClusters);
 
-
-            for(NetNode node: Networks.postTraversal(network)){
-                if(_printDetails){
-                    System.out.println();
-                    System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
+                HashSet<String> gtTaxaSet = new HashSet<String>();
+                for (String taxon : gtTaxa) {
+                    gtTaxaSet.add(taxon);
                 }
-                List<Map<Set<Integer>,List<Configuration>>> CACs = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
 
-                //set AC for a node
-                if(node.isLeaf()){
-                    Map<Set<Integer>,List<Configuration>> sizeOneConfigs = new HashMap<Set<Integer>, List<Configuration>>();
-                    Configuration config = new Configuration();
-                    if(species2alleles == null){
-                        if(gtTaxaSet.contains(node.getName())){
-                            STITreeCluster cl = new STITreeCluster(gtTaxa);
-                            cl.addLeaf(node.getName());
-                            config.addLineage(gtClusters.indexOf(cl));
-                        }
+                int netNodeIndex = 0;
+                Map<NetNode, Map<NetNode, List<Configuration>>> node2ACMinus = new HashMap<>();
+
+
+                for (NetNode node : Networks.postTraversal(network)) {
+                    if (_printDetails) {
+                        System.out.println();
+                        System.out.println("On node #" + _node2ID.get(node) + " " + node.getName());
                     }
-                    else{
-                        for(String allele: species2alleles.get(node.getName())){
-                            if(gtTaxaSet.contains(allele)){
+                    List<Map<Set<Integer>, List<Configuration>>> CACs = new ArrayList<Map<Set<Integer>, List<Configuration>>>();
+
+                    //set AC for a node
+                    if (node.isLeaf()) {
+                        Map<Set<Integer>, List<Configuration>> sizeOneConfigs = new HashMap<Set<Integer>, List<Configuration>>();
+                        Configuration config = new Configuration();
+                        if (species2alleles == null) {
+                            if (gtTaxaSet.contains(node.getName())) {
                                 STITreeCluster cl = new STITreeCluster(gtTaxa);
-                                cl.addLeaf(allele);
+                                cl.addLeaf(node.getName());
                                 config.addLineage(gtClusters.indexOf(cl));
                             }
+                        } else {
+                            for (String allele : species2alleles.get(node.getName())) {
+                                if (gtTaxaSet.contains(allele)) {
+                                    STITreeCluster cl = new STITreeCluster(gtTaxa);
+                                    cl.addLeaf(allele);
+                                    config.addLineage(gtClusters.indexOf(cl));
+                                }
+                            }
                         }
-                    }
-                    config.setTotalProbability(1);
-                    List<Configuration> tempList = new ArrayList<Configuration>();
-                    tempList.add(config);
-                    sizeOneConfigs.put(config._lineages, tempList);
-                    CACs.add(sizeOneConfigs);
-                }
-                else{
-                    if(node.isNetworkNode()){
-                        Map<NetNode, List<Configuration>> childACMinus = node2ACMinus.get(node.getChildren().iterator().next());
-                        Map<Set<Integer>,List<Configuration>> temp = new HashMap<Set<Integer>, List<Configuration>>();
-                        temp.put(null,childACMinus.get(node));
-                        CACs.add(temp);
-                    }
-                    else{
-                        Iterator<NetNode> childNode = node.getChildren().iterator();
-                        List<Configuration> AC1 = node2ACMinus.get(childNode.next()).get(node);
-                        List<Configuration> AC2 = node2ACMinus.get(childNode.next()).get(node);
+                        config.setTotalProbability(1);
+                        List<Configuration> tempList = new ArrayList<Configuration>();
+                        tempList.add(config);
+                        sizeOneConfigs.put(config._lineages, tempList);
+                        CACs.add(sizeOneConfigs);
+                    } else {
+                        if (node.isNetworkNode()) {
+                            Map<NetNode, List<Configuration>> childACMinus = node2ACMinus.get(node.getChildren().iterator().next());
+                            Map<Set<Integer>, List<Configuration>> temp = new HashMap<Set<Integer>, List<Configuration>>();
+                            temp.put(null, childACMinus.get(node));
+                            CACs.add(temp);
+                        } else {
+                            Iterator<NetNode> childNode = node.getChildren().iterator();
+                            List<Configuration> AC1 = node2ACMinus.get(childNode.next()).get(node);
+                            List<Configuration> AC2 = node2ACMinus.get(childNode.next()).get(node);
 
-                        List<Integer> configSizeList = new ArrayList<Integer>();
-                        boolean total = _totalCoverNodes.contains(node);
-                        List<Configuration> mergedConfigList = new ArrayList<Configuration>();
-                        for(Configuration config1: AC1){
-                            for(Configuration config2: AC2){
-                                if(config1.isCompatible(config2)){
-                                    Configuration mergedConfig = new Configuration(config1, config2);
-                                    int numLin = mergedConfig._lineages.size();
-                                    List<Configuration> sameLineageConfigs;
-                                    int sizeIndex = configSizeList.indexOf(numLin);
-                                    if(sizeIndex == -1){
-                                        int pos = 0;
-                                        for(Integer size: configSizeList){
-                                            if(size >= numLin){
-                                                break;
+                            List<Integer> configSizeList = new ArrayList<Integer>();
+                            boolean total = _totalCoverNodes.contains(node);
+                            List<Configuration> mergedConfigList = new ArrayList<Configuration>();
+                            for (Configuration config1 : AC1) {
+                                for (Configuration config2 : AC2) {
+                                    if (config1.isCompatible(config2)) {
+                                        Configuration mergedConfig = new Configuration(config1, config2);
+                                        int numLin = mergedConfig._lineages.size();
+                                        List<Configuration> sameLineageConfigs;
+                                        int sizeIndex = configSizeList.indexOf(numLin);
+                                        if (sizeIndex == -1) {
+                                            int pos = 0;
+                                            for (Integer size : configSizeList) {
+                                                if (size >= numLin) {
+                                                    break;
+                                                }
+                                                pos++;
                                             }
-                                            pos++;
-                                        }
-                                        sameLineageConfigs = new ArrayList<Configuration>();
-                                        Map<Set<Integer>, List<Configuration>> sameSizelineages2configs = new HashMap<Set<Integer>, List<Configuration>>();
-                                        sameSizelineages2configs.put(mergedConfig._lineages,sameLineageConfigs);
-                                        CACs.add(pos, sameSizelineages2configs);
-                                        configSizeList.add(pos, numLin);
-                                    }
-                                    else{
-                                        Map<Set<Integer>, List<Configuration>> sameSizelineages2configs = CACs.get(sizeIndex);
-                                        sameLineageConfigs = sameSizelineages2configs.get(mergedConfig._lineages);
-                                        if(sameLineageConfigs==null){
                                             sameLineageConfigs = new ArrayList<Configuration>();
-                                            sameSizelineages2configs.put(mergedConfig._lineages,sameLineageConfigs);
+                                            Map<Set<Integer>, List<Configuration>> sameSizelineages2configs = new HashMap<Set<Integer>, List<Configuration>>();
+                                            sameSizelineages2configs.put(mergedConfig._lineages, sameLineageConfigs);
+                                            CACs.add(pos, sameSizelineages2configs);
+                                            configSizeList.add(pos, numLin);
+                                        } else {
+                                            Map<Set<Integer>, List<Configuration>> sameSizelineages2configs = CACs.get(sizeIndex);
+                                            sameLineageConfigs = sameSizelineages2configs.get(mergedConfig._lineages);
+                                            if (sameLineageConfigs == null) {
+                                                sameLineageConfigs = new ArrayList<Configuration>();
+                                                sameSizelineages2configs.put(mergedConfig._lineages, sameLineageConfigs);
+                                            }
                                         }
-                                    }
 
-                                    if(total){
-                                        mergedConfig.clearNetNodeChoice();
-                                        if(sameLineageConfigs.size()==0){
+                                        if (total) {
+                                            mergedConfig.clearNetNodeChoice();
+                                            if (sameLineageConfigs.size() == 0) {
+                                                sameLineageConfigs.add(mergedConfig);
+                                                mergedConfigList.add(mergedConfig);
+                                            } else {
+                                                sameLineageConfigs.get(0).addTotalProbability(mergedConfig._totalProb);
+                                            }
+                                        } else {
                                             sameLineageConfigs.add(mergedConfig);
                                             mergedConfigList.add(mergedConfig);
                                         }
-                                        else{
-                                            sameLineageConfigs.get(0).addTotalProbability(mergedConfig._totalProb);
-                                        }
-                                    }
-                                    else{
-                                        sameLineageConfigs.add(mergedConfig);
-                                        mergedConfigList.add(mergedConfig);
+
                                     }
 
                                 }
-
                             }
-                        }
 
-                    }
-                }
-
-                if(_printDetails){
-                    System.out.print("AC: {");
-                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
-                        for(List<Configuration> configList: lineages2configs.values()){
-                            for(Configuration config: configList){
-                                System.out.print(config.toString(gtClusters)+"  ");
-                            }
                         }
                     }
-                    System.out.println("}");
-                }
 
-
-                //set AC- for a node
-                if(node.isRoot()){
-                    Configuration rootConfig = new Configuration();
-                    rootConfig.addLineage(gtClusters.size()-1);
-                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
-                        for(List<Configuration> configList: lineages2configs.values()){
-                            for(Configuration preConfig: configList){
-                                if(preConfig.getLineageCount()==1){
-                                    gtProb += preConfig._totalProb;
-                                }else{
-                                    Set<Integer> events = new HashSet<Integer>();
-                                    events.add(gtClusters.size()-1);
-                                    for (int i: preConfig._lineages) {
-                                        int p = child2parent.get(i);
-
-                                        while(!events.contains(p)){
-                                            events.add(p);
-                                            p = child2parent.get(p);
-                                        }
-                                    }
-                                    double weight = calculateW(events, R);
-                                    double prob = Math.max(0, computeProbability(preConfig, rootConfig, weight, -1, 1, gtClusters));
-                                    gtProb += Math.max(0, prob*preConfig._totalProb);
+                    if (_printDetails) {
+                        System.out.print("AC: {");
+                        for (Map<Set<Integer>, List<Configuration>> lineages2configs : CACs) {
+                            for (List<Configuration> configList : lineages2configs.values()) {
+                                for (Configuration config : configList) {
+                                    System.out.print(config.toString(gtClusters) + "  ");
                                 }
-
                             }
-                        }
-
-                    }
-                    List<Configuration> temp = new ArrayList<Configuration>();
-                    temp.add(rootConfig);
-
-                }
-                else if(node.isTreeNode()){
-                    NetNode parentNode = (NetNode)node.getParents().iterator().next();
-                    double distance = node.getParentDistance(parentNode);
-                    List<Configuration> ACminus = new ArrayList<Configuration>();
-                    computeACMinus(CACs, distance, 1, child2parent, R, gtClusters, ACminus);
-                    Map<NetNode, List<Configuration>> ACminusMap = new HashMap<>();
-                    ACminusMap.put(parentNode, ACminus);
-                    node2ACMinus.put(node, ACminusMap);
-                    if(_printDetails){
-                        System.out.print("ACminus: {");
-                        for(Configuration config: ACminus){
-                            System.out.print(config.toString(gtClusters)+"  ");
                         }
                         System.out.println("}");
                     }
-                }
-                else {
-                    List<Integer> configSizeList = new ArrayList<Integer>();
-                    List<Map<Set<Integer>,List<Configuration>>> newCACs1 = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
-                    List<Map<Set<Integer>,List<Configuration>>> newCACs2 = new ArrayList<Map<Set<Integer>,List<Configuration>>>();
-                    Map<Configuration, List<Configuration>> config2splitedConfigs = new HashMap<Configuration, List<Configuration>>();
-                    int configIndex = 1;
-                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: CACs){
-                        for(List<Configuration> configList: lineages2configs.values()){
-                            for(Configuration config: configList){
-                                List<Configuration> splitedConfigs = new ArrayList<Configuration>();
-                                config2splitedConfigs.put(config, splitedConfigs);
-                                int[] lineageArray = new int[config.getLineageCount()];
-                                int index = 0;
-                                for(int lineage: config._lineages){
-                                    lineageArray[index++] = lineage;
-                                }
-                                boolean fEven = (config.getLineageCount()%2)==0;
-                                int upper = Math.max(0, config.getLineageCount()/2);
-                                Set<Set<Integer>> addedConfigs = null;
-                                if(fEven){
-                                    addedConfigs = new HashSet<Set<Integer>>();
-                                }
 
-                                for(int i=0; i<=upper; i++){
-                                    for(boolean[] selectedLineages: getSelected(config.getLineageCount(),i)){
-                                        for(int k=0; k<2; k++){
-                                            Configuration newConfig = new Configuration();
-                                            index = 0;
-                                            for(int lin: lineageArray) {
-                                                if(selectedLineages[index] && k==0){
-                                                    newConfig.addLineage(lin);
-                                                }
-                                                else if(!selectedLineages[index] && k==1){
-                                                    newConfig.addLineage(lin);
-                                                }
-                                                index ++;
+
+                    //set AC- for a node
+                    if (node.isRoot()) {
+                        Configuration rootConfig = new Configuration();
+                        rootConfig.addLineage(gtClusters.size() - 1);
+                        for (Map<Set<Integer>, List<Configuration>> lineages2configs : CACs) {
+                            for (List<Configuration> configList : lineages2configs.values()) {
+                                for (Configuration preConfig : configList) {
+                                    if (preConfig.getLineageCount() == 1) {
+                                        gtProb += preConfig._totalProb;
+                                    } else {
+                                        Set<Integer> events = new HashSet<Integer>();
+                                        events.add(gtClusters.size() - 1);
+                                        for (int i : preConfig._lineages) {
+                                            int p = child2parent.get(i);
+
+                                            while (!events.contains(p)) {
+                                                events.add(p);
+                                                p = child2parent.get(p);
                                             }
+                                        }
+                                        double weight = calculateW(events, R);
+                                        double prob = Math.max(0, computeProbability(preConfig, rootConfig, weight, -1, 1, gtClusters));
+                                        gtProb += Math.max(0, prob * preConfig._totalProb);
+                                    }
 
-                                            if(fEven && i==upper){
-                                                if(addedConfigs.contains(newConfig._lineages)){
-                                                    break;
-                                                }else{
-                                                    addedConfigs.add(newConfig._lineages);
-                                                }
-                                            }
+                                }
+                            }
 
-                                            newConfig.setNetNodeChoice(config._netNodeIndex);
-                                            newConfig.addNetNodeChoice(netNodeIndex, configIndex);
-                                            newConfig.setTotalProbability(Math.sqrt(config._totalProb));
+                        }
+                        List<Configuration> temp = new ArrayList<Configuration>();
+                        temp.add(rootConfig);
 
-                                            int numLin = k==0?i : config.getLineageCount()-i;
-                                            List<Configuration> sameLineageConfigs1;
-                                            List<Configuration> sameLineageConfigs2;
-                                            int sizeIndex = configSizeList.indexOf(numLin);
-                                            if(sizeIndex == -1){
-                                                int pos = 0;
-                                                for(Integer size: configSizeList){
-                                                    if(size >= numLin){
-                                                        break;
+                    } else if (node.isTreeNode()) {
+                        NetNode parentNode = (NetNode) node.getParents().iterator().next();
+                        double distance = node.getParentDistance(parentNode);
+                        List<Configuration> ACminus = new ArrayList<Configuration>();
+                        computeACMinus(CACs, distance, 1, child2parent, R, gtClusters, ACminus);
+                        Map<NetNode, List<Configuration>> ACminusMap = new HashMap<>();
+                        ACminusMap.put(parentNode, ACminus);
+                        node2ACMinus.put(node, ACminusMap);
+                        if (_printDetails) {
+                            System.out.print("ACminus: {");
+                            for (Configuration config : ACminus) {
+                                System.out.print(config.toString(gtClusters) + "  ");
+                            }
+                            System.out.println("}");
+                        }
+                    } else {
+                        List<Integer> configSizeList = new ArrayList<Integer>();
+                        List<Map<Set<Integer>, List<Configuration>>> newCACs1 = new ArrayList<Map<Set<Integer>, List<Configuration>>>();
+                        List<Map<Set<Integer>, List<Configuration>>> newCACs2 = new ArrayList<Map<Set<Integer>, List<Configuration>>>();
+                        Map<Configuration, List<Configuration>> config2splitedConfigs = new HashMap<Configuration, List<Configuration>>();
+                        int configIndex = 1;
+                        for (Map<Set<Integer>, List<Configuration>> lineages2configs : CACs) {
+                            for (List<Configuration> configList : lineages2configs.values()) {
+                                for (Configuration config : configList) {
+                                    List<Configuration> splitedConfigs = new ArrayList<Configuration>();
+                                    config2splitedConfigs.put(config, splitedConfigs);
+                                    int[] lineageArray = new int[config.getLineageCount()];
+                                    int index = 0;
+                                    for (int lineage : config._lineages) {
+                                        lineageArray[index++] = lineage;
+                                    }
+                                    boolean fEven = (config.getLineageCount() % 2) == 0;
+                                    int upper = Math.max(0, config.getLineageCount() / 2);
+                                    Set<Set<Integer>> addedConfigs = null;
+                                    if (fEven) {
+                                        addedConfigs = new HashSet<Set<Integer>>();
+                                    }
+
+                                    for (int i = 0; i <= upper; i++) {
+                                        for (boolean[] selectedLineages : getSelected(config.getLineageCount(), i)) {
+                                            for (int k = 0; k < 2; k++) {
+                                                Configuration newConfig = new Configuration();
+                                                index = 0;
+                                                for (int lin : lineageArray) {
+                                                    if (selectedLineages[index] && k == 0) {
+                                                        newConfig.addLineage(lin);
+                                                    } else if (!selectedLineages[index] && k == 1) {
+                                                        newConfig.addLineage(lin);
                                                     }
-                                                    pos++;
+                                                    index++;
                                                 }
-                                                sameLineageConfigs1 = new ArrayList<Configuration>();
-                                                Map<Set<Integer>, List<Configuration>> sameSizelineages2configs1 = new HashMap<Set<Integer>, List<Configuration>>();
-                                                sameSizelineages2configs1.put(newConfig._lineages,sameLineageConfigs1);
-                                                newCACs1.add(pos, sameSizelineages2configs1);
 
-                                                sameLineageConfigs2 = new ArrayList<Configuration>();
-                                                Map<Set<Integer>, List<Configuration>> sameSizelineages2configs2 = new HashMap<Set<Integer>, List<Configuration>>();
-                                                sameSizelineages2configs2.put(newConfig._lineages,sameLineageConfigs2);
-                                                newCACs2.add(pos, sameSizelineages2configs2);
-                                                configSizeList.add(pos, numLin);
-                                            }
-                                            else{
-                                                Map<Set<Integer>, List<Configuration>> sameSizelineages2configs1 = newCACs1.get(sizeIndex);
-                                                sameLineageConfigs1 = sameSizelineages2configs1.get(newConfig._lineages);
-                                                if(sameLineageConfigs1==null){
+                                                if (fEven && i == upper) {
+                                                    if (addedConfigs.contains(newConfig._lineages)) {
+                                                        break;
+                                                    } else {
+                                                        addedConfigs.add(newConfig._lineages);
+                                                    }
+                                                }
+
+                                                newConfig.setNetNodeChoice(config._netNodeIndex);
+                                                newConfig.addNetNodeChoice(netNodeIndex, configIndex);
+                                                newConfig.setTotalProbability(Math.sqrt(config._totalProb));
+
+                                                int numLin = k == 0 ? i : config.getLineageCount() - i;
+                                                List<Configuration> sameLineageConfigs1;
+                                                List<Configuration> sameLineageConfigs2;
+                                                int sizeIndex = configSizeList.indexOf(numLin);
+                                                if (sizeIndex == -1) {
+                                                    int pos = 0;
+                                                    for (Integer size : configSizeList) {
+                                                        if (size >= numLin) {
+                                                            break;
+                                                        }
+                                                        pos++;
+                                                    }
                                                     sameLineageConfigs1 = new ArrayList<Configuration>();
-                                                    sameSizelineages2configs1.put(newConfig._lineages,sameLineageConfigs1);
-                                                }
+                                                    Map<Set<Integer>, List<Configuration>> sameSizelineages2configs1 = new HashMap<Set<Integer>, List<Configuration>>();
+                                                    sameSizelineages2configs1.put(newConfig._lineages, sameLineageConfigs1);
+                                                    newCACs1.add(pos, sameSizelineages2configs1);
 
-                                                Map<Set<Integer>, List<Configuration>> sameSizelineages2configs2 = newCACs2.get(sizeIndex);
-                                                sameLineageConfigs2 = sameSizelineages2configs2.get(newConfig._lineages);
-                                                if(sameLineageConfigs2==null){
                                                     sameLineageConfigs2 = new ArrayList<Configuration>();
-                                                    sameSizelineages2configs2.put(newConfig._lineages,sameLineageConfigs2);
+                                                    Map<Set<Integer>, List<Configuration>> sameSizelineages2configs2 = new HashMap<Set<Integer>, List<Configuration>>();
+                                                    sameSizelineages2configs2.put(newConfig._lineages, sameLineageConfigs2);
+                                                    newCACs2.add(pos, sameSizelineages2configs2);
+                                                    configSizeList.add(pos, numLin);
+                                                } else {
+                                                    Map<Set<Integer>, List<Configuration>> sameSizelineages2configs1 = newCACs1.get(sizeIndex);
+                                                    sameLineageConfigs1 = sameSizelineages2configs1.get(newConfig._lineages);
+                                                    if (sameLineageConfigs1 == null) {
+                                                        sameLineageConfigs1 = new ArrayList<Configuration>();
+                                                        sameSizelineages2configs1.put(newConfig._lineages, sameLineageConfigs1);
+                                                    }
+
+                                                    Map<Set<Integer>, List<Configuration>> sameSizelineages2configs2 = newCACs2.get(sizeIndex);
+                                                    sameLineageConfigs2 = sameSizelineages2configs2.get(newConfig._lineages);
+                                                    if (sameLineageConfigs2 == null) {
+                                                        sameLineageConfigs2 = new ArrayList<Configuration>();
+                                                        sameSizelineages2configs2.put(newConfig._lineages, sameLineageConfigs2);
+                                                    }
                                                 }
-                                            }
 
-                                            Configuration copy = new Configuration(newConfig);
-                                            if(config.getLineageCount()==0){
-                                                copy.addNetNodeChoice(netNodeIndex, configIndex);
-                                            }else{
-                                                copy.addNetNodeChoice(netNodeIndex, configIndex+1);
-                                            }
+                                                Configuration copy = new Configuration(newConfig);
+                                                if (config.getLineageCount() == 0) {
+                                                    copy.addNetNodeChoice(netNodeIndex, configIndex);
+                                                } else {
+                                                    copy.addNetNodeChoice(netNodeIndex, configIndex + 1);
+                                                }
 
-                                            if(k==0){
-                                                sameLineageConfigs1.add(newConfig);
-                                                sameLineageConfigs2.add(copy);
+                                                if (k == 0) {
+                                                    sameLineageConfigs1.add(newConfig);
+                                                    sameLineageConfigs2.add(copy);
 
-                                            }
-                                            else{
-                                                sameLineageConfigs2.add(newConfig);
-                                                sameLineageConfigs1.add(copy);
+                                                } else {
+                                                    sameLineageConfigs2.add(newConfig);
+                                                    sameLineageConfigs1.add(copy);
 
+                                                }
+                                                splitedConfigs.add(newConfig);
+                                                splitedConfigs.add(copy);
                                             }
-                                            splitedConfigs.add(newConfig);
-                                            splitedConfigs.add(copy);
+                                            if (config.getLineageCount() == 0) {
+                                                configIndex++;
+                                            } else {
+                                                configIndex = configIndex + 2;
+                                            }
                                         }
-                                        if(config.getLineageCount()==0){
-                                            configIndex++;
-                                        }else{
-                                            configIndex = configIndex + 2;
-                                        }                                    }
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if(_printDetails){
-                        System.out.print("CAC after: {");
-                        for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
-                            for(List<Configuration> configList: lineages2configs.values()){
-                                for(Configuration config: configList){
-                                    System.out.print(config.toString(gtClusters)+"  ");
+                        if (_printDetails) {
+                            System.out.print("CAC after: {");
+                            for (Map<Set<Integer>, List<Configuration>> lineages2configs : newCACs1) {
+                                for (List<Configuration> configList : lineages2configs.values()) {
+                                    for (Configuration config : configList) {
+                                        System.out.print(config.toString(gtClusters) + "  ");
+                                    }
                                 }
                             }
-                        }
-                        System.out.println("}");
-                        System.out.print("CAC after: {");
-                        for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs2){
-                            for(List<Configuration> configList: lineages2configs.values()){
-                                for(Configuration config: configList){
-                                    System.out.print(config.toString(gtClusters)+"  ");
+                            System.out.println("}");
+                            System.out.print("CAC after: {");
+                            for (Map<Set<Integer>, List<Configuration>> lineages2configs : newCACs2) {
+                                for (List<Configuration> configList : lineages2configs.values()) {
+                                    for (Configuration config : configList) {
+                                        System.out.print(config.toString(gtClusters) + "  ");
+                                    }
                                 }
                             }
+                            System.out.println("}");
                         }
-                        System.out.println("}");
-                    }
-                    Iterator<NetNode> parentIt = node.getParents().iterator();
-                    NetNode parentNode1 = parentIt.next();
-                    double distance1 = node.getParentDistance(parentNode1);
-                    double hybridProb1 = node.getParentProbability(parentNode1);
-                    hybridProb1 = hybridProb1==NetNode.NO_PROBABILITY?1:hybridProb1;
-                    List<Configuration> temp = new ArrayList<Configuration>();
-                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs1){
-                        for(List<Configuration> configs: lineages2configs.values()){
-                            temp.addAll(configs);
+                        Iterator<NetNode> parentIt = node.getParents().iterator();
+                        NetNode parentNode1 = parentIt.next();
+                        double distance1 = node.getParentDistance(parentNode1);
+                        double hybridProb1 = node.getParentProbability(parentNode1);
+                        hybridProb1 = hybridProb1 == NetNode.NO_PROBABILITY ? 1 : hybridProb1;
+                        List<Configuration> temp = new ArrayList<Configuration>();
+                        for (Map<Set<Integer>, List<Configuration>> lineages2configs : newCACs1) {
+                            for (List<Configuration> configs : lineages2configs.values()) {
+                                temp.addAll(configs);
+                            }
                         }
+
+                        NetNode parentNode2 = parentIt.next();
+                        double distance2 = node.getParentDistance(parentNode2);
+                        double hybridProb2 = node.getParentProbability(parentNode2);
+                        hybridProb2 = hybridProb2 == NetNode.NO_PROBABILITY ? 1 : hybridProb2;
+                        temp = new ArrayList<Configuration>();
+                        for (Map<Set<Integer>, List<Configuration>> lineages2configs : newCACs2) {
+                            for (List<Configuration> configs : lineages2configs.values()) {
+                                temp.addAll(configs);
+                            }
+                        }
+
+                        List<Configuration> ACminus1 = new ArrayList<Configuration>();
+                        List<Configuration> ACminus2 = new ArrayList<Configuration>();
+                        computeTwoACMinus(newCACs1, distance1, hybridProb1, newCACs2, distance2, hybridProb2, child2parent, R, gtClusters, ACminus1, ACminus2);
+
+                        Map<NetNode, List<Configuration>> ACminusMap = new HashMap<>();
+                        ACminusMap.put(parentNode1, ACminus1);
+                        ACminusMap.put(parentNode2, ACminus2);
+                        node2ACMinus.put(node, ACminusMap);
+
+                        if (_printDetails) {
+                            System.out.print("ACminus to " + parentNode1.getName() + ":  {");
+                            for (Configuration config : ACminus1) {
+                                System.out.print(config.toString(gtClusters) + "  ");
+                            }
+                            System.out.println("}");
+                        }
+
+                        if (_printDetails) {
+                            System.out.print("ACminus to " + parentNode2.getName() + ":  {");
+                            for (Configuration config : ACminus2) {
+                                System.out.print(config.toString(gtClusters) + "  ");
+                            }
+                            System.out.println("}");
+                        }
+                        netNodeIndex++;
                     }
 
-                    NetNode parentNode2 = parentIt.next();
-                    double distance2 = node.getParentDistance(parentNode2);
-                    double hybridProb2 = node.getParentProbability(parentNode2);
-                    hybridProb2 = hybridProb2==NetNode.NO_PROBABILITY?1:hybridProb2;
-                    temp = new ArrayList<Configuration>();
-                    for(Map<Set<Integer>,List<Configuration>> lineages2configs: newCACs2){
-                        for(List<Configuration> configs: lineages2configs.values()){
-                            temp.addAll(configs);
-                        }
-                    }
 
-                    List<Configuration> ACminus1 = new ArrayList<Configuration>();
-                    List<Configuration> ACminus2 = new ArrayList<Configuration>();
-                    computeTwoACMinus(newCACs1, distance1, hybridProb1, newCACs2, distance2, hybridProb2, child2parent, R, gtClusters, ACminus1, ACminus2);
-
-                    Map<NetNode, List<Configuration>> ACminusMap = new HashMap<>();
-                    ACminusMap.put(parentNode1, ACminus1);
-                    ACminusMap.put(parentNode2, ACminus2);
-                    node2ACMinus.put(node, ACminusMap);
-
-                    if(_printDetails){
-                        System.out.print("ACminus to " + parentNode1.getName()+ ":  {");
-                        for(Configuration config: ACminus1){
-                            System.out.print(config.toString(gtClusters)+"  ");
-                        }
-                        System.out.println("}");
-                    }
-
-                    if(_printDetails){
-                        System.out.print("ACminus to " + parentNode2.getName()+ ":  {");
-                        for(Configuration config: ACminus2){
-                            System.out.print(config.toString(gtClusters)+"  ");
-                        }
-                        System.out.println("}");
-                    }
-                    netNodeIndex ++;
                 }
-
-
             }
             resultProbs[treeID] = gtProb;
 

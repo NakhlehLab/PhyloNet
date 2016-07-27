@@ -95,75 +95,85 @@ public class GeneTreeProbability {
 
         List<Double> problist = new ArrayList<Double>();
         double totalprob = 0;
-        for(Tree gt: gts){
+        for(Tree oneGT: gts){
             if(_printDetails){
-                System.out.println("Gene tree " + gt+" :");
-            }
-            _R = calculateSorR(gt);
-            List<String> gtTaxa = Arrays.asList(gt.getLeaves());
-            List<List<String>> allelesList = new ArrayList<List<String>>();
-            for(int i=0; i<_netTaxa.size(); i++){
-                allelesList.add(new ArrayList<String>());
+                System.out.println("Gene tree " + oneGT+" :");
             }
 
-            int[] upper = new int[_netTaxa.size()];
-            for(String gtleaf: gtTaxa){
-                String nleaf = gtleaf;
-                if(allele2species!=null){
-                    nleaf = allele2species.get(gtleaf);
-                }
-                int index = _netTaxa.indexOf(nleaf);
-                List<String> alleles = allelesList.get(index);
-                if(alleles.size()==0){
-                    upper[index] = _nname2tamount.get(nleaf);
-                }
-                alleles.add(gtleaf);
-            }
-
-            List<int[]> mergeNumber = new ArrayList<int[]>();
-            for(List<String> alleles: allelesList){
-                int[] first = new int[alleles.size()];
-                Arrays.fill(first, 1);
-                mergeNumber.add(first);
-            }
+            List<Tree> allRootingGT = new ArrayList<>();
+            if(oneGT.isRooted())
+                allRootingGT.add(oneGT);
+            else
+                allRootingGT = oneGT.getAllRootingTrees();
 
             double gtprob = 0;
-            do{
-                int[] mapping = new int[gtTaxa.size()];
-                for(int i=0; i<_netTaxa.size(); i++){
-                    String baseName = _netTaxa.get(i);
-                    List<String> alleles = allelesList.get(i);
-                    int[] subscribes = mergeNumber.get(i);
-                    for(int j=0; j<alleles.size(); j++){
-                        mapping[gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
+
+            for(Tree gt : allRootingGT) {
+
+                _R = calculateSorR(gt);
+                List<String> gtTaxa = Arrays.asList(gt.getLeaves());
+                List<List<String>> allelesList = new ArrayList<List<String>>();
+                for (int i = 0; i < _netTaxa.size(); i++) {
+                    allelesList.add(new ArrayList<String>());
+                }
+
+                int[] upper = new int[_netTaxa.size()];
+                for (String gtleaf : gtTaxa) {
+                    String nleaf = gtleaf;
+                    if (allele2species != null) {
+                        nleaf = allele2species.get(gtleaf);
                     }
-                }
-
-                if(_printDetails){
-                    System.out.print("Mapping: ");
-                    for(int i=0; i<mapping.length; i++){
-                        System.out.print(gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
+                    int index = _netTaxa.indexOf(nleaf);
+                    List<String> alleles = allelesList.get(index);
+                    if (alleles.size() == 0) {
+                        upper[index] = _nname2tamount.get(nleaf);
                     }
-                    System.out.println();
+                    alleles.add(gtleaf);
                 }
 
-                List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
-                double gtmapprob = 0;
-                for(int[] history: histories){
-                    gtmapprob += Double.parseDouble(computeProbability(mapping, history, false));
-                }
-                gtprob += gtmapprob;
-
-                if(_printDetails){
-                    System.out.println("Probability of this mapping: " + gtmapprob);
-                    System.out.println();
+                List<int[]> mergeNumber = new ArrayList<int[]>();
+                for (List<String> alleles : allelesList) {
+                    int[] first = new int[alleles.size()];
+                    Arrays.fill(first, 1);
+                    mergeNumber.add(first);
                 }
 
+                do {
+                    int[] mapping = new int[gtTaxa.size()];
+                    for (int i = 0; i < _netTaxa.size(); i++) {
+                        String baseName = _netTaxa.get(i);
+                        List<String> alleles = allelesList.get(i);
+                        int[] subscribes = mergeNumber.get(i);
+                        for (int j = 0; j < alleles.size(); j++) {
+                            mapping[gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName + "_" + subscribes[j]);
+                        }
+                    }
 
-            }while(mergeNumberAddOne(mergeNumber,upper));
+                    if (_printDetails) {
+                        System.out.print("Mapping: ");
+                        for (int i = 0; i < mapping.length; i++) {
+                            System.out.print(gtTaxa.get(i) + "->" + _stTaxa.get(mapping[i]) + "\t");
+                        }
+                        System.out.println();
+                    }
 
+                    List<int[]> histories = computeHistories(gt, gtTaxa, mapping);
+                    double gtmapprob = 0;
+                    for (int[] history : histories) {
+                        gtmapprob += Double.parseDouble(computeProbability(mapping, history, false));
+                    }
+                    gtprob += gtmapprob;
+
+                    if (_printDetails) {
+                        System.out.println("Probability of this mapping: " + gtmapprob);
+                        System.out.println();
+                    }
+
+
+                } while (mergeNumberAddOne(mergeNumber, upper));
+            }
             if(_printDetails){
-                System.out.println("Total probability of gene tree " + gt + " : " + gtprob);
+                System.out.println("Total probability of gene tree " + oneGT + " : " + gtprob);
             }
             problist.add(gtprob);
             totalprob += gtprob;

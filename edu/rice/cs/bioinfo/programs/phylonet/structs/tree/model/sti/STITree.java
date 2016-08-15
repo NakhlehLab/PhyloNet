@@ -53,7 +53,7 @@ public class STITree<D extends Object> implements MutableTree {
 	protected static CharArrayWriter SWRITER;
 	
 	/**
-	 * This object is used with {@link SWRITER} to write string representations of the tree.
+	 * This object is used with {SWRITER} to write string representations of the tree.
 	 */
 	protected static NewickWriter NWRITER;
 	
@@ -647,6 +647,61 @@ public class STITree<D extends Object> implements MutableTree {
 			}
 		}
 		
+		return clusters;
+	}
+
+
+	/**
+	 * Compute all clusters for every node in the tree.
+	 * @param leaves A list of leaves in the tree. If it is null, then the function will create a list of
+	 * 				leaves each time this function is called.
+	 * @return  A map containing (cluster, node) pairs.
+	 */
+	public Map<STITreeCluster, TNode> getClusters(String leaves[]) {
+		Map<STITreeCluster, TNode> clusters = new HashMap<>();
+		Map<TNode, BitSet> map = new HashMap<TNode, BitSet>();
+		if (leaves == null) {
+			int i = 0;
+			leaves = new String[getLeafCount()];
+			for (TNode node : getNodes()) {
+				if (node.isLeaf()) {
+					leaves[i++] = node.getName();
+				}
+			}
+		}
+		PostTraversal<D> traversal = new PostTraversal<D>(_root);
+		for (TNode node : traversal) {
+			BitSet bs = new BitSet();
+
+			if (node.isLeaf()) {
+				for (int i = 0; i < leaves.length; i++) {
+					if (node.getName().equals(leaves[i])) {
+						bs.set(i);
+						break;
+					}
+				}
+				map.put(node, bs);
+
+			} else {
+				int childCount = node.getChildCount();
+				BitSet[] childbslist = new BitSet[childCount];
+				int index = 0;
+				for (TNode child : node.getChildren()) {
+					BitSet childCluster = map.get(child);
+					bs.or(childCluster);
+					childbslist[index++] = childCluster;
+				}
+				map.put(node, bs);
+			}
+
+			if (bs.cardinality() < leaves.length) {
+				STITreeCluster tc = new STITreeCluster(leaves);
+				tc.setCluster(bs);
+				tc.setData(((STINode)node).getData());
+				clusters.put(tc, node);
+			}
+		}
+
 		return clusters;
 	}
 

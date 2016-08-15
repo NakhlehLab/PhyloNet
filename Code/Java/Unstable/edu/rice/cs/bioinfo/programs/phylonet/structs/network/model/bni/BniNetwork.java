@@ -288,6 +288,16 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
         return sw.toString();
     }
 
+	//LEO added this temporarily to get the pop sizes and gen times initialized sinc e the factory
+	//stuff will involve a lot of changes it seems
+	public void initPopSizesAndGenTimes(){
+		for (NetNode<T> node : dfs()) {
+			for(NetNode<T> node2 : node.getParents()){
+				((BniNetNode)node).setParentGenTime(node2,0.0);
+				((BniNetNode)node).setParentPopSize(node2,0.0);
+			}
+		}
+	}
 
 	// Data members
 	private BniNetNode<T> _root;

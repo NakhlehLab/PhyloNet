@@ -1214,6 +1214,42 @@ public class Trees {
         return null;
     }
 
+	/**
+	 * If two trees has the same topology, map nodes from Tree 2 to nodes in Tree 1.
+	 * Otherwise, return null
+	 * @param t1  Tree 1
+	 * @param t2  Tree 2
+     * @return  a map containing (node in tree1, corresponding node in tree2) pairs,
+	 * 			or null if two trees doesn't have the same topology
+     */
+	public static Map<TNode, TNode> mapTwoTopologies(Tree t1, Tree t2) {
+		Map<TNode, TNode> map = new HashMap<TNode, TNode>();
+		for(String s : t1.getLeaves()) {
+			TNode n1 = t1.getNode(s);
+			TNode n2 = t2.getNode(s);
+			if(!addNodePair(n1, n2, map)) return null;
+		}
+		return map;
+	}
+
+	// helper function of mapTwoTopologies
+	private static boolean addNodePair(TNode n1, TNode n2, Map<TNode, TNode> map) {
+		if(n1 != null && n2 != null) {
+			map.put(n1, n2);
+			if(n1.isRoot() && n2.isRoot()) return true;
+			else if(n1.isRoot() || n2.isRoot()) return false;
+			TNode p1 = n1.getParent();
+			TNode p2 = n2.getParent();
+			if(map.containsKey(p1)) {
+				if(map.get(p1).equals(p2)) return true;
+				else return false;
+			} else {
+				return addNodePair(p1, p2, map);
+			}
+		} else {
+			return false;
+		}
+	}
 
 
 }

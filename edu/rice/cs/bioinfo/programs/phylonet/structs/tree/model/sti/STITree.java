@@ -73,7 +73,7 @@ public class STITree<D extends Object> implements MutableTree {
 	protected HashSet<STINode<D>> _node_set = new HashSet<STINode<D>>();
 	protected Hashtable<String,STINode<D>> _name2node = new Hashtable<String,STINode<D>>();
 	protected STINode<D> _root;
-	protected boolean _is_rooted;
+	public boolean _is_rooted;
 	
 	protected int _next_node_id = 0;
 	

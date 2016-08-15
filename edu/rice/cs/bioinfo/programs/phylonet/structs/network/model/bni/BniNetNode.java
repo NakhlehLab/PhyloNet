@@ -45,6 +45,9 @@ public class BniNetNode<T> implements NetNode<T> {
 		_parent_distances = null;
         _parent_probabiliites = null;
         _parent_support = null;
+		_parent_gen_times = null;
+		_parent_pop_sizes = null;
+		_age = 0.0;
 	}
 
 	/**
@@ -67,6 +70,14 @@ public class BniNetNode<T> implements NetNode<T> {
 	public String getName()
 	{
 		return _name;
+	}
+
+	/**
+	 * This function returns the age of the node.
+	 */
+	public double getAge()
+	{
+		return _age;
 	}
 
 	/**
@@ -231,8 +242,52 @@ public class BniNetNode<T> implements NetNode<T> {
 		if (i == -1) {	// parent is actually not a parent of this node.
 			return Double.NaN;
 		}
+		//added this for phylonet-hmm, if using pop size and gen time and ages only, then derive this number
+		else if(_parent_distances.get(i).doubleValue() < 0.0){
+			return (((BniNetNode)parent).getAge() - _age) / (2.0 * _parent_gen_times.get(i).doubleValue() * _parent_pop_sizes.get(i).doubleValue());
+		}
 		else {
 			return _parent_distances.get(i).doubleValue();
+		}
+	}
+
+	/**
+	 * This function returns the population size from this node to one of its parent.
+	 *
+	 * @param parent: The parent node that we want to compute the distance from this node to it.
+
+	 * @return the distance from this node to <code>parent</code>. If <code>parent</code> is actually
+	 * not a parent of this node, this function returns the constanct <code>Double.NaN</code>.
+	 */
+	public double getParentPopSize(NetNode<T> parent)
+	{
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is actually not a parent of this node.
+			return Double.NaN;
+		}
+		else {
+			return _parent_pop_sizes.get(i).doubleValue();
+		}
+	}
+
+	/**
+	 * This function returns the generation time from this node to one of its parent.
+	 *
+	 * @param parent: The parent node that we want to compute the distance from this node to it.
+
+	 * @return the distance from this node to <code>parent</code>. If <code>parent</code> is actually
+	 * not a parent of this node, this function returns the constanct <code>Double.NaN</code>.
+	 */
+	public double getParentGenTime(NetNode<T> parent)
+	{
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is actually not a parent of this node.
+			return Double.NaN;
+		}
+		else {
+			return _parent_gen_times.get(i).doubleValue();
 		}
 	}
 
@@ -261,6 +316,16 @@ public class BniNetNode<T> implements NetNode<T> {
 
 
 	/**
+	 * This function changes the age of this node.
+	 *
+	 * @param age: The new name for this node.
+	 */
+	public void setAge(double age)
+	{
+		_age = age;
+	}
+
+	/**
 	 * This functions sets the distance from this calling node to <code>parent</code> with
 	 * the new value <code>newDistance</code>.
 	 *
@@ -287,6 +352,67 @@ public class BniNetNode<T> implements NetNode<T> {
 	}
 
 
+
+	/**
+	 * This functions sets the population size from this calling node to <code>parent</code> with
+	 * the new value <code>newDistance</code>.
+	 *
+	 * @param parent: A parent of this node that it wants to modify the distance.
+	 * @param popSize: New value for the distance from this node to <code>parent</code>.
+	 *
+	 * @return: <code>true</code> if the operation parent is indeed a parent of this node;
+	 * <code>false</code> otherwise.
+	 */
+	public boolean setParentPopSize(NetNode<T> parent, double popSize)
+	{
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
+			return false;
+		}
+		else {
+			// Update the distance.
+			if(_parent_pop_sizes != null) {
+				_parent_pop_sizes.remove(i);
+			}else {
+				_parent_pop_sizes = new LinkedList<Double>();
+			}
+			_parent_pop_sizes.add(i, new Double(popSize));
+
+			return true;
+		}
+	}
+
+	/**
+	 * This functions sets the generation time from this calling node to <code>parent</code> with
+	 * the new value <code>newDistance</code>.
+	 *
+	 * @param parent: A parent of this node that it wants to modify the distance.
+	 * @param genTime: New value for the distance from this node to <code>parent</code>.
+	 *
+	 * @return: <code>true</code> if the operation parent is indeed a parent of this node;
+	 * <code>false</code> otherwise.
+	 */
+	public boolean setParentGenTime(NetNode<T> parent, double genTime)
+	{
+		int i = _parents.indexOf(parent);
+
+		if (i == -1) {	// parent is not a parent of this node. Operation failed.
+			return false;
+		}
+		else {
+			// Update the distance.
+			if(_parent_gen_times != null) {
+				_parent_gen_times.remove(i);
+			}else
+			{
+				_parent_gen_times = new LinkedList<Double>();
+			}
+			_parent_gen_times.add(i, new Double(genTime));
+
+			return true;
+		}
+	}
 
 	/**
 	 * This function connects an existing node (the node that makes a call to this
@@ -536,5 +662,9 @@ public class BniNetNode<T> implements NetNode<T> {
 	private List<Double> _parent_probabiliites;           // List of gammas to its children
     private List<Double> _parent_support;           // List of gammas to its children
 	private List<Double> _parent_distances;	// List of distances from this node to its parents.
+	//LEO: adding new parameters aug. 9, 2016
+	private List<Double> _parent_pop_sizes; //population sizes from this node to its parents
+	private List<Double> _parent_gen_times; //generation times from this node to its parents
+	private double _age; //the time in years of the node
 }
 

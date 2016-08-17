@@ -25,7 +25,7 @@ public interface TNode {
 
 	public static final double NO_DISTANCE = Double.NEGATIVE_INFINITY;
     public static final double NO_SUPPORT = Double.NEGATIVE_INFINITY;
-
+	public static final double NO_NODE_HEIGHT = Double.NEGATIVE_INFINITY;
 	public static final String NO_NAME = "";
 
 	/**
@@ -70,6 +70,16 @@ public interface TNode {
 	 * set the distance between this node and its parent.
 	 */
 	public void setParentDistance(double distance);
+
+	/**
+	 * Gets the height of the node
+     */
+	public double getNodeHeight();
+
+	/**
+	 * Sets the height of the node
+     */
+	public void setNodeHeight(double height);
 
 	/**
 	 * @return this node's children.

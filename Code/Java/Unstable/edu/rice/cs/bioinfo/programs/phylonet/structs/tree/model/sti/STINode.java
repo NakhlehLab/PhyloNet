@@ -39,7 +39,7 @@ public class STINode<D extends Object> implements TMutableNode {
 	protected STINode<D> _parent;
 	protected LinkedList<STINode<D>> _children = new LinkedList<STINode<D>>();
 	protected double _distance = TMutableNode.NO_DISTANCE;
-
+	protected double _nodeHeight = TMutableNode.NO_NODE_HEIGHT;
 	
 	
 	/**
@@ -547,8 +547,18 @@ public class STINode<D extends Object> implements TMutableNode {
 		_distance = distance;
 	}
 
+	@Override
+	public double getNodeHeight() {
+		return _nodeHeight;
+	}
 
-    /**
+	@Override
+	public void setNodeHeight(double height) {
+		_nodeHeight = height;
+	}
+
+
+	/**
      * This method returns the the number of leaves under this node
      */
 	public int getLeafCount() {

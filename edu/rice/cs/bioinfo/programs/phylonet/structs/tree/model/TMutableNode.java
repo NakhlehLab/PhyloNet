@@ -40,6 +40,12 @@ public interface TMutableNode extends TNode {
 	 * Set the distance between this node and its parent.
 	 */
 	public void setParentDistance(double distance);
+
+
+	/**
+	 * Sets the height of the node
+	 */
+	public void setNodeHeight(double height);
 	
 	/**
 	 * Create a new child beneath this node.

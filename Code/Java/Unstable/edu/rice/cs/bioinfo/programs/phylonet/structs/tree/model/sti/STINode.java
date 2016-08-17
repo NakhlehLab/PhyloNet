@@ -699,4 +699,16 @@ public class STINode<D extends Object> implements TMutableNode {
         }
         return true;
     }
+
+	/**
+	 * Count the number of leaf children
+	 * @return   the number of leaf children
+     */
+	public int countLeafChildren() {
+		int counter = 0;
+		for(STINode<D> child: _children) {
+			if(child.isLeaf()) counter++;
+		}
+		return counter;
+	}
 }

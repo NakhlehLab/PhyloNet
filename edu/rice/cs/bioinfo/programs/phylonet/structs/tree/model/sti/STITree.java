@@ -59,7 +59,7 @@ public class STITree<D extends Object> implements MutableTree {
 	
 	protected static final int UNCOUNTED = -1;
 	public static final String NO_NAME = "";
-	
+
 	static {
 		// initialize the objects used for writing trees
 		SWRITER = new CharArrayWriter();

@@ -1251,6 +1251,16 @@ public class Trees {
 		}
 	}
 
+	public static List<TNode> getInternalNodes(Tree tree) {
+		List<TNode> nodes = new ArrayList<>();
+		for(TNode n : tree.getNodes()) {
+			if(n.isLeaf()) {
+				continue;
+			}
+			nodes.add(n);
+		}
+		return nodes;
+	}
 
 }
 

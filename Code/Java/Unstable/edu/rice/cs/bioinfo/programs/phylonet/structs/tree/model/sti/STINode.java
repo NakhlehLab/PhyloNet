@@ -711,4 +711,20 @@ public class STINode<D extends Object> implements TMutableNode {
 		}
 		return counter;
 	}
+
+	public void setParent2(STINode newParent)
+	{
+		if (newParent == null) { // reset root
+			this._parent._children.remove(this);
+			this._parent = null;
+			this._tree._root = this;
+			this._distance = TMutableNode.NO_DISTANCE;
+		} else {
+			if (this._parent != null) {
+				this._parent._children.remove(this);
+			}
+			this._parent = newParent;
+			newParent._children.add(this);
+		}
+	}
 }

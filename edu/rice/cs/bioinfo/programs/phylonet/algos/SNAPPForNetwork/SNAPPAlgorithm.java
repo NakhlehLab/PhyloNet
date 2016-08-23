@@ -285,8 +285,8 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
                     OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
 
 
-                    //GTRModel gtrModel = new GTRModel(new double[]{.1, .2, .3, .4},new double[]{1,1.5,2,2.5,3,3.5});
-                    GTRModel gtrModel = new GTRModel(new double[]{1, 0, 0, 0},new double[]{0,0,0,0,0,0});
+                    GTRModel gtrModel = new GTRModel(new double[]{.1, .2, .3, .4},new double[]{1,1.5,2,2.5,3,3.5});
+                    //GTRModel gtrModel = new GTRModel(new double[]{1, 0, 0, 0},new double[]{0,0,0,0,0,0});
 
 
 

@@ -11,6 +11,7 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.InferNetworkClustering;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.InferNetworkFromParentalTrees;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.ParentalTreeOperation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
@@ -129,6 +130,9 @@ public class InferNetwork_ParentalTrees extends CommandBaseFileOut {
         InferNetworkFromParentalTrees inferNetworkFromParentalTrees = new InferNetworkFromParentalTrees();
         Network<Object> network = inferNetworkFromParentalTrees.inferNetwork(gts);
         result.append(network.toString());
+
+        //ParentalTreeOperation parentalTreeOperation = new ParentalTreeOperation();
+        //parentalTreeOperation.test();
 
         return result.toString();
     }

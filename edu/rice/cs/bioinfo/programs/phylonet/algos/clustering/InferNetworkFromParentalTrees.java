@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
 
@@ -161,7 +162,7 @@ public class InferNetworkFromParentalTrees {
 
 
 
-        int count = Integer.MAX_VALUE;
+        int count = Integer.MIN_VALUE;
         for(NetNode<Object> node : net.bfs()) {
             if(marks.get(node) >= 0) {
                 for(NetNode<Object> child : node.getChildren()) {
@@ -270,6 +271,17 @@ public class InferNetworkFromParentalTrees {
         for(int i = 0 ; i < parentalTrees.size() ; i++) {
             Map<MountPoint, List<Set<String>>> currentMountPointsWithLeaves = new HashMap<>();
             Network<Object> net = Networks.readNetwork(parentalTrees.get(i).get(0).Item1.toNewick());
+
+            for(NetNode<Object> node : net.bfs()) {
+                if(!node.isLeaf()) {
+                    node.setName("");
+                }
+                for(NetNode<Object> parent: node.getParents()){
+                    node.setParentDistance(parent,NetNode.NO_DISTANCE);
+                }
+            }
+
+
             Map<NetNode<Object>, Integer> marks = new HashMap<>();
 
             int OUT = 1;
@@ -591,6 +603,9 @@ public class InferNetworkFromParentalTrees {
 
         }
 
+        System.out.println("Groups detected: " + groupedInLeaves.size());
+
+
         //check if every Group is associated with two Mount Point
         for(MutableTuple<Set<String>, Set<MountPoint>> tuple : groupedInLeaves) {
 
@@ -747,11 +762,36 @@ public class InferNetworkFromParentalTrees {
                 double mostFreq = -1;
                 int minDeep = Integer.MAX_VALUE;
 
+                for(String s : tuple.Item1)
+                    System.out.print(s + ' ');
+                System.out.println();
+
+                System.out.println("Subgroup:");
+                for(Set<String> set : subgroups.get(tuple.Item1)) {
+                    for(String s : set) {
+                        System.out.print(s + ' ');
+                    }
+                    System.out.println();
+                }
+
                 //find the best reticulated part of one Group
                 for (int i = 0; i < parentalTrees.size(); i++) {
+                    System.out.println("Parental Tree #" + i + " " + parentalTrees.get(i).get(0).toString());
+
                     Network<Object> net = Networks.readNetwork(parentalTrees.get(i).get(0).Item1.toNewick());
+                    for(NetNode<Object> node : net.bfs()) {
+                        if(!node.isLeaf()) {
+                            node.setName("");
+                        }
+                        for(NetNode<Object> parent: node.getParents()){
+                            node.setParentDistance(parent,NetNode.NO_DISTANCE);
+                        }
+                    }
+
                     int count = getSubnetworkRetain(net, currentInLeaves);
                     removeBinaryNodes(net);
+
+                    System.out.println("--> " + net.toString() + " " + count);
 
                     if (count == 1) {
                         if (reticulatePart == null) {
@@ -764,6 +804,7 @@ public class InferNetworkFromParentalTrees {
                             getSubnetworkRetain(subnet, new ArrayList<>(subgroup));
                             deep += getDeep(subnet);
                         }
+                        System.out.println("Score: " + deep);
                         if (deep < minDeep) {
                             minDeep = deep;
                             bestFairPart = net;
@@ -773,6 +814,8 @@ public class InferNetworkFromParentalTrees {
 
                 if (reticulatePart == null)
                     reticulatePart = bestFairPart;
+
+                System.out.println("Best reticulate part: " + reticulatePart.toString());
 
                 //mount best reticulated part to MAST
                 for(MountPoint mountPoint : tuple.Item2) {
@@ -818,5 +861,19 @@ public class InferNetworkFromParentalTrees {
 
         removeBinaryNodes(network);
         return network;
+    }
+
+    public static void main(String[] args) {
+        Network trueNetwork = Networks.readNetwork("((((((C)#H1,D)#H2,E),F)#H3,B), (((A,#H2),#H1),#H3));");
+        ParentalTreeOperation parentalTreeOperation = new ParentalTreeOperation();
+        InferNetworkFromParentalTrees inferNetworkFromParentalTrees = new InferNetworkFromParentalTrees();
+        List<Tree> parentalTrees = parentalTreeOperation.getParentalTrees(trueNetwork);
+        List<List<MutableTuple<Tree, Double>>> parentalTrees0 = new ArrayList<>();
+        for(Tree tree : parentalTrees) {
+            parentalTrees0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), new Double(1.0))));
+
+        }
+        Network inferredNetwork = inferNetworkFromParentalTrees.inferNetwork(parentalTrees0);
+        System.out.println(inferredNetwork);
     }
 }

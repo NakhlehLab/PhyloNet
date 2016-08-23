@@ -531,7 +531,7 @@ public class Networks
 
                 sd.computeDifference(trees1.get(l), trees2.get(r), false);
                 fn = sd.getFalseNegativeCount();	// Number of disagreement edges in a left tree.
-                fp = sd.getFalseNegativeCount();	// Number of disagreement edges in a right tree.
+                fp = sd.getFalsePositiveCount();	// Number of disagreement edges in a right tree.
 
                 ncount = trees1.get(l).getNodeCount() - trees1.get(l).getLeafCount() - 1;	// #Internal edges in ltree.
                 pcount = trees2.get(r).getNodeCount() - trees2.get(r).getLeafCount() - 1;	// #Internal edges in rtree.
@@ -541,7 +541,7 @@ public class Networks
                 avg = (fn + fp) / 2.0;
 
                 fnBG.addEdge(l, r, fn);
-                fpBG.addEdge(l, r, avg);
+                fpBG.addEdge(l, r, fp);
                 avgBG.addEdge(l, r, avg);
             }
         }

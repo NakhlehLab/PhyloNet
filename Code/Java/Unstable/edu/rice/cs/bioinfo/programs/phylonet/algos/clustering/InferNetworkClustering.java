@@ -30,7 +30,7 @@ public class InferNetworkClustering {
         multidimensionalScaling.getMDScoordinates(n, d, distMatrix, coordinates);
     }
 
-    private double getRootedRobinsonFouldsDistance(Tree tree1, Tree tree2) {
+    public double getRootedRobinsonFouldsDistance(Tree tree1, Tree tree2) {
         SymmetricDifference symmetricDifference = new SymmetricDifference();
         symmetricDifference.computeDifference(tree1, tree2, true);
         double diff = symmetricDifference.getWeightedAverage();
@@ -76,7 +76,7 @@ public class InferNetworkClustering {
         return s;
     }
 
-    private void KMeansClustering_MDC(List<List<Integer>> cluster, List<List<MutableTuple<Tree, Double>>> trees, int n, int m) {
+    public void KMeansClustering_MDC(List<List<Integer>> cluster, List<List<MutableTuple<Tree, Double>>> trees, int n, int m) {
         int maxIter = 1000;
         List<Tree> centroids = new ArrayList<>();
         //double centroids[][] = new double[m][dim];
@@ -149,7 +149,7 @@ public class InferNetworkClustering {
 
     }
 
-    private void KMeansClustering(List<List<Integer>> cluster, double [][] coordinates, int n, int m, int dim) {
+    public void KMeansClustering(List<List<Integer>> cluster, double [][] coordinates, int n, int m, int dim) {
         int maxIter = 1000;
         double centroids[][] = new double[m][dim];
         cluster.clear();
@@ -221,7 +221,7 @@ public class InferNetworkClustering {
     }
 
     //n points, m clusters
-    private void KMedoidsClustering(List<List<Integer>> cluster, double [][] distMatrix, int n, int m) {
+    public void KMedoidsClustering(List<List<Integer>> cluster, double [][] distMatrix, int n, int m) {
         int maxIter = 1000;
         int medoids[] = new int[m];
         cluster.clear();

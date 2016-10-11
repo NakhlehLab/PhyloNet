@@ -9,6 +9,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkByMS;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.ReticulationEdgeAddition;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -145,6 +146,24 @@ public class DataGenerator {
 
     }
 
+    private boolean isFullReticulation(Network<Object> network){
+        //if(true)
+            //return true;
+        int number = 0;
+        for (NetNode<Object> node : network.dfs()) {
+            if(node.isNetworkNode())
+                number++;
+        }
+        int count = 0;
+        for (NetworkTree<Object> nt : Networks.getTrees(network)) {
+            count++;
+        }
+        if((1 << number) == count)
+            return true;
+        else
+            return false;
+    }
+
     void addReticulation(Network<Object> network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allEdgesNeedBrlens = new ArrayList<>();
@@ -153,6 +172,11 @@ public class DataGenerator {
         Set<String> taxa = new HashSet<>();
 
         getNetworkInfo(network, allEdges, allEdgesNeedBrlens, allReticulationEdges, allRemovableReticulationEdges, taxa);
+
+        /*for(Tuple<NetNode, NetNode> edge : allEdges) {
+            if(edge.Item1 == network.getRoot())
+                allEdges.remove(edge);
+        }*/
 
         ReticulationEdgeAddition reticulationEdgeAddition = new ReticulationEdgeAddition();
 
@@ -166,7 +190,7 @@ public class DataGenerator {
 
                 if (reticulationEdgeAddition.performOperation()) {
 
-                    if (Networks.hasCycle(network) || !isNetworkValid(network, taxa) /*|| !isFullReticulation(network)*/) {
+                    if (Networks.hasCycle(network) || !isNetworkValid(network, taxa) || !isFullReticulation(network)) {
                         successRearrangment = false;
                         reticulationEdgeAddition.undoOperation();
                     }
@@ -182,13 +206,18 @@ public class DataGenerator {
     }
 
     public Network<Object> getRandomNetwork() {
-        String[] leaves = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
+        String[] leaves;
         int taxa = 10;
+        leaves = new String[taxa];
+        for(int i = 0 ; i < taxa ; i++) {
+            leaves[i] = Integer.toString(i + 1);
+        }
         int maxReticulations = 2;
 
-        Network<Object> trueNetwork = Networks.readNetwork(Trees.generateRandomTree(Arrays.copyOfRange(leaves, 0, taxa)).toNewick());
+        Tree randomTree = Trees.generateRandomTree(Arrays.copyOfRange(leaves, 0, taxa));
+        Network<Object> trueNetwork = Networks.readNetwork(randomTree.toNewick());
 
-        _printDetails = true;
+        _printDetails = false;
         _targetEdgeBrlen = 1;
         _targetEdgeInheriProb = 0.5;
 

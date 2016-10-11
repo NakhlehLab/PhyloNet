@@ -4,8 +4,11 @@ import edu.rice.cs.bioinfo.library.programming.Func2;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MajorityConsensusInference;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.mast.SteelWarnowMAST;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.GeneTreeProbability;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkByMS;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.BipartiteGraph;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -194,6 +197,35 @@ public class RECOMB_CG_16_JZ {
         //double score2 = getBestMatchDistanceBetweenTreesRecursively(trees1, trees2, distMatrix, Math.min(size1, size2));
         return score;
 
+    }
+
+    public void getDistanceMatrixBestTree(List<List<MutableTuple<Tree, Double>>> gts, String path, double[][] distMatrix) {
+        int size = gts.size();
+        List<Tree> bestTrees = new ArrayList<>();
+        try {
+            for(int i = 0 ; i < size ; i++) {
+
+                File file = new File(path + "/seq/" + i + ".bestTree");
+                Scanner scanner = new Scanner(file);
+                String s = scanner.nextLine();
+                Tree newtree = Trees.readTree(s);
+                bestTrees.add(newtree);
+
+                scanner.close();
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        for(int i = 0 ; i < size ; i++) {
+            for(int j = i + 1 ; j < size ; j++) {
+                double distance = getDistance(bestTrees.get(i), bestTrees.get(j), false);
+                distMatrix[i][j] = distMatrix[j][i] = distance;
+            }
+        }
     }
 
     public void getDistanceMatrixBootstrap(List<List<MutableTuple<Tree, Double>>> gts, String path, double[][] distMatrix) {
@@ -770,6 +802,8 @@ public class RECOMB_CG_16_JZ {
                         for (int j = i + 1; j < size; j++)
                             distMatrix[i][j] = distMatrix[j][i] = getDistance(simulatedGTs.get(i).get(0).Item1, simulatedGTs.get(j).get(0).Item1);
 
+                } else if(_config._distanceMethod.equals("BestTree")) {
+                    getDistanceMatrixBestTree(simulatedGTs, _path, distMatrix);
                 } else if(_config._distanceMethod.equals("Bootstrap")) {
                     getDistanceMatrixBootstrap(simulatedGTs, _path, distMatrix);
                 } else if(_config._distanceMethod.equals("BootstrapConsensus")) {
@@ -956,7 +990,7 @@ public class RECOMB_CG_16_JZ {
         SimulationConfiguration config = new SimulationConfiguration();
         config._clusteringMethod = new String("MDS+KMeans");
         config._inferringMethod = new String("MDC");
-        config._distanceMethod = "BootstrapConsensus";
+        config._distanceMethod = "BestTree";
         config._sizes = new int[]{50, 250, 500, 1000};
         config._fixedClusterNumberTest = -1;
         config._lockedClusterNumber = -1;
@@ -1084,6 +1118,14 @@ public class RECOMB_CG_16_JZ {
         //Should be 140
         System.out.println("Cost: " + cost);
 
+        BipartiteGraph bg = new BipartiteGraph(costMatrix.length, costMatrix[0].length);
+        for(int i = 0 ; i < workers ; i++) {
+            for(int j = 0 ; j < jobs ; j++) {
+                bg.addEdge(i, j, costMatrix[i][j]);
+            }
+        }
+        System.out.println("Cost: " + bg.getMinEdgeCoverWeight());
+
     }
 
     public void generateData() {
@@ -1115,5 +1157,99 @@ public class RECOMB_CG_16_JZ {
                 return gts;
             }
         };
+    }
+
+    public void printGeneTreeProbWithFourTaxa(Network<Object> trueNetwork) {
+        List<Double> branchLengths = new ArrayList<>();
+        GeneTreeProbability geneTreeProbability = new GeneTreeProbability();
+        List<Double> gtprob = new ArrayList<>();
+        List<Tree> gts = new ArrayList<>();
+        gts.add(Trees.readTree("(((b, c), a), d);"));
+        gts.add(Trees.readTree("(((b, c), d), a);"));
+        gts.add(Trees.readTree("((a, b), (c, d));"));
+        gts.add(Trees.readTree("((a, c), (b, d));"));
+        gts.add(Trees.readTree("(((a, b), c), d);"));
+        gts.add(Trees.readTree("(((a, c), b), d);"));
+        gts.add(Trees.readTree("(a, (b, (c, d)));"));
+        gts.add(Trees.readTree("(((b, d), c), a);"));
+        gts.add(Trees.readTree("((a, d), (b, c));"));
+        gts.add(Trees.readTree("(((a, b), d), c);"));
+        gts.add(Trees.readTree("(b, (a, (c, d)));"));
+        gts.add(Trees.readTree("(((a, d), b), c);"));
+        gts.add(Trees.readTree("(((b, d), a), c);"));
+        gts.add(Trees.readTree("(((a, c), d), b);"));
+        gts.add(Trees.readTree("(((a, d), c), b);"));
+
+
+        gtprob = geneTreeProbability.calculateGTDistribution((Network)trueNetwork, gts, null, false);
+        //System.out.println(gts);
+        for(double x : gtprob){
+            System.out.print('\t');
+            System.out.print(x);
+        }
+        System.out.println("");
+        System.out.println("");
+    }
+
+    public void testTable1(){
+        double gamma = 1 - 0.05;
+
+        double y = 0.1;
+        double x = 10000;
+
+        Network<Object> trueNetwork;
+        trueNetwork = Networks.readNetwork("((((b:1000.0,c:1000.0)I4:" + y + ")I3#H1:0.0::" + (1 - gamma) + ",a:" + (1000 + y) + ")I1:" + x + ",(I3#H1:0.0::" + gamma + ",d:" + (1000 + y) + ")I2:"+ x +")I0;");
+
+        printGeneTreeProbWithFourTaxa(trueNetwork);
+    }
+
+    public static void main(String[] args) {
+
+        /*SymmetricDifference sd = new SymmetricDifference();
+        Tree t1 = Trees.readTree("(((b, c), a), d);");
+        Tree t2 = Trees.readTree("(((b, c), d), a);");
+        sd.computeDifference(t1, t2, true);
+        System.out.println(sd.getUnweightedAverage());
+        System.out.println(sd.getWeightedAverage());
+        System.out.println(sd.getNumInternalEdges1());
+        System.out.println(sd.getNumInternalEdges2());
+*/
+
+
+
+
+        ParentalTreeOperation parentalTreeOperation = new ParentalTreeOperation();
+        parentalTreeOperation.test();
+
+        if(true)
+            return;
+
+        RECOMB_CG_16_JZ recomb_cg_16_jz = new RECOMB_CG_16_JZ();
+        recomb_cg_16_jz.testTable1();
+
+
+        Network<Object> net = Networks.readNetwork("((A,B),C);");
+        System.out.println(net.toString());
+
+        List<Tree> trees = new ArrayList<>();
+        trees.add(Trees.readTree("(((((((8,10),7))),(((((3)),1),6),4)),(5,2)),9);"));
+        trees.add(Trees.readTree("(((((3)),(((((((8,10),7))),1),6),4)),(5,2)),9);"));
+        trees.add(Trees.readTree("(((((((8)))),(((((3,((10),7))),1),6),4)),(5,2)),9);"));
+
+        //trees.add(Trees.readTree("((((a,b),e),c),d);"));
+
+        for(int i = 0 ; i < trees.size() ; i++) {
+            InferNetworkFromParentalTrees inferNetworkFromParentalTrees = new InferNetworkFromParentalTrees();
+            Network<Object> tmp = Networks.readNetwork(trees.get(i).toNewick());
+            inferNetworkFromParentalTrees.removeBinaryNodes(tmp);
+            trees.set(i, Trees.readTree(tmp.toString()));
+
+        }
+        SteelWarnowMAST steelWarnowMAST = new SteelWarnowMAST();
+        //Tree mast = steelWarnowMAST.computeRMAST(trees);
+        Tree mast = steelWarnowMAST.computeRMAST(trees.get(0), trees.get(1));
+        System.out.println(mast);
+
+
     }
 }

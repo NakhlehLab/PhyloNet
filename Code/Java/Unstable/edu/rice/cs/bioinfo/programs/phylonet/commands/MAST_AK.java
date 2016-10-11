@@ -28,7 +28,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkN
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.mast.SteelWarnowMAST;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.mast.AmirKeselmanMAST;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.riatahgt.ExMultipleMasts;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
@@ -41,8 +41,8 @@ import java.util.*;
  * Time: 2:00 PM
  * To change this template use File | Settings | File Templates.
  */
-@CommandName("Mast")
-class MAST extends CommandBaseFileOut
+@CommandName("Mast_AK")
+class MAST_AK extends CommandBaseFileOut
 {
     private boolean _computeAll = false;
 
@@ -54,8 +54,8 @@ class MAST extends CommandBaseFileOut
 
     boolean _allUnrooted = true;
 
-    public MAST(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
-                RichNewickReader<Networks> rnReader) {
+    public MAST_AK(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
+                   RichNewickReader<Networks> rnReader) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
     }
 
@@ -180,7 +180,7 @@ class MAST extends CommandBaseFileOut
         }
         else
         {
-            SteelWarnowMAST calculator = new SteelWarnowMAST();
+            AmirKeselmanMAST calculator = new AmirKeselmanMAST();
             Tree outTree;
 
             List<Tree> treeList = new ArrayList<>();
@@ -189,7 +189,8 @@ class MAST extends CommandBaseFileOut
 
             if(_allUnrooted)
             {
-                outTree = calculator.computeUMAST(treeList);
+                throw new RuntimeException("Only support rooted tree");
+                //outTree = calculator.computeUMAST(_treeSet);
             }
             else
             {

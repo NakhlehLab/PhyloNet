@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.clustering;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
@@ -170,33 +171,77 @@ public class ParentalTreeOperation {
         }
 
         List<Tree> newParentalTrees = new ArrayList<>();
+        Set<String> newickStrings = new HashSet<>();
 
         for(STITree<Double> tree : parentalTrees) {
             for(STINode<Double> node : tree.getNodes()) {
                 if(node.isLeaf()) {
                     String name = node.getName();
                     node.setName(name.substring(0, name.lastIndexOf("_")));
+                } else {
+                    node.setName("");
                 }
+                node.setParentDistance(TNode.NO_DISTANCE);
             }
+            Trees.removeBinaryNodes(tree);
+            Trees.convertToLexicographicTree(tree);
+            if(newickStrings.contains(tree.toNewick()))
+                continue;
+            newickStrings.add(tree.toNewick());
             newParentalTrees.add(Trees.readTree(tree.toNewick()));
         }
+
 
         return newParentalTrees;
     }
 
     public void test() {
-        int number = 100;
+        int number = 1;
         int correctness = 0;
-        double remainRatio = 0.5;
+        double remainRatio = 1;
 
-        DataGenerator dataGenerator = new DataGenerator();
-        ParentalTreeOperation parentalTreeOperation = new ParentalTreeOperation();
-        InferNetworkFromParentalTrees inferNetworkFromParentalTrees = new InferNetworkFromParentalTrees();
+
+        List<Network<Object>> incorrectNetworks = new ArrayList<>();
+        List<Network<Object>> exceptionNetworks = new ArrayList<>();
         StringBuilder result = new StringBuilder();
 
         for(int i = 0 ; i < number ; i++) {
-            Network<Object> trueNetwork = dataGenerator.getNewNetworkR2_2();
+            DataGenerator dataGenerator = new DataGenerator();
+            ParentalTreeOperation parentalTreeOperation = new ParentalTreeOperation();
+            Network<Object> trueNetwork = dataGenerator.getRandomNetwork();
 
+            /*double gamma = 1 - 0.05;
+
+            double y = 0.1;
+            double x = 10000;
+
+            trueNetwork = Networks.readNetwork("((((b:1000.0,c:1000.0)I4:" + y + ")I3#H1:0.0::" + (1 - gamma) + ",a:" + (1000 + y) + ")I1:" + x + ",(I3#H1:0.0::" + gamma + ",d:" + (1000 + y) + ")I2:"+ x +")I0;");
+*/
+            //trueNetwork = Networks.readNetwork("(((B)I1#H1,A),(((C)I2#H2,D),(I1#H1,I2#H2)));");
+            //List<Tree> pt = getParentalTrees(trueNetwork);
+            //trueNetwork = Networks.readNetwork("((6,(4,(10,7)I6)I4)I2,(2,(((8)I8#H1:::0.5,(((9)I12#H2:::0.5,1)I10,((I12#H2:::0.5,5)I11,I8#H1:::0.5)I9)I7)I5,3)I3)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((5,6)I5,((((((((10,8)I10,4)I8,1)I6)I3#H2:::0.5,2)I9)I12#H1:::0.5,3)I11,(I12#H1:::0.5,7)I7)I4)I2,(I3#H2:::0.5,9)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((3,1)I5,((((5,8)I10,9)I9)I8#H1,10)I4)I2,(2,(((6)I12#H2,I8#H1)I7,((I12#H2,4)I11,7)I6)I3)I1)I0;");
+            //trueNetwork = Networks.readNetwork("((10,7)I1,(((((2)I11#H1:::0.5,(8)I6#H2:::0.5)I12,9)I4,(((1,6)I10,3)I9,(I6#H2:::0.5,5)I8)I7)I5,(I11#H1:::0.5,4)I3)I2)I0;");
+            //trueNetwork = Networks.readNetwork("((10,4)I1,(7,(((9)I8#H1:::0.5,((8,(1)I11#H2:::0.5)I9,(I8#H1:::0.5,(2,I11#H2:::0.5)I12)I10)I7)I5,((3,6)I6,5)I4)I3)I2)I0;");
+            //trueNetwork = Networks.readNetwork("((((1,(4,2)I5)I3,((6)I11#H1:::0.5,(((9)I9#H2:::0.5,((I11#H1:::0.5,(I9#H2:::0.5,3)I10)I12,7)I8)I7,10)I6)I4)I2,8)I1,5)I0;");
+            //trueNetwork = Networks.readNetwork("((((7,6)I10)I6#H1:::0.5,((((5)I11#H2:::0.5,1)I12,I6#H1:::0.5)I9,(I11#H2:::0.5,10)I8)I5)I2,((8,2)I4,((9,3)I7,4)I3)I1)I0;");
+            trueNetwork = Networks.readNetwork("(((10,(((((((1)I5#H2,2)I10,7)I9,4)I8,6)I7,3)I6,9)I4)I2)I11#H1,((I11#H1,(I5#H2,5)I3)I12,8)I1)I0;");
+            Networks.removeAllParameters(trueNetwork);
+            System.out.println(trueNetwork.toString());
+            System.out.println("Level-" + Networks.computeLevel(trueNetwork));
+            System.out.println("IsGalledNetwork: " + Networks.isGalledNetwork(trueNetwork));
+            //System.out.println("Num of PTs: " + pt.size());
+
+            //trueNetwork = Networks.readNetwork("(((((3,((8,10)I10,7)I9)I7)I5#H1:::0.5,(((I5#H1:::0.5,1)I8,6)I6,4)I4)I3,(5,2)I2)I1,9)I0;");
+            //trueNetwork = Networks.readNetwork("((((((6,3)I6)I4#H1:::0.5,((I4#H1:::0.5,(7,8)I9)I8,(5,1)I10)I7)I5,(4,2)I3)I2,9)I1,10)I0;");
+            //trueNetwork = Networks.readNetwork("(((((2,1)I9,10)I7,3)I4)I2#H1:::0.5,(((I2#H1:::0.5,(8,(6,7)I10)I8)I6,(4,5)I5)I3,9)I1)I0;"); //TODO: From root edge
+            //trueNetwork = Networks.readNetwork("(((((2,(3,5)I9)I8)I10#H1:::0.5,8)I7,(I10#H1:::0.5,7)I4)I2,(((10,4)I6,(9,1)I5)I3,6)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((5,((2,10)I7,((3,(1,6)I10)I9,(7,8)I8)I6)I5)I4)I2#H1,((I2#H1,9)I3,4)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((((8,3)I10,(5,10)I8)I7,(1,(4,9)I6)I4)I2)I5#H1:::0.5,((I5#H1:::0.5,6)I9,(7,2)I3)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((6:1.0,7:1.0)I5:1.0,(8:1.0,(((4:1.0,2:1.0)I10:1.0)I8#H1:0.0,((I8#H1:0.0,9:1.0)I9:1.0,1:1.0)I7:1.0)I6:1.0)I4:1.0)I2:1.0,((5:1.0,3:1.0)I3:1.0,10:1.0)I1:1.0)I0;");
+            //trueNetwork = Networks.readNetwork("((((((10,4)I8)I6#H1,7)I4,(I6#H1,((9,(5,(8,6)I10)I9)I7,2)I5)I3)I2,1)I1,3)I0;");
+            //trueNetwork = Networks.readNetwork("((8,(((((4,10)I9)I10#H1:::0.5,9)I4,(I10#H1:::0.5,1)I8)I7,((2,7)I6,(6,5)I5)I3)I2)I1,3)I0;");
             for(NetNode<Object> node: trueNetwork.dfs()){
                 for(NetNode<Object> parent: node.getParents()){
                     node.setParentDistance(parent,NetNode.NO_DISTANCE);
@@ -209,10 +254,22 @@ public class ParentalTreeOperation {
             System.out.println("True network: " + trueNetwork.toString());
 
             List<Tree> parentalTrees = parentalTreeOperation.getParentalTrees(trueNetwork);
+
+            //if(parentalTrees.size() > 128) {correctness++;continue;}
+
             Collections.shuffle(parentalTrees);
             parentalTrees = parentalTrees.subList(0, (int)(parentalTrees.size() * remainRatio));
+            //parentalTrees.clear();
+            //parentalTrees.add(Trees.readTree("((((((1,8),2),9),((3,6),5)),7),(10,4));"));
+            //parentalTrees.add(Trees.readTree("(((((1,8),(2,9)),((3,6),5)),7),(10,4));"));
+            //parentalTrees.add(Trees.readTree("((((((1,2),8),9),((3,6),5)),7),(10,4));"));
+            //parentalTrees.add(Trees.readTree("((((((1,2),9),8),((3,6),5)),7),(10,4));"));
 
             System.out.println("Number of input parental trees: " + parentalTrees.size());
+            //if(!Networks.isGalledNetwork(trueNetwork) /*|| !Networks.isNestedNetwork(trueNetwork)*/) {
+            //    correctness++;
+            //    continue;
+            //}
 
             for(Tree tree : parentalTrees) {
 
@@ -242,15 +299,28 @@ public class ParentalTreeOperation {
                 Future<Network<Object>> future = executor.submit(new Callable<Network<Object>>() {
                     @Override
                     public Network<Object> call() {
+                        InferNetworkFromParentalTrees inferNetworkFromParentalTrees = new InferNetworkFromParentalTrees();
                         Network<Object> inferredNetwork = inferNetworkFromParentalTrees.inferNetwork(parentalTrees0);
                         return inferredNetwork;
                     }
                 });
                 executor.shutdown();
 
-                inferredNetwork = future.get(10, TimeUnit.SECONDS);
+                inferredNetwork = future.get(20, TimeUnit.SECONDS);
+
+                executor.awaitTermination(20, TimeUnit.SECONDS);
 
                 System.out.println("Inferred Network: " + inferredNetwork.toString());
+
+                List<Tree> newParentalTrees = parentalTreeOperation.getParentalTrees(inferredNetwork);
+                Set<String> newParentalTreesNewick = new HashSet<>();
+                Set<String> originalParentalTreesNewick = new HashSet<>();
+                for(Tree t : newParentalTrees) {
+                    newParentalTreesNewick.add(t.toNewick());
+                }
+                for(Tree t : parentalTrees) {
+                    originalParentalTreesNewick.add(t.toNewick());
+                }
 
                 LinkedList<Tree> trees1 = new LinkedList<Tree>();
                 LinkedList<Tree> trees2 = new LinkedList<Tree>();
@@ -265,17 +335,36 @@ public class ParentalTreeOperation {
                 }
 
                 double dist[] = Networks.computeTreeDistance(trees1, trees2);
-                System.out.println("\nThe tree-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2] + "\n");
+                //System.out.println("\nThe tree-based distance between two networks: " + dist[0] + " " + dist[1] + " " + dist[2] + "\n");
 
-                if (dist[2] < 1e-6)
+                if(newParentalTreesNewick.containsAll(originalParentalTreesNewick))
+                //if (dist[2] < 1e-6)
                     correctness++;
-                else
+                else {
                     System.out.println("Incorrect!");
+                    incorrectNetworks.add(trueNetwork);
+                    for(String s : newParentalTreesNewick) {
+                        System.out.println("New parental tree: " + s);
+                    }
+                    for(String s : originalParentalTreesNewick) {
+                        if(!newParentalTreesNewick.contains(s))
+                        System.out.println("Unshown parental tree: " + s);
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                exceptionNetworks.add(trueNetwork);
             }
         }
         System.out.println("Correctness " + correctness);
-
+        System.out.println("IncorrectNetworks:");
+        for(Network net : incorrectNetworks)  {
+            System.out.println(net.toString());
+        }
+        System.out.println("ExceptionNetworks:");
+        for(Network net : exceptionNetworks)  {
+            System.out.println(net.toString());
+        }
     }
+
 }

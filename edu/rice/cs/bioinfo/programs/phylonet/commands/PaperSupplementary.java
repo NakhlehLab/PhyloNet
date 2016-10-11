@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.HungarianMatching;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.ParentalTreeOperation;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.RECOMB_CG_16_JZ;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class PaperSupplementary extends CommandBaseFileOut{
     private String [] _args;
     private boolean _clusteringTest;
     private boolean _generateData;
+    private boolean _parentalTreeTest;
 
     protected int getMinNumParams()
     {
@@ -86,6 +88,13 @@ public class PaperSupplementary extends CommandBaseFileOut{
             _generateData = false;
         }
 
+        ParamExtractor pttParam = new ParamExtractor("ptt", this.params, this.errorDetected);
+        if(pttParam.ContainsSwitch) {
+            _parentalTreeTest = true;
+        } else {
+            _parentalTreeTest = false;
+        }
+
         return noError;
     }
 
@@ -99,6 +108,11 @@ public class PaperSupplementary extends CommandBaseFileOut{
 
         if(_generateData) {
             recomb_cg_16_jz.generateData();
+        }
+
+        if(_parentalTreeTest) {
+            ParentalTreeOperation pto = new ParentalTreeOperation();
+            pto.test();
         }
 
         return "";

@@ -195,9 +195,26 @@ public interface NetNode<T> extends Serializable {
     public int getChildCount();
 
 
+	/**
+	 * Get root pop size
+	 * @return root pop size
+	 */
+	public double getRootPopSize();
+
+	/**
+	 * Set root pop size
+	 * @param popSize   root pop size
+	 */
+	public void setRootPopSize(double popSize);
+
+
 	// Data members
 	public static final double NO_DISTANCE = Double.NEGATIVE_INFINITY;	// Constant for no distances.
     public static final double NO_PROBABILITY = Double.NEGATIVE_INFINITY;	// Constant for no probability.
     public static final double NO_SUPPORT = Double.NEGATIVE_INFINITY;// Constant for no support.
 	public static final String NO_NAME = "";		// Constant for nodes without a name.
+	public static final double NO_AGE = Double.NEGATIVE_INFINITY;
+	public static final double NO_POP_SIZE = Double.NEGATIVE_INFINITY;
+	public static final double NO_GEN_TIME = Double.NEGATIVE_INFINITY;
+	public static final double NO_ROOT_POPSIZE = Double.NaN;
 }

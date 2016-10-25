@@ -47,7 +47,7 @@ public class BniNetNode<T> implements NetNode<T> {
         _parent_support = null;
 		_parent_gen_times = null;
 		_parent_pop_sizes = null;
-		_age = 0.0;
+		_age = NO_AGE;
 	}
 
 	/**
@@ -243,7 +243,7 @@ public class BniNetNode<T> implements NetNode<T> {
 			return Double.NaN;
 		}
 		//added this for phylonet-hmm, if using pop size and gen time and ages only, then derive this number
-		else if(_parent_distances.get(i).doubleValue() < 0.0){
+		else if(_parent_distances.get(i) != NO_DISTANCE && _parent_distances.get(i).doubleValue() < 0.0){
 			return (((BniNetNode)parent).getAge() - _age) / (2.0 * _parent_gen_times.get(i).doubleValue() * _parent_pop_sizes.get(i).doubleValue());
 		}
 		else {
@@ -653,6 +653,26 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+	/**
+	 * Get root pop size
+	 * @return root pop size
+     */
+	public double getRootPopSize() {
+		return isRoot() ? _root_popSize : NO_ROOT_POPSIZE;
+	}
+
+	/**
+	 * Set root pop size
+	 * @param popSize   root pop size
+     */
+	public void setRootPopSize(double popSize) {
+		if (isRoot()) {
+			_root_popSize = popSize;
+		} else {
+			throw new RuntimeException("Don't allow setting pop size for a node that is not root");
+		}
+	}
+
 
 	// Data members
 	private T _data;		// Additional data we want to store in this node
@@ -660,11 +680,14 @@ public class BniNetNode<T> implements NetNode<T> {
 	private List<NetNode<T>> _children;		// List of this node's children
 	private List<NetNode<T>> _parents;		// List of parents of this node.
 	private List<Double> _parent_probabiliites;           // List of gammas to its children
-    private List<Double> _parent_support;           // List of gammas to its children
+    public List<Double> _parent_support;           // List of gammas to its children // TODO
 	private List<Double> _parent_distances;	// List of distances from this node to its parents.
 	//LEO: adding new parameters aug. 9, 2016
 	private List<Double> _parent_pop_sizes; //population sizes from this node to its parents
 	private List<Double> _parent_gen_times; //generation times from this node to its parents
 	private double _age; //the time in years of the node
+	// dw20: adding new parameters 08/17/2016
+	private double _root_popSize = NO_ROOT_POPSIZE;
+
 }
 

@@ -63,7 +63,6 @@ public class SymmetricDifference {
 	/**
 	 * Compute the symmetric difference between two trees.  The false positives
 	 * and false negatives can be retrieved through the methods
-	 * {@link getFalsePositives} and {@link getFalseNegatives}, respectively.
 	 *
 	 * @throws RuntimeException if the trees do not have identical leaf sets
 	 */
@@ -139,7 +138,7 @@ public class SymmetricDifference {
     public void computeRootedDifference(Tree t1, Tree t2) {
 
         if(!Trees.leafSetsAgree(t1, t2)) {
-            throw new RuntimeException("Trees must have identical leaf sets");
+			throw new RuntimeException("Trees must have identical leaf sets");
         }
 
         String[] taxa = t1.getLeaves();
@@ -197,14 +196,14 @@ public class SymmetricDifference {
 	}
 
 	/**
-	 * @return the number of false positives computed by the last call to {@link computeDifference}
+	 * @return the number of false positives computed by the last call to {computeDifference}
 	 */
 	public int getFalsePositiveCount() {
 		return _fp;
 	}
 
 	/**
-	 * @return the number of false negatives computed by the last call to {@link computeDifference}
+	 * @return the number of false negatives computed by the last call to {computeDifference}
 	 */
 	public int getFalseNegativeCount() {
 		return _fn;

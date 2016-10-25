@@ -96,17 +96,21 @@ public class Networks
                     NetNode<T> parent = node.getParents().iterator().next();    // Node's only parent.
                     NetNode<T> child = node.getChildren().iterator().next();    // Node's only child.
                     double distance = node.getParentDistance(parent) + child.getParentDistance(node);
+                    double support = Math.max(node.getParentSupport(parent), child.getParentSupport(node));
                     double inheritanceProb = child.getParentProbability(node);
                     parent.removeChild(node);
                     node.removeChild(child);
                     parent.adoptChild(child, distance);
                     child.setParentProbability(parent, inheritanceProb);
+                    child.setParentSupport(parent, support);
                     update = true;
                 }
                 if(node.isRoot() && node.getOutdeg()==1){
                     NetNode newRoot = node.getChildren().iterator().next();
+                    double root_popsize = node.getRootPopSize();
                     node.removeChild(newRoot);
                     net.resetRoot(newRoot);
+                    newRoot.setRootPopSize(root_popsize);
                 }
             }
         }while(update);
@@ -754,7 +758,6 @@ public class Networks
      * @param net: The network
      * @return: The set of articulation nodes
      */
-
     public static <T> Set<NetNode<T>> getLowestArticulationNodes(Network<T> net){
         List<NetNode<T>> allArticulationNodes = new ArrayList<NetNode<T>>();
         Set<NetNode<T>> articulationNodesToReturn = new HashSet<NetNode<T>>();
@@ -789,9 +792,11 @@ public class Networks
                 }else{
                     NetNode<T> parent = node.getParents().iterator().next();
                     double distance = node.getParentDistance(parent);
+                    double support = node.getParentSupport(parent);
                     parent.removeChild(node);
                     boolean disconnect = isDisconnectedNetwork(net, parent);
                     parent.adoptChild(node, distance);
+                    node.setParentSupport(parent, support);
                     if (disconnect) {
                         articulationNodesToReturn.add(node);
                         allArticulationNodes.add(node);
@@ -828,9 +833,11 @@ public class Networks
                 }else{
                     NetNode<T> parent = node.getParents().iterator().next();
                     double distance = node.getParentDistance(parent);
+                    double support = node.getParentSupport(parent);
                     parent.removeChild(node);
                     boolean disconnect = isDisconnectedNetwork(net, parent);
                     parent.adoptChild(node, distance);
+                    node.setParentSupport(parent, support);
                     if (disconnect) {
                         articulationNodes.add(node);
                     }
@@ -1003,6 +1010,120 @@ public class Networks
         return true;
     }
 
+    /**
+     * Gets the edges in a network
+     * @param net   the network
+     * @param <T>   data type
+     * @return  all the edges
+     */
+    public static <T> List<Tuple<NetNode<T>, NetNode<T>>> getAllEdges(Network<T> net) {
+        List<Tuple<NetNode<T>, NetNode<T>>> edges = new ArrayList<>();
+        for(NetNode<T> node : net.dfs()) {
+            for(NetNode<T> par : node.getParents()) {
+                edges.add(new Tuple<>(node, par));
+            }
+        }
+        return edges;
+    }
+
+
+    /**
+     * Get the other child of a network tree node given a child
+     * @param parent    the network tree node
+     * @param child     one of the child
+     * @param <T>
+     * @return  the other child
+     */
+    public static <T> NetNode<T> getOtherChild(NetNode<T> parent, NetNode<T> child) {
+        boolean found = false;
+        NetNode<T> otherChild = null;
+        for(NetNode<T> node : parent.getChildren()) {
+            if(node == child) {
+                found = true;
+            } else {
+                otherChild = node;
+            }
+        }
+        if(parent.getChildCount() != 2 || !found || otherChild == null) {
+            throw new RuntimeException("Invalid node with wrong in/out-degree " + parent.getName());
+        }
+        return otherChild;
+    }
+
+
+    /**
+     * Get the other parent of a network node
+     * @param child     the network node
+     * @param parent    one of the parents
+     * @param <T>
+     * @return  the other parent
+     */
+    public static <T> NetNode<T> getOtherParent(NetNode<T> child, NetNode<T> parent) {
+        boolean found = false;
+        NetNode<T> otherParent = null;
+        for(NetNode<T> node : child.getParents()) {
+            if(node == parent) {
+                found = true;
+            } else {
+                otherParent = node;
+            }
+        }
+        if(child.getParentCount() != 2 || !found || otherParent == null) {
+            throw new RuntimeException("Invalid node with wrong in/out-degree " + child.getName());
+        }
+        return otherParent;
+    }
+
+
+    /**
+     * Get all internal nodes of a network
+     * @param net   the network
+     * @param <T>
+     * @return  all internal nodes
+     */
+    public static <T> List<NetNode<T>> getInternalNodes(Network<T> net) {
+        List<NetNode<T>> res = new ArrayList<>();
+        Queue<NetNode<T>> queue = new LinkedList<>();
+        queue.add(net.getRoot());
+        Set<NetNode<T>> visited = new HashSet<>();
+        while(!queue.isEmpty()) {
+            NetNode<T> node = queue.poll();
+            if(visited.contains(node)) continue;
+            res.add(node);
+            visited.add(node);
+            for(NetNode<T> child: node.getChildren()) {
+                if(child.isLeaf()) continue;
+                queue.add(child);
+            }
+        }
+        return res;
+    }
+
+
+    /**
+     * Get all internal tree nodes
+     * @param net   the network
+     * @param <T>
+     * @return  all internal tree nodes
+     */
+    public static <T> List<NetNode<T>> getInternalTreeNodes(Network<T> net) {
+        List<NetNode<T>> res = new ArrayList<>();
+        Queue<NetNode<T>> queue = new LinkedList<>();
+        queue.add(net.getRoot());
+        Set<NetNode<T>> visited = new HashSet<>();
+        while(!queue.isEmpty()) {
+            NetNode<T> node = queue.poll();
+            if(visited.contains(node)) continue;
+            visited.add(node);
+            if(node.isTreeNode()) res.add(node);
+            for(NetNode<T> child: node.getChildren()) {
+                if(child.isLeaf()) continue;
+                queue.add(child);
+            }
+        }
+        return res;
+    }
+
     public static <T> void computeBiconComponetEdges(List<List<Tuple<NetNode,NetNode>>> results,
                                                      Stack<Tuple<NetNode,NetNode>> S,
                                                      Map<NetNode, Integer> num,
@@ -1122,4 +1243,3 @@ public class Networks
     // Data members
     public static final String NAME_PREFIX = "I";	// Name prefix for interior nodes.
 }
-

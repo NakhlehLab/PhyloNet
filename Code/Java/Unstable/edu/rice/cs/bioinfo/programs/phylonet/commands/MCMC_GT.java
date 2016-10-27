@@ -398,12 +398,13 @@ public class MCMC_GT extends CommandBaseFileOut{
                     }
                     catch(NumberFormatException e)
                     {
-                        errorDetected.execute("Invalid value after switch -w.", wParam.PostSwitchParam.getLine(), wParam.PostSwitchParam.getColumn());
+                        errorDetected.execute("Invalid value after switch -sn.",
+                                snParam.PostSwitchParam.getLine(), snParam.PostSwitchParam.getColumn());
                     }
                 }
                 else
                 {
-                    errorDetected.execute("Expected value after switch -s.",
+                    errorDetected.execute("Expected value after switch -sn.",
                             snParam.SwitchParam.getLine(), snParam.SwitchParam.getColumn());
                 }
             }

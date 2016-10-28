@@ -50,7 +50,7 @@ public class CoalescenceAnalysis {
             for(Object p : node.getParents()) {
                 NetNode<Double> par = (NetNode<Double>)p;
                 if(node.getParentProbability(par) > 0.5) {
-                    node.setParentProbability(par, 1.0 + 0.000001 * i);
+                    node.setParentProbability(par, 1);
                 } else {
                     node.setParentProbability(par, 1.0 - 0.000001 * i);
                     rateMapping.put(1.0 - 0.000001 * i, d);

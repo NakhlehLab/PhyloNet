@@ -23,8 +23,6 @@ import java.util.*;
 
 public class Coalescence {
 
-    private boolean _printDetails = false;
-
     // input
     private Network<Double> _specieNetwork;
     private List<String> _gtTaxa;
@@ -50,7 +48,6 @@ public class Coalescence {
         _stTaxa = new ArrayList<String>();
         _nname2tamount = new TreeMap<String,Integer>();
         _tname2nname = new TreeMap<String,String>();
-        _printDetails = false;
 
         this._specieNetwork = net;
         this._gtTaxa = Arrays.asList(trees.get(0).getLeaves());
@@ -80,7 +77,7 @@ public class Coalescence {
         for(NetNode<Double> netNode : _specieNetwork.getNetworkNodes()) {
             for(NetNode<Double> par : netNode.getParents()) {
                 double prob = netNode.getParentProbability(par);
-                if(prob > 1.0) continue;  //todo
+                if(prob >= 1) continue;
                 else inheritanceProbs.put(prob, 0.0);
             }
         }
@@ -146,17 +143,13 @@ public class Coalescence {
             mulChild = (STINode<Double>) _mulTree.getNode(internal[child.getID()]);
         }
         STINode<Double> tmp = mulChild;
-//        StringBuilder path = new StringBuilder("");
         while(!tmp.equals(mulPar)) {
-//            path.append(tmp.getName() + " - ");
             double tmpProb = tmp.getData();
-            if(Math.abs(tmpProb - 1.0) > 0.000000001 && tmpProb < 1.0) {    // TODO   NORMAL: 0.5
+            if(Math.abs(tmpProb - 1.0) > 0.000000001 && tmpProb < 1.0) {
                 add.add(tmpProb);
             }
             tmp = tmp.getParent();
         }
-//        path.append(mulPar.getName());
-//        System.out.printf("add inheritance from edge %s to %s, with path %s \n", par.getName(), child.getName(), path.toString());
     }
 
     private List<Tuple3<int[],int[],Double>> getAllCoalescenceHistories(Tree gt){
@@ -167,97 +160,59 @@ public class Coalescence {
         computeNodesUnderHybrid(_mulTree, hname2tnodes);
 
         List<Tuple3<int[],int[],Double>> results = new ArrayList<>();
-        //for(Tree gt: gts){
-            if(_printDetails){
-                System.out.println("Gene tree " + gt+" :");
-            }
-            _R = calculateSorR(gt);
+        _R = calculateSorR(gt);
 
-            List<List<String>> allelesList = new ArrayList<List<String>>();
+        List<List<String>> allelesList = new ArrayList<List<String>>();
+        for(int i=0; i<_netTaxa.size(); i++){
+            allelesList.add(new ArrayList<String>());
+        }
+        int[] upper = new int[_netTaxa.size()];
+        for(String gtleaf: _gtTaxa){
+            String nleaf = gtleaf;
+            if(_allele2species!=null) nleaf = _allele2species.get(gtleaf);
+            int index = _netTaxa.indexOf(nleaf);
+            List<String> alleles = allelesList.get(index);
+            if(alleles.size()==0){
+                upper[index] = _nname2tamount.get(nleaf);
+            }
+            alleles.add(gtleaf);
+        }
+
+        List<int[]> mergeNumber = new ArrayList<int[]>();
+        for(List<String> alleles: allelesList){
+            int[] first = new int[alleles.size()];
+            Arrays.fill(first, 1);
+            mergeNumber.add(first);
+        }
+
+        double maxProb = -1;
+        MutableTuple<int[],int[]> optimalCoalescentHistory = new MutableTuple(null,null);
+        do{
+            int[] mapping = new int[_gtTaxa.size()];
             for(int i=0; i<_netTaxa.size(); i++){
-                allelesList.add(new ArrayList<String>());
-            }
-            int[] upper = new int[_netTaxa.size()];
-            for(String gtleaf: _gtTaxa){
-                String nleaf = gtleaf;
-                if(_allele2species!=null) nleaf = _allele2species.get(gtleaf);
-                int index = _netTaxa.indexOf(nleaf);
-                List<String> alleles = allelesList.get(index);
-                if(alleles.size()==0){
-                    upper[index] = _nname2tamount.get(nleaf);
+                String baseName = _netTaxa.get(i);
+                List<String> alleles = allelesList.get(i);
+                int[] subscribes = mergeNumber.get(i);
+                for(int j=0; j<alleles.size(); j++){
+                    mapping[_gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
                 }
-                alleles.add(gtleaf);
             }
 
-            List<int[]> mergeNumber = new ArrayList<int[]>();
-            for(List<String> alleles: allelesList){
-                int[] first = new int[alleles.size()];
-                Arrays.fill(first, 1);
-                mergeNumber.add(first);
+            List<int[]> histories = computeHistories(gt, _gtTaxa, mapping);
+
+            for(int[] history: histories){
+                double prob = Double.parseDouble(computeProbability(mapping, history, false, hname2tnodes));
+                results.add(new Tuple3<int[], int[], Double>(mapping, history, prob));
+
+                if(prob > maxProb){
+                    maxProb = prob;
+                    optimalCoalescentHistory.Item1 = mapping;
+                    optimalCoalescentHistory.Item2 = history;
+                }
+
             }
 
-            double maxProb = -1;
-            MutableTuple<int[],int[]> optimalCoalescentHistory = new MutableTuple(null,null);
-            do{
-                int[] mapping = new int[_gtTaxa.size()];
-                for(int i=0; i<_netTaxa.size(); i++){
-                    String baseName = _netTaxa.get(i);
-                    List<String> alleles = allelesList.get(i);
-                    int[] subscribes = mergeNumber.get(i);
-                    for(int j=0; j<alleles.size(); j++){
-                        mapping[_gtTaxa.indexOf(alleles.get(j))] = _stTaxa.indexOf(baseName+"_"+subscribes[j]);
-                    }
-                }
-                //TODO
-                if(_printDetails){
-                    for(int i=0; i<mapping.length; i++){
-                        System.out.print(_gtTaxa.get(i)+"->"+_stTaxa.get(mapping[i])+"\t");
-                    }
-                    System.out.println();
-                }
-
-                List<int[]> histories = computeHistories(gt, _gtTaxa, mapping);
-
-                for(int[] history: histories){
-                    double prob = Double.parseDouble(computeProbability(mapping, history, false, hname2tnodes));
-                    results.add(new Tuple3<int[], int[], Double>(mapping, history, prob));
-
-                    if(prob > maxProb){
-                        maxProb = prob;
-                        optimalCoalescentHistory.Item1 = mapping;
-                        optimalCoalescentHistory.Item2 = history;
-                    }
-
-                }
-                if(_printDetails)
-                    System.out.println("");
-
-            }while(mergeNumberAddOne(mergeNumber,upper));
-
-
-               //if(_printDetails){
-//                   System.out.println(_mulTree);
-//                   System.out.println("Probability:" + maxProb);
-//                   //for(int i=0; i<optimalMappings.size(); i++){
-//                       int[] mapping = optimalCoalescentHistory.Item1;
-//                       int[] history = optimalCoalescentHistory.Item2;
-//                       System.out.println("Mapping:");
-//                       for(int j=0; j<mapping.length; j++){
-//                           System.out.print(_gtTaxa.get(j)+"->"+_stTaxa.get(mapping[j])+"\t");
-//                       }
-//                       System.out.println();
-//                       System.out.println("History:");
-//                       for(int j=0; j<history.length; j++){
-//                           if(history[j] != -1){
-//                               System.out.println(gt.getNode(j).toString() + ":" + _mulTree.getNode(history[j]).getName());
-//                           }
-//                       }
-//                   //}
-//                   System.out.println();
-               //}
-
-            //allOptimalHistories.add(optimalHistories);
-        //}
+        }while(mergeNumberAddOne(mergeNumber,upper));
 
         return results;
     }
@@ -298,36 +253,10 @@ public class Coalescence {
             double gij = gij(b.getParentDistance(),u,u-c);
             long w = calculateW(b,c,history);
             long d = calculateD(u,c);
-            double gamma = ((STINode<Double>)b).getData();
+            double gamma = 1; // ((STINode<Double>)b).getData();
             gtmaphisprob *= gij*w/d*Math.pow(gamma, u);
             if(countXL && b.getParentDistance()!=0){
                 xl += Math.max(0, u-c-1);
-            }
-            if(_printDetails){
-                //System.out.println("not h");
-                String prefix = "*";
-                if(first){
-                    prefix = "+";
-                }
-                if(gij!=1){
-                    System.out.print(prefix+"g"+u+(u-c)+"("+b.getParentDistance()+")");
-                    prefix = "*";
-                    first = false;
-                }
-                if(d!=1){
-                    System.out.print(prefix+"("+w+"/"+d+")");
-                    prefix = "*";
-                    first = false;
-                }
-                if(gamma!=1 && u!=0){
-                    if(u!=1){
-                        System.out.print(prefix+"("+gamma+")^"+u);
-                    }
-                    else{
-                        System.out.print(prefix+"("+gamma+")");
-                    }
-                    first = false;
-                }
             }
         }
         for(Map.Entry<String,List<TNode>> entry: hname2tnodes.entrySet()){
@@ -339,24 +268,9 @@ public class Coalescence {
                 distance = hnode.getParentDistance();
                 int u = calculateU(_mulTree, hnode, mapping, history);
                 int c = calculateC(hnode,history);
-                double gamma = ((STINode<Double>)hnode).getData();
+                double gamma = 1; // ((STINode<Double>)hnode).getData();
                 double w = calculateHW(hnode,c,history);
                 gtmaphisprob *= Math.pow(gamma, u);
-                if(_printDetails){
-                    String prefix = "*";
-                    if(first){
-                        prefix = "+";
-                    }
-                    if(gamma!=1 && u-c!=0){
-                        if(u-c!=1){
-                            System.out.print(prefix+"("+gamma+")^"+u);
-                        }
-                        else{
-                            System.out.print(prefix+"("+gamma+")");
-                        }
-                        first = false;
-                    }
-                }
                 sum_u += u;
                 sum_c += c;
                 prod_w *= w;
@@ -369,25 +283,7 @@ public class Coalescence {
             if(countXL && distance!=0){
                 xl += Math.max(0, sum_u-sum_c-1);
             }
-            if(_printDetails){
-                String prefix = "*";
-                if(first){
-                    prefix = "+";
-                }
-                if(gij!=1){
-                    System.out.print(prefix+"g"+sum_u+(sum_u-sum_c)+"("+distance+")");
-                    prefix = "*";
-                    first = false;
-                }
-                if(d!=1){
-                    System.out.print(prefix+"("+prod_w+"/"+d+")");
-                    first = false;
-                }
-            }
         }
-        if(_printDetails)
-            System.out.println(" = " + gtmaphisprob);
-
         if(countXL){
             return gtmaphisprob+"|"+xl;
         }
@@ -439,9 +335,6 @@ public class Coalescence {
                 String name = child.getName();
                 if(child.isNetworkNode()){
                     name = child.getName()+"TO"+parent.getName();
-                    if(child.getParentProbability(parent) > 0.50) {
-
-                    }
                 }
                 Integer amount = _nname2tamount.get(name);
                 if(amount==null){

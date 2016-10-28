@@ -77,7 +77,6 @@ public class CoalescenceAnalysis {
                 double weight = gtPerLocus.get(i).Item2;
                 totalProb += gtProbList.get(i) * weight;
                 Map<Double,Double> tmp = introgressionList.get(i);
-//                System.out.println(weight + " " + gtProbList.get(i) + " " + report(tmp, 1.0));
                 for(Double key : tmp.keySet()) {
                     Double mappedKey = rateMapping.get(key);
                     if(!result.containsKey(mappedKey)) {
@@ -95,9 +94,9 @@ public class CoalescenceAnalysis {
     }
 
     private String report(Map<Double,Double> map, double div, Map<Double, String> edges) {
-        StringBuilder sb = new StringBuilder(" ");
+        StringBuilder sb = new StringBuilder("");
         for(Double d : map.keySet()) {
-            sb.append(String.format(" %s:%.4f; ", edges.get(d), map.get(d) / div));
+            sb.append(String.format("  %s:%.4f;", edges.get(d), map.get(d) / div));
         }
         sb.append("\n");
         return sb.toString();

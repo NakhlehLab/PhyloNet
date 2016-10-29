@@ -46,6 +46,8 @@ public class Utils {
     public static double _POP_SIZE_MEAN = 0.036;
     public static String _START_NET = null;
     public static List<String> _START_GT_LIST = null;
+    // summary
+    public static int _TOPK_NETS = 10;
 
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;

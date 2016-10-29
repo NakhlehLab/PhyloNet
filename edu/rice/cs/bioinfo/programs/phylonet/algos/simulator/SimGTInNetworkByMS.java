@@ -45,6 +45,7 @@ public class SimGTInNetworkByMS {
         Map<String,String> MSName2AlleleName = new Hashtable<String, String>();
 
         String MSCommand = generateMSCommand(network, species2alleles,numGTs, epsilon, MSName2AlleleName);
+        System.out.println(MSCommand);
         List<Tree> gts = new ArrayList<Tree>();
         try{
             Process proc = Runtime.getRuntime().exec(MSPath+MSCommand,null,null);
@@ -164,6 +165,7 @@ public class SimGTInNetworkByMS {
                 edge2population.put(parentEdge2, numPopulations);
             }
         }
+
         return outputCommand;
 
     }

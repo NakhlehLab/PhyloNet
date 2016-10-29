@@ -198,7 +198,7 @@ public class State {
     }
 
     public String getNetwork() {
-        return _speciesNet.toString();
+        return _speciesNet.getNetwork().toString();
     }
 
 }

@@ -1,8 +1,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by wendingqiao on 10/17/14.
@@ -107,6 +111,9 @@ public class MC3 {
                         _logLikelihood, _logPrior, essPrior,
                         _state.numOfReticulation());
                 _core.addSample(_state.toList());
+                List<Tuple<String,Double>> netSample = new ArrayList<>();
+                netSample.add(new Tuple<>(_state.getNetwork(), _logPost));
+                _core.addNetSample(netSample);
                 System.out.println(_state.toString());
             }
         }

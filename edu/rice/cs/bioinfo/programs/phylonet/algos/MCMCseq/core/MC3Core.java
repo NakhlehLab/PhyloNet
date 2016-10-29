@@ -1,10 +1,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.summary.SampleSummary;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.ESS;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Summary;
 
 import java.util.*;
 
@@ -17,6 +19,7 @@ public class MC3Core {
     private List<MC3> _mc3s;
 
     // samples
+    private List<List<Tuple<String,Double>>> _netSamples = new ArrayList<>();
     private List<SampleSummary> _samples = new ArrayList<>();
     private boolean _samplingPhase = false;
     private int _burnInCounter = 0;
@@ -130,6 +133,10 @@ public class MC3Core {
             ss.summary();
             ss.close();
         }
+
+        Summary summary = new Summary(_netSamples, true);
+        System.out.println("         -------------- Top Topologies: --------------");
+        System.out.println(summary.getTopK(Utils._TOPK_NETS));
     }
 
     public void addSample(List<String> sample) {
@@ -143,6 +150,13 @@ public class MC3Core {
             if(_burnInCounter == Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY) {
                 _samplingPhase = true;
             }
+        }
+    }
+
+    public void addNetSample(List<Tuple<String,Double>> sample) {
+        if(_samplingPhase) {
+            _netSamples.add(sample);
+            return;
         }
     }
 

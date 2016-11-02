@@ -1240,6 +1240,15 @@ public class Networks
     }
 
 
+    public static <T> void scaleNetwork(Network<T> net, double scale) {
+        for(NetNode<T> node : postTraversal(net)) {
+            for(NetNode<T> child : node.getChildren()) {
+                child.setParentDistance(node, child.getParentDistance(node) * scale);
+            }
+        }
+    }
+
+
     // Data members
     public static final String NAME_PREFIX = "I";	// Name prefix for interior nodes.
 }

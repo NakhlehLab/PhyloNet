@@ -215,6 +215,18 @@ public class Trees {
 
 
 	/**
+	 * Reroot the tree using outgroup and remove outgroup
+	 * @param tree
+	 * @param outgroup
+     */
+	public static final void rootAndRemoveOutgroup(STITree tree, String outgroup) {
+		tree.rerootTreeAtEdge(outgroup);
+		tree.removeNode(outgroup);
+		Trees.removeBinaryNodes(tree);
+	}
+
+
+	/**
 	 * Remove all binary children of node <code>node</code>
 	 */
 	private static final void removeBinaryChildren(TMutableNode node) {

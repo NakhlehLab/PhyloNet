@@ -19,8 +19,6 @@ import java.util.*;
  */
 public class SpeciesNetPriorDistribution {
 
-    private static final boolean PRINT_ERR_MSG = true;
-
     // topology
     private PoissonDistribution numReticulation;
     // node heights
@@ -125,12 +123,12 @@ public class SpeciesNetPriorDistribution {
 
 
     public boolean isValid(Network<NetNodeInfo> net) {
-        if (!Networks.isDisconnectedNetwork(net, null)) {
-            if(PRINT_ERR_MSG) System.err.println("disconnected network: " + net.toString());
+        if (Networks.hasCycle(net)) {
+            if(Utils.DEBUG_MODE) System.err.println("has cycle");
             return false;
         }
-        if (Networks.hasCycle(net)) {
-            if(PRINT_ERR_MSG) System.err.println("has cycle");
+        if (!Networks.isDisconnectedNetwork(net, null)) {
+            if(Utils.DEBUG_MODE) System.err.println("disconnected network: " + net.toString());
             return false;
         }
         List<NetNode<NetNodeInfo>> networkLeafNode = IterableHelp.toList(net.getLeaves());
@@ -138,13 +136,13 @@ public class SpeciesNetPriorDistribution {
         int count = 0;
         for (NetNode<NetNodeInfo> leaf : networkLeafNode) {
             if (!taxa.contains(leaf.getName())) {
-                if(PRINT_ERR_MSG) System.err.println(leaf.getName() + " is missing");
+                if(Utils.DEBUG_MODE) System.err.println(leaf.getName() + " is missing");
                 return false;
             }
             count++;
         }
         if (count != taxa.size()) {
-            if(PRINT_ERR_MSG) System.err.println("taxa size doesn't match " + count);
+            if(Utils.DEBUG_MODE) System.err.println("taxa size doesn't match " + count);
             return false;
         }
         // test gamma
@@ -155,13 +153,15 @@ public class SpeciesNetPriorDistribution {
             for (NetNode parent : node.getParents()) {
                 // distance
                 if(node.getParentDistance(parent) < 0) {
-                    if(PRINT_ERR_MSG) System.err.println("negative branch length! " + node.getName() + "<-" + parent.getName());
+                    if(Utils.DEBUG_MODE) {
+                        System.err.println("negative branch length! " + node.getName() + "<-" + parent.getName());
+                    }
                     return false;
                 }
                 // population size
                 if(Utils.varyPopSizeAcrossBranches() && (
                         Double.isNaN(node.getParentSupport(parent)) || node.getParentSupport(parent) < 0)) {
-                    if(PRINT_ERR_MSG) {
+                    if(Utils.DEBUG_MODE) {
                         System.err.println("Wrong pop size! " + node.getName() + "<-" + parent.getName());
                     }
                     return false;

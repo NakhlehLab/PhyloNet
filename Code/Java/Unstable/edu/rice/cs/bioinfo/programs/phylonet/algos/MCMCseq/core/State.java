@@ -107,7 +107,7 @@ public class State {
             logHR = Utils.INVALID_MOVE;
         } else if(_moveNode.mayViolate()){
             if(_speciesNet.isDirty() && !_priorDistribution.isValid(_speciesNet.getNetwork())) {
-                System.err.println(getOperation());
+                if(Utils.DEBUG_MODE) System.err.println(getOperation());
                 logHR = Utils.INVALID_MOVE;
             } else if(!_speciesNet.isValid()) {
                 logHR = Utils.INVALID_MOVE;

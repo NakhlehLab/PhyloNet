@@ -1,19 +1,32 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.clustering;
 
+import edu.rice.cs.bioinfo.library.programming.Func1;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.mast.AmirKeselmanMAST;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.mast.SteelWarnowMAST;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.HillClimberBase;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkCluster;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomParameterNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NonUltrametricNetworkRandomParameterNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import sun.nio.ch.Net;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -24,6 +37,22 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class InferNetworkFromParentalTrees {
+    protected long _maxExaminations = 1000000;
+    protected int _maxFailure = 100;
+    protected int _numRuns = 10;
+    protected int _numThreads = 1;
+    protected int _moveDiameter = -1;
+    protected int _reticulationDiameter = -1;
+    protected double[] _topologyOperationWeights = {0.1,0.1,0.15,0.55,0.15,0.15};
+    protected double[] _topologyVsParameterOperation = {1,0};
+    protected Long _seed = new Long(12345);
+    protected Set<String> _fixedHybrid = new HashSet<String>();
+    protected File _logFile = null;
+    protected File _intermediateResultFile = null;
+    protected Set<String> _inputParentalTreesNewick = null;
+
+
+
     private boolean _verbose = true;
 
     public void removeBinaryNodes(Network<Object> net)
@@ -452,501 +481,84 @@ public class InferNetworkFromParentalTrees {
         return network;
     }
 
-    public Network<Object> inferNetworkNew(List<List<MutableTuple<Tree, Double>>> parentalTrees) {
-        Network<Object> network = null;
+    protected Comparator<Double> getDoubleScoreComparator(){
+        return new Comparator<Double>() {
+            public int compare(Double o1, Double o2)
+            {
+                return Double.compare(o1, o2);
+            }
+        };
+    }
+
+    protected Func1<Network, Double> getScoreFunction(final Set<String> singleAlleleSpecies){
+        return new Func1<Network, Double>() {
+            public Double execute(Network speciesNetwork) {
+                //System.out.println(speciesNetwork.toString());
+                ParentalTreeOperation pto = new ParentalTreeOperation();
+                List<Tree> parentalTrees = pto.getParentalTrees(speciesNetwork);
+                Set<String> parentalTreesNewick = new HashSet<>();
+                for(Tree t : parentalTrees) {
+                    parentalTreesNewick.add(t.toNewick());
+                }
+                double score = 0;
+                for(String s : _inputParentalTreesNewick) {
+                    if(parentalTreesNewick.contains(s))
+                        score += 1.0;
+                }
+                int count = 0;
+                for(Object node : speciesNetwork.getNetworkNodes()) {
+                    count++;
+                }
+                score += count > 0 ? 1.0 / count : 0;
+                //System.out.println(score);
+                return score;
+            }
+        };
+    }
+
+    public Network<Object> inferNetworkHeuristc(List<List<MutableTuple<Tree, Double>>> parentalTrees) {
+        LinkedList<Tuple<Network,Double>> resultList = new LinkedList<>();
+        _inputParentalTreesNewick = new HashSet<>();
+
         List<Tree> trees = new ArrayList<>();
         for(int i = 0 ; i < parentalTrees.size() ; i++) {
-            trees.add(parentalTrees.get(i).get(0).Item1);
+            STITree tree = null;
+            try {
+                tree = new STITree(parentalTrees.get(i).get(0).Item1.toNewick());
+            } catch (Exception e){
+
+            };
+            Trees.removeBinaryNodes(tree);
+            Trees.convertToLexicographicTree(tree);
+            _inputParentalTreesNewick.add(tree.toNewick());
         }
 
-        //SteelWarnowMAST steelWarnowMAST = new SteelWarnowMAST();
-        //Tree mast = steelWarnowMAST.computeRMAST(trees);
+        Set<String> singleAlleleSpecies = new HashSet<>();
+        int maxReticulations = 3;
+        int numSol = 1;
 
-        AmirKeselmanMAST amirKeselmanMAST = new AmirKeselmanMAST();
-        Tree mast = amirKeselmanMAST.computeRMAST(trees);
-        mast = Trees.readTree(mast.toNewick());
-
-        List<String> outLeaves = new ArrayList<>();
-        for(String leaf : mast.getLeaves())
-            outLeaves.add(leaf);
-
-        System.out.println("MAST: " + mast.toNewick());
-
-        network = Networks.readNetwork(mast.toNewick());
-
-        Map<Set<String>, Integer> numberMountPointsPerGroup = new HashMap<>();
-        Map<MountPoint, List<List<Set<String>>>> mountPointsWithLeaves = new HashMap<>();
-        Map<MountPoint, List<Set<String>>> orderOnMountPoint = new HashMap<>();
-        List<MutableTuple<Set<String>, Set<MountPoint>>> groupedInLeaves = new ArrayList<>();
-
-        for(int i = 0 ; i < parentalTrees.size() ; i++) {
-            Map<MountPoint, List<Set<String>>> currentMountPointsWithLeaves = new HashMap<>();
-            Network<Object> net = Networks.readNetwork(parentalTrees.get(i).get(0).Item1.toNewick());
-
-            for(NetNode<Object> node : net.bfs()) {
-                if(!node.isLeaf()) {
-                    node.setName("");
-                }
-                for(NetNode<Object> parent: node.getParents()){
-                    node.setParentDistance(parent,NetNode.NO_DISTANCE);
-                }
-            }
-
-
-            Map<NetNode<Object>, Integer> marks = new HashMap<>();
-
-            int OUT = 1;
-            int IN = 2;
-            int DONE = 3;
-
-            for(NetNode<Object> node : net.bfs()) {
-                marks.put(node, IN);
-            }
-
-            marks.put(net.getRoot(), OUT);
-
-            for(NetNode<Object> leaf : net.getLeaves()) {
-                if(outLeaves.contains(leaf.getName())) {
-                    NetNode<Object> node = leaf;
-                    while(!node.isRoot()) {
-                        marks.put(node, OUT);
-                        for(NetNode<Object> parent : node.getParents()) {
-                            node = parent;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            //Find all group in current parental tree
-            for(NetNode<Object> outNode : net.bfs()) {
-                Set<String> currentGroup = new HashSet<>();
-                Set<MountPoint> currentMountPoints = new HashSet<>();
-
-                if(marks.get(outNode) == OUT) {
-                    NetNode<Object> inNode = null;
-                    for(NetNode<Object> child : outNode.getChildren()) {
-                        if(marks.get(child) == IN) {
-                            inNode = child;
-                            break;
-                        }
-                    }
-                    if(inNode == null)
-                        continue;
-
-                    //Find all leaves in current group in current parental tree
-                    Queue<NetNode<Object>> queue = new LinkedList<>();
-                    queue.offer(inNode);
-                    marks.put(inNode, DONE);
-
-                    while(queue.size() > 0) {
-                        NetNode<Object> node = queue.poll();
-                        if(node.isLeaf()) {
-                            currentGroup.add(node.getName());
-                        }
-                        for(NetNode<Object> child : node.getChildren()) {
-                            queue.offer(child);
-                            marks.put(child, DONE);
-                        }
-                    }
-
-                    //Find Mount Point of current group
-                    int count = 1;
-                    NetNode<Object> outLeaf = inNode.getParents().iterator().next();
-                    while(!outLeaf.isLeaf()) {
-                        int cc = 0;
-                        for(NetNode<Object> son : outLeaf.getChildren()) {
-                            if(marks.get(son) == OUT) {
-                                outLeaf = son;
-                                cc++;
-                            }
-                        }
-                        //if out-degree > 1 in MAST
-                        if(cc > 1)
-                            count++;
-                    }
-                    MountPoint currentMountPoint = new MountPoint(mast, outLeaf.getName(), count);
-                    currentMountPoints.add(currentMountPoint);
-
-                    //Find corresponding Order of current Mount Point
-                    List<Set<String>> order = null;
-                    for(MountPoint mountPoint : currentMountPointsWithLeaves.keySet()) {
-                        if(mountPoint.isCongruence(currentMountPoint)) {
-                            order = currentMountPointsWithLeaves.get(mountPoint);
-                            break;
-                        }
-                    }
-
-                    if(order == null) {
-                        currentMountPointsWithLeaves.put(currentMountPoint, new ArrayList<>());
-                        order = currentMountPointsWithLeaves.get(currentMountPoint);
-                    }
-
-                    order.add(new HashSet<String>(currentGroup));
-
-                    //register current Group
-                    boolean inserted = false;
-                    //combine sets of leaves with intersection
-                    for(MutableTuple<Set<String>, Set<MountPoint>> tuple : groupedInLeaves) {
-                        Set<String> group = tuple.Item1;
-                        Set<String> intersection = new HashSet<String>(group);
-                        intersection.retainAll(currentGroup);
-                        if(intersection.size() > 0) {
-                            inserted = true;
-                            group.addAll(currentGroup);
-                            tuple.Item2.addAll(currentMountPoints);
-                        }
-                    }
-
-                    if(inserted) {
-                        boolean done = false;
-                        while(!done) {
-                            done = true;
-                            for(MutableTuple<Set<String>, Set<MountPoint>> tuple1 : groupedInLeaves) {
-                                Set<String> group1 = tuple1.Item1;
-                                for(MutableTuple<Set<String>, Set<MountPoint>> tuple2 : groupedInLeaves) {
-                                    Set<String> group2 = tuple2.Item1;
-                                    if(group1 != group2) {
-                                        Set<String> intersection = new HashSet<String>(group1);
-                                        intersection.retainAll(group2);
-                                        if(intersection.size() > 0) {
-                                            group1.addAll(group2);
-                                            tuple1.Item2.addAll(tuple2.Item2);
-                                            groupedInLeaves.remove(tuple2);
-                                            done = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if(!done)
-                                    break;
-                            }
-                        }
-                    }
-
-                    if(!inserted && currentGroup.size() > 0)
-                        groupedInLeaves.add(new MutableTuple<Set<String>, Set<MountPoint>>(currentGroup, currentMountPoints));
-                }
-            }
-
-            //combine current Order with Mount Point in current parental tree with global one
-            for(MountPoint mountPoint1 : currentMountPointsWithLeaves.keySet()) {
-                boolean found = false;
-                for(MountPoint mountPoint2 : mountPointsWithLeaves.keySet()) {
-                    if(mountPoint1.isCongruence(mountPoint2)) {
-                        found = true;
-                        mountPointsWithLeaves.get(mountPoint2).add(currentMountPointsWithLeaves.get(mountPoint1));
-                        break;
-                    }
-                }
-
-                if(!found) {
-                    mountPointsWithLeaves.put(mountPoint1, new ArrayList<>());
-                    mountPointsWithLeaves.get(mountPoint1).add(currentMountPointsWithLeaves.get(mountPoint1));
-                }
-            }
-
-
+        String startingNetwork = inferNetwork(parentalTrees).toString();
+        Network speciesNetwork = Networks.readNetwork(startingNetwork);
+        for (Object nt : Networks.getTrees(speciesNetwork)) {
+            speciesNetwork = Networks.readNetwork(((NetworkTree<Object>)nt).makeTree().toNewick());
+            break;
         }
 
-        Map<String, Set<String>> groupFinder = new HashMap<>();
-        boolean isLevel1 = true;
+        NetworkRandomParameterNeighbourGenerator parameterGenerator = new NonUltrametricNetworkRandomParameterNeighbourGenerator(singleAlleleSpecies);
+        NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeights, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), _topologyVsParameterOperation[0], parameterGenerator, _topologyVsParameterOperation[1], _seed);
+        Comparator<Double> comparator = getDoubleScoreComparator();
 
-        //build Group finder
-        for(MutableTuple<Set<String>, Set<MountPoint>> tuple : groupedInLeaves) {
+        HillClimberBase searcher;
+        //searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+        searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, _seed);
 
-            for(String leaf : tuple.Item1) {
-                groupFinder.put(leaf, tuple.Item1);
-            }
+        searcher.setLogFile(_logFile);
+        searcher.setIntermediateResultFile(_intermediateResultFile);
+        Func1<Network, Double> scorer = getScoreFunction(singleAlleleSpecies);
 
-        }
+        searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
 
-        Map<Set<String>, Set<Set<String>>> subgroups = new IdentityHashMap<>();
-        for(MountPoint mountPoint : mountPointsWithLeaves.keySet()) {
-            //get number of SubGroup of one Group shown in current Mount Point
-            //amount all Orders, keep the largest number
-            Map<Set<String>, Integer> numberShown = new IdentityHashMap<>();
-            for(List<Set<String>> order : mountPointsWithLeaves.get(mountPoint)) {
-                Map<Set<String>, Integer> currentNumberShown = new IdentityHashMap<>();
-                for(Set<String> set : order) {
-                    Set<String> groupBelong = groupFinder.get(set.iterator().next());
-                    if(currentNumberShown.get(groupBelong) == null)
-                        currentNumberShown.put(groupBelong, 0);
-                    currentNumberShown.put(groupBelong, currentNumberShown.get(groupBelong) + 1);
-                }
-                for(Set<String> group : currentNumberShown.keySet()) {
-                    if(numberShown.get(group) == null)
-                        numberShown.put(group, 0);
-                    if(numberShown.get(group) < currentNumberShown.get(group))
-                        numberShown.put(group, currentNumberShown.get(group));
-                }
-
-            }
-
-            //initialize the SubGroups of one Group shown in current Mount Point
-            //paritalOrder is the graph of Orders
-            Map<Set<String>, Map<Set<String>, Integer>> partialOrder = new IdentityHashMap<>();
-            Map<Set<String>, List<Set<String>>> subGroupOnMountPoint = new IdentityHashMap<>();
-            for(Set<String> group : numberShown.keySet()) {
-                subGroupOnMountPoint.put(group, new ArrayList<>());
-                for(int i = 0 ; i < numberShown.get(group) ; i++) {
-                    subGroupOnMountPoint.get(group).add(new HashSet<>());
-                    partialOrder.put(subGroupOnMountPoint.get(group).get(i), new IdentityHashMap<>());
-                }
-
-            }
-
-            //get all SubGroups of one Group shown in current Mount Point
-            for(List<Set<String>> order : mountPointsWithLeaves.get(mountPoint)) {
-                Map<Set<String>, Integer> currentNumberShown = new IdentityHashMap<>();
-                Map<Set<String>, List<Set<String>>> curSubGroupOnMountPoint = new IdentityHashMap<>();
-
-                //get all SubGroups of one Group shown in current Order in current Mount Point
-                for(Set<String> set : order) {
-                    Set<String> groupBelong = groupFinder.get(set.iterator().next());
-                    if(currentNumberShown.get(groupBelong) == null)
-                        currentNumberShown.put(groupBelong, 0);
-                    currentNumberShown.put(groupBelong, currentNumberShown.get(groupBelong) + 1);
-                    if(curSubGroupOnMountPoint.get(groupBelong) == null)
-                        curSubGroupOnMountPoint.put(groupBelong, new ArrayList<>());
-                    curSubGroupOnMountPoint.get(groupBelong).add(set);
-                }
-
-                //when number of SubGroup of one Group is correct in this Order -> update
-                for(Set<String> group : numberShown.keySet()) {
-                    if(numberShown.get(group).equals(currentNumberShown.get(group))) {
-                        for(int i = 0 ; i < numberShown.get(group) ; i++)
-                            subGroupOnMountPoint.get(group).get(i).addAll(curSubGroupOnMountPoint.get(group).get(i));
-                    }
-
-                }
-
-                //when number of SubGroup of one Group is correct in this Order -> put into graph of Orders
-                Map<Set<String>, Integer> currentScanNumberShown = new IdentityHashMap<>();
-                Set<String> prevset = null;
-                for(Set<String> set : order) {
-                    Set<String> groupBelong = groupFinder.get(set.iterator().next());
-                    if(currentScanNumberShown.get(groupBelong) == null)
-                        currentScanNumberShown.put(groupBelong, 0);
-                    Set<String> curset = subGroupOnMountPoint.get(groupBelong).get(currentScanNumberShown.get(groupBelong));
-                    currentScanNumberShown.put(groupBelong, currentScanNumberShown.get(groupBelong) + 1);
-
-                    if (numberShown.get(groupBelong).equals(currentNumberShown.get(groupBelong))) {
-
-                        if(prevset != null) {
-                            partialOrder.get(prevset).put(curset, 1);
-                        }
-                        prevset = curset;
-                    }
-                }
-
-
-
-
-            }
-
-            for(Set<String> group : subGroupOnMountPoint.keySet()) {
-                if(subgroups.get(group) == null)
-                    subgroups.put(group, new HashSet<>());
-                subgroups.get(group).addAll(subGroupOnMountPoint.get(group));
-            }
-
-            //do topological sorting to get the correct Order
-            List<Set<String>> currentOrder = new ArrayList<>();
-            int totalSubMountPoints = partialOrder.size();
-            Map<Set<String>, Integer> indegree = new IdentityHashMap<>();
-
-            for(Set<String> set : partialOrder.keySet()) {
-                indegree.put(set, 0);
-            }
-
-            for(Set<String> set : partialOrder.keySet()) {
-                for(Set<String> nextset : partialOrder.get(set).keySet()) {
-                    indegree.put(nextset, indegree.get(nextset) + 1);
-                }
-            }
-
-            int subMountPointsCount = totalSubMountPoints;
-            while(subMountPointsCount > 0) {
-                boolean found = false;
-
-                for(Set<String> set : partialOrder.keySet()) {
-                    if(indegree.get(set) == 0) {
-                        found = true;
-                        currentOrder.add(set);
-                        for(Set<String> nextset : partialOrder.get(set).keySet()) {
-                            indegree.put(nextset, indegree.get(nextset) - 1);
-                        }
-                        indegree.put(set, -1);
-                        subMountPointsCount--;
-                        break;
-                    }
-                }
-
-                if(subMountPointsCount == 0) break;
-                //when there is a conflict, do breaking
-                if(!found) {
-                    for(Set<String> set : partialOrder.keySet()) {
-                        if(indegree.get(set) > 0) {
-                            found = true;
-                            Set<String> newset = new HashSet<>(set);
-                            indegree.put(newset, 0);
-                            partialOrder.put(newset, partialOrder.get(set));
-                            partialOrder.get(set).clear();
-                            Set<String> groupBelong = groupFinder.get(set.iterator().next());
-                            numberShown.put(groupBelong, numberShown.get(groupBelong) + 1);
-                            subMountPointsCount++;
-                            totalSubMountPoints++;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            for(Set<String> subgroup : currentOrder) {
-                Set<String> groupBelong = groupFinder.get(subgroup.iterator().next());
-                if(numberMountPointsPerGroup.get(groupBelong) == null)
-                    numberMountPointsPerGroup.put(groupBelong, 0);
-                numberMountPointsPerGroup.put(groupBelong, numberMountPointsPerGroup.get(groupBelong) + 1);
-            }
-            orderOnMountPoint.put(mountPoint, currentOrder);
-
-
-        }
-
-        System.out.println("Groups detected: " + groupedInLeaves.size());
-
-
-        //check if every Group is associated with two Mount Point
-        for(MutableTuple<Set<String>, Set<MountPoint>> tuple : groupedInLeaves) {
-
-            if(numberMountPointsPerGroup.get(tuple.Item1) > 2)
-                isLevel1 = false;
-        }
-
-        if(!isLevel1) {
-            System.out.println("I don't think it is a level-1 network.");
-        }
-
-        //insert mount points
-
-        Map<NetNode<Object>, Integer> marks = new HashMap<>();
-        Map<MountPoint, NetNode<Object>> mountNodes = new HashMap<>();
-        int ORIGINAL = 0;
-        int NEW = 1;
-        for(NetNode<Object> node : network.bfs()) {
-            marks.put(node, ORIGINAL);
-        }
-
-        for(MountPoint mountPoint : orderOnMountPoint.keySet()) {
-            NetNode<Object> node = network.findNode(mountPoint._position.Item1);
-            for(int i = 0 ; i < mountPoint._position.Item2 - 1; i++) {
-                do {
-                    node = node.getParents().iterator().next();
-                } while(marks.get(node) == NEW);
-            }
-
-            for(int i = 0 ; i < orderOnMountPoint.get(mountPoint).size() ; i++) {
-                NetNode<Object> newnode = (NetNode<Object>) new BniNetNode<Object>();
-                if(node == network.getRoot()) {
-                    newnode.adoptChild(node, NetNode.NO_DISTANCE);
-                    network.resetRoot(newnode);
-                } else {
-                    NetNode<Object> parent = node.getParents().iterator().next();
-                    parent.removeChild(node);
-                    parent.adoptChild(newnode, NetNode.NO_DISTANCE);
-                    newnode.adoptChild(node, NetNode.NO_DISTANCE);
-                    //mountNodes.put()
-                }
-                marks.put(newnode, NEW);
-            }
-        }
-
-        Map<String, int[]> tripletCount = new HashMap<>();
-
-        for(MutableTuple<Set<String>, Set<MountPoint>> tuple : groupedInLeaves) {
-            List<String> currentInLeaves = new ArrayList<>(tuple.Item1);
-
-            Network<Object> reticulatePart = null;
-            Network<Object> bestFairPart = null;
-            double mostFreq = -1;
-            int minDeep = Integer.MAX_VALUE;
-
-            if(_verbose) {
-                for (String s : tuple.Item1)
-                    System.out.print(s + ' ');
-                System.out.println();
-
-                System.out.println("Subgroup:");
-                for (Set<String> set : subgroups.get(tuple.Item1)) {
-                    for (String s : set) {
-                        System.out.print(s + ' ');
-                    }
-                    System.out.println();
-                }
-            }
-
-            //check all triplets of one Group
-            for (int i = 0; i < parentalTrees.size(); i++) {
-                if(_verbose)
-                    System.out.println("Parental Tree #" + i + " " + parentalTrees.get(i).get(0).toString());
-
-                Tree curPTree = Trees.readTree(parentalTrees.get(i).get(0).Item1.toNewick());
-
-
-                int count = getAllTriplets(curPTree, currentInLeaves, tripletCount);
-
-            }
-
-            reticulatePart = constructFromTriplets(tripletCount);
-            //TODO if (reticulatePart == null) do recursively
-
-            if(_verbose)
-                System.out.println("Best reticulate part: " + reticulatePart.toString());
-
-            //mount best reticulated part to MAST
-            for(MountPoint mountPoint : tuple.Item2) {
-                NetNode<Object> node = network.findNode(mountPoint._position.Item1);
-                for(int i = 0 ; i < mountPoint._position.Item2 - 1; i++) {
-                    do {
-                        node = node.getParents().iterator().next();
-                    } while(marks.get(node) == NEW);
-                }
-
-                for(Set<String> subgroup : orderOnMountPoint.get(mountPoint)) {
-                    if(tuple.Item1.containsAll(subgroup)) {
-                        int subMountPoint = orderOnMountPoint.get(mountPoint).indexOf(subgroup);
-                        subMountPoint = orderOnMountPoint.get(mountPoint).size() - subMountPoint;
-                        NetNode<Object> connectNode = node;
-                        for(int i = 0 ; i < subMountPoint ; i++)
-                            connectNode = connectNode.getParents().iterator().next();
-
-                        //TODO: Maybe bug when encounter partial SubGroup first
-
-                        if(tuple.Item1.equals(subgroup) && reticulatePart.getRoot() != network.getRoot()) {
-                            connectNode.adoptChild(reticulatePart.getRoot(), NetNode.NO_DISTANCE);
-                        } else {
-
-                            NetNode<Object> newConnectNode = new BniNetNode<>();
-                            NetNode<Object> reticulateNode = getMRCA(reticulatePart, new ArrayList<>(subgroup));
-                            if (reticulateNode.isRoot()) {
-                                newConnectNode.adoptChild(reticulateNode, NetNode.NO_DISTANCE);
-                                reticulatePart.resetRoot(newConnectNode);
-                            } else {
-                                NetNode<Object> parent = reticulateNode.getParents().iterator().next();
-                                parent.removeChild(reticulateNode);
-                                parent.adoptChild(newConnectNode, NetNode.NO_DISTANCE);
-                                newConnectNode.adoptChild(reticulateNode, NetNode.NO_DISTANCE);
-                            }
-                            connectNode.adoptChild(newConnectNode, NetNode.NO_DISTANCE);
-                        }
-                    }
-                }
-            }
-        }
-
-        removeBinaryNodes(network);
-        return network;
+        return resultList.get(0).Item1;
     }
 
     public Network<Object> inferNetwork(List<List<MutableTuple<Tree, Double>>> parentalTrees) {
@@ -1527,11 +1139,13 @@ public class InferNetworkFromParentalTrees {
                     if(_verbose)
                         System.out.println("--> " + net.toString() + " " + count);
 
+
                     if (count == 1) {
                         if (reticulatePart == null) {
                             reticulatePart = net;
                         }
                         subTreesForGroup.add(Trees.readTree(net.toString()));
+
                     } else {
                         int deep = 0;
                         for(Set<String> subgroup : subgroups.get(tuple.Item1)) {
@@ -1546,9 +1160,28 @@ public class InferNetworkFromParentalTrees {
                             bestFairPart = net;
                         }
                     }
+
+
+                }
+                Map<String, int[]> tripletCount = new HashMap<>();
+
+                for (int i = 0; i < parentalTrees.size(); i++) {
+                    if(_verbose)
+                        System.out.println("Parental Tree #" + i + " " + parentalTrees.get(i).get(0).toString());
+
+                    Tree curPTree = Trees.readTree(parentalTrees.get(i).get(0).Item1.toNewick());
+
+
+                    int count = getAllTriplets(curPTree, currentInLeaves, tripletCount);
+
                 }
 
-                if(tuple.Item1.size() > 2) {
+                if(tuple.Item1.size() > 2)
+                    reticulatePart = constructFromTriplets(tripletCount);
+                if(_verbose)
+                    System.out.println("Compute from triplets: " + (reticulatePart != null ? reticulatePart.toString() : "null"));
+
+                if(tuple.Item1.size() > 2 && reticulatePart == null && subTreesForGroup.size() > 0) {
                     AmirKeselmanMAST submastObj = new AmirKeselmanMAST();
                     Tree submast = submastObj.computeRMAST(subTreesForGroup);
                     submast = Trees.readTree(submast.toNewick());

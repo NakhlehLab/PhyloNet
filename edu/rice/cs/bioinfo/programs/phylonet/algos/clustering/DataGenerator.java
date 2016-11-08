@@ -190,7 +190,7 @@ public class DataGenerator {
 
                 if (reticulationEdgeAddition.performOperation()) {
 
-                    if (Networks.hasCycle(network) || !isNetworkValid(network, taxa) || !isFullReticulation(network)) {
+                    if (Networks.hasCycle(network) || !isNetworkValid(network, taxa) /*|| !isFullReticulation(network)*/) {
                         successRearrangment = false;
                         reticulationEdgeAddition.undoOperation();
                     }
@@ -212,7 +212,7 @@ public class DataGenerator {
         for(int i = 0 ; i < taxa ; i++) {
             leaves[i] = Integer.toString(i + 1);
         }
-        int maxReticulations = 2;
+        int maxReticulations = 1;
 
         Tree randomTree = Trees.generateRandomTree(Arrays.copyOfRange(leaves, 0, taxa));
         Network<Object> trueNetwork = Networks.readNetwork(randomTree.toNewick());

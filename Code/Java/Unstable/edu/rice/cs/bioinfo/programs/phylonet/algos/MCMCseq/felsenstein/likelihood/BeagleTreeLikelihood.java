@@ -964,7 +964,7 @@ public class BeagleTreeLikelihood extends StateNode {
         double[] base = {0.2112, 0.2888, 0.2896, 0.2104};
         double[] trans = {0.2173/0.2070, 0.9798/0.2070, 0.2575/0.2070, 0.1038/0.2070, 1/0.2070, 1.0};
         Utils._BASE_FREQS = base;
-        Utils._TRANS_RATES = base;
+        Utils._TRANS_RATES = trans;
         Utils._SUBSTITUTION_MODEL = "GTR";
 
         UltrametricTree uTree1 = new UltrametricTree(newick1, aln);

@@ -153,6 +153,7 @@ public class ParentalTreeOperation {
         int k = stack.size() - 1;
         while(k >= 0) {
             parentalTrees.add(getSubtree(mulTree, leaves));
+            //if(parentalTrees.size() > 1000) break;
             leaves.remove(stack.get(k).getKey() + "_" + stack.get(k).getValue());
             stack.set(k, new Pair<String, Integer>(stack.get(k).getKey(), stack.get(k).getValue() + 1));
             leaves.add(stack.get(k).getKey() + "_" + stack.get(k).getValue());
@@ -196,7 +197,7 @@ public class ParentalTreeOperation {
     }
 
     public void test() {
-        int number = 1;
+        int number = 100;
         int correctness = 0;
         double remainRatio = 1;
 
@@ -226,11 +227,12 @@ public class ParentalTreeOperation {
             //trueNetwork = Networks.readNetwork("((10,4)I1,(7,(((9)I8#H1:::0.5,((8,(1)I11#H2:::0.5)I9,(I8#H1:::0.5,(2,I11#H2:::0.5)I12)I10)I7)I5,((3,6)I6,5)I4)I3)I2)I0;");
             //trueNetwork = Networks.readNetwork("((((1,(4,2)I5)I3,((6)I11#H1:::0.5,(((9)I9#H2:::0.5,((I11#H1:::0.5,(I9#H2:::0.5,3)I10)I12,7)I8)I7,10)I6)I4)I2,8)I1,5)I0;");
             //trueNetwork = Networks.readNetwork("((((7,6)I10)I6#H1:::0.5,((((5)I11#H2:::0.5,1)I12,I6#H1:::0.5)I9,(I11#H2:::0.5,10)I8)I5)I2,((8,2)I4,((9,3)I7,4)I3)I1)I0;");
-            trueNetwork = Networks.readNetwork("(((10,(((((((1)I5#H2,2)I10,7)I9,4)I8,6)I7,3)I6,9)I4)I2)I11#H1,((I11#H1,(I5#H2,5)I3)I12,8)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((10,(((((((1)I5#H2,2)I10,7)I9,4)I8,6)I7,3)I6,9)I4)I2)I11#H1,((I11#H1,(I5#H2,5)I3)I12,8)I1)I0;");
+            //trueNetwork = Networks.readNetwork("(((((((9)I8#H2:::0.5,3)I9,2)I5,(I8#H2:::0.5,(1,6)I7)I4)I2)I12#H1:::0.5,(I12#H1:::0.5,(4,((10,7)I10,8)I6)I3)I11)I1,5)I0;");
             Networks.removeAllParameters(trueNetwork);
-            System.out.println(trueNetwork.toString());
-            System.out.println("Level-" + Networks.computeLevel(trueNetwork));
-            System.out.println("IsGalledNetwork: " + Networks.isGalledNetwork(trueNetwork));
+            //System.out.println(trueNetwork.toString());
+            //System.out.println("Level-" + Networks.computeLevel(trueNetwork));
+            //System.out.println("IsGalledNetwork: " + Networks.isGalledNetwork(trueNetwork));
             //System.out.println("Num of PTs: " + pt.size());
 
             //trueNetwork = Networks.readNetwork("(((((3,((8,10)I10,7)I9)I7)I5#H1:::0.5,(((I5#H1:::0.5,1)I8,6)I6,4)I4)I3,(5,2)I2)I1,9)I0;");
@@ -242,6 +244,7 @@ public class ParentalTreeOperation {
             //trueNetwork = Networks.readNetwork("(((6:1.0,7:1.0)I5:1.0,(8:1.0,(((4:1.0,2:1.0)I10:1.0)I8#H1:0.0,((I8#H1:0.0,9:1.0)I9:1.0,1:1.0)I7:1.0)I6:1.0)I4:1.0)I2:1.0,((5:1.0,3:1.0)I3:1.0,10:1.0)I1:1.0)I0;");
             //trueNetwork = Networks.readNetwork("((((((10,4)I8)I6#H1,7)I4,(I6#H1,((9,(5,(8,6)I10)I9)I7,2)I5)I3)I2,1)I1,3)I0;");
             //trueNetwork = Networks.readNetwork("((8,(((((4,10)I9)I10#H1:::0.5,9)I4,(I10#H1:::0.5,1)I8)I7,((2,7)I6,(6,5)I5)I3)I2)I1,3)I0;");
+            //trueNetwork = Networks.readNetwork("(((((((4)I12#H3:::0.5)I17#H2:::0.5,(1,10)I9)I18)I16#H1:::0.5,((I16#H1:::0.5,I12#H3:::0.5)I11,2)I5)I15,(I17#H2:::0.5,((5)I4#H5:::0.5)I13#H4:::0.5)I6)I2,(I4#H5:::0.5,((9,7)I8,(((I13#H4:::0.5,8)I14,3)I10,6)I7)I3)I1)I0;");
             for(NetNode<Object> node: trueNetwork.dfs()){
                 for(NetNode<Object> parent: node.getParents()){
                     node.setParentDistance(parent,NetNode.NO_DISTANCE);
@@ -251,10 +254,18 @@ public class ParentalTreeOperation {
                     }
                 }
             }
+
+            if(! (Networks.computeLevel(trueNetwork) == 1))
+                continue;
+
             System.out.println("True network: " + trueNetwork.toString());
 
             List<Tree> parentalTrees = parentalTreeOperation.getParentalTrees(trueNetwork);
 
+            if(true) {
+                System.out.println("Number of parental trees: " + parentalTrees.size());
+                continue;
+            }
             //if(parentalTrees.size() > 128) {correctness++;continue;}
 
             Collections.shuffle(parentalTrees);
@@ -300,15 +311,15 @@ public class ParentalTreeOperation {
                     @Override
                     public Network<Object> call() {
                         InferNetworkFromParentalTrees inferNetworkFromParentalTrees = new InferNetworkFromParentalTrees();
-                        Network<Object> inferredNetwork = inferNetworkFromParentalTrees.inferNetwork(parentalTrees0);
+                        Network<Object> inferredNetwork = inferNetworkFromParentalTrees.inferNetworkHeuristc(parentalTrees0);
                         return inferredNetwork;
                     }
                 });
                 executor.shutdown();
 
-                inferredNetwork = future.get(20, TimeUnit.SECONDS);
+                inferredNetwork = future.get(1000, TimeUnit.SECONDS);
 
-                executor.awaitTermination(20, TimeUnit.SECONDS);
+                executor.awaitTermination(1000, TimeUnit.SECONDS);
 
                 System.out.println("Inferred Network: " + inferredNetwork.toString());
 

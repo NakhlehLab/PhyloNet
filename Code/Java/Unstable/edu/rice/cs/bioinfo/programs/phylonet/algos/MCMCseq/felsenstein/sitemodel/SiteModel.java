@@ -5,6 +5,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitut
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitution.GTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.UltrametricTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitution.SubstitutionModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 public class SiteModel extends SiteModelInterface.Base {
 
-    protected double _muParameter = 1.0;
+    protected double _muParameter = Utils._MUTATION_RATE;
 //    private double _muLowerBound = 0; // not be used if fixed
 //    private double _muUpperBound = Double.MAX_VALUE; // not be used if fixed
     protected int _gammaCategoryCount = 0;

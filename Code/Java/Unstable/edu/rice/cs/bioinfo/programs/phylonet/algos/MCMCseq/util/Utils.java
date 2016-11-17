@@ -48,6 +48,8 @@ public class Utils {
     public static List<String> _START_GT_LIST = null;
     // summary
     public static int _TOPK_NETS = 10;
+    // site model
+    public static double _MUTATION_RATE = 1.0;
 
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;

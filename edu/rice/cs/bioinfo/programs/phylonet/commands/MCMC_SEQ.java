@@ -330,6 +330,23 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        // ----- Site Model -----
+        // mutation rate
+        ParamExtractor muParam = new ParamExtractor("mu", this.params, this.errorDetected);
+        if(muParam.ContainsSwitch){
+            if(muParam.PostSwitchParam != null) {
+                try {
+                    Utils._MUTATION_RATE = Double.parseDouble(muParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized mutation rate " + muParam.PostSwitchValue,
+                            muParam.PostSwitchParam.getLine(), muParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -mu.",
+                        muParam.SwitchParam.getLine(), muParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Starting State Settings -----
         // starting gene trees
         ParamExtractor sgtParam = new ParamExtractor("sgt", this.params, this.errorDetected);
@@ -404,14 +421,14 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "loci",
                 "cl", "bl", "sf", "sd", "pl", "outDir",
                 "mc3", "mr", "tm", "fixps", "varyps",
-                "pp", "dd", "ee", "gtr",
+                "pp", "dd", "ee", "gtr", "mu",
                 "sgt", "snet", "sps"
         );
         checkAndSetOutFile(
                 dataParam,
                 clParam, blParam, sfParam, sdParam, plParam, outDirParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
-                ppParam, ddParam, eeParam, gtrParam,
+                ppParam, ddParam, eeParam, gtrParam, muParam,
                 sgtParam, snParam, spsParam
         );
 

@@ -16,15 +16,18 @@ import java.util.List;
  */
 public class ScaleAll extends AllOperator {
 
-    private double _scaleFactor = 0.95;
-    private double _upperLimit = 1.0 - 1e-6;
-    private double _lowerLimit = 1e-6;
+    private double _upperLimit = 1.0 - 1e-8;
+    private double _lowerLimit;
+    private double _scaleFactor;
 
     private Double scale;
     private List<Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>> _edges;
 
     public ScaleAll(List<UltrametricTree> trees, UltrametricNetwork net) {
         super(trees, net);
+        _lowerLimit = Math.min(_upperLimit,
+                1.0 / Math.exp(50.0 / (trees.size()+1.0) / trees.get(0).getInternalNodes().size()));
+        _scaleFactor = (_upperLimit + _lowerLimit) / 2.0;
     }
 
     @Override

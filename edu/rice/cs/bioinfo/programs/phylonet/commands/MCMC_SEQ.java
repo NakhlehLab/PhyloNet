@@ -160,23 +160,23 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         }
 
         // output directory
-        ParamExtractor outDirParam = new ParamExtractor("outDir", this.params, this.errorDetected);
-        if(outDirParam.ContainsSwitch) {
-            if(outDirParam.PostSwitchParam != null) {
+        ParamExtractor dirParam = new ParamExtractor("dir", this.params, this.errorDetected);
+        if(dirParam.ContainsSwitch) {
+            if(dirParam.PostSwitchParam != null) {
                 try {
-                    Utils._OUT_DIRECTORY = outDirParam.PostSwitchValue;
+                    Utils._OUT_DIRECTORY = dirParam.PostSwitchValue;
                 } catch(NumberFormatException e) {
-                    errorDetected.execute("Unrecognized output directory " + outDirParam.PostSwitchValue,
-                            outDirParam.PostSwitchParam.getLine(), outDirParam.PostSwitchParam.getColumn());
+                    errorDetected.execute("Unrecognized output directory " + dirParam.PostSwitchValue,
+                            dirParam.PostSwitchParam.getLine(), dirParam.PostSwitchParam.getColumn());
                 }
-                File outDir = new File(Utils._OUT_DIRECTORY);
-                if(!outDir.exists() || !outDir.isDirectory()) {
-                    errorDetected.execute("Output directory doesn't exist: " + outDirParam.PostSwitchValue,
-                            outDirParam.PostSwitchParam.getLine(), outDirParam.PostSwitchParam.getColumn());
+                File dir = new File(Utils._OUT_DIRECTORY);
+                if(!dir.exists() || !dir.isDirectory()) {
+                    errorDetected.execute("Output directory doesn't exist: " + dirParam.PostSwitchValue,
+                            dirParam.PostSwitchParam.getLine(), dirParam.PostSwitchParam.getColumn());
                 }
             } else {
-                errorDetected.execute("Expected value after switch -outDir.",
-                        outDirParam.SwitchParam.getLine(), outDirParam.SwitchParam.getColumn());
+                errorDetected.execute("Expected value after switch -dir.",
+                        dirParam.SwitchParam.getLine(), dirParam.SwitchParam.getColumn());
             }
         }
 
@@ -419,14 +419,14 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
         noError = noError && checkForUnknownSwitches(
                 "loci",
-                "cl", "bl", "sf", "sd", "pl", "outDir",
+                "cl", "bl", "sf", "sd", "pl", "dir",
                 "mc3", "mr", "tm", "fixps", "varyps",
                 "pp", "dd", "ee", "gtr", "mu",
                 "sgt", "snet", "sps"
         );
         checkAndSetOutFile(
                 dataParam,
-                clParam, blParam, sfParam, sdParam, plParam, outDirParam,
+                clParam, blParam, sfParam, sdParam, plParam, dirParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
                 ppParam, ddParam, eeParam, gtrParam, muParam,
                 sgtParam, snParam, spsParam
@@ -439,7 +439,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
     protected String produceResult() {
 
         StringBuffer result = new StringBuffer("\n");
-        System.out.println();
+        System.out.println("\nOutput files under " + Utils._OUT_DIRECTORY);
 
         long startTime = System.currentTimeMillis();
 

@@ -80,16 +80,17 @@ public class Utils {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
     public static final double[] Net_Op_Weights = new double[] {
-            0.03, 0.01, 0.01,
+            0.03, 0.01, // 0.01,
             0.04, 0.05,
             0.25, 0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
             0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT, 0.06 - DIMENSION_CHANGE_WEIGHT
     };
-    // ChangePopSize ScalePopSize ScaleAll ScaleTime ScaleRootTime
+    // ChangePopSize ScalePopSize --// ScaleAll
+    // ScaleTime ScaleRootTime
     // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation
     // FlipReticulation MoveHead DeleteReticulation ChangeInheritance
     public static final double[] Net_Tree_Op_Weights = new double[] {
-            0.03, 0.01, 0.01,
+            0.03, 0.01, // 0.01,
             0.04, 0.05,
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };

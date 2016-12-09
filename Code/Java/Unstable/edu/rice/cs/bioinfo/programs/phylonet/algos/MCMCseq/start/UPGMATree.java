@@ -114,20 +114,19 @@ public class UPGMATree {
         return _upgmaTree;
     }
 
-    private void buildTree(Cluster cluster, STINode node) {
+    private double buildTree(Cluster cluster, STINode node) {
         if (cluster._c1 != null && cluster._c2 != null) {
             String name1 = cluster._c1._taxa.size() == 1 ? cluster._c1._taxa.iterator().next() : "I" + id++;
             STINode child1 = node.createChild(name1);
             String name2 = cluster._c2._taxa.size() == 1 ? cluster._c2._taxa.iterator().next() : "I" + id++;
             STINode child2 = node.createChild(name2);
-            double childHeight = Math.max(cluster._c1._height, cluster._c2._height);
+            double childHeight = Math.max(buildTree(cluster._c1, child1), buildTree(cluster._c2, child2));
             if(cluster._height < childHeight) {
                 cluster._height = childHeight * Utils.TREE_INTI_SCALE;
             }
-            buildTree(cluster._c1, child1);
-            buildTree(cluster._c2, child2);
         }
         node.setNodeHeight(cluster._height);
+        return cluster._height;
     }
 
     private void setBranchLengths() {

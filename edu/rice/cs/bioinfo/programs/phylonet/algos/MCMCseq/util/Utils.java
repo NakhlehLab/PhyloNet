@@ -188,19 +188,25 @@ public class Utils {
         return Utils._ESTIMATE_POP_SIZE && !Utils._CONST_POP_SIZE;
     }
 
-    public static void taxonMapPhasing(List<Alignment> alignments) {
-        Collection<String> keys = Utils._TAXON_MAP == null ?
-                alignments.get(0).getTaxaNames() : Utils._TAXON_MAP.keySet();
-        Map<String, List<String>> taxonMap = new HashMap<>();
-        for(String key : keys) {
-            List<String> treeTaxa = new ArrayList<>();
-            if(Utils._DIPLOID_SPECIES.contains(key)) {
-                treeTaxa.add(key + "_1");
-                treeTaxa.add(key + "_2");
-            } else {
-                treeTaxa.add(key);
+    public static void taxonMapPhasing(Set<String> taxa) {
+        if(Utils._TAXON_MAP == null) {
+            Utils._TAXON_MAP = new HashMap<>();
+            for(String key : taxa) {
+                Utils._TAXON_MAP.put(key, Arrays.asList(new String[] {key}));
             }
-            taxonMap.put(key, treeTaxa);
+        }
+        Map<String, List<String>> taxonMap = new HashMap<>();
+        for(String key : Utils._TAXON_MAP.keySet()) {
+            List<String> treeTaxa = new ArrayList<>();
+            for(String val : Utils._TAXON_MAP.get(key)) {
+                if(Utils._DIPLOID_SPECIES.contains(val)) {
+                    treeTaxa.add(val + "_1");
+                    treeTaxa.add(val + "_2");
+                } else {
+                    treeTaxa.add(val);
+                }
+                taxonMap.put(key, treeTaxa);
+            }
         }
         Utils._TAXON_MAP = taxonMap;
     }

@@ -1,13 +1,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.SpeciesNetPriorDistribution;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Utils fields and methods for the whole program
@@ -50,6 +49,9 @@ public class Utils {
     public static int _TOPK_NETS = 10;
     // site model
     public static double _MUTATION_RATE = 1.0;
+    // diploid phasing
+    public static Set<String> _DIPLOID_SPECIES = null;
+    public static boolean _PHASING = false;
 
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;
@@ -95,6 +97,8 @@ public class Utils {
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
     public static final double[] PopSize_Op_Weights = new double[]{0.5, 1.0};
+    // phasing
+    private static Map<Character, String[]> PHASING_NUCLEOTIDES = null;
 
 
     public static double[] getOperationWeights(double[] weights, int start, int end) {
@@ -182,5 +186,36 @@ public class Utils {
 
     public static boolean varyPopSizeAcrossBranches() {
         return Utils._ESTIMATE_POP_SIZE && !Utils._CONST_POP_SIZE;
+    }
+
+    public static void taxonMapPhasing(List<Alignment> alignments) {
+        Collection<String> keys = Utils._TAXON_MAP == null ?
+                alignments.get(0).getTaxaNames() : Utils._TAXON_MAP.keySet();
+        Map<String, List<String>> taxonMap = new HashMap<>();
+        for(String key : keys) {
+            List<String> treeTaxa = new ArrayList<>();
+            if(Utils._DIPLOID_SPECIES.contains(key)) {
+                treeTaxa.add(key + "_1");
+                treeTaxa.add(key + "_2");
+            } else {
+                treeTaxa.add(key);
+            }
+            taxonMap.put(key, treeTaxa);
+        }
+        Utils._TAXON_MAP = taxonMap;
+    }
+
+    public static Map<Character, String[]> getPhasingNucleotides() {
+        if(PHASING_NUCLEOTIDES == null) {
+            Map<Character, String[]> nucleotides = new HashMap<>();
+            nucleotides.put('R', new String[] {"AG", "GA"});
+            nucleotides.put('Y', new String[] {"CT", "TC"});
+            nucleotides.put('M', new String[] {"AC", "CA"});
+            nucleotides.put('W', new String[] {"AT", "TA"});
+            nucleotides.put('S', new String[] {"CG", "GC"});
+            nucleotides.put('K', new String[] {"GT", "TG"});
+            PHASING_NUCLEOTIDES = nucleotides;
+        }
+        return PHASING_NUCLEOTIDES;
     }
 }

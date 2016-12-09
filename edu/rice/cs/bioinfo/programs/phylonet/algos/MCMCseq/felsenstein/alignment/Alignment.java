@@ -1,7 +1,14 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.DataType;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.Nucleotide;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.likelihood.BeagleTreeLikelihood;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.sitemodel.SiteModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitution.Frequencies;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitution.JukesCantor;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.UltrametricTree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 
 import java.util.*;
 
@@ -44,6 +51,8 @@ public class Alignment {
 
     private Map<String, String> _aln;
     private String _name = null;
+    private List<Integer> _siteSeqCounts = null;
+    private List<List<Integer>> _hexPatternIndices = null;
 
     public Alignment(Map<String, String> sequences, String name) {
         this(sequences);
@@ -51,8 +60,12 @@ public class Alignment {
     }
 
     public Alignment(Map<String, String> sequences) {
-        _aln = sequences;
-        for(String key : sequences.keySet()) {
+        if(Utils._PHASING) {
+            _aln = diploidPhasing(sequences);
+        } else {
+            _aln = sequences;
+        }
+        for(String key : _aln.keySet()) {
             if (_taxaNames.contains(key)) {
                 throw new RuntimeException("Duplicate taxon found in alignment: " + key);
             }
@@ -61,11 +74,11 @@ public class Alignment {
         Collections.sort(_taxaNames);
 
         for(String taxon: _taxaNames) {
-            Sequence seq = new Sequence(taxon, sequences.get(taxon));
+            Sequence seq = new Sequence(taxon, _aln.get(taxon));
             _sequences.add(seq);
             _counts.add(seq.getSequence(m_dataType));
             if(seq.getStateCount() == -1) {
-                throw new RuntimeException("state count has not been initialized yet " + taxon + " " + sequences.get(taxon));
+                throw new RuntimeException("state count has not been initialized yet " + taxon + " " + _aln.get(taxon));
             }
             _stateCounts.add(seq.getStateCount());
             _maxStateCount = Math.max(_maxStateCount, seq.getStateCount());
@@ -143,20 +156,47 @@ public class Alignment {
             weights[patterns - 1]++;
         }
         // reserve memory for patterns
-        _patternWeight = new int[patterns];
         _sitePatterns = new int[patterns][taxonCount];
         for (int i = 0; i < patterns; i++) {
-            _patternWeight[i] = weights[i];
             _sitePatterns[i] = data[i];
         }
         // find patterns for the sites
+        int idx = 0, cnt = 0;
+        List<List<Integer>> hexList = new ArrayList<>();
+        List<Integer> hexSite = null;
         _patternIndex = new int[siteCount];
         for (int i = 0; i < siteCount; i++) {
             int[] sites = new int[taxonCount];
             for (int j = 0; j < taxonCount; j++) {
                 sites[j] = _counts.get(j).get(i);
             }
-            _patternIndex[i] = Arrays.binarySearch(_sitePatterns, sites, comparator);
+            int patternIdx = Arrays.binarySearch(_sitePatterns, sites, comparator);
+            _patternIndex[i] = patternIdx;
+            if(_siteSeqCounts != null) {
+                if(cnt == 0) {
+                    if(hexSite != null) {
+                        hexList.add(hexSite);
+                        hexSite = null;
+                    }
+                    cnt = _siteSeqCounts.get(idx++);
+                    if(cnt == 1) {
+                        cnt = 0;
+                        continue;
+                    } else {
+                        hexSite = new ArrayList<>();
+                    }
+                }
+                hexSite.add(patternIdx);
+                weights[patternIdx]--;
+                cnt--;
+            }
+        }
+        _patternWeight = new int[patterns];
+        for (int i = 0; i < patterns; i++) {
+            _patternWeight[i] = weights[i];
+        }
+        if(_siteSeqCounts != null) {
+            _hexPatternIndices = hexList;
         }
     }
 
@@ -272,6 +312,96 @@ public class Alignment {
         return null;
     }
 
+    // ----- diploid phasing -----
+    public List<List<Integer>> getHexPatternIndices() {
+        return _hexPatternIndices;
+    }
+
+    private Map<String, String> diploidPhasing(Map<String, String> aln) {
+        // store pattern indices - counts pairs for all sites
+        List<Integer> siteSeqCounts = new ArrayList<>();
+//        List<Tuple<List<Integer>, Integer>> patternIndicesCounts = new ArrayList<>();
+//        Map<String, Integer> patternCounts = new HashMap<>();
+        // final diploid phased taxon - sequence pairs
+        List<String> keys = new ArrayList<>();
+        List<StringBuilder> vals = new ArrayList<>();
+        // original unphased taxon - sequence pairs
+        List<String> alnKeys = new ArrayList<>();
+        List<String> alnVals = new ArrayList<>();
+        for(String key : aln.keySet()) {
+            alnKeys.add(key);
+            alnVals.add(aln.get(key).toUpperCase());
+            if(Utils._DIPLOID_SPECIES.contains(key)) {
+                keys.add(key + "_1");
+                keys.add(key + "_2");
+                vals.add(new StringBuilder());
+                vals.add(new StringBuilder());
+            } else {
+                keys.add(key);
+                vals.add(new StringBuilder());
+            }
+        }
+        for(int i = 0; i < alnVals.get(0).length(); i++) {
+            StringBuilder sb = new StringBuilder();
+            for(int j = 0; j < alnKeys.size(); j++) {
+                sb.append(alnVals.get(j).charAt(i));
+            }
+            int cnt = addSites(vals, alnKeys, sb.toString(), 0, new StringBuilder());
+            siteSeqCounts.add(cnt);
+        }
+        Map<String, String> newAln = new HashMap<>();
+        for(int i = 0; i < keys.size(); i++) {
+            String seq = vals.get(i).toString();
+            newAln.put(keys.get(i), seq);
+            _sequences.add(new Sequence(keys.get(i), seq));
+        }
+        _siteSeqCounts = siteSeqCounts;
+        return newAln;
+    }
+
+    private static int addSites(List<StringBuilder> vals,
+                                 List<String> alnKeys,
+                                 String site, int index, StringBuilder sb) {
+        if(sb.length() == vals.size() && index == site.length()) {
+            String s = sb.toString();
+            int idx = 0;
+            for(int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if(c == 'A' || c == 'C' || c == 'G' || c == 'T') {
+                    s = s.replaceAll(Character.toString(c), Integer.toString(idx++));
+                }
+            }
+            s = s.replaceAll("0", "A").replaceAll("1", "C").replaceAll("2", "G").replaceAll("3", "T");
+            for(int i = 0; i < s.length(); i++) {
+                vals.get(i).append(s.charAt(i));
+            }
+            return 1;
+        } else if (sb.length() == vals.size() || index == site.length()) {
+            throw new RuntimeException();
+        }
+        int cnt = 0;
+        char c = site.charAt(index);
+        if(Utils._DIPLOID_SPECIES.contains(alnKeys.get(index))) {
+            // diploid
+            if(c == 'A' || c == 'C' || c == 'G' || c == 'T' || c == 'N') {
+                sb.append(c).append(c);
+            } else if(c == 'R' || c == 'Y' || c == 'M' || c == 'W' || c == 'S' || c == 'K') {
+                sb.append(Utils.getPhasingNucleotides().get(c)[0]);
+                cnt += addSites(vals, alnKeys, site, index + 1, sb);
+                sb.delete(sb.length() - 2, sb.length());
+                sb.append(Utils.getPhasingNucleotides().get(c)[1]);
+            }
+            cnt += addSites(vals, alnKeys, site, index + 1, sb);
+            sb.delete(sb.length() - 2, sb.length());
+        } else {
+            // haploid
+            sb.append(c);
+            cnt += addSites(vals, alnKeys, site, index + 1, sb);
+            sb.delete(sb.length() - 1, sb.length());
+        }
+        return cnt;
+    }
+
     // test
     public static void main(String[] args) {
         Map<String, String> input = new HashMap<>();
@@ -284,10 +414,50 @@ public class Alignment {
         System.out.println(taxa.get(0) == "A" && taxa.get(1) == "B" && taxa.get(2) == "C");
         System.out.println(aln.getMaxStateCount() == 4);
         System.out.println(aln.getPatternCount() == 5);
-        System.out.println(Arrays.toString(aln.getPatternWeights())); // 1,1,1,1,2
         System.out.println(Arrays.toString(aln.getStateSet(0))); // TFFF
         System.out.println(Arrays.toString(aln.getStateSet(17))); // TTTT
-        System.out.println(Arrays.toString(aln.getPattern(4))); // T T T -> 3, 3, 3
+        for(int i = 0; i < 5; i++) {
+            System.out.println(aln.getPatternWeight(i) + ": " + Arrays.toString(aln.getPattern(i)));
+        }
+        for(List<Integer> list : aln._counts) {
+            System.out.println(Arrays.toString(list.toArray()));
+        }
+        System.out.println(Arrays.toString(aln._patternWeight));
+        System.out.println(Arrays.toString(aln._patternIndex));
+        // test diploid phasing
+        testDiploidPhasing();
+    }
+
+    private static void testDiploidPhasing() {
+        Set<String> diploids = new HashSet<>();
+        diploids.add("b");
+        diploids.add("c");
+        diploids.add("d");
+        Utils._DIPLOID_SPECIES = diploids;
+        Utils._PHASING = true;
+        Map<String, String> aln = new HashMap<>();
+        aln.put("a", "ACATTGGAAGATNAGTCANA");
+        aln.put("b", "ACRTTGGARRATTAGYCACA");
+        aln.put("c", "ACATYGRARAATTAGKCACA");
+        aln.put("d", "ACATCGAARNACTCGCCACA");
+        Alignment alignment = new Alignment(aln, "test");
+        for(String key : alignment.getTaxaNames()) {
+            System.out.printf("%3s: %s\n", key, alignment.getAlignment().get(key));
+        }
+        for(int i = 0; i < alignment.getPatternCount(); i++) {
+            System.out.printf("%2s: %s\n", alignment.getPatternWeight(i), Arrays.toString(alignment.getPattern(i)));
+        }
+        System.out.println(Arrays.toString(alignment._patternIndex));
+        for(List<Integer> list : alignment._hexPatternIndices) {
+            System.out.println(list.size() + ": " + Arrays.toString(list.toArray()));
+        }
+        BeagleTreeLikelihood likelihood = new BeagleTreeLikelihood(
+                alignment,
+                new UltrametricTree(alignment),
+                new SiteModel(new JukesCantor(new Frequencies(alignment, false))),
+                null
+        );
+        System.out.println(likelihood.calculateLogP());
     }
 
 }

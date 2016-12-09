@@ -22,7 +22,7 @@ import java.util.*;
 @CommandName("MCMC_SEQ")
 public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
-    List<Alignment> alignments = new ArrayList<>();
+    private List<Alignment> alignments = new ArrayList<>();
 
     public MCMC_SEQ(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                     Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -48,8 +48,35 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         this.parseMultiLociData(Program.inputNexusFileName);
         if(this.sourceIdentToMultilocusData == null) {
             throw new RuntimeException("Expected data for inference! See format here: " +
-                    ""); // TODO
+                    "https://wiki.rice.edu/confluence/display/PHYLONET/Multilocus+Data");
         }
+
+        // ----- diploid phasing -----
+        ParamExtractor diploidParam = new ParamExtractor("diploid", this.params, this.errorDetected);
+        if(diploidParam.ContainsSwitch) {
+            if(diploidParam.PostSwitchParam != null) {
+                try {
+                    if(!(diploidParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    Set<String> diploidSpecies = new HashSet<>();
+                    ParameterIdentList taxa = (ParameterIdentList) diploidParam.PostSwitchParam;
+                    for(String taxon: taxa.Elements){
+                        diploidSpecies.add(taxon);
+                    }
+                    Utils._DIPLOID_SPECIES = diploidSpecies;
+                    Utils._PHASING = diploidSpecies.size() > 0;
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Invalid value after switch -diploid.",
+                            diploidParam.PostSwitchParam.getLine(), diploidParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -diploid.",
+                        diploidParam.SwitchParam.getLine(), diploidParam.SwitchParam.getColumn());
+            }
+        }
+
+        // ----- selected loci -----
         ParamExtractor dataParam = new ParamExtractor("loci", this.params, this.errorDetected);
         if(dataParam.ContainsSwitch){
             if(dataParam.PostSwitchParam != null) {
@@ -290,46 +317,6 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             Utils._TIMES_EXP_PRIOR = true;
         }
 
-        // ----- Substitution Model Settings -----
-        // GTR
-        ParamExtractor gtrParam = new ParamExtractor("gtr", this.params, this.errorDetected);
-        if(gtrParam.ContainsSwitch) {
-            if(gtrParam.PostSwitchParam != null) {
-                try {
-                    if(!(gtrParam.PostSwitchParam instanceof ParameterIdentList)){
-                        throw new RuntimeException();
-                    }
-                    double[] baseFreqs = new double[4];
-                    double[] transRates = new double[6];
-                    ParameterIdentList rates = (ParameterIdentList) gtrParam.PostSwitchParam;
-                    int idx = 0;
-                    for(String item: rates.Elements){
-                        double r = Double.parseDouble(item.trim());
-                        if(r < 0) {
-                            throw new RuntimeException();
-                        }
-                        if(idx >= 4) {
-                            transRates[idx - 4] = r;
-                        } else {
-                            baseFreqs[idx] = r;
-                        }
-                        idx++;
-                    }
-                    if(idx != 10) {
-                        throw new RuntimeException();
-                    }
-                    Utils._BASE_FREQS = baseFreqs;
-                    Utils._TRANS_RATES = transRates;
-                } catch(NumberFormatException e) {
-                    errorDetected.execute("Invalid value after switch -gtr.",
-                            gtrParam.PostSwitchParam.getLine(), gtrParam.PostSwitchParam.getColumn());
-                }
-            } else {
-                errorDetected.execute("Expected value after switch -gtr.",
-                        gtrParam.SwitchParam.getLine(), gtrParam.SwitchParam.getColumn());
-            }
-        }
-
         // ----- Site Model -----
         // mutation rate
         ParamExtractor muParam = new ParamExtractor("mu", this.params, this.errorDetected);
@@ -417,19 +404,61 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        // ----- Substitution Model Settings -----
+        // GTR
+        ParamExtractor gtrParam = new ParamExtractor("gtr", this.params, this.errorDetected);
+        if(gtrParam.ContainsSwitch) {
+            if(gtrParam.PostSwitchParam != null) {
+                try {
+                    if(!(gtrParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    double[] baseFreqs = new double[4];
+                    double[] transRates = new double[6];
+                    ParameterIdentList rates = (ParameterIdentList) gtrParam.PostSwitchParam;
+                    int idx = 0;
+                    for(String item: rates.Elements){
+                        double r = Double.parseDouble(item.trim());
+                        if(r < 0) {
+                            throw new RuntimeException();
+                        }
+                        if(idx >= 4) {
+                            transRates[idx - 4] = r;
+                        } else {
+                            baseFreqs[idx] = r;
+                        }
+                        idx++;
+                    }
+                    if(idx != 10) {
+                        throw new RuntimeException();
+                    }
+                    Utils._BASE_FREQS = baseFreqs;
+                    Utils._TRANS_RATES = transRates;
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Invalid value after switch -gtr.",
+                            gtrParam.PostSwitchParam.getLine(), gtrParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -gtr.",
+                        gtrParam.SwitchParam.getLine(), gtrParam.SwitchParam.getColumn());
+            }
+        }
+
         noError = noError && checkForUnknownSwitches(
+                "diploid",
                 "loci",
                 "cl", "bl", "sf", "sd", "pl", "dir",
                 "mc3", "mr", "tm", "fixps", "varyps",
-                "pp", "dd", "ee", "gtr", "mu",
-                "sgt", "snet", "sps"
+                "pp", "dd", "ee", "mu",
+                "sgt", "snet", "sps", "gtr"
         );
         checkAndSetOutFile(
+                diploidParam,
                 dataParam,
                 clParam, blParam, sfParam, sdParam, plParam, dirParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
-                ppParam, ddParam, eeParam, gtrParam, muParam,
-                sgtParam, snParam, spsParam
+                ppParam, ddParam, eeParam, muParam,
+                sgtParam, snParam, spsParam, gtrParam
         );
 
         return  noError;
@@ -437,6 +466,10 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
     @Override
     protected String produceResult() {
+
+        if(Utils._PHASING) {
+            Utils.taxonMapPhasing(alignments);
+        }
 
         StringBuffer result = new StringBuffer("\n");
         System.out.println("\nOutput files under " + Utils._OUT_DIRECTORY);

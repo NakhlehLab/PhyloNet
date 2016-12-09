@@ -1,11 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.likelihood;
 
-import beagle.Beagle;
-import beagle.BeagleFactory;
-import beagle.BeagleFlag;
-import beagle.BeagleInfo;
-import beagle.InstanceDetails;
-import beagle.ResourceDetails;
+import beagle.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.StateNode;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
@@ -643,6 +638,15 @@ public class BeagleTreeLikelihood extends StateNode {
                 logL = 0.0;
                 for (int i = 0; i < _patternCount; i++) {
                     logL += _patternLogLikelihoods[i] * patternWeights[i];
+                }
+            } else if(Utils._PHASING) {
+                _beagle.getSiteLogLikelihoods(_patternLogLikelihoods);
+                for(List<Integer> list : _alignment.getHexPatternIndices()) {
+                    double prob = 0.0;
+                    for(Integer idx : list) {
+                        prob += Math.exp(_patternLogLikelihoods[idx]);
+                    }
+                    logL += Math.log(prob / list.size());
                 }
             }
 

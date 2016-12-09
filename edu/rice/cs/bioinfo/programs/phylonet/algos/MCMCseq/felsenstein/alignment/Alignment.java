@@ -457,7 +457,7 @@ public class Alignment {
                 new SiteModel(new JukesCantor(new Frequencies(alignment, false))),
                 null
         );
-        System.out.println(likelihood.calculateLogP());
+        System.out.println(likelihood.calculateLogP()); // -107.86891849283889
     }
 
 }

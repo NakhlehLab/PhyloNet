@@ -469,6 +469,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
         if(Utils._PHASING) {
             Utils.taxonMapPhasing(this.sourceIdentToMultilocusData.values().iterator().next().keySet());
+            Utils._SUBSTITUTION_MODEL = "JC";
         }
 
         StringBuffer result = new StringBuffer("\n");

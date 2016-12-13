@@ -223,7 +223,10 @@ public class BeagleTreeLikelihood extends StateNode {
                                 BranchRateModel branch) {
         // sanity check: alignment should have same #taxa as tree
         if (aln.getTaxonSize() != tree.getTree().getLeafCount()) {
-            throw new IllegalArgumentException("The number of nodes in the tree does not match the number of sequences");
+            throw new IllegalArgumentException("The number of nodes in the tree " +
+                    tree.getTree().getLeafCount() +
+                    " does not match the number of sequences " +
+                    aln.getTaxonSize());
         }
         boolean forceJava = Boolean.valueOf(System.getProperty("java.only"));
         if (forceJava) return;

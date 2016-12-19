@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class JCDistance extends Distance {
 
-    private static double MIN_DISTANCE = 0.01;
+    private static double MIN_DISTANCE = 0.0001;
     private static double MAX_DISTANCE = 0.75;
     private PDistance _pDistance;
 

@@ -23,7 +23,7 @@ public class ScaleTime extends NetworkOperator {
 
     private double _scaleFactor = 0.95;
     private double _upperLimit = 1.0 - 1e-6;
-    private double _lowerLimit = 1e-6;
+    private double _lowerLimit = 0.9;
 
     public Double scale;
 
@@ -35,14 +35,14 @@ public class ScaleTime extends NetworkOperator {
     public double propose() {
         scale = null; // reset
         scale = getScaler(); // scale > 1 => increase height => may violate
-        scaleHeight(scale);
+        scaleHeight(scale, false);
         _violate = scale > 1.0;
         return Math.log(scale) * (_network.getInternalNodeCount() - 2);
     }
 
     @Override
     public void undo() {
-        scaleHeight(1.0 / scale);
+        scaleHeight(1.0 / scale, true);
     }
 
     @Override
@@ -65,13 +65,17 @@ public class ScaleTime extends NetworkOperator {
         return _scaleFactor + Randomizer.getRandomDouble() * (1.0 / _scaleFactor - _scaleFactor);
     }
 
-    private void scaleHeight(double scale) {
+    private void scaleHeight(double scale, boolean undo) {
         for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network.getNetwork())) {
             if(node.isLeaf()) continue;
-            double newH = node.getData().getHeight() * scale;
-            node.getData().setHeight(newH);
+            if(undo) {
+                node.getData().recoverHeight();
+            } else {
+                node.getData().storeHeight();
+                node.getData().setHeight(node.getData().getHeight() * scale);
+            }
             for(NetNode<NetNodeInfo> child : node.getChildren()) {
-                child.setParentDistance(node, newH - child.getData().getHeight());
+                child.setParentDistance(node, node.getData().getHeight() - child.getData().getHeight());
             }
         }
     }
@@ -128,7 +132,7 @@ public class ScaleTime extends NetworkOperator {
                 op.undo();
                 int idx = 0;
                 for(NetNode<NetNodeInfo> node : Networks.postTraversal(net.getNetwork())) {
-                    if(Math.abs(node.getData().getHeight() - heights.get(idx++)) > 0.000001) {
+                    if(node.getData().getHeight() != heights.get(idx++)) {
                         System.out.println(node.getData().getHeight() + " vs " + heights.get(idx-1));
                         test--;
                         break;

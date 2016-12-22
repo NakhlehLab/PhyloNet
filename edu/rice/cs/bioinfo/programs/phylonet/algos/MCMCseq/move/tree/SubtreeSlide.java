@@ -30,7 +30,7 @@ public class SubtreeSlide extends TreeOperator {
     private double _logHastingsRatio;
     private TNode _oldParent;
     private TNode _oldChild;
-    private double _windowSize = 0.1;
+    private double _windowSize = Utils._TIME_WINDOW_SIZE;
 
     public SubtreeSlide(UltrametricTree tree) {
         super(tree);
@@ -163,6 +163,7 @@ public class SubtreeSlide extends TreeOperator {
     }
 
     public static void main(String[] args) {
+        Utils._TIME_WINDOW_SIZE = 0.1;
 
         Map<String, String> locus = new HashMap<>();
         {

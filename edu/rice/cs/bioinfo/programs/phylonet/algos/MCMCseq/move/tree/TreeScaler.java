@@ -17,9 +17,9 @@ import java.util.Map;
  */
 public class TreeScaler extends TreeOperator {
 
-    private double _scaleFactor = 0.85;
+    private double _scaleFactor = 0.95;
     private double _upperLimit = 1.0 - 1e-6;
-    private double _lowerLimit = 1e-6;
+    private double _lowerLimit = 0.85;
 
     private double scale;
     private double _logHR;
@@ -44,7 +44,7 @@ public class TreeScaler extends TreeOperator {
             _logHR = Utils.INVALID_MOVE;
             return _logHR;
         }
-        _tree.scale(scale);
+        _tree.scale(scale, false);
         _logHR = Math.log(scale) * (_tree.getInternalNodes().size() - 2);
         return _logHR;
     }
@@ -52,7 +52,7 @@ public class TreeScaler extends TreeOperator {
     @Override
     public void undo() {
         if(_logHR == Utils.INVALID_MOVE) return;
-        _tree.scale(1.0/scale);
+        _tree.scale(1.0/scale, true);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class TreeScaler extends TreeOperator {
             int counter = 0;
             int test = 0;
             for(int i = 0; i < runs; i++) {
-                Operator op = new TreeScaler(tree);
+                TreeScaler op = new TreeScaler(tree);
                 double logHR = op.propose();
                 if(logHR != Utils.INVALID_MOVE) counter++;
                 if(tree.checkUltrametric()) test++;

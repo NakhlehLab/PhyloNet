@@ -97,6 +97,7 @@ public class ContextAnalyser
 
             /*
              * Check to ensure support is a number between 0 and 100 inclusive.
+             * TODO by dw20: population size in MCMC_SEQ is stored as support
              */
             String supportStr = syntaxInspector.getSupportText(node);
             if(supportStr != null)
@@ -105,7 +106,9 @@ public class ContextAnalyser
                 {
                     BigDecimal support = new BigDecimal(supportStr, MathContext.UNLIMITED);
 
-                    if(support.compareTo(BigDecimal.ZERO) == -1  || (support.compareTo(BigDecimal.valueOf(100)) == 1))
+                    if(support.compareTo(BigDecimal.ZERO) == -1
+//                            || (support.compareTo(BigDecimal.valueOf(100)) == 1)
+                            )
                     {
                         int supportLine = syntaxInspector.getSupportLineNumber(node);
                         int supportColumn = syntaxInspector.getSupportColumnNumber(node);

@@ -9,6 +9,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,10 +20,12 @@ public class ScalePopSize extends NetworkOperator {
 
     private double _scaleFactor = 0.92;
     private double _upperLimit = 1.0 - 1e-6;
-    private double _lowerLimit = 1e-6;
+    private double _lowerLimit = 0.8;
 
     private Double scale;
     private List<Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>> _edges;
+    private List<Double> _prevPopSizes;
+    private double _prevRootPopSize = -1;
 
     public ScalePopSize(UltrametricNetwork net) {
         super(net);
@@ -38,11 +41,12 @@ public class ScalePopSize extends NetworkOperator {
         int dimension = 1;
         if(Utils._CONST_POP_SIZE) {
             _edges = null;
+            _prevPopSizes = null;
         } else {
             _edges = Networks.getAllEdges(_network.getNetwork());
             dimension += _edges.size();
         }
-        scalePopSize(scale);
+        scalePopSize(scale, false);
 
         _violate = false;
         return Math.log(scale) * (dimension - 2);
@@ -50,7 +54,7 @@ public class ScalePopSize extends NetworkOperator {
 
     @Override
     public void undo() {
-        scalePopSize(1.0 / scale);
+        scalePopSize(1.0 / scale, true);
     }
 
     @Override
@@ -73,24 +77,41 @@ public class ScalePopSize extends NetworkOperator {
         return _scaleFactor + Randomizer.getRandomDouble() * (1.0 / _scaleFactor - _scaleFactor);
     }
 
-    private void scalePopSize(double scale) {
+    private void scalePopSize(double scale, boolean undo) {
         NetNode root = _network.getNetwork().getRoot();
-        root.setRootPopSize(root.getRootPopSize() * scale);
+        if(undo) {
+            root.setRootPopSize(_prevRootPopSize);
+            _prevRootPopSize = -1;
+        } else {
+            _prevRootPopSize = root.getRootPopSize();
+            root.setRootPopSize(_prevRootPopSize * scale);
+        }
         if(Utils._CONST_POP_SIZE) {
             return;
         }
-        if(_edges == null) {
+        if(_edges == null || (undo && _prevPopSizes == null)) {
             throw new RuntimeException("not CONST population size!!!!");
         }
-        for(Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>> edge : _edges) {
-            edge.Item1.setParentSupport(edge.Item2, edge.Item1.getParentSupport(edge.Item2) * scale);
+        if(undo) {
+            for(int i = 0; i < _edges.size(); i++) {
+                _edges.get(i).Item1.setParentSupport(_edges.get(i).Item2, _prevPopSizes.get(i));
+            }
+            _prevPopSizes = null;
+        } else {
+            _prevPopSizes = new ArrayList<>();
+            for(Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>> edge : _edges) {
+                double ps = edge.Item1.getParentSupport(edge.Item2);
+                _prevPopSizes.add(ps);
+                edge.Item1.setParentSupport(edge.Item2, ps * scale);
+            }
         }
     }
 
     public static void main(String[] args) {
         Utils._CONST_POP_SIZE = false;
         {
-            UltrametricNetwork net = new UltrametricNetwork("(O:0.5,((((A:0.5,(C:0.5,(G:0.424733668924115)I10#H3:0.27526633107588505::0.95)I6:1.2148953368828783)I5:2.0902392667517367,(((R:0.23468712)I8#H2:0.57719209683010764::0.76)I2#H1:0.4723366810412248::0.29,(Q:0.5,I10#H3:0.24368001872495645::0.05)I4:1.4561500003545642)I9:2.081453711192161)I3:0.8324858688602822,(L:0.30183286,I8#H2:0.8699237693946538::0.24)I7:0.7369103845180647)I1:1.427856628628852,I2#H1:0.8195085232672825::0.71)I0:3.0);");
+            UltrametricNetwork net = new UltrametricNetwork("(((AF:4.7560289410455474E-7:6.216710846747218E-4)I5#H1:6.673080055619683E-5:6.04717164578389E-4:0.19169217458789256,EU:6.720640345030139E-5:4.54804059863962E-4)I4:3.2385691593548525E-5:1.441308148785055E-4,(I5#H1:7.170661624805849E-5:8.149685305377055E-4:0.8083078254121074,SA:7.218221914216304E-5:0.0011303870974394095)I1:2.740987590168687E-5:3.0250110970208124E-4)I0;");
+            System.out.println(net.getNetwork().toString());
             int runs = 10000;
             int counter = 0;
             for(int i = 0; i < runs; i++) {
@@ -100,23 +121,25 @@ public class ScalePopSize extends NetworkOperator {
             }
             System.out.println(counter == runs);
             System.out.printf("%d out of %d\n", counter, runs);
-            System.out.println(net.getNetwork().getRoot().getRootPopSize());
+            System.out.println(net.getNetwork().toString());
         }
         {
-            UltrametricNetwork net = new UltrametricNetwork("(O:0.5,((((A:0.5,(C:0.5,(G:0.424733668924115)I10#H3:0.27526633107588505::0.95)I6:1.2148953368828783)I5:2.0902392667517367,(((R:0.23468712)I8#H2:0.57719209683010764::0.76)I2#H1:0.4723366810412248::0.29,(Q:0.5,I10#H3:0.24368001872495645::0.05)I4:1.4561500003545642)I9:2.081453711192161)I3:0.8324858688602822,(L:0.30183286,I8#H2:0.8699237693946538::0.24)I7:0.7369103845180647)I1:1.427856628628852,I2#H1:0.8195085232672825::0.71)I0:3.0);");
+            UltrametricNetwork net = new UltrametricNetwork("(((AF:4.7560289410455474E-7:6.216710846747218E-4)I5#H1:6.673080055619683E-5:6.04717164578389E-4:0.19169217458789256,EU:6.720640345030139E-5:4.54804059863962E-4)I4:3.2385691593548525E-5:1.441308148785055E-4,(I5#H1:7.170661624805849E-5:8.149685305377055E-4:0.8083078254121074,SA:7.218221914216304E-5:0.0011303870974394095)I1:2.740987590168687E-5:3.0250110970208124E-4)I0;");
+            System.out.println(net.getNetwork().toString());
             int runs = 10000;
             int test = 0;
             for(int i = 0; i < runs; i++) {
                 NetworkOperator op = new ScalePopSize(net);
                 double logHR = op.propose();
                 op.undo();
-                if(Math.abs(net.getNetwork().getRoot().getRootPopSize() - Utils._POP_SIZE_MEAN) > 0.000001) {
+                if(net.getNetwork().getRoot().getRootPopSize() != Utils._POP_SIZE_MEAN) {
                     test--;
                 }
                 test++;
             }
             System.out.println(test == runs);
             System.out.printf("%d out of %d\n", test, runs);
+            System.out.println(net.getNetwork().toString());
         }
     }
 }

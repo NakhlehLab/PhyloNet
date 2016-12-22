@@ -21,9 +21,9 @@ import java.util.Map;
  */
 public class ScaleRootTime extends NetworkOperator {
 
-    private double _scaleFactor = 0.90;
+    private double _scaleFactor = 0.92;
     private double _upperLimit = 1.0 - 1e-6;
-    private double _lowerLimit = 1e-6;
+    private double _lowerLimit = 0.85;
 
     public double scale;
     private double _logHR;
@@ -134,7 +134,7 @@ public class ScaleRootTime extends NetworkOperator {
                 op.undo();
                 int idx = 0;
                 for(NetNode<NetNodeInfo> node : Networks.postTraversal(net.getNetwork())) {
-                    if(Math.abs(node.getData().getHeight() - heights.get(idx++)) > 0.000001) {
+                    if(node.getData().getHeight() != heights.get(idx++)) {
                         System.out.println(node.getData().getHeight() + " vs " + heights.get(idx-1));
                         test--;
                         break;

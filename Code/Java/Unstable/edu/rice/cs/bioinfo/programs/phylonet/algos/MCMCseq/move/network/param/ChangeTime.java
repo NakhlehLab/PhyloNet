@@ -116,7 +116,7 @@ public class ChangeTime extends NetworkOperator {
                 op.undo();
                 int idx = 0;
                 for(NetNode<NetNodeInfo> node : Networks.postTraversal(net.getNetwork())) {
-                    if(Math.abs(node.getData().getHeight() - heights.get(idx++)) > 0.000001) {
+                    if(node.getData().getHeight() != heights.get(idx++)) {
                         System.out.println(node.getData().getHeight() + " vs " + heights.get(idx-1));
                         test--;
                         break;

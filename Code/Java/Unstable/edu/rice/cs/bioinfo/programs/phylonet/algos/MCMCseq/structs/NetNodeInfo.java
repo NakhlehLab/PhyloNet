@@ -8,6 +8,7 @@ public class NetNodeInfo {
 
     private double _height; // the time of the node
     private int _index; // the index of the node for likelihood calculation
+    private double _prevHeight = -1;
 
     public NetNodeInfo(double height) {
         this._height = height;
@@ -31,5 +32,14 @@ public class NetNodeInfo {
             throw new IllegalArgumentException("Cannot access index value before initialization.");
         }
         return this._index;
+    }
+
+    public void storeHeight() {
+        this._prevHeight = this._height;
+    }
+
+    public void recoverHeight() {
+        this._height = this._prevHeight;
+        this._prevHeight = -1;
     }
 }

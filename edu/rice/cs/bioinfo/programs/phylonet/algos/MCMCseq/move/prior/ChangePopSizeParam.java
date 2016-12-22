@@ -12,7 +12,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
  */
 public class ChangePopSizeParam extends Operator {
 
-    private double _windowSize = Utils._POP_SIZE_MEAN;
+    private double _windowSize = Utils._POP_SIZE_WINDOW_SIZE;
 
     private PopulationSize _popSize;
     private Double _oldParam;
@@ -61,31 +61,37 @@ public class ChangePopSizeParam extends Operator {
             UltrametricNetwork net = new UltrametricNetwork("(O:0.5,((((A:0.5,(C:0.5,(G:0.424733668924115)I10#H3:0.27526633107588505::0.95)I6:1.2148953368828783)I5:2.0902392667517367,(((R:0.23468712)I8#H2:0.57719209683010764::0.76)I2#H1:0.4723366810412248::0.29,(Q:0.5,I10#H3:0.24368001872495645::0.05)I4:1.4561500003545642)I9:2.081453711192161)I3:0.8324858688602822,(L:0.30183286,I8#H2:0.8699237693946538::0.24)I7:0.7369103845180647)I1:1.427856628628852,I2#H1:0.8195085232672825::0.71)I0:3.0);");
             int runs = 10000;
             int counter = 0;
+            PopulationSize ps = new PopulationSize();
+            System.out.println(ps.getGammaMean());
             for(int i = 0; i < runs; i++) {
-                Operator op = new ChangePopSizeParam(new PopulationSize());
+                Operator op = new ChangePopSizeParam(ps);
                 double logHR = op.propose();
                 if(logHR != Utils.INVALID_MOVE) counter++;
             }
             System.out.println(counter == runs);
             System.out.printf("%d out of %d\n", counter, runs);
-            System.out.println(net.getNetwork().getRoot().getRootPopSize());
+            System.out.println(ps.getGammaMean());
         }
         {
             UltrametricNetwork net = new UltrametricNetwork("(O:0.5,((((A:0.5,(C:0.5,(G:0.424733668924115)I10#H3:0.27526633107588505::0.95)I6:1.2148953368828783)I5:2.0902392667517367,(((R:0.23468712)I8#H2:0.57719209683010764::0.76)I2#H1:0.4723366810412248::0.29,(Q:0.5,I10#H3:0.24368001872495645::0.05)I4:1.4561500003545642)I9:2.081453711192161)I3:0.8324858688602822,(L:0.30183286,I8#H2:0.8699237693946538::0.24)I7:0.7369103845180647)I1:1.427856628628852,I2#H1:0.8195085232672825::0.71)I0:3.0);");
             int runs = 10000;
             int test = 0;
+            PopulationSize ps = new PopulationSize();
+            double original = ps.getGammaMean();
+            System.out.println(ps.getGammaMean());
             for(int i = 0; i < runs; i++) {
-                Operator op = new ChangePopSizeParam(new PopulationSize());
+                Operator op = new ChangePopSizeParam(ps);
                 double logHR = op.propose();
                 op.undo();
-                if(Math.abs(net.getNetwork().getRoot().getRootPopSize() - Utils._POP_SIZE_MEAN) > 0.000001) {
+                if(ps.getGammaMean() != original) {
                     test--;
-                    System.err.println(net.getNetwork().getRoot().getRootPopSize());
+                    System.err.println(ps.getGammaMean());
                 }
                 test++;
             }
             System.out.println(test == runs);
             System.out.printf("%d out of %d\n", test, runs);
+            System.out.println(ps.getGammaMean());
         }
     }
 }

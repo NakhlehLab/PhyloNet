@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class Algorithms
 {
-    private static final boolean PRINT_DETAILS = true;
+    private static final boolean PRINT_DETAILS = false;
 
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){

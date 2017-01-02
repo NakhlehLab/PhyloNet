@@ -653,6 +653,20 @@ public class Networks
         return metric.computeDistanceBetweenTwoNetworks(net1,net2)==0;
     }
 
+    public static <T> String getTopologyString(Network<T> net) {
+        Network network = net.clone();
+        for(Object nodeObject : Networks.postTraversal(network)) {
+            NetNode node = (NetNode) nodeObject;
+            for(Object parentObject :  node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                node.setParentSupport(parent, NetNode.NO_SUPPORT);
+                node.setParentDistance(parent, NetNode.NO_DISTANCE);
+                node.setParentProbability(parent, NetNode.NO_PROBABILITY);
+            }
+        }
+        return network.toString();
+    }
+
 
     /**
      * This function adds <code>numReticulations</code> random reticulations to a given network

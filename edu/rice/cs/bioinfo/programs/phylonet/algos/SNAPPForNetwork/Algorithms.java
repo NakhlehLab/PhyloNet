@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class Algorithms
 {
-    private static final boolean PRINT_DETAILS = false;
+    private static final boolean PRINT_DETAILS = true;
 
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
@@ -68,13 +68,13 @@ public class Algorithms
         }
         Map<String, R> leafNode2R = new HashMap<String, R>();
         for(Map.Entry<String, int[]> entry: colorMap.entrySet()){
-            int[] Rvalue = new int[3];
+            int[] Rvalue = new int[R.dims];
             int n = 0;
-            for(int i=0; i<3; i++){
+            for(int i = 0; i< R.dims; i++){
                 Rvalue[i] = entry.getValue()[i];
                 n += entry.getValue()[i];
             }
-            n += entry.getValue()[3];
+            n += entry.getValue()[R.dims];
             leafNode2R.put(entry.getKey(), new R(n, Rvalue));
         }
         return leafNode2R;
@@ -120,7 +120,7 @@ public class Algorithms
      * @return The probability.
      */
     @SuppressWarnings("unchecked")
-   public static double getProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, Map<String,String> allele2species, NucleotideObservation obs, MatrixQ Q, int siteID)
+    public static double getProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, Map<String,String> allele2species, NucleotideObservation obs, QParameters Q, int siteID)
     {
         Map<String, R> nucleotideIndexMap = getNucleotideIndexMap(obs, allele2species);
         Set<String> articulationNodes = new HashSet<String>();
@@ -132,7 +132,7 @@ public class Algorithms
         for (NetNode<SNAPPData[]> node : Networks.postTraversal(speciesNetwork))
         {
             boolean isArticulation = articulationNodes.contains(node.getName());
-            processNode(Q, nucleotideIndexMap, node, isArticulation, numReticulations, reticulationID, siteID);
+            processNode(Q, nucleotideIndexMap, node, isArticulation, numReticulations, obs.getAlleles().size(), reticulationID, siteID);
             if(node.isNetworkNode()){
                 reticulationID++;
             }
@@ -142,7 +142,7 @@ public class Algorithms
     }
 
 
-    public static double updateProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, MatrixQ Q, int siteID, Map<NetNode, Boolean> node2update)
+    public static double updateProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, QParameters Q, int siteID, Map<NetNode, Boolean> node2update)
     {
 
         Set<String> articulationNodes = new HashSet<String>();
@@ -181,11 +181,15 @@ public class Algorithms
      * @param Q           A SNAPP transition matrix.
      * @return The probability
      */
-    private static double getProbabilityOfNetwork(Network<SNAPPData[]> speciesNetwork, MatrixQ Q, int siteID)
+    private static double getProbabilityOfNetwork(Network<SNAPPData[]> speciesNetwork, QParameters Q, int siteID)
     {
         FMatrix rootFBot = speciesNetwork.getRoot().getData()[siteID].getFBottoms(null).iterator().next().Item1;
 
-        DenseMatrix eq = Q.getEquilibrium();
+        double theta = speciesNetwork.getRoot().getRootPopSize();
+        if(Double.isNaN(theta))
+            theta = Q._gTheta;
+        MatrixQ matQ = new MatrixQ(Q._rModel, Q._M, theta);
+        DenseMatrix eq = matQ.getEquilibrium();
         double sum = 0;
         for (int n = 1; n <= rootFBot.mx; n++)
         {
@@ -204,7 +208,7 @@ public class Algorithms
      * @param nucleotideIndexMap The observations encoded as indices.
      * @param node               The node to process.
      */
-    private static void processNode(MatrixQ Q, Map<String, R> nucleotideIndexMap, NetNode<SNAPPData[]> node, boolean isArticulation, int numReticulations, int reticulationID, int siteID)
+    private static void processNode(QParameters Q, Map<String, R> nucleotideIndexMap, NetNode<SNAPPData[]> node, boolean isArticulation, int numReticulations, int maxLineages, int reticulationID, int siteID)
     {
         if(PRINT_DETAILS){
             System.out.println("\nNode " + node.getName());
@@ -240,7 +244,7 @@ public class Algorithms
      * @param Q                  The transition matrix for SNAPP.
      * @param node               The node to process.
      */
-    private static void updateNode(MatrixQ Q, NetNode<SNAPPData[]> node, boolean isArticulation, int reticulationID, int siteID, Boolean constructFBottom)
+    private static void updateNode(QParameters Q, NetNode<SNAPPData[]> node, boolean isArticulation, int reticulationID, int siteID, Boolean constructFBottom)
     {
         if(PRINT_DETAILS){
             System.out.println("\nNode " + node.getName());
@@ -289,18 +293,22 @@ public class Algorithms
      * @param Q    The transition matrix for SNAPP.
      * @param node The node to process.
      */
-    private static void processTopBranchOfNode(MatrixQ Q, NetNode<SNAPPData[]> node, SNAPPData data)
+    private static void processTopBranchOfNode(QParameters Q, NetNode<SNAPPData[]> node, SNAPPData data)
     {
 
         for(NetNode<SNAPPData[]> parent: node.getParents()) {
             if (Double.isNaN(node.getParentDistance(parent)) || Double.isInfinite(node.getParentDistance(parent)))
                 throw new RuntimeException("Snapp only works with finite branch distances: " + node.getParentDistance(parent));
 
+            double theta = node.getParentSupport(parent);
+            if(theta == NetNode.NO_SUPPORT)
+                theta = Q._gTheta;
+            MatrixQ matQ = new MatrixQ(Q._rModel, Q._M, theta);
             for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
                 FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                 if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {
                     //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
-                    fTop.setMatrix(Q.getProbabilityForColumn(node.getParentDistance(parent), fBot.Item1.getArr()));
+                    fTop.setMatrix(matQ.getProbabilityForColumn(node.getParentDistance(parent), fBot.Item1.getArr()));
                 }
                 data.addFTop(parent, fTop, fBot.Item2);
             }
@@ -467,7 +475,7 @@ public class Algorithms
 
     private static int calculateRWeight(R fromR, R toR){
         int weight = 1;
-        for(int type=0; type<4; type++){
+        for(int type = 0; type<(R.dims + 1); type++){
             weight *= ArithmeticUtils.binomialCoefficient(fromR.getNum(type), toR.getNum(type));
         }
         return weight;
@@ -480,20 +488,35 @@ public class Algorithms
 
     private static List<R[]> splittingR(R r){
         List<R[]> splittingRs = new ArrayList<R[]>();
-        for(int A=0; A<=r.getNum(0); A++)
-            for(int C=0; C<=r.getNum(1); C++)
-                for(int T=0; T<=r.getNum(2); T++)
-                    for(int G=0; G<=r.getNum(3); G++){
-                        int totalN = A + C + T + G;
-                        int[] rValues = new int[3];
-                        rValues[0] = A;
-                        rValues[1] = C;
-                        rValues[2] = T;
-                        R[] splitR = new R[2];
-                        splitR[0] = new R(totalN, rValues);
-                        splitR[1] = r.subtract(splitR[0]);
-                        splittingRs.add(splitR);
-                    }
+
+        if(R.dims == 3) {
+            for (int A = 0; A <= r.getNum(0); A++)
+                for (int C = 0; C <= r.getNum(1); C++)
+                    for (int T = 0; T <= r.getNum(2); T++)
+                        for (int G = 0; G <= r.getNum(3); G++) {
+                            int totalN = A + C + T + G;
+                            int[] rValues = new int[3];
+                            rValues[0] = A;
+                            rValues[1] = C;
+                            rValues[2] = T;
+                            R[] splitR = new R[2];
+                            splitR[0] = new R(totalN, rValues);
+                            splitR[1] = r.subtract(splitR[0]);
+                            splittingRs.add(splitR);
+                        }
+        } else if(R.dims == 1) {
+            for(int zero = 0 ; zero <= r.getNum(0) ; zero ++) {
+                for(int one = 0 ; one <= r.getNum(1) ; one++) {
+                    int totalN = zero + one;
+                    int[] rValues = new int[1];
+                    rValues[0] = zero;
+                    R[] splitR = new R[2];
+                    splitR[0] = new R(totalN, rValues);
+                    splitR[1] = r.subtract(splitR[0]);
+                    splittingRs.add(splitR);
+                }
+            }
+        }
         return splittingRs;
     }
 
@@ -514,7 +537,7 @@ public class Algorithms
         FMatrix fBot = data.addFBottom(parent, r.n, false, splittingIndex);
         int weight = 1;
         int total = r.n;
-        for(int i=0; i<4; i++){
+        for(int i = 0; i<(R.dims + 1); i++){
             weight *= ArithmeticUtils.binomialCoefficient(total, r.getNum(i));
             total = total - r.getNum(i);
         }

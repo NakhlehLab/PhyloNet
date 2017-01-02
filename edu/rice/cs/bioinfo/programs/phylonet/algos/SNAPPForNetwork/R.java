@@ -17,7 +17,8 @@ public class R {
      * Dims +1 = the number of nucleotides.
      * dims = 3 for the 4 nucleotide case.
      */
-    private final static int dims = 3;
+    //private final static int dims = 3;
+    public static int dims = 1;
 
 
     /**
@@ -481,7 +482,7 @@ public class R {
 
         Map<Integer,String> seenIndices = new HashMap<Integer,String>();
 
-        for (int n = 1; n <=20 ;n++) {
+        for (int n = 1; n <=10 ;n++) {
 
 
             for (R r : R.loopOver(n)) {

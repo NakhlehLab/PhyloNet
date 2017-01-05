@@ -211,9 +211,22 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         return bound;
     }
 
-    public void scale(double scaleFactor) {
-        for(TNode node : _internalNodes) {
-            node.setNodeHeight(getNodeHeight(node) * scaleFactor);
+    private double[] _prevHeights = null;
+
+    public void scale(double scaleFactor, boolean undo) {
+        if(undo) {
+            for(int i = 0; i < _internalNodes.size(); i++) {
+                _internalNodes.get(i).setNodeHeight(_prevHeights[i]);
+            }
+            _prevHeights = null;
+        } else {
+            _prevHeights = new double[_internalNodes.size()];
+            for(int i = 0; i < _internalNodes.size(); i++) {
+                TNode node = _internalNodes.get(i);
+                double nh = getNodeHeight(node);
+                _prevHeights[i] = nh;
+                node.setNodeHeight(nh * scaleFactor);
+            }
         }
         for(TNode node : _tree.getNodes()) {
             if(node.isRoot()) continue;

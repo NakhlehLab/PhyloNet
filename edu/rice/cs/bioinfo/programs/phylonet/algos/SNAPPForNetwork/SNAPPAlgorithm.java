@@ -30,11 +30,10 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     private Network speciesNetwork;
     private Map<String, String> allele2species;
 
-    public SNAPPAlgorithm(Network theSpeciesNetwork, RateModel rModel, double theta){
+    public SNAPPAlgorithm(Network theSpeciesNetwork, RateModel rModel, Double theta){
 
         speciesNetwork = theSpeciesNetwork;
         Q = new QParameters(rModel, speciesNetwork.getLeafCount(), theta);
-        //Q = new MatrixQ(rModel, speciesNetwork.getLeafCount(), theta);
         if(speciesNetwork.getRoot().getData()==null) {
             Networks.removeBinaryNodes(speciesNetwork);
             for (Object node : Networks.postTraversal(speciesNetwork)) {
@@ -49,7 +48,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         new SNAPPAlgorithm(theSpeciesNetwork, alleleMapping, rModel, 0.02);
     }
 
-    public SNAPPAlgorithm(Network theSpeciesNetwork, Map<String, String> alleleMapping, RateModel rModel, double theta){
+    public SNAPPAlgorithm(Network theSpeciesNetwork, Map<String, String> alleleMapping, RateModel rModel, Double theta){
         speciesNetwork = theSpeciesNetwork;
         if(speciesNetwork.getRoot().getData()==null) {
             Networks.removeBinaryNodes(speciesNetwork);
@@ -59,10 +58,8 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         }
         allele2species = alleleMapping;
         if(allele2species == null) {
-            //Q = new MatrixQ(rModel, speciesNetwork.getLeafCount(), theta);
             Q = new QParameters(rModel, speciesNetwork.getLeafCount(), theta);
         }else{
-            //Q = new MatrixQ(rModel, alleleMapping.size(), theta);
             Q = new QParameters(rModel, alleleMapping.size(), theta);
         }
     }
@@ -96,9 +93,9 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
 
 
-    public double updateProbability(int siteID, Map<NetNode,Boolean> node2update) {
+    public double updateProbability(int siteID, NucleotideObservation obs, Map<String, String> allele2species, Map<NetNode,Boolean> node2update) {
 
-        double resultVal= Algorithms.updateProbabilityObservationGivenNetwork(speciesNetwork, Q, siteID, node2update);
+        double resultVal= Algorithms.updateProbabilityObservationGivenNetwork(speciesNetwork, Q, siteID, obs, allele2species, node2update);
 
         if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
             throw new RuntimeException("Result is not finite");
@@ -135,8 +132,8 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         //testSpeed();
         //testFourAlleles();
         //testFourAllelesTwoUnderReticulation();
-        //testBiallelicLarge();
-        testBiallelic();
+        testBiallelicLarge();
+        //testBiallelic();
         //checkWithOriginalPaperData();
 
 
@@ -244,7 +241,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
 
 
-                            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, allele2species, gtrModel, 1);
+                            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, allele2species, gtrModel, 1.0);
                             System.out.println("Observation:  " + a +',' + b1 + ','+ b2 + "," +  b3 + "," + c);
                             //System.out.println("Probability:  " + run.getProbability(converter) + "\n");
                             sum += run.getProbability(converter);
@@ -355,7 +352,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
 
 
-                            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, gtrModel, 1);
+                            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, gtrModel, 1.0);
                             System.out.println("Observation:  " + a +',' + b + ','+ c +','+ d + ','+ e);
                             //System.out.println("Probability:  " + run.getProbability(converter) + "\n");
                             sum += run.getProbability(converter);
@@ -376,7 +373,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         Network speciesNetworkTopology = Networks.readNetwork("(((A:.2, B:.2)n1:.3,((C:.1,D:.1)n0:.3, E:.4)n2:.1)n3:.1,(F:.2, G:.2)n4:.4)");
         GTRModel gtrModel = new GTRModel(new double[]{.1, .2, .3, .4},new double[]{1,1.5,2,2.5,3,3.5});
 
-        SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, gtrModel, 1);
+        SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, gtrModel, 1.0);
 
         long last = System.currentTimeMillis();
         char[] nucleotides = {'A','C','T','G'};
@@ -452,7 +449,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
             //System.out.println(BAGTRModel.getRateMatrix());
 
 
-            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, BAGTRModel, 1);
+            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, BAGTRModel, 1.0);
             System.out.println("Observation:  " + a + "," + b + "," + c);
             System.out.println("Probability:  " + run.getProbability(converter) + "\n");
             sum += run.getProbability(converter);
@@ -462,60 +459,77 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
     private static void testBiallelicLarge() {
         double sum =0;
-        for (int i = 0; i<64; i++)
-        {
-            char a = ((i&1) != 0) ? '1' :'0';
-            char b = ((i&2) != 0) ? '1' :'0';
-            char c = ((i&4) != 0) ? '1' :'0';
-            char d = ((i&8) != 0) ? '1' :'0';
-            char e = ((i&16) != 0) ? '1' :'0';
-            char f = ((i&32) != 0) ? '1' :'0';
 
-            //Network speciesNetworkTopology = Networks.readNetwork("(A:.5,(B:.2,C:.2)n1:.3)n0;");
-            //Network speciesNetworkTopology = Networks.readNetwork("((A:0.04,X#H1:0.02::0.7)n3:0.02,((B:0.02)X#H1:0.02::0.3,C:0.04)n1:0.02)root;");
-            Network speciesNetworkTopology = Networks.readNetwork("((((((((G:0.22950212771454837)#H3:0.08670753342120574::0.00282793363498135,A:0.3162096611357541):0.017035797590358892,(Q:0.19012318627246375)#H1:0.14312227245364925::0.5228892817568864):0.010328596967308479,C:0.3435740556934215):0.0012203081657338188,(R:0.1195921448597946)#H2:0.22520221899936071::0.026849304992340173):0.00859180946928989,L:0.3533861733284452):1.008223109245107,(#H1:0.9660558616585218::0.4771107182431136,#H2:1.036586903071191::0.9731506950076598):0.2054302346425667):0.06680556134344817,#H3:1.198912716202452::0.9971720663650187);");
-            //Network speciesNetworkTopology = Networks.readNetwork("((A:1.5,C:1.5):0.5,B:2.0);");
-            double constTheta = 0.036;
-            for(Object nodeObject : Networks.postTraversal(speciesNetworkTopology)) {
-                NetNode node = (NetNode) nodeObject;
-                for(Object parentObject :  node.getParents()) {
-                    NetNode parent = (NetNode) parentObject;
-                    node.setParentSupport(parent, constTheta);
-                    node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
-                }
+
+        //Network speciesNetworkTopology = Networks.readNetwork("(A:.5,(B:.2,C:.2)n1:.3)n0;");
+        //Network speciesNetworkTopology = Networks.readNetwork("((A:0.04,X#H1:0.02::0.7)n3:0.02,((B:0.02)X#H1:0.02::0.3,C:0.04)n1:0.02)root;");
+        Network speciesNetworkTopology = Networks.readNetwork("((((((((G:0.22950212771454837)#H3:0.08670753342120574::0.00282793363498135,A:0.3162096611357541):0.017035797590358892,(Q:0.19012318627246375)#H1:0.14312227245364925::0.5228892817568864):0.010328596967308479,C:0.3435740556934215):0.0012203081657338188,(R:0.1195921448597946)#H2:0.22520221899936071::0.026849304992340173):0.00859180946928989,L:0.3533861733284452):1.008223109245107,(#H1:0.9660558616585218::0.4771107182431136,#H2:1.036586903071191::0.9731506950076598):0.2054302346425667):0.06680556134344817,#H3:1.198912716202452::0.9971720663650187);");
+        //Network speciesNetworkTopology = Networks.readNetwork("((A:1.5,C:1.5):0.5,B:2.0);");
+
+        speciesNetworkTopology = Networks.readNetwork("(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+        speciesNetworkTopology = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+        //speciesNetworkTopology = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
+        //speciesNetworkTopology = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+        double constTheta = 0.036;
+        for(Object nodeObject : Networks.postTraversal(speciesNetworkTopology)) {
+            NetNode node = (NetNode) nodeObject;
+            for(Object parentObject :  node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                node.setParentSupport(parent, constTheta);
+                node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
             }
-            speciesNetworkTopology.getRoot().setRootPopSize(constTheta);
+        }
+        speciesNetworkTopology.getRoot().setRootPopSize(constTheta);
 
-            int nameCount = 0;
-            for(Object node : speciesNetworkTopology.dfs()) {
-                NetNode mynode = (NetNode) node;
-                if(mynode.getName().equals("")) {
-                    mynode.setName("I" + nameCount);
-                    nameCount++;
-                }
+        int nameCount = 0;
+        for(Object node : speciesNetworkTopology.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("I" + nameCount);
+                nameCount++;
             }
+        }
 
-            Map<String, Character> colorMap = new HashMap<String, Character>();
-            colorMap.put("A", a);
-            colorMap.put("C", b);
-            colorMap.put("G", c);
-            colorMap.put("L", d);
-            colorMap.put("Q", e);
-            colorMap.put("R", f);
+        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
+
+        //System.out.println(BAGTRModel.getRateMatrix());
 
 
-            OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
-            BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
+        SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, BAGTRModel, 1.0);
+        long last = System.currentTimeMillis();
 
-            //System.out.println(BAGTRModel.getRateMatrix());
+        for(int repeat = 0 ; repeat < 200 ; repeat++) {
+            if(repeat == 100) last = System.currentTimeMillis();
+            for (int i = 0; i < 64; i++) {
+
+                char a = ((i & 1) != 0) ? '1' : '0';
+                char b = ((i & 2) != 0) ? '1' : '0';
+                char c = ((i & 4) != 0) ? '1' : '0';
+                char d = ((i & 8) != 0) ? '1' : '0';
+                char e = ((i & 16) != 0) ? '1' : '0';
+                char f = ((i & 32) != 0) ? '1' : '0';
 
 
-            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, BAGTRModel, 1);
-            System.out.println("Observation:  " + a + "," + b + "," + c+","+d+","+e+"," +f);
-            System.out.println("Probability:  " + run.getProbability(converter) + "\n");
-            sum += run.getProbability(converter);
+                Map<String, Character> colorMap = new HashMap<String, Character>();
+                colorMap.put("A", a);
+                colorMap.put("C", b);
+                colorMap.put("G", c);
+                colorMap.put("L", d);
+                colorMap.put("Q", e);
+                colorMap.put("R", f);
+
+
+                OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
+                //System.out.println("Observation:  " + a + "," + b + "," + c+","+d+","+e+"," +f);
+                //System.out.println("Probability:  " + run.getProbability(converter) + "\n");
+                sum += run.getProbability(converter);
+                //break;
+            }
         }
         System.out.println("Sum: " + sum);
+
+        System.out.println(String.format("Total elapsed time : %2.5f s\n",
+                (double) (System.currentTimeMillis() - last) / 1000.0));
     }
 
     private static void checkWithOriginalPaperData() {
@@ -629,7 +643,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
                 OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
                 Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
                 cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-                SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, 1);
+                SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, 1.0);
                 double likelihood = 0;
                 try {
                     likelihood = run.getProbability(converter);
@@ -665,7 +679,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         colorMap.put("F", 'A');
         colorMap.put("G", 'A');
         for(int i=0; i<87; i++) {
-            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesTreeTopology, gtrModel, 1);
+            SNAPPAlgorithm run = new SNAPPAlgorithm(speciesTreeTopology, gtrModel, 1.0);
             OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
             run.getProbability(converter);
         }

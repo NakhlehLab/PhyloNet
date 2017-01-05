@@ -40,6 +40,10 @@ public class Test {
     }
 
     public static void testMCMC() {
+        Utils._NUM_THREADS = 16;
+        Utils._CHAIN_LEN = 2000;
+        Utils._BURNIN_LEN = 1000;
+        Utils._SAMPLE_FREQUENCY = 500;
         /*Utils._MC3_CHAINS = new ArrayList<>();
         Utils._MC3_CHAINS.add(1.0);
         Utils._MC3_CHAINS.add(2.0);
@@ -51,7 +55,7 @@ public class Test {
         double y = 1.0;
         double x = 1000.0;
 
-        SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, null);
+        SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, 12345678L + 10000);
         DataGenerator dataGenerator = new DataGenerator();
         Network trueNetwork = Networks.readNetwork(dataGenerator.getNewNetwork1().toString());
         //System.out.println("True Network: " + trueNetwork.toString());
@@ -65,6 +69,7 @@ public class Test {
         //trueNetwork = Networks.readNetwork("(((((A:0.7)I6#H1:1.3::1.0,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.0,C:1.4)I5:0.6)I1:3.0)I0;");
         //trueNetwork = Networks.readNetwork("((d:2.6,((c:1.0,b:1.0)I4:1.5)I3#H1:0.1::0.7)I2:0.5,(a:2.6,I3#H1:0.1::0.30000000000000004)I1:0.5)I0;");
         //trueNetwork = Networks.readNetwork("((((b:1.0,c:1.0)I4:" + y + ")I3#H1:0.1::" + (1 - gamma) + ",a:" + (1.1 + y) + ")I1:" + x + ",(I3#H1:0.1::" + gamma + ",d:" + (1.1 + y) + ")I2:"+ x +")I0;");
+        trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
 
         double constTheta = 0.036;
         for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
@@ -78,7 +83,7 @@ public class Test {
         trueNetwork.getRoot().setRootPopSize(constTheta);
 
 
-        Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, 500000, true);
+        Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, 10000, true);
         // List<Map<String, String>> snpdata = simulator.generateGTs(Networks.readNetwork("((B:0.5)X#H1:1.5::0.5,((X#H1:0.5::0.5,A:1)n1:0.5,C:1.5)n2:0.5)root;"), null, 100, "/scratch/jz55/Luay/msdir/ms");
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(onesnp);
@@ -153,8 +158,15 @@ public class Test {
         inference.setStartingNetwork(Networks.readNetwork("(((((A:0.7)I6#H1:1.3::1.0,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.0,C:1.4)I5:0.6)I1:3.0)I0;"));
         System.out.println(inference.inferNetwork(gtTaxa, allLoci, null, BAGTRModel, 0.036, 4, 1));
 */
+
+        long startTime = System.currentTimeMillis();
+
         MC3Core run = new MC3Core(alns, BAGTRModel);
         run.run();
+
+
+        System.out.println(String.format("Total elapsed time : %2.5f s\n",
+                (double) (System.currentTimeMillis() - startTime) / 1000.0));
     }
 
     public static void testWithSNAPPSimulation(String[] args) {
@@ -267,6 +279,8 @@ public class Test {
     }
 
     public static void testWithDingqiaoNetwork(String[] args) {
+        //Utils._NUM_THREADS = 16;
+
         int curPart = Integer.parseInt(args[0]);
         int number = 0;
         List<String> paths = new ArrayList<>();
@@ -432,7 +446,7 @@ public class Test {
 
         int number = 0;
         List<String> paths = new ArrayList<>();
-        for (File file : new File("/Users/zhujiafan/").listFiles()) {
+        for (File file : new File("/Users/zhujiafan/test1").listFiles()) {
             if (file.isFile() && file.getName().endsWith(".out")) {
                 paths.add(file.getPath());
                 number++;

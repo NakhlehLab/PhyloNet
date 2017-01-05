@@ -100,20 +100,27 @@ public class SimSNPInNetwork {
         trueNetwork.getRoot().setRootPopSize(constTheta);
 
 
-        /*trueNetwork = Networks.readNetwork("(((d:0.03312567269052971:0.05729812764763328)#H1:0.04040511494621882:0.01741043976665741:0.20775124134245948,(((b:0.028486216774249146:0.006372651326433015,c:0.028486216774249146:0.00978225510772307):0.022397718719795415:0.043337051035579346)#H2:0.005681182773572657:0.019241824721338403:0.7217411528293988,#H1:0.023439445577087506:0.07791563334890902:0.7922487586575405):0.01696566936913131:0.05670452561728086):0.5676859473369829:0.05332739995725745,(a:0.05264074053638943:0.003071386462697118,#H2:0.0017568050423448708:0.02272184117641578:0.27825884717060123):0.588575994437342:0.008691349345198683);");
-        trueNetwork.getRoot().setRootPopSize(0.08023790737422791);
+        /*trueNetwork = Networks.readNetwork("((((A:0.09791508158706645,Q:0.09791508158706645):0.04737303547719145,L:0.1452881170642579):0.023386428388076835,R:0.16867454545233473):0.016009187542328024,(G:0.10020765998425706,C:0.10020765998425706):0.0844760730104057);");
+        trueNetwork.getRoot().setRootPopSize(0.036);
         int nameCount = 0;
+        for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
+            NetNode node = (NetNode) nodeObject;
+            for(Object parentObject :  node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                node.setParentSupport(parent, 0.036);
+            }
+        }
         for(Object node : trueNetwork.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
                 mynode.setName("I" + nameCount);
                 nameCount++;
             }
-        }
-*/
+        }*/
+
 
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, null);
-        Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, 1000000, true);
+        Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, 100000, true);
 
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(onesnp);
@@ -162,7 +169,7 @@ public class SimSNPInNetwork {
                     OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
                     Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
                     cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-                    SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, 1);
+                    SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, null);
                     double likelihood = 0;
                     try {
                         likelihood = run.getProbability(converter);

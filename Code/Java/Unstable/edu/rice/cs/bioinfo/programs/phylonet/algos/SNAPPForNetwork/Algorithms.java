@@ -142,9 +142,9 @@ public class Algorithms
     }
 
 
-    public static double updateProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, QParameters Q, int siteID, Map<NetNode, Boolean> node2update)
+    public static double updateProbabilityObservationGivenNetwork(Network<SNAPPData[]> speciesNetwork, QParameters Q, int siteID, NucleotideObservation obs, Map<String, String> allele2species, Map<NetNode, Boolean> node2update)
     {
-
+        Map<String, R> nucleotideIndexMap = (obs != null) ? getNucleotideIndexMap(obs, allele2species) : null;
         Set<String> articulationNodes = new HashSet<String>();
         for(Object node: Networks.getLowestArticulationNodes(cloneNetwork(speciesNetwork))){
             articulationNodes.add(((NetNode)node).getName());
@@ -161,7 +161,7 @@ public class Algorithms
             */
 
             boolean isArticulation = articulationNodes.contains(node.getName());
-            updateNode(Q, node, isArticulation, reticulationID, siteID, node2update.get(node));
+            updateNode(speciesNetwork, Q, node, isArticulation, reticulationID, siteID, nucleotideIndexMap, node2update.get(node));
 
 
             if(node.isNetworkNode()){
@@ -186,9 +186,12 @@ public class Algorithms
         FMatrix rootFBot = speciesNetwork.getRoot().getData()[siteID].getFBottoms(null).iterator().next().Item1;
 
         double theta = speciesNetwork.getRoot().getRootPopSize();
-        if(Double.isNaN(theta))
-            theta = Q._gTheta;
-        MatrixQ matQ = new MatrixQ(Q._rModel, Q._M, theta);
+        MatrixQ matQ;
+        if(Q._gTheta != null) {
+            matQ = Q._gMatrix;
+        } else {
+            matQ = new MatrixQ(Q._rModel, Q._M, theta);
+        }
         DenseMatrix eq = matQ.getEquilibrium();
         double sum = 0;
         for (int n = 1; n <= rootFBot.mx; n++)
@@ -244,7 +247,7 @@ public class Algorithms
      * @param Q                  The transition matrix for SNAPP.
      * @param node               The node to process.
      */
-    private static void updateNode(QParameters Q, NetNode<SNAPPData[]> node, boolean isArticulation, int reticulationID, int siteID, Boolean constructFBottom)
+    private static void updateNode(Network<SNAPPData[]> speciesNetwork, QParameters Q, NetNode<SNAPPData[]> node, boolean isArticulation, int reticulationID, int siteID, Map<String, R> nucleotideIndexMap, Boolean constructFBottom)
     {
         if(PRINT_DETAILS){
             System.out.println("\nNode " + node.getName());
@@ -265,7 +268,9 @@ public class Algorithms
 
         if(constructFBottom) {
             data.cleanFBottom();
-            if (node.isTreeNode()) {
+            if(node.isLeaf()) {
+                processLeaf(nucleotideIndexMap, node, data, speciesNetwork.getReticulationCount());
+            } else if (node.isTreeNode()) {
                 processInternalTreeNode(node, data, isArticulation, siteID);
             } else if (node.isNetworkNode()) {
                 processNetworkNode(node, data, reticulationID, siteID);
@@ -301,9 +306,13 @@ public class Algorithms
                 throw new RuntimeException("Snapp only works with finite branch distances: " + node.getParentDistance(parent));
 
             double theta = node.getParentSupport(parent);
-            if(theta == NetNode.NO_SUPPORT)
-                theta = Q._gTheta;
-            MatrixQ matQ = new MatrixQ(Q._rModel, Q._M, theta);
+            MatrixQ matQ;
+            if(Q._gTheta != null) {
+                matQ = Q._gMatrix;
+            }
+            else {
+                matQ = new MatrixQ(Q._rModel, Q._M, theta);
+            }
             for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
                 FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                 if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {

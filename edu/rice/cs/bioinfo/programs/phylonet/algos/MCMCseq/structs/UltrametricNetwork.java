@@ -105,7 +105,7 @@ public class UltrametricNetwork extends StateNode {
         this._operators = new Operator[] {
                 new ChangePopSize(this),
                 new ScalePopSize(this),
-//                new ScaleAll(_geneTrees, this),
+                new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
                 new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
                 new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
                 new AddReticulation(this),

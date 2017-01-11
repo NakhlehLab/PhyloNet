@@ -34,7 +34,7 @@ public class RFDistanceBL {
 
     private double computeDistance(Tree t1, double s1, Tree t2, double s2) {
         if(!Trees.leafSetsAgree(t1, t2)) {
-            throw new RuntimeException("Trees must have identical leaf sets");
+            throw new RuntimeException("Trees must have identical leaf sets\n" + t1.toNewick() + "\n" + t2.toNewick());
         }
         String[] taxa = t1.getLeaves();
         Map<STITreeCluster, TNode> clusters1 = ((STITree)t1).getClusters(taxa);

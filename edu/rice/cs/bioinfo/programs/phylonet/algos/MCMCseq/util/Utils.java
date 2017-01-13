@@ -53,7 +53,7 @@ public class Utils {
     public static Set<String> _DIPLOID_SPECIES = null;
     public static boolean _PHASING = false;
     // divergence time window size
-    public static double _TIME_WINDOW_SIZE = 0.1;
+    public static double _TIME_WINDOW_SIZE = 0.01;
     public static double _POP_SIZE_WINDOW_SIZE = 0.01;
 
     // --- net ---

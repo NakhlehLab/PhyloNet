@@ -27,7 +27,7 @@ public class SlideSubNet extends NetworkOperator {
     private Double _logHR;
     private NetNode<NetNodeInfo> _v1, _v2, _v3, _v4, _v5 = null, _v6 = null;
     private double _oldHeight, newHeight;
-    private double _windowSize = 0.1;
+    private double _windowSize = Utils._TIME_WINDOW_SIZE;
 
     public SlideSubNet(UltrametricNetwork net) {
         super(net);

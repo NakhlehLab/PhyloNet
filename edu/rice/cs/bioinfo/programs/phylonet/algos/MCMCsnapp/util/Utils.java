@@ -7,6 +7,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utils fields and methods for the whole program
@@ -14,7 +15,7 @@ import java.util.Map;
  */
 public class Utils {
 
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
     public static double EPSILON = 2.220446049250313E-16;
 
     // --- settings ---
@@ -23,8 +24,8 @@ public class Utils {
     //public static long _BURNIN_LEN = 2000000;
     //public static long _SAMPLE_FREQUENCY = 5000;
 
-    public static long _CHAIN_LEN = 2000000;
-    public static long _BURNIN_LEN = 1000000;
+    public static long _CHAIN_LEN = 500000;
+    public static long _BURNIN_LEN = 300000;
     public static long _SAMPLE_FREQUENCY = 500;
     public static long _SEED = 12345678;
     public static int _NUM_THREADS = Runtime.getRuntime().availableProcessors();
@@ -36,11 +37,11 @@ public class Utils {
     public static Map<String, List<String>> _TAXON_MAP = null;
     // pop size
     public static boolean _ESTIMATE_POP_SIZE = true;
-    public static boolean _CONST_POP_SIZE = false;
+    public static boolean _CONST_POP_SIZE = true;
     // priors
     public static double _POISSON_PARAM = 1.0;
     public static boolean _TIMES_EXP_PRIOR = false;
-    public static boolean _DIAMETER_PRIOR = true;
+    public static boolean _DIAMETER_PRIOR = false;
     // Substitution model
     public static String _SUBSTITUTION_MODEL = "JC";
     public static double[] _BASE_FREQS = null;
@@ -51,6 +52,12 @@ public class Utils {
     public static List<String> _START_GT_LIST = null;
     // summary
     public static int _TOPK_NETS = 10;
+    // diploid phasing
+    public static Set<String> _DIPLOID_SPECIES = null;
+    public static boolean _PHASING = false;
+    // divergence time window size
+    public static double _TIME_WINDOW_SIZE = 0.004;
+    public static double _POP_SIZE_WINDOW_SIZE = 0.004;
 
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;
@@ -76,15 +83,15 @@ public class Utils {
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
-    public static final double DIMENSION_CHANGE_WEIGHT = 0.015;
+    public static final double DIMENSION_CHANGE_WEIGHT = 0.002;
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
     public static final double[] Net_Op_Weights = new double[] {
-            0.03, 0.01, 0.01,
+            0.03, 0.01, 0.00,
             0.04, 0.05,
-            0.25, 0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
-            0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT, 0.06 - DIMENSION_CHANGE_WEIGHT
+            0.20, 0.15, 0.03, 0.10, DIMENSION_CHANGE_WEIGHT,
+            0.06 - DIMENSION_CHANGE_WEIGHT, 0.10, DIMENSION_CHANGE_WEIGHT, 0.06 - DIMENSION_CHANGE_WEIGHT
     };
     // ChangePopSize ScalePopSize ScaleAll ScaleTime ScaleRootTime
     // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation

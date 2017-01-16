@@ -444,7 +444,16 @@ public class Algorithms
 
         index = 1;
         for(Tuple<FMatrix,int[]> tuple: node.getChildren().iterator().next().getData()[siteID].getFTops(node)){
+            index = 1;
             FMatrix fTop = tuple.Item1;
+            if(fTop.mx == 0) {
+                int[] splittingIndex = tuple.Item2.clone();
+                //splittingIndex[reticulationID] = index++;
+                FMatrix fm = new FMatrix(0, true);
+                data.addFBottom(parents[0], fm, splittingIndex);
+                data.addFBottom(parents[1], fm, splittingIndex);
+            }
+
             for (int n = 1; n <= fTop.mx; n++)
             {
                 for (R r : R.loopOver(n)) {

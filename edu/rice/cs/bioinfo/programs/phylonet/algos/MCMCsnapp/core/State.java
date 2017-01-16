@@ -92,6 +92,7 @@ public class State {
             // always do network operation (jiafan)
             _moveNode = _speciesNet;
         }
+        _geneTrees.clear();
 
         double logHR = _moveNode.propose();
         _moveNode.setDirty(true);
@@ -99,7 +100,7 @@ public class State {
             /*for(UltrametricTree ut : _geneTrees) {
                 ut.setDirty(true);
             }*/
-            //logHR = Utils.INVALID_MOVE;
+            logHR = Utils.INVALID_MOVE;
         }
 
         if(getOperation().getName().contains("Add-Reticulation") &&
@@ -198,7 +199,10 @@ public class State {
     }
 
     public String getNetwork() {
-        return _speciesNet.getNetwork().toString();
+        if(Double.isNaN(_speciesNet.getNetwork().getRoot().getRootPopSize()))
+            return _speciesNet.getNetwork().toString();
+        else
+            return "[" + _speciesNet.getNetwork().getRoot().getRootPopSize() + "]" + _speciesNet.getNetwork().toString();
     }
 
 }

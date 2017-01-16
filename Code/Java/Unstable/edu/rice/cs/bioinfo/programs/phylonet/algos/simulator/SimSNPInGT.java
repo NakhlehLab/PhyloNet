@@ -48,30 +48,22 @@ public class SimSNPInGT {
     }
 
 
-    public Map<String, String> generateSingeSite(Tree tree, boolean allowConstant) {
+    public Map<String, String> generateSingeSite(Tree tree) {
         if(_seed == null){
             _random = new Random();
         }
 
         Map<String, String> res = new HashMap<>();
-        while(true) {
-            res = new HashMap<>();
-            Map<TNode, Character> markers = new HashMap<>();
-            TNode root = tree.getRoot();
-            markers.put(root, _random.nextDouble() < _pi0 ? '0' : '1');
-            for (TNode child : root.getChildren()) {
-                processNode(child, markers);
-            }
-            boolean all1 = true;
-            boolean all0 = true;
-            for (String leafName : tree.getLeaves()) {
-                if(markers.get(tree.getNode(leafName)) == '0') all1 = false;
-                if(markers.get(tree.getNode(leafName)) == '1') all0 = false;
-                res.put(leafName, markers.get(tree.getNode(leafName)).toString());
-            }
+        res = new HashMap<>();
+        Map<TNode, Character> markers = new HashMap<>();
+        TNode root = tree.getRoot();
+        markers.put(root, _random.nextDouble() < _pi0 ? '0' : '1');
+        for (TNode child : root.getChildren()) {
+            processNode(child, markers);
+        }
 
-            if(allowConstant) break;
-            if(!all1 && !all0) break;
+        for (String leafName : tree.getLeaves()) {
+            res.put(leafName, markers.get(tree.getNode(leafName)).toString());
         }
         return res;
     }

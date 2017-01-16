@@ -46,6 +46,11 @@ public class MC3 {
      */
     public void run(int iteration, boolean doSample) {
 
+        //if(iteration == 4) {
+        //    Utils._NET_MAX_RETI = 1;
+        //    System.out.println("Change!");
+        //}
+
         if(iteration == 1 && doSample) {
             if(_main) {
                 System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",

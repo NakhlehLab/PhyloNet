@@ -58,7 +58,7 @@ public class AddReticulation extends DimensionChange {
         _v2.setData(new NetNodeInfo(t2));
 
         double logPopSize = (t1 > t2) ? addReticulation(_v1, _v2, _v3, _v4, _v5, _v6, gamma) // v3 v4 t1 v5 v6 t2
-                                    : addReticulation(_v2, _v1, _v5, _v6, _v3, _v4, gamma);  // v5 v6 t2 v3 v4 t1
+                : addReticulation(_v2, _v1, _v5, _v6, _v3, _v4, gamma);  // v5 v6 t2 v3 v4 t1
 
         double pda = numRetiNodes == 0 ? 0.5 : 1.0;
         double numRetiEdges = 2 * (numRetiNodes + 1);

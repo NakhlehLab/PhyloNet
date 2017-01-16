@@ -23,9 +23,9 @@ import java.util.Map;
  */
 public class ScaleRootTime extends NetworkOperator {
 
-    private double _scaleFactor = 0.90;
+    private double _scaleFactor = 0.92;
     private double _upperLimit = 1.0 - 1e-6;
-    private double _lowerLimit = 1e-6;
+    private double _lowerLimit = 0.85;
 
     public double scale;
     private double _logHR;
@@ -101,7 +101,7 @@ public class ScaleRootTime extends NetworkOperator {
         geneTrees.add(upgma.getUltrametricTree());
         {
             UltrametricNetwork net = new UltrametricNetwork("((((A:0.5,(C:0.5,(G:0.424733668924115)I10#H3:0.27526633107588505::0.95)I6:1.2148953368828783)I5:2.0902392667517367,(((R:0.23468712)I8#H2:0.57719209683010764::0.76)I2#H1:0.4723366810412248::0.29,(Q:0.5,I10#H3:0.24368001872495645::0.05)I4:1.4561500003545642)I9:2.081453711192161)I3:0.8324858688602822,(L:0.30183286,I8#H2:0.8699237693946538::0.24)I7:0.7369103845180647)I1:1.427856628628852,I2#H1:0.8195085232672825::0.71)I0:3.0;"
-                                                           , geneTrees);
+                    , geneTrees);
             System.out.println(geneTrees.get(0).getTree().toNewick());
             System.out.println(net.getNetwork().toString());
             int runs = 10000;
@@ -136,7 +136,7 @@ public class ScaleRootTime extends NetworkOperator {
                 op.undo();
                 int idx = 0;
                 for(NetNode<NetNodeInfo> node : Networks.postTraversal(net.getNetwork())) {
-                    if(Math.abs(node.getData().getHeight() - heights.get(idx++)) > 0.000001) {
+                    if(node.getData().getHeight() != heights.get(idx++)) {
                         System.out.println(node.getData().getHeight() + " vs " + heights.get(idx-1));
                         test--;
                         break;

@@ -24,7 +24,21 @@ import java.util.concurrent.atomic.DoubleAdder;
  * To change this template use File | Settings | File Templates.
  */
 public class SNAPPLikelihood {
+    public static int ALGORITHM = 0;
 
+    static public double verify(Network network, Map<String, String> alleles2species, List<Alignment> alignments, BiAllelicGTR BAGTRModel) {
+        SNAPPLikelihood.ALGORITHM = 0;
+        double t0 = SNAPPLikelihood.computeSNAPPLikelihood(network, null, alignments, BAGTRModel);
+        SNAPPLikelihood.ALGORITHM = 1;
+        double t1 = SNAPPLikelihood.computeSNAPPLikelihood(network, null, alignments, BAGTRModel);
+        SNAPPLikelihood.ALGORITHM = 2;
+        double t2 = SNAPPLikelihood.computeSNAPPLikelihood(network, null, alignments, BAGTRModel);
+        if(Math.abs(t0 - t1) > 1e-6) System.out.println("ALGO0 != ALGO1");
+        if(Math.abs(t0 - t2) > 1e-6) System.out.println("ALGO0 != ALGO2");
+        if(Math.abs(t1 - t2) > 1e-6) System.out.println("ALGO1 != ALGO2");
+
+        return t0;
+    }
 
     static public double computeSNAPPLikelihood(Network network, Map<String, String> alleles2species, List<Alignment> alignments, BiAllelicGTR BAGTRModel) {
 
@@ -57,17 +71,17 @@ public class SNAPPLikelihood {
         for(Object node : net.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
-                mynode.setName("I" + nameCount);
+                mynode.setName("II" + nameCount);
                 nameCount++;
             }
         }
         String netstring = net.toString();
 
 
-        ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
-        int ALGORITHM = 2;
 
         for(Alignment alg : alignments) {
+            ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
+
             List<String> names = alg.getTaxaNames();
 
             if(ALGORITHM == 0) {
@@ -85,7 +99,7 @@ public class SNAPPLikelihood {
                             OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
                             Network cloneNetwork = Networks.readNetwork(netstring);
                             cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
-                            SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, network.getRoot().getRootPopSize());
+                            SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, (Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize() : null));
                             double likelihood = 0;
                             try {
                                 likelihood = run.getProbability(converter);
@@ -135,7 +149,7 @@ public class SNAPPLikelihood {
                     nameIndex--;
                 }
                 node2update.put(cloneNetwork.getRoot(), true);
-                SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, network.getRoot().getRootPopSize());
+                SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, (Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize() : null));
 
                 for(int represent = 0 ; represent < (1 << names.size()) ; represent++) {
                     if(bestName != null && (represent & (1 << bestNameIndex)) > 0) continue;
@@ -228,7 +242,7 @@ public class SNAPPLikelihood {
                                 OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
                                 Network cloneNetwork = Networks.readNetwork(netstring);
                                 cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
-                                SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, network.getRoot().getRootPopSize());
+                                SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, (Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize() : null));
                                 double likelihood = 0;
                                 try {
                                     likelihood = run.getProbability(converter);

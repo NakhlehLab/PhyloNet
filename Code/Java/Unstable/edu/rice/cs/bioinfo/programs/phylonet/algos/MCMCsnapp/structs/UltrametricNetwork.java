@@ -109,6 +109,7 @@ public class UltrametricNetwork extends StateNode {
         }
         Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(gts, _species2alleles, _alleles2species);
         initNetHeights(popSize, constraints);
+
         setOperators();
     }
 
@@ -201,8 +202,12 @@ public class UltrametricNetwork extends StateNode {
         }
         // network changed
         if(_dirty) {
-            _logLtemp = computeLikelihood();
-            return Utils.sum(_logLtemp);
+            if(_network.getReticulationCount() > Utils._NET_MAX_RETI)
+                return Utils.INVALID_MOVE;
+            else {
+                _logLtemp = computeLikelihood();
+                return Utils.sum(_logLtemp);
+            }
         }
         else {
             _logLtemp = Utils.copy(_logGeneTreeNetwork);
@@ -243,13 +248,14 @@ public class UltrametricNetwork extends StateNode {
     public boolean isValid() {
         if(_network.getRoot().getData().getHeight() > Utils.NET_MAX_HEIGHT) return false;
 
-        Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(_geneTrees, _species2alleles, _alleles2species);
+
+        /*Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(_geneTrees, _species2alleles, _alleles2species);
         Map<String, Double> lowerBound = TemporalConstraints.getLowerBounds(_network);
         for(String key : lowerBound.keySet()) {
             if(constraints.get(key) < lowerBound.get(key)) {
                 return false;
             }
-        }
+        }*/
         return true;
     }
 

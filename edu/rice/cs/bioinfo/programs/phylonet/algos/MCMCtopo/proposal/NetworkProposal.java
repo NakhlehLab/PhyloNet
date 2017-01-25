@@ -58,7 +58,7 @@ public class NetworkProposal {
             double omega = _rand.nextDouble();
             if(omega < _weights[2]) {
                 if(reticulations == 0 || _rand.nextDouble() < _weights[3]) {
-                    return proposeChangeLength(network, edgesNeedBrlens);
+                    return proposeChangeLength(network, allEdges); //edgesNeedBrlens);
                 } else {
                     return proposeChangeProbability(network, allReticulationEdges); // done
                 }

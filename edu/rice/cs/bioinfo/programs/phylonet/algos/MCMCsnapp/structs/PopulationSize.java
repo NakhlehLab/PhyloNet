@@ -32,6 +32,9 @@ public class PopulationSize extends StateNode {
         if(!Utils._ESTIMATE_POP_SIZE) {
             throw new RuntimeException("Don't allow to change gamma mean parameter for population size estimation");
         }
+
+        if(!Utils._ESTIMATE_POP_PARAM)
+            mean = Utils._POP_SIZE_MEAN;
         _gammaMean = mean;
         _popSize = new GammaDistribution(Utils.GAMMA_SHAPE, _gammaMean);
     }

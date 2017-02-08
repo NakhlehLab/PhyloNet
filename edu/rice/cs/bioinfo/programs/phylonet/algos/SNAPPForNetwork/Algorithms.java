@@ -313,11 +313,18 @@ public class Algorithms
             else {
                 matQ = new MatrixQ(Q._rModel, Q._M, theta);
             }
+            double t = node.getParentDistance(parent);
+
+            int maxColumnSize = 0;
+            for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
+                maxColumnSize = Math.max(maxColumnSize, fBot.Item1.getArr().length);
+            }
+            matQ.setTime(t, maxColumnSize);
             for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
                 FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                 if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {
                     //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
-                    fTop.setMatrix(matQ.getProbabilityForColumn(node.getParentDistance(parent), fBot.Item1.getArr()));
+                    fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
                 }
                 data.addFTop(parent, fTop, fBot.Item2);
             }
@@ -346,15 +353,80 @@ public class Algorithms
             parent = node.getParents().iterator().next();
         }
 
+        //System.out.println(childData1.getFTops(node).size() + " " + childData2.getFTops(node).size());
 
-        for(Tuple<FMatrix,int[]> fTop1: childData1.getFTops(node)){
-            for(Tuple<FMatrix,int[]> fTop2: childData2.getFTops(node)){
+        for (Tuple<FMatrix, int[]> fTop1 : childData1.getFTops(node)) {
+            for (Tuple<FMatrix, int[]> fTop2 : childData2.getFTops(node)) {
                 int[] newIndex = mergeTwoSplittingIndices(fTop1.Item2, fTop2.Item2);
-                if(newIndex != null){
+                if (newIndex != null) {
                     data.addFBottom(parent, getFBottomNormal(fTop1.Item1, fTop2.Item1), newIndex);
                 }
             }
         }
+
+//        List<Map<Integer, Set<Integer>>> fTop2Cache = new ArrayList<>();
+//        int reticulationNumber = -1;
+//        int fTop2Index = 0;
+//        for(Tuple<FMatrix,int[]> fTop2: childData2.getFTops(node)) {
+//            if(reticulationNumber == -1) {
+//                reticulationNumber = fTop2.Item2.length;
+//                for(int i = 0 ; i < reticulationNumber ; i++) {
+//                    fTop2Cache.add(new HashMap<>());
+//                }
+//            }
+//            for(int i = 0 ; i < reticulationNumber ; i++) {
+//                if(fTop2Cache.get(i).get(fTop2.Item2[i]) == null)
+//                    fTop2Cache.get(i).put(fTop2.Item2[i], new HashSet<>());
+//                fTop2Cache.get(i).get(fTop2.Item2[i]).add(fTop2Index);
+//            }
+//            fTop2Index++;
+//        }
+//
+//        if(reticulationNumber == 0) {
+//            for (Tuple<FMatrix, int[]> fTop1 : childData1.getFTops(node)) {
+//                for (Tuple<FMatrix, int[]> fTop2 : childData2.getFTops(node)) {
+//                    int[] newIndex = mergeTwoSplittingIndices(fTop1.Item2, fTop2.Item2);
+//                    if (newIndex != null) {
+//                        data.addFBottom(parent, getFBottomNormal(fTop1.Item1, fTop2.Item1), newIndex);
+//                    }
+//                }
+//            }
+//        } else {
+//            for(Tuple<FMatrix,int[]> fTop1: childData1.getFTops(node)) {
+//                Set<Integer> stfTop2 = new HashSet<>();
+//                if(fTop1.Item2[0] == 0) {
+//                    for(int k : fTop2Cache.get(0).keySet())
+//                        stfTop2.addAll(fTop2Cache.get(0).get(k));
+//                } else {
+//                    if (fTop2Cache.get(0).containsKey(0))
+//                        stfTop2.addAll(fTop2Cache.get(0).get(0));
+//                    if (fTop2Cache.get(0).containsKey(fTop1.Item2[0]))
+//                        stfTop2.addAll(fTop2Cache.get(0).get(fTop1.Item2[0]));
+//                }
+//
+//                for(int i = 1 ; i < reticulationNumber ; i++) {
+//                    Set<Integer> currentSet = new HashSet<>();
+//                    if(fTop1.Item2[i] == 0) {
+//                        for(int k : fTop2Cache.get(i).keySet())
+//                            currentSet.addAll(fTop2Cache.get(i).get(k));
+//                    } else {
+//                        if (fTop2Cache.get(i).containsKey(0))
+//                            currentSet.addAll(fTop2Cache.get(i).get(0));
+//                        if (fTop2Cache.get(i).containsKey(fTop1.Item2[i]))
+//                            currentSet.addAll(fTop2Cache.get(i).get(fTop1.Item2[i]));
+//                    }
+//                    stfTop2.retainAll(currentSet);
+//                }
+//
+//                for(int index : stfTop2) {
+//                    Tuple<FMatrix, int[]> fTop2 = childData2.getFTops(node).get(index);
+//                    int[] newIndex = mergeTwoSplittingIndices(fTop1.Item2, fTop2.Item2);
+//                    if (newIndex != null) {
+//                        data.addFBottom(parent, getFBottomNormal(fTop1.Item1, fTop2.Item1), newIndex);
+//                    }
+//                }
+//            }
+//        }
 
         if(isArticulation){
             if(PRINT_DETAILS){

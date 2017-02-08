@@ -107,7 +107,10 @@ public class MC3 {
             }
         }
         if(doSample) {
+
+
             if(_main) {
+                System.out.println("Temperature = " + _temperature + " (main)");
                 double essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
                 System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
@@ -118,6 +121,13 @@ public class MC3 {
                 List<Tuple<String,Double>> netSample = new ArrayList<>();
                 netSample.add(new Tuple<>(_state.getNetwork(), _logPost));
                 _core.addNetSample(netSample);
+                System.out.println(_state.toString());
+            } else {
+                System.out.println("Temperature = " + _temperature);
+                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
+                        iteration, _logPost, 0.0,
+                        _logLikelihood, _logPrior, 0.0,
+                        _state.numOfReticulation());
                 System.out.println(_state.toString());
             }
         }

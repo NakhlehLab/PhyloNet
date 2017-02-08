@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util;
 
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -25,7 +26,7 @@ public class Utils {
     //public static long _SAMPLE_FREQUENCY = 5000;
 
     public static long _CHAIN_LEN = 500000;
-    public static long _BURNIN_LEN = 300000;
+    public static long _BURNIN_LEN = 200000;
     public static long _SAMPLE_FREQUENCY = 500;
     public static long _SEED = 12345678;
     public static int _NUM_THREADS = Runtime.getRuntime().availableProcessors();
@@ -38,6 +39,7 @@ public class Utils {
     // pop size
     public static boolean _ESTIMATE_POP_SIZE = true;
     public static boolean _CONST_POP_SIZE = true;
+    public static boolean _ESTIMATE_POP_PARAM = true;
     // priors
     public static double _POISSON_PARAM = 1.0;
     public static boolean _TIMES_EXP_PRIOR = false;
@@ -76,14 +78,14 @@ public class Utils {
     // --- MCMC chain ---
     public static final int SWAP_FREQUENCY = 100;
     // --- priors ---
-    public static final double EXP_PARAM = 10; // Mr.Bayes
+    public static double EXP_PARAM = 10; // Mr.Bayes
     public static final double GAMMA_SHAPE = 2; // *BEAST
     // --- substitution model ---
     public static final boolean ESTIMATE_SUBSTITUTION = false; // TODO future improvement
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
-    public static final double DIMENSION_CHANGE_WEIGHT = 0.002;
+    public static final double DIMENSION_CHANGE_WEIGHT = 0.005;
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
@@ -97,7 +99,7 @@ public class Utils {
     // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation
     // FlipReticulation MoveHead DeleteReticulation ChangeInheritance
     public static final double[] Net_Tree_Op_Weights = new double[] {
-            0.03, 0.01, 0.01,
+            0.03, 0.01, 0.00,
             0.04, 0.05,
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
@@ -190,4 +192,23 @@ public class Utils {
     public static boolean varyPopSizeAcrossBranches() {
         return Utils._ESTIMATE_POP_SIZE && !Utils._CONST_POP_SIZE;
     }
+
+    public static void printSettings() {
+        System.out.println("Number of threads = " + Utils._NUM_THREADS);
+        System.out.println("Number of Chains = " + (Utils._MC3_CHAINS == null ? 1 : 1 + Utils._MC3_CHAINS.size()));
+        System.out.println("Max reticulation number = " + Utils._NET_MAX_RETI);
+        System.out.println("Diameter prior: " + Utils._DIAMETER_PRIOR);
+        System.out.println("Time exp prior: " + Utils._TIMES_EXP_PRIOR);
+        System.out.println("Estimate pop size: " + Utils._ESTIMATE_POP_SIZE);
+        System.out.println("Estimate pop param: " + Utils._ESTIMATE_POP_PARAM);
+        System.out.println("Const pop size: " + Utils._CONST_POP_SIZE);
+        System.out.println("Pop size mean: " + Utils._POP_SIZE_MEAN);
+        System.out.println("Exp param: " + Utils.EXP_PARAM);
+        System.out.println("Seed: " + Utils._SEED);
+
+        System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);
+        System.out.println("useOnlyPolymorphic: " + SNAPPLikelihood.useOnlyPolymorphic);
+
+    }
+
 }

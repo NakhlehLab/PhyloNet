@@ -19,6 +19,9 @@ public class MatrixQ{
 
     final double theta;
 
+    double _time;
+    DenseMatrix _expQ;
+
     public MatrixQ(RateModel rModel, int M, double theta){
         this.M = M;
         this.theta = theta;
@@ -88,10 +91,28 @@ public class MatrixQ{
         };
     }
 
+    public void setTime(double time, int maxColumnSize) {
+        _time = time;
+        //maxColumnSize = transposedQ.cols;
+        _expQ = transposedQ.mul(time).cols(0,maxColumnSize).rows(0,maxColumnSize).mexp();
+        //_expQ = transposedQ.mul(time).mexp();
+    }
+
+    public DenseMatrix getProbabilityForColumn(double[] actualColumn)
+    {
+        int size = actualColumn.length;
+        DenseMatrix columnCopy = new DenseMatrix(new double[][]{actualColumn}).t();
+        DenseMatrix ret = _expQ.cols(0,size).rows(0,size).mmul(columnCopy);
+        return ret;
+
+    }
 
     public DenseMatrix getProbabilityForColumn(double time, double[] actualColumn)
     {
-
+        DenseMatrix mexpResult = getProbabiltyForColumnMexp(time, actualColumn);
+        //checkAccuracyReal(mexpResult,krylovResult);
+        return mexpResult;
+        /*
         KrylovResult krylovResult = getProbabilityForColumnKrylov(time,actualColumn);
         //KrylovResult krylovResult = null;
         if (isGood(krylovResult))
@@ -102,7 +123,7 @@ public class MatrixQ{
             DenseMatrix mexpResult = getProbabiltyForColumnMexp(time, actualColumn);
             //checkAccuracyReal(mexpResult,krylovResult);
             return mexpResult;
-        }
+        }*/
 
     }
 

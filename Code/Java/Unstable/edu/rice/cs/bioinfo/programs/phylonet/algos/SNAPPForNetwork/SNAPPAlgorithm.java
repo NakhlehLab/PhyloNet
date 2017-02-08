@@ -132,8 +132,8 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
 
         //testSpeed();
         //testFourAlleles();
-        testFourAllelesTwoUnderReticulation();
-        //testBiallelicLarge();
+        //testFourAllelesTwoUnderReticulation();
+        testBiallelicLarge();
         //testBiallelic();
         //checkWithOriginalPaperData();
         //testMultipleAllelesBiallelic2();
@@ -599,17 +599,18 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
             //Network speciesNetworkTopology = Networks.readNetwork("(A:.5,(B:.2,C:.2)n1:.3)n0;");
             //Network speciesNetworkTopology = Networks.readNetwork("((A:0.04,X#H1:0.02::0.7)n3:0.02,((B:0.02)X#H1:0.02::0.3,C:0.04)n1:0.02)root;");
             //Network speciesNetworkTopology = Networks.readNetwork("((B:0.5)X#H1:1.5::0.5,((X#H1:0.5::0.5,A:1)n1:0.5,C:1.5)n2:0.5)root;");
-            Network speciesNetworkTopology = Networks.readNetwork("(((C:0.09,(B:0.07)I6#H2:0.01::0.2)I3:0.02,(I6#H2:0.02::0.8)I5#H3:0.01::0.2)I2:0.07,(I5#H3:0.06::0.8,A:0.16)I1:0.02)I0;");
+            //Network speciesNetworkTopology = Networks.readNetwork("(((C:0.09,(B:0.07)I6#H2:0.01::0.2)I3:0.02,(I6#H2:0.02::0.8)I5#H3:0.01::0.2)I2:0.07,(I5#H3:0.06::0.8,A:0.16)I1:0.02)I0;");
             //Network speciesNetworkTopology = Networks.readNetwork("(((C:0.09)I3:0.02,((B:0.07)I6:0.01)I5#H3:0.01::0.2)I2:0.07,(I5#H3:0.06::0.8,A:0.16)I1:0.02)I0;");
-
+            Network speciesNetworkTopology = Networks.readNetwork("((A:1.5,((B:0.5,C:0.5)I3:0.5)I2#H1:0.5::0.5)I1:0.5,I2#H1:1.0::0.5)I0;");
             //Network speciesNetworkTopology = Networks.readNetwork("((A:1.5,C:1.5):0.5,B:2.0);");
+
             double constTheta = 0.036;
             for(Object nodeObject : Networks.postTraversal(speciesNetworkTopology)) {
                 NetNode node = (NetNode) nodeObject;
                 for(Object parentObject :  node.getParents()) {
                     NetNode parent = (NetNode) parentObject;
                     node.setParentSupport(parent, constTheta);
-                    node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
+                    //node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
                 }
             }
             speciesNetworkTopology.getRoot().setRootPopSize(constTheta);
@@ -647,13 +648,15 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         speciesNetworkTopology = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
         //speciesNetworkTopology = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
         //speciesNetworkTopology = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+        speciesNetworkTopology = Networks.readNetwork("(((((R:0.10472155953678641,(L:0.08956088683777966,(Q:0.061388364670773195,A:0.061388364670773195)II8:0.028172522167006463)II7:0.015160672699006755)II6:0.015145851252580833,((C:0.07315556526977926,G:0.07315556526977926)II3:0.03223357104021027)II2#H1:0.014478274479377717::0.8669225099912875)II5:2.152380577149497)II4#H2:0.1822392555742689::0.22368190104831598,II2#H1:2.3490981072031434::0.1330774900087125)II1:6.446533712494073,II4#H2:6.6287729680683425::0.776318098951684)II0;");
+        //speciesNetworkTopology = Networks.readNetwork("((((L:0.009304825035069735)#H1:14.370818397517256::0.020382388550110098)#H2:25.83351345488807::0.28805683793703096,((#H1:0.0013174924892173801::0.9796176114498899,(Q:0.009166552336431677,(A:0.005296210274212645,(G:0.0014429534014067207,C:0.0014429534014067207):0.003853256872805924):0.0038703420622190326):0.0014557651878554373):0.0047109417058845745,R:0.015333259230171689):40.19830341821022):75.28824647371039,#H2:101.12175992859846::0.711943162062969);");
         double constTheta = 0.036;
         for(Object nodeObject : Networks.postTraversal(speciesNetworkTopology)) {
             NetNode node = (NetNode) nodeObject;
             for(Object parentObject :  node.getParents()) {
                 NetNode parent = (NetNode) parentObject;
                 node.setParentSupport(parent, constTheta);
-                node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
+                //node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
             }
         }
         speciesNetworkTopology.getRoot().setRootPopSize(constTheta);
@@ -675,8 +678,8 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         SNAPPAlgorithm run = new SNAPPAlgorithm(speciesNetworkTopology, BAGTRModel, 1.0);
         long last = System.currentTimeMillis();
 
-        for(int repeat = 0 ; repeat < 200 ; repeat++) {
-            if(repeat == 100) last = System.currentTimeMillis();
+        for(int repeat = 0 ; repeat < 20 ; repeat++) {
+            sum = 0;
             for (int i = 0; i < 64; i++) {
 
                 char a = ((i & 1) != 0) ? '1' : '0';
@@ -702,8 +705,9 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
                 sum += run.getProbability(converter);
                 //break;
             }
+            System.out.println("Sum: " + sum);
         }
-        System.out.println("Sum: " + sum);
+
 
         System.out.println(String.format("Total elapsed time : %2.5f s\n",
                 (double) (System.currentTimeMillis() - last) / 1000.0));

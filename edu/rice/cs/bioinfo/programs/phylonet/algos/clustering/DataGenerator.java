@@ -810,7 +810,7 @@ public class DataGenerator {
         return network;
     }
 
-    DataGenerator() {
+    public DataGenerator() {
         _numNetwork = 1;
         _setsPerNetwork = 1;
         _simulator = getSimulator(null);
@@ -818,7 +818,7 @@ public class DataGenerator {
         _sizes = new int[]{1000};
     }
 
-    DataGenerator(int numNetwork, int [] sizes, int setsPerNetwork) {
+    public DataGenerator(int numNetwork, int [] sizes, int setsPerNetwork) {
         _numNetwork = numNetwork;
         _setsPerNetwork = setsPerNetwork;
         _simulator = getSimulator(null);

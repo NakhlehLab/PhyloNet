@@ -5,8 +5,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignme
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.SampleSummary;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.ESS;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Summary;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.ESS;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.Summary;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 
 import java.util.ArrayList;

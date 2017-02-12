@@ -44,7 +44,8 @@ public class Test {
         //testMultiThread();
         //testBranchlength();
         //testSecondData(args);
-        testMosquitoData(args);
+        //testMosquitoData(args);
+        test012Data(args);
         //testWithDingqiaoNetwork(args);
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
@@ -767,6 +768,245 @@ public class Test {
                 (double) (System.currentTimeMillis() - startTime) / 1000.0));
     }
 
+    //args[0] current part
+    //args[1] seed
+    //args[2] chain length
+    public static void test012Data(String []args) {
+        Random random = new Random(Utils._SEED);
+
+        Utils._NUM_THREADS = 4;
+        //Utils._CHAIN_LEN = 2000500;
+        //Utils._BURNIN_LEN = 500;
+        Utils._CHAIN_LEN = 2000000;
+        Utils._BURNIN_LEN = 1000000;
+        Utils._SAMPLE_FREQUENCY = 500;
+        //Utils._NET_MAX_RETI = 2;
+        Utils._DIAMETER_PRIOR = true;
+        Utils._TIMES_EXP_PRIOR = true;
+        Utils._MC3_CHAINS = new ArrayList<>();
+        //Utils._MC3_CHAINS.add(1.0);
+        //Utils._MC3_CHAINS.add(2.0);
+        //Utils._MC3_CHAINS.add(4.0);
+        Utils._ESTIMATE_POP_SIZE = false;
+        Utils._POP_SIZE_MEAN = 0.001;
+
+        String path = "../heliconius_basckei_datasets/";
+
+        SNAPPLikelihood.ALGORITHM = 2;
+        SNAPPLikelihood.useOnlyPolymorphic = false;
+        //SNAPPLikelihood.debugMode = true;
+
+        int curPart = Integer.parseInt(args[0]) ;
+
+        int number = 0;
+        List<String> paths = new ArrayList<>();
+        for (File file : new File(path).listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".012")) {
+                paths.add(file.getPath());
+                number++;
+            }
+        }
+        Collections.sort(paths);
+        //curPart = paths.indexOf("../data/networkA_1000000_ac_seed12345678.snp");
+        System.out.println("Total number " + number);
+        System.out.println("Current number " + curPart);
+        System.out.println(paths.get(curPart));
+        String filename = paths.get(curPart);
+
+        if(args.length > 1) {
+            Utils._SEED = Integer.parseInt(args[1]);
+        }
+
+        if(args.length > 2) {
+            Utils._CHAIN_LEN = Integer.parseInt(args[2]);
+        }
+
+        String breakpoint = "/scratch/jz55/butterfly/run/slurm-3326493_";
+        if(breakpoint != null) {
+            breakpoint = breakpoint + curPart + ".out";
+            System.out.println("Breakpoint: " + breakpoint);
+            Utils._START_NET = getLatestNetwork(breakpoint);
+            System.out.println("Start network: " + Utils._START_NET);
+        }
+
+        Utils.printSettings();
+
+        Map<Integer, Integer> freq = new HashMap<>();
+        Map<String, StringBuilder> sequenceRaw = new HashMap<>();
+        Map<String, StringBuilder> sequenceWithoutGaps = new HashMap<>();
+        Map<String, String> sequence = new HashMap<>();
+        List<String> taxaNames = new ArrayList<>();
+
+        //get taxa names from *.012.indv
+        try{
+            File file = new File(filename + ".indv");
+            System.out.println("Reading " + file.getName());
+            Scanner scanner = new Scanner(file);
+            while(scanner.hasNextLine()) {
+                String s = scanner.nextLine();
+                if(s.equals("")) break;
+                taxaNames.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Got " + taxaNames.size() + " taxa.");
+
+        //get positions from *.012.pos
+        int sequenceLength = 0;
+        try{
+            File file = new File(filename + ".pos");
+            System.out.println("Reading " + file.getName());
+            Scanner scanner = new Scanner(file);
+            while(scanner.hasNextLine()) {
+                String s = scanner.nextLine();
+                if(s.equals("")) break;
+                sequenceLength++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Got " + sequenceLength + " sites.");
+
+        //get sequence from *.012
+        try {
+            File file = new File(filename);
+            System.out.println(file.getName());
+            Scanner scanner = new Scanner(file);
+
+            for(int i = 0 ; i < taxaNames.size() ; i++) {
+                StringBuilder sb = new StringBuilder();
+                scanner.nextInt();
+                for(int j = 0 ; j < sequenceLength ; j++) {
+                    int k = scanner.nextInt();
+
+                    if(!freq.containsKey(k))
+                        freq.put(k, 0);
+                    freq.put(k, freq.get(k) + 1);
+
+                    if(k == 1) {
+                        if(random.nextDouble() < 0.5) k = 0;
+                        else k = 2;
+                    }
+                    if(k == 0)
+                        sb.append("0");
+                    else if(k == 2)
+                        sb.append("1");
+                    else
+                        sb.append("-");
+                }
+
+                sequenceRaw.put(taxaNames.get(i), sb);
+                sequenceWithoutGaps.put(taxaNames.get(i), new StringBuilder());
+                System.out.println(sb.length());
+            }
+
+            scanner.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for(Integer num : freq.keySet()) {
+            System.out.println(num + " : " + freq.get(num));
+        }
+
+        for(int j = 0 ; j < sequenceLength ; j++) {
+            boolean containsGap = false;
+            for(int i = 0 ; i < taxaNames.size() ; i++) {
+                if(sequenceRaw.get(taxaNames.get(i)).charAt(j) == '-') containsGap = true;
+            }
+            if(!containsGap) {
+                for(int i = 0 ; i < taxaNames.size() ; i++) {
+                    sequenceWithoutGaps.get(taxaNames.get(i)).append(sequenceRaw.get(taxaNames.get(i)).charAt(j));
+                }
+            }
+        }
+
+        for(String taxon : sequenceWithoutGaps.keySet())
+            sequence.put(taxon, sequenceWithoutGaps.get(taxon).toString());
+
+        for(String taxon : sequence.keySet()) {
+            System.out.println(taxon + " " + sequence.get(taxon).substring(0, 10) + "..." + sequence.get(taxon).substring(sequence.get(taxon).length() - 10, sequence.get(taxon).length()));
+        }
+        List<Map<String, String>> snpdata = new ArrayList<>();
+        snpdata.add(sequence);
+
+        List<Alignment> alns = new ArrayList<>();
+        for(Map<String, String> input : snpdata) {
+
+            System.out.println();
+            Alignment aln = new Alignment(input);
+
+            Map<Integer, Integer> cache = new HashMap<>();
+
+            for(int i = 0 ; i < aln.getSiteCount() ; i++) {
+                Map<String, Character> colorMap = new TreeMap<String, Character>();
+                for(String taxon : aln.getAlignment().keySet()) {
+                    colorMap.put(taxon, aln.getAlignment().get(taxon).charAt(i));
+                }
+                Integer represent = 0;
+                for(String s : colorMap.keySet()) {
+                    represent = (represent << 1) + (colorMap.get(s) == '0' ? 0 : 1);
+                }
+                if(!cache.containsKey(represent)) {
+                    cache.put(represent, 0);
+                }
+                cache.put(represent, cache.get(represent) + 1);
+            }
+
+            aln.setCache(cache);
+            alns.add(aln);
+        }
+
+        double [] pi =  new double[2];
+        double [] rate = new double[1];
+
+        int totalSites = 0;
+        for(Alignment alg : alns) {
+            int count = 0;
+            for(String s : alg.getAlignment().values()) {
+                for(int i = 0 ; i < s.length() ; i++) {
+                    count += s.charAt(i) == '1' ? 1 : 0;
+                }
+            }
+            totalSites += alg.getSiteCount() * alg.getTaxonSize();
+            pi[1] += 1.0 * count;
+        }
+        pi[1] /= 1.0 * totalSites;
+        pi[0] = 1 - pi[1];
+
+        rate[0] = 1 / (2*pi[0]);
+
+        /*pi[1] = 0.5;
+        pi[0] = 1 - pi[1];
+
+        rate[0] = 1.0 / (2*pi[0]);*/
+
+        System.out.println("PI0: " + pi[0] + " PI1: " + pi[1]);
+
+        BiAllelicGTR curBAGTRModel = new BiAllelicGTR(pi, rate);
+
+        //Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
+        //cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
+        //System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
+
+        long startTime = System.currentTimeMillis();
+
+        //Utils._START_NET = "[0.013941695932206571]((L:0.0027483538928538406)#H1:0.024591705100111893::0.3457545488771119,(((#H1:0.006070791744061946::0.6542454511228881,((C:0.001705161774251553,G:0.001705161774251553):0.0036209530403215947,A:0.0053261148145731475):0.0034930308223426387):7.363852463073764E-4,Q:0.009555530883223163):0.005224376373616809,R:0.014779907256839971):0.012560151736125763);";
+        //Utils._START_NET = "[0.013183212466841288]((R:0.005393926178755438)#H1:103.9561992239639743::0.018548690495628684,(L:0.015519221548218956,(#H1:0.005032251955269181::0.9814513095043713,(((G:0.002179801517554337,C:0.002179801517554337):0.003448879780084071,A:0.005628681297638408):0.0039931010651085815,Q:0.00962178236274699):8.043957712776297E-4):0.005093043414194337):103.9460739285945103);";
+        //Utils._START_NET = "[0.01432278740805789](R:0.014623597111565564,((Q:0.00911822640342767,(A:0.005012995498108841,(G:0.0013615204510037562,C:0.0013615204510037562):0.0036514750471050845):0.004105230905318829):8.83545194053861E-4,(L:0.004912143753730035):0.005089627843751496):0.004621825514084034);";
+        //Utils._START_NET = "[0.004730554505572216]((L:0.0018026486850655757)#H1:0.006868170254180248::0.37434235096700086,((Q:0.003017192479968964,(((C:8.059411556637647E-4,G:8.059411556637647E-4):7.375228243481855E-4,A:0.0015434639800119502):0.0010181992335458793,#H1:7.590145284922538E-4::0.6256576490329991):4.5552926641113456E-4):0.0018414552390651788,R:0.004858647719034143):0.003812171220211681);";
+
+        MC3Core run = new MC3Core(alns, curBAGTRModel);
+        run.run();
+
+
+        System.out.println(String.format("Total elapsed time : %2.5f s\n",
+                (double) (System.currentTimeMillis() - startTime) / 1000.0));
+    }
+
+
+
     public static void testWithSNAPPSimulation(String[] args) {
         int curPart = Integer.parseInt(args[0]);
         int number = 0;
@@ -921,6 +1161,54 @@ public class Test {
             }
 
             System.out.println("Best log posterior: " + bestLogPosterior);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return lastNetwork;
+    }
+
+    public static String getLatestNetwork(String filename) {
+        String lastNetwork = null;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            String line;
+            String inputfile = "";
+            int seqLength;
+            String allowConstantLabel;
+            String currentChain = "";
+            List<Network> trueBackbones = new ArrayList<>();
+            boolean ready = false;
+            boolean finished = false;
+            double bestLogPosterior = -1e18;
+
+            while ((line = br.readLine()) != null) {
+                if(line.contains("/") && inputfile.equals("")) {
+                    inputfile = line.substring(line.lastIndexOf('/') + 1);
+                    System.out.println("Last Run Input: " + inputfile);
+                }
+                else if(line.startsWith("Temp")) {
+                    currentChain = line;
+                    ready = true;
+                }
+                else if(ready) {
+                    Scanner lineScanner = new Scanner(line);
+                    lineScanner.useDelimiter(";    ");
+                    int numSamples = lineScanner.nextInt();
+                    double logPosterior = lineScanner.nextDouble();
+                    if(currentChain.contains("main")) {
+                        bestLogPosterior = logPosterior;
+                        lastNetwork = br.readLine();
+                    }
+                    ready = false;
+                }
+                else if(line.startsWith("Rank = 0")){
+                    System.out.println("Last Run Finished ");
+                }
+            }
+
+            System.out.println("Latest log posterior: " + bestLogPosterior);
 
         } catch (Exception e) {
             e.printStackTrace();

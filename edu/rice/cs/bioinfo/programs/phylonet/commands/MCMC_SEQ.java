@@ -493,7 +493,6 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             Utils._SUBSTITUTION_MODEL = "JC";
         }
 
-        StringBuffer result = new StringBuffer("\n");
         System.out.println("\nOutput files under " + Utils._OUT_DIRECTORY);
 
         long startTime = System.currentTimeMillis();
@@ -501,10 +500,10 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         MC3Core mc3 = new MC3Core(alignments);
         mc3.run();
 
-        result.append(String.format("Total elapsed time : %2.5f s\n",
-                (double) (System.currentTimeMillis() - startTime) / 1000.0));
+        System.out.printf("Total elapsed time : %2.5f s\n",
+                (double) (System.currentTimeMillis() - startTime) / 1000.0);
 
-        return result.toString();
+        return null;
     }
 
 }

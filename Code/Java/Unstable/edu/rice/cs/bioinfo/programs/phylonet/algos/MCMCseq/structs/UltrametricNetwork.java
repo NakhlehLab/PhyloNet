@@ -168,7 +168,7 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public double propose() {
-        if(_network.getReticulationCount() == 0) {
+        if(Utils._PRE_BURN_IN || _network.getReticulationCount() == 0) {
             this._operator = getOp(_operators, _treeOpWeights);
         } else {
             this._operator = getOp(_operators, _netOpWeights);

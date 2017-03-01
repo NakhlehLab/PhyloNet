@@ -68,12 +68,20 @@ public class MC3Core {
     }
 
     public void run() {
-        System.out.println("----------------------- Logger: -----------------------");
-        System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation");
         int total = (int) (Utils._CHAIN_LEN / Utils._SAMPLE_FREQUENCY);
         int burnin = (int) (Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY);
         int swap = (int) (Utils._SAMPLE_FREQUENCY / Utils.SWAP_FREQUENCY);
-        for(int i = 1; i <= total; i++) {
+        for(int i = 1 - Utils._PRE_BURN_IN_ITER; i <= total; i++) {
+            if (i == 1) {
+                Utils._PRE_BURN_IN = false;
+                MC3 main = getMain();
+                if(main == null) {
+                    throw new RuntimeException("No main MC3 chain found!!!");
+                }
+                main.setPreBurnInParams();
+                System.out.println("----------------------- Logger: -----------------------");
+                System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation");
+            }
             if(i > burnin) {
                 _sampling = true;
             }
@@ -84,6 +92,13 @@ public class MC3Core {
             }
         }
         summarize();
+    }
+
+    private MC3 getMain() {
+        for(MC3 mc3 : _mc3s) {
+            if(mc3.getMain()) return mc3;
+        }
+        return null;
     }
 
     private void doSwap() {

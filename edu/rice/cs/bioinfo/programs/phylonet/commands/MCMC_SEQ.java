@@ -404,6 +404,27 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        // pre-burn-in
+        ParamExtractor preParam = new ParamExtractor("pre", this.params, this.errorDetected);
+        if(preParam.ContainsSwitch){
+            if(preParam.PostSwitchParam != null) {
+                try {
+                    int pre = Integer.parseInt(preParam.PostSwitchValue);
+                    if(pre < 0) {
+                        throw new RuntimeException("pre-burn-in iterations should be an integer >= 0");
+                    }
+                    Utils._PRE_BURN_IN_ITER = pre;
+                } catch(NumberFormatException e) {
+                    errorDetected.execute(
+                            "Unrecognized pre-burn-in iterations (an integer >= 0)" + preParam.PostSwitchValue,
+                            preParam.PostSwitchParam.getLine(), preParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -pre.",
+                        preParam.SwitchParam.getLine(), preParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Substitution Model Settings -----
         // GTR
         ParamExtractor gtrParam = new ParamExtractor("gtr", this.params, this.errorDetected);
@@ -450,7 +471,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "cl", "bl", "sf", "sd", "pl", "dir",
                 "mc3", "mr", "tm", "fixps", "varyps",
                 "pp", "dd", "ee", "mu",
-                "sgt", "snet", "sps", "gtr"
+                "sgt", "snet", "sps", "pre", "gtr"
         );
         checkAndSetOutFile(
                 diploidParam,

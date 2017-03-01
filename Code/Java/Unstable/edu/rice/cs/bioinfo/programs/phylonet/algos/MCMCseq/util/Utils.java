@@ -45,6 +45,8 @@ public class Utils {
     public static double _POP_SIZE_MEAN = 0.036;
     public static String _START_NET = null;
     public static List<String> _START_GT_LIST = null;
+    public static boolean _PRE_BURN_IN = true;
+    public static int _PRE_BURN_IN_ITER = 1;
     // summary
     public static int _TOPK_NETS = 10;
     // site model

@@ -503,7 +503,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         System.out.printf("Total elapsed time : %2.5f s\n",
                 (double) (System.currentTimeMillis() - startTime) / 1000.0);
 
-        return null;
+        return "";
     }
 
 }

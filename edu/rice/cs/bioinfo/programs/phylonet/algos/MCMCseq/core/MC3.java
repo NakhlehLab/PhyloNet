@@ -46,17 +46,6 @@ public class MC3 {
      * Main GTT loop.
      */
     public void run(int iteration, boolean doSample) {
-
-        if(iteration == 1 && doSample) {
-            if(_main) {
-                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-                        0, _logPost, 0.0,
-                        _logLikelihood, _logPrior, 0.0,
-                        _state.numOfReticulation());
-                System.out.println(_state.toString());
-            }
-        }
-
         boolean accept;
         double logHastings;
         String op;
@@ -102,7 +91,7 @@ public class MC3 {
                 _core.addInfo(accept, op);
             }
         }
-        if(doSample) {
+        if(!Utils._PRE_BURN_IN && doSample) {
             if(_main) {
                 double essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
@@ -125,6 +114,10 @@ public class MC3 {
      */
     public String report() {
         return this._temperature + " : " + _state.toString();
+    }
+
+    protected void setPreBurnInParams() {
+        _state.setPreBurnInParams();
     }
 
     /********** getters and setters ***********/

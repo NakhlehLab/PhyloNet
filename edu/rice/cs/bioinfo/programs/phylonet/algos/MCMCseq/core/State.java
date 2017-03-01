@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core;
 
-import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.SpeciesNetPriorDistribution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
@@ -11,6 +10,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -199,6 +199,26 @@ public class State {
 
     public String getNetwork() {
         return _speciesNet.getNetwork().toString();
+    }
+
+    protected void setPreBurnInParams() {
+        if(Utils._ESTIMATE_POP_SIZE) {
+            double rootPS = _speciesNet.getNetwork().getRoot().getRootPopSize();
+            Utils._POP_SIZE_MEAN = rootPS;
+            Utils._POP_SIZE_WINDOW_SIZE = 0.05 * rootPS;
+            System.out.println("SET _POP_SIZE_MEAN = " + Utils._POP_SIZE_MEAN);
+            System.out.println("SET _POP_SIZE_WINDOW_SIZE = " + Utils._POP_SIZE_WINDOW_SIZE);
+        }
+        List<Double> list = new ArrayList<>();
+        for(NetNode node : Networks.postTraversal( _speciesNet.getNetwork())) {
+            for(Object c : node.getChildren()) {
+                NetNode child = (NetNode) c;
+                list.add(child.getParentDistance(node));
+            }
+        }
+        Collections.sort(list);
+        Utils._TIME_WINDOW_SIZE = list.get(list.size() / 2) * 0.05;
+        System.out.println("SET _TIME_WINDOW_SIZE = " + Utils._TIME_WINDOW_SIZE);
     }
 
 }

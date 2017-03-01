@@ -667,6 +667,19 @@ public class Networks
         return network.toString();
     }
 
+    public static <T> String getDendroscopeCompatibleString(Network<T> net) {
+        Network network = net.clone();
+        for(Object nodeObject : Networks.postTraversal(network)) {
+            NetNode node = (NetNode) nodeObject;
+            for(Object parentObject :  node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                node.setParentSupport(parent, NetNode.NO_SUPPORT);
+                node.setParentProbability(parent, NetNode.NO_PROBABILITY);
+            }
+        }
+        return network.toString();
+    }
+
 
     /**
      * This function adds <code>numReticulations</code> random reticulations to a given network

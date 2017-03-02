@@ -4,6 +4,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.UltrametricNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -62,6 +63,12 @@ public class AddReticulation extends DimensionChange {
 
         double pda = numRetiNodes == 0 ? 0.5 : 1.0;
         double numRetiEdges = 2 * (numRetiNodes + 1);
+
+        // convert to coalescent unit
+        if(!Utils.varyPopSizeAcrossBranches()) {
+            l1 /= _network.getNetwork().getRoot().getRootPopSize();
+            l2 /= _network.getNetwork().getRoot().getRootPopSize();
+        }
         double hr = pda * l1 * l2 * numEdges * (numEdges-1.0) / numRetiEdges;
 
         _violate = false;

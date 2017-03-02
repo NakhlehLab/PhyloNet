@@ -60,6 +60,11 @@ public class DeleteReticulation extends DimensionChange {
                     double logPopSize = removeReticulation(_v1, _v2, _v3, _v4, _v5, _v6);
 
                     _violate = true;
+                    // convert to coalescent unit
+                    if(!Utils.varyPopSizeAcrossBranches()) {
+                        l1 /= _network.getNetwork().getRoot().getRootPopSize();
+                        l2 /= _network.getNetwork().getRoot().getRootPopSize();
+                    }
                     _logHR = Math.log(pad / l1 / l2 * numRetiEdges / numEdges / (numEdges-1.0)) + logPopSize;
                 }
             }

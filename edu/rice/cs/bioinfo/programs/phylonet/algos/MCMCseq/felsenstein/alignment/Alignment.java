@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Created by wendingqiao on 5/3/16.
  */
-public class Alignment {
+public class Alignment implements Comparable<Alignment> {
 
     protected List<String> _taxaNames = new ArrayList<>(); // sorted
     protected List<Sequence> _sequences = new ArrayList<>(); // corresponds to _taxaNames
@@ -107,6 +107,11 @@ public class Alignment {
             _patternWeight[patternIndex] = 0;
             _excludedPatterns.add(patternIndex);
         }
+    }
+
+    @Override
+    public int compareTo(Alignment o) {
+        return this.getName().compareTo(o.getName());
     }
 
 

@@ -497,6 +497,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
         long startTime = System.currentTimeMillis();
 
+        Collections.sort(alignments);
         MC3Core mc3 = new MC3Core(alignments);
         mc3.run();
 

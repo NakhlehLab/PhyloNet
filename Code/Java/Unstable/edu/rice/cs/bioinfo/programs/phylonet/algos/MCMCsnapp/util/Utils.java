@@ -56,7 +56,6 @@ public class Utils {
     public static int _TOPK_NETS = 10;
     // diploid phasing
     public static Set<String> _DIPLOID_SPECIES = null;
-    public static boolean _PHASING = false;
     // divergence time window size
     public static double _TIME_WINDOW_SIZE = 0.004;
     public static double _POP_SIZE_WINDOW_SIZE = 0.004;

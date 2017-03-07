@@ -2,10 +2,13 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.OperatorLog;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 
 /**
@@ -251,5 +254,61 @@ public class Summary<T> {
             heightMap.put(n1, height);
         }
         return heightMap;
+    }
+
+    public static void main(String[] args) {
+        //do the summary for unfinished job
+        String filename = "/scratch/jz55/butterfly/run_2ndwave/slurm-3425287_3.out";
+
+        List<List<Tuple<String,Double>>> netSamples = new ArrayList<>();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            String line;
+            String inputfile = "";
+            int seqLength;
+            String allowConstantLabel;
+            String currentChain = "";
+            List<Network> trueBackbones = new ArrayList<>();
+            boolean ready = false;
+            boolean finished = false;
+            double bestLogPosterior = -1e18;
+
+            while ((line = br.readLine()) != null) {
+                if(line.contains("/") && inputfile.equals("")) {
+                    inputfile = line.substring(line.lastIndexOf('/') + 1);
+                    System.out.println("Last Run Input: " + inputfile);
+                }
+                else if(line.startsWith("Temp")) {
+                    currentChain = line;
+                    ready = true;
+                }
+                else if(ready) {
+                    Scanner lineScanner = new Scanner(line);
+                    lineScanner.useDelimiter(";    ");
+                    int numSamples = lineScanner.nextInt();
+                    double logPosterior = lineScanner.nextDouble();
+                    if(currentChain.contains("main")) {
+                        String netstring = br.readLine();
+                        List<Tuple<String,Double>> netSample = new ArrayList<>();
+                        netSample.add(new Tuple<>(netstring, new Double(logPosterior)));
+                        netSamples.add(netSample);
+                    }
+                    ready = false;
+                }
+                else if(line.startsWith("Rank = 0")){
+                    System.out.println("Last Run Finished ");
+                }
+            }
+
+            System.out.println("Got: " + netSamples.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Summary summary = new Summary(netSamples, true);
+        System.out.println("         -------------- Top Topologies: --------------");
+        System.out.println(summary.getTopK(Utils._TOPK_NETS));
     }
 }

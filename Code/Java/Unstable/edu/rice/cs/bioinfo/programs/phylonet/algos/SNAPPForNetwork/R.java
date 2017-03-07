@@ -19,6 +19,7 @@ public class R {
      */
     //private final static int dims = 3;
     public static int dims = 1;
+    public static int maxLineages = 0;
 
 
     /**
@@ -52,6 +53,36 @@ public class R {
         this.values = values;
 
         this.sum = calculateSum(values);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int ret = 1;
+        int [] primes = {2,3,5,7};
+        for(int i = 0 ; i < dims ; i++)
+            ret *= values[i] * primes[i];
+        ret *= n * primes[3];
+        return ret;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof R))
+            return false;
+        if (obj == this)
+            return true;
+
+        R rhs = (R) obj;
+
+        if(this.n != rhs.n)
+            return false;
+
+        for(int i = 0 ; i < dims ; i++)
+            if(this.values[i] != rhs.values[i])
+                return false;
+
+        return true;
 
     }
 

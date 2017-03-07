@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignm
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.datatype.DataType;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.datatype.Nucleotide;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 
 import java.util.*;
 
@@ -46,6 +47,7 @@ public class Alignment {
     private String _name = null;
 
     private Map<Integer, Integer> _cache;
+    public Map<RPattern, double[]> _RPatterns;
 
     public Alignment(Map<String, String> sequences, String name) {
         this(sequences);

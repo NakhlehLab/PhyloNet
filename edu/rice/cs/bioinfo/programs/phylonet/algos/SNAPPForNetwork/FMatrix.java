@@ -103,4 +103,12 @@ public class FMatrix
         }
         return exp;
     }
+
+    public double getSum() {
+        double sum = 0.0;
+        for(double value: arr){
+            sum += value;
+        }
+        return sum;
+    }
 }

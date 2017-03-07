@@ -301,7 +301,9 @@ public class UltrametricNetwork extends StateNode {
             }
         }*/
         double[] likelihoodArray = new double[1];
-        likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alleles2species, _alignments, _BAGTRModel);
+        //likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alleles2species, _alignments, _BAGTRModel);
+        likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihoodMT(_network, _alignments.get(0)._RPatterns, _BAGTRModel);
+
         return likelihoodArray;
     }
 

@@ -34,7 +34,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     public SNAPPAlgorithm(Network theSpeciesNetwork, RateModel rModel, Double theta){
 
         speciesNetwork = theSpeciesNetwork;
-        Q = new QParameters(rModel, speciesNetwork.getLeafCount(), theta);
+        Q = new QParameters(rModel, R.maxLineages, theta);
         if(speciesNetwork.getRoot().getData()==null) {
             Networks.removeBinaryNodes(speciesNetwork);
             for (Object node : Networks.postTraversal(speciesNetwork)) {
@@ -82,10 +82,21 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         return getProbability(dna, 0);
     }
 
-
+    public double getProbability(RPattern pattern) {
+        return getProbability(pattern, 0);
+    }
 
     public double getProbability(NucleotideObservation dna, int siteID) {
         double resultVal= Algorithms.getProbabilityObservationGivenNetwork(speciesNetwork, allele2species, dna, Q, siteID);
+
+        if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
+            throw new RuntimeException("Result is not finite");
+        return resultVal;
+    }
+
+    public double getProbability(RPattern pattern, int siteID) {
+        Q._M = pattern.sumLineages();
+        double resultVal= Algorithms.getProbabilityObservationGivenNetwork(speciesNetwork, pattern, Q, siteID);
 
         if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
             throw new RuntimeException("Result is not finite");
@@ -133,12 +144,12 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         //testSpeed();
         //testFourAlleles();
         //testFourAllelesTwoUnderReticulation();
-        testBiallelicLarge();
+        //testBiallelicLarge();
         //testBiallelic();
         //checkWithOriginalPaperData();
         //testMultipleAllelesBiallelic2();
         //testMultipleAlleles();
-        //testMultipleAllelesBiallelic();
+        testMultipleAllelesBiallelic();
         //R.dims = 3;
 
         //testFourAllelesMedium();

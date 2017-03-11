@@ -42,7 +42,7 @@ public class Test {
         //SimSNPInNetwork.testDiploid();
         //checkSNAPPSimulationResults();
         //testWithSNAPPSimulation(args);
-        //testMCMC1();
+        testMCMC();
         //testMultiThread();
         //testBranchlength();
         //testSecondData(args);
@@ -50,7 +50,7 @@ public class Test {
         //testOurisiaData(args);
         //test012Data(args);
         //trim012Data(args);
-        testWithDingqiaoNetwork(args);
+        //testWithDingqiaoNetwork(args);
         //testWithDingqiaoNetwork_diploid(args);
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
@@ -169,8 +169,8 @@ public class Test {
 
     public static void testMCMC() {
         Utils._NUM_THREADS = 2;
-        Utils._CHAIN_LEN = 20000;
-        Utils._BURNIN_LEN = 10000;
+        Utils._CHAIN_LEN = 2000;
+        Utils._BURNIN_LEN = 1000;
         Utils._SAMPLE_FREQUENCY = 500;
         //Utils._NET_MAX_RETI = 2;
         SNAPPLikelihood.useOnlyPolymorphic = true;
@@ -188,6 +188,7 @@ public class Test {
         double x = 1000.0;
 
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, 12345678L + 100000);
+        simulator._diploid = false;
         DataGenerator dataGenerator = new DataGenerator();
         Network trueNetwork = Networks.readNetwork(dataGenerator.getNewNetwork1().toString());
         //System.out.println("True Network: " + trueNetwork.toString());
@@ -201,7 +202,7 @@ public class Test {
         //trueNetwork = Networks.readNetwork("(((((A:0.7)I6#H1:1.3::1.0,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.0,C:1.4)I5:0.6)I1:3.0)I0;");
         //trueNetwork = Networks.readNetwork("((d:2.6,((c:1.0,b:1.0)I4:1.5)I3#H1:0.1::0.7)I2:0.5,(a:2.6,I3#H1:0.1::0.30000000000000004)I1:0.5)I0;");
         //trueNetwork = Networks.readNetwork("((((b:1.0,c:1.0)I4:" + y + ")I3#H1:0.1::" + (1 - gamma) + ",a:" + (1.1 + y) + ")I1:" + x + ",(I3#H1:0.1::" + gamma + ",d:" + (1.1 + y) + ")I2:"+ x +")I0;");
-        trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+        //trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
 
@@ -220,7 +221,7 @@ public class Test {
         //trueNetwork = Networks.readNetwork("((((C:0.07,(B:0.06)I7#H1:0.01::0.2)I4:0.02,(I7#H1:0.02::0.8)I6#H2:0.01::0.2)I3:0.02,(I6#H2:0.02::0.8)I5#H3:0.01::0.2)I2:0.07,(I5#H3:0.06::0.8,A:0.16)I1:0.02)I0;");
         //trueNetwork.getRoot().setRootPopSize(0.04);
 
-        Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, 100000, false);
+        Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, 100000, true);
         // List<Map<String, String>> snpdata = simulator.generateGTs(Networks.readNetwork("((B:0.5)X#H1:1.5::0.5,((X#H1:0.5::0.5,A:1)n1:0.5,C:1.5)n2:0.5)root;"), null, 100, "/scratch/jz55/Luay/msdir/ms");
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(onesnp);
@@ -231,25 +232,11 @@ public class Test {
             }
             System.out.println();
             Alignment aln = new Alignment(input);
+            List<Alignment> alnwarp = new ArrayList<>();
+            alnwarp.add(new Alignment(onesnp));
+            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
 
-            Map<Integer, Integer> cache = new HashMap<>();
 
-            for(int i = 0 ; i < aln.getSiteCount() ; i++) {
-                Map<String, Character> colorMap = new TreeMap<String, Character>();
-                for(String taxon : aln.getAlignment().keySet()) {
-                    colorMap.put(taxon, aln.getAlignment().get(taxon).charAt(i));
-                }
-                Integer represent = 0;
-                for(String s : colorMap.keySet()) {
-                    represent = (represent << 1) + (colorMap.get(s) == '0' ? 0 : 1);
-                }
-                if(!cache.containsKey(represent)) {
-                    cache.put(represent, 0);
-                }
-                cache.put(represent, cache.get(represent) + 1);
-            }
-
-            aln.setCache(cache);
             alns.add(aln);
         }
 
@@ -276,7 +263,7 @@ public class Test {
 
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
+        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
 
         //Utils._START_NET = "[0.036]" + trueNetwork.toString();
         /*String[] gtTaxa = new String[onesnp.size()];

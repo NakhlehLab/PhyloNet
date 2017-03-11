@@ -7,6 +7,8 @@ public class BiAllelicGTR implements RateModel {
     DenseMatrix rateMatrix;
     DenseMatrix equilibriumMatrix;
 
+    private double _u, _v;
+
     private static double sum(double[] arr)
     {
         double result= 0;
@@ -30,6 +32,8 @@ public class BiAllelicGTR implements RateModel {
             throw new IllegalArgumentException("Error: There should be 1 transition frequencies.");
         }
 
+        _u = 1.0 / (2.0 * equilibriumFrequencies[0]);
+        _v = 1.0 / (2.0 * equilibriumFrequencies[1]);
         createRateMatrix(equilibriumFrequencies,transitionFrequencies);
         createEquilibriumMatrix(equilibriumFrequencies);
     }
@@ -50,6 +54,10 @@ public class BiAllelicGTR implements RateModel {
         //Create the matrix Q, as described by WikiPedia's Substitution Model page.
         rateMatrix = new DenseMatrix(temporary);
     }
+
+    public double getU() { return _u; }
+
+    public double getV() { return _v; }
 
     @Override
     public DenseMatrix getEquilibriumVector(){

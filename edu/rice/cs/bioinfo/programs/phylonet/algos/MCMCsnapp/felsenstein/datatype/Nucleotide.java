@@ -43,7 +43,8 @@ public class Nucleotide extends DataType.Base {
         stateCount = 2;
         mapCodeToStateSet = x;
         codeLength = 1;
-        codeMap = "01";
+        //codeMap = "01";
+        codeMap = "012";
     }
 
     @Override

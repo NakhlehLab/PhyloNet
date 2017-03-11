@@ -368,16 +368,17 @@ public class Algorithms
             }
             double t = node.getParentDistance(parent);
 
-            int maxColumnSize = 0;
-            for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
-                maxColumnSize = Math.max(maxColumnSize, fBot.Item1.getArr().length);
-            }
-            matQ.setTime(t, maxColumnSize);
+//            int maxColumnSize = 0;
+//            for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
+//                maxColumnSize = Math.max(maxColumnSize, fBot.Item1.getArr().length);
+//            }
+//            matQ.setTime(t, maxColumnSize);
             for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
                 FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                 if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {
                     //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
-                    fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
+                    //fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
+                    fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
                 }
                 data.addFTop(parent, fTop, fBot.Item2);
             }
@@ -535,11 +536,69 @@ public class Algorithms
      */
     private static FMatrix getFBottomNormal(FMatrix fTop1, FMatrix fTop2)
     {
+        if(fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR()) {
+            return new FMatrix(0, true);
+        }
+
+        if(fTop1.hasEmptyR) {
+            double u2[] = fTop2.getArr().clone();
+            return new FMatrix(fTop2.mx, u2, false);
+        }
+
+        if(fTop2.hasEmptyR) {
+            double u1[] = fTop1.getArr().clone();
+            return new FMatrix(fTop1.mx, u1, false);
+        }
+
         FMatrix FBottom = new FMatrix(fTop1.mx + fTop2.mx, fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR());
-        for (int n = 1; n <= FBottom.mx; n++)
-        {
-            for (R r : R.loopOver(n))
-                FBottom.set(r, getFBottom(n, r, fTop1, fTop2));
+
+        if(R.dims == 1) {
+            //faster implementation
+            double u1[] = fTop1.getArr().clone();
+            double u2[] = fTop2.getArr().clone();
+            for(int n = 1 ; n <= fTop1.mx ; n++) {
+                double b = 1.0;
+                for(int i = 0 ; i <= n ; i++) {
+                    u1[n*(n+1)/2-1+i] *= b;
+                    b *= 1.0 * (n - i)/(i + 1);
+                }
+            }
+            for(int n = 1 ; n <= fTop2.mx ; n++) {
+                double b = 1.0;
+                for(int i = 0 ; i <= n ; i++) {
+                    u2[n*(n+1)/2-1+i] *= b;
+                    b *= 1.0 * (n - i)/(i+1);
+                }
+            }
+
+            double fb[] = FBottom.getArr();
+            for(int n1 = 1 ; n1 <= fTop1.mx ; n1++) {
+                for(int i = 0 ; i <= n1 ; i++ ) {
+                    double f11  =  u1[n1*(n1+1)/2-1+i];
+                    for(int n2 = 1 ; n2 <= fTop2.mx ; n2++) {
+                        for(int j = 0 ; j <= n2 ; j++)  {
+                            fb[(n1+n2)*(n1+n2+1)/2-1+(i+j)] += f11 * u2[n2*(n2+1)/2-1+j];
+                        }
+                    }
+                }
+            }
+
+            for(int n = 1 ; n <= FBottom.mx ; n++) {
+                double b = 1.0;
+                for(int i = 0 ; i <= n ; i++) {
+                    fb[n*(n+1)/2-1+i] = Math.max(0.0, fb[n*(n+1)/2-1+i] / b);
+                    b *= 1.0 * (n - i)/(i+1);
+                }
+            }
+
+
+        } else {
+
+            FBottom = new FMatrix(fTop1.mx + fTop2.mx, fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR());
+            for (int n = 1; n <= FBottom.mx; n++) {
+                for (R r : R.loopOver(n))
+                    FBottom.set(r, getFBottom(n, r, fTop1, fTop2));
+            }
         }
 
         return FBottom;

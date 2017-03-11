@@ -19,7 +19,7 @@ public class R {
      */
     //private final static int dims = 3;
     public static int dims = 1;
-    public static int maxLineages = 0;
+    public static int maxLineages = 0; //need to be set according to RPattern!
 
 
     /**

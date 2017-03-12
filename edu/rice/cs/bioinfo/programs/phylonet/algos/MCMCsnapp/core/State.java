@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.Ultrametric
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 

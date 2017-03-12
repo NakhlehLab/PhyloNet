@@ -80,6 +80,10 @@ public class FMatrix
         }
     }
 
+    public void setMatrix(double [] a) {
+        arr = a;
+    }
+
     public double[] getArr(){
         return arr;
     }

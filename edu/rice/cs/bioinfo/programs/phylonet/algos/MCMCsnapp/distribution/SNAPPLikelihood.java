@@ -172,15 +172,17 @@ public class SNAPPLikelihood {
         String netstring = net.toString();
 
         double sum = 0.0;
-
+        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        Network cloneNetwork = Networks.readNetwork(netstring);
+        cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
+        SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta);
+        //long start = System.currentTimeMillis();
         for(RPattern pattern : patterns.keySet()) {
             double count = patterns.get(pattern)[0];
             double correction = patterns.get(pattern)[1];
-            Network cloneNetwork = Networks.readNetwork(netstring);
-            cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
-            R.maxLineages = pattern.sumLineages();
-            SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta);
+
             double likelihood = 0;
+            //long start = System.currentTimeMillis();
             try {
                 likelihood = run.getProbability(pattern);
                 sum += Math.log(likelihood) * count + correction;
@@ -189,8 +191,10 @@ public class SNAPPLikelihood {
                 e.printStackTrace();
                 System.out.println("Exceptional network" + netstring);
             }
+            //double time1 = (System.currentTimeMillis()-start)/1000.0;
+            //System.out.println(time1);
         }
-
+        //System.out.println((System.currentTimeMillis()-start)/1000.0);
         return sum;
     }
 

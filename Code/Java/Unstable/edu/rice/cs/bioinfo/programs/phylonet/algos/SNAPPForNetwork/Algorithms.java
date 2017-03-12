@@ -18,6 +18,9 @@ import java.util.*;
 public class Algorithms
 {
     private static final boolean PRINT_DETAILS = false;
+    public static final boolean SWITCH_FASTER_BIALLILE = true;
+    public static final boolean SWITCH_EXP_APPROX = true;
+    public static final boolean SWITCH_APPROX_SPLIT = true;
 
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
@@ -368,17 +371,21 @@ public class Algorithms
             }
             double t = node.getParentDistance(parent);
 
-//            int maxColumnSize = 0;
-//            for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
-//                maxColumnSize = Math.max(maxColumnSize, fBot.Item1.getArr().length);
-//            }
-//            matQ.setTime(t, maxColumnSize);
+            if(!SWITCH_EXP_APPROX) {
+                int maxColumnSize = 0;
+                for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
+                    maxColumnSize = Math.max(maxColumnSize, fBot.Item1.getArr().length);
+                }
+                matQ.setTime(t, maxColumnSize);
+            }
             for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
                 FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                 if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {
                     //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
-                    //fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
-                    fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
+                    if(SWITCH_EXP_APPROX)
+                        fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
+                    else
+                        fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
                 }
                 data.addFTop(parent, fTop, fBot.Item2);
             }
@@ -552,7 +559,7 @@ public class Algorithms
 
         FMatrix FBottom = new FMatrix(fTop1.mx + fTop2.mx, fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR());
 
-        if(R.dims == 1) {
+        if(R.dims == 1 && SWITCH_FASTER_BIALLILE) {
             //faster implementation
             double u1[] = fTop1.getArr().clone();
             double u2[] = fTop2.getArr().clone();
@@ -699,7 +706,7 @@ public class Algorithms
                             }
                             int[] splittingIndex = tuple.Item2.clone();
                             splittingIndex[reticulationID] = index;
-                            //if(!fm.ifHasEmptyR() && fm.getSum() < 1e-5) continue;
+                            if(SWITCH_APPROX_SPLIT && !fm.ifHasEmptyR() && fm.getSum() < 1e-5) continue;
                             data.addFBottom(parents[i], fm, splittingIndex);
                         }
                         index++;
@@ -779,7 +786,10 @@ public class Algorithms
             weight *= ArithmeticUtils.binomialCoefficient(total, r.getNum(i));
             total = total - r.getNum(i);
         }*/
-        fBot.set(r , 1.0/weight);
+        if(R.dims == 1 && SWITCH_FASTER_BIALLILE)
+            fBot.getArr()[r.n*(r.n+1)/2-1+r.values[0]] = 1.0;
+        else
+            fBot.set(r , 1.0/weight);
     }
 
 

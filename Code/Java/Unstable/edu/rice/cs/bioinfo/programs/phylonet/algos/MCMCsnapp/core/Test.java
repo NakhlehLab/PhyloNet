@@ -1871,7 +1871,7 @@ public class Test {
 
         if(whichToRun.equals("firstdata_mono_firstrun")) {
             path = "../data_diploid";
-            Utils._NUM_THREADS = 2;
+            Utils._NUM_THREADS = 1;
             Utils._NET_MAX_RETI = 3;
             //Utils._NET_MAX_RETI = 2;
             //if(curPart >= 12)

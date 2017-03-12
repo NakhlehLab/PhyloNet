@@ -90,6 +90,11 @@ public class MC3 {
                     _logPrior = logPriorNext;
                     _logPost = logNext;
                     accept = true;
+//                    if(_state.getOperation().getName().contains("Add-Reticulation")) {
+//                        System.out.println("Add-Reticulation!");
+//                        System.out.println(_state.getNetwork());
+//                        System.out.println(_logLikelihood);
+//                    }
                     _state.accept(_logAlpha);
                 } else {
                     _state.undo(_logAlpha);

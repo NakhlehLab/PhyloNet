@@ -42,7 +42,7 @@ public class Test {
         //SimSNPInNetwork.testDiploid();
         //checkSNAPPSimulationResults();
         //testWithSNAPPSimulation(args);
-        testMCMC();
+        //testMCMC();
         //testMultiThread();
         //testBranchlength();
         //testSecondData(args);
@@ -50,7 +50,7 @@ public class Test {
         //testOurisiaData(args);
         //test012Data(args);
         //trim012Data(args);
-        //testWithDingqiaoNetwork(args);
+        testWithDingqiaoNetwork(args);
         //testWithDingqiaoNetwork_diploid(args);
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
@@ -203,10 +203,10 @@ public class Test {
         //trueNetwork = Networks.readNetwork("((d:2.6,((c:1.0,b:1.0)I4:1.5)I3#H1:0.1::0.7)I2:0.5,(a:2.6,I3#H1:0.1::0.30000000000000004)I1:0.5)I0;");
         //trueNetwork = Networks.readNetwork("((((b:1.0,c:1.0)I4:" + y + ")I3#H1:0.1::" + (1 - gamma) + ",a:" + (1.1 + y) + ")I1:" + x + ",(I3#H1:0.1::" + gamma + ",d:" + (1.1 + y) + ")I2:"+ x +")I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
-        //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
+        trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
 
-        double constTheta = 0.006;
+        double constTheta = 0.036;
         for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
             NetNode node = (NetNode) nodeObject;
             for(Object parentObject :  node.getParents()) {
@@ -286,7 +286,8 @@ public class Test {
 
         long startTime = System.currentTimeMillis();
 
-        MC3Core run = new MC3Core(alns, curBAGTRModel);
+        //Utils._START_NET = "[0.036]((C:0.01686540407742875,G:0.01686540407742875):0.07350960000344123,((R:1.340328062900917E-5)#H1:0.08382712523064921::0.7178892548959948,((((L:0.011713766752932408)#H2:9.514133432525565E-4::0.5179993702542565,A:0.012665180096184964):0.01992786320586724,(#H1:1.981341453095487E-4::0.28211074510400524,Q:2.1153742593855787E-4):0.032381505876113645):0.028981604257608262,#H2:0.049860880806728056::0.48200062974574354):0.02226588095161776):0.006534475569591747);";
+        MC3Core run = new MC3Core(alns, BAGTRModel);
         run.run();
 
 
@@ -1570,8 +1571,8 @@ public class Test {
         //String whichToRun = "seconddata_mono";
         //String whichToRun = "firstdata_mono_firstrun";
         //String whichToRun = "firstdata_mono_secondrun";
-        //String whichToRun = "firstdata_mono_thirdrun";
-        String whichToRun = "VLBL";
+        String whichToRun = "firstdata_mono_thirdrun";
+        //String whichToRun = "VLBL";
         int curPart = Integer.parseInt(args[0]);
 
         String path = "";
@@ -1626,7 +1627,7 @@ public class Test {
             networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
             networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
 
-        } if(whichToRun.equals("firstdata_mono_thirdrun")){
+        } else if(whichToRun.equals("firstdata_mono_thirdrun")){
             path = "/scratch/jz55/usePolyMono/data";
             Utils._NUM_THREADS = 4;
 
@@ -1641,7 +1642,7 @@ public class Test {
             SNAPPLikelihood.useOnlyPolymorphic = false;
             SNAPPLikelihood.ALGORITHM = 2;
 
-            //breakpoint = "/scratch/jz55/usePolyMono/run2/slurm-3454735_";
+            //breakpoint = "/scratch/jz55/usePolyMono/rerun/slurm-3495003_" + curPart + ".out";
 
             networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
             networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
@@ -1669,7 +1670,7 @@ public class Test {
             networks.put("net_0.4", "((((C:0.012,(B:0.008)I7#H1:0.004::0.2)I4:0.008,(I7#H1:0.008::0.8)I6#H2:0.004::0.2)I3:0.008,(I6#H2:0.008::0.8)I5#H3:0.004::0.2)I2:0.012,(I5#H3:0.008::0.8,A:0.032)I1:0.008)I0;");
             networks.put("net_1.0", "((((C:0.07,(B:0.06)I7#H1:0.01::0.2)I4:0.02,(I7#H1:0.02::0.8)I6#H2:0.01::0.2)I3:0.02,(I6#H2:0.02::0.8)I5#H3:0.01::0.2)I2:0.07,(I5#H3:0.06::0.8,A:0.16)I1:0.02)I0;");
 
-        } if(whichToRun.equals("VLBL")){
+        } else if(whichToRun.equals("VLBL")){
             path = "/scratch/jz55/usePolyMono/data_VLBL";
             Utils._NUM_THREADS = 4;
 
@@ -1747,7 +1748,7 @@ public class Test {
             for(Object parentObject :  node.getParents()) {
                 NetNode parent = (NetNode) parentObject;
                 node.setParentSupport(parent, constTheta);
-                //node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
+                node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
             }
         }
         trueNetwork.getRoot().setRootPopSize(constTheta);
@@ -1760,12 +1761,12 @@ public class Test {
             }
         }
 
-        if(breakpoint != null) {
-            breakpoint = breakpoint + curPart + ".out";
-            System.out.println("Breakpoint: " + breakpoint);
-            Utils._START_NET = getBestNetwork(breakpoint);
-            System.out.println("Start network: " + Utils._START_NET);
-        }
+//        if(breakpoint != null) {
+//            breakpoint = breakpoint + curPart + ".out";
+//            System.out.println("Breakpoint: " + breakpoint);
+//            Utils._START_NET = getBestNetwork(breakpoint);
+//            System.out.println("Start network: " + Utils._START_NET);
+//        }
 
         long startTime = System.currentTimeMillis();
 
@@ -1847,11 +1848,11 @@ public class Test {
         System.out.println("True Network: " + trueNetwork.toString());
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
+        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodMTCP(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
 
         //Utils._START_NET = "[0.036]" + trueNetwork.toString();
 
-        MC3Core run = new MC3Core(alns, BAGTRModel);
+        MC3Core run = new MC3Core(alns, BAGTRModel, breakpoint);
         run.run();
 
         System.out.println(String.format("Total elapsed time : %2.5f s\n",
@@ -1871,11 +1872,11 @@ public class Test {
 
         if(whichToRun.equals("firstdata_mono_firstrun")) {
             path = "../data_diploid";
-            Utils._NUM_THREADS = 1;
-            Utils._NET_MAX_RETI = 3;
-            //Utils._NET_MAX_RETI = 2;
-            //if(curPart >= 12)
-                //Utils._NET_MAX_RETI = 3;
+            Utils._NUM_THREADS = 8;
+            //Utils._NET_MAX_RETI = 3;
+            Utils._NET_MAX_RETI = 2;
+            if(curPart >= 12)
+                Utils._NET_MAX_RETI = 3;
 
             Utils._CHAIN_LEN = 500000;
             Utils._BURNIN_LEN = 300000;
@@ -1894,6 +1895,8 @@ public class Test {
             networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
             networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
             networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+            //Utils._START_NET = "[0.036]((((R:0.06600749785133136,Q:0.06600749785133136)I3:0.0028664761527561616,(G:0.049992824509466384,A:0.049992824509466384)I4:0.018881149494621143)I2:0.040273634130363264)I1#H1:0.04008378256601308::0.023797585353788404,(I1#H1:0.026304049424634296::0.9762024146462116,(C:0.11924591298549124,L:0.11924591298549124)I6:0.016205744573593847)I5:0.013779733141378786)I0;";
+            //Utils._START_NET = "[0.036]((R:0.08367282846113054,(C:0.07593758112857354,(L:0.052916500367923024,(Q:0.041158950188336915,(A:0.03678567236241674,(G:0.008379958816273495)#H1:0.028405713546143248::0.8479778381532519):0.004373277825920174):0.011757550179586108):0.02302108076065052):0.0077352473325569965):0.0027417131425719055,#H1:0.07803458278742895::0.1520221618467481);";
         }
         else if(whichToRun.equals("firstdata_mono_secondrun")){
             path = "/scratch/jz55/usePolyMono/data";

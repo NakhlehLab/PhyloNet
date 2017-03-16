@@ -1,5 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +22,7 @@ public class RPattern {
     public int hashCode() {
         int ret = 0;
         for(String species : pattern.keySet())
-            ret += pattern.get(species).hashCode();
+            ret += species.hashCode() * pattern.get(species).hashCode();
         return ret;
     }
 
@@ -58,5 +60,23 @@ public class RPattern {
             sum += pattern.get(species).n;
         }
         return sum;
+    }
+
+    public int diff(RPattern p2) {
+        int count = 0;
+        for(String species : pattern.keySet()) {
+            if(!p2.getR(species).equals(pattern.get(species)))
+                count++;
+        }
+        return count;
+    }
+
+    public List<String> leaves2update(RPattern p2) {
+        List<String> ret = new ArrayList<>();
+        for(String species : pattern.keySet()) {
+            if(!p2.getR(species).equals(pattern.get(species)))
+                ret.add(species);
+        }
+        return ret;
     }
 }

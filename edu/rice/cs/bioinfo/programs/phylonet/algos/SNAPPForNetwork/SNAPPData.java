@@ -90,6 +90,20 @@ public class SNAPPData {
         fBotList.add(matrixTuple);
     }
 
+    public void pruneFBottom() {
+        for(NetNode node : FBottomsMap.keySet()) {
+            Collections.sort(FBottomsMap.get(node), new Comparator<Tuple<FMatrix, int[]>>(){
+                public int compare(Tuple<FMatrix, int[]> p1, Tuple<FMatrix, int[]> p2){
+                    return -Double.compare(p1.Item1.getSum(), p2.Item1.getSum());
+                }
+            });
+            for(int i = FBottomsMap.get(node).size() - 1 ; i >= 100 ; i--)
+                if(FBottomsMap.get(node).get(i).Item1.getSum() < 5e-3)
+                    FBottomsMap.get(node).remove(i);
+            //FBottomsMap.put(node, FBottomsMap.get(node).subList(0, Math.min(100, FBottomsMap.get(node).size())));
+        }
+    }
+
     public void addFTop(NetNode parent, FMatrix fTop, int[] splittingIndex){
         Tuple<FMatrix, int[]> matrixTuple = new Tuple<FMatrix, int[]>(fTop, splittingIndex);
         List<Tuple<FMatrix, int[]>> fTopList = FTopsMap.get(parent);
@@ -132,7 +146,7 @@ public class SNAPPData {
             }
         }
         int[] splittingIndex = new int[splittingIndexDimension];
-        FMatrix fBot = new FMatrix(maxMX, arr, false);
+        FMatrix fBot = new FMatrix(maxMX, arr, maxMX == 0);
         FBottomsMap.clear();
         addFBottom(parent, fBot, splittingIndex);
     }

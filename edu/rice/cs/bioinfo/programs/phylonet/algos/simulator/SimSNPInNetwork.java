@@ -2,8 +2,11 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.QParameters;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -150,10 +153,10 @@ public class SimSNPInNetwork {
             }
         }
         trueNetwork.getRoot().setRootPopSize(constTheta);
-//        trueNetwork = Networks.readNetwork("((C:0.09604283044864592:0.036,G:0.09604283044864592:0.036)II1:0.08821096143809048:0.036,(R:0.16796441222747166:0.036,(L:0.13918714276096708:0.036,(A:0.10079837440250675:0.036,Q:0.10079837440250675:0.036)II4:0.038388768358460335:0.036)II3:0.02877726946650458:0.036)II2:0.016289379659264747:0.036)II0;");
-//        trueNetwork.getRoot().setRootPopSize(0.036);
-//        trueNetwork = Networks.readNetwork("(((G:0.03271098551352612,(C:0.014581262376039935,(A:0.007848436317467452)#H2:0.006732826058572483::0.20092242303662247):0.01812972313748619):6.589767080962955E-4)#H1:0.056974310762192545::0.973670280875714,(((Q:0.01575520654534508)#H3:0.008437888036381732::0.29205403332422386,R:0.02419309458172681):0.04760724352481251,(#H1:0.012622246801820981::0.026329719124286055,((#H3:1.8671708033869347E-4::0.7079459666757761,#H2:0.00809348730821632::0.7990775769633776):0.01963878547064636,L:0.03558070909633013):0.010411499927113266):0.025808129083095925):0.01854393487727564);");
-//        trueNetwork.getRoot().setRootPopSize(0.036);
+        //trueNetwork = Networks.readNetwork("((C:0.09604283044864592:0.036,G:0.09604283044864592:0.036)II1:0.08821096143809048:0.036,(R:0.16796441222747166:0.036,(L:0.13918714276096708:0.036,(A:0.10079837440250675:0.036,Q:0.10079837440250675:0.036)II4:0.038388768358460335:0.036)II3:0.02877726946650458:0.036)II2:0.016289379659264747:0.036)II0;");
+        //trueNetwork.getRoot().setRootPopSize(0.036);
+        trueNetwork = Networks.readNetwork("(((G:0.03271098551352612,(C:0.014581262376039935,(A:0.007848436317467452)#H2:0.006732826058572483::0.20092242303662247):0.01812972313748619):6.589767080962955E-4)#H1:0.056974310762192545::0.973670280875714,(((Q:0.01575520654534508)#H3:0.008437888036381732::0.29205403332422386,R:0.02419309458172681):0.04760724352481251,(#H1:0.012622246801820981::0.026329719124286055,((#H3:1.8671708033869347E-4::0.7079459666757761,#H2:0.00809348730821632::0.7990775769633776):0.01963878547064636,L:0.03558070909633013):0.010411499927113266):0.025808129083095925):0.01854393487727564);");
+        trueNetwork.getRoot().setRootPopSize(0.036);
 
         int nameCount = 0;
         for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
@@ -180,6 +183,7 @@ public class SimSNPInNetwork {
         aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alns);
 
         int count = 0;
+        double sum = 0.0;
 
         for(RPattern pattern : aln._RPatterns.keySet()) {
             //if(count > 10) break;
@@ -191,13 +195,15 @@ public class SimSNPInNetwork {
             try {
                 long start = System.currentTimeMillis();
                 likelihood = run.getProbability(pattern);
-                System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
+                sum += likelihood;
+                //System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
             } catch(Exception e) {
                 e.printStackTrace();
                 System.out.println("Exceptional network");
             }
         }
+        System.out.println("Sum " + sum);
 
         return;
     }
@@ -219,10 +225,10 @@ public class SimSNPInNetwork {
         Network<Object> trueNetwork;
         trueNetwork = Networks.readNetwork("((((b:1.0,c:1.0)I4:" + y + ")I3#H1:0.1::" + (1 - gamma) + ",a:" + (1.1 + y) + ")I1:" + x + ",(I3#H1:0.1::" + gamma + ",d:" + (1.1 + y) + ")I2:"+ x +")I0;");
         //trueNetwork = Networks.readNetwork("(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
-        //trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+        trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
-        trueNetwork = Networks.readNetwork("((R:1.0)I10#H1:4.0::0.6,(((Q:2.0,A:2.0)I4:1.0,(L:2.0,I10#H1:1.0::0.4)I9:1.0)I3:1.0,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+        //trueNetwork = Networks.readNetwork("((R:1.0)I10#H1:4.0::0.6,(((Q:2.0,A:2.0)I4:1.0,(L:2.0,I10#H1:1.0::0.4)I9:1.0)I3:1.0,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
 
         System.out.println(trueNetwork.toString());
 
@@ -264,8 +270,10 @@ public class SimSNPInNetwork {
         //trueNetwork.getRoot().setRootPopSize(0.03776047660800021);
         //trueNetwork = Networks.readNetwork("((C:0.09604283044864592:0.036,G:0.09604283044864592:0.036)II1:0.08821096143809048:0.036,(R:0.16796441222747166:0.036,(L:0.13918714276096708:0.036,(A:0.10079837440250675:0.036,Q:0.10079837440250675:0.036)II4:0.038388768358460335:0.036)II3:0.02877726946650458:0.036)II2:0.016289379659264747:0.036)II0;");
         //trueNetwork.getRoot().setRootPopSize(0.036);
-        trueNetwork = Networks.readNetwork("((R:0.01)#H1:0.7::0.3,(L:0.13,((A:0.05,((C:0.01,G:0.01):0.01,#H1:0.01::0.7):0.03):0.01,Q:0.06):0.07):0.71);");
-        trueNetwork.getRoot().setRootPopSize(0.01);
+
+        // unidable branch length
+        //trueNetwork = Networks.readNetwork("((R:0.01)#H1:0.7::0.3,(L:0.13,((A:0.05,((C:0.01,G:0.01):0.01,#H1:0.01::0.7):0.03):0.01,Q:0.06):0.07):0.71);");
+        //trueNetwork.getRoot().setRootPopSize(0.01);
         //trueNetwork = Networks.readNetwork("((R:0.01)#H1:1.7::0.3,(L:0.13,((A:0.05,((C:0.01,G:0.01):0.01,#H1:0.01::0.7):0.03):0.01,Q:0.06):0.07):1.71);");
         //trueNetwork.getRoot().setRootPopSize(0.01);
 
@@ -297,7 +305,8 @@ public class SimSNPInNetwork {
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
 
         int count = 0;
-
+        double sum = 0.0;
+        R.maxLineages = aln._RPatterns.keySet().iterator().next().sumLineages();
         for(RPattern pattern : aln._RPatterns.keySet()) {
             //if(count > 10) break;
             count++;
@@ -308,6 +317,7 @@ public class SimSNPInNetwork {
             try {
                 long start = System.currentTimeMillis();
                 likelihood = run.getProbability(pattern);
+                sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
             } catch(Exception e) {
@@ -315,6 +325,7 @@ public class SimSNPInNetwork {
                 System.out.println("Exceptional network");
             }
         }
+        System.out.println("Sum " + sum);
 
 //        List<Map<String, String>> snpdata = new ArrayList<>();
 //        snpdata.add(onesnp);

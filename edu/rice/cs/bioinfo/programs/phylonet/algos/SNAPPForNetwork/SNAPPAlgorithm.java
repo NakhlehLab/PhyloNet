@@ -49,6 +49,19 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         new SNAPPAlgorithm(theSpeciesNetwork, alleleMapping, rModel, 0.02);
     }
 
+    public SNAPPAlgorithm(Network theSpeciesNetwork, QParameters q){
+
+        speciesNetwork = theSpeciesNetwork;
+        if(speciesNetwork.getRoot().getData()==null) {
+            Networks.removeBinaryNodes(speciesNetwork);
+            for (Object node : Networks.postTraversal(speciesNetwork)) {
+                ((NetNode<SNAPPData[]>) node).setData(new SNAPPData[1]);
+            }
+        }
+        allele2species = null;
+        Q = q;
+    }
+
     public SNAPPAlgorithm(Network theSpeciesNetwork, Map<String, String> alleleMapping, RateModel rModel, Double theta){
         speciesNetwork = theSpeciesNetwork;
         if(speciesNetwork.getRoot().getData()==null) {
@@ -65,7 +78,9 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         }
     }
 
+    public void initialize() {
 
+    }
     /*
     public SNAPPAlgorithm(Network theSpeciesNetwork, Map<String, String> alleleMapping, RateModel rModel, double theta){
         allele2species = alleleMapping;
@@ -95,7 +110,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     }
 
     public double getProbability(RPattern pattern, int siteID) {
-        Q._M = pattern.sumLineages();
+        //Q._M = pattern.sumLineages();
         double resultVal= Algorithms.getProbabilityObservationGivenNetwork(speciesNetwork, pattern, Q, siteID);
 
         if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
@@ -108,6 +123,15 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     public double updateProbability(int siteID, NucleotideObservation obs, Map<String, String> allele2species, Map<NetNode,Boolean> node2update) {
 
         double resultVal= Algorithms.updateProbabilityObservationGivenNetwork(speciesNetwork, Q, siteID, obs, allele2species, node2update);
+
+        if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
+            throw new RuntimeException("Result is not finite");
+        return resultVal;
+    }
+
+    public double updateProbability(int siteID, RPattern pattern, Map<String, String> allele2species, Map<NetNode,Boolean> node2update) {
+
+        double resultVal= Algorithms.updateProbabilityObservationGivenNetwork(speciesNetwork, Q, siteID, pattern, allele2species, node2update);
 
         if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
             throw new RuntimeException("Result is not finite");

@@ -18,12 +18,17 @@ import java.util.*;
 public class Algorithms
 {
     private static final boolean PRINT_DETAILS = false;
+    public static final boolean CORRECTION_AT_LEAVES = false;
     public static final boolean SWITCH_FASTER_BIALLILE = true;
     public static final boolean SWITCH_EXP_APPROX = true;
     public static final boolean SWITCH_APPROX_SPLIT = true;
 
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
+        for(int i=0; i<index1.length; i++) {
+            if(index1[i] != index2[i] && index1[i] != 0 && index2[i] != 0)
+                return null;
+        }
         int[] newIndex = new int[index1.length];
         for(int i=0; i<index1.length; i++){
             if(index1[i] == index2[i]){
@@ -187,7 +192,7 @@ public class Algorithms
             */
 
             boolean isArticulation = articulationNodes.contains(node.getName());
-            updateNode(speciesNetwork, Q, node, isArticulation, reticulationID, siteID, nucleotideIndexMap, node2update.get(node));
+            updateNode(speciesNetwork, Q, node, isArticulation, numReticulations, reticulationID, siteID, nucleotideIndexMap, node2update.get(node));
 
 
             if(node.isNetworkNode()){
@@ -217,7 +222,7 @@ public class Algorithms
             */
 
             boolean isArticulation = articulationNodes.contains(node.getName());
-            updateNode(speciesNetwork, Q, node, isArticulation, reticulationID, siteID, nucleotideIndexMap, node2update.get(node));
+            updateNode(speciesNetwork, Q, node, isArticulation, numReticulations, reticulationID, siteID, nucleotideIndexMap, node2update.get(node));
 
 
             if(node.isNetworkNode()){
@@ -257,6 +262,8 @@ public class Algorithms
                 sum += rootFBot.get(r) * eq.get(r.getIndex(), 0);
             }
         }
+        if(sum == 0.0)
+            sum = 1e-6;
         return sum;
     }
 
@@ -282,7 +289,7 @@ public class Algorithms
         {
             processInternalTreeNode(node, data, isArticulation, siteID);
         } else if(node.isNetworkNode()){
-            processNetworkNode(node, data, reticulationID, siteID);
+            processNetworkNode(node, data, numReticulations, reticulationID, siteID);
         }
         if(PRINT_DETAILS){
             System.out.println("FBottoms:");
@@ -303,7 +310,7 @@ public class Algorithms
      * @param Q                  The transition matrix for SNAPP.
      * @param node               The node to process.
      */
-    private static void updateNode(Network<SNAPPData[]> speciesNetwork, QParameters Q, NetNode<SNAPPData[]> node, boolean isArticulation, int reticulationID, int siteID, Map<String, R> nucleotideIndexMap, Boolean constructFBottom)
+    private static void updateNode(Network<SNAPPData[]> speciesNetwork, QParameters Q, NetNode<SNAPPData[]> node, boolean isArticulation, int numReticulation, int reticulationID, int siteID, Map<String, R> nucleotideIndexMap, Boolean constructFBottom)
     {
         if(PRINT_DETAILS){
             System.out.println("\nNode " + node.getName());
@@ -324,20 +331,21 @@ public class Algorithms
 
         if(constructFBottom) {
             data.cleanFBottom();
-            if(node.isLeaf()) {
-                processLeaf(nucleotideIndexMap, node, data, speciesNetwork.getReticulationCount());
+            if (node.isLeaf()) {
+                processLeaf(nucleotideIndexMap, node, data, numReticulation);
             } else if (node.isTreeNode()) {
                 processInternalTreeNode(node, data, isArticulation, siteID);
             } else if (node.isNetworkNode()) {
-                processNetworkNode(node, data, reticulationID, siteID);
+                processNetworkNode(node, data, numReticulation, reticulationID, siteID);
             }
             if (PRINT_DETAILS) {
                 System.out.println("FBottoms:");
                 data.printFMatrixs("b");
             }
+
+            data.cleanFTop();
+            processTopBranchOfNode(Q, node, data);
         }
-        data.cleanFTop();
-        processTopBranchOfNode(Q, node, data);
         if(PRINT_DETAILS){
             System.out.println("FTop:");
             data.printFMatrixs("t");
@@ -378,16 +386,20 @@ public class Algorithms
                 }
                 matQ.setTime(t, maxColumnSize);
             }
-            for(Tuple<FMatrix,int[]> fBot: data.getFBottoms(parent)) {
-                FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
-                if(fTop.mx!=0 && !fBot.Item1.isArrAllZero()) {
-                    //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
-                    if(SWITCH_EXP_APPROX)
-                        fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
-                    else
-                        fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
+            if(data.getFBottoms(parent).isEmpty()) {
+
+            } else {
+                for (Tuple<FMatrix, int[]> fBot : data.getFBottoms(parent)) {
+                    FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
+                    if (fTop.mx != 0 && !fBot.Item1.isArrAllZero()) {
+                        //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
+                        if (SWITCH_EXP_APPROX)
+                            fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
+                        else
+                            fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
+                    }
+                    data.addFTop(parent, fTop, fBot.Item2);
                 }
-                data.addFTop(parent, fTop, fBot.Item2);
             }
         }
     }
@@ -415,14 +427,16 @@ public class Algorithms
         }
 
         //System.out.println(childData1.getFTops(node).size() + " " + childData2.getFTops(node).size());
-
-        if(childData1.getFTops(node).size() < 1000 || childData2.getFTops(node).size() < 1000) {
+        boolean added = false;
+        if(childData1.getFTops(node).size() < 100 || childData2.getFTops(node).size() < 100) {
         //if(true){
+
             for (Tuple<FMatrix, int[]> fTop1 : childData1.getFTops(node)) {
                 for (Tuple<FMatrix, int[]> fTop2 : childData2.getFTops(node)) {
                     int[] newIndex = mergeTwoSplittingIndices(fTop1.Item2, fTop2.Item2);
                     if (newIndex != null) {
                         data.addFBottom(parent, getFBottomNormal(fTop1.Item1, fTop2.Item1), newIndex);
+                        added = true;
                     }
                 }
             }
@@ -519,10 +533,25 @@ public class Algorithms
                         int[] newIndex = mergeTwoSplittingIndices(fTop1.Item2, fTop2.Item2);
                         if (newIndex != null) {
                             data.addFBottom(parent, getFBottomNormal(fTop1.Item1, fTop2.Item1), newIndex);
+                            added = true;
                         }
                     }
                 }
             }
+        }
+        if(!added) {
+            int splittingIndexDimension = -1;
+            FMatrix tmp = new FMatrix(data.maxMX, false);
+            for (Tuple<FMatrix, int[]> fTop1 : childData1.getFTops(node)) {
+                splittingIndexDimension = fTop1.Item2.length;
+                break;
+            }
+            for (Tuple<FMatrix, int[]> fTop2 : childData2.getFTops(node)) {
+                splittingIndexDimension = fTop2.Item2.length;
+                break;
+            }
+            int newIndex[] = new int[splittingIndexDimension];
+            data.addFBottom(parent, new FMatrix(0, true), newIndex);
         }
         if(isArticulation){
             if(PRINT_DETAILS){
@@ -654,12 +683,13 @@ public class Algorithms
      * @param node The node to process.
      * @param data The data for that node.
      */
-    private static void processNetworkNode(NetNode<SNAPPData[]> node, SNAPPData data, int reticulationID, int siteID)
+    private static void processNetworkNode(NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations, int reticulationID, int siteID)
     {
         if (node.getChildCount() != 1)
             throw new RuntimeException("SNAPP does not work on networks with reticulation node with 2 or more children per node");
 
-
+        int added[] = new int[]{0, 0};
+        int splittingIndexDimension = -1;
         double[] inheritanceProbs = new double[2];
         NetNode[] parents = new NetNode[2];
         int index = 0;
@@ -672,6 +702,8 @@ public class Algorithms
         for(Tuple<FMatrix,int[]> tuple: node.getChildren().iterator().next().getData()[siteID].getFTops(node)){
             index = 1;
             FMatrix fTop = tuple.Item1;
+            if(splittingIndexDimension == -1)
+                splittingIndexDimension = tuple.Item2.length;
             if(fTop.mx == 0) {
                 int[] splittingIndex = tuple.Item2.clone();
                 //splittingIndex[reticulationID] = index++;
@@ -706,7 +738,21 @@ public class Algorithms
                             }
                             int[] splittingIndex = tuple.Item2.clone();
                             splittingIndex[reticulationID] = index;
-                            if(SWITCH_APPROX_SPLIT && !fm.ifHasEmptyR() && fm.getSum() < 1e-5) continue;
+                            if(SWITCH_APPROX_SPLIT) {
+                                double threshold = 1e-10;
+                                if(numReticulations == 1)
+                                    threshold = 1e-5;
+                                else if(numReticulations == 2)
+                                    threshold = 5e-3;
+                                else if(numReticulations > 2)
+                                    threshold = 1e-3;
+
+                                if (!fm.ifHasEmptyR() && fm.getSum() < threshold && added[i] > 0) {
+                                    i = 2;
+                                    continue;
+                                }
+                            }
+                            added[i]++;
                             data.addFBottom(parents[i], fm, splittingIndex);
                         }
                         index++;
@@ -715,6 +761,8 @@ public class Algorithms
                 }
             }
         }
+
+        //data.pruneFBottom();
     }
 
 
@@ -782,12 +830,14 @@ public class Algorithms
         FMatrix fBot = data.addFBottom(parent, r.n, false, splittingIndex);
         int weight = 1;
         int total = r.n;
-        /*for(int i = 0; i<(R.dims + 1); i++){
-            weight *= ArithmeticUtils.binomialCoefficient(total, r.getNum(i));
-            total = total - r.getNum(i);
-        }*/
+        if(CORRECTION_AT_LEAVES) {
+            for(int i = 0; i<(R.dims + 1); i++){
+                weight *= ArithmeticUtils.binomialCoefficient(total, r.getNum(i));
+                total = total - r.getNum(i);
+            }
+        }
         if(R.dims == 1 && SWITCH_FASTER_BIALLILE)
-            fBot.getArr()[r.n*(r.n+1)/2-1+r.values[0]] = 1.0;
+            fBot.getArr()[r.n*(r.n+1)/2-1+r.values[0]] = 1.0 / weight;
         else
             fBot.set(r , 1.0/weight);
     }

@@ -10,10 +10,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.RateModel;
  * To change this template use File | Settings | File Templates.
  */
 public class QParameters {
-    public RateModel _rModel;
-    public Integer _M;
-    public Double _gTheta;
-    public MatrixQ _gMatrix;
+    public final RateModel _rModel;
+    public final Integer _M;
+    public final Double _gTheta;
+    public final MatrixQ _gMatrix;
 
     public QParameters(RateModel rModel, Integer M) {
         _rModel = rModel;
@@ -28,6 +28,8 @@ public class QParameters {
         _gTheta = theta;
         if(theta != null)
             _gMatrix = new MatrixQ(rModel, M, theta);
+        else
+            _gMatrix = null;
     }
 
 }

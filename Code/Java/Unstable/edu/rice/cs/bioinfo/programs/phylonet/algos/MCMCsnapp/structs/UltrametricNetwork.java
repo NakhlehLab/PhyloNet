@@ -80,6 +80,7 @@ public class UltrametricNetwork extends StateNode {
         if(!init) {
             if(s.startsWith("[")) {
                 popSize = Double.parseDouble(s.substring(1, s.indexOf("]")));
+                Utils._POP_SIZE_MEAN = popSize;
                 s = s.substring(s.indexOf("]") + 1);
             }
             this._network = Networks.readNetwork(s); // adopt topology only
@@ -306,7 +307,7 @@ public class UltrametricNetwork extends StateNode {
         if(Utils._NUM_THREADS == 1)
             likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihoodST(_network, _alignments.get(0)._RPatterns, _BAGTRModel);
         else
-            likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihoodMT(_network, _alignments.get(0)._RPatterns, _BAGTRModel);
+            likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihoodMTCP(_network, _alignments.get(0)._RPatterns, _BAGTRModel);
         return likelihoodArray;
     }
 

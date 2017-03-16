@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.QParameters;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
@@ -222,15 +223,19 @@ public class SNAPPLikelihood {
         double sum = 0.0;
         DoubleAdder adder = new DoubleAdder();
 
+        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
+
         for(RPattern pattern : patterns.keySet()) {
             executor.execute(new Runnable() {
                 public void run() {
                     double count = patterns.get(pattern)[0];
                     double correction = patterns.get(pattern)[1];
+
                     Network cloneNetwork = Networks.readNetwork(netstring);
                     cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
-                    R.maxLineages = pattern.sumLineages();
-                    SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta);
+                    SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, Q);
+
                     double likelihood = 0;
                     try {
                         likelihood = run.getProbability(pattern);
@@ -249,6 +254,176 @@ public class SNAPPLikelihood {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        sum = adder.sumThenReset();
+        return sum;
+    }
+
+    private static class PatternPool {
+        Set<RPattern> _pool;
+        List<Map<RPattern, Set<RPattern>>> _conn;
+        Map<RPattern, double[]> _patterns;
+        int _size;
+
+
+        PatternPool(Map<RPattern, double[]> patterns) {
+            _patterns = patterns;
+            _size = patterns.keySet().iterator().next().getPattern().size();
+            _pool = new HashSet<>();
+            for(RPattern pattern : patterns.keySet()) {
+                _pool.add(pattern);
+            }
+            _conn = new ArrayList<>();
+            for(int i = 0 ; i < _size ; i++) {
+                _conn.add(new HashMap<>());
+            }
+            for(RPattern p1 : _pool) {
+                for(RPattern p2 : _pool) {
+                    if(p1 == p2) continue;
+                    int index = p1.diff(p2) - 1;
+                    if(index < 0 || index >= _size)
+                        System.out.println("patterns incorrect");
+                    if(!_conn.get(index).containsKey(p1))
+                        _conn.get(index).put(p1, new HashSet<>());
+                    _conn.get(index).get(p1).add(p2);
+                }
+            }
+        }
+
+        synchronized Tuple<RPattern, double[]> pull(RPattern lastPattern) {
+            for(int i = 0 ; i < _size ; i++) {
+                if(_conn.get(i).containsKey(lastPattern)) {
+                    if(_conn.get(i).get(lastPattern).size() > 0) {
+                        RPattern ret = null;
+                        for(RPattern pattern : _conn.get(i).get(lastPattern)) {
+                            if(_pool.contains(pattern)) {
+                                ret = pattern;
+                                break;
+                            }
+                        }
+
+                        if(ret == null) continue;
+                        _conn.get(i).get(lastPattern).remove(ret);
+                        _pool.remove(ret);
+                        return new Tuple<>(ret, _patterns.get(ret));
+                    }
+                }
+            }
+            return null;
+        }
+
+        synchronized Tuple<RPattern, double[]> pull() {
+            if(_pool.size() == 0)
+                return null;
+            RPattern ret = _pool.iterator().next();
+            _pool.remove(ret);
+            return new Tuple<>(ret, _patterns.get(ret));
+        }
+
+        double[] getParameter(RPattern pattern) {
+            return _patterns.get(pattern);
+        }
+    }
+
+    private static class MyThreadForCached extends Thread{
+        Network cloneNetwork;
+        SNAPPAlgorithm run;
+        PatternPool pool;
+        DoubleAdder adder;
+
+        public MyThreadForCached(QParameters Q, PatternPool p, DoubleAdder a, String netstring, double rootPopSize){
+            cloneNetwork = Networks.readNetwork(netstring);
+            cloneNetwork.getRoot().setRootPopSize(rootPopSize);
+            pool = p;
+            adder = a;
+            run = new SNAPPAlgorithm(cloneNetwork, Q);
+        }
+
+        public void run() {
+            double likelihood = 0;
+            Tuple<RPattern, double[]> firstToGo = pool.pull();
+            if(firstToGo == null)
+                return;
+
+            try {
+                likelihood = run.getProbability(firstToGo.Item1);
+                double count = firstToGo.Item2[0];
+                double correction = firstToGo.Item2[1];
+                adder.add(Math.log(likelihood) * count + correction);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Exceptional network" + cloneNetwork.toString());
+            }
+
+            Map<NetNode,Boolean> node2update = new HashMap<>();
+            RPattern lastPattern = firstToGo.Item1;
+            Tuple<RPattern, double[]> nextToGo = pool.pull(lastPattern);
+            while(nextToGo != null) {
+                RPattern pattern = nextToGo.Item1;
+                Set<NetNode> nodes = new HashSet<>();
+                for(String name : pattern.leaves2update(lastPattern)) {
+                    nodes.add(cloneNetwork.findNode(name));
+                }
+
+                node2update.clear();
+                while(!nodes.isEmpty()) {
+                    NetNode node = nodes.iterator().next();
+                    node2update.put(node, true);
+                    nodes.remove(node);
+                    for(Object parentObject : node.getParents()) {
+                        NetNode parent = (NetNode) parentObject;
+                        nodes.add(parent);
+                    }
+                }
+
+                likelihood = run.updateProbability(0, pattern, null, node2update);
+                double count = nextToGo.Item2[0];
+                double correction = nextToGo.Item2[1];
+                adder.add(Math.log(likelihood) * count + correction);
+
+                lastPattern = pattern;
+                nextToGo = pool.pull(lastPattern);
+            }
+        }
+    }
+
+    static public double computeSNAPPLikelihoodMTCP(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
+        int nameCount = 0;
+        Network net = Networks.readNetwork(network.toString());
+        for(Object node : net.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("II" + nameCount);
+                nameCount++;
+            }
+        }
+
+        if(!Utils._ESTIMATE_POP_SIZE) {
+            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+        }
+
+        final Double theta = Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize(): null;
+
+        String netstring = net.toString();
+
+        double sum = 0.0;
+        DoubleAdder adder = new DoubleAdder();
+
+        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
+        PatternPool pool = new PatternPool(patterns);
+
+        MyThreadForCached threads[] = new MyThreadForCached[Utils._NUM_THREADS];
+        for(int i = 0 ; i < threads.length; i++) {
+            threads[i] = new MyThreadForCached(Q, pool, adder, netstring, network.getRoot().getRootPopSize());
+            threads[i].start();
+        }
+
+        for(int i = 0 ; i < threads.length; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException ignore) {}
+        }
+
         sum = adder.sumThenReset();
         return sum;
     }

@@ -24,13 +24,18 @@ import java.util.Map;
  */
 public abstract class DimensionChange extends NetworkOperator {
 
+    protected double _time_scale;
+    protected double _popSize_scale;
+
     public DimensionChange(UltrametricNetwork net) {
         super(net);
+        _time_scale = net.getNetwork().getRoot().getRootPopSize();
+        _popSize_scale = 1.0;
     }
 
     protected double removeReticulation(NetNode<NetNodeInfo> v1, NetNode<NetNodeInfo> v2,
-                                      NetNode<NetNodeInfo> v3, NetNode<NetNodeInfo> v4,
-                                      NetNode<NetNodeInfo> v5, NetNode<NetNodeInfo> v6) {
+                                        NetNode<NetNodeInfo> v3, NetNode<NetNodeInfo> v4,
+                                        NetNode<NetNodeInfo> v5, NetNode<NetNodeInfo> v6) {
 
         double[] paramV1V4 = getParameters(v1, v4);
         double[] paramV2V6 = getParameters(v2, v6);
@@ -53,9 +58,9 @@ public abstract class DimensionChange extends NetworkOperator {
     }
 
     protected double addReticulation(NetNode<NetNodeInfo> v1, NetNode<NetNodeInfo> v2,
-                    NetNode<NetNodeInfo> v3, NetNode<NetNodeInfo> v4,
-                    NetNode<NetNodeInfo> v5, NetNode<NetNodeInfo> v6,
-                    double gamma) {
+                                     NetNode<NetNodeInfo> v3, NetNode<NetNodeInfo> v4,
+                                     NetNode<NetNodeInfo> v5, NetNode<NetNodeInfo> v6,
+                                     double gamma) {
 
         double[] paramV3V4 = getParameters(v3, v4);
         double[] paramV5V6 = getParameters(v5, v6);
@@ -85,25 +90,25 @@ public abstract class DimensionChange extends NetworkOperator {
         if(!setPopSize) {
             return new Tuple<>(Double.NEGATIVE_INFINITY, 1.0);
         }
-        double c = 1.5 / (2 * b - a);
+        double c = 1.5 / (2 * b - a); // * scale
         double u = Randomizer.getRandomDouble();
         if(u < c * a / 2.0) {
-            return new Tuple<>(Math.sqrt(2.0 * a * u / c), Math.sqrt(a / 2.0 / c / u));
+            return new Tuple<>(Math.sqrt(2.0 * a * u / c), Math.sqrt(a / 2.0 / c / u) / _popSize_scale);
         } else if (u <= 0.75) {
-            return new Tuple<>(u / c + 0.5 * a, 1.0 / c);
+            return new Tuple<>(u / c + 0.5 * a, 1.0 / (c * _popSize_scale));
         } else {
-            return new Tuple<>(-0.25 / c * Math.log(4.0 * (1.0 - u)) + b, 0.25 / c / (1.0 - u));
+            return new Tuple<>(-0.25 / c * Math.log(4.0 * (1.0 - u)) + b, 0.25 / (c * _popSize_scale) / (1.0 - u));
         }
     }
 
     private double getLogPopSizeProb(double x, double a, double b) {
-        double c = 1.5 / (2 * b - a);
+        double c = 1.5 / (2 * b - a) * _popSize_scale;
         if(x < a) {
             return Math.log(c / a * x);
         } else if(x <= b) {
             return Math.log(c);
         } else {
-            return Math.log(c) - 4.0 * c * (x - b);
+            return Math.log(c) - 4.0 * c * (x - b) / _popSize_scale;
         }
     }
 

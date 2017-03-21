@@ -37,6 +37,7 @@ public class UltrametricNetwork extends StateNode {
     private double[] _logGeneTreeNetwork = null;
     private double[] _logLtemp = null;
 
+    private double[] _treeSpaceOpWeights;
     private double[] _treeOpWeights;
     private double[] _netOpWeights;
     private Operator[] _operators;
@@ -114,9 +115,13 @@ public class UltrametricNetwork extends StateNode {
                 new ChangeInheritance(this)
         };
         if (Utils._ESTIMATE_POP_SIZE) {
+            this._treeSpaceOpWeights = Utils.getOperationWeights(
+                    Utils.Net_Tree_Op_Weights, 0, Utils.Net_Tree_Op_Weights.length - 1);
             this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights);
             this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights);
         } else {
+            this._treeSpaceOpWeights = Utils.getOperationWeights(
+                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length - 1);
             this._treeOpWeights = Utils.getOperationWeights(
                     Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length);
             this._netOpWeights = Utils.getOperationWeights(
@@ -168,7 +173,9 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public double propose() {
-        if(Utils._PRE_BURN_IN || _network.getReticulationCount() == 0) {
+        if(Utils._PRE_BURN_IN) {
+            this._operator = getOp(_operators, _treeSpaceOpWeights);
+        } else if(_network.getReticulationCount() == 0) {
             this._operator = getOp(_operators, _treeOpWeights);
         } else {
             this._operator = getOp(_operators, _netOpWeights);

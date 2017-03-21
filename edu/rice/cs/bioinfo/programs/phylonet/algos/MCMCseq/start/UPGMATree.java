@@ -121,7 +121,7 @@ public class UPGMATree {
             String name2 = cluster._c2._taxa.size() == 1 ? cluster._c2._taxa.iterator().next() : "I" + id++;
             STINode child2 = node.createChild(name2);
             double childHeight = Math.max(buildTree(cluster._c1, child1), buildTree(cluster._c2, child2));
-            if(cluster._height < childHeight) {
+            if(cluster._height <= childHeight) {
                 cluster._height = childHeight * Utils.TREE_INTI_SCALE;
             }
         }

@@ -64,12 +64,9 @@ public class AddReticulation extends DimensionChange {
         double pda = numRetiNodes == 0 ? 0.5 : 1.0;
         double numRetiEdges = 2 * (numRetiNodes + 1);
 
-        // convert to coalescent unit
-        if(!Utils.varyPopSizeAcrossBranches()) {
-            l1 /= _network.getNetwork().getRoot().getRootPopSize();
-            l2 /= _network.getNetwork().getRoot().getRootPopSize();
-        }
-        double hr = pda * l1 * l2 * numEdges * (numEdges-1.0) / numRetiEdges;
+        // convert to the scale of the root population size
+        // if only one population size, it equals to convert to coalescent unit
+        double hr = pda * l1 / _time_scale * l2 / _time_scale * numEdges * (numEdges-1.0) / numRetiEdges;
 
         _violate = false;
         return Math.log(hr) + logPopSize;

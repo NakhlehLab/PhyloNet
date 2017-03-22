@@ -10,6 +10,7 @@ import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.Program;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 
@@ -160,6 +161,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             if(sdParam.PostSwitchParam != null) {
                 try {
                     Utils._SEED = Long.parseLong(sdParam.PostSwitchValue);
+                    Randomizer.setSeed(Utils._SEED);
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Unrecognized random seed " + sdParam.PostSwitchValue,
                             sdParam.PostSwitchParam.getLine(), sdParam.PostSwitchParam.getColumn());

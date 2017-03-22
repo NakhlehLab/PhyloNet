@@ -38,33 +38,32 @@ public class SummaryBL {
         }
 
         public void addInfo(double dist, double prob) {
+            this.size++;
             this.meanBL += dist;
             this.stdBL += dist * dist;
             this.minBL = Math.min(this.minBL, dist);
             this.maxBL = Math.max(this.maxBL, dist);
 
             if(this.meanProb == this.child.NO_PROBABILITY) return;
-
             this.meanProb += prob;
             this.stdProb += prob * prob;
             this.minProb = Math.min(this.minProb, prob);
             this.maxProb = Math.max(this.maxProb, prob);
-            this.size++;
         }
 
         public int getSize() {return this.size;}
 
         public String report() {
-            //System.out.println(this.size);
             this.meanBL /= (double)size;
             this.stdBL = Math.sqrt(this.stdBL / (double)size - this.meanBL * this.meanBL);
-            String s = this.parent.getName() + " -> " + this.child.getName() + ": " + this.meanBL + ", " +
-                    this.minBL + ", " + this.maxBL + ", " + this.stdBL;
+            String s = this.parent.getName() + " -> " + this.child.getName() + ": " +
+                    this.meanBL + ", " + this.stdBL + ", " +
+                    this.minBL + ", " + this.maxBL;
             if(this.meanProb == this.child.NO_PROBABILITY) return s;
             this.meanProb /= (double) size;
             this.stdProb = Math.sqrt(this.stdProb / (double)size - this.meanProb * this.meanProb);
-            return s + ": " + this.meanProb + ", " +
-                    this.minProb + ", " + this.maxProb + ", " + this.stdProb;
+            return s + ": " + this.meanProb + ", " + this.stdProb + ", " +
+                    this.minProb + ", " + this.maxProb;
         }
     }
 
@@ -86,14 +85,16 @@ public class SummaryBL {
             String[] ss;
             boolean start = false;
             while((s = in.readLine()) != null) {
+                s = s.trim();
+                if(s.length() == 0) continue;
                 ss = s.split("\\s+");
-                if(ss.length == 7 && ss[0].charAt(0) != 'I') {
+                if(ss.length == 7 && ss[0].length() > 0 && ss[0].charAt(0) != 'I') {
                     s = in.readLine();
-                    if(ss[2].charAt(0) == '1' || start) {
+                    if(!s.startsWith("(") || !s.endsWith(";")) continue;
+                    if((ss[2].length() > 0 && ss[2].charAt(0) == '1') || start) {
                         start = true;
                         Network net = Networks.readNetwork(s);
                         if(net == null) continue;
-                        //System.out.println(net.toString());
                         if(Networks.hasTheSameTopology(this._net, net)) {
                             Map<NetNode, NetNode> map = Networks.mapTwoNetworks(this._net, net);
                             this._size++;
@@ -110,7 +111,8 @@ public class SummaryBL {
 
     public void report() {
         System.out.println(_size);
-        System.out.println("edge: branch length - mean min max std : inheritance probability - mean min max std");
+        System.out.println("edge: BL_mean, BL_std, BL_min, BL_max, " +
+                "gamma_mean, gamma_std, gamma_min, gamma_max");
         for(String key : this._branches.keySet()) {
             System.out.println(this._branches.get(key).report());
         }

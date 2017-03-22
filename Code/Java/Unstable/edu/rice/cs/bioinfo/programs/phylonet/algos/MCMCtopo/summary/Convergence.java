@@ -6,6 +6,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 
@@ -14,6 +15,8 @@ import java.util.*;
  */
 public class Convergence {
 
+    private List<String> _files;
+
     private double threshold = 0.95;
     private List<List<Summ>> summaryLists;
 
@@ -21,10 +24,12 @@ public class Convergence {
     private PriorityQueue<MutableTuple<Double,Network>> pqueue;
     private List<MutableTuple<Double,Network>> pqList = new ArrayList<>();
 
+
     public Convergence(List<String> files) {
+        _files = files;
         summaryLists = new ArrayList<>();
-        for(String f : files) {
-            processFile( f );
+        for(String f : _files) {
+            processFile(f);
         }
         pqueue = new PriorityQueue<>(networkCounts.size(), new TupleComparator());
         for(Network key : networkCounts.keySet()) {
@@ -37,6 +42,16 @@ public class Convergence {
             tmp += pqList.get(pqList.size()-1).Item1;
             System.out.printf("%.4f - %s\n", pqList.get(pqList.size()-1).Item1, pqList.get(pqList.size()-1).Item2);
             if(tmp > threshold) break;
+        }
+    }
+
+    public void summarizeTopo() {
+        for(MutableTuple<Double, Network> tup : pqList) {
+            SummaryBL sum = new SummaryBL(tup.Item2.toString());
+            for(String f: _files) {
+                sum.addFile(f);
+            }
+            sum.report();
         }
     }
 

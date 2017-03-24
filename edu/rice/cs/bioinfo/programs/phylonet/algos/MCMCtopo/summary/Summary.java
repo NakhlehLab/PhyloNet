@@ -45,9 +45,6 @@ public class Summary<T> {
      */
     private void rankSpeciesTopologies() {
         // build network topology map
-        long timeHasCycle = 0;
-        long timeMapping = 0;
-
         double maxPost = Double.NEGATIVE_INFINITY;
         String maxTopo = null;
 
@@ -64,14 +61,9 @@ public class Summary<T> {
             for(Network network : netTopologies.keySet()) {
                 // if find, add map to the list
                 // compute time
-                timeMapping -= System.currentTimeMillis();
                 Map<NetNode<T>, NetNode<T>> tmpMap = Networks.mapTwoNetworks(network, n);
                 boolean t1 = tmpMap != null;
-                timeMapping += System.currentTimeMillis();
-
-                timeHasCycle -= System.currentTimeMillis();
                 boolean t2 = Networks.hasTheSameTopology(network, n);
-                timeHasCycle += System.currentTimeMillis();
                 // exception
                 if(t1 != t2) {
                     System.out.println(network.toString());
@@ -99,7 +91,6 @@ public class Summary<T> {
                 information.put(n, new OperatorLog(tuple));
             }
         }
-        System.out.println("time has cycle: " + timeHasCycle + "  time mapping: " + timeMapping);
         // build priority queue
         consensusTopologies = new PriorityQueue<Network>(netTopologies.size(),
                 new Comparator<Network>() {

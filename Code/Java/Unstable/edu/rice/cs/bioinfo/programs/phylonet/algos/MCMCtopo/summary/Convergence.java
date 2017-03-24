@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple3;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.summary.SummaryBranch;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
@@ -45,13 +46,21 @@ public class Convergence {
         }
     }
 
-    public void summarizeTopo() {
+    public void summarizeTopo(boolean withBL) {
         for(MutableTuple<Double, Network> tup : pqList) {
-            SummaryBL sum = new SummaryBL(tup.Item2.toString());
-            for(String f: _files) {
-                sum.addFile(f);
+            if(withBL) {
+                SummaryBranch sum = new SummaryBranch(tup.Item2.toString());
+                for(String f : _files) {
+                    sum.addFile(f);
+                }
+                sum.report(1, 1);
+            } else {
+                SummaryBL sum = new SummaryBL(tup.Item2.toString());
+                for(String f: _files) {
+                    sum.addFile(f);
+                }
+                sum.report();
             }
-            sum.report();
         }
     }
 

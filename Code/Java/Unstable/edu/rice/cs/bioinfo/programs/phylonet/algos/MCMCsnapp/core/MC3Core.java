@@ -39,68 +39,73 @@ public class MC3Core {
     ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
 
     public MC3Core(List<Alignment> alignments,BiAllelicGTR BAGTRModel, String logFileName) {
-        System.out.println("Last log file: " + logFileName);
-        int burnin = (int) (Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY);
-        System.out.println("----------------------- Previous logger: -----------------------");
-        System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation");
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(logFileName));
-            String line;
-            String inputfile = "";
-            String currentChain = "";
-            boolean ready = false;
+        if(logFileName != null) {
+            System.out.println("Last log file: " + logFileName);
+            int burnin = (int) (Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY);
+            System.out.println("----------------------- Previous logger: -----------------------");
+            System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation");
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(logFileName));
+                String line;
+                String inputfile = "";
+                String currentChain = "";
+                boolean ready = false;
 
-            while ((line = br.readLine()) != null) {
-                if(line.contains("/") && inputfile.equals("")) {
-                    inputfile = line.substring(line.lastIndexOf('/') + 1);
-                    System.out.println("Last Run Input: " + inputfile);
-                }
-                else if(line.startsWith("Temp")) {
-                    currentChain = line;
-                    ready = true;
-                }
-                else if(ready) {
-                    Scanner lineScanner = new Scanner(line);
-                    lineScanner.useDelimiter(";\\s*");
-                    int numSamples = lineScanner.nextInt();
-                    double logPosterior = lineScanner.nextDouble();
-                    double posteriorESS = lineScanner.nextDouble();
-                    double likelihood = lineScanner.nextDouble();
-                    double logPrior = lineScanner.nextDouble();
-                    double priorESS = lineScanner.nextDouble();
-                    int numReticulation = lineScanner.nextInt();
-                    if(currentChain.contains("main")) {
-                        if(numSamples > burnin) {
-                            _sampling = true;
-                            _samplingPhase = true;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains("/") && inputfile.equals("")) {
+                        inputfile = line.substring(line.lastIndexOf('/') + 1);
+                        System.out.println("Last Run Input: " + inputfile);
+                    } else if (line.startsWith("Temp") || line.startsWith("(main)")) {
+                        currentChain = line;
+                        ready = true;
+                    } else if (ready) {
+                        Scanner lineScanner = new Scanner(line);
+                        lineScanner.useDelimiter(";\\s*");
+                        int numSamples = lineScanner.nextInt();
+                        double logPosterior = lineScanner.nextDouble();
+                        double posteriorESS = lineScanner.nextDouble();
+                        double likelihood = lineScanner.nextDouble();
+                        double logPrior = lineScanner.nextDouble();
+                        double priorESS = lineScanner.nextDouble();
+                        int numReticulation = lineScanner.nextInt();
+                        if (currentChain.contains("main")) {
+                            if (numSamples > burnin) {
+                                _sampling = true;
+                                _samplingPhase = true;
+                            }
+                            if(_sampling) {
+                                posteriorESS = addPosteriorESS(logPosterior);
+                                priorESS = addPriorESS(logPrior);
+                            } else {
+                                posteriorESS = 0.0;
+                                priorESS = 0.0;
+                            }
+                            System.out.println("(main)");
+                            System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
+                                    numSamples, logPosterior, posteriorESS,
+                                    likelihood, logPrior, priorESS,
+                                    numReticulation);
+                            String lastNetwork = br.readLine();
+                            System.out.println(lastNetwork);
+                            Utils._START_NET = lastNetwork;
+                            if(_sampling) {
+                                List<Tuple<String, Double>> netSample = new ArrayList<>();
+                                netSample.add(new Tuple<>(lastNetwork, logPosterior));
+                                addNetSample(netSample);
+                            }
+                            _startNumber = numSamples + 1;
                         }
-                        posteriorESS = addPosteriorESS(logPosterior);
-                        priorESS = addPriorESS(logPrior);
-                        System.out.println("(main)");
-                        System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-                                numSamples, logPosterior, posteriorESS,
-                                likelihood, logPrior, priorESS,
-                                numReticulation);
-                        String lastNetwork = br.readLine();
-                        System.out.println(lastNetwork);
-                        Utils._START_NET = lastNetwork;
-                        List<Tuple<String,Double>> netSample = new ArrayList<>();
-                        netSample.add(new Tuple<>(lastNetwork, logPosterior));
-                        addNetSample(netSample);
-                        _startNumber = numSamples + 1;
+                        ready = false;
+                    } else if (line.startsWith("Rank = 0")) {
+                        System.out.println("Last Run Finished ");
                     }
-                    ready = false;
                 }
-                else if(line.startsWith("Rank = 0")){
-                    System.out.println("Last Run Finished ");
-                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
         initializeChains(alignments, BAGTRModel);
     }
 
@@ -248,7 +253,7 @@ public class MC3Core {
     }
 
     public void addNetSample(List<Tuple<String,Double>> sample) {
-        if(_samplingPhase) {
+        if(_samplingPhase || _sampling) {
             _netSamples.add(sample);
             return;
         }

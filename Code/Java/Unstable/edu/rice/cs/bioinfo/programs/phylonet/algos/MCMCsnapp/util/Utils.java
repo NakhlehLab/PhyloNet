@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.Operator;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -207,6 +208,11 @@ public class Utils {
 
         System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);
         System.out.println("useOnlyPolymorphic: " + SNAPPLikelihood.useOnlyPolymorphic);
+        System.out.println("CORRECTION_AT_LEAVES " + Algorithms.CORRECTION_AT_LEAVES);
+        System.out.println("SWITCH_FASTER_BIALLILE " + Algorithms.SWITCH_FASTER_BIALLILE);
+        System.out.println("SWITCH_EXP_APPROX " + Algorithms.SWITCH_EXP_APPROX);
+        System.out.println("SWITCH_APPROX_SPLIT " + Algorithms.SWITCH_APPROX_SPLIT);
+
 
     }
 

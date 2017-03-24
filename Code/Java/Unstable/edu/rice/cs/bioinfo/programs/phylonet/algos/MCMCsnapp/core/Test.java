@@ -50,8 +50,8 @@ public class Test {
         //testOurisiaData(args);
         //test012Data(args);
         //trim012Data(args);
-        testWithDingqiaoNetwork(args);
-        //testWithDingqiaoNetwork_diploid(args);
+        //testWithDingqiaoNetwork(args);
+        testWithDingqiaoNetwork_diploid(args);
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
         //generateVLBLSNPdata();
@@ -173,7 +173,7 @@ public class Test {
         Utils._BURNIN_LEN = 1000;
         Utils._SAMPLE_FREQUENCY = 500;
         //Utils._NET_MAX_RETI = 2;
-        SNAPPLikelihood.useOnlyPolymorphic = true;
+        SNAPPLikelihood.useOnlyPolymorphic = false;
 
 
         Utils._MC3_CHAINS = new ArrayList<>();
@@ -307,8 +307,8 @@ public class Test {
         //Utils._MC3_CHAINS.add(4.0);
         Utils._DIAMETER_PRIOR = true;
         BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
-        SNAPPLikelihood.useOnlyPolymorphic = false;
-        SNAPPLikelihood.debugMode = true;
+        SNAPPLikelihood.useOnlyPolymorphic = true;
+        SNAPPLikelihood.debugMode = false;
         double gamma = 1 - 0.3;
 
         double y = 1.0;
@@ -354,7 +354,7 @@ public class Test {
         Map<String, String> sequence = new HashMap<>();
 
         try {
-            File file = new File("../data/networkC_" + numSites + "_ac_seed12345678.snp");
+            File file = new File("../data/networkC_" + numSites + "_nc_seed12345678.snp");
             Scanner scanner = new Scanner(file);
 
             while(scanner.hasNext()) {
@@ -410,6 +410,11 @@ public class Test {
             }
 
             aln.setCache(cache);
+
+            List<Alignment> alnwarp = new ArrayList<>();
+            alnwarp.add(new Alignment(onesnp));
+            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
+
             alns.add(aln);
         }
 
@@ -437,6 +442,7 @@ public class Test {
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
         System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
+        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodMTC(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
 
         /*String[] gtTaxa = new String[onesnp.size()];
         char[][] sequences = new char[onesnp.size()][500000];
@@ -622,11 +628,11 @@ public class Test {
     }
 
     public static void testMosquitoData(String []args) {
-        Utils._NUM_THREADS = 8;
+        Utils._NUM_THREADS = 4;
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
-        Utils._CHAIN_LEN = 2000000;
-        Utils._BURNIN_LEN = 500000;
+        Utils._CHAIN_LEN = 5000000;
+        Utils._BURNIN_LEN = 2500000;
         Utils._SAMPLE_FREQUENCY = 500;
         //Utils._NET_MAX_RETI = 2;
         Utils._DIAMETER_PRIOR = true;
@@ -638,23 +644,23 @@ public class Test {
         Utils._CONST_POP_SIZE = true;
         Utils._POP_SIZE_MEAN = 0.014;
 
-        String filename = "../mosquito/sampled.snp";
+        String filename = "../mosquito/sampled_new.snp";
 
         SNAPPLikelihood.ALGORITHM = 2;
         SNAPPLikelihood.useOnlyPolymorphic = false;
         //SNAPPLikelihood.debugMode = true;
 
-        if(args.length > 0) {
-            filename = args[0];
-        }
-
-        if(args.length > 1) {
-            Utils._SEED = Integer.parseInt(args[1]);
-        }
-
-        if(args.length > 2) {
-            Utils._CHAIN_LEN = Integer.parseInt(args[2]);
-        }
+//        if(args.length > 0) {
+//            filename = args[0];
+//        }
+//
+//        if(args.length > 1) {
+//            Utils._SEED = Integer.parseInt(args[1]);
+//        }
+//
+//        if(args.length > 2) {
+//            Utils._CHAIN_LEN = Integer.parseInt(args[2]);
+//        }
 
         String breakpoint = null;//"breakpoint.txt";
         if(breakpoint != null) {
@@ -696,6 +702,9 @@ public class Test {
 
             System.out.println();
             Alignment aln = new Alignment(input);
+            List<Alignment> alnwarp = new ArrayList<>();
+            alnwarp.add(new Alignment(sequence));
+            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
 
             Map<Integer, Integer> cache = new HashMap<>();
 
@@ -721,7 +730,7 @@ public class Test {
         double [] pi =  new double[2];
         double [] rate = new double[1];
 
-       /* int totalSites = 0;
+        int totalSites = 0;
         for(Alignment alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
@@ -735,12 +744,13 @@ public class Test {
         pi[1] /= 1.0 * totalSites;
         pi[0] = 1 - pi[1];
 
-        rate[0] = 1 / (2*pi[0]);*/
+        rate[0] = 1 / (2*pi[0]);
 
-        pi[1] = 0.5;
-        pi[0] = 1 - pi[1];
+        //pi[1] = 0.5;
+        //pi[0] = 1 - pi[1];
 
-        rate[0] = 1.0 / (2*pi[0]);
+        //rate[0] = 1.0 / (2*pi[0]);
+        System.out.println("PI0 " + pi[0] + " PI1 " + pi[1]);
 
         BiAllelicGTR curBAGTRModel = new BiAllelicGTR(pi, rate);
 
@@ -764,7 +774,7 @@ public class Test {
     }
 
     public static void testOurisiaData(String []args) {
-        Utils._NUM_THREADS = 1;
+        Utils._NUM_THREADS = 4;
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
         Utils._CHAIN_LEN = 2000000;
@@ -851,6 +861,19 @@ public class Test {
         }
 
         Utils._TAXON_MAP = species2allele;
+        String mappingString = "<";
+        for(String s : species2allele.keySet()) {
+            mappingString += s + ":";
+            for(int i = 0 ; i < species2allele.get(s).size() - 1 ; i++) {
+                mappingString += species2allele.get(s).get(i) + ", ";
+            }
+            mappingString += species2allele.get(s).get(species2allele.get(s).size() - 1) + "; ";
+        }
+        if(species2allele.size() > 1)
+            mappingString = mappingString.substring(0, mappingString.length() - 2);
+        mappingString += ">";
+
+        String command = "MCMC_SNP";
 
         for(String taxon : sequence.keySet()) {
             System.out.println(taxon + " " + sequence.get(taxon).substring(0, 10) + "..." + sequence.get(taxon).substring(sequence.get(taxon).length() - 10, sequence.get(taxon).length()));
@@ -943,10 +966,10 @@ public class Test {
         Utils._NUM_THREADS = 4;
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
-        //Utils._CHAIN_LEN = 100000; //diploid
-        //Utils._BURNIN_LEN = 50000; //diploid
-        Utils._CHAIN_LEN = 500500; //haploid
-        Utils._BURNIN_LEN = 500; //haploid
+        Utils._CHAIN_LEN = 500000; //diploid
+        Utils._BURNIN_LEN = 300000; //diploid
+        //Utils._CHAIN_LEN = 500500; //haploid
+        //Utils._BURNIN_LEN = 500; //haploid
         Utils._SAMPLE_FREQUENCY = 500;
         Utils._NET_MAX_RETI = 3;
         Utils._DIAMETER_PRIOR = true;
@@ -955,10 +978,12 @@ public class Test {
         //Utils._MC3_CHAINS.add(1.0);
         //Utils._MC3_CHAINS.add(2.0);
         //Utils._MC3_CHAINS.add(4.0);
-        Utils._ESTIMATE_POP_SIZE = false;
+        Utils._ESTIMATE_POP_SIZE = true;
         Utils._POP_SIZE_MEAN = 0.01;
 
-        String path = "../heliconius_basckei_datasets-2/";
+        boolean randomlyPhasing = false;
+
+        String path = "../heliconius_basckei_datasets-3/";
 
         SNAPPLikelihood.ALGORITHM = 2;
         SNAPPLikelihood.useOnlyPolymorphic = false;
@@ -989,16 +1014,12 @@ public class Test {
             Utils._CHAIN_LEN = Integer.parseInt(args[2]);
         }
 
-        String breakpoint = "/scratch/jz55/butterfly/run_2ndwave/slurm-3421630_";
-        if(breakpoint != null) {
-            breakpoint = breakpoint + curPart + ".out";
-            System.out.println("Breakpoint: " + breakpoint);
-            Utils._START_NET = getLatestNetwork(breakpoint);
-            System.out.println("Start network: " + Utils._START_NET);
-        }
+        //String breakpoint = "/scratch/jz55/butterfly/run_2ndwave/slurm-3421630_";
+
         //Utils._START_NET = "[0.001]((ros2017:0.017028184235434476)#H1:0.6152890841632503::0.40898434563289043,((chi565:0.03447070633656545,#H1:0.017442522101130977::0.5910156543671096):0.04289812690018165,(bes110107:0.0662431088577681,(num1053:0.06517768605069217,(eth11045:0.046319692342458245,ser202:0.046319692342458245):0.018857993708233926):0.0010654228070759303):0.011125724378979004):0.5549484351619376);";
 
         Utils.printSettings();
+        System.out.println("Randomly phasing: " + randomlyPhasing);
 
         Map<Integer, Integer> freq = new HashMap<>();
         Map<String, StringBuilder> sequenceRaw = new HashMap<>();
@@ -1129,28 +1150,33 @@ public class Test {
             System.out.println();
             Alignment aln = new Alignment(input);
             List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(sequence));
-            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
+            if(randomlyPhasing) {
+                alnwarp.add(new Alignment(sequence));
+                aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
+            } else {
+                alnwarp.add(new Alignment(sequence2));
+                aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alnwarp);
+            }
             System.out.println("Got " + aln._RPatterns.size() + " patterns.");
 
-            Map<Integer, Integer> cache = new HashMap<>();
-
-            for(int i = 0 ; i < aln.getSiteCount() ; i++) {
-                Map<String, Character> colorMap = new TreeMap<String, Character>();
-                for(String taxon : aln.getAlignment().keySet()) {
-                    colorMap.put(taxon, aln.getAlignment().get(taxon).charAt(i));
-                }
-                Integer represent = 0;
-                for(String s : colorMap.keySet()) {
-                    represent = (represent << 1) + (colorMap.get(s) == '0' ? 0 : 1);
-                }
-                if(!cache.containsKey(represent)) {
-                    cache.put(represent, 0);
-                }
-                cache.put(represent, cache.get(represent) + 1);
-            }
-
-            aln.setCache(cache);
+//            Map<Integer, Integer> cache = new HashMap<>();
+//
+//            for(int i = 0 ; i < aln.getSiteCount() ; i++) {
+//                Map<String, Character> colorMap = new TreeMap<String, Character>();
+//                for(String taxon : aln.getAlignment().keySet()) {
+//                    colorMap.put(taxon, aln.getAlignment().get(taxon).charAt(i));
+//                }
+//                Integer represent = 0;
+//                for(String s : colorMap.keySet()) {
+//                    represent = (represent << 1) + (colorMap.get(s) == '0' ? 0 : 1);
+//                }
+//                if(!cache.containsKey(represent)) {
+//                    cache.put(represent, 0);
+//                }
+//                cache.put(represent, cache.get(represent) + 1);
+//            }
+//
+//            aln.setCache(cache);
             alns.add(aln);
         }
 
@@ -1158,17 +1184,25 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
-            int count = 0;
-            for(String s : alg.getAlignment().values()) {
-                for(int i = 0 ; i < s.length() ; i++) {
-                    count += s.charAt(i) == '1' ? 1 : 0;
-                }
+//        for(Alignment alg : alns) {
+//            int count = 0;
+//            for(String s : alg.getAlignment().values()) {
+//                for(int i = 0 ; i < s.length() ; i++) {
+//                    count += s.charAt(i) == '1' ? 1 : 0;
+//                }
+//            }
+//            totalSites += alg.getSiteCount() * alg.getTaxonSize();
+//            pi[1] += 1.0 * count;
+//        }
+        for(String taxon : sequence2.keySet()) {
+            for(int i = 0 ; i < sequence2.get(taxon).length() ; i++) {
+                char c = sequence2.get(taxon).charAt(i);
+                if(c == '1') pi[1] += 1.0;
+                else if(c == '2') pi[1] += 2.0;
+                totalSites++;
             }
-            totalSites += alg.getSiteCount() * alg.getTaxonSize();
-            pi[1] += 1.0 * count;
         }
-        pi[1] /= 1.0 * totalSites;
+        pi[1] /= 2.0 * totalSites;
         pi[0] = 1 - pi[1];
 
         rate[0] = 1 / (2*pi[0]);
@@ -1204,9 +1238,9 @@ public class Test {
     public static void trim012Data(String []args) {
         Random random = new Random(Utils._SEED);
 
-        String filename = "../heliconius_basckei_datasets-2/HE670865_600k_set4.recode.012";
-        String outfilename = "../heliconius_basckei_datasets-2/HE670865_600k_set4.recode.trim1000.012";
-        int jump = 1000;
+        String filename = "../heliconius_basckei_datasets-3/HE672060_formaltest.recode.012";
+        String outfilename = "../heliconius_basckei_datasets-3/HE672060_formaltest.recode.trim10.012";
+        int jump = 10;
 
         Map<Integer, Integer> freq = new HashMap<>();
         Map<String, StringBuilder> sequenceRaw = new HashMap<>();
@@ -1631,18 +1665,18 @@ public class Test {
             path = "/scratch/jz55/usePolyMono/data";
             Utils._NUM_THREADS = 4;
 
-            Utils._CHAIN_LEN = 500000;
-            Utils._BURNIN_LEN = 300000;
+            Utils._CHAIN_LEN = 1500000;
+            Utils._BURNIN_LEN = 1200000;
             Utils._DIAMETER_PRIOR = true;
             Utils._TIMES_EXP_PRIOR = true;
             //Utils._ESTIMATE_POP_PARAM = false;
             Utils._ESTIMATE_POP_SIZE = false;
             Utils._NET_MAX_RETI = 3;
 
-            SNAPPLikelihood.useOnlyPolymorphic = false;
+            SNAPPLikelihood.useOnlyPolymorphic = true;
             SNAPPLikelihood.ALGORITHM = 2;
 
-            //breakpoint = "/scratch/jz55/usePolyMono/rerun/slurm-3495003_" + curPart + ".out";
+            breakpoint = "/scratch/jz55/usePolyMono/onlyPoly/slurm-3519346_" + curPart + ".out";
 
             networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
             networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
@@ -1651,6 +1685,7 @@ public class Test {
             pi[1] = 0.5;
             pi[0] = 1 - pi[1];
             rate[0] = 1 / (2*pi[0]);
+            //Utils._START_NET = "[0.036]((R:0.07551329384968994,(((A:0.03631082363051613,Q:0.03631082363051613):0.018034121924842106)#H1:3.8789381985759874E-5::0.8713490636767001,(L:6.737360012374536E-4)#H2:0.05370999893610654::0.8726103077386879):0.02112955891234594):0.013137397706868018,((G:0.03594331545781518,C:0.03594331545781518):0.026068316200871,(#H2:0.05786571712696003::0.12738969226131214,#H1:0.004194507572839248::0.12865093632329994):0.003472178530488694):0.026639059897871777);";
         }
         else if(whichToRun.equals("seconddata_mono")) {
             path = "/scratch/jz55/seconddata_mono";
@@ -1869,7 +1904,7 @@ public class Test {
         Utils._MC3_CHAINS = new ArrayList<>();
         Map<String, String> networks = new HashMap<>();
         String breakpoint = null;//"/scratch/jz55/useOnlyPolymorphic/run/slurm-3175687_";
-
+        boolean randomlyPhasing = false;
         if(whichToRun.equals("firstdata_mono_firstrun")) {
             path = "../data_diploid";
             Utils._NUM_THREADS = 8;
@@ -1884,6 +1919,7 @@ public class Test {
             Utils._TIMES_EXP_PRIOR = true;
             Utils._ESTIMATE_POP_SIZE = false;
             Utils._POP_SIZE_MEAN = 0.036;
+            randomlyPhasing = true;
 
             //Utils._MC3_CHAINS.add(2.0);
             //Utils._MC3_CHAINS.add(4.0);
@@ -1897,6 +1933,7 @@ public class Test {
             networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
             //Utils._START_NET = "[0.036]((((R:0.06600749785133136,Q:0.06600749785133136)I3:0.0028664761527561616,(G:0.049992824509466384,A:0.049992824509466384)I4:0.018881149494621143)I2:0.040273634130363264)I1#H1:0.04008378256601308::0.023797585353788404,(I1#H1:0.026304049424634296::0.9762024146462116,(C:0.11924591298549124,L:0.11924591298549124)I6:0.016205744573593847)I5:0.013779733141378786)I0;";
             //Utils._START_NET = "[0.036]((R:0.08367282846113054,(C:0.07593758112857354,(L:0.052916500367923024,(Q:0.041158950188336915,(A:0.03678567236241674,(G:0.008379958816273495)#H1:0.028405713546143248::0.8479778381532519):0.004373277825920174):0.011757550179586108):0.02302108076065052):0.0077352473325569965):0.0027417131425719055,#H1:0.07803458278742895::0.1520221618467481);";
+            //Utils._START_NET = "[0.036]((((((((Q:0.007706894443703847)#H3:0.011286322972969953::0.23227570802381947,R:0.0189932174166738):4.832779408627669E-6)#H2:0.006601622173161768::0.8787824364801154,L:0.025599672369244195):0.005238671994843097,(#H3:0.016537156753233577::0.7677242919761805,A:0.024244051196937424):0.006594293167149868):0.004030047262403039)#H1:0.04499887208586771::0.6757746276842883,(#H2:0.03928130470143773::0.12121756351988455,#H1:0.023410963271029823::0.3242253723157117):0.021587908814837888):0.007571037854375656,(G:0.03494992023933711,C:0.03494992023933711):0.05248838132739659);"; //blow up!
         }
         else if(whichToRun.equals("firstdata_mono_secondrun")){
             path = "/scratch/jz55/usePolyMono/data";
@@ -1964,6 +2001,7 @@ public class Test {
 
 
         Utils.printSettings();
+        System.out.println("Randomly phasing: " + randomlyPhasing);
 
         int number = 0;
         List<String> paths = new ArrayList<>();
@@ -2074,8 +2112,14 @@ public class Test {
             System.out.println();
             Alignment aln = new Alignment(input);
             List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(sequence));
-            aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alnwarp);
+            if(randomlyPhasing) {
+                sequence = SNAPPLikelihood.randomlyPhasing(sequence, random);
+                alnwarp.add(new Alignment(sequence));
+                aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
+            } else {
+                alnwarp.add(new Alignment(sequence));
+                aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alnwarp);
+            }
 
             alns.add(aln);
         }
@@ -2511,6 +2555,7 @@ public class Test {
         samples.put("Q", new StringBuilder());
         samples.put("L", new StringBuilder());
 
+        String outlier = "O";
 
         List<String> chromosomeLabels = new ArrayList<>();
         chromosomeLabels.add("2L");
@@ -2519,6 +2564,8 @@ public class Test {
         chromosomeLabels.add("3R");
 
         int nPolymorphic = 0;
+        int nZero = 0;
+        int nOne = 0;
 
         for(String chromosomeLabel : chromosomeLabels) {
             System.out.println("Chromosome: " + chromosomeLabel);
@@ -2570,7 +2617,7 @@ public class Test {
                 for(int i = start ; i < length ; i++) {
                     Map<String, Character> site = new HashMap<>();
                     Map<Character, Integer> states = new TreeMap<>();
-                    for(String taxon : samples.keySet()) {
+                    for(String taxon : sequence.keySet()) {
                         Character c = sequence.get(taxon).charAt(i);
                         if(!states.containsKey(c))
                             states.put(c, 0);
@@ -2580,27 +2627,43 @@ public class Test {
                     }
                     System.out.println(states.size() + " " + states.keySet().iterator().next());
                     if(states.size() <= 2 && !states.containsKey('-') && !states.containsKey('N')) {
-                        List<Character> statesList = new ArrayList<>(states.keySet());
-                        Collections.shuffle(statesList, random);
-                        int draw = random.nextInt(2);
-
-                        Map<Character, Character> image = new HashMap<>();
-                        image.put(statesList.get(0), (draw == 0 ? '0': '1'));
-                        //if(states.get(statesList.get(0)) <= 1) continue;
-                        if(statesList.size() >= 2) nPolymorphic++;
-                        for(int j = 1 ; j < statesList.size() ; j++) {
-                            image.put(statesList.get(j), (draw == 0 ? '1' : '0'));
-                            //if(states.get(statesList.get(1)) <= 1) continue;
-                        }
-
-                        for(String taxon : site.keySet()) {
+                        Set<Character> actualStates = new HashSet<>();
+                        for(String taxon : samples.keySet()) {
                             if(!site.get(taxon).equals('A') && !site.get(taxon).equals('T') && !site.get(taxon).equals('C') && !site.get(taxon).equals('G'))
                                 throw new RuntimeException("error char " + site.get(taxon));
-                            samples.get(taxon).append(image.get(site.get(taxon)));
+                            char target = '0';
+                            if(!site.get(taxon).equals(site.get(outlier)))
+                                target = '1';
+                            samples.get(taxon).append(target);
+                            if(target == '0')
+                                nZero++;
+                            else
+                                nOne++;
+                            actualStates.add(target);
                         }
-                        System.out.println("Sampled at " + (position + i) + " (+" + (position + i - lastPos) + ")" + " " + statesList.size());
+                        if(actualStates.size() == 2) nPolymorphic++;
+
+//                        List<Character> statesList = new ArrayList<>(states.keySet());
+//                        Collections.shuffle(statesList, random);
+//                        int draw = random.nextInt(2);
+//
+//                        Map<Character, Character> image = new HashMap<>();
+//                        image.put(statesList.get(0), (draw == 0 ? '0': '1'));
+//                        //if(states.get(statesList.get(0)) <= 1) continue;
+//                        if(statesList.size() >= 2) nPolymorphic++;
+//                        for(int j = 1 ; j < statesList.size() ; j++) {
+//                            image.put(statesList.get(j), (draw == 0 ? '1' : '0'));
+//                            //if(states.get(statesList.get(1)) <= 1) continue;
+//                        }
+//
+//                        for(String taxon : site.keySet()) {
+//                            if(!site.get(taxon).equals('A') && !site.get(taxon).equals('T') && !site.get(taxon).equals('C') && !site.get(taxon).equals('G'))
+//                                throw new RuntimeException("error char " + site.get(taxon));
+//                            samples.get(taxon).append(image.get(site.get(taxon)));
+//                        }
+                        System.out.println("Sampled at " + (position + i) + " (+" + (position + i - lastPos) + ")" + " " );
                         lastPos = position + i;
-                        nextPos = position + i + 2500;
+                        nextPos = position + i + 5000;
                         break;
                     }
                 }
@@ -2611,7 +2674,7 @@ public class Test {
         System.out.println("Polymorphic sites: " + nPolymorphic);
 
         try {
-            PrintWriter out = new PrintWriter("../mosquito/sampled_2k5.snp");
+            PrintWriter out = new PrintWriter("../mosquito/sampled_new.snp");
             List<String> taxa = new ArrayList<>(samples.keySet());
             //Collections.sort(taxa);
             for (String taxon : taxa) {

@@ -56,6 +56,12 @@ public class R {
 
     }
 
+    public R(R r) {
+        this.n = r.n;
+        this.values = r.values.clone();
+        this.sum = calculateSum(values);
+    }
+
     @Override
     public int hashCode() {
         int ret = 1;
@@ -84,6 +90,18 @@ public class R {
 
         return true;
 
+    }
+
+    public int compareTo(R obj) {
+        for(int i = 0 ; i < dims ; i++) {
+            if(values[i] != obj.values[i])
+                return values[i] - obj.values[i];
+        }
+        return 0;
+    }
+
+    public int getN() {
+        return n;
     }
 
 
@@ -138,17 +156,26 @@ public class R {
      * @return The name of that type.
      */
     public String getTypeName(int type){
-        switch (type)
-        {
-            case 0:
-                return "A";
-            case 1:
-                return "C";
-            case 2:
-                return "T";
-            case 3:
-                return "G";
 
+        if(dims == 1) {
+            switch (type) {
+                case 0:
+                    return "0";
+                case 1:
+                    return "1";
+            }
+        } else {
+            switch (type) {
+                case 0:
+                    return "A";
+                case 1:
+                    return "C";
+                case 2:
+                    return "T";
+                case 3:
+                    return "G";
+
+            }
         }
 
         throw new RuntimeException("No such type");

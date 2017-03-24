@@ -78,9 +78,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         }
     }
 
-    public void initialize() {
 
-    }
     /*
     public SNAPPAlgorithm(Network theSpeciesNetwork, Map<String, String> alleleMapping, RateModel rModel, double theta){
         allele2species = alleleMapping;

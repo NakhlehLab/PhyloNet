@@ -16,10 +16,13 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.util.ArithmeticUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.DoubleAdder;
+import java.util.concurrent.atomic.LongAccumulator;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,6 +35,7 @@ public class SNAPPLikelihood {
     public static int ALGORITHM = 0;
     public static boolean useOnlyPolymorphic = false;
     public static boolean debugMode = false ;
+    public static LongAdder workloadCounter = null;
 
     static public BiAllelicGTR getModel(List<Alignment> alignments) {
         double [] pi =  new double[2];
@@ -66,8 +70,35 @@ public class SNAPPLikelihood {
         return BAGTRModel;
     }
 
+    static public Map<String, String> randomlyPhasing(Map<String, String> sequence, Random random) {
+        if(random == null)
+            random = new Random();
+        Map<String, StringBuilder> newbuilder = new HashMap<>();
+        for(String taxon : sequence.keySet()) {
+            newbuilder.put(taxon, new StringBuilder());
+            for(int i = 0 ; i < sequence.get(taxon).length() ; i++) {
+                char c = sequence.get(taxon).charAt(i);
+                if(c == '1') {
+                    if(random.nextDouble() < 0.5) c = '0';
+                    else c = '2';
+                }
+
+                if(c == '2')
+                    c = '1';
+                newbuilder.get(taxon).append(c);
+            }
+        }
+
+        Map<String, String> ret = new HashMap<>();
+        for(String taxon : newbuilder.keySet()) {
+            ret.put(taxon, newbuilder.get(taxon).toString());
+        }
+        return ret;
+    }
+
     static public Map<RPattern, double[]> diploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments) {
         Map<RPattern, double[]> result = new HashMap<>();
+        Map<String, Integer> maxLineages = new HashMap<>();
         for(Alignment aln : alignments) {
             for(int i = 0 ; i < aln.getSiteCount() ; i++) {
                 Map<String, Tuple<int[], int[]>> currentPattern = new HashMap<>(); //item1[0]: n, item2[0]: R0
@@ -100,18 +131,43 @@ public class SNAPPLikelihood {
 
                 if(notGood) continue;
 
+                for(String species : newPattern.keySet()) {
+                    if(!maxLineages.containsKey(species))
+                        maxLineages.put(species, 0);
+                    maxLineages.put(species, Math.max(maxLineages.get(species), newPattern.get(species).getN()));
+                }
+
                 RPattern rpattern = new RPattern(newPattern);
+                if(useOnlyPolymorphic && rpattern.isMonomorphic()) continue;
+
                 if(!result.containsKey(rpattern))
                     result.put(rpattern, new double[]{0.0, 0.0});
                 result.get(rpattern)[0] += 1.0;
                 result.get(rpattern)[1] += Math.log(weight);
             }
         }
+
+        if(useOnlyPolymorphic) {
+            for(int i = 0 ; i <= R.dims ; i++) {
+                Map<String, R> newPattern = new HashMap<>();
+
+                for(String species : maxLineages.keySet()) {
+                    int a[] = new int[R.dims];
+                    if(i < R.dims)
+                    a[i] = maxLineages.get(species);
+                    newPattern.put(species, new R(maxLineages.get(species), a));
+                }
+                RPattern rpattern = new RPattern(newPattern);
+                result.put(rpattern, new double[]{0.0, 0.0});
+            }
+        }
+
         return result;
     }
 
     static public Map<RPattern, double[]> haploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments) {
         Map<RPattern, double[]> result = new HashMap<>();
+        Map<String, Integer> maxLineages = new HashMap<>();
         for(Alignment aln : alignments) {
             for(int i = 0 ; i < aln.getSiteCount() ; i++) {
                 Map<String, Tuple<int[], int[]>> currentPattern = new HashMap<>();
@@ -141,14 +197,58 @@ public class SNAPPLikelihood {
 
                 if(notGood) continue;
 
+                for(String species : newPattern.keySet()) {
+                    if(!maxLineages.containsKey(species))
+                        maxLineages.put(species, 0);
+                    maxLineages.put(species, Math.max(maxLineages.get(species), newPattern.get(species).getN()));
+                }
+
                 RPattern rpattern = new RPattern(newPattern);
+                if(useOnlyPolymorphic && rpattern.isMonomorphic()) continue;
+
                 if(!result.containsKey(rpattern))
                     result.put(rpattern, new double[]{0.0, 0.0});
                 result.get(rpattern)[0] += 1.0;
                 result.get(rpattern)[1] += Math.log(weight);
             }
         }
+
+        if(useOnlyPolymorphic) {
+            for(int i = 0 ; i <= R.dims ; i++) {
+                Map<String, R> newPattern = new HashMap<>();
+
+                for(String species : maxLineages.keySet()) {
+                    int a[] = new int[R.dims];
+                    if(i < R.dims)
+                        a[i] = maxLineages.get(species);
+                    newPattern.put(species, new R(maxLineages.get(species), a));
+                }
+                RPattern rpattern = new RPattern(newPattern);
+                result.put(rpattern, new double[]{0.0, 0.0});
+            }
+        }
+
         return result;
+    }
+
+    static public double computeSNAPPLikelihood(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
+        double prob;
+
+        if(workloadCounter == null) {
+            workloadCounter = new LongAdder();
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("Total number of network processed: " + workloadCounter.sum());
+                }
+            }));
+        }
+
+        if(Utils._NUM_THREADS == 1)
+            prob = SNAPPLikelihood.computeSNAPPLikelihoodST(network, patterns, BAGTRModel);
+        else
+            prob = SNAPPLikelihood.computeSNAPPLikelihoodMTC(network, patterns, BAGTRModel);
+        workloadCounter.increment();
+        return prob;
     }
 
     static public double computeSNAPPLikelihoodST(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
@@ -173,6 +273,8 @@ public class SNAPPLikelihood {
         String netstring = net.toString();
 
         double sum = 0.0;
+        double sumMono = 0.0;
+        double numsites = 0.0;
         R.maxLineages = patterns.keySet().iterator().next().sumLineages();
         Network cloneNetwork = Networks.readNetwork(netstring);
         cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
@@ -187,6 +289,9 @@ public class SNAPPLikelihood {
             try {
                 likelihood = run.getProbability(pattern);
                 sum += Math.log(likelihood) * count + correction;
+                if(count == 0.0)
+                    sumMono += likelihood;
+                numsites += count;
                 //System.out.println(represent + " " + likelihood  + " " + count );
             } catch(Exception e) {
                 e.printStackTrace();
@@ -195,6 +300,11 @@ public class SNAPPLikelihood {
             //double time1 = (System.currentTimeMillis()-start)/1000.0;
             //System.out.println(time1);
         }
+
+        if(useOnlyPolymorphic) {
+            sum -= numsites * Math.log(1.0 - sumMono);
+        }
+
         //System.out.println((System.currentTimeMillis()-start)/1000.0);
         return sum;
     }
@@ -222,10 +332,12 @@ public class SNAPPLikelihood {
 
         double sum = 0.0;
         DoubleAdder adder = new DoubleAdder();
+        DoubleAdder sitecounter = new DoubleAdder();
+        DoubleAdder monoadder = new DoubleAdder();
 
         R.maxLineages = patterns.keySet().iterator().next().sumLineages();
         QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
-
+        long start = System.currentTimeMillis();
         for(RPattern pattern : patterns.keySet()) {
             executor.execute(new Runnable() {
                 public void run() {
@@ -240,6 +352,9 @@ public class SNAPPLikelihood {
                     try {
                         likelihood = run.getProbability(pattern);
                         adder.add(Math.log(likelihood) * count + correction);
+                        sitecounter.add(count);
+                        if(count == 0.0)
+                            monoadder.add(likelihood);
                         //System.out.println(represent + " " + likelihood  + " " + count );
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -255,6 +370,380 @@ public class SNAPPLikelihood {
             e.printStackTrace();
         }
         sum = adder.sumThenReset();
+        if(useOnlyPolymorphic) {
+            sum -= sitecounter.sumThenReset() * Math.log(1.0 - monoadder.sumThenReset());
+        }
+        //System.out.println((System.currentTimeMillis()-start)/1000.0);
+        return sum;
+    }
+
+    static public Map<NetNode,Boolean> findNodes2Update(Network network, List<String> leaves2update) {
+        Map<NetNode,Boolean> node2update = new HashMap<>();
+        Set<NetNode> nodes = new HashSet<>();
+        for(String name : leaves2update) {
+            nodes.add(network.findNode(name));
+        }
+
+        node2update.clear();
+        while(!nodes.isEmpty()) {
+            NetNode node = nodes.iterator().next();
+            node2update.put(node, true);
+            nodes.remove(node);
+            for(Object parentObject : node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                nodes.add(parent);
+            }
+        }
+
+        return node2update;
+    }
+
+    static public double computeSNAPPLikelihoodMTC(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
+        //System.out.println(network.toString());
+        int nameCount = 0;
+        Network net = Networks.readNetwork(network.toString());
+        for(Object node : net.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("II" + nameCount);
+                nameCount++;
+            }
+        }
+
+        if(!Utils._ESTIMATE_POP_SIZE) {
+            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+        }
+
+        final Double theta = Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize(): null;
+
+        String netstring = net.toString();
+
+        ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
+
+        double sum = 0.0;
+        DoubleAdder adder = new DoubleAdder();
+        DoubleAdder sitecounter = new DoubleAdder();
+        DoubleAdder monoadder = new DoubleAdder();
+
+        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
+        long start = System.currentTimeMillis();
+
+        //find best leaf
+        Map<NetNode,Boolean> node2update = new HashMap<>();
+        List<String> names = patterns.keySet().iterator().next().getNames();
+        int bestCost = 9999;
+        String bestName = null;
+        for(String name : names) {
+            Set<NetNode> nodes = new HashSet<>();
+            Network cloneNetwork = Networks.readNetwork(netstring);
+            nodes.add(cloneNetwork.findNode(name));
+
+            node2update.clear();
+            while(!nodes.isEmpty()) {
+                NetNode node = nodes.iterator().next();
+                node2update.put(node, true);
+                nodes.remove(node);
+                for(Object parentObject : node.getParents()) {
+                    NetNode parent = (NetNode) parentObject;
+                    nodes.add(parent);
+                }
+            }
+
+            int cost = 0;
+            for(NetNode node : node2update.keySet()) {
+                if(node.isNetworkNode()) cost += 1;
+                else cost += 1;
+            }
+
+            if(bestCost > cost) {
+                bestCost = cost;
+                bestName = name;
+            }
+        }
+
+        final List<List<Tuple<RPattern, double[]>>> jobLists = new ArrayList<>();
+        Set<RPattern> patternSet = new HashSet<>( patterns.keySet());
+        Map<RPattern, List<Tuple<RPattern, double[]>>> jobMapping = new HashMap<>();
+
+        for(RPattern pattern : patterns.keySet()) {
+            if(!patternSet.contains(pattern)) continue;
+            Map<String, R> partialPattern = new HashMap<>();
+            for(String name : names) {
+                if(bestName.equals(name)) continue;
+                partialPattern.put(name, pattern.getR(name));
+            }
+            RPattern partialPatternRP = new RPattern(partialPattern);
+            if(!jobMapping.containsKey(partialPatternRP))
+                jobMapping.put(partialPatternRP, new ArrayList<>());
+            jobMapping.get(partialPatternRP).add(new Tuple<RPattern, double[]>(pattern, patterns.get(pattern)));
+        }
+
+        for(RPattern partialPatternRP : jobMapping.keySet()) {
+            jobLists.add(jobMapping.get(partialPatternRP));
+        }
+        //System.out.println("Preprocessing " + (System.currentTimeMillis()-start)/1000.0);
+
+        for(int i = 0 ; i < jobLists.size() ; i++) {
+            final int jobIndex = i;
+            final String bestName1 = bestName;
+            executor.execute(new Runnable() {
+                public void run() {
+
+                    Network cloneNetwork = null;
+                    SNAPPAlgorithm run = null;
+                    List<Tuple<RPattern, double[]>> jobList = jobLists.get(jobIndex);
+
+                    Tuple<RPattern, double[]> firstJob = jobList.get(0);
+
+                    double count = firstJob.Item2[0];
+                    double correction = firstJob.Item2[1];
+
+                    cloneNetwork = Networks.readNetwork(netstring);
+                    cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
+                    run = new SNAPPAlgorithm(cloneNetwork, Q);
+
+                    double likelihood = 0;
+                    try {
+                        likelihood = run.getProbability(firstJob.Item1);
+                        adder.add(Math.log(likelihood) * count + correction);
+                        if(useOnlyPolymorphic) {
+                            sitecounter.add(count);
+                            if (count == 0.0)
+                                monoadder.add(likelihood);
+                        }
+                        //System.out.println(represent + " " + likelihood  + " " + count );
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Exceptional network" + netstring);
+                    }
+
+                    if (jobList.size() <= 1) return;
+
+                    //Map<NetNode, Boolean> node2update = findNodes2Update(cloneNetwork, Collections.singletonList(bestName1));
+                    Set<NetNode> nodes = new HashSet<>();
+                    nodes.add(cloneNetwork.findNode(bestName1));
+
+                    Map<NetNode,Boolean> node2update = new HashMap<>();
+                    while(!nodes.isEmpty()) {
+                        NetNode node = nodes.iterator().next();
+                        node2update.put(node, true);
+                        nodes.remove(node);
+                        for(Object parentObject : node.getParents()) {
+                            NetNode parent = (NetNode) parentObject;
+                            nodes.add(parent);
+                        }
+                    }
+
+                    for (int j = 1; j < jobList.size(); j++) {
+                        Tuple<RPattern, double[]> nextJob = jobList.get(j);
+                        likelihood = run.updateProbability(0, nextJob.Item1, null, node2update);
+                        count = nextJob.Item2[0];
+                        correction = nextJob.Item2[1];
+                        adder.add(Math.log(likelihood) * count + correction);
+                        if(useOnlyPolymorphic) {
+                            sitecounter.add(count);
+                            if (count == 0.0)
+                                monoadder.add(likelihood);
+                        }
+                    }
+
+                }
+            });
+        }
+        try {
+            executor.shutdown();
+            while(!executor.awaitTermination(1000, TimeUnit.SECONDS)) {
+                System.out.println("Super long: " + network.toString());
+                //System.out.println("Free memory: " + Runtime.getRuntime().freeMemory());
+                //System.out.println("Total memory: " + Runtime.getRuntime().totalMemory());
+            };
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        sum = adder.sumThenReset();
+        if(useOnlyPolymorphic) {
+            sum -= sitecounter.sumThenReset() * Math.log(1.0 - monoadder.sumThenReset());
+        }
+        //System.out.println("Finished " + (System.currentTimeMillis()-start)/1000.0);
+        return sum;
+    }
+
+    static public double computeSNAPPLikelihoodMTCU(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
+
+        //System.out.println(network.toString());
+
+        int nameCount = 0;
+        Network net = Networks.readNetwork(network.toString());
+        for(Object node : net.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("II" + nameCount);
+                nameCount++;
+            }
+        }
+
+        if(!Utils._ESTIMATE_POP_SIZE) {
+            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+        }
+
+        final Double theta = Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize(): null;
+
+        String netstring = net.toString();
+
+        ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
+
+        double sum = 0.0;
+        DoubleAdder adder = new DoubleAdder();
+        DoubleAdder sitecounter = new DoubleAdder();
+        DoubleAdder monoadder = new DoubleAdder();
+
+        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
+        long start = System.currentTimeMillis();
+
+        //find best leaf
+        Map<NetNode,Boolean> node2update = new HashMap<>();
+        List<String> names = patterns.keySet().iterator().next().getNames();
+        int bestCost = 9999;
+        String bestName = null;
+        for(String name : names) {
+            Set<NetNode> nodes = new HashSet<>();
+            Network cloneNetwork = Networks.readNetwork(netstring);
+            nodes.add(cloneNetwork.findNode(name));
+
+            node2update.clear();
+            while(!nodes.isEmpty()) {
+                NetNode node = nodes.iterator().next();
+                node2update.put(node, true);
+                nodes.remove(node);
+                for(Object parentObject : node.getParents()) {
+                    NetNode parent = (NetNode) parentObject;
+                    nodes.add(parent);
+                }
+            }
+
+            int cost = 0;
+            for(NetNode node : node2update.keySet()) {
+                if(node.isNetworkNode()) cost += 2;
+                else cost += 1;
+            }
+
+            if(bestCost > cost) {
+                bestCost = cost;
+                bestName = name;
+            }
+        }
+
+        final Queue<List<Tuple<RPattern, double[]>>> jobLists = new ConcurrentLinkedQueue<>();
+        Set<RPattern> patternSet = new HashSet<>( patterns.keySet());
+        Map<RPattern, List<Tuple<RPattern, double[]>>> jobMapping = new HashMap<>();
+
+        for(RPattern pattern : patterns.keySet()) {
+            if(!patternSet.contains(pattern)) continue;
+            Map<String, R> partialPattern = new HashMap<>();
+            for(String name : names) {
+                if(bestName.equals(name)) continue;
+                partialPattern.put(name, pattern.getR(name));
+            }
+            RPattern partialPatternRP = new RPattern(partialPattern);
+            if(!jobMapping.containsKey(partialPatternRP))
+                jobMapping.put(partialPatternRP, new ArrayList<>());
+            jobMapping.get(partialPatternRP).add(new Tuple<RPattern, double[]>(pattern, patterns.get(pattern)));
+        }
+
+        for(RPattern partialPatternRP : jobMapping.keySet()) {
+            jobLists.add(jobMapping.get(partialPatternRP));
+        }
+        //System.out.println("Preprocessing " + (System.currentTimeMillis()-start)/1000.0);
+        Thread threads[] = new Thread[Utils._NUM_THREADS];
+
+        for(int i = 0 ; i < Utils._NUM_THREADS ; i++) {
+            final String bestName1 = bestName;
+            threads[i] = new Thread(new Runnable() {
+                public void run() {
+
+                    Network cloneNetwork = null;
+                    SNAPPAlgorithm run = null;
+                    RPattern lastRPattern = null;
+                    List<Tuple<RPattern, double[]>> jobList = jobLists.poll();
+
+                    while(jobList != null) {
+
+                        Tuple<RPattern, double[]> firstJob = jobList.get(0);
+
+                        double count = firstJob.Item2[0];
+                        double correction = firstJob.Item2[1];
+
+                        if(cloneNetwork == null) {
+                            cloneNetwork = Networks.readNetwork(netstring);
+                            cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
+                            run = new SNAPPAlgorithm(cloneNetwork, Q);
+
+                            double likelihood = 0;
+                            try {
+                                likelihood = run.getProbability(firstJob.Item1);
+                                adder.add(Math.log(likelihood) * count + correction);
+                                sitecounter.add(count);
+                                if (count == 0.0)
+                                    monoadder.add(likelihood);
+                                //System.out.println(represent + " " + likelihood  + " " + count );
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                System.out.println("Exceptional network" + netstring);
+                            }
+                        } else {
+                            Map<NetNode, Boolean> node2update = findNodes2Update(cloneNetwork, firstJob.Item1.leaves2update(lastRPattern));
+                            double likelihood = run.updateProbability(0, firstJob.Item1, null, node2update);
+                            count = firstJob.Item2[0];
+                            correction = firstJob.Item2[1];
+                            sitecounter.add(count);
+                            adder.add(Math.log(likelihood) * count + correction);
+                            if (count == 0.0)
+                                monoadder.add(likelihood);
+                        }
+                        lastRPattern = firstJob.Item1;
+
+                        //if (jobList.size() <= 1) continue;
+
+                        Map<NetNode, Boolean> node2update = findNodes2Update(cloneNetwork, Collections.singletonList(bestName1));
+
+                        for (int j = 1; j < jobList.size(); j++) {
+                            Tuple<RPattern, double[]> nextJob = jobList.get(j);
+                            double likelihood = run.updateProbability(0, nextJob.Item1, null, node2update);
+                            count = nextJob.Item2[0];
+                            correction = nextJob.Item2[1];
+                            sitecounter.add(count);
+                            adder.add(Math.log(likelihood) * count + correction);
+                            if (count == 0.0)
+                                monoadder.add(likelihood);
+                            lastRPattern = nextJob.Item1;
+                        }
+
+                        jobList = jobLists.poll();
+                    }
+                }
+            });
+            threads[i].start();
+        }
+
+        for(int i = 0 ; i < threads.length; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException ignore) {}
+        }
+
+//        try {
+//            executor.shutdown();
+//            executor.awaitTermination(1000, TimeUnit.SECONDS);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        sum = adder.sumThenReset();
+        if(useOnlyPolymorphic) {
+            sum -= sitecounter.sumThenReset() * Math.log(1.0 - monoadder.sumThenReset());
+        }
+        //System.out.println("Finished " + (System.currentTimeMillis()-start)/1000.0);
         return sum;
     }
 
@@ -262,6 +751,7 @@ public class SNAPPLikelihood {
         Set<RPattern> _pool;
         List<Map<RPattern, Set<RPattern>>> _conn;
         Map<RPattern, double[]> _patterns;
+        List<RPattern> _jobList;
         int _size;
 
 
@@ -287,9 +777,12 @@ public class SNAPPLikelihood {
                     _conn.get(index).get(p1).add(p2);
                 }
             }
+
         }
 
         synchronized Tuple<RPattern, double[]> pull(RPattern lastPattern) {
+            //if(true)
+                //return pull();
             for(int i = 0 ; i < _size ; i++) {
                 if(_conn.get(i).containsKey(lastPattern)) {
                     if(_conn.get(i).get(lastPattern).size() > 0) {
@@ -329,12 +822,16 @@ public class SNAPPLikelihood {
         SNAPPAlgorithm run;
         PatternPool pool;
         DoubleAdder adder;
+        DoubleAdder sitecounter;
+        DoubleAdder monoadder;
 
-        public MyThreadForCached(QParameters Q, PatternPool p, DoubleAdder a, String netstring, double rootPopSize){
+        public MyThreadForCached(QParameters Q, PatternPool p, DoubleAdder a, DoubleAdder sc, DoubleAdder mc, String netstring, double rootPopSize){
             cloneNetwork = Networks.readNetwork(netstring);
             cloneNetwork.getRoot().setRootPopSize(rootPopSize);
             pool = p;
             adder = a;
+            sitecounter = sc;
+            monoadder = mc;
             run = new SNAPPAlgorithm(cloneNetwork, Q);
         }
 
@@ -349,6 +846,9 @@ public class SNAPPLikelihood {
                 double count = firstToGo.Item2[0];
                 double correction = firstToGo.Item2[1];
                 adder.add(Math.log(likelihood) * count + correction);
+                sitecounter.add(count);
+                if(count == 0.0)
+                    monoadder.add(likelihood);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exceptional network" + cloneNetwork.toString());
@@ -379,7 +879,9 @@ public class SNAPPLikelihood {
                 double count = nextToGo.Item2[0];
                 double correction = nextToGo.Item2[1];
                 adder.add(Math.log(likelihood) * count + correction);
-
+                sitecounter.add(count);
+                if(count == 0.0)
+                    monoadder.add(likelihood);
                 lastPattern = pattern;
                 nextToGo = pool.pull(lastPattern);
             }
@@ -388,6 +890,7 @@ public class SNAPPLikelihood {
 
     static public double computeSNAPPLikelihoodMTCP(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
         int nameCount = 0;
+        System.out.println(network.toString());
         Network net = Networks.readNetwork(network.toString());
         for(Object node : net.dfs()) {
             NetNode mynode = (NetNode) node;
@@ -407,6 +910,9 @@ public class SNAPPLikelihood {
 
         double sum = 0.0;
         DoubleAdder adder = new DoubleAdder();
+        DoubleAdder sitecounter = new DoubleAdder();
+        DoubleAdder monoadder = new DoubleAdder();
+        long start = System.currentTimeMillis();
 
         R.maxLineages = patterns.keySet().iterator().next().sumLineages();
         QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
@@ -414,7 +920,7 @@ public class SNAPPLikelihood {
 
         MyThreadForCached threads[] = new MyThreadForCached[Utils._NUM_THREADS];
         for(int i = 0 ; i < threads.length; i++) {
-            threads[i] = new MyThreadForCached(Q, pool, adder, netstring, network.getRoot().getRootPopSize());
+            threads[i] = new MyThreadForCached(Q, pool, adder, sitecounter, monoadder, netstring, network.getRoot().getRootPopSize());
             threads[i].start();
         }
 
@@ -423,8 +929,12 @@ public class SNAPPLikelihood {
                 threads[i].join();
             } catch (InterruptedException ignore) {}
         }
+        System.out.println((System.currentTimeMillis()-start)/1000.0);
 
         sum = adder.sumThenReset();
+        if(useOnlyPolymorphic) {
+            sum -= sitecounter.sumThenReset() * Math.log(1.0 - monoadder.sumThenReset());
+        }
         return sum;
     }
 
@@ -681,6 +1191,7 @@ public class SNAPPLikelihood {
                             OneNucleotideObservation converter = new OneNucleotideObservation(colorMap);
                             Network cloneNetwork = Networks.readNetwork(netstring);
                             cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
+                            R.maxLineages = alg.getAlignment().keySet().size();
                             SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, (Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize() : null));
                             double likelihood = 0;
                             try {

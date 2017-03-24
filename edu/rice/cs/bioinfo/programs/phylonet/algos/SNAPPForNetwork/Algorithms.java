@@ -11,6 +11,7 @@ import jeigen.DenseMatrix;
 import org.apache.commons.math3.util.ArithmeticUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This class holds all the various algorithms from http://mbe.oxfordjournals.org/content/29/8/1917.
@@ -21,8 +22,7 @@ public class Algorithms
     public static final boolean CORRECTION_AT_LEAVES = false;
     public static final boolean SWITCH_FASTER_BIALLILE = true;
     public static final boolean SWITCH_EXP_APPROX = true;
-    public static final boolean SWITCH_APPROX_SPLIT = true;
-
+    public static final boolean SWITCH_APPROX_SPLIT = false;
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
         for(int i=0; i<index1.length; i++) {
@@ -541,7 +541,6 @@ public class Algorithms
         }
         if(!added) {
             int splittingIndexDimension = -1;
-            FMatrix tmp = new FMatrix(data.maxMX, false);
             for (Tuple<FMatrix, int[]> fTop1 : childData1.getFTops(node)) {
                 splittingIndexDimension = fTop1.Item2.length;
                 break;
@@ -743,10 +742,10 @@ public class Algorithms
                                 if(numReticulations == 1)
                                     threshold = 1e-5;
                                 else if(numReticulations == 2)
-                                    threshold = 5e-3;
+                                    threshold = 1e-4;
                                 else if(numReticulations > 2)
                                     threshold = 1e-3;
-
+                                threshold = 1e-5;
                                 if (!fm.ifHasEmptyR() && fm.getSum() < threshold && added[i] > 0) {
                                     i = 2;
                                     continue;

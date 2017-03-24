@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +14,12 @@ import java.util.Map;
  */
 public class RPattern {
     private Map<String, R> pattern;
+    private List<String> sortedKeys;
 
     public RPattern(Map<String, R> pattern) {
         this.pattern = pattern;
+        this.sortedKeys = new ArrayList<>(pattern.keySet());
+        Collections.sort(sortedKeys);
     }
 
     @Override
@@ -50,6 +54,8 @@ public class RPattern {
         return pattern;
     }
 
+    public List<String> getNames() { return sortedKeys; }
+
     public R getR(String species) {
         return pattern.get(species);
     }
@@ -78,5 +84,34 @@ public class RPattern {
                 ret.add(species);
         }
         return ret;
+    }
+
+    public int compareTo(RPattern p2) {
+        for(String species : sortedKeys) {
+            int k = this.pattern.get(species).compareTo(p2.pattern.get(species));
+            if(k != 0)
+                return k;
+        }
+        return 0;
+    }
+
+    public boolean isMonomorphic() {
+        int count[] = new int[R.dims];
+        int n = sumLineages();
+        for(String species : pattern.keySet()) {
+            R r = pattern.get(species);
+            for(int i = 0 ; i < R.dims ; i++) {
+                count[i] += r.values[i];
+            }
+        }
+
+        boolean flag = true;
+        for(int i = 0 ; i < R.dims ; i++) {
+            if(count[i] == n)
+                return true;
+            if(count[i] != 0)
+                flag = false;
+        }
+        return flag;
     }
 }

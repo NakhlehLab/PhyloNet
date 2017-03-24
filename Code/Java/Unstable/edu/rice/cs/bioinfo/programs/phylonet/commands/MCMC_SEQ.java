@@ -12,6 +12,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Convergence;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 
 import java.io.File;
@@ -24,6 +25,9 @@ import java.util.*;
 public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
     private List<Alignment> alignments = new ArrayList<>();
+
+    // for summarization
+    private List<String> _files = new ArrayList<>();
 
     public MCMC_SEQ(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                     Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -44,6 +48,34 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
     @Override
     protected boolean checkParamsForCommand(){
         boolean noError = true;
+
+        // summary
+        ParamExtractor sumParam = new ParamExtractor("sum", this.params, this.errorDetected);
+        if(sumParam.ContainsSwitch) {
+
+            if (sumParam.PostSwitchParam != null) {
+                try {
+                    if (!(sumParam.PostSwitchParam instanceof ParameterIdentList)) {
+                        throw new RuntimeException();
+                    }
+                    ParameterIdentList temps = (ParameterIdentList) sumParam.PostSwitchParam;
+                    for (String tExp : temps.Elements) {
+                        System.out.println(tExp);
+                        _files.add(tExp);
+                    }
+                } catch (NumberFormatException e) {
+                    errorDetected.execute("Invalid value after switch -sum.",
+                            sumParam.PostSwitchParam.getLine(), sumParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -sum.",
+                        sumParam.SwitchParam.getLine(), sumParam.SwitchParam.getColumn());
+            }
+
+            noError = noError && checkForUnknownSwitches("sum");
+            checkAndSetOutFile(sumParam);
+            return noError;
+        }
 
         // ----- DNA sequences -----
         this.parseMultiLociData(Program.inputNexusFileName);
@@ -489,6 +521,16 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
     @Override
     protected String produceResult() {
+
+        if(_files.size() > 0) {
+            System.out.println();
+            Convergence conv = new Convergence(_files);
+            conv.summarizeTopo(true);
+            conv.computePSRF();
+            conv.generateSRQ();
+            conv.generateTracePlot();
+            return "";
+        }
 
         if(Utils._PHASING) {
             Utils.taxonMapPhasing(this.sourceIdentToMultilocusData.values().iterator().next().keySet());

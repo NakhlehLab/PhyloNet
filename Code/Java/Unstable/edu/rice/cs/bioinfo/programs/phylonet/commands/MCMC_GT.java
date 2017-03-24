@@ -434,7 +434,7 @@ public class MCMC_GT extends CommandBaseFileOut{
 
         if(_files.size() > 0) {
             Convergence conv = new Convergence(_files);
-            conv.summarizeTopo();
+            conv.summarizeTopo(false);
             conv.computePSRF();
             conv.generateSRQ();
             conv.generateTracePlot();

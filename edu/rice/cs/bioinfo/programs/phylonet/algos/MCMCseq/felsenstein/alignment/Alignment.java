@@ -382,19 +382,22 @@ public class Alignment implements Comparable<Alignment> {
             }
             return 1;
         } else if (sb.length() == vals.size() || index == site.length()) {
-            throw new RuntimeException();
+            throw new RuntimeException(String.format("%d %d %d %d %s %s",
+                    sb.length(), vals.size(), index, site.length(), site, sb.toString()));
         }
         int cnt = 0;
         char c = site.charAt(index);
         if(Utils._DIPLOID_SPECIES.contains(alnKeys.get(index))) {
             // diploid
-            if(c == 'A' || c == 'C' || c == 'G' || c == 'T' || c == 'N') {
+            if(c == 'A' || c == 'C' || c == 'G' || c == 'T' || c == 'N' || c == '-') {
                 sb.append(c).append(c);
             } else if(c == 'R' || c == 'Y' || c == 'M' || c == 'W' || c == 'S' || c == 'K') {
                 sb.append(Utils.getPhasingNucleotides().get(c)[0]);
                 cnt += addSites(vals, alnKeys, site, index + 1, sb);
                 sb.delete(sb.length() - 2, sb.length());
                 sb.append(Utils.getPhasingNucleotides().get(c)[1]);
+            } else {
+                throw new RuntimeException("Unsupported DNA code: " + c);
             }
             cnt += addSites(vals, alnKeys, site, index + 1, sb);
             sb.delete(sb.length() - 2, sb.length());

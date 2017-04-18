@@ -748,7 +748,7 @@ public class BeagleTreeLikelihood extends StateNode {
         if (!node.isRoot() && (update != 0 || branchTime != _prevBranchLengths[nodeNum])) {
             _prevBranchLengths[nodeNum] = branchTime;
             if (branchTime < 0.0) {
-                throw new RuntimeException("Negative branch length: " + branchTime);
+                throw new RuntimeException("Negative branch length: " + branchTime + "\n" + _geneTree.toString());
             }
             if (flip) {
                 // first flip the matrixBufferHelper

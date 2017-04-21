@@ -50,7 +50,8 @@ abstract class CommandBaseFileOutMultilocusData extends CommandBaseFileOut {
                 if(begin && nTaxon > 0) break;
             }
 
-            while((s = br.readLine().trim()) != null) {
+            s = br.readLine().trim();
+            while(s != null) {
                 if(s.toLowerCase().endsWith("end;")) {
                     break;
                 }
@@ -63,15 +64,17 @@ abstract class CommandBaseFileOutMultilocusData extends CommandBaseFileOut {
                     String name = ss[0];
                     int length = Integer.parseInt(ss[1]);
                     Map<String, String> taxonSeqMap = new HashMap<>();
-                    for(int i = 0; i < nTaxon; i++) {
-                        ss = br.readLine().trim().split("\\s+");
-                        if(ss.length != 2 || ss[1].length() != length) {
-                            br.close();
-                            throw new RuntimeException(s);
+                    s = br.readLine().trim();
+                    while((ss = s.split("\\s+")).length == 2) {
+                        if(ss[1].length() != length) {
+                            throw new RuntimeException("wrong sequence length " + ss[1].length() + "\n" + s);
                         }
                         taxonSeqMap.put(ss[0], ss[1]);
+                        s = br.readLine().trim();
                     }
                     sourceIdentToMultilocusData.put(name, taxonSeqMap);
+                } else {
+                    s = br.readLine().trim();
                 }
             }
             if(sourceIdentToMultilocusData.size() == 0) {

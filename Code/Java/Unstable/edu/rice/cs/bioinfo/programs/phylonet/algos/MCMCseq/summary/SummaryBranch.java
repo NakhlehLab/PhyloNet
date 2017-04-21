@@ -18,23 +18,30 @@ public class SummaryBranch {
         private int count;
         private double avgPost;
         private double stdPost;
+        private double minPost;
+        private double maxPost;
 
-        public Info(double post) {
-            count = 1;
-            avgPost = post;
-            stdPost = post * post;
+        public Info() {
+            count = 0;
+            avgPost = 0;
+            stdPost = 0;
+            minPost = Double.MAX_VALUE;
+            maxPost = -Double.MAX_VALUE;
         }
 
         public void add(double post) {
             count++;
             avgPost += post;
             stdPost += post * post;
+            minPost = Math.min(minPost, post);
+            maxPost = Math.max(maxPost, post);
         }
 
         public String toString() {
             double avg = avgPost / count;
             double std = Math.sqrt(stdPost / count - avg * avg);
-            return count + "    " + avg + "  " + std;
+            return String.format("size=%d, avgPostVal=%f +- %f, min=%f, max=%f",
+                    count, avg, std, minPost, maxPost);
         }
     }
 
@@ -132,13 +139,14 @@ public class SummaryBranch {
     private double _rootPopSizeAvg = 0;
     private double _rootPopSizeStd = 0;
     private int _rootPopSizeSize = 0;
-    private Map<Network, Info> _topologyCount = new HashMap<>();
+    private Info _info;
 
     public SummaryBranch(String s) {
         this._net = Networks.readNetwork(s);
         Networks.autoLabelNodes(this._net);
         this._branches = getBranches(this._net);
         this._size = 0;
+        this._info = new Info();
     }
 
     public void addFile(String file) {
@@ -181,16 +189,7 @@ public class SummaryBranch {
                         s = s.substring(s.indexOf("]") + 1);
                         _rootPopSizeSize++;
                     }
-                } else {
-                    boolean add = false;
-                    for(Network key : _topologyCount.keySet()) {
-                        if(Networks.hasTheSameTopology(key, net)) {
-                            _topologyCount.get(key).add(posterior);
-                            add = true;
-                            break;
-                        }
-                    }
-                    if(!add) _topologyCount.put(net, new Info(posterior));
+                    _info.add(posterior);
                 }
             }
             in.close();
@@ -200,7 +199,8 @@ public class SummaryBranch {
     }
 
     public void report(double scale, double popScale) {
-        System.out.println(_size);
+        System.out.println("#samples = " + _size);
+        System.out.println(_info.toString());
         _rootPopSizeAvg /= _rootPopSizeSize;
         _rootPopSizeStd = Math.sqrt(_rootPopSizeStd / _rootPopSizeSize - _rootPopSizeAvg * _rootPopSizeAvg);
         System.out.printf("sample_size = %d, root_pop_size_mean = %f, root_pop_size_std = %f\n",

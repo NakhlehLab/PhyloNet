@@ -526,9 +526,9 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             System.out.println();
             Convergence conv = new Convergence(_files);
             conv.summarizeTopo(true);
-            conv.computePSRF();
-            conv.generateSRQ();
-            conv.generateTracePlot();
+//            conv.computePSRF();
+//            conv.generateSRQ();
+//            conv.generateTracePlot();
             return "";
         }
 

@@ -29,7 +29,7 @@ public abstract class DimensionChange extends NetworkOperator {
 
     public DimensionChange(UltrametricNetwork net) {
         super(net);
-        _time_scale = net.getNetwork().getRoot().getRootPopSize();
+        _time_scale = 1.0; // net.getNetwork().getRoot().getRootPopSize();
         _popSize_scale = 1.0;
     }
 

@@ -5,6 +5,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 import java.util.*;
 
@@ -231,5 +233,26 @@ public class Utils {
             PHASING_NUCLEOTIDES = nucleotides;
         }
         return PHASING_NUCLEOTIDES;
+    }
+
+    public static void makeUltrametric(STITree t) {
+        Map<STINode, Double> heights = new HashMap<>();
+        for(Object n : t.postTraverse()) {
+            STINode node = (STINode) n;
+            if(node.isLeaf()) {
+                heights.put(node, 0.0);
+            } else {
+                double h = 0;
+                for(Object c : node.getChildren()) {
+                    STINode child = (STINode) c;
+                    h = Math.max(h, heights.get(child) + child.getParentDistance());
+                }
+                for(Object c : node.getChildren()) {
+                    STINode child = (STINode) c;
+                    child.setParentDistance(h - heights.get(child));
+                }
+                heights.put(node, h);
+            }
+        }
     }
 }

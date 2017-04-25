@@ -49,9 +49,9 @@ public class Test {
         //testMosquitoData(args);
         //testOurisiaData(args);
         //test012Data(args);
-        //trim012Data(args);
+        trim012Data(args);
         //testWithDingqiaoNetwork(args);
-        testWithDingqiaoNetwork_diploid(args);
+        //testWithDingqiaoNetwork_diploid(args);
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
         //generateVLBLSNPdata();
@@ -102,7 +102,8 @@ public class Test {
         });
         try {
             executor.shutdown();
-            executor.awaitTermination(1000, TimeUnit.SECONDS);
+            executor.awaitTermination(10, TimeUnit.SECONDS);
+            //executor.shutdownNow();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -172,6 +173,7 @@ public class Test {
         Utils._CHAIN_LEN = 2000;
         Utils._BURNIN_LEN = 1000;
         Utils._SAMPLE_FREQUENCY = 500;
+        Utils._CONST_POP_SIZE = false;
         //Utils._NET_MAX_RETI = 2;
         SNAPPLikelihood.useOnlyPolymorphic = false;
 
@@ -287,7 +289,7 @@ public class Test {
         long startTime = System.currentTimeMillis();
 
         //Utils._START_NET = "[0.036]((C:0.01686540407742875,G:0.01686540407742875):0.07350960000344123,((R:1.340328062900917E-5)#H1:0.08382712523064921::0.7178892548959948,((((L:0.011713766752932408)#H2:9.514133432525565E-4::0.5179993702542565,A:0.012665180096184964):0.01992786320586724,(#H1:1.981341453095487E-4::0.28211074510400524,Q:2.1153742593855787E-4):0.032381505876113645):0.028981604257608262,#H2:0.049860880806728056::0.48200062974574354):0.02226588095161776):0.006534475569591747);";
-        MC3Core run = new MC3Core(alns, BAGTRModel);
+        MC3Core run = new MC3Core(alns, BAGTRModel, "temp");
         run.run();
 
 
@@ -641,7 +643,7 @@ public class Test {
         //Utils._MC3_CHAINS.add(1.0);
         //Utils._MC3_CHAINS.add(2.0);
         //Utils._MC3_CHAINS.add(4.0);
-        Utils._CONST_POP_SIZE = true;
+        Utils._CONST_POP_SIZE = false;
         Utils._POP_SIZE_MEAN = 0.014;
 
         String filename = "../mosquito/sampled_new.snp";
@@ -778,7 +780,7 @@ public class Test {
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
         Utils._CHAIN_LEN = 2000000;
-        Utils._BURNIN_LEN = 500000;
+        Utils._BURNIN_LEN = 1000000;
         Utils._SAMPLE_FREQUENCY = 500;
         //Utils._NET_MAX_RETI = 2;
         Utils._DIAMETER_PRIOR = true;
@@ -787,13 +789,12 @@ public class Test {
         //Utils._MC3_CHAINS.add(1.0);
         //Utils._MC3_CHAINS.add(2.0);
         //Utils._MC3_CHAINS.add(4.0);
-        Utils._CONST_POP_SIZE = true;
-        Utils._ESTIMATE_POP_SIZE = false;
-        Utils._POP_SIZE_MEAN = 0.001;
+        Utils._CONST_POP_SIZE = false;
+        Utils._ESTIMATE_POP_SIZE = true;
+        Utils._POP_SIZE_MEAN = 0.01;
 
-        String filename = "../ourisia/Ourisia_FINAL_215taxa_2576chars_all4dyes.nex";
+        String filename = "../ourisia/test2.nex";
 
-        SNAPPLikelihood.ALGORITHM = -1;
         SNAPPLikelihood.useOnlyPolymorphic = true;
         //SNAPPLikelihood.debugMode = true;
 
@@ -837,8 +838,8 @@ public class Test {
                 if(taxon.length() == 0) break;
 
                 String curSpecies = taxon.substring(0, taxon.indexOf('_'));
-                if(!curSpecies.equals("mccmcc") && !curSpecies.equals("vul") && !curSpecies.equals("mcccal") && !curSpecies.equals("mcplac") && !curSpecies.equals("mcpmcp") && !curSpecies.equals("cro"))
-                    continue;
+                //if(!curSpecies.equals("mccmcc") && !curSpecies.equals("vul") && !curSpecies.equals("mcccal") && !curSpecies.equals("mcplac") && !curSpecies.equals("mcpmcp") && !curSpecies.equals("cro"))
+                    //continue;
 
                 if(!species.contains(curSpecies)) {
                     species.add(curSpecies);
@@ -963,11 +964,11 @@ public class Test {
     public static void test012Data(String []args) {
         Random random = new Random(Utils._SEED);
 
-        Utils._NUM_THREADS = 4;
+        Utils._NUM_THREADS = 16;
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
-        Utils._CHAIN_LEN = 500000; //diploid
-        Utils._BURNIN_LEN = 300000; //diploid
+        Utils._CHAIN_LEN = 2000000; //diploid
+        Utils._BURNIN_LEN = 1000000; //diploid
         //Utils._CHAIN_LEN = 500500; //haploid
         //Utils._BURNIN_LEN = 500; //haploid
         Utils._SAMPLE_FREQUENCY = 500;
@@ -978,15 +979,17 @@ public class Test {
         //Utils._MC3_CHAINS.add(1.0);
         //Utils._MC3_CHAINS.add(2.0);
         //Utils._MC3_CHAINS.add(4.0);
+        Utils._CONST_POP_SIZE = false;
         Utils._ESTIMATE_POP_SIZE = true;
         Utils._POP_SIZE_MEAN = 0.01;
 
         boolean randomlyPhasing = false;
 
-        String path = "../heliconius_basckei_datasets-3/";
+        String path = "../heliconius_basckei_datasets-5/";
 
         SNAPPLikelihood.ALGORITHM = 2;
         SNAPPLikelihood.useOnlyPolymorphic = false;
+        SNAPPLikelihood.timeSavingMode = false;
         //SNAPPLikelihood.debugMode = true;
 
         int curPart = Integer.parseInt(args[0]) ;
@@ -1014,7 +1017,7 @@ public class Test {
             Utils._CHAIN_LEN = Integer.parseInt(args[2]);
         }
 
-        //String breakpoint = "/scratch/jz55/butterfly/run_2ndwave/slurm-3421630_";
+        String breakpoint = null;//"run" + curPart + ".out";
 
         //Utils._START_NET = "[0.001]((ros2017:0.017028184235434476)#H1:0.6152890841632503::0.40898434563289043,((chi565:0.03447070633656545,#H1:0.017442522101130977::0.5910156543671096):0.04289812690018165,(bes110107:0.0662431088577681,(num1053:0.06517768605069217,(eth11045:0.046319692342458245,ser202:0.046319692342458245):0.018857993708233926):0.0010654228070759303):0.011125724378979004):0.5549484351619376);";
 
@@ -1227,7 +1230,7 @@ public class Test {
         //Utils._START_NET = "[0.01432278740805789](R:0.014623597111565564,((Q:0.00911822640342767,(A:0.005012995498108841,(G:0.0013615204510037562,C:0.0013615204510037562):0.0036514750471050845):0.004105230905318829):8.83545194053861E-4,(L:0.004912143753730035):0.005089627843751496):0.004621825514084034);";
         //Utils._START_NET = "[0.004730554505572216]((L:0.0018026486850655757)#H1:0.006868170254180248::0.37434235096700086,((Q:0.003017192479968964,(((C:8.059411556637647E-4,G:8.059411556637647E-4):7.375228243481855E-4,A:0.0015434639800119502):0.0010181992335458793,#H1:7.590145284922538E-4::0.6256576490329991):4.5552926641113456E-4):0.0018414552390651788,R:0.004858647719034143):0.003812171220211681);";
 
-        MC3Core run = new MC3Core(alns, curBAGTRModel);
+        MC3Core run = new MC3Core(alns, curBAGTRModel, breakpoint);
         run.run();
 
 
@@ -1236,11 +1239,25 @@ public class Test {
     }
 
     public static void trim012Data(String []args) {
-        Random random = new Random(Utils._SEED);
 
-        String filename = "../heliconius_basckei_datasets-3/HE672060_formaltest.recode.012";
-        String outfilename = "../heliconius_basckei_datasets-3/HE672060_formaltest.recode.trim10.012";
-        int jump = 10;
+
+        boolean onlyPolymorphicSites = false;
+
+        String filename = "../heliconius_basckei_datasets-4/heli_genomewide_tima_5indv.recode.012";
+        String outfilename;
+        int jump = 10000;
+        long seed = Utils._SEED;
+
+        if(args.length > 0)
+            filename = args[0];
+        if(args.length > 1)
+            jump = Integer.parseInt(args[1]);
+        if(args.length > 2)
+            seed = Long.parseLong(args[2]);
+
+        Random random = new Random(seed);
+
+        outfilename = filename.substring(0, filename.length() - 3) + "trim" + jump + "_" + seed + ".012";
 
         Map<Integer, Integer> freq = new HashMap<>();
         Map<String, StringBuilder> sequenceRaw = new HashMap<>();
@@ -1275,6 +1292,8 @@ public class Test {
                 if(s.equals("")) break;
                 Scanner numscan = new Scanner(s);
                 positions.add(new Tuple(numscan.next(), Integer.parseInt(numscan.next())));
+                if(positions.size() % 100000 == 0)
+                    System.out.println("Number: " + positions.size());
                 sequenceLength++;
             }
         } catch (Exception e) {
@@ -1310,6 +1329,9 @@ public class Test {
                         sb.append("2");
                     else
                         sb.append("-");
+
+                    if(sb.length() % 100000 ==0)
+                        System.out.println("Number: " + sb.length());
                 }
 
                 sequenceRaw.put(taxaNames.get(i), sb);
@@ -1334,7 +1356,8 @@ public class Test {
             }
             int pos = positions.get(j).Item2;
 
-            if(!containsGap && pos >= nextpos) {
+            if(!containsGap && (pos >= nextpos || (j > 0 && !positions.get(j).Item1.equals(positions.get(j - 1).Item1)))) {
+                if(random.nextDouble() > 0.95) continue;
                 for(int i = 0 ; i < taxaNames.size() ; i++) {
                     char k = sequenceRaw.get(taxaNames.get(i)).charAt(j);
                     sequenceWithoutGaps.get(taxaNames.get(i)).append(k);
@@ -1628,9 +1651,11 @@ public class Test {
             Utils._BURNIN_LEN = 200000;
             Utils._DIAMETER_PRIOR = true;
             Utils._TIMES_EXP_PRIOR = true;
+            Utils._CONST_POP_SIZE = true;
+            Utils._ESTIMATE_POP_SIZE = true;
 
-            Utils._MC3_CHAINS.add(2.0);
-            Utils._MC3_CHAINS.add(4.0);
+            //Utils._MC3_CHAINS.add(2.0);
+            //Utils._MC3_CHAINS.add(4.0);
 
             SNAPPLikelihood.useOnlyPolymorphic = false;
             SNAPPLikelihood.ALGORITHM = 2;
@@ -1639,6 +1664,9 @@ public class Test {
             networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
             networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
             networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+            pi[1] = 0.5;
+            pi[0] = 1 - pi[1];
+            rate[0] = 1 / (2*pi[0]);
         }
         else if(whichToRun.equals("firstdata_mono_secondrun")){
             path = "/scratch/jz55/usePolyMono/data";
@@ -1663,25 +1691,36 @@ public class Test {
 
         } else if(whichToRun.equals("firstdata_mono_thirdrun")){
             path = "/scratch/jz55/usePolyMono/data";
-            Utils._NUM_THREADS = 4;
+            Utils._NUM_THREADS = 8;
 
             Utils._CHAIN_LEN = 1500000;
-            Utils._BURNIN_LEN = 1200000;
+            Utils._BURNIN_LEN = 1000000;
             Utils._DIAMETER_PRIOR = true;
             Utils._TIMES_EXP_PRIOR = true;
             //Utils._ESTIMATE_POP_PARAM = false;
-            Utils._ESTIMATE_POP_SIZE = false;
+            Utils._CONST_POP_SIZE = true;
+            Utils._ESTIMATE_POP_SIZE = true;
             Utils._NET_MAX_RETI = 3;
+            if(curPart < 12)
+                Utils._NET_MAX_RETI = 2;
+            Utils._POP_SIZE_MEAN = 0.0036;
 
-            SNAPPLikelihood.useOnlyPolymorphic = true;
+            SNAPPLikelihood.useOnlyPolymorphic = false;
             SNAPPLikelihood.ALGORITHM = 2;
 
-            breakpoint = "/scratch/jz55/usePolyMono/onlyPoly/slurm-3519346_" + curPart + ".out";
+            //breakpoint = "/scratch/jz55/usePolyMono/onlyPoly/slurm-3519346_" + curPart + ".out";
 
             networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
             networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
             networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
             networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+
+            networks.put("networkAS", "((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:2.0,R:4.0)I2:1.0,(I6#H1:0.7::0.2,C:1.4)I5:3.6)I0;");
+            networks.put("networkBS", "((((A:3.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,G:4.0)I7:1.0)I0;");
+            networks.put("networkCS", "((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,C:5.0)I0;");
+            networks.put("networkDS", "((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(I6#H2:0.5::0.2,C:1.0)I5:4.0)I0;");
+
+
             pi[1] = 0.5;
             pi[0] = 1 - pi[1];
             rate[0] = 1 / (2*pi[0]);
@@ -1895,9 +1934,7 @@ public class Test {
     }
 
     public static void testWithDingqiaoNetwork_diploid(String[] args) {
-        //String whichToRun = "seconddata_mono";
-        String whichToRun = "firstdata_mono_firstrun";
-        //String whichToRun = "firstdata_mono_secondrun";
+        String whichToRun = "run2_t8c";
         int curPart = Integer.parseInt(args[0]);
 
         String path = "";
@@ -1905,7 +1942,40 @@ public class Test {
         Map<String, String> networks = new HashMap<>();
         String breakpoint = null;//"/scratch/jz55/useOnlyPolymorphic/run/slurm-3175687_";
         boolean randomlyPhasing = false;
-        if(whichToRun.equals("firstdata_mono_firstrun")) {
+        if(whichToRun.equals("run2_t8c")) {
+            path = "../data_diploid";
+            Utils._NUM_THREADS = 16;
+            //Utils._NET_MAX_RETI = 3;
+            Utils._NET_MAX_RETI = 2;
+            if(curPart >= 12)
+                Utils._NET_MAX_RETI = 3;
+
+            Utils._CHAIN_LEN = 500000;
+            Utils._BURNIN_LEN = 300000;
+            Utils._DIAMETER_PRIOR = true;
+            Utils._TIMES_EXP_PRIOR = true;
+            Utils._ESTIMATE_POP_SIZE = true;
+            Utils._CONST_POP_SIZE = false;
+            Utils._POP_SIZE_MEAN = 0.036;
+            randomlyPhasing = false;
+
+            //Utils._MC3_CHAINS.add(2.0);
+            //Utils._MC3_CHAINS.add(4.0);
+
+            SNAPPLikelihood.useOnlyPolymorphic = false;
+            SNAPPLikelihood.timeSavingMode = false;
+            //SNAPPLikelihood.ALGORITHM = 2;
+            //breakpoint = "/scratch/jz55/diploid_4network/run2_T8c/slurm-3525927_" + curPart + ".out";
+
+            networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+            networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+            networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
+            networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+            //Utils._START_NET = "[0.036]((((R:0.06600749785133136,Q:0.06600749785133136)I3:0.0028664761527561616,(G:0.049992824509466384,A:0.049992824509466384)I4:0.018881149494621143)I2:0.040273634130363264)I1#H1:0.04008378256601308::0.023797585353788404,(I1#H1:0.026304049424634296::0.9762024146462116,(C:0.11924591298549124,L:0.11924591298549124)I6:0.016205744573593847)I5:0.013779733141378786)I0;";
+            //Utils._START_NET = "[0.036]((R:0.08367282846113054,(C:0.07593758112857354,(L:0.052916500367923024,(Q:0.041158950188336915,(A:0.03678567236241674,(G:0.008379958816273495)#H1:0.028405713546143248::0.8479778381532519):0.004373277825920174):0.011757550179586108):0.02302108076065052):0.0077352473325569965):0.0027417131425719055,#H1:0.07803458278742895::0.1520221618467481);";
+            //Utils._START_NET = "[0.036]((((((((Q:0.007706894443703847)#H3:0.011286322972969953::0.23227570802381947,R:0.0189932174166738):4.832779408627669E-6)#H2:0.006601622173161768::0.8787824364801154,L:0.025599672369244195):0.005238671994843097,(#H3:0.016537156753233577::0.7677242919761805,A:0.024244051196937424):0.006594293167149868):0.004030047262403039)#H1:0.04499887208586771::0.6757746276842883,(#H2:0.03928130470143773::0.12121756351988455,#H1:0.023410963271029823::0.3242253723157117):0.021587908814837888):0.007571037854375656,(G:0.03494992023933711,C:0.03494992023933711):0.05248838132739659);"; //blow up!
+        }
+        else if(whichToRun.equals("phasing")){
             path = "../data_diploid";
             Utils._NUM_THREADS = 8;
             //Utils._NET_MAX_RETI = 3;
@@ -1921,41 +1991,18 @@ public class Test {
             Utils._POP_SIZE_MEAN = 0.036;
             randomlyPhasing = true;
 
-            //Utils._MC3_CHAINS.add(2.0);
-            //Utils._MC3_CHAINS.add(4.0);
+            Utils._MC3_CHAINS.add(2.0);
+            Utils._MC3_CHAINS.add(4.0);
 
             SNAPPLikelihood.useOnlyPolymorphic = false;
+            SNAPPLikelihood.timeSavingMode = false;
             //SNAPPLikelihood.ALGORITHM = 2;
+            //breakpoint = "/scratch/jz55/diploid_4network/phasing/slurm-3529548_" + curPart + ".out";
 
             networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
             networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
             networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
             networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
-            //Utils._START_NET = "[0.036]((((R:0.06600749785133136,Q:0.06600749785133136)I3:0.0028664761527561616,(G:0.049992824509466384,A:0.049992824509466384)I4:0.018881149494621143)I2:0.040273634130363264)I1#H1:0.04008378256601308::0.023797585353788404,(I1#H1:0.026304049424634296::0.9762024146462116,(C:0.11924591298549124,L:0.11924591298549124)I6:0.016205744573593847)I5:0.013779733141378786)I0;";
-            //Utils._START_NET = "[0.036]((R:0.08367282846113054,(C:0.07593758112857354,(L:0.052916500367923024,(Q:0.041158950188336915,(A:0.03678567236241674,(G:0.008379958816273495)#H1:0.028405713546143248::0.8479778381532519):0.004373277825920174):0.011757550179586108):0.02302108076065052):0.0077352473325569965):0.0027417131425719055,#H1:0.07803458278742895::0.1520221618467481);";
-            //Utils._START_NET = "[0.036]((((((((Q:0.007706894443703847)#H3:0.011286322972969953::0.23227570802381947,R:0.0189932174166738):4.832779408627669E-6)#H2:0.006601622173161768::0.8787824364801154,L:0.025599672369244195):0.005238671994843097,(#H3:0.016537156753233577::0.7677242919761805,A:0.024244051196937424):0.006594293167149868):0.004030047262403039)#H1:0.04499887208586771::0.6757746276842883,(#H2:0.03928130470143773::0.12121756351988455,#H1:0.023410963271029823::0.3242253723157117):0.021587908814837888):0.007571037854375656,(G:0.03494992023933711,C:0.03494992023933711):0.05248838132739659);"; //blow up!
-        }
-        else if(whichToRun.equals("firstdata_mono_secondrun")){
-            path = "/scratch/jz55/usePolyMono/data";
-            Utils._NUM_THREADS = 8;
-
-            Utils._CHAIN_LEN = 1500000;
-            Utils._BURNIN_LEN = 500000;
-            Utils._DIAMETER_PRIOR = true;
-            Utils._TIMES_EXP_PRIOR = true;
-            //Utils._ESTIMATE_POP_PARAM = false;
-            Utils._ESTIMATE_POP_SIZE = false;
-
-            SNAPPLikelihood.useOnlyPolymorphic = false;
-            SNAPPLikelihood.ALGORITHM = 2;
-
-            breakpoint = "/scratch/jz55/usePolyMono/run/slurm-3199866_";
-
-            networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
-            networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
-            networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
-            networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
-
         }
         else if(whichToRun.equals("seconddata_mono")) {
             path = "/scratch/jz55/seconddata_mono";
@@ -2046,12 +2093,12 @@ public class Test {
             }
         }
 
-        if(breakpoint != null) {
-            breakpoint = breakpoint + curPart + ".out";
-            System.out.println("Breakpoint: " + breakpoint);
-            Utils._START_NET = getBestNetwork(breakpoint);
-            System.out.println("Start network: " + Utils._START_NET);
-        }
+//        if(breakpoint != null) {
+//            breakpoint = breakpoint + curPart + ".out";
+//            System.out.println("Breakpoint: " + breakpoint);
+//            Utils._START_NET = getBestNetwork(breakpoint);
+//            System.out.println("Start network: " + Utils._START_NET);
+//        }
 
         long startTime = System.currentTimeMillis();
 
@@ -2153,7 +2200,7 @@ public class Test {
 
         //Utils._START_NET = "[0.03607584361533212]((G:0.03549392871343419,((A:0.009141730492289675)#H1:0.00535829275583986::0.20791495377354396,C:0.014500023248129535):0.020993905465304653):0.05460987089719221,((R:0.029494867356105833,(Q:0.00940327301402531)#H2:0.02009159434208052::0.3125259801380098):0.04352279676380552,((#H1:0.008606419810793627::0.792085046226456,#H2:0.008344877289057992::0.6874740198619902):0.017451349039213384,L:0.035199499342296686):0.03781816477761467):0.01708613549071504);";
 
-        MC3Core run = new MC3Core(alns, BAGTRModel);
+        MC3Core run = new MC3Core(alns, BAGTRModel, breakpoint);
         run.run();
 
         System.out.println(String.format("Total elapsed time : %2.5f s\n",
@@ -2326,10 +2373,16 @@ public class Test {
         BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
 
         Map<String, String> networks = new HashMap<>();
-        networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
-        networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
-        networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
-        networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+        //networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+        //networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+        //networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
+        //networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+
+        networks.put("networkAS", "((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:2.0,R:4.0)I2:1.0,(I6#H1:0.7::0.2,C:1.4)I5:3.6)I0;");
+        networks.put("networkBS", "((((A:3.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,G:4.0)I7:1.0)I0;");
+        networks.put("networkCS", "((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,C:5.0)I0;");
+        networks.put("networkDS", "((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(I6#H2:0.5::0.2,C:1.0)I5:4.0)I0;");
+
 
 
         int lengtharray[] = new int[]{1000, 10000, 100000, 1000000};

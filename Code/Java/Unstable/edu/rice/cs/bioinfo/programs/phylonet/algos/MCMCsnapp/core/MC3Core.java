@@ -96,6 +96,11 @@ public class MC3Core {
                             _startNumber = numSamples + 1;
                         }
                         ready = false;
+                    } else if(line.startsWith("Gamma Mean: "))  {
+                        if(currentChain.contains("main")) {
+                            Utils._POP_SIZE_MEAN = 2.0 * Double.parseDouble(line.substring(12));
+                            System.out.println(line);
+                        }
                     } else if (line.startsWith("Rank = 0")) {
                         System.out.println("Last Run Finished ");
                     }

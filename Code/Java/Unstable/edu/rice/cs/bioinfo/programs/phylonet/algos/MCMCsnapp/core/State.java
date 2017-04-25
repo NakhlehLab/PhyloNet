@@ -61,7 +61,8 @@ public class State {
      */
     public String toString() {
         return "[" + _speciesNet.getNetwork().getRoot().getRootPopSize() + "]"
-                + _speciesNet.getNetwork().toString() + "\nTopology: " + Networks.getTopologyString(_speciesNet.getNetwork());
+                + _speciesNet.getNetwork().toString() + "\nTopology: " + Networks.getTopologyString(_speciesNet.getNetwork())
+                + "\nGamma Mean: " + _populationSize.toString();
     }
 
     /**

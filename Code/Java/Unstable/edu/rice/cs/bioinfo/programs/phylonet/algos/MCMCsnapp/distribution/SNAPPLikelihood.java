@@ -3,10 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.QParameters;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
@@ -34,6 +31,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class SNAPPLikelihood {
     public static int ALGORITHM = 0;
     public static boolean useOnlyPolymorphic = false;
+    public static boolean timeSavingMode = false;
     public static boolean debugMode = false ;
     public static LongAdder workloadCounter = null;
 
@@ -425,7 +423,10 @@ public class SNAPPLikelihood {
         DoubleAdder sitecounter = new DoubleAdder();
         DoubleAdder monoadder = new DoubleAdder();
 
-        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        if(Algorithms.HAS_DOMINANT_MARKER)
+            R.maxLineages = patterns.keySet().iterator().next().sumLineages() * 2;
+        else
+            R.maxLineages = patterns.keySet().iterator().next().sumLineages();
         QParameters Q = new QParameters(BAGTRModel, R.maxLineages, theta);
         long start = System.currentTimeMillis();
 
@@ -553,11 +554,17 @@ public class SNAPPLikelihood {
         }
         try {
             executor.shutdown();
-            while(!executor.awaitTermination(1000, TimeUnit.SECONDS)) {
-                System.out.println("Super long: " + network.toString());
-                //System.out.println("Free memory: " + Runtime.getRuntime().freeMemory());
-                //System.out.println("Total memory: " + Runtime.getRuntime().totalMemory());
-            };
+            if(timeSavingMode) {
+                boolean finished = executor.awaitTermination(10, TimeUnit.SECONDS);
+                if(!finished) {
+                    executor.shutdownNow();
+                    return Double.NEGATIVE_INFINITY;
+                }
+            } else {
+                while (!executor.awaitTermination(1000, TimeUnit.SECONDS)) {
+                    System.out.println("Super long: " + network.toString());
+                }
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

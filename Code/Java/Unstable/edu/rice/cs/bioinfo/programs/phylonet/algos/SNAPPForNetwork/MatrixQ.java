@@ -33,6 +33,22 @@ public class MatrixQ{
         equilibrium = computeEquilibrium();
     }
 
+    public MatrixQ(RateModel rModel, int M, double theta, boolean computeMatrix){
+        this.M = M;
+        this.theta = theta;
+
+        rateMatrix = rModel.getRateMatrix();
+        rateModel = rModel;
+
+        if(computeMatrix) {
+            transposedQ = initializeMatrixQ(rateMatrix, M, theta);
+            equilibrium = computeEquilibrium();
+        } else {
+            transposedQ = null;
+            equilibrium = null;
+        }
+    }
+
     public MatrixQ(RateModel rModel, int M)
     {
         this(rModel,M,1);

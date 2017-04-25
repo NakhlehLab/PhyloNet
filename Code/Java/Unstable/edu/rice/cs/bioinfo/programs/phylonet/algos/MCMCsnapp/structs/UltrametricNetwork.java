@@ -80,7 +80,7 @@ public class UltrametricNetwork extends StateNode {
         if(!init) {
             if(s.startsWith("[")) {
                 popSize = Double.parseDouble(s.substring(1, s.indexOf("]")));
-                Utils._POP_SIZE_MEAN = popSize;
+                //Utils._POP_SIZE_MEAN = popSize;
                 s = s.substring(s.indexOf("]") + 1);
             }
             this._network = Networks.readNetwork(s); // adopt topology only

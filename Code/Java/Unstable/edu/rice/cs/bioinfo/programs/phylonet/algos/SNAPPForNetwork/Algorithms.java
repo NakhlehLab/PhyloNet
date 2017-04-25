@@ -20,6 +20,7 @@ public class Algorithms
 {
     private static final boolean PRINT_DETAILS = false;
     public static final boolean CORRECTION_AT_LEAVES = false;
+    public static final boolean HAS_DOMINANT_MARKER = true;
     public static final boolean SWITCH_FASTER_BIALLILE = true;
     public static final boolean SWITCH_EXP_APPROX = true;
     public static final boolean SWITCH_APPROX_SPLIT = false;
@@ -375,7 +376,7 @@ public class Algorithms
                 matQ = Q._gMatrix;
             }
             else {
-                matQ = new MatrixQ(Q._rModel, Q._M, theta);
+                matQ = new MatrixQ(Q._rModel, Q._M, theta, !SWITCH_EXP_APPROX);
             }
             double t = node.getParentDistance(parent);
 
@@ -713,6 +714,7 @@ public class Algorithms
 
             for (int n = 1; n <= fTop.mx; n++)
             {
+                //System.out.println("n=" + n);
                 for (R r : R.loopOver(n)) {
                     double prob = fTop.get(r);
                     //System.out.println(r);
@@ -730,6 +732,7 @@ public class Algorithms
                                     double weight = r.getProbabilityOfSelecting(splitRPair[0]) / calculateRWeight(r, splitRPair[0]);
                                     //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + Math.pow(inheritanceProbs[0],splitRPair[0].n) + " * " + Math.pow(inheritanceProbs[1],splitRPair[1].n) + " * " + weight);
                                     double newProb = prob / weight * Math.pow(inheritanceProbs[0],splitRPair[0].n) * Math.pow(inheritanceProbs[1],splitRPair[1].n);
+                                    //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + newProb);
                                     fm.set(splitRPair[i],newProb);
                                     probSet = true;
 
@@ -826,19 +829,46 @@ public class Algorithms
         NetNode parent = node.getParents().iterator().next();
         int[] splittingIndex = new int[numReticulations];
         R r = nucleotideIndexMap.get(node.getName());
-        FMatrix fBot = data.addFBottom(parent, r.n, false, splittingIndex);
+        FMatrix fBot;
+        if(!HAS_DOMINANT_MARKER)
+            fBot = data.addFBottom(parent, r.n, false, splittingIndex);
+        else
+            fBot = data.addFBottom(parent, r.n * 2, false, splittingIndex);
+        //fBot = data.addFBottom(parent, r.n, false, splittingIndex);
+
         int weight = 1;
-        int total = r.n;
+
         if(CORRECTION_AT_LEAVES) {
+            int total = r.n;
             for(int i = 0; i<(R.dims + 1); i++){
                 weight *= ArithmeticUtils.binomialCoefficient(total, r.getNum(i));
                 total = total - r.getNum(i);
             }
         }
-        if(R.dims == 1 && SWITCH_FASTER_BIALLILE)
-            fBot.getArr()[r.n*(r.n+1)/2-1+r.values[0]] = 1.0 / weight;
-        else
-            fBot.set(r , 1.0/weight);
+
+        if(HAS_DOMINANT_MARKER) {
+            int N = r.n * 2;
+            double p_r_k_n = 1.0; //p(0,0,n)=1
+            int nReds = r.values[0];
+            if(nReds > 0) {
+                int n = r.n;
+                for (int i = 1; i <= nReds; i++)
+                    p_r_k_n = (p_r_k_n * 2.0 * (n - i + 1.0)) / (2.0 * n - i + 1.0);
+                for (int k = nReds; k <= 2 * nReds; k++) {
+                    if (k > nReds)
+                        p_r_k_n = (p_r_k_n * (2.0 * nReds - k + 1) * k) / (2.0 * (k - nReds) * (2.0 * n - k + 1.0));
+                    fBot.getArr()[N * (N + 1) / 2 - 1 + k] = p_r_k_n / weight;
+                }
+            } else {
+                fBot.getArr()[N * (N + 1) / 2 - 1 + r.values[0]] = 1.0 / weight;
+            }
+        } else {
+
+            if (R.dims == 1 && SWITCH_FASTER_BIALLILE)
+                fBot.getArr()[r.n * (r.n + 1) / 2 - 1 + r.values[0]] = 1.0 / weight;
+            else
+                fBot.set(r, 1.0 / weight);
+        }
     }
 
 

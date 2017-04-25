@@ -90,7 +90,7 @@ public class Utils {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
     public static final double[] Net_Op_Weights = new double[] {
-            0.03, 0.01, 0.00,
+            0.10, 0.04, 0.00,
             0.04, 0.05,
             0.20, 0.15, 0.03, 0.10, DIMENSION_CHANGE_WEIGHT,
             0.06 - DIMENSION_CHANGE_WEIGHT, 0.10, DIMENSION_CHANGE_WEIGHT, 0.06 - DIMENSION_CHANGE_WEIGHT
@@ -99,7 +99,7 @@ public class Utils {
     // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation
     // FlipReticulation MoveHead DeleteReticulation ChangeInheritance
     public static final double[] Net_Tree_Op_Weights = new double[] {
-            0.03, 0.01, 0.00,
+            0.15, 0.04, 0.00,
             0.04, 0.05,
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
@@ -208,7 +208,9 @@ public class Utils {
 
         System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);
         System.out.println("useOnlyPolymorphic: " + SNAPPLikelihood.useOnlyPolymorphic);
+        System.out.println("timeSavingMode: " + SNAPPLikelihood.timeSavingMode);
         System.out.println("CORRECTION_AT_LEAVES " + Algorithms.CORRECTION_AT_LEAVES);
+        System.out.println("HAS_DOMINANT_MARKER " + Algorithms.HAS_DOMINANT_MARKER);
         System.out.println("SWITCH_FASTER_BIALLILE " + Algorithms.SWITCH_FASTER_BIALLILE);
         System.out.println("SWITCH_EXP_APPROX " + Algorithms.SWITCH_EXP_APPROX);
         System.out.println("SWITCH_APPROX_SPLIT " + Algorithms.SWITCH_APPROX_SPLIT);

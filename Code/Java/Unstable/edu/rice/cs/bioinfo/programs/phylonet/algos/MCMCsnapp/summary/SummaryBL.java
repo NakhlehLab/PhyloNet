@@ -149,6 +149,13 @@ public class SummaryBL {
         }
 
         public void reportForDensityPlot(PrintWriter out, double scale, double popScale) {
+            if(this.parent == null) {
+                out.println("-> root : pop size");
+                for(Double sp : listSp ) {
+                    out.println(sp / popScale);
+                }
+                return;
+            }
             out.println(this.parent.getName() + " -> " + this.child.getName() + " : branch length");
             for(Double bl : listBL) {
                 out.println(bl / scale);
@@ -178,6 +185,10 @@ public class SummaryBL {
 
     public SummaryBL(String s) {
         this._net = Networks.readNetwork(s);
+        if(s.startsWith("[")) {
+            double popSize = Double.parseDouble(s.substring(1, s.indexOf("]")));
+            this._net.getRoot().setRootPopSize(popSize);
+        }
         Networks.autoLabelNodes(this._net);
         this._branches = getBranches(this._net);
         this._size = 0;
@@ -249,6 +260,7 @@ public class SummaryBL {
                                     _rootPopSizeStd += popSize * popSize;
                                     s = s.substring(s.indexOf("]") + 1);
                                     _rootPopSizeSize++;
+                                    _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
                                 }
                             } else {
                                 boolean add = false;
@@ -370,6 +382,7 @@ public class SummaryBL {
                         child.getParentProbability(parent), child.getParentSupport(parent)));
             }
         }
+        res.put("root", new Branch(null, net.getRoot(), NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, net.getRoot().getRootPopSize()));
         return res;
     }
 
@@ -390,17 +403,19 @@ public class SummaryBL {
     }
 
     public static void main(String[] args) {
-        String netA = "[0.036](((C:0.025199999999999997,(A:0.012599999999999998)I6#H1:0.012599999999999998::0.2)I5:0.010799999999999999,G:0.036)I1:0.05399999999999999,(R:0.072,(L:0.05399999999999999,(Q:0.036,I6#H1:0.0234::0.8)I4:0.018)I3:0.018)I2:0.018)I0;";
+        String netA = "[0.036](((C:0.025199999999999997:0.036,(A:0.012599999999999998:0.036)I6#H1:0.012599999999999998:0.036:0.2)I5:0.010799999999999999:0.036,G:0.036:0.036)I1:0.05399999999999999:0.036,(R:0.072:0.036,(L:0.05399999999999999:0.036,(Q:0.036:0.036,I6#H1:0.0234:0.036:0.8)I4:0.018:0.036)I3:0.018:0.036)I2:0.018:0.036)I0;";
         String netB = "[0.036](((C:0.036,G:0.036)I1:0.036,((L:0.05399999999999999,(A:0.036,Q:0.036)I4:0.018)I3:0.009)I8#H1:0.009::0.3)I7:0.018,(R:0.072,I8#H1:0.009::0.7)I2:0.018)I0;";
-        String netC = "[0.036]((C:0.018,G:0.018)I1:0.072,((R:0.026999999999999996,(Q:0.009)I8#H1:0.018::0.3)I7:0.045,(L:0.036,(A:0.018,I8#H1:0.009::0.7)I4:0.018)I3:0.036)I2:0.018)I0;";
-        String netD = "[0.036]((G:0.036,(C:0.018,(A:0.009)I6#H1:0.009::0.2)I5:0.018)I1:0.05399999999999999,((R:0.026999999999999996,(Q:0.009)I8#H2:0.018::0.3)I7:0.045,(L:0.036,(I6#H1:0.009::0.8,I8#H2:0.009::0.7)I4:0.018)I3:0.036)I2:0.018)I0;";
-        String net = "((R:0.07418337143189109,(L:0.06326041807321096,(A:0.04879879316357197,Q:0.04879879316357197):0.014461624909638995):0.010922953358680126):0.015047126703711472,(G:0.03786213356113884,C:0.03786213356113884):0.05136836457446372);";
-        int start = 1000, end = 4001;
-        SummaryBL sbl = new SummaryBL(netD);
-        String file = "/scratch/jz55/usePolyMono/run/slurm-3213054_14.out";
+        String netC = "[0.036]((C:0.018:0.036,G:0.018:0.036)I1:0.072:0.036,((R:0.026999999999999996:0.036,(Q:0.009:0.036)I8#H1:0.018:0.036:0.3)I7:0.045:0.036,(L:0.036:0.036,(A:0.018:0.036,I8#H1:0.009:0.036:0.7)I4:0.018:0.036)I3:0.036:0.036)I2:0.018:0.036)I0;";
+        String netD = "[0.036]((G:0.036:0.036,(C:0.018:0.036,(A:0.009:0.036)I6#H1:0.009:0.036:0.2)I5:0.018:0.036)I1:0.05399999999999999:0.036,((R:0.026999999999999996:0.036,(Q:0.009:0.036)I8#H2:0.018:0.036:0.3)I7:0.045:0.036,(L:0.036:0.036,(I6#H1:0.009:0.036:0.8,I8#H2:0.009:0.036:0.7)I4:0.018:0.036)I3:0.036:0.036)I2:0.018:0.036)I0;";
+        //String net = "((R:0.07418337143189109,(L:0.06326041807321096,(A:0.04879879316357197,Q:0.04879879316357197):0.014461624909638995):0.010922953358680126):0.015047126703711472,(G:0.03786213356113884,C:0.03786213356113884):0.05136836457446372);";
+
+        //String net = "[0.011246994934593928](wal:0.16856764465578844:0.024643805160552118,(((the57:0.005532380717127541:0.0328604191625876)#H1:0.008861256779885193:0.0349981605141176:0.5697578143531001,c513:0.014393637497012734:0.06774556777311104):0.02033133765658179:0.05536861556843345,(m523:0.03221433499579413:0.05265524780165408,(agla569:0.010982981528325176:0.04211202761569184,(#H1:4.459081325119832E-4:0.044983217465569256:0.43024218564689987,amar48:0.0059782888496395245:0.06404852435647355):0.005004692678685652:0.05142074487290094):0.021231353467468954:0.05110140055230508):0.0025106401578003923:0.05027578096009688):0.13384266950219392:0.02824200898517967);";
+        int start = 200, end = 1000;
+        SummaryBL sbl = new SummaryBL(netA);
+        String file = "/Users/zhujiafan/slurm-3557839_2.out";
         sbl.addFile(file, true, start, end);
         //sbl.report( 0.036 / 2, 1);
-        sbl.reportForDensityPlot(file + ".DP", 0.036 / 2, 1);
+        sbl.reportForDensityPlot(file + ".DP", 1, 1);
 
 //        SummaryBL sbl = new SummaryBL(net);
 //        for(int i = 0; i < 10; i++) {

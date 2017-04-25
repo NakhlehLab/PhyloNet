@@ -50,6 +50,20 @@ public class RPattern {
 
     }
 
+    @Override
+    public String toString() {
+
+        StringBuilder ret = new StringBuilder();
+        for(String species : sortedKeys) {
+            ret.append(species);
+            ret.append(": ");
+            ret.append(pattern.get(species));
+            ret.append(" ");
+        }
+
+        return  ret.toString();
+    }
+
     public Map<String, R> getPattern() {
         return pattern;
     }

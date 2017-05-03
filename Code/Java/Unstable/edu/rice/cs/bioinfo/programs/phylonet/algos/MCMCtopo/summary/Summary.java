@@ -175,7 +175,7 @@ public class Summary<T> {
             int size = getSize(net);
             sb.append("Size = " + getSize(net) + "; ");
             double percent = (double) size / (double) _samples.size() * 100;
-            sb.append("Percent = " + String.format("%2.4f", percent) + "; ");
+            sb.append("Percent = " + String.format("%2.2f", percent) + "; ");
             sb.append("MAP = " + information.get(net).toString(size) + "; ");
 			if (getSize(net) > 1) {
 				averageNetworks(net);
@@ -203,7 +203,7 @@ public class Summary<T> {
             sb.append("Size = " + getSize(net) + "; ");
             double proportion = (double) size / (double) _samples.size() * 100;
             percent -= proportion;
-            sb.append("Percent = " + String.format("%2.4f", proportion) + "; ");
+            sb.append("Percent = " + String.format("%2.2f", proportion) + "; ");
             sb.append("MAP = " + information.get(net).toString(size) + "; ");
             if (getSize(net) > 1) {
                 averageNetworks(net);

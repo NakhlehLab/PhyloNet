@@ -150,8 +150,8 @@ public class MC3Core {
         }
 
         Summary summary = new Summary(_netSamples, true);
-        System.out.println("         -------------- Top Topologies: --------------");
-        System.out.println(summary.getTopK(Utils._TOPK_NETS));
+        System.out.println("         -------------- 95% credible set of topologies --------------");
+        System.out.println(summary.getTopTopologies(95));
     }
 
     public void addSample(List<String> sample) {

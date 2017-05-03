@@ -174,12 +174,40 @@ public class Summary<T> {
             sb.append("Rank = " + i++ + "; ");
             int size = getSize(net);
             sb.append("Size = " + getSize(net) + "; ");
-            String percent = Double.toString((double) size / (double) _samples.size());
-            sb.append("Percent = " + percent.substring(0, Math.min(8, percent.length())) + "; ");
+            double percent = (double) size / (double) _samples.size() * 100;
+            sb.append("Percent = " + String.format("%2.4f", percent) + "; ");
             sb.append("MAP = " + information.get(net).toString(size) + "; ");
 			if (getSize(net) > 1) {
 				averageNetworks(net);
 			}
+            sb.append(net.toString());
+            sb.append("\n");
+            if(consensusTopologies.size() == 0) break;
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * Gets the X percent credible set
+     * @param percent   top percent topologies
+     * @return    the string presentation of the networks
+     */
+    public String getTopTopologies(double percent) {
+        StringBuilder sb = new StringBuilder("");
+        int i = 0;
+        while(!consensusTopologies.isEmpty() && percent > 0) {
+            Network net = consensusTopologies.poll();
+            sb.append("Rank = " + i++ + "; ");
+            int size = getSize(net);
+            sb.append("Size = " + getSize(net) + "; ");
+            double proportion = (double) size / (double) _samples.size() * 100;
+            percent -= proportion;
+            sb.append("Percent = " + String.format("%2.4f", proportion) + "; ");
+            sb.append("MAP = " + information.get(net).toString(size) + "; ");
+            if (getSize(net) > 1) {
+                averageNetworks(net);
+            }
             sb.append(net.toString());
             sb.append("\n");
             if(consensusTopologies.size() == 0) break;

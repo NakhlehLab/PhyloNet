@@ -45,6 +45,7 @@ public class Utils {
     public static double _POISSON_PARAM = 1.0;
     public static boolean _TIMES_EXP_PRIOR = false;
     public static boolean _DIAMETER_PRIOR = false;
+    public static boolean _NETWORK_SIZE_PRIOR = true;
     // Substitution model
     public static String _SUBSTITUTION_MODEL = "JC";
     public static double[] _BASE_FREQS = null;
@@ -58,8 +59,8 @@ public class Utils {
     // diploid phasing
     public static Set<String> _DIPLOID_SPECIES = null;
     // divergence time window size
-    public static double _TIME_WINDOW_SIZE = 0.004;
-    public static double _POP_SIZE_WINDOW_SIZE = 0.004;
+    public static double _TIME_WINDOW_SIZE = 0.04;
+    public static double _POP_SIZE_WINDOW_SIZE = 0.04;
 
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;
@@ -79,13 +80,13 @@ public class Utils {
     public static final int SWAP_FREQUENCY = 100;
     // --- priors ---
     public static double EXP_PARAM = 10; // Mr.Bayes
-    public static final double GAMMA_SHAPE = 2; // *BEAST
+    public static double GAMMA_SHAPE = 2; // *BEAST
     // --- substitution model ---
     public static final boolean ESTIMATE_SUBSTITUTION = false; // TODO future improvement
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
-    public static final double DIMENSION_CHANGE_WEIGHT = 0.005;
+    public static final double DIMENSION_CHANGE_WEIGHT = 0.05;
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
@@ -204,6 +205,12 @@ public class Utils {
         System.out.println("Const pop size: " + Utils._CONST_POP_SIZE);
         System.out.println("Pop size mean: " + Utils._POP_SIZE_MEAN);
         System.out.println("Exp param: " + Utils.EXP_PARAM);
+        System.out.println("Gamma shape: " + Utils.GAMMA_SHAPE);
+        System.out.println("Poisson param: " + Utils._POISSON_PARAM);
+        System.out.println("Network size prior: " + Utils._NETWORK_SIZE_PRIOR);
+        System.out.println("Dimension change weight: " + Utils.DIMENSION_CHANGE_WEIGHT);
+        System.out.println("Time window size: " + Utils._TIME_WINDOW_SIZE);
+        System.out.println("Pop size window size: " + Utils._POP_SIZE_WINDOW_SIZE);
         System.out.println("Seed: " + Utils._SEED);
 
         System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);

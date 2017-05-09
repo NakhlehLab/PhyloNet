@@ -4,6 +4,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.DataGenerator;
@@ -28,6 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.w3c.dom.*;
 
 /**
@@ -49,11 +51,14 @@ public class Test {
         //testMosquitoData(args);
         //testOurisiaData(args);
         //test012Data(args);
-        trim012Data(args);
+        //trim012Data(args);
         //testWithDingqiaoNetwork(args);
         //testWithDingqiaoNetwork_diploid(args);
+        //testMulInData(args);
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
+        //generateFourSpeciesData();
+        generateAFLPdata();
         //generateVLBLSNPdata();
         //generateNEXfile();
         //generateSecondSNPdata();
@@ -633,11 +638,11 @@ public class Test {
         Utils._NUM_THREADS = 4;
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
-        Utils._CHAIN_LEN = 5000000;
-        Utils._BURNIN_LEN = 2500000;
+        Utils._CHAIN_LEN = 1000000;
+        Utils._BURNIN_LEN = 500000;
         Utils._SAMPLE_FREQUENCY = 500;
         //Utils._NET_MAX_RETI = 2;
-        Utils._DIAMETER_PRIOR = true;
+        Utils._DIAMETER_PRIOR = false;
         Utils._TIMES_EXP_PRIOR = true;
         Utils._MC3_CHAINS = new ArrayList<>();
         //Utils._MC3_CHAINS.add(1.0);
@@ -645,16 +650,19 @@ public class Test {
         //Utils._MC3_CHAINS.add(4.0);
         Utils._CONST_POP_SIZE = false;
         Utils._POP_SIZE_MEAN = 0.014;
+        Utils._POISSON_PARAM = 2.0;
+        Utils._NETWORK_SIZE_PRIOR = false;
+        Utils.EXP_PARAM = 2.0;
 
-        String filename = "../mosquito/sampled_new.snp";
+        String filename = "../mosquito/sampled_May4.snp";
 
-        SNAPPLikelihood.ALGORITHM = 2;
         SNAPPLikelihood.useOnlyPolymorphic = false;
+        Algorithms.HAS_DOMINANT_MARKER = false;
         //SNAPPLikelihood.debugMode = true;
 
-//        if(args.length > 0) {
-//            filename = args[0];
-//        }
+        if(args.length > 0) {
+            filename = args[0];
+        }
 //
 //        if(args.length > 1) {
 //            Utils._SEED = Integer.parseInt(args[1]);
@@ -779,11 +787,11 @@ public class Test {
         Utils._NUM_THREADS = 4;
         //Utils._CHAIN_LEN = 2000500;
         //Utils._BURNIN_LEN = 500;
-        Utils._CHAIN_LEN = 2000000;
-        Utils._BURNIN_LEN = 1000000;
+        Utils._CHAIN_LEN = 1500000;
+        Utils._BURNIN_LEN = 500000;
         Utils._SAMPLE_FREQUENCY = 500;
-        //Utils._NET_MAX_RETI = 2;
-        Utils._DIAMETER_PRIOR = true;
+        //Utils._NET_MAX_RETI = 1;
+        Utils._DIAMETER_PRIOR = false;
         Utils._TIMES_EXP_PRIOR = true;
         Utils._MC3_CHAINS = new ArrayList<>();
         //Utils._MC3_CHAINS.add(1.0);
@@ -791,17 +799,37 @@ public class Test {
         //Utils._MC3_CHAINS.add(4.0);
         Utils._CONST_POP_SIZE = false;
         Utils._ESTIMATE_POP_SIZE = true;
-        Utils._POP_SIZE_MEAN = 0.01;
+        Utils._ESTIMATE_POP_PARAM = true;
+        Utils._NETWORK_SIZE_PRIOR = true;
+        Utils._POP_SIZE_MEAN = 0.3;
+        Utils._SEED = 12345678;
+        Utils._TIME_WINDOW_SIZE = 0.04;
+        Utils._POP_SIZE_WINDOW_SIZE = 0.04;
 
-        String filename = "../ourisia/test2.nex";
+
+
+        String filename = "../ourisia/test4.nex";
+
+        Utils.EXP_PARAM = 2.0;
+        Utils._POISSON_PARAM = 1.0;
+        PoissonDistribution dist = new PoissonDistribution(Utils._POISSON_PARAM);
+        //System.out.println(dist.probability(0));
+        //System.out.println(dist.probability(1));
+        //System.out.println(dist.probability(2));
 
         SNAPPLikelihood.useOnlyPolymorphic = true;
+        Algorithms.HAS_DOMINANT_MARKER = true;
         //SNAPPLikelihood.debugMode = true;
 
-        /*if(args.length > 0) {
+        String breakpoint = null;
+        if(args.length > 0) {
             filename = args[0];
         }
 
+        if(args.length > 1) {
+            breakpoint = args[1];
+        }
+        /*
         if(args.length > 1) {
             Utils._SEED = Integer.parseInt(args[1]);
         }
@@ -810,11 +838,8 @@ public class Test {
             Utils._CHAIN_LEN = Integer.parseInt(args[2]);
         }*/
 
-        String breakpoint = null;//"breakpoint.txt";
         if(breakpoint != null) {
             System.out.println("Breakpoint: " + breakpoint);
-            Utils._START_NET = getBestNetwork(breakpoint);
-            System.out.println("Start network: " + Utils._START_NET);
         }
 
         Utils.printSettings();
@@ -874,9 +899,17 @@ public class Test {
             mappingString = mappingString.substring(0, mappingString.length() - 2);
         mappingString += ">";
 
-        String command = "MCMC_SNP";
+        String command = "MCMC_BiMarkers";
 
         for(String taxon : sequence.keySet()) {
+            StringBuilder newseq = new StringBuilder(sequence.get(taxon));
+            for(int i = 0 ; i < newseq.length() ; i++) {
+                if(newseq.charAt(i) == '0')
+                    newseq.setCharAt(i, '1');
+                else if (newseq.charAt(i) == '1')
+                    newseq.setCharAt(i, '0');
+            }
+            sequence.put(taxon, newseq.toString());
             System.out.println(taxon + " " + sequence.get(taxon).substring(0, 10) + "..." + sequence.get(taxon).substring(sequence.get(taxon).length() - 10, sequence.get(taxon).length()));
         }
         List<Map<String, String>> snpdata = new ArrayList<>();
@@ -928,7 +961,11 @@ public class Test {
             pi[1] += 1.0 * count;
         }
         pi[1] /= 1.0 * totalSites;
+        //pi[1] = 0.64;
         pi[0] = 1 - pi[1];
+
+        //pi[0] = 1-Math.sqrt(1-pi[0]);
+        //pi[1] = 1-pi[0];
 
         rate[0] = 1 / (2*pi[0]);
 
@@ -950,13 +987,20 @@ public class Test {
         //Utils._START_NET = "[0.01432278740805789](R:0.014623597111565564,((Q:0.00911822640342767,(A:0.005012995498108841,(G:0.0013615204510037562,C:0.0013615204510037562):0.0036514750471050845):0.004105230905318829):8.83545194053861E-4,(L:0.004912143753730035):0.005089627843751496):0.004621825514084034);";
         //Utils._START_NET = "[0.004730554505572216]((L:0.0018026486850655757)#H1:0.006868170254180248::0.37434235096700086,((Q:0.003017192479968964,(((C:8.059411556637647E-4,G:8.059411556637647E-4):7.375228243481855E-4,A:0.0015434639800119502):0.0010181992335458793,#H1:7.590145284922538E-4::0.6256576490329991):4.5552926641113456E-4):0.0018414552390651788,R:0.004858647719034143):0.003812171220211681);";
 
-        MC3Core run = new MC3Core(alns, curBAGTRModel);
+        //Utils._START_NET = "[0.3584047434049776](mcplac:0.028549641388049177:0.1025603177372156,(((HYB:1.0168476145993422E-4:0.2639467933716024)#H1:2.5954967850195696E-4:0.14346338982351825:0.5903131340377815,vul:3.612344399618912E-4:0.23677672279395687):0.017410766188433915:0.21101425510697555,(mcpmcp:6.913323274423638E-4:0.12771811741000286,#H1:5.896475659824295E-4:0.31865030707731684:0.4096868659622185):0.017080668300953443:0.19401078380376935):0.01077764075965337:0.26656789929703123);";
+        //Utils._START_NET = "[0.25027830859424205](mcpmcp:0.028033183934714517:0.343229317327624,(HYB:0.01579459430923836:0.6982026938879052,vul:0.01579459430923836:0.9267269220413799):0.012238589625476158:0.10691259203388048);";
+        //Utils._START_NET = "[0.2](((HYB:0.09544605860064784:0.2,vul:0.09544605860064784:0.2):0.014127856768885116:0.2,mcpmcp:0.10957391536953295:0.2):0.014915557079912739:0.2,mcplac:0.12448947244944569:0.2);";
+        //Utils._START_NET = "[0.2](((HYB:0.10165792392195251:0.2,sesses:0.10165792392195251:0.2):0.014096016100334438:0.2,(cro:0.10510174996871254:0.2,mccmcc:0.10510174996871254:0.2):0.010652190053574415:0.2):0.008308936248612647:0.2,cae:0.1240628762708996:0.2);";
+
+        MC3Core run = new MC3Core(alns, curBAGTRModel, breakpoint);
         run.run();
 
 
         System.out.println(String.format("Total elapsed time : %2.5f s\n",
                 (double) (System.currentTimeMillis() - startTime) / 1000.0));
     }
+
+
 
     //args[0] current part
     //args[1] seed
@@ -1412,7 +1456,245 @@ public class Test {
         }
     }
 
+    public static void testMulInData(String[] args) {
+        String whichToRun = "aflp";
+        int curPart = Integer.parseInt(args[0]);
+        int nIdv = Integer.parseInt(args[1]);
 
+        String path = "";
+        Utils._MC3_CHAINS = new ArrayList<>();
+        Map<String, String> networks = new HashMap<>();
+        String breakpoint = null;//"/scratch/jz55/useOnlyPolymorphic/run/slurm-3175687_";
+        BiAllelicGTR BAGTRModel = null;
+        double [] pi =  new double[2];
+        double [] rate = new double[1];
+
+        if(whichToRun.equals("aflp")) {
+            path = "../aflp_many";
+            Utils._NUM_THREADS = 2;
+            Utils._NET_MAX_RETI = 1;
+
+            Utils._CHAIN_LEN = 1000000;
+            Utils._BURNIN_LEN = 500000;
+            Utils._DIAMETER_PRIOR = false;
+            Utils._TIMES_EXP_PRIOR = true;
+            Utils._CONST_POP_SIZE = false;
+            Utils._ESTIMATE_POP_SIZE = true;
+            Utils._ESTIMATE_POP_PARAM = false;
+            Utils._POISSON_PARAM = 1.0;
+            Utils._POP_SIZE_MEAN = 0.005;
+            Utils.EXP_PARAM = 2.0;
+
+            //Utils._MC3_CHAINS.add(2.0);
+            //Utils._MC3_CHAINS.add(4.0);
+
+            SNAPPLikelihood.useOnlyPolymorphic = true;
+            Algorithms.HAS_DOMINANT_MARKER = true;
+            networks.put("networkS", "((((C:0.005)I1#H1:0.006::0.8,D:0.011):0.009,(B:0.014,I1#H1:0.009::0.2):0.006):0.005,A:0.025);");
+
+            pi[1] = 0.5;
+            pi[0] = 1 - pi[1];
+            rate[0] = 1 / (2*pi[0]);
+        } else if(whichToRun.equals("non-aflp")) {
+            path = "../fourspecies";
+            Utils._NUM_THREADS = 8;
+            Utils._NET_MAX_RETI = 1;
+
+            Utils._CHAIN_LEN = 500000;
+            Utils._BURNIN_LEN = 200000;
+            Utils._DIAMETER_PRIOR = false;
+            Utils._TIMES_EXP_PRIOR = true;
+            Utils._CONST_POP_SIZE = false;
+            Utils._ESTIMATE_POP_SIZE = true;
+            Utils._ESTIMATE_POP_PARAM = false;
+            Utils._POISSON_PARAM = 1.0;
+            Utils._POP_SIZE_MEAN = 0.005;
+
+            //Utils._MC3_CHAINS.add(2.0);
+            //Utils._MC3_CHAINS.add(4.0);
+
+            SNAPPLikelihood.useOnlyPolymorphic = true;
+            Algorithms.HAS_DOMINANT_MARKER = false;
+            networks.put("networkS", "((((C:0.005)I1#H1:0.006::0.8,D:0.011):0.009,(B:0.014,I1#H1:0.009::0.2):0.006):0.005,A:0.025);");
+
+            pi[1] = 0.9;
+            pi[0] = 1 - pi[1];
+            rate[0] = 1 / (2*pi[0]);
+        }
+        else {
+            System.out.println("Which to run?");
+            return;
+        }
+
+
+        Utils.printSettings();
+
+        int number = 0;
+        List<String> paths = new ArrayList<>();
+        for (File file : new File(path).listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".snp")) {
+                paths.add(file.getPath());
+                number++;
+            }
+        }
+        Collections.sort(paths);
+        //curPart = paths.indexOf("../data/networkA_1000000_ac_seed12345678.snp");
+        System.out.println("Total number " + number);
+        System.out.println("Current number " + curPart);
+        System.out.println(paths.get(curPart));
+
+        Network trueNetwork = null;
+        for(String s : networks.keySet()) {
+            if(paths.get(curPart).contains(s)) {
+                trueNetwork = Networks.readNetwork(networks.get(s));
+                break;
+            }
+        }
+        double constTheta = Utils._POP_SIZE_MEAN;
+        double mu = 1.0;
+        for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
+            NetNode node = (NetNode) nodeObject;
+            for(Object parentObject :  node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                node.setParentSupport(parent, constTheta);
+                //node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
+            }
+        }
+        trueNetwork.getRoot().setRootPopSize(constTheta);
+        int nameCount = 0;
+        for(Object node : trueNetwork.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("II" + nameCount);
+                nameCount++;
+            }
+        }
+
+//        if(breakpoint != null) {
+//            breakpoint = breakpoint + curPart + ".out";
+//            System.out.println("Breakpoint: " + breakpoint);
+//            Utils._START_NET = getBestNetwork(breakpoint);
+//            System.out.println("Start network: " + Utils._START_NET);
+//        }
+
+        long startTime = System.currentTimeMillis();
+        Map<String, String> allele2species = new HashMap<String, String>();
+        Map<String, List<String>> species2allele = new HashMap<>();
+        List<String> species = new ArrayList<>();
+        Set<String> individualSubset = new HashSet<>();
+        individualSubset.add("A_0");
+        individualSubset.add("A_1");
+        individualSubset.add("B_0");
+        //individualSubset.add("B_1");
+        individualSubset.add("C_0");
+        individualSubset.add("D_0");
+        //individualSubset.add("D_1");
+
+        Map<String, String> sequence = new HashMap<>();
+
+        try {
+            File file = new File(paths.get(curPart));
+            Scanner scanner = new Scanner(file);
+
+            while(scanner.hasNext()) {
+                String taxon = scanner.next();
+                if(taxon.length() == 0) break;
+
+                String s = scanner.next();
+
+                String curSpecies = taxon.substring(0, taxon.indexOf('_'));
+
+                if(!species.contains(curSpecies)) {
+                    species.add(curSpecies);
+                    species2allele.put(curSpecies, new ArrayList<>());
+                }
+
+                //if(species2allele.get(curSpecies).size() >= nIdv) continue;
+                if(!individualSubset.contains(taxon)) continue;
+
+                allele2species.put(taxon, curSpecies);
+                species2allele.get(curSpecies).add(taxon);
+
+
+                sequence.put(taxon, s);
+            }
+
+            scanner.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for(String taxon : sequence.keySet()) {
+            System.out.println(taxon + " " + sequence.get(taxon).substring(0, 10) + "..." + sequence.get(taxon).substring(sequence.get(taxon).length() - 10, sequence.get(taxon).length()));
+        }
+        List<Map<String, String>> snpdata = new ArrayList<>();
+        snpdata.add(sequence);
+        List<Alignment> alns = new ArrayList<>();
+        Utils._TAXON_MAP = species2allele;
+
+        for(Map<String, String> input : snpdata) {
+            //for(String allele : input.keySet()) {
+            //System.out.println(allele + " " + input.get(allele));
+            //}
+//            System.out.println();
+//            Alignment aln = new Alignment(input);
+//
+//            Map<Integer, Integer> cache = new HashMap<>();
+//
+//            for(int i = 0 ; i < aln.getSiteCount() ; i++) {
+//                Map<String, Character> colorMap = new TreeMap<String, Character>();
+//                for(String taxon : aln.getAlignment().keySet()) {
+//                    colorMap.put(taxon, aln.getAlignment().get(taxon).charAt(i));
+//                }
+//                Integer represent = 0;
+//                for(String s : colorMap.keySet()) {
+//                    represent = (represent << 1) + (colorMap.get(s) == '0' ? 0 : 1);
+//                }
+//                if(!cache.containsKey(represent)) {
+//                    cache.put(represent, 0);
+//                }
+//                cache.put(represent, cache.get(represent) + 1);
+//            }
+//
+//            aln.setCache(cache);
+//            alns.add(aln);
+
+            Alignment aln = new Alignment(input);
+            List<Alignment> alnwarp = new ArrayList<>();
+            alnwarp.add(new Alignment(sequence));
+            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alnwarp);
+            alns.add(aln);
+        }
+
+        /*pi[0] = pi[1] = 0;
+        int totalSites = 0;
+        for(Alignment alg : alns) {
+            int count = 0;
+            for(String s : alg.getAlignment().values()) {
+                for(int i = 0 ; i < s.length() ; i++) {
+                    count += s.charAt(i) == '1' ? 1 : 0;
+                }
+            }
+            totalSites += alg.getSiteCount() * alg.getTaxonSize();
+            pi[1] += 1.0 * count;
+        }
+        pi[1] /= 1.0 * totalSites;*/
+
+        BAGTRModel = new BiAllelicGTR(pi, rate);
+
+        System.out.println("True Network: " + trueNetwork.toString());
+        Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
+        cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
+        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodMTC(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
+
+        //Utils._START_NET = "[0.036]" + trueNetwork.toString();
+
+        MC3Core run = new MC3Core(alns, BAGTRModel, breakpoint);
+        run.run();
+
+        System.out.println(String.format("Total elapsed time : %2.5f s\n",
+                (double) (System.currentTimeMillis() - startTime) / 1000.0));
+    }
 
     public static void testWithSNAPPSimulation(String[] args) {
         int curPart = Integer.parseInt(args[0]);
@@ -1629,6 +1911,7 @@ public class Test {
         //String whichToRun = "firstdata_mono_firstrun";
         //String whichToRun = "firstdata_mono_secondrun";
         String whichToRun = "firstdata_mono_thirdrun";
+        //String whichToRun = "poly";
         //String whichToRun = "VLBL";
         int curPart = Integer.parseInt(args[0]);
 
@@ -1694,19 +1977,60 @@ public class Test {
             Utils._NUM_THREADS = 8;
 
             Utils._CHAIN_LEN = 1500000;
-            Utils._BURNIN_LEN = 1000000;
+            Utils._BURNIN_LEN = 500000;
             Utils._DIAMETER_PRIOR = true;
             Utils._TIMES_EXP_PRIOR = true;
             //Utils._ESTIMATE_POP_PARAM = false;
             Utils._CONST_POP_SIZE = true;
             Utils._ESTIMATE_POP_SIZE = true;
+            Utils._ESTIMATE_POP_PARAM = false;
             Utils._NET_MAX_RETI = 3;
             if(curPart < 12)
                 Utils._NET_MAX_RETI = 2;
-            Utils._POP_SIZE_MEAN = 0.0036;
+            Utils._POP_SIZE_MEAN = 0.036;
 
             SNAPPLikelihood.useOnlyPolymorphic = false;
-            SNAPPLikelihood.ALGORITHM = 2;
+            Algorithms.HAS_DOMINANT_MARKER = false;
+
+            //breakpoint = "/scratch/jz55/usePolyMono/onlyPoly/slurm-3519346_" + curPart + ".out";
+
+            networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+            networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+            networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
+            networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+
+            networks.put("networkAS", "((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:2.0,R:4.0)I2:1.0,(I6#H1:0.7::0.2,C:1.4)I5:3.6)I0;");
+            networks.put("networkBS", "((((A:3.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,G:4.0)I7:1.0)I0;");
+            networks.put("networkCS", "((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,C:5.0)I0;");
+            networks.put("networkDS", "((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(I6#H2:0.5::0.2,C:1.0)I5:4.0)I0;");
+
+
+            pi[1] = 0.5;
+            pi[0] = 1 - pi[1];
+            rate[0] = 1 / (2*pi[0]);
+            //Utils._START_NET = "[0.036]((R:0.07551329384968994,(((A:0.03631082363051613,Q:0.03631082363051613):0.018034121924842106)#H1:3.8789381985759874E-5::0.8713490636767001,(L:6.737360012374536E-4)#H2:0.05370999893610654::0.8726103077386879):0.02112955891234594):0.013137397706868018,((G:0.03594331545781518,C:0.03594331545781518):0.026068316200871,(#H2:0.05786571712696003::0.12738969226131214,#H1:0.004194507572839248::0.12865093632329994):0.003472178530488694):0.026639059897871777);";
+        } else if(whichToRun.equals("poly")){
+            path = "../sixspecies/";
+            Utils._NUM_THREADS = 8;
+
+            //Utils._MC3_CHAINS.add(2.0);
+            //Utils._MC3_CHAINS.add(4.0);
+            Utils._CHAIN_LEN = 1500000;
+            Utils._BURNIN_LEN = 500000;
+            Utils._DIAMETER_PRIOR = true;
+            Utils._TIMES_EXP_PRIOR = true;
+            //Utils._ESTIMATE_POP_PARAM = false;
+            Utils._CONST_POP_SIZE = false;
+            Utils._ESTIMATE_POP_SIZE = true;
+            Utils._ESTIMATE_POP_PARAM = false;
+            //Utils.EXP_PARAM = 5.0;
+            Utils._NET_MAX_RETI = 3;
+            if(curPart < 36)
+                Utils._NET_MAX_RETI = 2;
+            Utils._POP_SIZE_MEAN = 0.036;
+
+            SNAPPLikelihood.useOnlyPolymorphic = true;
+            Algorithms.HAS_DOMINANT_MARKER = false;
 
             //breakpoint = "/scratch/jz55/usePolyMono/onlyPoly/slurm-3519346_" + curPart + ".out";
 
@@ -1934,7 +2258,7 @@ public class Test {
     }
 
     public static void testWithDingqiaoNetwork_diploid(String[] args) {
-        String whichToRun = "run2_t8c";
+        String whichToRun = "six_aflp";
         int curPart = Integer.parseInt(args[0]);
 
         String path = "";
@@ -1955,6 +2279,7 @@ public class Test {
             Utils._DIAMETER_PRIOR = true;
             Utils._TIMES_EXP_PRIOR = true;
             Utils._ESTIMATE_POP_SIZE = true;
+            Utils._ESTIMATE_POP_PARAM = false;
             Utils._CONST_POP_SIZE = false;
             Utils._POP_SIZE_MEAN = 0.036;
             randomlyPhasing = false;
@@ -2022,7 +2347,32 @@ public class Test {
             networks.put("net_0.4", "((((C:0.012,(B:0.008)I7#H1:0.004::0.2)I4:0.008,(I7#H1:0.008::0.8)I6#H2:0.004::0.2)I3:0.008,(I6#H2:0.008::0.8)I5#H3:0.004::0.2)I2:0.012,(I5#H3:0.008::0.8,A:0.032)I1:0.008)I0;");
             networks.put("net_1.0", "((((C:0.07,(B:0.06)I7#H1:0.01::0.2)I4:0.02,(I7#H1:0.02::0.8)I6#H2:0.01::0.2)I3:0.02,(I6#H2:0.02::0.8)I5#H3:0.01::0.2)I2:0.07,(I5#H3:0.06::0.8,A:0.16)I1:0.02)I0;");
 
-        } else {
+        }else if(whichToRun.equals("six_aflp")) {
+            path = "../sixspecies_aflp";
+            Utils._NUM_THREADS = 4;
+            Utils._NET_MAX_RETI = 1;
+
+            Utils._CHAIN_LEN = 1500000;
+            Utils._BURNIN_LEN = 500000;
+            Utils._DIAMETER_PRIOR = false;
+            Utils._TIMES_EXP_PRIOR = true;
+            Utils._CONST_POP_SIZE = false;
+            Utils._ESTIMATE_POP_SIZE = true;
+            Utils._ESTIMATE_POP_PARAM = false;
+            Utils._POISSON_PARAM = 1.0;
+            Utils._POP_SIZE_MEAN = 0.036;
+            Utils.GAMMA_SHAPE = 1.0;
+            Utils.EXP_PARAM = 2.0;
+
+            //Utils._MC3_CHAINS.add(2.0);
+            //Utils._MC3_CHAINS.add(4.0);
+
+            SNAPPLikelihood.useOnlyPolymorphic = true;
+            Algorithms.HAS_DOMINANT_MARKER = true;
+            networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+
+        }
+        else {
             System.out.println("Which to run?");
             return;
         }
@@ -2165,7 +2515,10 @@ public class Test {
                 aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
             } else {
                 alnwarp.add(new Alignment(sequence));
-                aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alnwarp);
+                if(Algorithms.HAS_DOMINANT_MARKER)
+                    aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
+                else
+                    aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alnwarp);
             }
 
             alns.add(aln);
@@ -2370,22 +2723,23 @@ public class Test {
     }
 
     public static void generateSNPdata() {
+        Utils._SEED = 123456;
         BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
 
         Map<String, String> networks = new HashMap<>();
-        //networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
-        //networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
-        //networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
-        //networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+        networks.put("networkA", "(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+        networks.put("networkB", "(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
+        networks.put("networkC", "(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
+        networks.put("networkD", "(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
 
-        networks.put("networkAS", "((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:2.0,R:4.0)I2:1.0,(I6#H1:0.7::0.2,C:1.4)I5:3.6)I0;");
-        networks.put("networkBS", "((((A:3.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,G:4.0)I7:1.0)I0;");
-        networks.put("networkCS", "((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,C:5.0)I0;");
-        networks.put("networkDS", "((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(I6#H2:0.5::0.2,C:1.0)I5:4.0)I0;");
+        //networks.put("networkAS", "((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:2.0,R:4.0)I2:1.0,(I6#H1:0.7::0.2,C:1.4)I5:3.6)I0;");
+        //networks.put("networkBS", "((((A:3.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,G:4.0)I7:1.0)I0;");
+        //networks.put("networkCS", "((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,C:5.0)I0;");
+        //networks.put("networkDS", "((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:3.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(I6#H2:0.5::0.2,C:1.0)I5:4.0)I0;");
 
 
 
-        int lengtharray[] = new int[]{1000, 10000, 100000, 1000000};
+        int lengtharray[] = new int[]{100,1000,10000,100000,1000000};
 
         for(int i = 0 ; i < lengtharray.length ; i++) {
             System.out.println("Generating length=" + lengtharray[i]);
@@ -2405,10 +2759,160 @@ public class Test {
                 }
                 trueNetwork.getRoot().setRootPopSize(constTheta);
 
-                String filename = "/scratch/jz55/usePolyMono/data/" + label + "_" + lengtharray[i] + "_ac_seed12345678.snp";
+                String filename = "../data/" + label + "_" + lengtharray[i] + "_ac_seed" + Utils._SEED +".snp";
                 SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, Utils._SEED + lengtharray[i]);
                 simulator._diploid = false;
+                simulator._dominant = false;
                 Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, lengtharray[i], true);
+                List<String> taxa = new ArrayList<>(onesnp.keySet());
+                Collections.sort(taxa);
+                try {
+                    PrintWriter out = new PrintWriter(filename);
+                    for (String taxon : taxa) {
+                        out.println(taxon + " " + onesnp.get(taxon));
+                    }
+                    out.close();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+//                Utils._NUM_THREADS = 4;
+//                Utils._ESTIMATE_POP_SIZE = false;
+//                Utils._POP_SIZE_MEAN = 0.01;
+//                Utils._TIMES_EXP_PRIOR = true;
+//                Utils._DIAMETER_PRIOR = true;
+//                generateNEXfile("../data/" + label + "_" + lengtharray[i] + "_ac.nex", null, onesnp, "01");
+
+            }
+        }
+    }
+
+    public static void generateFourSpeciesData() {
+        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
+
+        Map<String, String> networks = new HashMap<>();
+
+        networks.put("networkS", "((((C:0.005)I1#H1:0.006::0.8,D:0.011):0.009,(B:0.014,I1#H1:0.009::0.2):0.006):0.005,A:0.025);");
+
+
+        int lengtharray[] = new int[]{10000};
+
+        for(int i = 0 ; i < lengtharray.length ; i++) {
+            System.out.println("Generating length=" + lengtharray[i]);
+            for(String label : networks.keySet()) {
+                //if(lengtharray[i] != 250000 || !label.equals("networkC")) continue;
+
+                Network trueNetwork = Networks.readNetwork(networks.get(label));
+
+                double constTheta = 0.005;
+                for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
+                    NetNode node = (NetNode) nodeObject;
+                    for(Object parentObject :  node.getParents()) {
+                        NetNode parent = (NetNode) parentObject;
+                        node.setParentSupport(parent, constTheta);
+                        //node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
+                    }
+                }
+                trueNetwork.getRoot().setRootPopSize(constTheta);
+
+                System.out.println(trueNetwork.toString());
+
+                String filename = "../fourspecies/" + label + "_" + lengtharray[i] + "_nc_seed12345678.snp";
+                SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, Utils._SEED + lengtharray[i]);
+                simulator._diploid = false;
+                simulator._dominant = false;
+                Map<String, List<String>> species2alleles = new HashMap<>();
+                species2alleles.put("A", new ArrayList<>());
+                species2alleles.put("B", new ArrayList<>());
+                species2alleles.put("C", new ArrayList<>());
+                species2alleles.put("D", new ArrayList<>());
+                species2alleles.get("A").add("A_0");
+                species2alleles.get("B").add("B_0");
+                species2alleles.get("C").add("C_0");
+                species2alleles.get("C").add("C_1");
+                species2alleles.get("C").add("C_2");
+                species2alleles.get("C").add("C_3");
+                species2alleles.get("D").add("D_0");
+
+                Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, species2alleles, lengtharray[i], false);
+                List<String> taxa = new ArrayList<>(onesnp.keySet());
+                Collections.sort(taxa);
+                try {
+                    PrintWriter out = new PrintWriter(filename);
+                    for (String taxon : taxa) {
+                        out.println(taxon + " " + onesnp.get(taxon));
+                    }
+                    out.close();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+//                Utils._NUM_THREADS = 4;
+//                Utils._ESTIMATE_POP_SIZE = false;
+//                Utils._POP_SIZE_MEAN = 0.01;
+//                Utils._TIMES_EXP_PRIOR = true;
+//                Utils._DIAMETER_PRIOR = true;
+//                generateNEXfile("../data/" + label + "_" + lengtharray[i] + "_ac.nex", null, onesnp, "01");
+
+            }
+        }
+    }
+
+    public static void generateAFLPdata() {
+        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
+
+        Map<String, String> networks = new HashMap<>();
+
+        networks.put("networkS", "((((C:0.005)I1#H1:0.006::0.8,D:0.011):0.009,(B:0.014,I1#H1:0.009::0.2):0.006):0.005,A:0.025);");
+        Utils._SEED = 12345678;
+
+        int lengtharray[] = new int[]{10000};
+
+        for(int i = 0 ; i < lengtharray.length ; i++) {
+            System.out.println("Generating length=" + lengtharray[i]);
+            for(String label : networks.keySet()) {
+                //if(lengtharray[i] != 250000 || !label.equals("networkC")) continue;
+
+                Network trueNetwork = Networks.readNetwork(networks.get(label));
+
+                double constTheta = 0.005;
+                for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
+                    NetNode node = (NetNode) nodeObject;
+                    for(Object parentObject :  node.getParents()) {
+                        NetNode parent = (NetNode) parentObject;
+                        node.setParentSupport(parent, constTheta);
+                        //node.setParentDistance(parent, node.getParentDistance(parent) * constTheta / 2.0);
+                    }
+                }
+                trueNetwork.getRoot().setRootPopSize(constTheta);
+
+                System.out.println(trueNetwork.toString());
+
+                String filename = "../aflp_many/" + label + "_" + lengtharray[i] + "_nc_seed" +Utils._SEED+ ".snp";
+                SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, Utils._SEED + lengtharray[i]);
+                simulator._diploid = true;
+                simulator._dominant = true;
+                Map<String, List<String>> species2alleles = new HashMap<>();
+                species2alleles.put("A", new ArrayList<>());
+                species2alleles.put("B", new ArrayList<>());
+                species2alleles.put("C", new ArrayList<>());
+                species2alleles.put("D", new ArrayList<>());
+                species2alleles.get("A").add("A_0");
+                species2alleles.get("A").add("A_1");
+                species2alleles.get("A").add("A_2");
+                species2alleles.get("A").add("A_3");
+                species2alleles.get("B").add("B_0");
+                species2alleles.get("B").add("B_1");
+                species2alleles.get("B").add("B_2");
+                species2alleles.get("B").add("B_3");
+                species2alleles.get("C").add("C_0");
+                species2alleles.get("C").add("C_1");
+                species2alleles.get("C").add("C_2");
+                species2alleles.get("C").add("C_3");
+                species2alleles.get("D").add("D_0");
+                species2alleles.get("D").add("D_1");
+                species2alleles.get("D").add("D_2");
+                species2alleles.get("D").add("D_3");
+
+                Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, species2alleles, lengtharray[i], false);
                 List<String> taxa = new ArrayList<>(onesnp.keySet());
                 Collections.sort(taxa);
                 try {
@@ -2559,7 +3063,7 @@ public class Test {
             out.println(";End;");
             out.println();
             out.println("BEGIN PHYLONET;");
-            out.print("MCMC_SNP -cl " + Utils._CHAIN_LEN + " -bl " + Utils._BURNIN_LEN + " -sf " + Utils._SAMPLE_FREQUENCY);
+            out.print("MCMC_BiMarkers -cl " + Utils._CHAIN_LEN + " -bl " + Utils._BURNIN_LEN + " -sf " + Utils._SAMPLE_FREQUENCY);
             out.print(" -sd " + Utils._SEED);
             if(Utils._NUM_THREADS > 1)
                 out.println(" -pl " + Utils._NUM_THREADS);
@@ -2716,7 +3220,7 @@ public class Test {
 //                        }
                         System.out.println("Sampled at " + (position + i) + " (+" + (position + i - lastPos) + ")" + " " );
                         lastPos = position + i;
-                        nextPos = position + i + 5000;
+                        nextPos = position + i + 20000;
                         break;
                     }
                 }
@@ -2727,7 +3231,7 @@ public class Test {
         System.out.println("Polymorphic sites: " + nPolymorphic);
 
         try {
-            PrintWriter out = new PrintWriter("../mosquito/sampled_new.snp");
+            PrintWriter out = new PrintWriter("../mosquito/sampled_May4.snp");
             List<String> taxa = new ArrayList<>(samples.keySet());
             //Collections.sort(taxa);
             for (String taxon : taxa) {

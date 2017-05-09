@@ -273,7 +273,10 @@ public class SNAPPLikelihood {
         double sum = 0.0;
         double sumMono = 0.0;
         double numsites = 0.0;
-        R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+        if(Algorithms.HAS_DOMINANT_MARKER)
+            R.maxLineages = patterns.keySet().iterator().next().sumLineages() * 2;
+        else
+            R.maxLineages = patterns.keySet().iterator().next().sumLineages();
         Network cloneNetwork = Networks.readNetwork(netstring);
         cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
         SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta);

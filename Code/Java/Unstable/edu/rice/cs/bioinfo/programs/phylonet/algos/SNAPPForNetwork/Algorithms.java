@@ -20,7 +20,7 @@ public class Algorithms
 {
     private static final boolean PRINT_DETAILS = false;
     public static final boolean CORRECTION_AT_LEAVES = false;
-    public static final boolean HAS_DOMINANT_MARKER = true;
+    public static boolean HAS_DOMINANT_MARKER = false;
     public static final boolean SWITCH_FASTER_BIALLILE = true;
     public static final boolean SWITCH_EXP_APPROX = true;
     public static final boolean SWITCH_APPROX_SPLIT = false;

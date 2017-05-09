@@ -14,7 +14,7 @@ import org.apache.commons.math3.distribution.GammaDistribution;
 public class PopulationSize extends StateNode {
 
     private GammaDistribution _popSize;
-    private double _gammaMean = Utils._POP_SIZE_MEAN / 2;
+    private double _gammaMean = Utils._POP_SIZE_MEAN / Utils.GAMMA_SHAPE;
     private Operator[] _operators;
     private double[] _opWeights;
 
@@ -34,7 +34,7 @@ public class PopulationSize extends StateNode {
         }
 
         if(!Utils._ESTIMATE_POP_PARAM)
-            mean = Utils._POP_SIZE_MEAN;
+            mean = Utils._POP_SIZE_MEAN / Utils.GAMMA_SHAPE;
         _gammaMean = mean;
         _popSize = new GammaDistribution(Utils.GAMMA_SHAPE, _gammaMean);
     }

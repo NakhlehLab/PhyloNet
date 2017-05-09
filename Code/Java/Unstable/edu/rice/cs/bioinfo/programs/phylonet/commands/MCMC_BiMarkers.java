@@ -12,6 +12,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 
@@ -76,6 +77,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                     if(marker != 0 && marker != 1)
                         throw new NumberFormatException();
                     _dominant = (char)('0' + marker);
+                    Algorithms.HAS_DOMINANT_MARKER = true;
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Unrecognized marker " + dominantParam.PostSwitchValue,
                             dominantParam.PostSwitchParam.getLine(), dominantParam.PostSwitchParam.getColumn());
@@ -84,6 +86,14 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                 errorDetected.execute("Expected value after switch -dominant." + dominantParam.PostSwitchValue,
                         dominantParam.PostSwitchParam.getLine(), dominantParam.PostSwitchParam.getColumn());
             }
+        }
+
+        // only polymorphic
+        ParamExtractor onlyPolyParam = new ParamExtractor("op", this.params, this.errorDetected);
+        if(onlyPolyParam.ContainsSwitch){
+            SNAPPLikelihood.useOnlyPolymorphic = true;
+        } else {
+            SNAPPLikelihood.useOnlyPolymorphic = false;
         }
 
         // ----- selected taxa -----
@@ -326,6 +336,36 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             Utils._TIMES_EXP_PRIOR = false;
         }
 
+        ParamExtractor thetaWinParam = new ParamExtractor("thetawindow", this.params, this.errorDetected);
+        if(thetaWinParam.ContainsSwitch){
+            if(thetaWinParam.PostSwitchParam != null) {
+                try {
+                    Utils._POP_SIZE_WINDOW_SIZE = Double.parseDouble(thetaWinParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized theta window size " + thetaWinParam.PostSwitchValue,
+                            thetaWinParam.PostSwitchParam.getLine(), thetaWinParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -thetawindow.",
+                        thetaWinParam.SwitchParam.getLine(), thetaWinParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor timeWinParam = new ParamExtractor("timewindow", this.params, this.errorDetected);
+        if(timeWinParam.ContainsSwitch){
+            if(timeWinParam.PostSwitchParam != null) {
+                try {
+                    Utils._TIME_WINDOW_SIZE = Double.parseDouble(timeWinParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized time window size " + timeWinParam.PostSwitchValue,
+                            timeWinParam.PostSwitchParam.getLine(), timeWinParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -timewindow.",
+                        timeWinParam.SwitchParam.getLine(), timeWinParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Starting State Settings -----
 
         // starting network
@@ -375,20 +415,22 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
 
         noError = noError && checkForUnknownSwitches(
                 "diploid", "dominant",
-                "taxa",
+                "taxa", "op",
                 "cl", "bl", "sf", "sd", "pl",
                 "mc3", "mr", "tm", "fixtheta", "varytheta",
                 "pp", "dd", "ee", "pi0",
-                "esptheta", "snet", "ptheta"
+                "esptheta", "snet", "ptheta",
+                "thetawindow", "timewindow"
         );
         checkAndSetOutFile(
                 diploidParam,
                 dominantParam,
-                dataParam,
+                dataParam, onlyPolyParam,
                 clParam, blParam, sfParam, sdParam, plParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
                 ppParam, ddParam, eeParam, estimatePThetaParam,
-                pthetaParam, snParam, pi0Param
+                pthetaParam, snParam, pi0Param,
+                thetaWinParam, timeWinParam
         );
 
         return  noError;
@@ -458,6 +500,8 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                 }
             }
         }
+
+        Utils.printSettings();
 
         List<Alignment> alnwarp = new ArrayList<>();
         alnwarp.add(new Alignment(_sequence));

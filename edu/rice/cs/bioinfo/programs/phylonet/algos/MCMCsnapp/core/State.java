@@ -87,7 +87,7 @@ public class State {
     public double propose() {
         double rand = Randomizer.getRandomDouble();
 
-        if(Utils._ESTIMATE_POP_SIZE && rand < _popSizeParamWeight) {
+        if(Utils._ESTIMATE_POP_SIZE && Utils._ESTIMATE_POP_PARAM && rand < _popSizeParamWeight) {
             _moveNode = _populationSize;
         }
         else {

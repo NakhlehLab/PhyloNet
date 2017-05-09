@@ -59,7 +59,8 @@ public class SpeciesNetPriorDistribution {
     private double getTopPrior(Network<NetNodeInfo> net) {
         int numReti = net.getReticulationCount();
         int numEdges = net.getLeafCount() * 2 - 2;
-        return Math.log(numReticulation.probability(numReti)) + getNetworkSizePrior(numReti, numEdges);
+        double networkSizePrior = Utils._NETWORK_SIZE_PRIOR ? getNetworkSizePrior(numReti, numEdges) : 0.0;
+        return Math.log(numReticulation.probability(numReti)) + networkSizePrior;
     }
 
     private double getNetworkSizePrior(int reti, int edges) {

@@ -134,7 +134,7 @@ public class SimSNPInNetwork {
     }
 
     public static void testDominant(){
-        double pi0 = 0.9;
+        double pi0 = 0.5;
         double pi1 = 1- pi0;
 
         BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {pi0, pi1}, new double[] {1.0/ (2.0 * pi0)});
@@ -191,7 +191,21 @@ public class SimSNPInNetwork {
         simulator._diploid = true;
         simulator._dominant = true;
 
+        Map<Character, Integer> counter = new TreeMap<>();
+
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
+
+        for(String taxon : onesnp.keySet()) {
+            for(int i = 0 ; i < onesnp.get(taxon).length() ; i++) {
+                if(!counter.containsKey(onesnp.get(taxon).charAt(i))) {
+                    counter.put(onesnp.get(taxon).charAt(i), 0);
+                }
+                counter.put(onesnp.get(taxon).charAt(i), counter.get(onesnp.get(taxon).charAt(i)) + 1);
+            }
+        }
+        for(Character c : counter.keySet()) {
+            System.out.println(c + ":" + counter.get(c));
+        }
 
         List<Alignment> alns = new ArrayList<>();
         Alignment aln = new Alignment(onesnp);
@@ -330,10 +344,10 @@ public class SimSNPInNetwork {
 
         Network<Object> trueNetwork;
         trueNetwork = Networks.readNetwork("((((b:1.0,c:1.0)I4:" + y + ")I3#H1:0.1::" + (1 - gamma) + ",a:" + (1.1 + y) + ")I1:" + x + ",(I3#H1:0.1::" + gamma + ",d:" + (1.1 + y) + ")I2:"+ x +")I0;");
-        //trueNetwork = Networks.readNetwork("(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
+        trueNetwork = Networks.readNetwork("(((((A:0.7)I6#H1:1.3::0.8,Q:2.0)I4:1.0,L:3.0)I3:1.0,R:4.0)I2:1.0,(G:2.0,(I6#H1:0.7::0.2,C:1.4)I5:0.6)I1:3.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:2.0,A:2.0)I4:1.0,L:3.0)I3:0.5)I8#H1:0.5::0.7,R:4.0)I2:1.0,(I8#H1:0.5::0.3,(G:2.0,C:2.0)I1:2.0)I7:1.0)I0;");
         //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,A:1.0)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,(G:1.0,C:1.0)I1:4.0)I0;");
-        trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
+        //trueNetwork = Networks.readNetwork("(((((Q:0.5)I8#H1:0.5::0.7,(A:0.5)I6#H2:0.5::0.8)I4:1.0,L:2.0)I3:2.0,(I8#H1:1.0::0.3,R:1.5)I7:2.5)I2:1.0,((I6#H2:0.5::0.2,C:1.0)I5:1.0,G:2.0)I1:3.0)I0;");
 
         double constTheta = 0.036;
         double mu = 1.0;
@@ -368,32 +382,76 @@ public class SimSNPInNetwork {
                 nameCount++;
             }
         }
-
-        int taxaPerSpecies = 10;
+        Map<String, String> allele2species = new HashMap<>();
         Map<String, List<String>> species2alleles = new HashMap<>();
+        /*int taxaPerSpecies = 10;
         for(NetNode leaf : trueNetwork.getLeaves()) {
             String species = leaf.getName();
             List<String> alleles = new ArrayList<>();
             for(int i = 0 ; i < taxaPerSpecies ; i++) {
                 alleles.add(species + "_" + i);
+                allele2species.put(species + "_" + i, species);
             }
             species2alleles.put(species, alleles);
+        }*/
+        allele2species.put("A_0", "A");
+        allele2species.put("C_0", "C");
+        allele2species.put("C_1", "C");
+        allele2species.put("Q_0", "Q");
+        allele2species.put("Q_1", "Q");
+        allele2species.put("L_0", "L");
+        allele2species.put("L_1", "L");
+        allele2species.put("R_0", "R");
+        allele2species.put("R_1", "R");
+        allele2species.put("G_0", "G");
+        allele2species.put("G_1", "G");
+        for(String allele : allele2species.keySet()) {
+            String species = allele2species.get(allele);
+            if(!species2alleles.containsKey(species)) {
+                species2alleles.put(species, new ArrayList<>());
+            }
+            species2alleles.get(species).add(allele);
         }
+
+
 
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, null);
         simulator._diploid = false;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, species2alleles, numSites, !useOnlyPolymorphic);
 
+        System.out.println("Monomorphic patterns: ");
         List<Alignment> alns = new ArrayList<>();
         Alignment aln = new Alignment(onesnp);
         alns.add(aln);
-        aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
+        aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alns);
         for(RPattern pattern : aln._RPatterns.keySet()) {
             if(pattern.isMonomorphic()) {
                 System.out.println(pattern);
                 System.out.println(aln._RPatterns.get(pattern)[0]);
             }
         }
+
+        R.maxLineages = aln._RPatterns.keySet().iterator().next().sumLineages();
+        double sum = 0.0;
+        for(RPattern pattern : aln._RPatterns.keySet()) {
+            //if(count > 10) break;
+            //count++;
+            Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
+            cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
+            SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, null);
+            double likelihood = 0;
+            try {
+                long start = System.currentTimeMillis();
+                likelihood = run.getProbability(pattern);
+                sum += likelihood;
+                System.out.println(pattern + " " + likelihood * Math.exp( aln._RPatterns.get(pattern)[1] / aln._RPatterns.get(pattern)[0]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
+                System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Exceptional network");
+            }
+        }
+        System.out.println("Sum " + sum);
 
     }
 
@@ -602,9 +660,9 @@ public class SimSNPInNetwork {
     }
 
     public static void main(String []args) {
-        testDominant();
+        //testDominant();
         //testDiploid();
         //basic();
-        //testMultipleAlleles();
+        testMultipleAlleles();
     }
 }

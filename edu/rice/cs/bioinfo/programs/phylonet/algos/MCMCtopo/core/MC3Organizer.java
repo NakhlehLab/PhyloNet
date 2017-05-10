@@ -167,8 +167,8 @@ public class MC3Organizer {
 
         Summary summary = new Summary(_samples, false);
 
-        System.out.println("         -------------- Top Topologies: --------------");
-        System.out.println(summary.getTopK(topK));
+        System.out.println("         -------------- 95% credible set of topologies: --------------");
+        System.out.println(summary.getTopTopologies(95));
     }
 
     private int count = 0;

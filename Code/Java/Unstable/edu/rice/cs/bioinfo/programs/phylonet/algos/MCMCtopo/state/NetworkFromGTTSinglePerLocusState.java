@@ -11,10 +11,7 @@ import java.util.Map;
 /**
  * Created by wendingqiao on 11/2/14.
  */
-public class NetworkFromGTTSinglePerLocusState<T> extends NetworkFromGTTSinglePerLocus {
-
-    // operations
-    protected NetworkProposal _operation;
+public class NetworkFromGTTSinglePerLocusState<T> extends NetworkFromGTT {
 
     public NetworkFromGTTSinglePerLocusState(Network start,
                                              List<List<MutableTuple<Tree, Double>>> inputTrees,
@@ -25,26 +22,8 @@ public class NetworkFromGTTSinglePerLocusState<T> extends NetworkFromGTTSinglePe
                                              Map<String, List<String>> taxonMap
                                              ) {
         super(start, inputTrees, taxonMap, seed, parallel);
+        this.calculation = new GTTLikelihood_SinglePerLocus();
         _operation = new NetworkProposal(weights, reti, _seed);
-    }
-
-    /**
-     * Propose a new state based on current state.
-     * @return   hastings ratio.
-     */
-    public double propose() {
-        return _operation.propose(_speciesNet);
-    }
-
-    public void undo() {
-        _operation.undo();
-    }
-
-    /**
-     * Report the name of operation used
-     */
-    public String getOperation() {
-        return _operation.getOperationName();
     }
 
 }

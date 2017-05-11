@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * Created by wendingqiao on 6/6/15.
  */
-public class GTTLikelihood_SinglePerLocus extends NetworkLikelihoodFromGTT_SingleTreePerLocus {
+public class GTTLikelihood_SinglePerLocus extends NetworkLikelihoodFromGTT_SingleTreePerLocus implements GTTLikelihood {
 
     public double computeProbability(Network<Object> speciesNetwork, List distinctTrees,
                                      Map<String,List<String>> species2alleles, List gtCorrespondences) {
@@ -65,75 +65,5 @@ public class GTTLikelihood_SinglePerLocus extends NetworkLikelihoodFromGTT_Singl
         gtsForStartingNetwork.addAll(exp2tree.values());
 
     }
-
-
-
-    public String getStartNetwork(List gts, Map<String,List<String>> species2alleles, Set<String> hybridSpecies, Network<Object> startingNetwork){
-        Map<String,String> allele2species = null;
-        if(species2alleles!=null){
-            allele2species = new HashMap<String, String>();
-            for(Map.Entry<String,List<String>> entry: species2alleles.entrySet()){
-                String species = entry.getKey();
-                for(String allele: entry.getValue()){
-                    allele2species.put(allele,species);
-                }
-            }
-        }
-        MDCInference_Rooted mdc = new MDCInference_Rooted();
-
-        List<Solution> solutions = (allele2species==null) ?
-                mdc.inferSpeciesTree(gts, false, 1, false, true, -1) :
-                mdc.inferSpeciesTree(gts, allele2species, false, 1, false, true, -1);
-        Solution sol = solutions.get(0);
-
-        Tree startingTree= Trees.generateRandomBinaryResolution(sol._st);
-        startingNetwork = Networks.readNetwork(startingTree.toString());
-
-        for(String hybrid: hybridSpecies){
-            createHybrid(startingNetwork, hybrid);
-        }
-        Networks.removeAllParameters(startingNetwork);
-        for(NetNode<Object> node: startingNetwork.dfs()){
-            for(NetNode<Object> parent: node.getParents()){
-                node.setParentDistance(parent,1.0);
-                if(node.isNetworkNode()){
-                    node.setParentProbability(parent, 0.5);
-                }
-            }
-        }
-        return startingNetwork.toString();
-    }
-
-    private void createHybrid(Network<Object> network, String hybrid){
-        List<Tuple<NetNode,NetNode>> edgeList = new ArrayList<Tuple<NetNode,NetNode>>();
-        Tuple<NetNode,NetNode> destinationEdge = null;
-        for(NetNode<Object> node: Networks.postTraversal(network)){
-            for(NetNode child: node.getChildren()){
-                if(child.isLeaf() && child.getName().equals(hybrid)){
-                    if(node.isNetworkNode()){
-                        return;
-                    }
-                    destinationEdge = new Tuple<NetNode, NetNode>(node, child);
-                }
-                else{
-                    edgeList.add(new Tuple<NetNode, NetNode>(node, child));
-                }
-            }
-
-        }
-
-        int numEdges = edgeList.size();
-        Tuple<NetNode,NetNode> sourceEdge = edgeList.get((int)(Math.random() * numEdges));
-        NetNode insertedSourceNode = new BniNetNode();
-        insertedSourceNode.adoptChild(sourceEdge.Item2, NetNode.NO_DISTANCE);
-        sourceEdge.Item1.removeChild(sourceEdge.Item2);
-        sourceEdge.Item1.adoptChild(insertedSourceNode, NetNode.NO_DISTANCE);
-        NetNode insertedDestinationNode = new BniNetNode();
-        insertedDestinationNode.adoptChild(destinationEdge.Item2, NetNode.NO_DISTANCE);
-        destinationEdge.Item1.removeChild(destinationEdge.Item2);
-        destinationEdge.Item1.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
-        insertedSourceNode.adoptChild(insertedDestinationNode, NetNode.NO_DISTANCE);
-    }
-
 
 }

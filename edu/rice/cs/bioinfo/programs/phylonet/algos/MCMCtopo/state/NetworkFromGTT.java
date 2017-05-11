@@ -5,6 +5,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.NetworkPrior;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.State;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.proposal.NetworkProposal;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -14,9 +15,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import java.util.*;
 
 /**
- * Created by wendingqiao on 11/3/14.
+ * Created by dw20 on 5/11/17.
  */
-public abstract class NetworkFromGTTSinglePerLocus<T> implements State {
+public abstract class NetworkFromGTT<T> implements State {
 
     // species network
     protected Network _speciesNet;
@@ -33,7 +34,7 @@ public abstract class NetworkFromGTTSinglePerLocus<T> implements State {
     // gene tree correspondences
     protected List<Tuple<MutableTuple<Tree, Double>, Set<Integer>>> treeCorrespondences;
     // for likelihood calculation
-    protected GTTLikelihood_SinglePerLocus calculation;
+    protected GTTLikelihood calculation;
     // random
     protected long _seed;
     protected Random _random;
@@ -43,6 +44,8 @@ public abstract class NetworkFromGTTSinglePerLocus<T> implements State {
     private int numThreads;
     // taxon map
     private Map<String, List<String>> _taxonMap;
+    // operations
+    protected NetworkProposal _operation;
 
     /**
      * Constructor
@@ -50,16 +53,15 @@ public abstract class NetworkFromGTTSinglePerLocus<T> implements State {
      * @param inputTrees
      * @param seed
      */
-    public NetworkFromGTTSinglePerLocus(Network start,
-                                        List<List<MutableTuple<Tree, Double>>> inputTrees,
-                                        Map<String, List<String>> taxonMap,
-                                        long seed,
-                                        int parallel) {
-        this.numThreads = parallel;
+    public NetworkFromGTT(Network start,
+                          List<List<MutableTuple<Tree, Double>>> inputTrees,
+                          Map<String, List<String>> taxonMap,
+                          long seed,
+                          int parallel) {
         this._taxonMap = taxonMap;
+        this.numThreads = parallel;
         // gene trees
         this.originalGeneTrees = inputTrees;
-        this.calculation = new GTTLikelihood_SinglePerLocus();
         try{
             this.inputWeightedGTs = new ArrayList<>();
             for(List<MutableTuple<Tree,Double>> treeList : inputTrees) {
@@ -162,29 +164,32 @@ public abstract class NetworkFromGTTSinglePerLocus<T> implements State {
      */
     private Network getStartingNetwork(Network net) {
         if(net != null) {
-            setBranchLengths(net);
+            Utils.setBranchLengths(net);
             return net;
         }
-        String start = calculation.getStartNetwork(gtsForStartingNet,
+        String start = Utils.getStartNetwork(gtsForStartingNet,
                 _taxonMap, new HashSet<String>(), _speciesNet);
         if(printDetails) System.out.println("Get starting network as MDC tree: " + start);
         return Networks.readNetwork(start);
     }
 
-    private void setBranchLengths(Network net) {
-        for(Object n1 : net.bfs()) {
-            NetNode node1 = (NetNode)n1;
-            for(Object n2 : node1.getParents()) {
-                NetNode node2 = (NetNode)n2;
-                if( Double.isNaN( node1.getParentDistance(node2) ) ) {
-                    node1.setParentDistance(node2, 1.0);
-                }
-                if(node1.isNetworkNode() && Double.isNaN( node1.getParentProbability(node2) ) ) {
-                    node1.setParentProbability(node2, 0.5);
-                }
-            }
-        }
+
+    /**
+     * Propose a new state based on current state.
+     * @return   hastings ratio.
+     */
+    public double propose() {
+        return _operation.propose(_speciesNet);
     }
 
+    public void undo() {
+        _operation.undo();
+    }
 
+    /**
+     * Report the name of operation used
+     */
+    public String getOperation() {
+        return _operation.getOperationName();
+    }
 }

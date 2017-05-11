@@ -10,10 +10,7 @@ import java.util.*;
 /**
  * Created by wendingqiao on 11/2/14.
  */
-public class NetworkFromGTTMultiPerLocusState<T> extends NetworkFromGTTMultiPerLocus {
-
-    // operations
-    protected NetworkProposal _operation;
+public class NetworkFromGTTMultiPerLocusState<T> extends NetworkFromGTT {
 
     public NetworkFromGTTMultiPerLocusState(Network start,
                                             List<List<MutableTuple<Tree, Double>>> inputTrees,
@@ -24,27 +21,8 @@ public class NetworkFromGTTMultiPerLocusState<T> extends NetworkFromGTTMultiPerL
                                             Map<String, List<String>> taxonMap
     ) {
         super(start, inputTrees, taxonMap, seed, parallel);
+        this.calculation = new GTTLikelihood_MultiPerLocus();
         _operation = new NetworkProposal(weights, reti, _seed);
-    }
-
-    /**
-     * Propose a new state based on current state.
-     * @return   hastings ratio.
-     */
-    public double propose() {
-        //System.out.println(_speciesNet.toString());
-        return _operation.propose(_speciesNet);
-    }
-
-    public void undo() {
-        _operation.undo();
-    }
-
-    /**
-     * Report the name of operation used
-     */
-    public String getOperation() {
-        return _operation.getOperationName();
     }
 
 }

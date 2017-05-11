@@ -1,24 +1,21 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state;
 
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.NetworkLikelihoodFromGTT_MultiTreesPerLocus;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Created by wendingqiao on 6/6/15.
+ * Created by dw20 on 5/11/17.
  */
-public class GTTLikelihood_MultiPerLocus extends NetworkLikelihoodFromGTT_MultiTreesPerLocus implements GTTLikelihood {
+public class GTTPseudoLikelihood_MultiPerLocus extends NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus {
 
     public double computeProbability(Network<Object> speciesNetwork, List distinctTrees,
                                      Map<String,List<String>> species2alleles, List gtCorrespondences) {
@@ -26,10 +23,12 @@ public class GTTLikelihood_MultiPerLocus extends NetworkLikelihoodFromGTT_MultiT
     }
 
 
-    public void summarizeData(List originalGTs, Map<String,String> allele2species,
-                                 List dataForStartingNetwork, List dataForInferNetwork, List treeCorrespondences){
+    protected void summarizeData(List originalGTs, Map<String,String> allele2species,
+                                 List gtsForStartingNetwork, List allTriplets, List tripletFrequencies){
         int treeID = 0;
-        Map<String, MutableTuple<Integer,Double>> tree2Info = new HashMap<String, MutableTuple<Integer,Double>>();
+        Map<String, Integer> distinctTree2ID = new HashMap<>();
+        List<List<MutableTuple<Integer,Double>>> treeCorrespondences = new ArrayList<>();
+        int i=0;
         for(Object o: originalGTs) {
             List<MutableTuple<Tree,Double>> treesForOneLocus = (List<MutableTuple<Tree,Double>>)o;
             Map<String, Integer> tree2infoIndex = new HashMap<String, Integer>();
@@ -39,32 +38,30 @@ public class GTTLikelihood_MultiPerLocus extends NetworkLikelihoodFromGTT_MultiT
                     node.setParentDistance(TNode.NO_DISTANCE);
                 }
                 String exp = Trees.getLexicographicNewickString(gtTuple.Item1, allele2species);
-                MutableTuple<Integer,Double> existingInfo = tree2Info.get(exp);
-                if (existingInfo == null) {
-                    existingInfo = new MutableTuple<Integer,Double>(treeID, gtTuple.Item2);
-                    dataForStartingNetwork.add(gtTuple);
-                    dataForInferNetwork.add(gtTuple.Item1);
-                    tree2Info.put(exp, existingInfo);
+                Integer existingTreeID = distinctTree2ID.get(exp);
+                if (existingTreeID == null) {
+                    existingTreeID = treeID;
+                    gtsForStartingNetwork.add(new MutableTuple<Tree, Double>(gtTuple.Item1,gtTuple.Item2));
+                    distinctTree2ID.put(exp, existingTreeID);
                     tree2infoIndex.put(exp, infoList.size());
                     infoList.add(new MutableTuple(treeID, gtTuple.Item2));
                     treeID++;
                 } else {
-                    existingInfo.Item2 += gtTuple.Item2;
+                    ((MutableTuple<Tree,Double>)(gtsForStartingNetwork.get(existingTreeID))).Item2 += gtTuple.Item2;
                     Integer infoID = tree2infoIndex.get(exp);
-                    if (infoID == null) {
+                    if(infoID == null){
                         tree2infoIndex.put(exp, infoList.size());
-                        infoList.add(new MutableTuple(existingInfo.Item1, gtTuple.Item2));
-                    } else {
+                        infoList.add(new MutableTuple(existingTreeID, gtTuple.Item2));
+                    }
+                    else{
                         infoList.get(infoID).Item2 += gtTuple.Item2;
                     }
                 }
             }
             treeCorrespondences.add(infoList);
         }
-        for(MutableTuple<Integer,Double> info: tree2Info.values()){
-            MutableTuple<Integer,Double> tuple = (MutableTuple<Integer,Double>)dataForStartingNetwork.get(info.Item1);
-            tuple.Item2 = info.Item2;
-        }
+        NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus.computeTripleFrequenciesInGTs(
+                gtsForStartingNetwork, allele2species, treeCorrespondences, allTriplets, tripletFrequencies);
     }
 
 }

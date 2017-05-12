@@ -14,36 +14,13 @@ import java.util.*;
  */
 public abstract class NetworkFromGTTPseudoState extends NetworkFromGTT {
 
-    // summarized gene trees
-    protected List<Tree> _geneTrees;
-    // original input gene trees
-    protected List<List<MutableTuple<Tree,Double>>> _originalGeneTrees;
-    // input gene trees for processing (a copy of original input gene trees)
-    protected List<List<MutableTuple<Tree,Double>>> _inputWeightedGTs;
-
-    // gene trees used for starting network
-    protected List<MutableTuple<Tree, Double>> _gtsForStartingNet;
+    // gene tree info
     protected List<String> _allTriplets;
     protected List<List<Tuple<double[][],Double>>> _tripletFrequencies;
 
     public NetworkFromGTTPseudoState(List<List<MutableTuple<Tree, Double>>> inputTrees,
                                      Map<String, List<String>> taxonMap, long seed, int parallel) {
-        super(taxonMap, seed, parallel);
-        // gene trees
-        this._originalGeneTrees = inputTrees;
-        try{
-            this._inputWeightedGTs = new ArrayList<>();
-            for(List<MutableTuple<Tree,Double>> treeList : inputTrees) {
-                List<MutableTuple<Tree,Double>> wgtList = new ArrayList<MutableTuple<Tree,Double>>();
-                for(MutableTuple<Tree,Double> mt : treeList) {
-                    Tree newt = new STITree(mt.Item1.toNewick());
-                    wgtList.add(new MutableTuple<Tree, Double>(newt, new Double(mt.Item2)));
-                }
-                this._inputWeightedGTs.add(wgtList);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        super(inputTrees, taxonMap, seed, parallel);
     }
 
     /**
@@ -66,30 +43,12 @@ public abstract class NetworkFromGTTPseudoState extends NetworkFromGTT {
         _allTriplets  = new ArrayList<>();
         _tripletFrequencies = new ArrayList<>();
         // -- summarize gene trees
-        _calculation.summarizeData(_inputWeightedGTs, _allele2SpeciesMap,
-                _gtsForStartingNet, _allTriplets, _tripletFrequencies);
+        _calculation.summarizeData(
+                _inputWeightedGTs, _allele2SpeciesMap, _gtsForStartingNet, _allTriplets, _tripletFrequencies);
         // print trees & weights
         if(_printDetails) {
-            for(MutableTuple<Tree, Double> tuple : _gtsForStartingNet){
-                System.out.println(tuple.Item1.toNewick() + "  " + tuple.Item2.toString());
-            }
+            reportGeneTrees();
         }
     }
-
-    /**
-     * gets starting network as MDC tree
-     */
-    protected Network getStartingNetwork(Network net) {
-        if(net != null) {
-            Utils.setBranchLengths(net);
-            return net;
-        }
-        String start = Utils.getStartNetwork(_gtsForStartingNet, _taxonMap, new HashSet<String>(), _speciesNet);
-        if(_printDetails) {
-            System.out.println("Get starting network as MDC tree: " + start);
-        }
-        return Networks.readNetwork(start);
-    }
-
 
 }

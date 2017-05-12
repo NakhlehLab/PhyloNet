@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by wendingqiao on 11/2/14.
  */
-public class NetworkFromGTTPseudoMultiPerLocusState<T> extends NetworkFromGTTState {
+public class NetworkFromGTTPseudoMultiPerLocusState<T> extends NetworkFromGTTPseudoState {
 
     public NetworkFromGTTPseudoMultiPerLocusState(Network start,
                                                   List<List<MutableTuple<Tree, Double>>> inputTrees,

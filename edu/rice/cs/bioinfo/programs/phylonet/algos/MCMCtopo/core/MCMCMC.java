@@ -9,35 +9,65 @@ import java.util.*;
  *
  * Created by wendingqiao on 10/17/14.
  */
-public class MCMCMC {
+public abstract class MCMCMC {
 
-    private MC3Organizer organizer;
+    protected MC3Organizer _organizer;
 
-    private long _sampleFrequency;
+    protected long _sampleFrequency;
 
-    private double k;
+    protected double _k;
 
-    private Random _random;
+    protected Random _random;
 
-    private double temperature;
+    protected double _temperature;
 
-    private boolean main = false;
+    protected boolean _main = false;
 
     public void setTemperature(double temp) {
-        this.temperature = temp;
+        this._temperature = temp;
     }
 
     public void setMain(boolean m) {
-        this.main = m;
+        this._main = m;
     }
 
     public double getTemperature() {
-        return this.temperature;
+        return this._temperature;
     }
 
     public boolean getMain() {
-        return this.main;
+        return this._main;
     }
+
+    /**
+     * Metropolis Hastings ratio.
+     */
+    protected double _logAlpha;
+
+    /**
+     *  State posterior value
+     */
+    protected double _logPost;
+
+    /**
+     * State Likelihood value
+     */
+    protected double _logLikelihood;
+
+    /**
+     * State Prior value;
+     */
+    protected double _logPrior;
+
+
+    public double getPosterior() {
+        return _logPost;
+    }
+
+    /**
+     * Current state.
+     */
+    protected State _state;
 
 
     /**
@@ -49,117 +79,75 @@ public class MCMCMC {
                   double k,
                   long seed
     ) {
-        this.organizer = organizer;
-        this.state = start;
+        this._organizer = organizer;
+        this._state = start;
         this._sampleFrequency = sampleFrequency;
-        this.k = k;
+        this._k = k;
         this._random = new Random(seed);
 
-        this.logLikelihood = state.calculateLikelihood();
-        this.logPrior = state.calculatePrior(k);
-        this.logPost = logLikelihood + logPrior;
+        this._logLikelihood = _state.calculateLikelihood();
+        this._logPrior = _state.calculatePrior(k);
+        this._logPost = _logLikelihood + _logPrior;
     }
-
-    /**
-     * Metropolis Hastings ratio.
-     */
-    private double logAlpha;
-
-    /**
-     *  State posterior value
-     */
-    private double logPost;
-
-    /**
-     * State Likelihood value
-     */
-    private double logLikelihood;
-
-    /**
-     * State Prior value;
-     */
-    private double logPrior;
-
-
-    public double getPosterior() {
-        return logPost;
-    }
-
-    /**
-     * Current state.
-     */
-    private State state;
 
     /**
      * Main GTT loop.
      */
     public void run(int iteration, boolean doSample) {
-
-        if(iteration == 1 && doSample) {
-            if(main) {
-                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-                        0, logPost, 0.0,
-                        logLikelihood, logPrior, 0.0,
-                        state.numOfReticulation());
-                System.out.println(state.toString());
-            }
-        }
-
+        initialSystemOut(iteration == 1 && doSample);
         for (int i = 0; i < _sampleFrequency; i++) {
-            String prev = state.getNetwork().toString();
+            String prev = _state.getNetwork().toString();
             boolean ac = false;
-            double logQ = state.propose();
-            double logThisPrior;
+            double logQ = _state.propose();
+            double logThisPrior = Double.MIN_VALUE;
+            boolean proceed2likelihood = (logQ != Double.MIN_VALUE) &&
+                    ((logThisPrior = _state.calculatePrior(_k)) != Double.MIN_VALUE);
 
-            if(logQ != Double.MIN_VALUE && ((logThisPrior = state.calculatePrior(k)) != Double.MIN_VALUE)) {
-
-                double logLikelihoodNext = state.calculateLikelihood();
-                double logPriorNext = logThisPrior;
-                double logNext = logLikelihoodNext + logPriorNext;
-                logAlpha = (logNext - logPost) / temperature + logQ;
-
-                if(logAlpha >= Math.log(_random.nextDouble())) {
-                    logLikelihood = logLikelihoodNext;
-                    logPrior = logPriorNext;
-                    logPost = logNext;
-                    ac = true;
-
-                } else {
-                    state.setNetwork(Networks.readNetwork(prev));
-                }
-            } else {
+            if(!proceed2likelihood || !(ac = acceptNewState(logThisPrior, logQ))) {
                 // nullify the operation, or prior = 0
                 // means the proposal or the network is not valid (e.g. has cycle)
                 // undo may not be valid
-                state.setNetwork(Networks.readNetwork(prev));
+                _state.setNetwork(Networks.readNetwork(prev));
             }
 
-            if(main) {
-                if(ac) organizer.incrementAC();
-                organizer.addInfo(ac, state.getOperation());
-                organizer.addLog(i, ac, logPost);
+            if(_main) {
+                if(ac) _organizer.incrementAC();
+                _organizer.addInfo(ac, _state.getOperation());
+                _organizer.addLog(i, ac, _logPost);
                 List<Double> list = new ArrayList<>();
-                list.add(logPost);
-                list.add(logLikelihood);
-                list.add(logPrior);
+                list.add(_logPost);
+                list.add(_logLikelihood);
+                list.add(_logPrior);
             }
         }
-        if(doSample) {
-            if(main) {
-                organizer.addSample(state.storeState(this.logPost));
-                double essPost = organizer.addPosteriorESS(logPost);
-                double essPrior = organizer.addPriorESS(logPrior);
-                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-                        iteration, logPost, essPost,
-                        logLikelihood, logPrior, essPrior,
-                        state.numOfReticulation());
-                System.out.println(state.toString());
-            }
-        }
+        sampleSystemOut(doSample, iteration);
     }
 
+    public abstract boolean acceptNewState(double logThisPrior, double logQ);
+
     public String report() {
-        return temperature + " : " + state.toString();
+        return _temperature + " : " + _state.toString();
+    }
+
+    private void initialSystemOut(boolean print) {
+        if(!print || !_main) return;
+        System.out.printf("%d;\t%2.5f;\t%2.5f;\t%2.5f;\t%2.5f;\t%2.5f;\t%d;\n",
+                0, _logPost, 0.0,
+                _logLikelihood, _logPrior, 0.0,
+                _state.numOfReticulation());
+        System.out.println(_state.toString());
+    }
+
+    private void sampleSystemOut(boolean print, int iteration) {
+        if(!print || !_main) return;
+        _organizer.addSample(_state.storeState(this._logPost));
+        double essPost = _organizer.addPosteriorESS(_logPost);
+        double essPrior = _organizer.addPriorESS(_logPrior);
+        System.out.printf("%d;\t%2.5f;\t%2.5f;\t%2.5f;\t%2.5f;\t%2.5f;\t%d;\n",
+                iteration, _logPost, essPost,
+                _logLikelihood, _logPrior, essPrior,
+                _state.numOfReticulation());
+        System.out.println(_state.toString());
     }
 
 }

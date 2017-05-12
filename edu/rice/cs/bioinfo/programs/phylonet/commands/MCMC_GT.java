@@ -26,6 +26,8 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.MC3Organizer;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.MCMC;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.TwoStageMCMC;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTMultiPerLocusState;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoMultiPerLocusState;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoSinglePerLocusState;
@@ -74,7 +76,9 @@ public class MCMC_GT extends CommandBaseFileOut{
     private long _seed = 1234567;
     private int _maxReti = 10;
     private boolean _usePseudo = false;
+    private boolean _twoStage = false;
     private Class _stateClass;
+    private Class _mcmcClass;
 
     // for summarization
     private List<String> _files = new ArrayList<>();
@@ -424,14 +428,19 @@ public class MCMC_GT extends CommandBaseFileOut{
             }
 
             // pseudo likelihood
-            // vary population sizes
             ParamExtractor pseudoParam = new ParamExtractor("pseudo", this.params, this.errorDetected);
             if(pseudoParam.ContainsSwitch) {
                 _usePseudo = true;
             }
 
+            // two stage MCMC
+            ParamExtractor twoStageParam = new ParamExtractor("-ts", this.params, this.errorDetected);
+            if(twoStageParam.ContainsSwitch) {
+                _twoStage = true;
+            }
+
             noError = noError && checkForUnknownSwitches(
-                    "cl", "bl", "sf", "sd", "pp", "mr", "pl", "tp", "sn", "tm", "pseudo");
+                    "cl", "bl", "sf", "sd", "pp", "mr", "pl", "tp", "sn", "tm", "pseudo", "ts");
             checkAndSetOutFile(clParam, blParam, sfParam, sdParam, ppParam,
                     mrParam, plParam, tpParam, snParam, tmParam, pseudoParam);
         }
@@ -498,6 +507,11 @@ public class MCMC_GT extends CommandBaseFileOut{
             _stateClass = _oneGTPerLocus ? NetworkFromGTTSinglePerLocusState.class :
                     NetworkFromGTTMultiPerLocusState.class;
         }
+        if(_twoStage) {
+            _mcmcClass = TwoStageMCMC.class;
+        } else {
+            _mcmcClass = MCMC.class;
+        }
 
         if(_temperatures.size() == 0) {
             _temperatures.add(1.0);
@@ -505,6 +519,7 @@ public class MCMC_GT extends CommandBaseFileOut{
 
         MC3Organizer mc3 = new MC3Organizer(
                 _stateClass,
+                _mcmcClass,
                 networks,
                 gts,
                 _taxonMap,

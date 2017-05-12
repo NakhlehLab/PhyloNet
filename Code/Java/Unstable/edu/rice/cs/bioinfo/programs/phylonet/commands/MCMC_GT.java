@@ -430,7 +430,7 @@ public class MCMC_GT extends CommandBaseFileOut{
             }
 
             // two stage MCMC
-            ParamExtractor twoStageParam = new ParamExtractor("-ts", this.params, this.errorDetected);
+            ParamExtractor twoStageParam = new ParamExtractor("ts", this.params, this.errorDetected);
             if(twoStageParam.ContainsSwitch) {
                 _twoStage = true;
             }

@@ -27,10 +27,7 @@ import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.MC3Organizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.NormalMCMC;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.TwoStageMCMC;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTMultiPerLocusState;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoMultiPerLocusState;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoSinglePerLocusState;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTSinglePerLocusState;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Convergence;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
@@ -508,6 +505,8 @@ public class MCMC_GT extends CommandBaseFileOut{
         }
         if(_twoStage) {
             _mcmcClass = TwoStageMCMC.class;
+            _stateClass = _oneGTPerLocus ? NetworkFromGTTTwoStageSinglePerLocusState.class :
+                    NetworkFromGTTTwoStageMultiPerLocusState.class;
         } else {
             _mcmcClass = NormalMCMC.class;
         }

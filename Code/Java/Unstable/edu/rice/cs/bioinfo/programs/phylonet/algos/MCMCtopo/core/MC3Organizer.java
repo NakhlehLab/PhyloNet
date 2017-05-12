@@ -48,6 +48,8 @@ public class MC3Organizer {
 
     private Class _stateClass;
 
+    private Class _mcmcClass;
+
     private List _trees;
 
     private double _k = 0.0;
@@ -58,6 +60,7 @@ public class MC3Organizer {
 
 
     public MC3Organizer(Class stateClass,
+                        Class mcmcClass,
                         List<Network> start,
                         List trees,
                         Map<String, List<String>> taxonMap,
@@ -72,6 +75,7 @@ public class MC3Organizer {
                         double[] weights
     ) {
         this._stateClass = stateClass;
+        this._mcmcClass = mcmcClass;
         this._trees = trees;
         this._random = new Random(seed);
         this._seed = seed;
@@ -99,10 +103,14 @@ public class MC3Organizer {
     private void initMC3(int idx, Network start, Map<String, List<String>> taxonMap,
                          List<Double> temps, double[] weights, int parallel) {
         try{
-            State state = (State) _stateClass.getConstructor(
-                    new Class[] {Network.class, List.class, long.class, int.class, int.class, double[].class, Map.class})
-                    .newInstance(start, _trees, _seed, maxReti, parallel, weights, taxonMap);
-            mc3s[idx] = new MCMCMC(this, state, sampleSize, _k, _seed);
+            State state = (State) _stateClass.getConstructor(new Class[] {
+                    Network.class, List.class, long.class, int.class, int.class, double[].class, Map.class
+            }).newInstance(start, _trees, _seed, maxReti, parallel, weights, taxonMap);
+
+            mc3s[idx] = (MCMCMC) _mcmcClass.getConstructor(new Class[] {
+                    MC3Organizer.class, State.class, long.class, double.class, long.class
+            }).newInstance(this, state, sampleSize, _k, _seed);
+
             mc3s[idx].setTemperature(temps.get(idx));
         } catch (Exception ex) {
             ex.printStackTrace();

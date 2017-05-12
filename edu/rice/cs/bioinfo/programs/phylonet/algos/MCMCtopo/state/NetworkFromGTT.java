@@ -21,81 +21,42 @@ public abstract class NetworkFromGTT<T> implements State {
 
     // species network
     protected Network _speciesNet;
-    // summarized gene trees
-    protected List<Tree> _geneTrees;
-    // original input gene trees
-    protected List<List<MutableTuple<Tree,Double>>> originalGeneTrees;
-    // parameters for summarizing gene trees
-    protected boolean printDetails = false;
-    // input gene trees for processing (a copy of original input gene trees)
-    protected List<List<MutableTuple<Tree,Double>>> inputWeightedGTs;
-    // gene trees used for starting network
-    protected List<MutableTuple<Tree, Double>> gtsForStartingNet;
-    // gene tree correspondences
-    protected List<Tuple<MutableTuple<Tree, Double>, Set<Integer>>> treeCorrespondences;
     // for likelihood calculation
-    protected GTTLikelihood calculation;
+    protected GTTLikelihood _calculation;
+
+    // parameters for summarizing gene trees
+    protected boolean _printDetails = false;
     // random
     protected long _seed;
     protected Random _random;
     // for prior
-    private List<NetNode> startLeaves;
+    protected List<NetNode> _startLeaves;
     // parallel
-    private int numThreads;
+    protected int _numThreads;
     // taxon map
-    private Map<String, List<String>> _taxonMap;
+    protected Map<String, List<String>> _taxonMap;
+    // allele species map
+    protected Map<String, String> _allele2SpeciesMap;
     // operations
     protected NetworkProposal _operation;
 
     /**
      * Constructor
-     * @param start
-     * @param inputTrees
-     * @param seed
      */
-    public NetworkFromGTT(Network start,
-                          List<List<MutableTuple<Tree, Double>>> inputTrees,
-                          Map<String, List<String>> taxonMap,
+    public NetworkFromGTT(Map<String, List<String>> taxonMap,
                           long seed,
                           int parallel) {
         this._taxonMap = taxonMap;
-        this.numThreads = parallel;
-        // gene trees
-        this.originalGeneTrees = inputTrees;
-        try{
-            this.inputWeightedGTs = new ArrayList<>();
-            for(List<MutableTuple<Tree,Double>> treeList : inputTrees) {
-                List<MutableTuple<Tree,Double>> wgtList = new ArrayList<MutableTuple<Tree,Double>>();
-                for(MutableTuple<Tree,Double> mt : treeList) {
-                    Tree newt = new STITree(mt.Item1.toNewick());
-                    wgtList.add(new MutableTuple<Tree, Double>(newt, new Double(mt.Item2)));
-                }
-                this.inputWeightedGTs.add(wgtList);
+        this._allele2SpeciesMap = new HashMap<String, String>();
+        for(String key : taxonMap.keySet()) {
+            for(String val : taxonMap.get(key)) {
+                _allele2SpeciesMap.put(val, key);
             }
-            processGeneTrees();
-            // set starting network
-            _speciesNet = getStartingNetwork(start);
-            // random
-            this._seed = seed;
-            this._random = new Random(seed);
-            this.startLeaves = IterableHelp.toList(_speciesNet.getLeaves());
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
+        this._numThreads = parallel;
+        this._seed = seed;
+        this._random = new Random(seed);
     }
-
-
-    /**
-     * Calculate the log likelihood(this).
-     * @return
-     */
-    public double calculateLikelihood() {
-        calculation.setParallel(numThreads);
-        double logL = calculation.computeProbability(_speciesNet, _geneTrees, _taxonMap, treeCorrespondences);
-        return logL;
-    }
-
 
     /**
      * Calculates prior value
@@ -103,7 +64,7 @@ public abstract class NetworkFromGTT<T> implements State {
      * @return
      */
     public double calculatePrior(double k) {
-        return (new NetworkPrior(_speciesNet, k, startLeaves).calculate());
+        return (new NetworkPrior(_speciesNet, k, _startLeaves).calculate());
     }
 
     /**
@@ -139,40 +100,6 @@ public abstract class NetworkFromGTT<T> implements State {
     public Network getNetwork() {
         return this._speciesNet;
     }
-
-    /**
-     * summarize gene trees
-     */
-    private void processGeneTrees() {
-        // get gene trees and parameters
-        _geneTrees = new ArrayList<>();
-        gtsForStartingNet = new ArrayList<>();
-        treeCorrespondences = new ArrayList<>();
-        // -- summarize gene trees
-        calculation = new GTTLikelihood_SinglePerLocus();
-        calculation.summarizeData(inputWeightedGTs, null, gtsForStartingNet, _geneTrees, treeCorrespondences);
-        // print trees & weights
-        if(printDetails) {
-            for(MutableTuple<Tree, Double> tuple : gtsForStartingNet){
-                System.out.println(tuple.Item1.toNewick() + "  " + tuple.Item2.toString());
-            }
-        }
-    }
-
-    /**
-     * gets starting network as MDC tree
-     */
-    private Network getStartingNetwork(Network net) {
-        if(net != null) {
-            Utils.setBranchLengths(net);
-            return net;
-        }
-        String start = Utils.getStartNetwork(gtsForStartingNet,
-                _taxonMap, new HashSet<String>(), _speciesNet);
-        if(printDetails) System.out.println("Get starting network as MDC tree: " + start);
-        return Networks.readNetwork(start);
-    }
-
 
     /**
      * Propose a new state based on current state.

@@ -14,11 +14,12 @@ import java.util.Map;
 /**
  * Created by dw20 on 5/11/17.
  */
-public class GTTPseudoLikelihood_SinglePerLocus extends NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus {
+public class GTTPseudoLikelihood_SinglePerLocus extends NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus
+        implements GTTLikelihood{
 
-    public double computeProbability(Network<Object> speciesNetwork, List distinctTrees,
-                                     Map<String,List<String>> species2alleles, List gtCorrespondences) {
-        return super.computeProbability(speciesNetwork, distinctTrees, gtCorrespondences, species2alleles);
+    public double computeProbability(Network<Object> speciesNetwork, List allTriplets,
+                                     Map<String,List<String>> species2alleles, List tripleFrequencies) {
+        return super.computeProbability(speciesNetwork, allTriplets, tripleFrequencies, species2alleles);
     }
 
     public void summarizeData(List originalGTs, Map<String,String> allele2species,

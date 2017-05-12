@@ -47,10 +47,12 @@ public abstract class NetworkFromGTT<T> implements State {
                           long seed,
                           int parallel) {
         this._taxonMap = taxonMap;
-        this._allele2SpeciesMap = new HashMap<String, String>();
-        for(String key : taxonMap.keySet()) {
-            for(String val : taxonMap.get(key)) {
-                _allele2SpeciesMap.put(val, key);
+        if(_taxonMap != null) {
+            this._allele2SpeciesMap = new HashMap<String, String>();
+            for(String key : taxonMap.keySet()) {
+                for(String val : taxonMap.get(key)) {
+                    _allele2SpeciesMap.put(val, key);
+                }
             }
         }
         this._numThreads = parallel;

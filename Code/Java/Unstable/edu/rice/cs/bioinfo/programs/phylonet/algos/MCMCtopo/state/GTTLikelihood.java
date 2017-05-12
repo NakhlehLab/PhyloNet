@@ -10,12 +10,12 @@ import java.util.Map;
  */
 public interface GTTLikelihood {
 
-    double computeProbability(Network<Object> speciesNetwork, List distinctTrees,
-                              Map<String,List<String>> species2alleles, List gtCorrespondences);
+    double computeProbability(Network<Object> speciesNetwork, List list1,
+                              Map<String,List<String>> species2alleles, List list2);
 
 
     void summarizeData(List originalGTs, Map<String,String> allele2species,
-                       List dataForStartingNetwork, List dataForInferNetwork, List treeCorrespondences);
+                       List dataForStartingNetwork, List list1, List list2);
 
     void setParallel(int numThreads);
 

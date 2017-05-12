@@ -40,10 +40,20 @@ public abstract class NetworkFromGTT<T> implements State {
     // operations
     protected NetworkProposal _operation;
 
+    // summarized gene trees
+    protected List<Tree> _geneTrees;
+    // original input gene trees
+    protected List<List<MutableTuple<Tree,Double>>> _originalGeneTrees;
+    // input gene trees for processing (a copy of original input gene trees)
+    protected List<List<MutableTuple<Tree,Double>>> _inputWeightedGTs;
+    // gene trees used for starting network
+    protected List<MutableTuple<Tree, Double>> _gtsForStartingNet;
+
     /**
      * Constructor
      */
-    public NetworkFromGTT(Map<String, List<String>> taxonMap,
+    public NetworkFromGTT(List<List<MutableTuple<Tree, Double>>> inputTrees,
+                          Map<String, List<String>> taxonMap,
                           long seed,
                           int parallel) {
         this._taxonMap = taxonMap;
@@ -58,6 +68,21 @@ public abstract class NetworkFromGTT<T> implements State {
         this._numThreads = parallel;
         this._seed = seed;
         this._random = new Random(seed);
+        // gene trees
+        this._originalGeneTrees = inputTrees;
+        try{
+            this._inputWeightedGTs = new ArrayList<>();
+            for(List<MutableTuple<Tree,Double>> treeList : inputTrees) {
+                List<MutableTuple<Tree,Double>> wgtList = new ArrayList<MutableTuple<Tree,Double>>();
+                for(MutableTuple<Tree,Double> mt : treeList) {
+                    Tree newt = new STITree(mt.Item1.toNewick());
+                    wgtList.add(new MutableTuple<Tree, Double>(newt, new Double(mt.Item2)));
+                }
+                this._inputWeightedGTs.add(wgtList);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -120,5 +145,30 @@ public abstract class NetworkFromGTT<T> implements State {
      */
     public String getOperation() {
         return _operation.getOperationName();
+    }
+
+    /**
+     * gets summarized gene trees and weights
+     */
+    protected void reportGeneTrees() {
+        for(MutableTuple<Tree, Double> tuple : _gtsForStartingNet){
+            System.out.println(tuple.Item1.toNewick() + "\t" + tuple.Item2.toString());
+        }
+    }
+
+    /**
+     * gets starting network as MDC tree
+     */
+    protected Network getStartingNetwork(Network net) {
+        if(net != null) {
+            Utils.setBranchLengths(net);
+            return net;
+        }
+        String start = Utils.getStartNetwork(_gtsForStartingNet,
+                _taxonMap, new HashSet<String>(), _speciesNet);
+        if(_printDetails) {
+            System.out.println("Get starting network as MDC tree: " + start);
+        }
+        return Networks.readNetwork(start);
     }
 }

@@ -5,9 +5,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 /**
  * Created by dw20 on 5/12/17.
  */
-public class MCMC extends MCMCMC {
+public class NormalMCMC extends MCMCMC {
 
-    public MCMC(MC3Organizer organizer, State start, long sampleFrequency, double k, long seed) {
+    public NormalMCMC(MC3Organizer organizer, State start, long sampleFrequency, double k, long seed) {
         super(organizer, start, sampleFrequency, k, seed);
     }
 

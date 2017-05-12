@@ -24,9 +24,8 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.MC3Organizer;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.MCMC;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.NormalMCMC;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.TwoStageMCMC;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTMultiPerLocusState;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoMultiPerLocusState;
@@ -510,7 +509,7 @@ public class MCMC_GT extends CommandBaseFileOut{
         if(_twoStage) {
             _mcmcClass = TwoStageMCMC.class;
         } else {
-            _mcmcClass = MCMC.class;
+            _mcmcClass = NormalMCMC.class;
         }
 
         if(_temperatures.size() == 0) {

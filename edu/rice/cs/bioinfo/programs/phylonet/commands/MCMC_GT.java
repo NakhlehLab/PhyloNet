@@ -24,8 +24,11 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.*;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.MC3Organizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTMultiPerLocusState;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoMultiPerLocusState;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTPseudoSinglePerLocusState;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.state.NetworkFromGTTSinglePerLocusState;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Convergence;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -70,6 +73,7 @@ public class MCMC_GT extends CommandBaseFileOut{
     private double _poissonParam = 1.0;
     private long _seed = 1234567;
     private int _maxReti = 10;
+    private boolean _usePseudo = false;
     private Class _stateClass;
 
     // for summarization
@@ -419,8 +423,17 @@ public class MCMC_GT extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("cl", "bl", "sf", "sd", "pp", "mr", "pl", "tp", "sn", "tm");
-            checkAndSetOutFile(clParam, blParam, sfParam, sdParam, ppParam, mrParam, plParam, tpParam, snParam, tmParam);
+            // pseudo likelihood
+            // vary population sizes
+            ParamExtractor pseudoParam = new ParamExtractor("pseudo", this.params, this.errorDetected);
+            if(pseudoParam.ContainsSwitch) {
+                _usePseudo = true;
+            }
+
+            noError = noError && checkForUnknownSwitches(
+                    "cl", "bl", "sf", "sd", "pp", "mr", "pl", "tp", "sn", "tm", "pseudo");
+            checkAndSetOutFile(clParam, blParam, sfParam, sdParam, ppParam,
+                    mrParam, plParam, tpParam, snParam, tmParam, pseudoParam);
         }
 
         return  noError;
@@ -478,8 +491,13 @@ public class MCMC_GT extends CommandBaseFileOut{
             networks.add(sNetwork);
         }
 
-        _stateClass = _oneGTPerLocus ? NetworkFromGTTSinglePerLocusState.class :
-                NetworkFromGTTMultiPerLocusState.class;
+        if(_usePseudo) {
+            _stateClass = _oneGTPerLocus ? NetworkFromGTTPseudoSinglePerLocusState.class :
+                    NetworkFromGTTPseudoMultiPerLocusState.class;
+        } else {
+            _stateClass = _oneGTPerLocus ? NetworkFromGTTSinglePerLocusState.class :
+                    NetworkFromGTTMultiPerLocusState.class;
+        }
 
         if(_temperatures.size() == 0) {
             _temperatures.add(1.0);

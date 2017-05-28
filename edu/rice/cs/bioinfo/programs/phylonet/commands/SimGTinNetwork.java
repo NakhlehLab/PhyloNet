@@ -27,8 +27,15 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.*;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,13 +48,11 @@ import java.util.Map;
 @CommandName("simgtinnetwork")
 public class SimGTinNetwork extends CommandBaseFileOut
 {
-    private Double _t1;
 
-    private Double _t2;
-
-    private Double _gamma;
-
-    private Integer _n;
+    private NetworkNonEmpty _net;
+    private int _numGTs;
+    private Map<String, List<String>> _taxonMap = null;
+    private String _msPath;
 
     public SimGTinNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
                           Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
@@ -56,12 +61,12 @@ public class SimGTinNetwork extends CommandBaseFileOut
 
     @Override
     protected int getMinNumParams() {
-        return 4;  //To change body of implemented methods use File | Settings | File Templates.
+        return 2;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     protected int getMaxNumParams() {
-        return 5;  //To change body of implemented methods use File | Settings | File Templates.
+        return 4;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -69,84 +74,84 @@ public class SimGTinNetwork extends CommandBaseFileOut
 
         boolean noError = true;
 
-        ParameterIdent t1Param = this.assertParameterIdent(0);
-        ParameterIdent t2Param = this.assertParameterIdent(1);
-        ParameterIdent gammaParam = this.assertParameterIdent(2);
-        ParameterIdent nParam = this.assertParameterIdent(3);
+        _net = this.assertAndGetNetwork(0);
+        noError = noError && _net != null;
 
-        if(t1Param == null || t2Param == null || gammaParam == null || nParam == null)
-        {
-            noError = false;
+        ParameterIdent numParam = this.assertParameterIdent(1);
+        noError = noError && numParam != null;
+
+        if (noError) {
+
+            try {
+                _numGTs = Integer.parseInt(numParam.Content);
+            } catch(NumberFormatException e) {
+                this.errorDetected.execute("Unknown number: " + numParam.Content,
+                        numParam.getLine(), numParam.getColumn());
+                noError = false;
+            }
+
+            // taxon map
+            ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
+            if(aParam.ContainsSwitch){
+                ParamExtractorAllelListMap alParam = new ParamExtractorAllelListMap("a",
+                        this.params, this.errorDetected);
+                noError = noError && alParam.IsValidMap;
+                if(alParam.IsValidMap){
+                    _taxonMap = alParam.ValueMap;
+                }
+            }
+
+            // ms path
+            ParamExtractor msParam = new ParamExtractor("ms", this.params, this.errorDetected);
+            if(msParam.ContainsSwitch) {
+                if(msParam.PostSwitchParam != null) {
+                    try {
+                        _msPath = msParam.PostSwitchValue;
+                    } catch(NumberFormatException e) {
+                        errorDetected.execute("Unrecognized path " + msParam.PostSwitchValue,
+                                msParam.PostSwitchParam.getLine(), msParam.PostSwitchParam.getColumn());
+                    }
+                    File msPath = new File(_msPath);
+                    if(!msPath.exists() || !msPath.isFile()) {
+                        errorDetected.execute("MS path doesn't exist: " + msParam.PostSwitchValue,
+                                msParam.PostSwitchParam.getLine(), msParam.PostSwitchParam.getColumn());
+                    }
+                } else {
+                    errorDetected.execute("Expected value after switch -ms.",
+                            msParam.SwitchParam.getLine(), msParam.SwitchParam.getColumn());
+                }
+            }
+
+            noError = noError && checkForUnknownSwitches("a", "ms");
+            checkAndSetOutFile(aParam, msParam);
         }
-        else
-        {
-            try
-            {
-                _t1 = Double.parseDouble(t1Param.Content);
-            }
-            catch(NumberFormatException e)
-            {
-                this.errorDetected.execute("Unknown number: " + t1Param.Content, t1Param.getLine(), t1Param.getColumn());
-                noError = false;
-            }
-
-             try
-            {
-                _t2 = Double.parseDouble(t2Param.Content);
-            }
-            catch(NumberFormatException e)
-            {
-                this.errorDetected.execute("Unknown number: " + t2Param.Content, t2Param.getLine(), t2Param.getColumn());
-                noError = false;
-            }
-
-             try
-            {
-                _gamma = Double.parseDouble(gammaParam.Content);
-            }
-            catch(NumberFormatException e)
-            {
-                this.errorDetected.execute("Unknown number: " + gammaParam.Content, gammaParam.getLine(), gammaParam.getColumn());
-                noError = false;
-            }
-
-             try
-            {
-                _n = Integer.parseInt(nParam.Content);
-            }
-            catch(NumberFormatException e)
-            {
-                this.errorDetected.execute("Unknown number: " + nParam.Content, nParam.getLine(), nParam.getColumn());
-                noError = false;
-            }
-
-            this.checkAndSetOutFile();
-        }
-
 
         return noError;
-
     }
 
       @Override
     protected String produceResult() {
 
-          if(_t1 == null || _t2 == null || _gamma == null || _n == null)
-          {
-              throw new IllegalStateException();
+          StringBuffer result = new StringBuffer();
+
+          NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
+          Network speciesNetwork = transformer.makeNetwork(_net);
+
+          List<Tree> gts;
+
+          if (_msPath == null) {
+              SimGTInNetwork sim = new SimGTInNetwork();
+              gts = sim.generateGTs(speciesNetwork, _taxonMap, _numGTs);
+          } else {
+              SimGTInNetworkByMS sim = new SimGTInNetworkByMS();
+              gts = sim.generateGTs(speciesNetwork, _taxonMap, _numGTs, _msPath);
+              result.append("\nms" + sim.getMSCommand() + "\n");
           }
 
-     StringBuffer result = new StringBuffer();
-
-        String[] gts =  new SimGTInNetwork2010().generateGTs(_t1, _t2, _gamma, _n);
-
-          for(String tr: gts){
-                this.richNewickGenerated(tr);
-				result.append("\n" + tr);
-			}
-
+          for(Tree t: gts){
+              result.append("\n" + t.toNewick());
+          }
 
           return result.toString();
-
     }
 }

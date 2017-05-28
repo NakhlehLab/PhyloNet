@@ -45,8 +45,8 @@ public class Utils {
     public static double[] _TRANS_RATES = null;
     // starting state
     public static double _POP_SIZE_MEAN = 0.036;
-    public static String _START_NET = null;
-    public static List<String> _START_GT_LIST = null;
+    public static List<String> _START_NET = null;
+    public static List<List<String>> _START_GT_LIST = null;
     public static boolean _PRE_BURN_IN = true;
     public static int _PRE_BURN_IN_ITER = 10;
     // summary
@@ -98,7 +98,8 @@ public class Utils {
             0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
             0.04, 0.05, 0.25,
             0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
-            0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT, 0.06 - DIMENSION_CHANGE_WEIGHT
+            0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT,
+            0.06 - DIMENSION_CHANGE_WEIGHT
     };
     public static final double[] Net_Tree_Op_Weights = new double[] {
             0.03, 0.01,

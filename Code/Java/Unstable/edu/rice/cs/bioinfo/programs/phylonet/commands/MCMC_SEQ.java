@@ -387,7 +387,9 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                             geneTrees.add(NetworkTransformer.toENewickTree(gt));
                         }
                     }
-                    Utils._START_GT_LIST = geneTrees;
+                    List<List<String>> startGTs = new ArrayList<>();
+                    startGTs.add(geneTrees);
+                    Utils._START_GT_LIST = startGTs;
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Invalid value after switch -sgt.",
                             sgtParam.PostSwitchParam.getLine(), sgtParam.PostSwitchParam.getColumn());
@@ -403,15 +405,21 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         if(snParam.ContainsSwitch){
             if(snParam.PostSwitchParam != null) {
                 try {
-                    noError = noError && this.assertNetworkExists(snParam.PostSwitchValue,
-                            snParam.PostSwitchParam.getLine(), snParam.PostSwitchParam.getColumn());
-                    if (noError) {
-                        NetworkNonEmpty net = this.sourceIdentToNetwork.get(snParam.PostSwitchValue);
-                        noError = noError && net != null;
+                    if(!(snParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    List<String> snets = new ArrayList<>();
+                    ParameterIdentList nets = (ParameterIdentList) snParam.PostSwitchParam;
+                    NetworkFactoryFromRNNetwork factory = new NetworkFactoryFromRNNetwork();
+                    for(String ident: nets.Elements){
+                        noError = noError && this.assertNetworkExists(ident,
+                                snParam.PostSwitchParam.getLine(), snParam.PostSwitchParam.getColumn());
                         if (noError) {
-                            Utils._START_NET = (new NetworkFactoryFromRNNetwork()).makeNetwork(net).toString();
+                            NetworkNonEmpty net = this.sourceIdentToNetwork.get(ident);
+                            snets.add(factory.makeNetwork(net).toString());
                         }
                     }
+                    Utils._START_NET = snets;
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Invalid value after switch -snet.",
                             snParam.PostSwitchParam.getLine(), snParam.PostSwitchParam.getColumn());

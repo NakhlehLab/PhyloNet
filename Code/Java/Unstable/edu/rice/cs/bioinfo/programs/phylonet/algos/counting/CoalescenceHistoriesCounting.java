@@ -315,7 +315,7 @@ public class CoalescenceHistoriesCounting {
 
                 List<Network> netList2 = new ArrayList<>();
                 for(int i = 0 ; i < netList.size() ; i++) {
-                    //netList2.addAll(datagen.allPossibleReticulation(netList.get(i)));
+                    netList2.addAll(datagen.allPossibleReticulation(netList.get(i)));
                 }
                 netList2.add(0, net1.clone());
                 System.out.println(netList2.size());

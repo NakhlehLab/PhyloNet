@@ -164,7 +164,49 @@ public class DataGenerator {
             return false;
     }
 
-    void addReticulation(Network<Object> network){
+    public List<Network> allPossibleReticulation(Network<Object> originalNetwork) {
+        List<Network> results = new ArrayList<>();
+        ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
+        ArrayList<Tuple<NetNode, NetNode>> allEdgesNeedBrlens = new ArrayList<>();
+        ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges = new ArrayList<>();
+        ArrayList<Tuple<NetNode, NetNode>> allRemovableReticulationEdges = new ArrayList<>();
+        Set<String> taxa = new HashSet<>();
+
+        Network network = originalNetwork.clone();
+        //results.add(originalNetwork.clone());
+        ReticulationEdgeAddition reticulationEdgeAddition = new ReticulationEdgeAddition();
+        getNetworkInfo(network, allEdges, allEdgesNeedBrlens, allReticulationEdges, allRemovableReticulationEdges, taxa);
+        int size = allEdges.size();
+
+        for(int sourceID = 0 ; sourceID < size ; sourceID++) {
+            for(int destinationID = 0 ; destinationID < size ; destinationID++) {
+                if(sourceID == destinationID)
+                    continue;
+
+                _sourceEdge = allEdges.get(sourceID);
+                _destinationEdge = allEdges.get(destinationID);
+                _targetEdge = null;
+
+                reticulationEdgeAddition.setParameters(network, _targetEdge, _targetEdgeBrlen, _targetEdgeInheriProb, _sourceEdge, null, null, _destinationEdge, null, null);
+                if (reticulationEdgeAddition.performOperation()) {
+                    if (Networks.hasCycle(network) || !isNetworkValid(network, taxa) /*|| !isFullReticulation(network)*/) {
+
+                    } else {
+                        results.add(network.clone());
+                    }
+                    reticulationEdgeAddition.undoOperation();
+                }
+            }
+        }
+
+
+
+        return results;
+
+
+    }
+
+    public void addReticulation(Network<Object> network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allEdgesNeedBrlens = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allReticulationEdges = new ArrayList<>();

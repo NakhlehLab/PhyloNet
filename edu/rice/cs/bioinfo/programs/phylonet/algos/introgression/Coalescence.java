@@ -36,6 +36,7 @@ public class Coalescence {
     public List<String> _stTaxa; // taxas for species mul tree
     private Map<String,Integer> _nname2tamount;  //map the node name in the network to the number of corresponding nodes in the species tree
     private Map<String,String> _tname2nname;	 //map the node name in the species tree to the name of the corresponding node in the network
+    private List<Integer> _historiesCount;
 
     // temporal use
     private boolean [][] _R, _M, _S;
@@ -48,6 +49,7 @@ public class Coalescence {
         _stTaxa = new ArrayList<String>();
         _nname2tamount = new TreeMap<String,Integer>();
         _tname2nname = new TreeMap<String,String>();
+        _historiesCount = new ArrayList<>();
 
         this._specieNetwork = net;
         this._gtTaxa = Arrays.asList(trees.get(0).getLeaves());
@@ -84,6 +86,7 @@ public class Coalescence {
         double probForThisTree = 0.0;
 
         List<Tuple3<int[],int[],Double>> coals = getAllCoalescenceHistories(gt);
+        _historiesCount.add(coals.size());
         for(Tuple3<int[],int[],Double> coal : coals) {
             double probability = coal.Item3;
             probForThisTree += probability;
@@ -150,6 +153,10 @@ public class Coalescence {
             }
             tmp = tmp.getParent();
         }
+    }
+
+    public List<Integer> getAllCoalescenceHistoriesCount() {
+        return _historiesCount;
     }
 
     private List<Tuple3<int[],int[],Double>> getAllCoalescenceHistories(Tree gt){

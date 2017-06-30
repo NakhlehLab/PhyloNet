@@ -39,8 +39,10 @@ public class MC3Core {
             for(int i = 0; i < nChains; i++) {
                 _mc3s.add (new MC3 (this,
                         new State(
-                                Utils._START_NET,
-                                Utils._START_GT_LIST,
+                                (Utils._START_NET == null || Utils._START_NET.size() == 0) ? null :
+                                        Utils._START_NET.get(i % Utils._START_NET.size()),
+                                (Utils._START_GT_LIST == null || Utils._START_GT_LIST.size() == 0) ? null :
+                                        Utils._START_GT_LIST.get(i % Utils._START_GT_LIST.size()),
                                 alignments,
                                 Utils._POISSON_PARAM,
                                 Utils._TAXON_MAP

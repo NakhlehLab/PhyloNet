@@ -86,7 +86,7 @@ public class Utils {
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
-    public static final double DIMENSION_CHANGE_WEIGHT = 0.05;
+    public static double DIMENSION_CHANGE_WEIGHT = 0.005;
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
@@ -104,6 +104,7 @@ public class Utils {
             0.04, 0.05,
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
+
     public static final double[] PopSize_Op_Weights = new double[]{0.5, 1.0};
 
 

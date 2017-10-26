@@ -49,7 +49,7 @@ public class Test {
         //testBranchlength();
         //testSecondData(args);
         //testMosquitoData(args);
-        //testOurisiaData(args);
+        testOurisiaData(args);
         //test012Data(args);
         //trim012Data(args);
         //testWithDingqiaoNetwork(args);
@@ -58,7 +58,7 @@ public class Test {
         //checkDingqiaoNetworkResults();
         //generateSNPdata();
         //generateFourSpeciesData();
-        generateAFLPdata();
+        //generateAFLPdata();
         //generateVLBLSNPdata();
         //generateNEXfile();
         //generateSecondSNPdata();
@@ -808,7 +808,7 @@ public class Test {
 
 
 
-        String filename = "../ourisia/test4.nex";
+        String filename = "../ourisia/test8.nex";
 
         Utils.EXP_PARAM = 2.0;
         Utils._POISSON_PARAM = 1.0;

@@ -148,6 +148,10 @@ public class UltrametricNetwork extends StateNode {
         return this._network;
     }
 
+    public void setNetwork(Network<NetNodeInfo> network) {
+        this._network = network;
+    }
+
     public int getReticulationCount() {
         return this._network.getReticulationCount();
     }
@@ -225,6 +229,11 @@ public class UltrametricNetwork extends StateNode {
             }
         }*/
         return Utils.sum(_logLtemp);
+    }
+
+    public double recomputeLogDensity() {
+
+        return Utils.sum(computeLikelihood());
     }
 
     @Override

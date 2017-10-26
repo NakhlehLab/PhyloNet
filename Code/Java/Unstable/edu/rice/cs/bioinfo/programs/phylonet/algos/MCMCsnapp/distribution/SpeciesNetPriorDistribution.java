@@ -50,9 +50,14 @@ public class SpeciesNetPriorDistribution {
                 taxa.add(node.getName());
             }
         }
-        double prior = getTopPrior(net) + getDiametersPrior(net) + getNodeHeightsPrior(net)
-                + getInheritanceProbPrior(net)
-                + getPopSizePrior(net);
+        double topPrior = getTopPrior(net);
+        double diametersPrior = getDiametersPrior(net);
+        double nodeHeightsPrior = getNodeHeightsPrior(net);
+        double inheritanceProbPrior = getInheritanceProbPrior(net);
+        double popSizePrior = getPopSizePrior(net);
+        double prior = topPrior + diametersPrior + nodeHeightsPrior
+                + inheritanceProbPrior
+                + popSizePrior;
         return prior;
     }
 

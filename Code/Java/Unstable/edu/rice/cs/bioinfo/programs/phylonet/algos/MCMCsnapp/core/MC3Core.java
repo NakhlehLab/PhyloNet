@@ -30,6 +30,9 @@ public class MC3Core {
     private int _burnInCounter = 0;
     private int _startNumber = 1;
 
+    private List<Double> _likelihoodList = new ArrayList<>();
+    private List<String> _networkList = new ArrayList<>();
+
     // logging info
     private ESS _posteriorESS = new ESS();
     private ESS _priorESS = new ESS();
@@ -134,7 +137,9 @@ public class MC3Core {
                         ),
                         i == 0 ? 1.0 : Utils._MC3_CHAINS.get(i - 1),
                         i == 0,
-                        Utils.SWAP_FREQUENCY
+                        Utils.SWAP_FREQUENCY,
+                        _networkList,
+                        _likelihoodList
                 ) );
             }
             _mc3s.get(0).setMain(true);
@@ -152,6 +157,19 @@ public class MC3Core {
         //if(Utils._ESTIMATE_POP_SIZE) {
         //    _samples.add(new SampleSummary("popSizePrior", Utils.SampleType.DoubleParam));
         //}
+    }
+
+
+    public String getBestLikelihoodNetwork() {
+        int index = 0;
+        double bestLikelihood = -1e99;
+        for(int i = 0 ; i < _likelihoodList.size() ; i++) {
+            if(bestLikelihood < _likelihoodList.get(i)) {
+                bestLikelihood = _likelihoodList.get(i);
+                index = i;
+            }
+        }
+        return _networkList.get(index);
     }
 
 

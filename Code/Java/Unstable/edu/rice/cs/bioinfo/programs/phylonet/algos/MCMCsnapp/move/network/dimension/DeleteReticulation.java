@@ -19,6 +19,7 @@ public class DeleteReticulation extends DimensionChange {
     private double _logHR;
     private NetNode<NetNodeInfo> _v1, _v2, _v3, _v4, _v5, _v6;
     private double _oldGamma;
+    private double _popSizeV3V1, _popSizeV5V2, _popSizeV1V2;
 
     public DeleteReticulation(UltrametricNetwork net) {
         super(net);
@@ -57,6 +58,10 @@ public class DeleteReticulation extends DimensionChange {
                     double l1 = _v3.getData().getHeight() - _v4.getData().getHeight();
                     double l2 = _v5.getData().getHeight() - _v6.getData().getHeight();
 
+                    _popSizeV3V1 = _v1.getParentSupport(_v3);
+                    _popSizeV5V2 = _v2.getParentSupport(_v5);
+                    _popSizeV1V2 = _v2.getParentSupport(_v1);
+
                     double logPopSize = removeReticulation(_v1, _v2, _v3, _v4, _v5, _v6);
 
                     _violate = true;
@@ -70,7 +75,7 @@ public class DeleteReticulation extends DimensionChange {
     @Override
     public void undo() {
         if(_logHR == Utils.INVALID_MOVE) return;
-        addReticulation(_v1, _v2, _v3, _v4, _v5, _v6, _oldGamma);
+        undoDeleteReticulation(_v1, _v2, _v3, _v4, _v5, _v6, _oldGamma, _popSizeV3V1, _popSizeV5V2, _popSizeV1V2);
     }
 
     @Override

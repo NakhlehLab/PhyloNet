@@ -7,10 +7,16 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary;
  * Time: 6:13 PM
  * To change this template use File | Settings | File Templates.
  */
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.ParentalTreeOperation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -152,24 +158,24 @@ public class SummaryBL {
 
         public void reportForDensityPlot(PrintWriter out, double scale, double popScale) {
             if(this.parent == null) {
-                out.println("-> root : pop size");
+                out.println("[KEY]-> root : pop size");
                 for(Double sp : listSp ) {
                     out.println(sp / popScale);
                 }
                 return;
             }
-            out.println(this.parent.getName() + " -> " + this.child.getName() + " : branch length");
+            out.println("[KEY]" + this.parent.getName() + " -> " + this.child.getName() + " : branch length");
             for(Double bl : listBL) {
                 out.println(bl / scale);
             }
             if(this.listProb.size() > 0) {
-                out.println(this.parent.getName() + " -> " + this.child.getName() + " : inheritance prob");
+                out.println("[KEY]" + this.parent.getName() + " -> " + this.child.getName() + " : inheritance prob");
                 for(Double prob : listProb ) {
                     out.println(prob);
                 }
             }
             if(this.listSp.size() > 0) {
-                out.println(this.parent.getName() + " -> " + this.child.getName() + " : pop size");
+                out.println("[KEY]" + this.parent.getName() + " -> " + this.child.getName() + " : pop size");
                 for(Double sp : listSp ) {
                     out.println(sp / popScale);
                 }
@@ -184,6 +190,7 @@ public class SummaryBL {
     private double _rootPopSizeStd = 0;
     private int _rootPopSizeSize = 0;
     private Map<Network, Info> _topologyCount = new HashMap<>();
+    private List<Network> _samples = new ArrayList<>();
 
     public SummaryBL(String s) {
         this._net = Networks.readNetwork(s);
@@ -211,7 +218,7 @@ public class SummaryBL {
             while((s = in.readLine()) != null) {
                 ss = s.split("\\s+");
                 if (notBeast) {
-                    if(s.contains("Logger")) {
+                    if(s.contains("MC BEGINS")) {
                         loggerStart = true;
                         continue;
                     } else if(s.contains("Summarization"))  {
@@ -249,6 +256,7 @@ public class SummaryBL {
 //                                _rootPopSizeSize++;
 //                            }
                             Network net = Networks.readNetwork(s);
+                            _samples.add(Networks.readNetwork(s));
                             if(net == null) {
                                 continue;
                             }
@@ -442,14 +450,14 @@ public class SummaryBL {
     }
 
     public void reportForDensityPlot(String filename, double scale, double popScale) {
-        System.out.println(_size);
+        System.out.println("Samples: " + _size);
         try {
             PrintWriter out = new PrintWriter(filename);
             for(String key : this._branches.keySet()) {
                 Branch br = this._branches.get(key);
                 br.reportForDensityPlot(out, scale, popScale);
             }
-            out.println("->");
+            out.println("[END]");
             out.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -460,6 +468,87 @@ public class SummaryBL {
                 continue;
             }
             System.out.println(_topologyCount.get(key).toString() + "  " + key.toString());
+        }
+    }
+
+    public void reportForTopology(String filename) {
+        System.out.println("Samples: " + _samples.size());
+        System.out.println("Correct topologies: " + _size);
+
+        Tree backbone = getBackbone(_net);
+
+        List<Double> treeDistances = new ArrayList<>();
+        List<Double> networkDistances = new ArrayList<>();
+        for(Network key : _samples) {
+            if(key.getReticulationCount() == 0) {
+                double minDist = 1e99;
+                String s = Networks.getTopologyString(key);
+                Tree t = Trees.readTree(s);
+                minDist = Math.min(minDist, getRootedRobinsonFouldsDistance(backbone, t));
+                treeDistances.add(minDist);
+            } else {
+                NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
+                double dist = metric.computeDistanceBetweenTwoNetworks(key, _net);
+                networkDistances.add(dist);
+            }
+        }
+
+        try {
+            PrintWriter out = new PrintWriter(filename);
+            out.println("[KEY]Tree");
+            out.println(0.0);
+            for(double t : treeDistances) {
+                out.println(t);
+            }
+            out.println("[KEY]Network");
+            out.println(0.0);
+            for(double t : networkDistances) {
+                out.println(t);
+            }
+            out.println("[END]");
+            out.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    public void reportForHeight(String filename) {
+        System.out.println("Samples: " + _samples.size());
+        System.out.println("Correct topologies: " + _size);
+
+        try {
+            PrintWriter out = new PrintWriter(filename);
+            out.println("[KEY]Height");
+            out.println(getNetworkHeight(_net));
+
+            for(Network key : _samples) {
+                out.println(getNetworkHeight(key));
+            }
+
+            out.println("[END]");
+            out.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    public void reportForReticulation(String filename) {
+        System.out.println("Samples: " + _samples.size());
+        System.out.println("Correct topologies: " + _size);
+
+        try {
+            PrintWriter out = new PrintWriter(filename);
+            out.println("[KEY]Reticulation");
+            out.println(_net.getReticulationCount());
+
+            for(Network key : _samples) {
+                out.println(key.getReticulationCount());
+            }
+
+            out.println("[END]");
+            out.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
     }
 
@@ -495,6 +584,47 @@ public class SummaryBL {
         }
     }
 
+    public double getRootedRobinsonFouldsDistance(Tree tree1, Tree tree2) {
+        SymmetricDifference symmetricDifference = new SymmetricDifference();
+        symmetricDifference.computeDifference(tree1, tree2, true);
+        double diff = symmetricDifference.getWeightedAverage();
+
+        return diff;
+    }
+
+    public double getNetworkHeight(Network net) {
+        NetNode node = (NetNode) net.getLeaves().iterator().next();
+        double result = 0.0;
+        while(!node.isRoot()) {
+            NetNode parent = (NetNode) node.getParents().iterator().next();
+            result += node.getParentDistance(parent);
+            node = parent;
+        }
+        return result;
+    }
+
+    public Tree getBackbone(Network net) {
+        Network curNet = Networks.readNetwork(net.toString());
+        curNet.getRoot().setRootPopSize(net.getRoot().getRootPopSize());
+        List<NetNode> networkNodes = new ArrayList<>();
+        for(Object nodeObj : curNet.getNetworkNodes()) {
+            networkNodes.add((NetNode) nodeObj);
+        }
+        for(NetNode node : networkNodes) {
+            Iterator it = node.getParents().iterator();
+            NetNode p1 = (NetNode) it.next();
+            NetNode p2 = (NetNode) it.next();
+            if(node.getParentProbability(p1) > node.getParentProbability(p2)) {
+                p1 = p2;
+            }
+            p1.removeChild(node);
+        }
+        String s = Networks.getTopologyString(curNet);
+        MutableTree t = (MutableTree) Trees.readTree(s);
+        Trees.removeBinaryNodes(t);
+        return t;
+    }
+
     public static void main(String[] args) {
         String netA = "[0.036](((C:0.025199999999999997:0.036,(A:0.012599999999999998:0.036)I6#H1:0.012599999999999998:0.036:0.2)I5:0.010799999999999999:0.036,G:0.036:0.036)I1:0.05399999999999999:0.036,(R:0.072:0.036,(L:0.05399999999999999:0.036,(Q:0.036:0.036,I6#H1:0.0234:0.036:0.8)I4:0.018:0.036)I3:0.018:0.036)I2:0.018:0.036)I0;";
         String netB = "[0.036](((C:0.036,G:0.036)I1:0.036,((L:0.05399999999999999,(A:0.036,Q:0.036)I4:0.018)I3:0.009)I8#H1:0.009::0.3)I7:0.018,(R:0.072,I8#H1:0.009::0.7)I2:0.018)I0;";
@@ -504,12 +634,13 @@ public class SummaryBL {
         String netO = "[0.21545722449921065](((((HYB:0.003914413112003172:0.4176146908155346)#H1:0.017795921488291882:0.43115993308468703:0.27243274959227726,mcpmcp:0.021710334600295055:0.39534479563469904):0.05006671672056976:0.33564197409296903,mcplac:0.07177705132086482:0.2106105837692384):0.022926534912054042:0.19532354605930963,((#H1:0.024245525688431534:0.06424656769681:0.7275672504077227,vul:0.028159938800434707:0.1060232965423852):0.04314872010473817:0.47969536332364177,mcccal:0.07130865890517288:0.22924196754984502):0.02339492732774598:0.08797760028321075):0.011203153707864497:0.24137432580356583,cro:0.10590673994078335:0.28202492943752444);";
         //String netO="[0.12681791544104312](((mcccal:0.10324554898151703:0.07498756905531118,((HYB:0.018668688439637513:0.03429908136988121)#H1:0.052148254039290104:0.045084565479595835:0.573826907820398,vul:0.07081694247892761:0.03812038618556495):0.03242860650258941:0.03261690207000356):0.019549498068229462:0.037603755462335915,((#H1:0.029604547063352134:0.032054637614948284:0.426173092179602,mcpmcp:0.04827323550298965:0.021273866063836175):0.03578119089377865:0.033957981610605474,mcplac:0.0840544263967683:0.07805001108990976):0.03874062065297819:0.09196942861228893):0.00658368681952827:0.03596084334798809,cro:0.12937873386927476:0.11626211262353897);";
         //String net = "((R:0.07418337143189109,(L:0.06326041807321096,(A:0.04879879316357197,Q:0.04879879316357197):0.014461624909638995):0.010922953358680126):0.015047126703711472,(G:0.03786213356113884,C:0.03786213356113884):0.05136836457446372);";
-        String netO8 = "[0.0159460584501656](((HYB:0.010486260333729425:0.04568737827235455)#H1:0.030479082875572633:0.05614849942068507:0.3507859171423371,cae:0.040965343209302056:0.0975103415402549):0.1535807683033375:0.03801435228951263,(mccmcc:0.15241646529034594:0.10129308649738825,((#H1:0.03580036184201104:0.07982266172691824:0.6492140828576629,sesses:0.04628662217574046:0.04887809001016273):0.049028478979069826:0.0156785485876387,sesspl:0.09531510115481029:0.06442486234089084):0.057101364135535654:0.015874771342030733):0.04212964622229362:0.035590940755783826);";
-        String netO4 = "[0.04665584243290884]((mcplac:0.19611605452191586:0.12607082144388865,mccmcc:0.19611605452191586:0.09736454332457031):0.002106128636517768:0.2103788893544636,(((HYB:0.0022441022283661684:0.061525835220972144)#H1:0.010513541891924352:0.1303112903278956:0.36210706322047526,mcccal:0.012757644120290521:0.14263185275520357):0.12916379363427463:0.06477205845300829,(cae:0.0379761963281889:0.08629484890008852,#H1:0.03573209409982273:0.10011030257749999:0.6378929367795247):0.10394524142637623:0.07719823614952294):0.05630074540386848:0.11479812656689296);";
+        String netO8 = "[0.03678804256592915]((mccmcc:0.14889368885248497:0.0401585123579523,(sesspl:0.07484846132667702:0.05334010792803318,((HYB:0.029738544838728925:0.045259539795100646)#H1:0.004500135083003898:0.05739433597670084:0.5786813009538128,sesses:0.03423867992173282:0.03912830945064944):0.0406097814049442:0.021553843442927427):0.07404522752580794:0.11405841692866706):0.058943734376352225:0.04611915359113329,(#H1:0.010502859957408392:0.06686347677981164:0.42131869904618724,cae:0.04024140479613732:0.059065877126376044):0.1675960184326999:0.07103450968740839);";
+        String netO4 = "[0.031269291383741966]((cae:0.023498520577909784:0.11453515690711917,(HYB:0.009167547496130975:0.03805835880867663)#H1:0.01433097308177881:0.03423044524104861:0.5101383020949305):0.17382587887270695:0.024235535337852533,(mccmcc:0.18439345369566149:0.06925787527744415,(mcplac:0.1465258072175068:0.08235404912736036,(#H1:0.014564359287868745:0.03939682755966605:0.4898616979050695,mcccal:0.02373190678399972:0.04882348145145685):0.12279390043350707:0.04534154430390398):0.03786764647815469:0.05099477836461758):0.012930945754955264:0.06687609363382643);";
         //String net = "[0.011246994934593928](wal:0.16856764465578844:0.024643805160552118,(((the57:0.005532380717127541:0.0328604191625876)#H1:0.008861256779885193:0.0349981605141176:0.5697578143531001,c513:0.014393637497012734:0.06774556777311104):0.02033133765658179:0.05536861556843345,(m523:0.03221433499579413:0.05265524780165408,(agla569:0.010982981528325176:0.04211202761569184,(#H1:4.459081325119832E-4:0.044983217465569256:0.43024218564689987,amar48:0.0059782888496395245:0.06404852435647355):0.005004692678685652:0.05142074487290094):0.021231353467468954:0.05110140055230508):0.0025106401578003923:0.05027578096009688):0.13384266950219392:0.02824200898517967);";
-        int start = 300, end = 3000;
+        String netR1 = "[0.006](((((Q:0.004:0.006)I5#H1:0.002:0.005:0.7,A:0.006:0.006)I3:0.006:0.005,L:0.012:0.006)I2:0.012:0.005,(I5#H1:0.003:0.005:0.3,R:0.007:0.006)I4:0.017:0.005)I1:0.016:0.005,C:0.04:0.006);";
+        int start = 400, end = 3000;
         SummaryBL sbl = new SummaryBL(netO4);
-        String file = "/Users/zhujiafan/MBEresults/test4_2.txt";
+        String file = "/Users/zhujiafan/Documents/PhyloDataResults/Ourisia/test4_2.txt";
         sbl.addFile(file, true, start, end);
         //sbl.report( 0.036 / 2, 1);
         sbl.report( 1, 1);

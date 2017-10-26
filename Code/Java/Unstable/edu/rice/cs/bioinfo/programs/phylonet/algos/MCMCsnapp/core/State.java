@@ -65,6 +65,11 @@ public class State {
                 + "\nGamma Mean: " + _populationSize.toString();
     }
 
+    public String toNetworkString() {
+        return "[" + _speciesNet.getNetwork().getRoot().getRootPopSize() + "]"
+                + _speciesNet.getNetwork().toString();
+    }
+
     /**
      * Serialize state to list
      * @return    serialization string
@@ -167,6 +172,14 @@ public class State {
      */
     public double calculateLikelihood() {
         double logL = _speciesNet.logDensity();
+        /*for(UltrametricTree gt : _geneTrees) {
+            logL += gt.logDensity();
+        }*/
+        return logL;
+    }
+
+    public double recalculateLikelihood() {
+        double logL = _speciesNet.recomputeLogDensity();
         /*for(UltrametricTree gt : _geneTrees) {
             logL += gt.logDensity();
         }*/

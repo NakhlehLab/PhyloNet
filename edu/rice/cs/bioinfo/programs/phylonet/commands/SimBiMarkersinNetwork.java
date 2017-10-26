@@ -34,6 +34,12 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
     private Long _seed = null;
     private String _trueNetwork = null;
     private Integer _n = null;
+    private Integer _nSitesPerGT = null;
+    private Boolean _rateVarAcrossMarkers = null;
+    private Boolean _rateVarAcrossLineages = null;
+    private Double _invariantSitesProb = null;
+    private Double _gammaShape = null;
+    private Integer _gammaCat = null;
     private Map<String, List<String>> _species2alleles = null;
     private double _pi0 = 0.5;
     private String _outFilePath = null;
@@ -51,7 +57,7 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
 
     @Override
     protected int getMaxNumParams() {
-        return 15;
+        return 50;
     }
 
     @Override
@@ -93,6 +99,82 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
             } else {
                 errorDetected.execute("Expected value after switch -sd.",
                         sdParam.SwitchParam.getLine(), sdParam.SwitchParam.getColumn());
+            }
+        }
+
+        // invariant sites
+        ParamExtractor invariantParam = new ParamExtractor("i", this.params, this.errorDetected);
+        if(invariantParam.ContainsSwitch){
+            if(invariantParam.PostSwitchParam != null) {
+                try {
+                    _invariantSitesProb = Double.parseDouble(invariantParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized invariant sites prob " + invariantParam.PostSwitchValue,
+                            invariantParam.PostSwitchParam.getLine(), invariantParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -i.",
+                        invariantParam.SwitchParam.getLine(), invariantParam.SwitchParam.getColumn());
+            }
+        }
+
+        // gamma categories
+        ParamExtractor gammaCatParam = new ParamExtractor("g", this.params, this.errorDetected);
+        if(gammaCatParam.ContainsSwitch){
+            if(gammaCatParam.PostSwitchParam != null) {
+                try {
+                    _gammaCat = Integer.parseInt(gammaCatParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized number of categories " + gammaCatParam.PostSwitchValue,
+                            gammaCatParam.PostSwitchParam.getLine(), gammaCatParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -g.",
+                        gammaCatParam.SwitchParam.getLine(), gammaCatParam.SwitchParam.getColumn());
+            }
+        }
+
+        // gamma shape
+        ParamExtractor gammaShapeParam = new ParamExtractor("a", this.params, this.errorDetected);
+        if(gammaShapeParam.ContainsSwitch){
+            if(gammaShapeParam.PostSwitchParam != null) {
+                try {
+                    _gammaShape = Double.parseDouble(gammaShapeParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized alpha " + gammaShapeParam.PostSwitchValue,
+                            gammaShapeParam.PostSwitchParam.getLine(), gammaShapeParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -a.",
+                        gammaShapeParam.SwitchParam.getLine(), gammaShapeParam.SwitchParam.getColumn());
+            }
+        }
+
+        // rvl
+        ParamExtractor rvlParam = new ParamExtractor("rvl", this.params, this.errorDetected);
+        if(rvlParam.ContainsSwitch){
+            _rateVarAcrossLineages = true;
+        }
+
+        // rvm
+        ParamExtractor rvmParam = new ParamExtractor("rvm", this.params, this.errorDetected);
+        if(rvmParam.ContainsSwitch){
+            _rateVarAcrossMarkers = true;
+        }
+
+        // sitespergt
+        ParamExtractor sitespergtParam = new ParamExtractor("sitespergt", this.params, this.errorDetected);
+        if(sitespergtParam.ContainsSwitch){
+            if(sitespergtParam.PostSwitchParam != null) {
+                try {
+                    _nSitesPerGT = Integer.parseInt(sitespergtParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized number of sites " + sitespergtParam.PostSwitchValue,
+                            sitespergtParam.PostSwitchParam.getLine(), sitespergtParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -sitespergt.",
+                        sitespergtParam.SwitchParam.getLine(), sitespergtParam.SwitchParam.getColumn());
             }
         }
 
@@ -168,11 +250,15 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
         noError = noError && checkForUnknownSwitches(
                 "diploid",
                 "dominant","pi0",
-                "op", "sd", "num", "tm", "truenet", "out"
+                "op", "sd", "num", "tm", "truenet", "out",
+                "sitespergt", "rvl", "rvm",
+                "a", "i", "g"
         );
         checkAndSetOutFile(
                 diploidParam,dominantParam,onlyPolyParam,pi0Param,
-                numParam, sdParam, tmParam,snParam, fileParam
+                numParam, sdParam, tmParam,snParam, fileParam,
+                sitespergtParam, rvlParam, rvmParam,
+                gammaShapeParam, gammaCatParam, invariantParam
         );
 
         return  noError;
@@ -191,6 +277,26 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, _seed);
         simulator._diploid = _diploid;
         simulator._dominant = _dominant != null;
+
+        if(_nSitesPerGT != null) {
+            simulator.setSitesPerGT(_nSitesPerGT);
+        }
+
+        if(_rateVarAcrossLineages != null) {
+            simulator.setRateVarAcrossLineages(_rateVarAcrossLineages);
+        }
+
+        if(_rateVarAcrossMarkers != null) {
+            simulator.setRateVarAcrossMarkers(_rateVarAcrossMarkers);
+        }
+
+        if(_invariantSitesProb != null) {
+            simulator.setInvariantSitesProb(_invariantSitesProb);
+        }
+
+        if(_gammaCat != null) {
+            simulator.setDiscreteGamma(_gammaShape, _gammaCat, _seed);
+        }
 
         String s = _trueNetwork;
         double rootPopSize = 0.0;

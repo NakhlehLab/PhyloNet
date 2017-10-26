@@ -25,11 +25,17 @@ public class MC3 {
     private double _logLikelihood;
     private double _logPrior;
 
+    private List<String> _networkList = new ArrayList<>();
+    private List<String> _operationList = new ArrayList<>();
+    private List<Double> _likelihoodList = new ArrayList<>();
+
     public MC3(MC3Core core,
                State start,
                double temp,
                boolean main,
-               int sampleFrequency
+               int sampleFrequency,
+               List networkList,
+               List likelihoodList
     ) {
         this._core = core;
         this._state = start;
@@ -39,6 +45,8 @@ public class MC3 {
         this._logLikelihood = _state.calculateLikelihood();
         this._logPrior = _state.calculatePrior();
         this._logPost = this._logLikelihood + this._logPrior;
+        this._likelihoodList = likelihoodList;
+        this._networkList = networkList;
     }
 
     /**
@@ -83,6 +91,8 @@ public class MC3 {
                 double logNext = logLikelihoodNext + logPriorNext;
                 _logAlpha = (logNext - _logPost) / _temperature + logHastings;
 
+
+
                 _state.getOperation().optimize(_logAlpha);
 
                 if( _logAlpha >= Math.log(Randomizer.getRandomDouble()) ) {
@@ -99,6 +109,19 @@ public class MC3 {
                 } else {
                     _state.undo(_logAlpha);
                 }
+
+                /*double n1 = _state.recalculateLikelihood();
+                double n2 = _state.calculateLikelihood();
+
+                _networkList.add(_state.getNetwork());
+                _operationList.add(op);
+                _likelihoodList.add(n2);
+
+                if(Math.abs(n1 - n2) > 1e-6) {
+                    throw new RuntimeException("likelihood error");
+                }*/
+
+
             } else {
                 _state.undo(Utils.INVALID_MOVE);
             }
@@ -127,6 +150,9 @@ public class MC3 {
                 netSample.add(new Tuple<>(_state.getNetwork(), _logPost));
                 _core.addNetSample(netSample);
                 System.out.println(_state.toString());
+
+                _networkList.add(_state.toNetworkString());
+                _likelihoodList.add(_logLikelihood);
             } else {
                 System.out.println("Temperature = " + _temperature);
                 System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",

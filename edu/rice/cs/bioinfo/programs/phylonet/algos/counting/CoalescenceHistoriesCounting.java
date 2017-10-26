@@ -14,10 +14,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -54,6 +51,70 @@ public class CoalescenceHistoriesCounting {
         return count;
     }
 
+    public static int getDiscreteDiameterOneNode(NetNode p, Network net) {
+        Map<NetNode, Integer> marks = new HashMap<>();
+        NetNode p1 = null;
+        NetNode p2 = null;
+        if(!p.isNetworkNode())
+            return 0;
+        for(Object parentO : p.getParents()) {
+            NetNode parent = (NetNode) parentO;
+            if(p1 != null)
+                p2 = parent;
+            else
+                p1 = parent;
+        }
+
+        Queue<NetNode> q = new LinkedList<>();
+        q.add(p1);
+        marks.put(p1, 0);
+        while(!q.isEmpty()) {
+            NetNode node = q.poll();
+            int d = marks.get(node);
+
+            for(Object parentO : node.getParents()) {
+                NetNode parent = (NetNode) parentO;
+                q.add(parent);
+                if(!marks.containsKey(parent))
+                    marks.put(parent, Integer.MAX_VALUE);
+
+                marks.put(parent, Math.min(marks.get(parent), d + 1));
+            }
+        }
+
+
+        Map<NetNode, Integer> marks2 = new HashMap<>();
+        marks2.put(p2, 0);
+        int s = Integer.MAX_VALUE;
+        NetNode best = null;
+        q.clear();
+        q.add(p2);
+        while(!q.isEmpty()) {
+            NetNode node = q.poll();
+            if(marks.containsKey(node) && s > marks.get(node)) {
+                s = marks.get(node);
+                best = node;
+            }
+            int d = marks2.get(node);
+
+            for(Object parentO : node.getParents()) {
+                NetNode parent = (NetNode) parentO;
+                q.add(parent);
+
+                if(!marks2.containsKey(parent))
+                    marks2.put(parent, Integer.MAX_VALUE);
+
+                marks2.put(parent, Math.min(marks2.get(parent), d + 1));
+            }
+        }
+
+        s = marks.get(best) + marks2.get(best) + 2;
+
+        return s;
+
+
+    }
+
     public static int getDiscreteDiameter(Network net) {
         int result = 0;
         for(Object nodeObject : net.dfs()) {
@@ -64,29 +125,40 @@ public class CoalescenceHistoriesCounting {
             } else
                 continue;
 
-            Map<NetNode, Integer> visited = new HashMap<>();
-            for(Object parentObject : networkNode.getParents()) {
-                NetNode parent = (NetNode) parentObject;
-                int count = 0;
-                node = parent;
-                while(true) {
-                    count++;
-                    if(visited.containsKey(node)) {
-                        result += visited.get(node) + count;
-                        break;
-                    }
-                    visited.put(node, count);
-                    if(node.isRoot())
-                        break;
-                    node = (NetNode) node.getParents().iterator().next();
-                }
-            }
+            result += getDiscreteDiameterOneNode(networkNode, net);
 
         }
 
 
 
         return result;
+    }
+
+    private static boolean isReticulationDependent(Network net) {
+        boolean flag = false;
+        for(Object nodeObject : net.dfs()) {
+            NetNode node = (NetNode) nodeObject;
+            NetNode networkNode = null;
+            if(node.isNetworkNode()) {
+                networkNode = node;
+            } else
+                continue;
+
+            Queue<NetNode> q = new LinkedList<>();
+            q.add(networkNode);
+            while(!q.isEmpty()) {
+                NetNode cnode = q.poll();
+
+                for(Object parentO : cnode.getParents()) {
+                    NetNode parent = (NetNode) parentO;
+                    q.add(parent);
+                    if(parent.isNetworkNode())
+                        flag = true;
+                }
+            }
+
+        }
+        return flag;
     }
 
     private static void countPathsHelper(ArrayList<Tuple<NetNode, NetNode>> allEdges, Map<Tuple<NetNode, NetNode>, Integer> edgeIndices, int startEdge, int currentEdge, int f[]) {
@@ -263,13 +335,129 @@ public class CoalescenceHistoriesCounting {
 
     }
 
+    public static void processResult() {
+
+        double data[][] = new double[21][40];
+        for(int i = 0 ; i < data.length ; i++) {
+            for(int j = 0 ; j < data[0].length; j++) {
+                data[i][j] = -10;
+            }
+        }
+
+        String path = "coal_history_log_multigt.txt";
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line;
+            int i = 0;
+            while ((line = br.readLine()) != null) {
+                if(line.equals("GTs")) {
+                    while(!line.equals(""))
+                        line = br.readLine();
+                    continue;
+                }
+
+                String items[] = line.split("\t");
+                int a = Integer.parseInt(items[0]);
+                int b = Integer.parseInt(items[1]);
+                long c = Long.parseLong(items[2]);
+                double d = Double.parseDouble(items[3]);
+                Network e = Networks.readNetwork(items[4]);
+                //if(isReticulationDependent(e))
+                    data[a][b] = Math.max(data[a][b], d);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.print('{');
+        for(int i = 0 ; i < 21 ; i++) {
+            if(i > 0)
+                System.out.print(',');
+            System.out.print('{');
+
+            for(int j = 0 ; j < 21 ; j++) {
+
+                if(j > 0)
+                    System.out.print(',');
+                System.out.print(data[i][j]);
+            }
+            System.out.print('}');
+            //System.out.println();
+        }
+        System.out.print('}');
+    }
+
+    public static void robustnessCheck() {
+        List<String> treestrings = new ArrayList<>();
+        int n = 30;
+
+        String[] leaves;
+        int taxa = 7;
+        leaves = new String[taxa];
+        for(int i = 0 ; i < taxa ; i++) {
+            leaves[i] = Integer.toString(i + 1);
+        }
+
+        treestrings.clear();
+        for(int i = 0 ; i < n ; i++) {
+            Tree randomTree = Trees.generateRandomTree(Arrays.copyOfRange(leaves, 0, taxa));
+            treestrings.add(randomTree.toNewick());
+        }
+
+        int numGTs = 100;
+        List<String> gtPool = new ArrayList<>();
+        for(int i = 0 ; i < numGTs ; i++) {
+            Tree randomTree = Trees.generateRandomTree(Arrays.copyOfRange(leaves, 0, taxa));
+            gtPool.add(randomTree.toNewick());
+        }
+
+        for(String treestring : treestrings) {
+            System.out.println("Tree: " + treestring);
+
+            DataGenerator datagen = new DataGenerator();
+
+            Network net1 = Networks.readNetwork(treestring);
+            List<Network> netList = datagen.addReticulations(net1, 10);
+
+            List<Network> netList2 = new ArrayList<>();
+            for(int i = 0 ; i < netList.size() ; i++) {
+                netList2.addAll(datagen.addReticulations(netList.get(i), 10));
+            }
+            System.out.println(netList2.size());
+            for(Network network : netList2) {
+                //network = Networks.readNetwork("((((8,(4,(3,2)I5)I3)I1)I10#H1)I9,I10#H1)I0;");
+                //tree1 = Trees.readTree("(((2,3),4),8);");
+                for(String gtstring: gtPool) {
+                    Tree tree1 = Trees.readTree(gtstring);
+                    //System.out.println(network + "\t" + tree1);
+                    long k1 = getCoalescenceHistoriesCount(network, tree1);
+                    long k2 = getCoalescenceHistoriesCount2(network, tree1);
+                    //System.out.println(k1);
+                    if (k1 != k2) {
+                        System.out.println(k1 + " " + k2 + "!!!!!");
+                        System.out.println(network);
+                        System.out.println(tree1);
+                    }
+                }
+            }
+
+        }
+    }
+
     public static void main(String[] args) {
+        if(true)
+        {
+            //robustnessCheck();
+            processResult();
+            return;
+        }
         //test1(args);
 
         String path = "/Users/zhujiafan/Documents/SharedFolder/20taxa.trees";
         List<String> treestrings = new ArrayList<>();
         int n = 30;
-        try {
+        /*try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String line;
             int i = 0;
@@ -280,7 +468,7 @@ public class CoalescenceHistoriesCounting {
             }
         } catch(Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         String[] leaves;
         int taxa = 20;
@@ -295,8 +483,22 @@ public class CoalescenceHistoriesCounting {
             treestrings.add(randomTree.toNewick());
         }
 
+        int numGTs = 100;
+        List<String> gtPool = new ArrayList<>();
+        for(int i = 0 ; i < numGTs ; i++) {
+            Tree randomTree = Trees.generateRandomTree(Arrays.copyOfRange(leaves, 0, taxa));
+            gtPool.add(randomTree.toNewick());
+        }
+
         try {
-            PrintWriter out = new PrintWriter("coal_history_log2.txt");
+            PrintWriter out = new PrintWriter("coal_history_log_multigt.txt");
+            //PrintStream out = System.out;
+
+            out.println("GTs");
+            for(String gtstring : gtPool) {
+                out.println(gtstring);
+            }
+            out.println();
 
             for(String treestring : treestrings) {
                 System.out.println("Tree: " + treestring);
@@ -304,23 +506,26 @@ public class CoalescenceHistoriesCounting {
 
                 //UltrametricNetwork net = new UltrametricNetwork(treestring);
                 //System.out.println(getCoalescenceHistoriesCount(net.getNetwork(), tree1));
-                SpeciesNetPriorDistribution prior = new SpeciesNetPriorDistribution(1);
+                //SpeciesNetPriorDistribution prior = new SpeciesNetPriorDistribution(1);
                 //AddReticulation op = new AddReticulation(net);
                 DataGenerator datagen = new DataGenerator();
                 //prior.logPrior(net.getNetwork());
 
                 Network net1 = Networks.readNetwork(treestring);
-                List<Network> netList = datagen.allPossibleReticulation(net1);
-                //netList.add(0, net1.clone());
+                //List<Network> netList = datagen.allPossibleReticulation(net1);
+                List<Network> netList = datagen.addReticulations(net1, 10);
+                netList.add(0, net1.clone());
 
                 List<Network> netList2 = new ArrayList<>();
                 for(int i = 0 ; i < netList.size() ; i++) {
-                    netList2.addAll(datagen.allPossibleReticulation(netList.get(i)));
+                    //netList2.addAll(datagen.addReticulations(netList.get(i), 10));
                 }
                 netList2.add(0, net1.clone());
-                System.out.println(netList2.size());
+                System.out.println(netList.size());
                 long treeCoalHistories = 0;
-                for(Network network : netList2) {
+                long treesum = 0;
+
+                for(Network network : netList) {
                     //network = Networks.readNetwork("((((8,(4,(3,2)I5)I3)I1)I10#H1)I9,I10#H1)I0;");
                     //tree1 = Trees.readTree("(((2,3),4),8);");
                 /*long k1 = getCoalescenceHistoriesCount(network, tree1);
@@ -330,11 +535,18 @@ public class CoalescenceHistoriesCounting {
                     System.out.println(network);
                     System.out.println(tree1);
                 }*/
-                    long coalHistories = getCoalescenceHistoriesCount2(network, tree1);
-                    if(getNumTaxaUnderReticulation(network) == 0) {
-                        treeCoalHistories = coalHistories;
+                    long sum = 0;
+                    for(String gtstring: gtPool) {
+                        tree1 = Trees.readTree(gtstring);
+                        long coalHistories = getCoalescenceHistoriesCount2(network, tree1);
+                        sum += coalHistories;
+
                     }
-                    out.println(getNumTaxaUnderReticulation(network) + "\t" + getDiscreteDiameter(network) + "\t" + coalHistories + "\t" + coalHistories * 1.0 / treeCoalHistories + "\t" + network.toString() );
+                    if (getNumTaxaUnderReticulation(network) == 0) {
+                        treesum = sum;
+                    }
+                    out.println(getNumTaxaUnderReticulation(network) + "\t" + getDiscreteDiameter(network) + "\t" + sum + "\t" + sum * 1.0 / treesum + "\t" + network.toString() );
+
                 }
 
 
@@ -342,7 +554,7 @@ public class CoalescenceHistoriesCounting {
 
 
             out.close();
-        } catch (IOException ioe) {
+        } catch (Exception ioe) {
             ioe.printStackTrace();
         }
 

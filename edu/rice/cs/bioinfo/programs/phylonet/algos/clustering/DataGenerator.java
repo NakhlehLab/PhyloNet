@@ -206,6 +206,16 @@ public class DataGenerator {
 
     }
 
+    public List<Network> addReticulations(Network<Object> originalNetwork, int n) {
+        List<Network> results = new ArrayList<>();
+        for(int i = 0 ; i < n ; i++) {
+            Network net = originalNetwork.clone();
+            addReticulation(net);
+            results.add(net);
+        }
+        return results;
+    }
+
     public void addReticulation(Network<Object> network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
         ArrayList<Tuple<NetNode, NetNode>> allEdgesNeedBrlens = new ArrayList<>();

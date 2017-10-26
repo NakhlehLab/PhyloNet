@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.DiscreteGammaDistribution;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -26,6 +27,12 @@ public class SimSNPInGT {
     private double _v;
     private Random _random;
     private Long _seed = null;
+    private DiscreteGammaDistribution _gamma = null;
+    private boolean _rateVarAcrossMarkers = false;
+    private boolean _rateVarAcrossLineages = false;
+    private Double _invariantSitesProb = null;
+    private double _gammaSampled = 0;
+
 
     public SimSNPInGT(BiAllelicGTR BAGTRModel) {
         _BAGTRModel = BAGTRModel;
@@ -47,6 +54,21 @@ public class SimSNPInGT {
             _random = new Random();
     }
 
+    public void setDiscreteGamma(DiscreteGammaDistribution gamma) {
+        _gamma = gamma;
+    }
+
+    public void setRateVarAcrossMarkers(boolean setting) {
+        _rateVarAcrossMarkers = setting;
+    }
+
+    public void setRateVarAcrossLineages(boolean setting) {
+        _rateVarAcrossLineages = setting;
+    }
+
+    public void setInvariantSitesProb(double prob) {
+        _invariantSitesProb = prob;
+    }
 
     public Map<String, String> generateSingeSite(Tree tree) {
         if(_seed == null){
@@ -58,8 +80,14 @@ public class SimSNPInGT {
         Map<TNode, Character> markers = new HashMap<>();
         TNode root = tree.getRoot();
         markers.put(root, _random.nextDouble() < _pi0 ? '0' : '1');
+
+        if(_rateVarAcrossMarkers) {
+            _gammaSampled = _gamma.sample();
+        }
+
         for (TNode child : root.getChildren()) {
-            processNode(child, markers);
+            boolean invariant = (_invariantSitesProb != null) && (_random.nextDouble() < _invariantSitesProb);
+            processNode(child, markers, invariant);
         }
 
         for (String leafName : tree.getLeaves()) {
@@ -68,16 +96,27 @@ public class SimSNPInGT {
         return res;
     }
 
-    private void processNode(TNode node, Map<TNode, Character> markers) {
+    private void processNode(TNode node, Map<TNode, Character> markers, boolean invariant) {
         double t = node.getParentDistance();
+
+        if(_rateVarAcrossLineages) {
+            t *= _gamma.sample();
+        } else if(_rateVarAcrossMarkers) {
+            t *= _gammaSampled;
+        }
+
         double x = 1.0 - Math.exp(-(_u + _v) * t);
         char parentState = markers.get(node.getParent());
         char curState = parentState == '0' ?
                 (_random.nextDouble() < (1.0 - _pi1 * x) ? '0' : '1')
                 :(_random.nextDouble() < (_pi0 * x) ? '0' : '1');
+
+        if(invariant) {
+            curState = parentState;
+        }
         markers.put(node, curState);
         for(TNode child : node.getChildren()) {
-            processNode(child, markers);
+            processNode(child, markers, invariant);
         }
     }
 

@@ -13,7 +13,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPL
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 
 import java.io.File;
@@ -30,6 +32,14 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
     private Double _pi0 = null;
     private boolean _diploid = false;
     private Character _dominant = null;
+    private String _trueNetwork = null;
+    private List<Double> _premc3_chains = null;
+    private List<Double> _mc3_chains = null;
+    private Long _preburnin = null;
+    private int _preMaxReti = 2;
+    private Long _burnin = null;
+    private Long _chainlen = null;
+    private int _maxReticulations = 4;
 
     public MCMC_BiMarkers(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                           Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -44,7 +54,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
 
     @Override
     protected int getMaxNumParams(){
-        return 40;
+        return 50;
     }
 
     @Override
@@ -122,13 +132,73 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             }
         }
 
+        // ----- MCMC pre-burnin Settings -----
+
+        // pre-burn-in length
+        ParamExtractor preblParam = new ParamExtractor("prebl", this.params, this.errorDetected);
+        if(preblParam.ContainsSwitch){
+            if(preblParam.PostSwitchParam != null) {
+                try  {
+                    _preburnin = Long.parseLong(preblParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized preburnin length " + preblParam.PostSwitchValue,
+                            preblParam.PostSwitchParam.getLine(), preblParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -prebl.",
+                        preblParam.SwitchParam.getLine(), preblParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor pretpParam = new ParamExtractor("premc3", this.params, this.errorDetected);
+        if(pretpParam.ContainsSwitch) {
+            if(pretpParam.PostSwitchParam != null) {
+                try {
+                    if(!(pretpParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    _premc3_chains = new ArrayList<>();
+                    ParameterIdentList temps = (ParameterIdentList) pretpParam.PostSwitchParam;
+                    for(String tExp: temps.Elements){
+                        double t = Double.parseDouble(tExp.trim());
+                        if(t < 0) {
+                            throw new RuntimeException();
+                        }
+                        _premc3_chains.add(t);
+                    }
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Invalid value after switch -premc3.",
+                            pretpParam.PostSwitchParam.getLine(), pretpParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -premc3.",
+                        pretpParam.SwitchParam.getLine(), pretpParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor premrParam = new ParamExtractor("premr", this.params, this.errorDetected);
+        if(premrParam.ContainsSwitch) {
+            if(premrParam.PostSwitchParam != null) {
+                try {
+                    _preMaxReti = Integer.parseInt(premrParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized value of maximum number of reticulation nodes " + premrParam.PostSwitchValue,
+                            premrParam.PostSwitchParam.getLine(), premrParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -premr.",
+                        premrParam.SwitchParam.getLine(), premrParam.SwitchParam.getColumn());
+            }
+        }
+
+
         // ----- MCMC Settings -----
         // chain length
         ParamExtractor clParam = new ParamExtractor("cl", this.params, this.errorDetected);
         if(clParam.ContainsSwitch){
             if(clParam.PostSwitchParam != null) {
                 try {
-                    Utils._CHAIN_LEN = Long.parseLong(clParam.PostSwitchValue);
+                    _chainlen = Long.parseLong(clParam.PostSwitchValue);
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Unrecognized chain length " + clParam.PostSwitchValue,
                             clParam.PostSwitchParam.getLine(), clParam.PostSwitchParam.getColumn());
@@ -144,9 +214,9 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
         if(blParam.ContainsSwitch){
             if(blParam.PostSwitchParam != null) {
                 try  {
-                    Utils._BURNIN_LEN = Long.parseLong(blParam.PostSwitchValue);
+                    _burnin = Long.parseLong(blParam.PostSwitchValue);
                 } catch(NumberFormatException e) {
-                    errorDetected.execute("Unrecognized chain length " + blParam.PostSwitchValue,
+                    errorDetected.execute("Unrecognized burnin length " + blParam.PostSwitchValue,
                             blParam.PostSwitchParam.getLine(), blParam.PostSwitchParam.getColumn());
                 }
             } else {
@@ -162,11 +232,11 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                 try {
                     Utils._SAMPLE_FREQUENCY = Long.parseLong(sfParam.PostSwitchValue);
                 } catch(NumberFormatException e) {
-                    errorDetected.execute("Unrecognized burn-in length " + sfParam.PostSwitchValue,
+                    errorDetected.execute("Unrecognized sample frequency " + sfParam.PostSwitchValue,
                             sfParam.PostSwitchParam.getLine(), sfParam.PostSwitchParam.getColumn());
                 }
             } else {
-                errorDetected.execute("Expected value after switch -bl.",
+                errorDetected.execute("Expected value after switch -sf.",
                         sfParam.SwitchParam.getLine(), sfParam.SwitchParam.getColumn());
             }
         }
@@ -212,22 +282,22 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                     if(!(tpParam.PostSwitchParam instanceof ParameterIdentList)){
                         throw new RuntimeException();
                     }
-                    List<Double> _temperatures = new ArrayList<>();
+                    _mc3_chains = new ArrayList<>();
                     ParameterIdentList temps = (ParameterIdentList) tpParam.PostSwitchParam;
                     for(String tExp: temps.Elements){
                         double t = Double.parseDouble(tExp.trim());
                         if(t < 0) {
                             throw new RuntimeException();
                         }
-                        _temperatures.add(t);
+                        _mc3_chains.add(t);
                     }
-                    Utils._MC3_CHAINS = _temperatures;
+                    Utils._MC3_CHAINS = _mc3_chains;
                 } catch(NumberFormatException e) {
-                    errorDetected.execute("Invalid value after switch -tp.",
+                    errorDetected.execute("Invalid value after switch -mc3.",
                             tpParam.PostSwitchParam.getLine(), tpParam.PostSwitchParam.getColumn());
                 }
             } else {
-                errorDetected.execute("Expected value after switch -tp.",
+                errorDetected.execute("Expected value after switch -mc3.",
                         tpParam.SwitchParam.getLine(), tpParam.SwitchParam.getColumn());
             }
         }
@@ -238,7 +308,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
         if(mrParam.ContainsSwitch) {
             if(mrParam.PostSwitchParam != null) {
                 try {
-                    Utils._NET_MAX_RETI = Integer.parseInt(mrParam.PostSwitchValue);
+                    _maxReticulations = Integer.parseInt(mrParam.PostSwitchValue);
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Unrecognized value of maximum number of reticulation nodes " + mrParam.PostSwitchValue,
                             mrParam.PostSwitchParam.getLine(), mrParam.PostSwitchParam.getColumn());
@@ -366,6 +436,21 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             }
         }
 
+        ParamExtractor dcParam = new ParamExtractor("dc", this.params, this.errorDetected);
+        if(dcParam.ContainsSwitch){
+            if(dcParam.PostSwitchParam != null) {
+                try {
+                    Utils.DIMENSION_CHANGE_WEIGHT = Double.parseDouble(dcParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized dimension changing rate " + dcParam.PostSwitchValue,
+                            dcParam.PostSwitchParam.getLine(), dcParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -dc.",
+                        dcParam.SwitchParam.getLine(), dcParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Starting State Settings -----
 
         // starting network
@@ -378,6 +463,19 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             } else {
                 errorDetected.execute("Expected value after switch -snet.",
                         snParam.SwitchParam.getLine(), snParam.SwitchParam.getColumn());
+            }
+        }
+
+        // true network
+        ParamExtractor tnParam = new ParamExtractor("truenet", this.params, this.errorDetected);
+        if(tnParam.ContainsSwitch){
+            if(tnParam.PostSwitchParam != null) {
+                if (noError) {
+                    _trueNetwork = tnParam.PostSwitchValue;
+                }
+            } else {
+                errorDetected.execute("Expected string after switch -truenet.",
+                        tnParam.SwitchParam.getLine(), tnParam.SwitchParam.getColumn());
             }
         }
 
@@ -419,8 +517,9 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                 "cl", "bl", "sf", "sd", "pl",
                 "mc3", "mr", "tm", "fixtheta", "varytheta",
                 "pp", "dd", "ee", "pi0",
-                "esptheta", "snet", "ptheta",
-                "thetawindow", "timewindow"
+                "esptheta", "snet", "truenet", "ptheta",
+                "thetawindow", "timewindow", "dc",
+                "prebl", "premc3", "premr"
         );
         checkAndSetOutFile(
                 diploidParam,
@@ -429,8 +528,9 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                 clParam, blParam, sfParam, sdParam, plParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
                 ppParam, ddParam, eeParam, estimatePThetaParam,
-                pthetaParam, snParam, pi0Param,
-                thetaWinParam, timeWinParam
+                pthetaParam, snParam, tnParam, pi0Param,
+                thetaWinParam, timeWinParam, dcParam,
+                preblParam, pretpParam, premrParam
         );
 
         return  noError;
@@ -489,6 +589,8 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             rate[0] = 1 / (2*pi[0]);
         }
 
+        System.out.println("PI0 = " + pi[0] + " PI1 = " + pi[1]);
+
         BiAllelicGTR BAGTRModel = new BiAllelicGTR(pi, rate);
 
         Map<String, String> allele2species = null;
@@ -511,6 +613,46 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
         } else {
             alnwarp.get(0)._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alnwarp);
         }
+
+        double polyCount = 0.0;
+        for(RPattern key : alnwarp.get(0)._RPatterns.keySet()) {
+            if(!key.isMonomorphic()) {
+                polyCount += alnwarp.get(0)._RPatterns.get(key)[0];
+            }
+        }
+        System.out.println("Polymorphic sites: " + polyCount);
+
+        if(_dominant != null) {
+            Algorithms.HAS_DOMINANT_MARKER = true;
+        } else {
+            Algorithms.HAS_DOMINANT_MARKER = false;
+        }
+
+        if(_trueNetwork != null) {
+            System.out.println("True Network: " + _trueNetwork);
+            double trueRootPopSize = Double.parseDouble(_trueNetwork.substring(_trueNetwork.indexOf('[') + 1, _trueNetwork.indexOf(']')));
+            Network cloneNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(_trueNetwork.substring(_trueNetwork.indexOf(']') + 1));
+            cloneNetwork.getRoot().setRootPopSize(trueRootPopSize);
+            System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
+        }
+
+        if(_preburnin != null) {
+            Utils._BURNIN_LEN = _preburnin;
+            Utils._CHAIN_LEN = _preburnin;
+            Utils._MC3_CHAINS = _premc3_chains;
+            Utils._NET_MAX_RETI = _preMaxReti;
+            System.out.println("PRE-BURN-IN");
+            MC3Core mc3 = new MC3Core(alnwarp, BAGTRModel);
+            mc3.run();
+            Utils._START_NET = mc3.getBestLikelihoodNetwork();
+            System.out.println("Starting Network:");
+        }
+
+        System.out.println("MC BEGINS");
+        Utils._BURNIN_LEN = _burnin;
+        Utils._CHAIN_LEN = _chainlen;
+        Utils._MC3_CHAINS = _mc3_chains;
+        Utils._NET_MAX_RETI = _maxReticulations;
         MC3Core mc3 = new MC3Core(alnwarp, BAGTRModel);
         mc3.run();
 

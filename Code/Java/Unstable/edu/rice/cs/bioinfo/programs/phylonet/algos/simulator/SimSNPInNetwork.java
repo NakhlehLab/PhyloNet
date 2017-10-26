@@ -3,17 +3,16 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 import com.sun.scenario.effect.impl.sw.java.JSWBlend_DIFFERENCEPeer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.QParameters;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.DiscreteGammaDistribution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import org.apache.commons.math3.distribution.GammaDistribution;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -34,14 +33,40 @@ public class SimSNPInNetwork {
     private BiAllelicGTR _model;
     private SimGTInNetworkWithTheta _gtsim;
     private SimSNPInGT _snpsim;
+    private int _nSitesPerGT = 1;
+    private Random _random;
+    private DiscreteGammaDistribution _gamma = null;
 
     public SimSNPInNetwork(BiAllelicGTR model, Long seed) {
         _model = model;
         _seed = seed;
+        _random = new Random(_seed);
         _gtsim = new SimGTInNetworkWithTheta();
         _gtsim.setSeed(_seed);
         _snpsim = new SimSNPInGT(model);
         _snpsim.setSeed(_seed);
+    }
+
+    public void setSitesPerGT(int n) {
+        _nSitesPerGT = n;
+    }
+
+    public void setRateVarAcrossMarkers(boolean setting) {
+        _snpsim.setRateVarAcrossMarkers(setting);
+    }
+
+    public void setRateVarAcrossLineages(boolean setting) {
+        _snpsim.setRateVarAcrossLineages(setting);
+    }
+
+    public void setInvariantSitesProb(double prob) {
+        _snpsim.setInvariantSitesProb(prob);
+    }
+
+    public void setDiscreteGamma(double shape, int numCat, long seed) {
+        _gamma = new DiscreteGammaDistribution(shape, 1.0 / shape, numCat);
+        _gamma.setSeed(seed);
+        _snpsim.setDiscreteGamma(_gamma);
     }
 
     public Map<String, String> generateSNPs(Network network, Map<String, List<String>> species2alleles, int numGTs, boolean allowConstant){
@@ -77,52 +102,53 @@ public class SimSNPInNetwork {
 
         for(int i = 0 ; i < numGTs ; i++) {
             List<Tree> gts = _gtsim.generateGTs(network, species2alleles, mu, 1);
-            Tree gt = gts.get(0);
-            Map<String, String> snp = _snpsim.generateSingeSite(gt);
+            for(int j = 0 ; j < _nSitesPerGT ; j++) {
+                Tree gt = gts.get(0);
+                Map<String, String> snp = _snpsim.generateSingeSite(gt);
 
-            boolean all1 = true;
-            boolean all0 = true;
-            for (String name : snp.keySet()) {
-                if(snp.get(name).equals("0")) all1 = false;
-                if(snp.get(name).equals("1")) all0 = false;
-            }
+                Map<String, Character> actualSite = new HashMap<>();
+                for (String name : snp.keySet()) {
+                    if (_diploid) {
+                        String actualName = name.substring(0, name.length() - 2);
+                        if (!actualSite.containsKey(actualName))
+                            actualSite.put(actualName, '0');
 
-            if(!allowConstant && (all1 || all0)) {
-                i--;
-                continue;
-            }
-
-            Map<String, Character> actualSite = new HashMap<>();
-            for(String name : snp.keySet()) {
-                if(_diploid) {
-                    String actualName = name.substring(0, name.length() - 2);
-                    if(!actualSite.containsKey(actualName))
-                        actualSite.put(actualName, '0');
-
-                    if(snp.get(name).equals("1")) {
-                        actualSite.put(actualName, (char)(actualSite.get(actualName).charValue() + 1));
+                        if (snp.get(name).equals("1")) {
+                            actualSite.put(actualName, (char) (actualSite.get(actualName).charValue() + 1));
+                        }
+                    } else {
+                        actualSite.put(name, snp.get(name).charAt(0));
                     }
-                } else {
-                    actualSite.put(name, snp.get(name).charAt(0));
                 }
-            }
 
-            if(_diploid && _dominant) {
+                if (_diploid && _dominant) {
+                    for (String name : actualSite.keySet()) {
+                        if (actualSite.get(name).equals('2'))
+                            actualSite.put(name, '1');
+                        else
+                            actualSite.put(name, '0');
+                    }
+                }
+
+                boolean all1 = true;
+                boolean all0 = true;
                 for (String name : actualSite.keySet()) {
-                    if(actualSite.get(name).equals('2'))
-                        actualSite.put(name, '1');
-                    else
-                        actualSite.put(name, '0');
+                    if (actualSite.get(name).equals('0')) all1 = false;
+                    if (actualSite.get(name).equals('1')) all0 = false;
+                }
+
+                if (!allowConstant && (all1 || all0)) {
+                    j--;
+                    continue;
+                }
+
+                for (String name : actualSite.keySet()) {
+                    if (!res.containsKey(name))
+                        res.put(name, new StringBuilder());
+                    res.get(name).append(actualSite.get(name));
+                    //res.put(name, res.get(name) + snp.get(name));
                 }
             }
-
-            for (String name : actualSite.keySet()) {
-                if (!res.containsKey(name))
-                    res.put(name, new StringBuilder());
-                res.get(name).append(actualSite.get(name));
-                //res.put(name, res.get(name) + snp.get(name));
-            }
-
         }
 
         Map<String, String> ret = new HashMap<>();
@@ -170,15 +196,17 @@ public class SimSNPInNetwork {
         //trueNetwork.getRoot().setRootPopSize(0.036);
         //trueNetwork = Networks.readNetwork("((((((((Q:0.007706894443703847)#H3:0.011286322972969953::0.23227570802381947,R:0.0189932174166738):4.832779408627669E-6)#H2:0.006601622173161768::0.8787824364801154,L:0.025599672369244195):0.005238671994843097,(#H3:0.016537156753233577::0.7677242919761805,A:0.024244051196937424):0.006594293167149868):0.004030047262403039)#H1:0.04499887208586771::0.6757746276842883,(#H2:0.03928130470143773::0.12121756351988455,#H1:0.023410963271029823::0.3242253723157117):0.021587908814837888):0.007571037854375656,(G:0.03494992023933711,C:0.03494992023933711):0.05248838132739659);");
         //trueNetwork.getRoot().setRootPopSize(0.036);
+        trueNetwork = Networks.readNetwork("(((R:0.008240246414028625:0.006333679060139041,(Q:0.0038855623593096796:0.005719407145927067)#H1:0.004354684054718946:8.517836124549687E-4:0.30382890375958505):0.016808873217269017:0.002666329809797369,(((#H1:0.0015165273144522621:0.0075405317034286205:0.696171096240415)#H2:0.001450503568225351:0.0056462535812340274:0.9885669380899696,A:0.006852593241987293:0.005997443581536689):0.00676866962943905:0.0026650558180108855,(#H2:2.9333902987504525E-5:0.008462772375191307:0.011433061910030351,L:0.005431423576749446:0.006408170725436213):0.008189839294676897:0.004603485560213274):0.011427856759871298:0.0012590317739585581):0.015397830006182063:0.0021106617637148394,C:0.040446949637479704:0.006778893183814303);");
+        trueNetwork.getRoot().setRootPopSize(0.003878144746648854);
 
         int nameCount = 0;
-        for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
+        /*for(Object nodeObject : Networks.postTraversal(trueNetwork)) {
             NetNode node = (NetNode) nodeObject;
             for(Object parentObject :  node.getParents()) {
                 NetNode parent = (NetNode) parentObject;
                 node.setParentSupport(parent, trueNetwork.getRoot().getRootPopSize());
             }
-        }
+        }*/
         for(Object node : trueNetwork.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
@@ -214,10 +242,12 @@ public class SimSNPInNetwork {
 
         int count = 0;
         double sum = 0.0;
+        Algorithms.HAS_DOMINANT_MARKER = true;
 
         for(RPattern pattern : aln._RPatterns.keySet()) {
             //if(count > 10) break;
-            count++;
+            if(!useOnlyPolymorphic || !pattern.isMonomorphic())
+                count += aln._RPatterns.get(pattern)[0];
             Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
             cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
             R.maxLineages = aln._RPatterns.keySet().iterator().next().sumLineages() * 2;
@@ -235,6 +265,7 @@ public class SimSNPInNetwork {
             }
         }
         System.out.println("Sum " + sum);
+        System.out.println("Count " + count);
 
         return;
     }
@@ -660,9 +691,9 @@ public class SimSNPInNetwork {
     }
 
     public static void main(String []args) {
-        //testDominant();
+        testDominant();
         //testDiploid();
         //basic();
-        testMultipleAlleles();
+        //testMultipleAlleles();
     }
 }

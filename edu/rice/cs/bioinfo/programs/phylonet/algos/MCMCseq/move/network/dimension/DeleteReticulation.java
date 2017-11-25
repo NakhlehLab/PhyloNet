@@ -72,7 +72,7 @@ public class DeleteReticulation extends DimensionChange {
     @Override
     public void undo() {
         if(_logHR == Utils.INVALID_MOVE) return;
-        addReticulation(_v1, _v2, _v3, _v4, _v5, _v6, _oldGamma);
+        addReticulation(_v1, _v2, _v3, _v4, _v5, _v6, _oldGamma); // TODO: this is a bug: old parameters may be changed
     }
 
     @Override

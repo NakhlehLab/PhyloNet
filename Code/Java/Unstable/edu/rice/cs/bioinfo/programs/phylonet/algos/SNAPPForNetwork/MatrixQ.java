@@ -23,6 +23,9 @@ public class MatrixQ{
     double _time;
     DenseMatrix _expQ;
 
+    double _u;
+    double _v;
+
     public MatrixQ(RateModel rModel, int M, double theta){
         this.M = M;
         this.theta = theta;
@@ -31,6 +34,12 @@ public class MatrixQ{
         rateModel = rModel;
         transposedQ = initializeMatrixQ(rateMatrix,M,theta);
         equilibrium = computeEquilibrium();
+
+        if(rateModel instanceof BiAllelicGTR) {
+            BiAllelicGTR ba = (BiAllelicGTR) rateModel;
+            _u = ba.getU();
+            _v = ba.getV();
+        }
     }
 
     public MatrixQ(RateModel rModel, int M, double theta, boolean computeMatrix){
@@ -46,6 +55,12 @@ public class MatrixQ{
         } else {
             transposedQ = null;
             equilibrium = null;
+        }
+
+        if(rateModel instanceof BiAllelicGTR) {
+            BiAllelicGTR ba = (BiAllelicGTR) rateModel;
+            _u = ba.getU();
+            _v = ba.getV();
         }
     }
 
@@ -310,11 +325,8 @@ public class MatrixQ{
         return result;
     }
 
-    public void solveCentralBlock(ComplexCP[] y, ComplexCP offset, int n, double u, double v, double theta, ComplexCP[] x ) {
-        //Complex K = offset.add(-1.0 * n * (n - 1) / theta - n * v);
-        ComplexCP K = new ComplexCP(offset);
-        K.add(-1.0 * n * (n - 1) / theta - n * v);
-        ComplexCP tmp = new ComplexCP();
+    private void solveOneBlock(ComplexCP[] y, ComplexCP offset, int n, ComplexCP[] x ) {
+        ComplexCP t = new ComplexCP();
         ComplexCP d[] = new ComplexCP[n + 1];
         ComplexCP e[] = new ComplexCP[n + 1];
 
@@ -322,104 +334,71 @@ public class MatrixQ{
             d[i] = new ComplexCP();
             e[i] = new ComplexCP();
         }
-        d[0]._re = K._re;
-        d[0]._im = K._im;
+        d[0]._re = offset._re -1.0 * n * (n - 1) / theta - n * _v;
+        d[0]._im = offset._im;
         e[0]._re = y[0]._re;
         e[0]._im = y[0]._im;
         ComplexCP m = new ComplexCP();
         for(int i = 1 ; i <= n ; i++) {
-            //tmp = new Complex(i * u);
-            tmp._re = i * u;
-            tmp._im = 0.0;
-            //Complex m = tmp.divide(d[i - 1]);
-            m.setToQuotientOf(tmp, d[i - 1]);
-            //d[i] = K.subtract(m.multiply(v * (n - i + 1))).add(i * (v - u));
-            d[i]._re = K._re + i * (v - u) - m._re * v * (n - i + 1);
-            d[i]._im = K._im - m._im * v * (n - i + 1);
-            //tmp = m.multiply(e[i - 1]);
-            tmp.setToProductOf(m, e[i - 1]);
-            //e[i] = y[i].subtract(tmp);
-            e[i]._re = y[i]._re - tmp._re;
-            e[i]._im = y[i]._im - tmp._im;
+            m.setToQuotientOf(i * _u, 0.0, d[i - 1]._re, d[i - 1]._im);
+            d[i]._re = d[0]._re + i * (_v - _u) - m._re * _v * (n - i + 1);
+            d[i]._im = d[0]._im - m._im * _v * (n - i + 1);
+            t.setToProductOf(m._re, m._im, e[i - 1]._re, e[i - 1]._im);
+            e[i]._re = y[i]._re - t._re;
+            e[i]._im = y[i]._im - t._im;
         }
 
-        //x[n] = e[n].divide(d[n]);
-        x[n].setToQuotientOf(e[n], d[n]);
+        x[n].setToQuotientOf(e[n]._re, e[n]._im, d[n]._re, d[n]._im);
         for(int i = n - 1 ; i >= 0 ; i--) {
-            //tmp =e[i].subtract(x[i + 1].multiply(v * (n - i)));
-            tmp._re = e[i]._re - x[i + 1]._re * (v * (n - i));
-            tmp._im = e[i]._im - x[i + 1]._im * (v * (n - i));
-            //x[i] = tmp.divide(d[i]);
-            x[i].setToQuotientOf(tmp, d[i]);
+            x[i].setToQuotientOf(e[i]._re - x[i + 1]._re * (_v * (n - i)), e[i]._im - x[i + 1]._im * (_v * (n - i)), d[i]._re, d[i]._im);
         }
 
     }
 
-    public void multiplyUpperBlock(ComplexCP[] x, int n, double theta, ComplexCP[] y) {
-        for(int i = 0 ; i <= n ; i++) {
-            //y[i] = x[i].multiply(1.0 * (n - i) * (n + 1)/ theta).add(x[i + 1].multiply(1.0 * i * (n + 1)/ theta));
-            y[i].setToSumOfScaled(x[i], 1.0 * (n - i) * (n + 1)/ theta, x[i + 1], 1.0 * i * (n + 1)/ theta);
-        }
-    }
-
-    public void solve(ComplexCP[] y, ComplexCP offset, ComplexCP[] x, int mx) {
-        double u = 0.0;
-        double v = 0.0;
-
-        if(rateModel instanceof BiAllelicGTR) {
-            BiAllelicGTR ba = (BiAllelicGTR) rateModel;
-            u = ba.getU();
-            v = ba.getV();
-        } else {
-            throw new RuntimeException("only for bi-allele");
-        }
+    private void solve(ComplexCP[] y, ComplexCP offset, ComplexCP[] x, int mx) {
 
         for(int i = 0 ; i < x.length ; i++) {
-            //x[i] = Complex.ZERO;
             x[i]._re = 0.0;
             x[i]._im = 0.0;
         }
-        ComplexCP xn[] = new ComplexCP[mx + 1];
-        ComplexCP yn[] = new ComplexCP[mx + 1];
+        ComplexCP x1[] = new ComplexCP[mx + 1];
+        ComplexCP y1[] = new ComplexCP[mx + 1];
         for(int i = 0 ; i < mx + 1 ; i++){
-            xn[i] = new ComplexCP();
-            yn[i] = new ComplexCP();
+            x1[i] = new ComplexCP();
+            y1[i] = new ComplexCP();
         }
 
-        int xptr = x.length - 1 - mx;
-        int yptr = y.length - 1 - mx;
+        int xIndex = x.length - 1 - mx;
+        int yIndex = y.length - 1 - mx;
 
-        //System.arraycopy(y, yptr, yn, 0, yn.length);
-        for(int i = 0 ; i < yn.length ; i++) {
-            yn[i]._re = y[yptr + i]._re;
-            yn[i]._im = y[yptr + i]._im;
+        for(int i = 0 ; i < y1.length ; i++) {
+            y1[i]._re = y[yIndex + i]._re;
+            y1[i]._im = y[yIndex + i]._im;
         }
 
-        solveCentralBlock(yn, offset, mx, u, v, theta, xn);
+        solveOneBlock(y1, offset, mx, x1);
 
-        //System.arraycopy(xn, 0, x, xptr, xn.length);
-        for(int i = 0 ; i < xn.length ; i++) {
-            x[xptr + i]._re = xn[i]._re;
-            x[xptr + i]._im = xn[i]._im;
+        for(int i = 0 ; i < x1.length ; i++) {
+            x[xIndex + i]._re = x1[i]._re;
+            x[xIndex + i]._im = x1[i]._im;
         }
 
         for(int m = mx - 1 ; m >= 1 ; m--) {
-            xptr = xptr - (m + 1);
-            multiplyUpperBlock(xn, m, theta, yn);
-
-            yptr = yptr - (m + 1);
             for(int i = 0 ; i <= m ; i++) {
-                //yn[i] = y[yptr + i].subtract(yn[i]);
-                yn[i]._re = y[yptr + i]._re - yn[i]._re;
-                yn[i]._im = y[yptr + i]._im - yn[i]._im;
+                y1[i].setToSumOfScaled(x1[i], 1.0 * (m - i) * (m + 1)/ theta, x1[i + 1], 1.0 * i * (m + 1)/ theta);
+            }
+            xIndex -= m + 1;
+            yIndex -= m + 1;
+            for(int i = 0 ; i <= m ; i++) {
+                y1[i]._re = y[yIndex + i]._re - y1[i]._re;
+                y1[i]._im = y[yIndex + i]._im - y1[i]._im;
             }
 
-            solveCentralBlock(yn, offset, m, u, v, theta, xn);
+            solveOneBlock(y1, offset, m, x1);
 
-            //System.arraycopy(xn, 0, x, xptr, m + 1);
             for(int i = 0 ; i <= m ; i++) {
-                x[xptr + i]._re = xn[i]._re;
-                x[xptr + i]._im = xn[i]._im;
+                x[xIndex + i]._re = x1[i]._re;
+                x[xIndex + i]._im = x1[i]._im;
             }
         }
 
@@ -427,16 +406,6 @@ public class MatrixQ{
     }
 
     public double [] expQTtx(double time, double [] actualCol, int mx) {
-        /*double u = 0.0;
-        double v = 0.0;
-
-        if(rateModel instanceof BiAllelicGTR) {
-            BiAllelicGTR ba = (BiAllelicGTR) rateModel;
-            u = ba.getU();
-            v = ba.getV();
-        } else {
-            throw new RuntimeException("only for bi-allele");
-        }*/
 
         double xcol[] = new double[actualCol.length + 1];
         System.arraycopy(actualCol, 0, xcol, 1, actualCol.length);
@@ -445,12 +414,13 @@ public class MatrixQ{
         double y0[] = new double[y1.length - 1];
         System.arraycopy(y1, 1, y0, 0, y0.length);
 
-        //return new DenseMatrix(new double[][]{y0}).t();
         return y0;
     }
 
-    public static final int CF_DEG = 12;
-    public static final double [] ci_real = {
+    // those numbers can be computed from Matlab package:
+    // https://www.mathworks.com/matlabcentral/fileexchange/22055-carathéodory-fejér-approximation?s_tid=gn_loc_drop
+    private static final int CF_DEG = 12;
+    private static final double [] ci_real = {
             0.000818433612497,
             -0.068571505514864,
             1.319411815998137,
@@ -463,7 +433,7 @@ public class MatrixQ{
             1.319411815998138,
             -0.068571505514865,
             0.000818433612497};
-    public static final double [] ci_imag = {
+    private static final double [] ci_imag = {
             0.000581353207069,
             -0.038419074245887,
             0.183523497750480,
@@ -476,7 +446,7 @@ public class MatrixQ{
             -0.183523497750480,
             0.038419074245888,
             -0.000581353207069};
-    public static final double [] zi_real = {
+    private static final double [] zi_real = {
             -6.998688082445778,
             -2.235968223749446,
             0.851707264834878,
@@ -489,7 +459,7 @@ public class MatrixQ{
             0.851707264834878,
             -2.235968223749446,
             -6.998688082445778};
-    public static final double [] zi_imag = {
+    private static final double [] zi_imag = {
             -13.995917029301355,
             -11.109296400461870,
             -8.503832905826961,
@@ -504,109 +474,50 @@ public class MatrixQ{
             13.995917029301355};
 
 
-
-    public double [] cfexp(double time, double [] v, int mx) {
+    // Caratheodory-Fejer approximation
+    private double [] cfexp(double time, double [] v, int mx) {
         int n = v.length;
-        double w[] = new double[n];
 
-        ComplexCP xc[] = new ComplexCP[n];
-        ComplexCP wc[] = new ComplexCP[n];
-        ComplexCP vc[] = new ComplexCP[n];
+        ComplexCP x[] = new ComplexCP[n];
+        ComplexCP y[] = new ComplexCP[n];
+        ComplexCP r[] = new ComplexCP[n];
 
-        wc[0] = new ComplexCP();
+        r[0] = new ComplexCP();
         for(int i = 1 ; i < n ; i++) {
-            wc[i] = new ComplexCP(v[i]);
+            r[i] = new ComplexCP(v[i]);
         }
 
         for(int i = 0 ; i < n ; i++) {
-            xc[i] = new ComplexCP();
-            vc[i] = new ComplexCP();
+            x[i] = new ComplexCP();
+            y[i] = new ComplexCP();
         }
 
-        int steps = (int)(Math.ceil(Math.log(n) / Math.log(2)));
-        steps = 1;
-        double stepsize = time / steps;
-        for(int k = 0 ; k < steps ; k++) {
+        int nsteps = 1;
+        double stepsize = time / nsteps;
+        for(int step = 0 ; step < nsteps ; step++) {
             for(int i = 1; i < n ; i++) {
-                //vc[i] = wc[i].divide(stepsize);
-                vc[i]._re = wc[i]._re / stepsize;
-                vc[i]._im = wc[i]._im / stepsize;
-                //wc[i] = Complex.ZERO;
-                wc[i]._re = 0.0;
-                wc[i]._im = 0.0;
+                y[i]._re = r[i]._re / stepsize;
+                y[i]._im = r[i]._im / stepsize;
+                r[i]._re = 0.0;
+                r[i]._im = 0.0;
             }
 
             ComplexCP offset = new ComplexCP();
-            ComplexCP ci = new ComplexCP();
-            for(int i = 0 ; i < CF_DEG ; i++) {
-                //Complex offset = new Complex(-zi_real[i] / stepsize, -zi_imag[i] / stepsize);
-                offset._re = -zi_real[i] / stepsize;
-                offset._im = -zi_imag[i] / stepsize;
+            for(int deg = 0 ; deg < CF_DEG ; deg++) {
+                offset._re = -zi_real[deg] / stepsize;
+                offset._im = -zi_imag[deg] / stepsize;
 
-                solve(vc, offset, xc, mx);
-                //Complex ci = new Complex(ci_real[i], ci_imag[i]);
-                ci._re = ci_real[i];
-                ci._im = ci_imag[i];
+                solve(y, offset, x, mx);
                 for(int j = 1 ; j < n ; j++) {
-                    //wc[j] = wc[j].add(ci.multiply(xc[j]));
-                    wc[j].addProductOf(ci, xc[j]);
+                    r[j].addProductOf(ci_real[deg], ci_imag[deg], x[j]._re, x[j]._im);
                 }
             }
         }
 
+        double real[] = new double[n];
         for(int i = 1 ; i < n ; i++)
-            w[i] = wc[i]._re;
-        return w;
-    }
-
-    public static void testExp() {
-
-
-        FMatrix fb = new FMatrix(120, false);
-        R r = new R(120, new int[]{5});
-        fb.set(r, 1.0);
-        //System.out.println(fb);
-
-        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
-        MatrixQ Q = new MatrixQ(BAGTRModel , 120, 0.04);
-        FMatrix ft = new FMatrix(120, false);
-        long start = System.currentTimeMillis();
-
-        //for(int i = 0 ; i < 10000 ; i++)
-        ft.setMatrix(Q.expQTtx(0.5, fb.getArr(), fb.mx));
-        System.out.println("Seconds: " + (System.currentTimeMillis()-start)/1000.0);
-
-        //System.out.println(ft);
-
-
-    }
-
-    public static void testComplex() {
-        long start = System.currentTimeMillis();
-
-        //Complex c = new Complex(1.0, 1.0);
-        ComplexCP c = new ComplexCP(1.0, 1.0);
-
-        Complex t1 = new Complex(1.0, 0.0);
-        Complex t2 = new Complex(0.0, 1.0);
-        for(int i = 0 ; i < 10000000 ; i++) {
-            //c = c.divide(1.0);
-            c._im /= 1.0;
-            c._re /= 1.0;
-        }
-        System.out.println(c);
-        System.out.println((System.currentTimeMillis()-start)/1000.0);
-    }
-
-    public static void main(String[] args){
-        testExp();
-        //testComplex();
-        //R.dims = 1;
-//        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[] {5/6.0, 1/6.0}, new double[] {0.1});
-//        System.out.println("The BiAllelicGTR Model is: " + BAGTRModel.getRateMatrix());
-//        MatrixQ tester = new MatrixQ(BAGTRModel , 5, 1);
-//
-//        System.out.println(tester.transposedQ);
+            real[i] = r[i]._re;
+        return real;
     }
 
 }

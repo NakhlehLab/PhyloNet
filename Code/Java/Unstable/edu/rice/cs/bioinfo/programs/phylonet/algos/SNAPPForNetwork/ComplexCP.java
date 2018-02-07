@@ -34,18 +34,14 @@ public class ComplexCP {
         _re = c._re;
     }
 
-    public void setToProductOf(ComplexCP a, ComplexCP b) {
-        double re = b._re * a._re - b._im * a._im;
-        double im = b._re * a._im + b._im * a._re;
-        _re = re;
-        _im = im;
+    public void setToProductOf(double a_re, double a_im, double b_re, double b_im) {
+        _re = b_re * a_re - b_im * a_im;
+        _im = b_re * a_im + b_im * a_re;
     }
 
-    public void addProductOf(ComplexCP a, ComplexCP b) {
-        double re = b._re * a._re - b._im * a._im;
-        double im = b._re * a._im + b._im * a._re;
-        _re += re;
-        _im += im;
+    public void addProductOf(double a_re, double a_im, double b_re, double b_im) {
+        _re += b_re * a_re - b_im * a_im;
+        _im += b_re * a_im + b_im * a_re;
     }
 
     public void add(double re) {
@@ -59,10 +55,10 @@ public class ComplexCP {
         _im = im;
     }
 
-    public void setToQuotientOf(ComplexCP num, ComplexCP div) {
-        double f = div._re * div._re + div._im * div._im;
-        double re = (num._re * div._re + num._im * div._im) / f;
-        double im = (num._im * div._re - num._re * div._im) / f;
+    public void setToQuotientOf(double num_re, double num_im, double div_re, double div_im) {
+        double f = div_re * div_re + div_im * div_im;
+        double re = (num_re * div_re + num_im * div_im) / f;
+        double im = (num_im * div_re - num_re * div_im) / f;
         _re = re;
         _im = im;
     }

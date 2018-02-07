@@ -2,8 +2,15 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
 import jeigen.DenseMatrix;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.DoubleAdder;
+
 public class FMatrix
 {
+    public static ConcurrentHashMap<Long, double[]> cache = new ConcurrentHashMap<>();;
+    public static DoubleAdder cacheHit = new DoubleAdder();
+    public static DoubleAdder cacheAccess = new DoubleAdder();
+
     double [] arr;
     int mx;
     boolean hasEmptyR;
@@ -88,6 +95,8 @@ public class FMatrix
         return arr;
     }
 
+    public int getmx() { return mx; }
+
     /*
     public String toString(){
         String exp = "";
@@ -97,6 +106,14 @@ public class FMatrix
         return exp;
     }
     */
+
+    public long hash() {
+        long result = mx;
+        for(int i = 0 ; i < arr.length ; i++) {
+            result = result * 19 + Double.doubleToLongBits(arr[i]);
+        }
+        return result;
+    }
 
     public String toString(){
         String exp = "";

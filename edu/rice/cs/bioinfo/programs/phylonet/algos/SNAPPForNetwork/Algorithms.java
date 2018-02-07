@@ -11,6 +11,7 @@ import jeigen.DenseMatrix;
 import org.apache.commons.math3.util.ArithmeticUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -23,7 +24,8 @@ public class Algorithms
     public static boolean HAS_DOMINANT_MARKER = false;
     public static final boolean SWITCH_FASTER_BIALLILE = true;
     public static final boolean SWITCH_EXP_APPROX = true;
-    public static final boolean SWITCH_APPROX_SPLIT = false;
+    public static boolean SWITCH_APPROX_SPLIT = false;
+    public static boolean SWITCH_FMATRIX_CACHE = false;
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
         for(int i=0; i<index1.length; i++) {
@@ -394,10 +396,41 @@ public class Algorithms
                     FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                     if (fTop.mx != 0 && !fBot.Item1.isArrAllZero()) {
                         //System.out.println(Arrays.toString(fBot.Item1.getArr()) + ": " +  fBot.Item1.isArrAllZero());
-                        if (SWITCH_EXP_APPROX)
-                            fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
-                        else
-                            fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
+                        boolean foundInCache = false;
+                        Long cacheAccessor = null;
+                        if(SWITCH_FMATRIX_CACHE) {
+
+                            cacheAccessor = Double.doubleToLongBits(theta);
+                            cacheAccessor = (cacheAccessor << 3) ^ Double.doubleToLongBits(t);
+                            cacheAccessor = (cacheAccessor << 27) ^ fBot.Item1.hash();
+
+                            /*StringBuilder sb = new StringBuilder();
+                            sb.append(String.format("%.6f ", theta));
+                            sb.append(String.format("%.6f ", t));
+                            for(int i = 0 ; i < fBot.Item1.getArr().length ; i++) {
+                                sb.append(String.format("%.6f ", fBot.Item1.getArr()[i]));
+                            }
+                            cacheAccessor = sb.toString();*/
+                            double[] arr = FMatrix.cache.get(cacheAccessor);
+                            FMatrix.cacheAccess.add(1.0);
+                            if(arr != null) {
+                                fTop.setMatrix(arr);
+                                foundInCache = true;
+                                FMatrix.cacheHit.add(1.0);
+                            }
+
+                        }
+                        if(!foundInCache){
+
+                            if (SWITCH_EXP_APPROX)
+                                fTop.setMatrix(matQ.expQTtx(t, fBot.Item1.getArr(), fBot.Item1.mx));
+                            else
+                                fTop.setMatrix(matQ.getProbabilityForColumn(fBot.Item1.getArr()));
+
+                            if(SWITCH_FMATRIX_CACHE) {
+                                FMatrix.cache.put(cacheAccessor, fTop.getArr());
+                            }
+                        }
                     }
                     data.addFTop(parent, fTop, fBot.Item2);
                 }
@@ -586,54 +619,85 @@ public class Algorithms
             return new FMatrix(fTop1.mx, u1, false);
         }
 
+
+
         FMatrix FBottom = new FMatrix(fTop1.mx + fTop2.mx, fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR());
 
-        if(R.dims == 1 && SWITCH_FASTER_BIALLILE) {
-            //faster implementation
-            double u1[] = fTop1.getArr().clone();
-            double u2[] = fTop2.getArr().clone();
-            for(int n = 1 ; n <= fTop1.mx ; n++) {
-                double b = 1.0;
-                for(int i = 0 ; i <= n ; i++) {
-                    u1[n*(n+1)/2-1+i] *= b;
-                    b *= 1.0 * (n - i)/(i + 1);
-                }
+        Long cacheAccessor = null;
+        double[] cacheResult = null;
+        if(SWITCH_FMATRIX_CACHE) {
+            FMatrix.cacheAccess.add(1.0);
+            cacheAccessor = (long) FBottom.mx;
+            cacheAccessor = cacheAccessor * 11 + fTop1.hash() + fTop2.hash();
+            cacheResult = FMatrix.cache.get(cacheAccessor);
+            if(cacheResult != null) {
+                FMatrix.cacheHit.add(1.0);
             }
-            for(int n = 1 ; n <= fTop2.mx ; n++) {
-                double b = 1.0;
-                for(int i = 0 ; i <= n ; i++) {
-                    u2[n*(n+1)/2-1+i] *= b;
-                    b *= 1.0 * (n - i)/(i+1);
-                }
-            }
+        }
 
-            double fb[] = FBottom.getArr();
-            for(int n1 = 1 ; n1 <= fTop1.mx ; n1++) {
-                for(int i = 0 ; i <= n1 ; i++ ) {
-                    double f11  =  u1[n1*(n1+1)/2-1+i];
-                    for(int n2 = 1 ; n2 <= fTop2.mx ; n2++) {
-                        for(int j = 0 ; j <= n2 ; j++)  {
-                            fb[(n1+n2)*(n1+n2+1)/2-1+(i+j)] += f11 * u2[n2*(n2+1)/2-1+j];
+        if(cacheResult != null) {
+        //if(false){
+            FBottom.setMatrix(cacheResult);
+        } else {
+
+            if (R.dims == 1 && SWITCH_FASTER_BIALLILE) {
+                //faster implementation
+                double u1[] = fTop1.getArr().clone();
+                double u2[] = fTop2.getArr().clone();
+                for (int n = 1; n <= fTop1.mx; n++) {
+                    double b = 1.0;
+                    for (int i = 0; i <= n; i++) {
+                        u1[n * (n + 1) / 2 - 1 + i] *= b;
+                        b *= 1.0 * (n - i) / (i + 1);
+                    }
+                }
+                for (int n = 1; n <= fTop2.mx; n++) {
+                    double b = 1.0;
+                    for (int i = 0; i <= n; i++) {
+                        u2[n * (n + 1) / 2 - 1 + i] *= b;
+                        b *= 1.0 * (n - i) / (i + 1);
+                    }
+                }
+
+                double fb[] = FBottom.getArr();
+                for (int n1 = 1; n1 <= fTop1.mx; n1++) {
+                    for (int i = 0; i <= n1; i++) {
+                        double f11 = u1[n1 * (n1 + 1) / 2 - 1 + i];
+                        for (int n2 = 1; n2 <= fTop2.mx; n2++) {
+                            for (int j = 0; j <= n2; j++) {
+                                fb[(n1 + n2) * (n1 + n2 + 1) / 2 - 1 + (i + j)] += f11 * u2[n2 * (n2 + 1) / 2 - 1 + j];
+                            }
                         }
                     }
                 }
-            }
 
-            for(int n = 1 ; n <= FBottom.mx ; n++) {
-                double b = 1.0;
-                for(int i = 0 ; i <= n ; i++) {
-                    fb[n*(n+1)/2-1+i] = Math.max(0.0, fb[n*(n+1)/2-1+i] / b);
-                    b *= 1.0 * (n - i)/(i+1);
+                for (int n = 1; n <= FBottom.mx; n++) {
+                    double b = 1.0;
+                    for (int i = 0; i <= n; i++) {
+                        fb[n * (n + 1) / 2 - 1 + i] = Math.max(0.0, fb[n * (n + 1) / 2 - 1 + i] / b);
+                        b *= 1.0 * (n - i) / (i + 1);
+                    }
+                }
+
+
+            } else {
+
+                FBottom = new FMatrix(fTop1.mx + fTop2.mx, fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR());
+                for (int n = 1; n <= FBottom.mx; n++) {
+                    for (R r : R.loopOver(n))
+                        FBottom.set(r, getFBottom(n, r, fTop1, fTop2));
                 }
             }
 
+            /*if(cacheResult != null) {
+                for(int i = 0 ; i < FBottom.getArr().length ; i++) {
+                    if(Math.abs(FBottom.getArr()[i] - cacheResult[i]) > 1e-6)
+                        throw new RuntimeException("");
+                }
+            }*/
 
-        } else {
-
-            FBottom = new FMatrix(fTop1.mx + fTop2.mx, fTop1.ifHasEmptyR() && fTop2.ifHasEmptyR());
-            for (int n = 1; n <= FBottom.mx; n++) {
-                for (R r : R.loopOver(n))
-                    FBottom.set(r, getFBottom(n, r, fTop1, fTop2));
+            if(SWITCH_FMATRIX_CACHE && cacheAccessor != null) {
+                FMatrix.cache.put(cacheAccessor, FBottom.getArr().clone());
             }
         }
 
@@ -717,6 +781,11 @@ public class Algorithms
                 //System.out.println("n=" + n);
                 for (R r : R.loopOver(n)) {
                     double prob = fTop.get(r);
+                    if(SWITCH_APPROX_SPLIT) {
+                        if (prob < 1e-6)
+                            continue;
+                    }
+
                     //System.out.println(r);
                     for(R[] splitRPair: splittingR(r)){
 
@@ -740,7 +809,7 @@ public class Algorithms
                             }
                             int[] splittingIndex = tuple.Item2.clone();
                             splittingIndex[reticulationID] = index;
-                            if(SWITCH_APPROX_SPLIT) {
+                            /*if(SWITCH_APPROX_SPLIT) {
                                 double threshold = 1e-10;
                                 if(numReticulations == 1)
                                     threshold = 1e-5;
@@ -753,7 +822,7 @@ public class Algorithms
                                     i = 2;
                                     continue;
                                 }
-                            }
+                            }*/
                             added[i]++;
                             data.addFBottom(parents[i], fm, splittingIndex);
                         }

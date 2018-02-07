@@ -31,6 +31,19 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     private Network speciesNetwork;
     private Map<String, String> allele2species;
 
+    public SNAPPAlgorithm(Network theSpeciesNetwork, RateModel rModel, Double theta, int maxLineages){
+
+        speciesNetwork = theSpeciesNetwork;
+        Q = new QParameters(rModel, maxLineages, theta);
+        if(speciesNetwork.getRoot().getData()==null) {
+            Networks.removeBinaryNodes(speciesNetwork);
+            for (Object node : Networks.postTraversal(speciesNetwork)) {
+                ((NetNode<SNAPPData[]>) node).setData(new SNAPPData[1]);
+            }
+        }
+        allele2species = null;
+    }
+
     public SNAPPAlgorithm(Network theSpeciesNetwork, RateModel rModel, Double theta){
 
         speciesNetwork = theSpeciesNetwork;

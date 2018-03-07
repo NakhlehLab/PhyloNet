@@ -14,6 +14,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,10 +31,13 @@ public class SummarizeMCMCResults extends CommandBaseFileOut {
 
     private String _trueNetwork = null;
     private String _outputFile = null;
+    private String _pyFile = null;
+    private String _videoFile = null;
     private Long _chainlen = null;
     private Long _burnin = null;
     private Long _sample_freq = null;
     private List<String> _infiles = null;
+    private List<String> _leafOrder = new ArrayList<>();
     private String _mode = null;
 
 
@@ -49,7 +53,7 @@ public class SummarizeMCMCResults extends CommandBaseFileOut {
 
     @Override
     protected int getMaxNumParams() {
-        return 15;
+        return 30;
     }
 
     @Override
@@ -58,7 +62,7 @@ public class SummarizeMCMCResults extends CommandBaseFileOut {
 
         _infiles = parseInputFiles(Program.inputNexusFileName);
 
-        // output file
+        // mode
         ParamExtractor modeParam = new ParamExtractor("mode", this.params, this.errorDetected);
         if(modeParam.ContainsSwitch){
             if(modeParam.PostSwitchParam != null) {
@@ -68,6 +72,55 @@ public class SummarizeMCMCResults extends CommandBaseFileOut {
             } else {
                 errorDetected.execute("Expected string after switch -mode.",
                         modeParam.SwitchParam.getLine(), modeParam.SwitchParam.getColumn());
+            }
+        }
+
+        // script file
+        ParamExtractor pyfileParam = new ParamExtractor("pyfile", this.params, this.errorDetected);
+        if(pyfileParam.ContainsSwitch){
+            if(pyfileParam.PostSwitchParam != null) {
+                if (noError) {
+                    _pyFile = pyfileParam.PostSwitchValue;
+                }
+            } else {
+                errorDetected.execute("Expected string after switch -pyfile.",
+                        pyfileParam.SwitchParam.getLine(), pyfileParam.SwitchParam.getColumn());
+            }
+        }
+
+        // video file
+        ParamExtractor videofileParam = new ParamExtractor("videofile", this.params, this.errorDetected);
+        if(videofileParam.ContainsSwitch){
+            if(videofileParam.PostSwitchParam != null) {
+                if (noError) {
+                    _videoFile = videofileParam.PostSwitchValue;
+                }
+            } else {
+                errorDetected.execute("Expected string after switch -videofile.",
+                        videofileParam.SwitchParam.getLine(), videofileParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor dataParam = new ParamExtractor("taxa", this.params, this.errorDetected);
+        if(dataParam.ContainsSwitch){
+            if(dataParam.PostSwitchParam != null) {
+                try {
+                    if(!(dataParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    ParameterIdentList taxa = (ParameterIdentList) dataParam.PostSwitchParam;
+                    for(String taxon: taxa.Elements){
+                        if (noError) {
+                            _leafOrder.add(taxon);
+                        }
+                    }
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized taxa " + dataParam.PostSwitchValue,
+                            dataParam.PostSwitchParam.getLine(), dataParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -taxa." + dataParam.PostSwitchValue,
+                        dataParam.PostSwitchParam.getLine(), dataParam.PostSwitchParam.getColumn());
             }
         }
 
@@ -169,14 +222,14 @@ public class SummarizeMCMCResults extends CommandBaseFileOut {
         }
 
         noError = noError && checkForUnknownSwitches(
-                "outfile", "infiles",
-                "truenet",
+                "outfile", "infiles","pyfile","videofile",
+                "truenet","taxa",
                 "cl", "sf", "bl",
                 "mode"
         );
         checkAndSetOutFile(
-                outfileParam, tnParam, infilesParam,
-                clParam, blParam, sfParam,
+                outfileParam, tnParam, infilesParam,pyfileParam,videofileParam,
+                clParam, blParam, sfParam,dataParam,
                 modeParam
         );
 
@@ -208,6 +261,12 @@ public class SummarizeMCMCResults extends CommandBaseFileOut {
             case "DensityPlot":
                 sbl.reportForDensityPlot(_outputFile, 1, 1);
                 break;
+            case "Tracer":
+                sbl.reportForTracer(_outputFile, _sample_freq);
+                //sbl.report( 1, 1);
+                break;
+            case "Video":
+                sbl.reportForSlantedVideo(_pyFile, _videoFile, _leafOrder);
             default:
         }
 

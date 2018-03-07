@@ -83,7 +83,7 @@ public class SummaryBL {
                 this.minProb = Double.MAX_VALUE;
                 this.listProb.add(prob);
             }
-            if(support == NetNode.NO_SUPPORT) {
+            if(support == NetNode.NO_SUPPORT ) {
                 this.meanSp = NetNode.NO_SUPPORT;
                 this.stdSp = NetNode.NO_SUPPORT;
             } else {
@@ -181,9 +181,30 @@ public class SummaryBL {
                 }
             }
         }
+
+        public Map<String, List<Double>> gatherLists() {
+            Map<String, List<Double>> results = new TreeMap<>();
+            if(this.parent == null) {
+                if(listSp.size() > 0) {
+                    results.put("theta(root)", listSp);
+                }
+                return results;
+            }
+
+            results.put("tau(" + this.parent.getName() + "->" + this.child.getName() +")", listBL);
+            if(this.listProb.size() > 0) {
+                results.put("gamma(" + this.parent.getName() + "->" + this.child.getName() +")", listProb);
+            }
+            if(this.listSp.size() > 0) {
+                results.put("theta(" + this.parent.getName() + "->" + this.child.getName() +")", listSp);
+            }
+
+            return results;
+        }
     }
 
     private Network _net;
+    private double _trueHeight;
     private Map<String, Branch> _branches;
     private int _size;
     private double _rootPopSizeAvg = 0;
@@ -191,20 +212,88 @@ public class SummaryBL {
     private int _rootPopSizeSize = 0;
     private Map<Network, Info> _topologyCount = new HashMap<>();
     private List<Network> _samples = new ArrayList<>();
+    private List<Double> posteriors = new ArrayList<>();
+    private List<Double> priors = new ArrayList<>();
+    private List<String> _leafOrder;
 
     public SummaryBL(String s) {
         this._net = Networks.readNetwork(s);
         if(s.startsWith("[")) {
             double popSize = Double.parseDouble(s.substring(1, s.indexOf("]")));
             this._net.getRoot().setRootPopSize(popSize);
+        } else {
+            //this._net.getRoot().setRootPopSize(NetNode.NO_SUPPORT);
         }
+        _trueHeight = getNetworkHeight(Networks.readNetwork(s));
         Networks.autoLabelNodes(this._net);
         this._branches = getBranches(this._net);
         this._size = 0;
+        posteriors.add(0.0);
+        priors.add(0.0);
     }
 
     public void addFile(String file, boolean notBeast) {
         this.addFile(file, notBeast, -1, Integer.MAX_VALUE);
+    }
+
+    public void addFileMCMCSEQ(String file, int startIter, int endIter) {
+        try{
+            BufferedReader in = new BufferedReader(new FileReader(file));
+            String s;
+            String[] ss;
+            boolean start = false;
+            while((s = in.readLine()) != null) {
+                ss = s.trim().split("\\s+");
+                if(ss.length != 7 || ss[0].startsWith("I") || !ss[0].endsWith(";")) continue;
+                s = in.readLine();
+                int iter = Integer.parseInt(ss[0].substring(0, ss[0].length() - 1));
+                if(iter < startIter) {
+                    continue;
+                }
+                if(iter > endIter) {
+                    break;
+                }
+                double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
+                double ess = Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
+                if(ess <= 0 && !start) continue;
+                start = true;
+                Network net = Networks.readNetwork(s);
+                if(net == null) {
+                    continue;
+                }
+                if(Networks.hasTheSameTopology(this._net, net)) {
+                    Map<NetNode, NetNode> map = Networks.mapTwoNetworks(this._net, net);
+                    this._size++;
+                    addInformation(this._net, map);
+                    if(s.startsWith("[")) {
+                        double popSize = Double.parseDouble(s.substring(1, s.indexOf("]")));
+                        _rootPopSizeAvg += popSize;
+                        _rootPopSizeStd += popSize * popSize;
+                        s = s.substring(s.indexOf("]") + 1);
+                        _rootPopSizeSize++;
+                        _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
+                    }
+                    posteriors.add(posterior);
+                    priors.add(prior);
+                } else {
+                    boolean add = false;
+                    for(Network key : _topologyCount.keySet()) {
+                        if(Networks.hasTheSameTopology(key, net)) {
+//                                        _topologyCount.get(key).add(popSize);
+                            _topologyCount.get(key).add(posterior);
+                            add = true;
+                            break;
+                        }
+                    }
+//                                if(!add) _topologyCount.put(net, new Info(popSize));
+                    if(!add) _topologyCount.put(net, new Info(posterior));
+                }
+            }
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void addFile(String file, boolean notBeast, int startIter, int endIter) {
@@ -218,6 +307,12 @@ public class SummaryBL {
             while((s = in.readLine()) != null) {
                 ss = s.split("\\s+");
                 if (notBeast) {
+                    if(s.contains("MCMC_SEQ")) {
+                        in.close();
+                        addFileMCMCSEQ(file, startIter, endIter);
+                        return;
+                    }
+
                     if(s.contains("MC BEGINS")) {
                         loggerStart = true;
                         continue;
@@ -243,8 +338,10 @@ public class SummaryBL {
                         if(iter > endIter) {
                             break;
                         }
-                        double posterior = Double.parseDouble(ss[3].substring(0, ss[1].length() - 1));
+                        double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
                         double ess = 1; //Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                        double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
+
                         if(ess > 0 || start) {
                             double popSize = Double.NaN;
                             start = true;
@@ -272,6 +369,9 @@ public class SummaryBL {
                                     _rootPopSizeSize++;
                                     _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
                                 }
+                                posteriors.add(posterior);
+                                priors.add(prior);
+
                             } else {
                                 boolean add = false;
                                 for(Network key : _topologyCount.keySet()) {
@@ -447,6 +547,94 @@ public class SummaryBL {
         }
 
 
+    }
+
+    public void reportForSlantedVideo(String scriptFilename, String videoFilename, List<String> leafOrder) {
+        int count = 0;
+        _leafOrder = leafOrder;
+
+        try {
+            PrintWriter out = new PrintWriter(scriptFilename);
+            out.println("import numpy as np");
+            out.println("import matplotlib");
+            out.println("matplotlib.use(\"Agg\")");
+            out.println("import matplotlib.pyplot as plt");
+            out.println("import matplotlib.animation as manimation");
+            out.println("from matplotlib import collections  as mc");
+            out.println("FFMpegWriter = manimation.writers['ffmpeg']");
+            out.println("metadata = dict(title='Movie Test', artist='Matplotlib',comment='Movie support!')");
+            out.println("writer = FFMpegWriter(fps=30, metadata=metadata)");
+            out.println("fig = plt.figure()");
+            out.println("");
+            out.println("with writer.saving(fig, \"" + videoFilename + "\", 300):");
+
+            for(Network network : _samples) {
+                NetworkPlotter networkPlotter = new NetworkPlotter(network, _leafOrder, 4.0, 5.0 / _trueHeight);
+                out.println(networkPlotter.producePythonLists());
+                out.println("    plt.clf()");
+                out.println("    ax = plt.subplot(111)");
+                out.println("    lc = mc.LineCollection(lines, colors=c, linewidths=2)");
+                out.println("    ax.add_collection(lc);");
+                out.println("    ax.plot(x, y, 'o')");
+                out.println(networkPlotter.producePythonAnnotations());
+                out.println("    plt.axhline(y=" + 5.0 + ", color = 'red', linestyle = 'dashed')");
+                out.println("    plt.xlim([-0.5, 4.5])");
+                out.println("    plt.ylim([-0.5, 6.5])");
+                out.println("    plt.tick_params(axis='x',which='both',bottom='off',top='off',labelbottom='off')");
+                out.println("    plt.tick_params(axis='y',which='both',left='off',right='off',labelleft='off')");
+                out.println("    writer.grab_frame()\n\n");
+
+                count++;
+            }
+            out.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+
+    }
+
+    public void reportForTracer(String filename, long sf) {
+        try {
+            PrintWriter out = new PrintWriter(filename);
+            Map<String, List<Double>> results = new TreeMap<>();
+            for(String key : this._branches.keySet()) {
+                Branch br = this._branches.get(key);
+                results.putAll(br.gatherLists());
+            }
+
+            int size = -1;
+            out.print("Sample\tPosterior\tPrior\t");
+            for(String key : results.keySet()) {
+                if(size == -1)
+                    size = results.get(key).size();
+                if(results.get(key).size() != size) {
+                    throw new RuntimeException("Got different size of lists!");
+                }
+
+                out.print(key + "\t");
+            }
+            out.println();
+
+            if(posteriors.size() != size || priors.size() != size) {
+                throw new RuntimeException("Got different size of lists!");
+            }
+
+            System.out.println("# Used samples: " + (size - 1));
+            for(int i = 1 ; i < size ; i++) {
+                out.print((i - 1) * sf + "\t");
+                out.print(posteriors.get(i) + "\t");
+                out.print(priors.get(i) + "\t");
+                for(String key : results.keySet()) {
+                    out.print(results.get(key).get(i) + "\t");
+                }
+                out.println();
+            }
+            System.out.println("Network: " + _net);
+            out.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
     }
 
     public void reportForDensityPlot(String filename, double scale, double popScale) {
@@ -639,11 +827,19 @@ public class SummaryBL {
         //String net = "[0.011246994934593928](wal:0.16856764465578844:0.024643805160552118,(((the57:0.005532380717127541:0.0328604191625876)#H1:0.008861256779885193:0.0349981605141176:0.5697578143531001,c513:0.014393637497012734:0.06774556777311104):0.02033133765658179:0.05536861556843345,(m523:0.03221433499579413:0.05265524780165408,(agla569:0.010982981528325176:0.04211202761569184,(#H1:4.459081325119832E-4:0.044983217465569256:0.43024218564689987,amar48:0.0059782888496395245:0.06404852435647355):0.005004692678685652:0.05142074487290094):0.021231353467468954:0.05110140055230508):0.0025106401578003923:0.05027578096009688):0.13384266950219392:0.02824200898517967);";
         String netR1 = "[0.006](((((Q:0.004:0.006)I5#H1:0.002:0.005:0.7,A:0.006:0.006)I3:0.006:0.005,L:0.012:0.006)I2:0.012:0.005,(I5#H1:0.003:0.005:0.3,R:0.007:0.006)I4:0.017:0.005)I1:0.016:0.005,C:0.04:0.006);";
         int start = 400, end = 3000;
-        SummaryBL sbl = new SummaryBL(netO4);
-        String file = "/Users/zhujiafan/Documents/PhyloDataResults/Ourisia/test4_2.txt";
+        SummaryBL sbl = new SummaryBL(netR1);
+        String file = "/Users/zhujiafan/Documents/PhyloDataResults/Parameter/run12/slurm-5094406_39.out";
         sbl.addFile(file, true, start, end);
         //sbl.report( 0.036 / 2, 1);
-        sbl.report( 1, 1);
+        //sbl.report( 1, 1);
+        List<String> order = new ArrayList<>();
+        order.add("C");
+        order.add("A");
+        order.add("L");
+        order.add("Q");
+        order.add("R");
+
+        //sbl.reportForSlantedVideo(null,"writer_test.mp4");
         //sbl.reportForDensityPlot(file + ".DP", 1, 1);
 
 //        SummaryBL sbl = new SummaryBL(net);

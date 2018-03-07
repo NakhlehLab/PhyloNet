@@ -65,7 +65,7 @@ abstract class CommandBaseFileOutMultilocusData extends CommandBaseFileOut {
                     int length = Integer.parseInt(ss[1]);
                     Map<String, String> taxonSeqMap = new HashMap<>();
                     s = br.readLine().trim();
-                    while((ss = s.split("\\s+")).length == 2) {
+                    while(!(s.startsWith("[") && s.endsWith("]")) && (ss = s.split("\\s+")).length == 2) {
                         if(ss[1].length() != length) {
                             throw new RuntimeException("wrong sequence length " + ss[1].length() + "\n" + s);
                         }

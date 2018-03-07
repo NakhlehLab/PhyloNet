@@ -163,10 +163,10 @@ public class MC3Core {
             }
             return;
         } else {
-            _burnInCounter++;
             if(_burnInCounter == Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY) {
                 _samplingPhase = true;
             }
+            _burnInCounter++;
         }
     }
 

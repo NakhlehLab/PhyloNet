@@ -29,6 +29,7 @@ import java.util.Map;
 public class SimBiMarkersinNetwork extends CommandBaseFileOut{
 
     private boolean _diploid = false;
+    private Integer _polyploid = null;
     private Character _dominant = null;
     private boolean _useOnlyPolymorphic = false;
     private Long _seed = null;
@@ -77,6 +78,22 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
             if(!_diploid) {
                 errorDetected.execute("Only diploid has dominant markers.",
                         dominantParam.PostSwitchParam.getLine(), dominantParam.PostSwitchParam.getColumn());
+            }
+        }
+
+        // polyploid
+        ParamExtractor polyParam = new ParamExtractor("polyploid", this.params, this.errorDetected);
+        if(polyParam.ContainsSwitch){
+            if(polyParam.PostSwitchParam != null) {
+                try {
+                    _polyploid = Integer.parseInt(polyParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized polyploid " + polyParam.PostSwitchValue,
+                            polyParam.PostSwitchParam.getLine(), polyParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -polyploid.",
+                        polyParam.SwitchParam.getLine(), polyParam.SwitchParam.getColumn());
             }
         }
 
@@ -249,13 +266,13 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
 
         noError = noError && checkForUnknownSwitches(
                 "diploid",
-                "dominant","pi0",
+                "dominant","polyploid","pi0",
                 "op", "sd", "num", "tm", "truenet", "out",
                 "sitespergt", "rvl", "rvm",
                 "a", "i", "g"
         );
         checkAndSetOutFile(
-                diploidParam,dominantParam,onlyPolyParam,pi0Param,
+                diploidParam,dominantParam,polyParam,onlyPolyParam,pi0Param,
                 numParam, sdParam, tmParam,snParam, fileParam,
                 sitespergtParam, rvlParam, rvmParam,
                 gammaShapeParam, gammaCatParam, invariantParam
@@ -277,6 +294,7 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, _seed);
         simulator._diploid = _diploid;
         simulator._dominant = _dominant != null;
+        simulator._polyploid = _polyploid;
 
         if(_nSitesPerGT != null) {
             simulator.setSitesPerGT(_nSitesPerGT);

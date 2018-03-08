@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SpeciesNetPriorDistribution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.Operator;
@@ -10,6 +11,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.ArrayList;
@@ -40,6 +42,10 @@ public class State {
                   Map<String, List<String>> species2alleles,
                   BiAllelicGTR BAGTRModel
     ) {
+
+        if(SNAPPLikelihood.pseudoLikelihood != null) {
+            SNAPPLikelihood.pseudoLikelihood.cache.clear();
+        }
 
         this._geneTrees = new ArrayList<>(alignments.size());
         for(int i = 0; i < alignments.size(); i++) {
@@ -178,6 +184,10 @@ public class State {
         return logL;
     }
 
+    public double calculateScore() {
+        return calculatePrior() + calculateLikelihood();
+    }
+
     public double recalculateLikelihood() {
         double logL = _speciesNet.recomputeLogDensity();
         /*for(UltrametricTree gt : _geneTrees) {
@@ -218,6 +228,14 @@ public class State {
             return _speciesNet.getNetwork().toString();
         else
             return "[" + _speciesNet.getNetwork().getRoot().getRootPopSize() + "]" + _speciesNet.getNetwork().toString();
+    }
+
+    public Network getNetworkObject() {
+        return _speciesNet.getNetwork();
+    }
+
+    public UltrametricNetwork getUltrametricNetworkObject() {
+        return _speciesNet;
     }
 
 }

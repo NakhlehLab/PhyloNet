@@ -244,6 +244,7 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 		//added this for phylonet-hmm, if using pop size and gen time and ages only, then derive this number
 		else if(_parent_distances.get(i) != NO_DISTANCE && _parent_distances.get(i).doubleValue() < 0.0){
+			System.out.println("Warning: This is not robust! If not using phylonet-hmm and get negative distance by some mistakes, you cannot detect it!");
 			return (((BniNetNode)parent).getAge() - _age) / (2.0 * _parent_gen_times.get(i).doubleValue() * _parent_pop_sizes.get(i).doubleValue());
 		}
 		else {
@@ -338,6 +339,10 @@ public class BniNetNode<T> implements NetNode<T> {
 	public boolean setParentDistance(NetNode<T> parent, double distance)
 	{
 		int i = _parents.indexOf(parent);
+
+		if(distance < 0 && distance != NetNode.NO_DISTANCE) {
+			//System.out.println(parent + " " + distance + "!!!!!!");
+		}
 
 		if (i == -1) {	// parent is not a parent of this node. Operation failed.
 			return false;

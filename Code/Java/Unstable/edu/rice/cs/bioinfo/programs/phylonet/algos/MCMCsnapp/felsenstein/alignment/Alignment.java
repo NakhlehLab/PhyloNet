@@ -49,6 +49,9 @@ public class Alignment {
     private Map<Integer, Integer> _cache;
     public Map<RPattern, double[]> _RPatterns;
 
+    public boolean _diploid;
+    public Character _dominant = null;
+
     public Alignment(Map<String, String> sequences, String name) {
         this(sequences);
         this._name = name;
@@ -124,7 +127,7 @@ public class Alignment {
      * calculate patterns from sequence data
      */
     private void calcPatterns() {
-        int taxonCount = _counts.size();
+        /*int taxonCount = _counts.size();
         int siteCount = _counts.get(0).size();
         // convert data to transposed int array
         int[][] data = new int[siteCount][taxonCount];
@@ -165,7 +168,7 @@ public class Alignment {
                 sites[j] = _counts.get(j).get(i);
             }
             _patternIndex[i] = Arrays.binarySearch(_sitePatterns, sites, comparator);
-        }
+        }*/
     }
 
     public List<String> getTaxaNames() {
@@ -221,7 +224,8 @@ public class Alignment {
     }
 
     public int getSiteCount() {
-        return _patternIndex.length;
+        //return _patternIndex.length;
+        return _aln.entrySet().iterator().next().getValue().length();
     }
 
     public int[] getPatternWeights() {

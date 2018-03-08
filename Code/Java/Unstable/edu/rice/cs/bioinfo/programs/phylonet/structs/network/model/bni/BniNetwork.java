@@ -195,8 +195,10 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
             throw new RuntimeException("This should be impossible ...");
         }
         */
+        Network clonedNetwork = Networks.readNetwork(this.toString());
+        clonedNetwork.getRoot().setRootPopSize(this.getRoot().getRootPopSize());
 
-        return Networks.readNetwork(this.toString());
+        return clonedNetwork;
     }
     /*
 	public Network<T> clone()
@@ -287,6 +289,10 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
         rnNewickPrinter.print(this, sw);
         return sw.toString();
     }
+
+    public String toStringWithRootPop() {
+    	return "[" + getRoot().getRootPopSize() + "]" + toString();
+	}
 
 	//LEO added this temporarily to get the pop sizes and gen times initialized sinc e the factory
 	//stuff will involve a lot of changes it seems

@@ -680,6 +680,10 @@ public class Networks
         return network.toString();
     }
 
+    public static <T> String getFullString(Network<T> net) {
+        return "[" + net.getRoot().getRootPopSize() + "]" + net.toString();
+    }
+
 
     /**
      * This function adds <code>numReticulations</code> random reticulations to a given network
@@ -763,6 +767,37 @@ public class Networks
         return null;
     }
 
+    /**
+     * This function reads a network with root pop from its string representation
+     */
+    public static <T> Network<T> readNetworkWithRootPop(String networkExp){
+        if(networkExp.startsWith("[")) {
+            double popSize = Double.parseDouble(networkExp.substring(1, networkExp.indexOf("]")));
+            String s = networkExp.substring(networkExp.indexOf("]") + 1);
+            Network<T> network = readNetwork(s);
+            network.getRoot().setRootPopSize(popSize);
+            return network;
+        } else {
+            return readNetwork(networkExp);
+        }
+    }
+
+    public static List<String> getTaxaNamesUnderReticulation(Network net) {
+        int count = 0;
+        List<String> results = new ArrayList<>();
+        for(Object leafObject : net.getLeaves()) {
+            NetNode leaf = (NetNode) leafObject;
+            NetNode node = leaf;
+            while(!node.isRoot()) {
+                if(node.isNetworkNode()) {
+                    results.add(leaf.getName());
+                    break;
+                }
+                node = (NetNode) node.getParents().iterator().next();
+            }
+        }
+        return results;
+    }
 
 
     /**

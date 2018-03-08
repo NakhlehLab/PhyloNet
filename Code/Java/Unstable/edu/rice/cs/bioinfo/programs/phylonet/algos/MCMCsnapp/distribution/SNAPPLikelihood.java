@@ -31,9 +31,13 @@ import java.util.concurrent.atomic.LongAdder;
 public class SNAPPLikelihood {
     public static int ALGORITHM = 0;
     public static boolean useOnlyPolymorphic = false;
+    public static boolean usePseudoLikelihood = false;
+    public static boolean useApproximateBayesian = false;
     public static boolean timeSavingMode = false;
     public static boolean debugMode = false ;
     public static LongAdder workloadCounter = null;
+    public static SNAPPPseudoLikelihood pseudoLikelihood = null;
+    public static ApproximateBayesian approximateBayesian = null;
 
     static public BiAllelicGTR getModel(List<Alignment> alignments) {
         double [] pi =  new double[2];
@@ -92,6 +96,74 @@ public class SNAPPLikelihood {
             ret.put(taxon, newbuilder.get(taxon).toString());
         }
         return ret;
+    }
+
+    // TODO: not fully tested
+    static public Map<RPattern, double[]> polyploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments, int totalPerSpecies) {
+        Map<RPattern, double[]> result = new HashMap<>();
+        Map<String, Integer> maxLineages = new HashMap<>();
+        for(Alignment aln : alignments) {
+            for(int i = 0 ; i < aln.getSiteCount() ; i++) {
+                Map<String, Tuple<int[], int[]>> currentPattern = new HashMap<>(); //item1[0]: n, item2[0]: R0
+                double weight = 1.0;
+                for(String allele : aln.getTaxaNames()) {
+                    char c = aln.getAlignment().get(allele).charAt(i);
+                    String species;
+                    if(alleles2species == null)
+                        species = allele;
+                    else
+                        species = alleles2species.get(allele);
+                    if(!currentPattern.containsKey(species))
+                        currentPattern.put(species, new Tuple<>(new int[]{0}, new int[]{0}));
+                    if(c == '-') continue;
+                    else currentPattern.get(species).Item2[0] += totalPerSpecies - (c - '0');
+                    currentPattern.get(species).Item1[0] += totalPerSpecies;
+
+                    weight *= ArithmeticUtils.binomialCoefficient(totalPerSpecies, c - '0');
+                }
+
+                boolean notGood = false;
+                Map<String, R> newPattern = new HashMap<>();
+                for(String species : currentPattern.keySet()) {
+                    if(currentPattern.get(species).Item1[0] == 0) notGood = true;   //ignore the case that there is a branch contains no data
+                    weight /= ArithmeticUtils.binomialCoefficient(currentPattern.get(species).Item1[0], currentPattern.get(species).Item2[0]);
+                    newPattern.put(species, new R(currentPattern.get(species).Item1[0], currentPattern.get(species).Item2));
+                }
+
+                if(notGood) continue;
+
+                for(String species : newPattern.keySet()) {
+                    if(!maxLineages.containsKey(species))
+                        maxLineages.put(species, 0);
+                    maxLineages.put(species, Math.max(maxLineages.get(species), newPattern.get(species).getN()));
+                }
+
+                RPattern rpattern = new RPattern(newPattern);
+                if(useOnlyPolymorphic && rpattern.isMonomorphic()) continue;
+
+                if(!result.containsKey(rpattern))
+                    result.put(rpattern, new double[]{0.0, 0.0});
+                result.get(rpattern)[0] += 1.0;
+                result.get(rpattern)[1] += Math.log(weight);
+            }
+        }
+
+        if(useOnlyPolymorphic) {
+            for(int i = 0 ; i <= R.dims ; i++) {
+                Map<String, R> newPattern = new HashMap<>();
+
+                for(String species : maxLineages.keySet()) {
+                    int a[] = new int[R.dims];
+                    if(i < R.dims)
+                        a[i] = maxLineages.get(species);
+                    newPattern.put(species, new R(maxLineages.get(species), a));
+                }
+                RPattern rpattern = new RPattern(newPattern);
+                result.put(rpattern, new double[]{0.0, 0.0});
+            }
+        }
+
+        return result;
     }
 
     static public Map<RPattern, double[]> diploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments) {
@@ -229,6 +301,50 @@ public class SNAPPLikelihood {
         return result;
     }
 
+    static public double computeApproximateBayesian(Network network, Map<String, String> alleles2species, List<Alignment> alignments, BiAllelicGTR BAGTRModel) {
+        if(approximateBayesian == null) {
+            System.out.println("Initiating approximate bayesian");
+            approximateBayesian = new ApproximateBayesian(alleles2species, alignments, alignments.get(0)._diploid, alignments.get(0)._dominant != null, useOnlyPolymorphic, BAGTRModel);
+            System.out.println("Finished initiating approximate bayesian");
+        }
+
+        Network net = network.clone();
+
+        int nameCount = 0;
+        for(Object node : net.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("II" + nameCount);
+                nameCount++;
+            }
+        }
+
+        return approximateBayesian.computeApproximateBayesianMT(net);
+
+    }
+
+    static public double computeSNAPPPseudoLikelihood(Network network, Map<String, String> alleles2species, List<Alignment> alignments, BiAllelicGTR BAGTRModel) {
+        if(pseudoLikelihood == null) {
+            System.out.println("Initiating pseudo-likelihood");
+            pseudoLikelihood = new SNAPPPseudoLikelihood(alleles2species, alignments, alignments.get(0)._diploid);
+            System.out.println("Finished initiating pseudo-likelihood");
+        }
+
+        Network net = network.clone();
+
+        int nameCount = 0;
+        for(Object node : net.dfs()) {
+            NetNode mynode = (NetNode) node;
+            if(mynode.getName().equals("")) {
+                mynode.setName("II" + nameCount);
+                nameCount++;
+            }
+        }
+
+        return pseudoLikelihood.computeSNAPPPseudoLogLikelihoodMT(net, alleles2species, BAGTRModel);
+
+    }
+
     static public double computeSNAPPLikelihood(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
         double prob;
 
@@ -237,6 +353,7 @@ public class SNAPPLikelihood {
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 public void run() {
                     System.out.println("Total number of network processed: " + workloadCounter.sum());
+                    System.out.println("FMatrix cache hit rate: " + FMatrix.cacheHit.sum() / FMatrix.cacheAccess.sum());
                 }
             }));
         }
@@ -245,13 +362,25 @@ public class SNAPPLikelihood {
             prob = SNAPPLikelihood.computeSNAPPLikelihoodST(network, patterns, BAGTRModel);
         else
             prob = SNAPPLikelihood.computeSNAPPLikelihoodMTC(network, patterns, BAGTRModel);
-        workloadCounter.increment();
+        if(!usePseudoLikelihood)
+            workloadCounter.increment();
         return prob;
     }
 
     static public double computeSNAPPLikelihoodST(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
+        if(workloadCounter == null) {
+            workloadCounter = new LongAdder();
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("Total number of network processed: " + workloadCounter.sum());
+                    System.out.println("FMatrix cache hit rate: " + FMatrix.cacheHit.sum() / FMatrix.cacheAccess.sum());
+                }
+            }));
+        }
+
         int nameCount = 0;
         Network net = Networks.readNetwork(network.toString());
+        net.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
         for(Object node : net.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
@@ -261,25 +390,34 @@ public class SNAPPLikelihood {
         }
 
         if(!Utils._ESTIMATE_POP_SIZE) {
-            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+            net.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
         }
 
         Double theta = null;
-        if(Utils._CONST_POP_SIZE)
-            theta = network.getRoot().getRootPopSize();
+        if(Utils._CONST_POP_SIZE) {
+            // theta = network.getRoot().getRootPopSize();
+            for(Object childObj : net.bfs()) {
+                NetNode child = (NetNode) childObj;
+                for(Object parentObj : child.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    child.setParentSupport(parent, net.getRoot().getRootPopSize());
+                }
+            }
+        }
 
         String netstring = net.toString();
 
         double sum = 0.0;
         double sumMono = 0.0;
         double numsites = 0.0;
+        int maxLineages = 0;
         if(Algorithms.HAS_DOMINANT_MARKER)
-            R.maxLineages = patterns.keySet().iterator().next().sumLineages() * 2;
+            maxLineages = patterns.keySet().iterator().next().sumLineages() * 2;
         else
-            R.maxLineages = patterns.keySet().iterator().next().sumLineages();
+            maxLineages = patterns.keySet().iterator().next().sumLineages();
         Network cloneNetwork = Networks.readNetwork(netstring);
         cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
-        SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta);
+        SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta, maxLineages);
         //long start = System.currentTimeMillis();
         for(RPattern pattern : patterns.keySet()) {
             double count = patterns.get(pattern)[0];
@@ -313,6 +451,7 @@ public class SNAPPLikelihood {
     static public double computeSNAPPLikelihoodMT(Network network, Map<RPattern, double[]> patterns, BiAllelicGTR BAGTRModel) {
         int nameCount = 0;
         Network net = Networks.readNetwork(network.toString());
+        net.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
         for(Object node : net.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
@@ -322,10 +461,20 @@ public class SNAPPLikelihood {
         }
 
         if(!Utils._ESTIMATE_POP_SIZE) {
-            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+            net.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
         }
 
-        final Double theta = Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize(): null;
+        Double theta = null;
+        if(Utils._CONST_POP_SIZE) {
+            // theta = network.getRoot().getRootPopSize();
+            for(Object childObj : net.bfs()) {
+                NetNode child = (NetNode) childObj;
+                for(Object parentObj : child.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    child.setParentSupport(parent, net.getRoot().getRootPopSize());
+                }
+            }
+        }
 
         String netstring = net.toString();
 
@@ -403,6 +552,7 @@ public class SNAPPLikelihood {
         //System.out.println(network.toString());
         int nameCount = 0;
         Network net = Networks.readNetwork(network.toString());
+        net.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
         for(Object node : net.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
@@ -412,10 +562,20 @@ public class SNAPPLikelihood {
         }
 
         if(!Utils._ESTIMATE_POP_SIZE) {
-            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+            net.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
         }
 
-        final Double theta = Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize(): null;
+        Double theta = null;
+        if(Utils._CONST_POP_SIZE) {
+            // theta = network.getRoot().getRootPopSize();
+            for(Object childObj : net.bfs()) {
+                NetNode child = (NetNode) childObj;
+                for(Object parentObj : child.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    child.setParentSupport(parent, net.getRoot().getRootPopSize());
+                }
+            }
+        }
 
         String netstring = net.toString();
 
@@ -558,7 +718,7 @@ public class SNAPPLikelihood {
         try {
             executor.shutdown();
             if(timeSavingMode) {
-                boolean finished = executor.awaitTermination(10, TimeUnit.SECONDS);
+                boolean finished = executor.awaitTermination(3600, TimeUnit.SECONDS);
                 if(!finished) {
                     executor.shutdownNow();
                     return Double.NEGATIVE_INFINITY;
@@ -585,6 +745,7 @@ public class SNAPPLikelihood {
 
         int nameCount = 0;
         Network net = Networks.readNetwork(network.toString());
+        net.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
         for(Object node : net.dfs()) {
             NetNode mynode = (NetNode) node;
             if(mynode.getName().equals("")) {
@@ -594,10 +755,20 @@ public class SNAPPLikelihood {
         }
 
         if(!Utils._ESTIMATE_POP_SIZE) {
-            network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+            net.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
         }
 
-        final Double theta = Utils._CONST_POP_SIZE ? network.getRoot().getRootPopSize(): null;
+        Double theta = null;
+        if(Utils._CONST_POP_SIZE) {
+            // theta = network.getRoot().getRootPopSize();
+            for(Object childObj : net.bfs()) {
+                NetNode child = (NetNode) childObj;
+                for(Object parentObj : child.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    child.setParentSupport(parent, net.getRoot().getRootPopSize());
+                }
+            }
+        }
 
         String netstring = net.toString();
 

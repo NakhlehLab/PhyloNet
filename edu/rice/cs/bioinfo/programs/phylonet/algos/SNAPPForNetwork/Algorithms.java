@@ -782,7 +782,7 @@ public class Algorithms
                 for (R r : R.loopOver(n)) {
                     double prob = fTop.get(r);
                     if(SWITCH_APPROX_SPLIT) {
-                        if (prob < 1e-6)
+                        if (prob < 1e-3)
                             continue;
                     }
 

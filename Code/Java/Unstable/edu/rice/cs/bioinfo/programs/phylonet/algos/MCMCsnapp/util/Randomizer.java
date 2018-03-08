@@ -12,6 +12,8 @@ public class Randomizer {
 
     private Randomizer() {}
 
+    public static Random getRandom() { return _rand; }
+
     public static int getRandomInt(int upperBound) {
         return _rand.nextInt(upperBound);
     }

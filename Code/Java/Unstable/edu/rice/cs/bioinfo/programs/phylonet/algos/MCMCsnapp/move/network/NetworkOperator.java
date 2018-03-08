@@ -31,7 +31,7 @@ public abstract class NetworkOperator extends Operator {
 
     public void optimize (double logAlpha) {};
 
-    protected void setNodeHeight(NetNode<NetNodeInfo> node, double height) {
+    public void setNodeHeight(NetNode<NetNodeInfo> node, double height) {
         node.getData().setHeight(height);
         for(NetNode<NetNodeInfo> child : node.getChildren()) {
             child.setParentDistance(node, height - child.getData().getHeight());

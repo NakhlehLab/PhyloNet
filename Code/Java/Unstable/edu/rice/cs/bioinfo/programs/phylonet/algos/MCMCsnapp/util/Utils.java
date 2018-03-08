@@ -20,6 +20,10 @@ public class Utils {
     public static final boolean DEBUG_MODE = false;
     public static double EPSILON = 2.220446049250313E-16;
 
+    public static boolean _MCMC = true;
+    public static boolean _Forbid_Net_Net = true;
+    public static boolean _Forbid_Net_Triangle = true;
+
     // --- settings ---
     // MCMC chain
     //public static long _CHAIN_LEN = 10000000;
@@ -66,7 +70,7 @@ public class Utils {
     public static final double NET_INTI_SCALE = 0.95;
     public static final double DEFAULT_NET_LEAF_HEIGHT = 0;
     public static final double DEFAULT_NET_ROOT_HEIGHT = 6;
-    public static final double NET_MAX_HEIGHT = 1000; // used in debug mode
+    public static final double NET_MAX_HEIGHT = 10;//TODO: MCMC->1000;
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
     public static final double DEFAULT_TREE_LEAF_HEIGHT = 0;
@@ -86,10 +90,10 @@ public class Utils {
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
+    public static boolean DISABLE_PARAMETER_MOVES = false;
+
     public static double DIMENSION_CHANGE_WEIGHT = 0.005;
-    public static final double[] Tree_Op_Weights = new double[] {
-            0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
-    };
+
     public static final double[] Net_Op_Weights = new double[] {
             0.10, 0.04, 0.00,
             0.04, 0.05,
@@ -105,10 +109,36 @@ public class Utils {
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
 
+    public static double SEARCH_DIMENSION_CHANGE_WEIGHT = 0.02;
+
+    public static final double[] Search_Net_Op_Weights = new double[] {
+            0.02, 0.01, 0.00,
+            0.04, 0.05,
+            0.20, 0.15, 0.03, 0.10, SEARCH_DIMENSION_CHANGE_WEIGHT,
+            0.16 - SEARCH_DIMENSION_CHANGE_WEIGHT, 0.10, SEARCH_DIMENSION_CHANGE_WEIGHT, 0.16 - SEARCH_DIMENSION_CHANGE_WEIGHT, 0.20
+    };
+    // ChangePopSize ScalePopSize ScaleAll ScaleTime ScaleRootTime
+    // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation
+    // FlipReticulation MoveHead DeleteReticulation ChangeInheritance
+    public static final double[] Search_Net_Tree_Op_Weights = new double[] {
+            0.03, 0.01, 0.00,
+            0.04, 0.05,
+            0.30, 0.27, 0.06, 0.07 - SEARCH_DIMENSION_CHANGE_WEIGHT * 2, SEARCH_DIMENSION_CHANGE_WEIGHT * 2
+    };
+
     public static final double[] PopSize_Op_Weights = new double[]{0.5, 1.0};
 
 
     public static double[] getOperationWeights(double[] weights, int start, int end) {
+        if(DISABLE_PARAMETER_MOVES) {
+            weights[0] = 0.0;
+            weights[1] = 0.0;
+            weights[2] = 0.0;
+            weights[3] = 0.0;
+            weights[4] = 0.0;
+            weights[5] = 0.0;
+        }
+
         double[] arr = new double[weights.length];
         double sum = 0;
         for(int i = start; i < end; i++) {
@@ -127,6 +157,15 @@ public class Utils {
     }
 
     public static double[] getOperationWeights(double[] weights) {
+        if(DISABLE_PARAMETER_MOVES) {
+            weights[0] = 0.0;
+            weights[1] = 0.0;
+            weights[2] = 0.0;
+            weights[3] = 0.0;
+            weights[4] = 0.0;
+            weights[5] = 0.0;
+        }
+
         double[] arr = new double[weights.length];
         double sum = 0;
         for(double d : weights) {
@@ -198,7 +237,7 @@ public class Utils {
     public static void printSettings() {
         System.out.println("Number of threads = " + Utils._NUM_THREADS);
         System.out.println("Number of Chains = " + (Utils._MC3_CHAINS == null ? 1 : 1 + Utils._MC3_CHAINS.size()));
-        System.out.println("Max reticulation number = " + Utils._NET_MAX_RETI);
+        //System.out.println("Max reticulation number = " + Utils._NET_MAX_RETI);
         System.out.println("Diameter prior: " + Utils._DIAMETER_PRIOR);
         System.out.println("Time exp prior: " + Utils._TIMES_EXP_PRIOR);
         System.out.println("Estimate pop size: " + Utils._ESTIMATE_POP_SIZE);
@@ -209,9 +248,9 @@ public class Utils {
         System.out.println("Gamma shape: " + Utils.GAMMA_SHAPE);
         System.out.println("Poisson param: " + Utils._POISSON_PARAM);
         System.out.println("Network size prior: " + Utils._NETWORK_SIZE_PRIOR);
-        System.out.println("Dimension change weight: " + Utils.DIMENSION_CHANGE_WEIGHT);
-        System.out.println("Time window size: " + Utils._TIME_WINDOW_SIZE);
-        System.out.println("Pop size window size: " + Utils._POP_SIZE_WINDOW_SIZE);
+        //System.out.println("Dimension change weight: " + Utils.DIMENSION_CHANGE_WEIGHT);
+        //System.out.println("Time window size: " + Utils._TIME_WINDOW_SIZE);
+        //System.out.println("Pop size window size: " + Utils._POP_SIZE_WINDOW_SIZE);
         System.out.println("Seed: " + Utils._SEED);
 
         System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);

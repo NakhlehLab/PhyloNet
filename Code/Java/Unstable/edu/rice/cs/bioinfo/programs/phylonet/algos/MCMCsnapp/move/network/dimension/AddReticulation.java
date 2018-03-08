@@ -4,9 +4,11 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import org.apache.commons.math3.distribution.BetaDistribution;
 
 import java.util.List;
 
@@ -51,7 +53,14 @@ public class AddReticulation extends DimensionChange {
         double l2 = t5 - t6;
         double t2 = t6 + Randomizer.getRandomDouble() * l2;
 
-        double gamma = Randomizer.getRandomDouble();
+        double gamma = 0.0;
+        if(Utils._MCMC) {
+            gamma = Randomizer.getRandomDouble();
+        } else {
+            gamma = Randomizer.getRandomDouble();
+            //gamma = new BetaDistribution(2.0, 2.0).inverseCumulativeProbability(Randomizer.getRandomDouble());
+        }
+
         _v1 = new BniNetNode<>();
         _v1.setData(new NetNodeInfo(t1));
         _v2 = new BniNetNode<>();

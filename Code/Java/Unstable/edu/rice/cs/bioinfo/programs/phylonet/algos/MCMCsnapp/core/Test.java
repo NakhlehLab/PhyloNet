@@ -3,11 +3,14 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.dimension.AddReticulation;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.param.OptimizeAll;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.DataGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.counting.CoalescenceHistoriesCounting;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferMLNetworkFromSequences;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
@@ -112,6 +115,134 @@ public class Test {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void testPropose(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
+        //Utils._SEED = new Random().nextLong();
+        Utils._NET_MAX_RETI = 0;
+        Utils._CONST_POP_SIZE = true;
+        State state = new State(
+                Utils._START_NET,
+                Utils._START_GT_LIST,
+                alignments,
+                Utils._POISSON_PARAM,
+                Utils._TAXON_MAP,
+                BAGTRModel
+        );
+        state.calculatePrior();
+
+        while(true) {
+            double pseudo1 = state.getUltrametricNetworkObject().logDensity();
+            double full1 = SNAPPLikelihood.computeSNAPPLikelihood(state.getNetworkObject(), alignments.get(0)._RPatterns, BAGTRModel);
+            String s1 = Networks.getFullString(state.getNetworkObject());
+            String s2 = Networks.getTopologyString(state.getNetworkObject());
+            state.propose();
+            if(!state.isValidState()) {
+                state.undo(0.0);
+                continue;
+            }
+            double pseudo2 = state.getUltrametricNetworkObject().logDensity();
+            double full2 = SNAPPLikelihood.computeSNAPPLikelihood(state.getNetworkObject(), alignments.get(0)._RPatterns, BAGTRModel);
+            if((pseudo1 - pseudo2) * (full1 - full2) < -1e-6) {
+                System.out.println("========================");
+                System.out.println(s1);
+                System.out.println(s2);
+                System.out.println(pseudo1 + " " + full1);
+                System.out.println(state.getOperation().getName());
+                System.out.println(pseudo2 + " " + full2);
+                System.out.println(Networks.getFullString(state.getNetworkObject()));
+                System.out.println(Networks.getTopologyString(state.getNetworkObject()));
+                System.out.println("========================");
+                //break;
+            }
+            if(pseudo1 > pseudo2)
+                state.undo(0.0);
+            else {
+                System.out.println(s1);
+                System.out.println(s2);
+                System.out.println(pseudo2);
+            }
+        }
+
+    }
+
+    public static void testOptimizeAll(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
+        Utils._SEED = new Random().nextLong();
+        State state = new State(
+                Utils._START_NET,
+                Utils._START_GT_LIST,
+                alignments,
+                Utils._POISSON_PARAM,
+                Utils._TAXON_MAP,
+                BAGTRModel
+        );
+        OptimizeAll optimizer = new OptimizeAll(state);
+        double temp = optimizer.propose();
+        System.out.println(temp);
+
+
+    }
+
+    public static void testAddReticulation(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
+        Utils._SEED = new Random().nextLong();
+        State state = new State(
+                Utils._START_NET,
+                Utils._START_GT_LIST,
+                alignments,
+                Utils._POISSON_PARAM,
+                Utils._TAXON_MAP,
+                BAGTRModel
+        );
+        AddReticulation addReticulation = new AddReticulation(state.getUltrametricNetworkObject());
+        int s1 = 0;
+        int s2 = 0;
+        double bestLikelihood = -1e99;
+        String bestNetworkString = null;
+        while(true) {
+            addReticulation.propose();
+            //System.out.println(state.getNetworkObject().toString());
+            int k = CoalescenceHistoriesCounting.getNumTaxaUnderReticulation(state.getNetworkObject());
+            //System.out.println(k);
+            s1++;
+            if(k == 3) {
+                List<String> names = Networks.getTaxaNamesUnderReticulation(state.getNetworkObject());
+                if(names.contains("I")) {
+                    NetNode node = state.getNetworkObject().findNode("I");
+                    NetNode parent = (NetNode) node.getParents().iterator().next();
+                    NetNode parent1 = (NetNode) state.getNetworkObject().findNode("H").getParents().iterator().next();
+                    NetNode parent2 = (NetNode) state.getNetworkObject().findNode("F").getParents().iterator().next();
+                    if(parent.hasParent(parent1) && parent.hasParent(parent2)) {
+                        //System.out.println(Networks.getTopologyString(state.getNetworkObject()));
+                        //state.calculatePrior();
+                        //double likelihood = state.calculateLikelihood();
+                                //-8.509209862436728E8
+                        //System.out.println(likelihood);
+                        //s2++;
+                        //if(likelihood > -8.509209862436728E8) {
+                            //System.out.println(likelihood > -8.509209862436728E8);
+                            //break;
+                        //}
+                    }
+                }
+            }
+            state.calculatePrior();
+            double likelihood = state.calculateLikelihood();
+            //System.out.println(likelihood);
+            if(likelihood > bestLikelihood) {
+                s2 = s1;
+                bestLikelihood = likelihood;
+                bestNetworkString = Networks.getFullString(state.getNetworkObject());
+                System.out.println(Networks.getTopologyString(state.getNetworkObject()));
+                System.out.println(bestNetworkString);
+                System.out.println(likelihood);
+                //break;
+            }
+            addReticulation.undo();
+            if(s1 > 100000) {
+                break;
+            }
+        }
+        System.out.println("Tried: " + s1 + " " + s2);
     }
 
     public static void testBranchlength() {

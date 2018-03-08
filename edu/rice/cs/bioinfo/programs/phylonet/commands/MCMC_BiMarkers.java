@@ -7,8 +7,11 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkN
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.Program;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.MC3Core;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.SimulatedAnnealing;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.Test;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
@@ -31,6 +34,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
 
     private Double _pi0 = null;
     private boolean _diploid = false;
+    private Integer _polyploid = null;
     private Character _dominant = null;
     private String _trueNetwork = null;
     private List<Double> _premc3_chains = null;
@@ -40,6 +44,13 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
     private Long _burnin = null;
     private Long _chainlen = null;
     private int _maxReticulations = 4;
+    private boolean _mle = false;
+
+    private int _maxExamCount = 50000;
+    private int _numRuns = 100;
+    private int _numOpt = 10;
+    private int _maxFailure = 50;
+
 
     public MCMC_BiMarkers(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                           Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -61,6 +72,18 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
     protected boolean checkParamsForCommand(){
         boolean noError = true;
 
+        // ----- mle -----
+        ParamExtractor mleParam = new ParamExtractor("mle", this.params, this.errorDetected);
+        if(mleParam.ContainsSwitch) {
+            _mle = true;
+        }
+
+        // ------ approximated splitting -------
+        ParamExtractor approxParam = new ParamExtractor("approx", this.params, this.errorDetected);
+        if(approxParam.ContainsSwitch) {
+            Algorithms.SWITCH_APPROX_SPLIT = true;
+        }
+
         // ----- DNA sequences -----
         this.parseMatrixData(Program.inputNexusFileName);
         if(this.sourceIdentToMatrixData == null) {
@@ -68,10 +91,42 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                     "https://wiki.rice.edu/confluence/display/PHYLONET/");
         }
 
+        // approximate bayesian
+        ParamExtractor abcParam = new ParamExtractor("abc", this.params, this.errorDetected);
+        if(abcParam.ContainsSwitch){
+            SNAPPLikelihood.useApproximateBayesian = true;
+        } else {
+            SNAPPLikelihood.useApproximateBayesian = false;
+        }
+
+        // pseudo likelihood
+        ParamExtractor pseudoParam = new ParamExtractor("pseudo", this.params, this.errorDetected);
+        if(pseudoParam.ContainsSwitch){
+            SNAPPLikelihood.usePseudoLikelihood = true;
+        } else {
+            SNAPPLikelihood.usePseudoLikelihood = false;
+        }
+
         // ----- diploid -----
         ParamExtractor diploidParam = new ParamExtractor("diploid", this.params, this.errorDetected);
         if(diploidParam.ContainsSwitch) {
             _diploid = true;
+        }
+
+        // polyploid
+        ParamExtractor polyParam = new ParamExtractor("polyploid", this.params, this.errorDetected);
+        if(polyParam.ContainsSwitch){
+            if(polyParam.PostSwitchParam != null) {
+                try {
+                    _polyploid = Integer.parseInt(polyParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized polyploid " + polyParam.PostSwitchValue,
+                            polyParam.PostSwitchParam.getLine(), polyParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -polyploid.",
+                        polyParam.SwitchParam.getLine(), polyParam.SwitchParam.getColumn());
+            }
         }
 
         ParamExtractor dominantParam = new ParamExtractor("dominant", this.params, this.errorDetected);
@@ -302,6 +357,67 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             }
         }
 
+        // ----- ML Settings -----
+        ParamExtractor mnoParam = new ParamExtractor("mno", this.params, this.errorDetected);
+        if(mnoParam.ContainsSwitch) {
+            if(mnoParam.PostSwitchParam != null) {
+                try {
+                    _numOpt = Integer.parseInt(mnoParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized value of maximum number of optimums " + mnoParam.PostSwitchValue,
+                            mnoParam.PostSwitchParam.getLine(), mnoParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -mno.",
+                        mnoParam.SwitchParam.getLine(), mnoParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor mnrParam = new ParamExtractor("mnr", this.params, this.errorDetected);
+        if(mnrParam.ContainsSwitch) {
+            if(mnrParam.PostSwitchParam != null) {
+                try {
+                    _numRuns = Integer.parseInt(mnrParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized value of maximum number of runs " + mnrParam.PostSwitchValue,
+                            mnrParam.PostSwitchParam.getLine(), mnrParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -mnr.",
+                        mnrParam.SwitchParam.getLine(), mnrParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor mfParam = new ParamExtractor("mf", this.params, this.errorDetected);
+        if(mfParam.ContainsSwitch) {
+            if(mfParam.PostSwitchParam != null) {
+                try {
+                    _maxFailure = Integer.parseInt(mfParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized value of maximum number of failures " + mfParam.PostSwitchValue,
+                            mfParam.PostSwitchParam.getLine(), mfParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -mf.",
+                        mfParam.SwitchParam.getLine(), mfParam.SwitchParam.getColumn());
+            }
+        }
+
+        ParamExtractor mecParam = new ParamExtractor("mec", this.params, this.errorDetected);
+        if(mecParam.ContainsSwitch) {
+            if(mecParam.PostSwitchParam != null) {
+                try {
+                    _maxExamCount = Integer.parseInt(mecParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized value of maximum number of examinations " + mecParam.PostSwitchValue,
+                            mecParam.PostSwitchParam.getLine(), mecParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -mec.",
+                        mecParam.SwitchParam.getLine(), mecParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Inference Settings -----
         // maximum reticulation
         ParamExtractor mrParam = new ParamExtractor("mr", this.params, this.errorDetected);
@@ -352,6 +468,9 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
         if(varyPsParam.ContainsSwitch) {
             Utils._ESTIMATE_POP_SIZE = true;
             Utils._CONST_POP_SIZE = false;
+        } else {
+            Utils._CONST_POP_SIZE = true;
+            Utils._ESTIMATE_POP_SIZE = true;
         }
 
         // estimate theta prior
@@ -512,17 +631,19 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
         }
 
         noError = noError && checkForUnknownSwitches(
-                "diploid", "dominant",
+                "diploid", "dominant","polyploid",
                 "taxa", "op",
                 "cl", "bl", "sf", "sd", "pl",
                 "mc3", "mr", "tm", "fixtheta", "varytheta",
                 "pp", "dd", "ee", "pi0",
                 "esptheta", "snet", "truenet", "ptheta",
                 "thetawindow", "timewindow", "dc",
-                "prebl", "premc3", "premr"
+                "prebl", "premc3", "premr",
+                "mle", "pseudo", "abc","approx",
+                "mno", "mnr", "mf", "mec"
         );
         checkAndSetOutFile(
-                diploidParam,
+                diploidParam,polyParam,
                 dominantParam,
                 dataParam, onlyPolyParam,
                 clParam, blParam, sfParam, sdParam, plParam,
@@ -530,7 +651,9 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                 ppParam, ddParam, eeParam, estimatePThetaParam,
                 pthetaParam, snParam, tnParam, pi0Param,
                 thetaWinParam, timeWinParam, dcParam,
-                preblParam, pretpParam, premrParam
+                preblParam, pretpParam, premrParam,
+                mleParam, pseudoParam, abcParam,approxParam,
+                mnoParam, mnrParam, mfParam, mecParam
         );
 
         return  noError;
@@ -608,11 +731,17 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
         List<Alignment> alnwarp = new ArrayList<>();
         alnwarp.add(new Alignment(_sequence));
 
-        if(_diploid && _dominant == null) {
+        if(_polyploid != null) {
+            alnwarp.get(0)._RPatterns = SNAPPLikelihood.polyploidSequenceToPatterns(allele2species, alnwarp, _polyploid);
+        } else if(_diploid && _dominant == null) {
             alnwarp.get(0)._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(allele2species, alnwarp);
         } else {
             alnwarp.get(0)._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alnwarp);
         }
+
+        // TODO: fix (pseudo likelihood) for polyploid
+        alnwarp.get(0)._diploid = _diploid;
+        alnwarp.get(0)._dominant = _dominant;
 
         double polyCount = 0.0;
         for(RPattern key : alnwarp.get(0)._RPatterns.keySet()) {
@@ -633,28 +762,49 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             double trueRootPopSize = Double.parseDouble(_trueNetwork.substring(_trueNetwork.indexOf('[') + 1, _trueNetwork.indexOf(']')));
             Network cloneNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(_trueNetwork.substring(_trueNetwork.indexOf(']') + 1));
             cloneNetwork.getRoot().setRootPopSize(trueRootPopSize);
-            System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
+            if(!SNAPPLikelihood.usePseudoLikelihood && !SNAPPLikelihood.useApproximateBayesian){
+                System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
+            }
+
+            if(SNAPPLikelihood.usePseudoLikelihood) {
+                System.out.println("True Pseudo-Likelihood = " + SNAPPLikelihood.computeSNAPPPseudoLikelihood(cloneNetwork, allele2species, alnwarp, BAGTRModel));
+            }
+
+            if(SNAPPLikelihood.useApproximateBayesian) {
+                System.out.println("True Approximate Bayesian = " + SNAPPLikelihood.computeApproximateBayesian(cloneNetwork, allele2species, alnwarp, BAGTRModel));
+            }
         }
 
-        if(_preburnin != null) {
-            Utils._BURNIN_LEN = _preburnin;
-            Utils._CHAIN_LEN = _preburnin;
-            Utils._MC3_CHAINS = _premc3_chains;
-            Utils._NET_MAX_RETI = _preMaxReti;
-            System.out.println("PRE-BURN-IN");
+        if(!_mle) {
+
+            if (_preburnin != null) {
+                Utils._BURNIN_LEN = _preburnin;
+                Utils._CHAIN_LEN = _preburnin;
+                Utils._MC3_CHAINS = _premc3_chains;
+                Utils._NET_MAX_RETI = _preMaxReti;
+                System.out.println("PRE-BURN-IN");
+                MC3Core mc3 = new MC3Core(alnwarp, BAGTRModel);
+                mc3.run();
+                Utils._START_NET = mc3.getBestLikelihoodNetwork();
+                System.out.println("Starting Network:");
+            }
+
+            System.out.println("MC BEGINS");
+            Utils._BURNIN_LEN = _burnin;
+            Utils._CHAIN_LEN = _chainlen;
+            Utils._MC3_CHAINS = _mc3_chains;
+            Utils._NET_MAX_RETI = _maxReticulations;
             MC3Core mc3 = new MC3Core(alnwarp, BAGTRModel);
             mc3.run();
-            Utils._START_NET = mc3.getBestLikelihoodNetwork();
-            System.out.println("Starting Network:");
+        } else {
+            Utils._NET_MAX_RETI = _maxReticulations;
+            Utils._MCMC = false;
+            SimulatedAnnealing sa = new SimulatedAnnealing();
+            sa.setSeed(Utils._SEED);
+            LinkedList<Tuple<Network,Double>> resultList = new LinkedList<>();
+            sa.search(alnwarp, BAGTRModel, _numOpt, _numRuns, _maxExamCount, _maxFailure, false, resultList);
+            //Test.testPropose(alnwarp, BAGTRModel, _numOpt, _numRuns, _maxExamCount, _maxFailure, false, resultList);
         }
-
-        System.out.println("MC BEGINS");
-        Utils._BURNIN_LEN = _burnin;
-        Utils._CHAIN_LEN = _chainlen;
-        Utils._MC3_CHAINS = _mc3_chains;
-        Utils._NET_MAX_RETI = _maxReticulations;
-        MC3Core mc3 = new MC3Core(alnwarp, BAGTRModel);
-        mc3.run();
 
         result.append(String.format("Total elapsed time : %2.5f s\n",
                 (double) (System.currentTimeMillis() - startTime) / 1000.0));

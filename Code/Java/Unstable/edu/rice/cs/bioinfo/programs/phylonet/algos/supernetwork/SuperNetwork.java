@@ -41,8 +41,12 @@ public class SuperNetwork {
         }
     }
 
-    public List getSubNetworks() {
+    public List<Network> getSubNetworks() {
         return _subnetworks;
+    }
+
+    public void setTrueNetwork(Network net) {
+        _trueNetwork = net;
     }
 
     public void sortLabels(List<String> labels, boolean reverse) {
@@ -568,7 +572,7 @@ public class SuperNetwork {
             for(int i = 0 ; i < indices.length ; i++) {
                 selectedLeaves.add(allLeaves.get(indices[i]));
             }
-            _subnetworks.add(getSubNetwork(trueNetwork, selectedLeaves, true, true));
+            _subnetworks.add(getSubNetwork(trueNetwork, selectedLeaves, true, false));
         }
 
         return _subnetworks;

@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class SimSNPInNetwork {
     public boolean _diploid = false;
+    public Integer _polyploid = null; // TODO: not fully tested
     public boolean _dominant = false;
     private Long _seed = null;
     private BiAllelicGTR _model;
@@ -98,6 +99,16 @@ public class SimSNPInNetwork {
                 }
                 species2alleles.put(species, newalleles);
             }
+        } else if(_polyploid != null) {
+            for(String species : species2alleles.keySet()) {
+                List<String> newalleles = new ArrayList<>();
+                for(String allele : species2alleles.get(species)) {
+                    for(int i = 0 ; i < _polyploid ; i++) {
+                        newalleles.add(allele + "_" + i);
+                    }
+                }
+                species2alleles.put(species, newalleles);
+            }
         }
 
         for(int i = 0 ; i < numGTs ; i++) {
@@ -109,6 +120,14 @@ public class SimSNPInNetwork {
                 Map<String, Character> actualSite = new HashMap<>();
                 for (String name : snp.keySet()) {
                     if (_diploid) {
+                        String actualName = name.substring(0, name.length() - 2);
+                        if (!actualSite.containsKey(actualName))
+                            actualSite.put(actualName, '0');
+
+                        if (snp.get(name).equals("1")) {
+                            actualSite.put(actualName, (char) (actualSite.get(actualName).charValue() + 1));
+                        }
+                    } else if(_polyploid != null) {
                         String actualName = name.substring(0, name.length() - 2);
                         if (!actualSite.containsKey(actualName))
                             actualSite.put(actualName, '0');

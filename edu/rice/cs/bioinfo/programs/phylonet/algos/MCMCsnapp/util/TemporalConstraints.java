@@ -56,6 +56,9 @@ public class TemporalConstraints {
     public static Map<String, Double> getTemporalConstraints(List<UltrametricTree> gts,
                                                              Map<String, List<String>> species2alleles,
                                                              Map<String, String> alleles2species) {
+        if(gts == null) {
+            return null;
+        }
         if(gts.size() == 0) {
             throw new IllegalArgumentException("List of gene trees cannot be null");
         }

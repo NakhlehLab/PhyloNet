@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.all;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricTree;
@@ -26,13 +27,21 @@ public class ScaleAll extends AllOperator {
 
     public ScaleAll(List<UltrametricTree> trees, UltrametricNetwork net) {
         super(trees, net);
-        _lowerLimit = Math.min(_upperLimit,
-                1.0 / Math.exp(20.0 / (trees.size()+1.0) / trees.get(0).getInternalNodes().size())); // TODO: 50
+        if(trees == null) {
+            _lowerLimit = 0.0001;
+        } else {
+            _lowerLimit = Math.min(_upperLimit,
+                    1.0 / Math.exp(20.0 / (trees.size() + 1.0) / trees.get(0).getInternalNodes().size())); // TODO: 50
+        }
         _scaleFactor = _lowerLimit;
     }
 
     @Override
     public double propose() {
+        if(SNAPPLikelihood.pseudoLikelihood != null) {
+            SNAPPLikelihood.pseudoLikelihood.cache.clear();
+        }
+
         scale = getScaler();
         int dimension = 0;
 //        int dimension = 1;
@@ -57,6 +66,9 @@ public class ScaleAll extends AllOperator {
 
     @Override
     public void undo() {
+        if(SNAPPLikelihood.pseudoLikelihood != null) {
+            SNAPPLikelihood.pseudoLikelihood.cache.clear();
+        }
 //        scalePopSize(1.0 / scale);
         scaleHeight(1.0 / scale, true);
         /*for (UltrametricTree ut : _allTrees) {

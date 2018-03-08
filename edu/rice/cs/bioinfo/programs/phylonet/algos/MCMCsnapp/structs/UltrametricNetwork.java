@@ -26,6 +26,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
 
+import static edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils._Forbid_Net_Net;
+
 /**
  * Ultrametric network
  * Created by wendingqiao on 2/25/16.
@@ -115,33 +117,60 @@ public class UltrametricNetwork extends StateNode {
     }
 
     private void setOperators() {
-        this._operators = new Operator[] {
-                new ChangePopSize(this),
-                new ScalePopSize(this),
-                new ScaleAll(_geneTrees, this),
-                new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
-                new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
-                new AddReticulation(this),
-                new FlipReticulation(this), new MoveHead(this),
-                new DeleteReticulation(this),
-                new ChangeInheritance(this)
-        };
-        if (Utils._ESTIMATE_POP_SIZE) {
-            this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights);
-            this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights);
+        if(Utils._MCMC) {
+            this._operators = new Operator[]{
+                    new ChangePopSize(this),
+                    new ScalePopSize(this),
+                    new ScaleAll(_geneTrees, this),
+                    new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
+                    new AddReticulation(this),
+                    new FlipReticulation(this), new MoveHead(this),
+                    new DeleteReticulation(this),
+                    new ChangeInheritance(this)
+            };
+            if (Utils._ESTIMATE_POP_SIZE) {
+                this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights);
+                this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights);
+            } else {
+                this._treeOpWeights = Utils.getOperationWeights(
+                        Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length);
+                this._netOpWeights = Utils.getOperationWeights(
+                        Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length);
+            }
         } else {
-            this._treeOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length);
-            this._netOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length);
+            this._operators = new Operator[]{
+                    new ChangePopSize(this),
+                    new ScalePopSize(this),
+                    new ScaleAll(_geneTrees, this),
+                    new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
+                    new AddReticulation(this),
+                    new FlipReticulation(this), new MoveHead(this),
+                    new DeleteReticulation(this),
+                    new ChangeInheritance(this),
+                    new ReplaceReticulation(this)
+            };
+            if (Utils._ESTIMATE_POP_SIZE) {
+                this._treeOpWeights = Utils.getOperationWeights(Utils.Search_Net_Tree_Op_Weights);
+                this._netOpWeights = Utils.getOperationWeights(Utils.Search_Net_Op_Weights);
+            } else {
+                this._treeOpWeights = Utils.getOperationWeights(
+                        Utils.Search_Net_Tree_Op_Weights, 3, Utils.Search_Net_Tree_Op_Weights.length);
+                this._netOpWeights = Utils.getOperationWeights(
+                        Utils.Search_Net_Op_Weights, 3, Utils.Search_Net_Op_Weights.length);
+            }
         }
+
     }
 
     // used only for debug only
     public UltrametricNetwork(String s) {
-        this._network = Networks.readNetwork(s);
-        this._geneTrees = null;
-        initNetHeights(null);
+        //this._network = Networks.readNetwork(s);
+        //this._geneTrees = null;
+        //initNetHeights(null);
+
+        this(s, null, null, null, null);
     }
 
     public Network<NetNodeInfo> getNetwork() {
@@ -258,7 +287,33 @@ public class UltrametricNetwork extends StateNode {
     public boolean isValid() {
         if(_network.getRoot().getData().getHeight() > Utils.NET_MAX_HEIGHT) return false;
 
+        if(Utils._Forbid_Net_Net) {
+            for(Object nodeObj : _network.bfs()) {
+                NetNode node = (NetNode) nodeObj;
+                if(node.isNetworkNode()) {
+                    for(Object parentObj : node.getParents()) {
+                        NetNode parent = (NetNode) parentObj;
+                        if(parent.isNetworkNode()) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
 
+        if(Utils._Forbid_Net_Triangle) {
+            for(Object nodeObj : _network.bfs()) {
+                NetNode node = (NetNode) nodeObj;
+                if(node.isNetworkNode()) {
+                    Iterator it = node.getParents().iterator();
+                    NetNode parent1 = (NetNode) it.next();
+                    NetNode parent2 = (NetNode) it.next();
+                    if(parent1.hasParent(parent2) || parent2.hasParent(parent1)) {
+                        return false;
+                    }
+                }
+            }
+        }
         /*Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(_geneTrees, _species2alleles, _alleles2species);
         Map<String, Double> lowerBound = TemporalConstraints.getLowerBounds(_network);
         for(String key : lowerBound.keySet()) {
@@ -312,7 +367,14 @@ public class UltrametricNetwork extends StateNode {
         }*/
         double[] likelihoodArray = new double[1];
         //likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alleles2species, _alignments, _BAGTRModel);
-        likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alignments.get(0)._RPatterns, _BAGTRModel);
+
+        if(SNAPPLikelihood.usePseudoLikelihood) {
+            likelihoodArray[0] = SNAPPLikelihood.computeSNAPPPseudoLikelihood(_network, _alleles2species, _alignments, _BAGTRModel); // pseudo likelihood
+        } else if(SNAPPLikelihood.useApproximateBayesian) {
+            likelihoodArray[0] = SNAPPLikelihood.computeApproximateBayesian(_network, _alleles2species, _alignments, _BAGTRModel); // approximate bayesian
+        } else {
+            likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alignments.get(0)._RPatterns, _BAGTRModel); // normal likelihood
+        }
 
         return likelihoodArray;
     }

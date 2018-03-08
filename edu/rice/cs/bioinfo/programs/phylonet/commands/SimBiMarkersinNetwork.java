@@ -29,7 +29,7 @@ import java.util.Map;
 public class SimBiMarkersinNetwork extends CommandBaseFileOut{
 
     private boolean _diploid = false;
-    private Integer _polyploid = null;
+    private Integer _polyploid = null; // TODO: not fully tested
     private Character _dominant = null;
     private boolean _useOnlyPolymorphic = false;
     private Long _seed = null;

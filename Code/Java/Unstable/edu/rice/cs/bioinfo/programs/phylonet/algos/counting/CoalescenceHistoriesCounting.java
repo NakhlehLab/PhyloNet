@@ -214,7 +214,9 @@ public class CoalescenceHistoriesCounting {
 
         List<STITreeCluster> clusters = gt.getClusters(null, true);
         clusters.add(new STITreeCluster(clusters.get(0)));
+        // add the cluster that contains all taxa
         clusters.get(clusters.size() - 1).getCluster().set(0, clusters.get(clusters.size() - 1).getTaxa().length);
+        // store the two subtrees of each cluster
         List<List<STITreeCluster>> clusterContains = new ArrayList<>();
         for(int i = 0 ; i < clusters.size() ; i++) {
             clusterContains.add(new ArrayList<>());
@@ -224,6 +226,8 @@ public class CoalescenceHistoriesCounting {
 
                     BitSet set = (BitSet) clusters.get(j).getCluster().clone();
                     set.or(clusters.get(k).getCluster());
+
+                    // if [i] == [j] & [k] -- find two subtrees of [i]
                     if (set.equals(clusters.get(i).getCluster())) {
                         clusterContains.get(i).add(clusters.get(j));
                         clusterContains.get(i).add(clusters.get(k));
@@ -234,14 +238,18 @@ public class CoalescenceHistoriesCounting {
                     break;
             }
 
+            // if no subtree found then one subtree of [i] must be a leaf
             if(clusterContains.get(i).size() == 0) {
                 for(int j = 0 ; j < clusters.size() ; j++) {
                     if(i == j) continue;
+
+                    // if card([i]) != card([j]) + 1
                     if(clusters.get(j).getCluster().cardinality() + 1 != clusters.get(i).getCluster().cardinality())
                         continue;
                     BitSet set = (BitSet) clusters.get(j).getCluster().clone();
                     set.and(clusters.get(i).getCluster());
 
+                    // [i] is one taxon more than [j]
                     if (set.equals(clusters.get(j).getCluster())) {
                         clusterContains.get(i).add(clusters.get(j));
                         break;
@@ -250,36 +258,37 @@ public class CoalescenceHistoriesCounting {
             }
         }
 
+        // rho(cluster,edge)
         Map<STITreeCluster, long[]> nCoalWays = new HashMap<>();
         for(int i = 0 ; i < clusters.size() ; i++) {
             nCoalWays.put(clusters.get(i), new long[nEdges]);
-            if(clusterContains.get(i).size() == 0) {
+            if(clusterContains.get(i).size() == 0) { // two subtrees are both leaf ([i] is a lowest cluster)
                 int t = clusters.get(i).getCluster().nextSetBit(0);
                 int e1 = externalEdges.get(clusters.get(i).getTaxa()[t]);
                 t = clusters.get(i).getCluster().nextSetBit(t + 1);
                 int e2 = externalEdges.get(clusters.get(i).getTaxa()[t]);
 
-                for(int j = 0 ; j < nEdges ; j++) {
+                for(int j = 0 ; j < nEdges ; j++) { // "outer" edges
                     if(j == e2 || j == e1) continue;
                     nCoalWays.get(clusters.get(i))[j] = nPaths[e1][j] * nPaths[e2][j];
                 }
-            } else if(clusterContains.get(i).size() == 1) {
+            } else if(clusterContains.get(i).size() == 1) { // one subtree is leaf
                 BitSet subset = (BitSet) clusterContains.get(i).get(0).getCluster().clone();
                 subset.xor(clusters.get(i).getCluster());
                 int t = subset.nextSetBit(0);
                 int e1 = externalEdges.get(clusters.get(i).getTaxa()[t]);
 
-                for(int j = 0 ; j < nEdges ; j++) {
-                    for(int e2 = 0 ; e2 < nEdges ; e2++) {
+                for(int j = 0 ; j < nEdges ; j++) { // "outer" edges
+                    for(int e2 = 0 ; e2 < nEdges ; e2++) { // "inner" edges
                         //if(j == e1 || j == e2) continue;
                         nCoalWays.get(clusters.get(i))[j] += nPaths[e1][j]
                                 * nCoalWays.get(clusterContains.get(i).get(0))[e2] * nPaths[e2][j];
                     }
                 }
             } else if(clusterContains.get(i).size() == 2) {
-                for(int j = 0 ; j < nEdges ; j++) {
-                    for(int e1 = 0 ; e1 < nEdges ; e1++) {
-                        for(int e2 = 0 ; e2 < nEdges ; e2++) {
+                for(int j = 0 ; j < nEdges ; j++) { // "outer" edges
+                    for(int e1 = 0 ; e1 < nEdges ; e1++) { // "inner" edges
+                        for(int e2 = 0 ; e2 < nEdges ; e2++) { // "inner" edges
                             //if(j == e1 || j == e2) continue;
                             nCoalWays.get(clusters.get(i))[j] +=
                                     nCoalWays.get(clusterContains.get(i).get(0))[e1] * nPaths[e1][j]
@@ -333,6 +342,31 @@ public class CoalescenceHistoriesCounting {
             System.out.println(gts.get(i).toString() + " : " + count.get(i) + " " + getCoalescenceHistoriesCount2(trueNetwork, gts.get(i)));
         }
 
+    }
+
+    public static void test2() {
+        GeneTreeProbability geneTreeProbability = new GeneTreeProbability();
+        List<Double> gtprob = new ArrayList<>();
+        List<Tree> gts = new ArrayList<>();
+        gts.add(Trees.readTree("(a, (b, c));"));
+        gts.add(Trees.readTree("(b, (a, c));"));
+        gts.add(Trees.readTree("(c, (a, b));"));
+
+        double gamma = 1 - 0.05;
+
+        double y = 0.1;
+        double x = 10000;
+
+        Network<Double> trueNetwork;
+        trueNetwork = Networks.readNetwork("(((b:" + (1000.0 + y) + ")I3#H1:0.0::" + (1 - gamma) + ",a:" + (1000 + y) + ")I1:" + x + ",(I3#H1:0.0::" + gamma + ",c:" + (1000 + y) + ")I2:"+ x +")I0;");
+        System.out.println("Network = " + trueNetwork.toString());
+
+        Coalescence coal = new Coalescence(trueNetwork, gts, null);
+        List<Integer> count = coal.getAllCoalescenceHistoriesCount();
+        for(int i = 0 ; i < count.size() ; i++) {
+            System.out.println(gts.get(i).toString() + " : " + count.get(i) + " " + getCoalescenceHistoriesCount2(trueNetwork, gts.get(i)));
+        }
+        System.exit(0);
     }
 
     public static void processResult() {
@@ -446,6 +480,7 @@ public class CoalescenceHistoriesCounting {
     }
 
     public static void main(String[] args) {
+        test2();
         if(true)
         {
             //robustnessCheck();

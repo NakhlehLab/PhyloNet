@@ -60,17 +60,13 @@ public class Utils {
     public static List<String> _START_GT_LIST = null;
     // summary
     public static int _TOPK_NETS = 10;
-    // diploid phasing
-    public static Set<String> _DIPLOID_SPECIES = null;
     // divergence time window size
     public static double _TIME_WINDOW_SIZE = 0.04;
     public static double _POP_SIZE_WINDOW_SIZE = 0.04;
 
     // --- net ---
-    public static final double NET_INTI_SCALE = 0.95;
     public static final double DEFAULT_NET_LEAF_HEIGHT = 0;
-    public static final double DEFAULT_NET_ROOT_HEIGHT = 6;
-    public static final double NET_MAX_HEIGHT = 10;//TODO: MCMC->1000;
+    public static final double NET_MAX_HEIGHT = 1000;
     // --- moves ---
     public static final double INVALID_MOVE = Double.NEGATIVE_INFINITY;
     public static enum  MOVE_TYPE {TREE, NETWORK, ALL, PRIOR};
@@ -92,7 +88,7 @@ public class Utils {
     public static double DIMENSION_CHANGE_WEIGHT = 0.005;
 
     public static final double[] Net_Op_Weights = new double[] {
-            0.10, 0.04, 0.00,
+            0.10, 0.04, 0.01,
             0.04, 0.05,
             0.20, 0.15, 0.03, 0.10, DIMENSION_CHANGE_WEIGHT,
             0.06 - DIMENSION_CHANGE_WEIGHT, 0.10, DIMENSION_CHANGE_WEIGHT, 0.06 - DIMENSION_CHANGE_WEIGHT
@@ -101,7 +97,7 @@ public class Utils {
     // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation
     // FlipReticulation MoveHead DeleteReticulation ChangeInheritance
     public static final double[] Net_Tree_Op_Weights = new double[] {
-            0.15, 0.04, 0.00,
+            0.15, 0.04, 0.01,
             0.04, 0.05,
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };

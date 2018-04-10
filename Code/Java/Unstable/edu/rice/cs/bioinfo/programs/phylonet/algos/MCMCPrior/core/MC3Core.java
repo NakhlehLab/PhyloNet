@@ -29,7 +29,7 @@ public class MC3Core {
     private int _startNumber = 1;
 
     private List<Double> _likelihoodList = new ArrayList<>();
-    private List<String> _networkList = new ArrayList<>();
+    public List<String> _networkList = new ArrayList<>();
 
     // logging info
     private ESS _posteriorESS = new ESS();

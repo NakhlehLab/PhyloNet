@@ -48,7 +48,7 @@ public class SpeciesNetPriorDistribution {
         diameters = Utils._DIAMETER_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
         this.popSize = ps;
         inheritance = new BetaDistribution(2, 2);
-        maxTau = new Double(3.0);
+        maxTau = new Double(100.0);
     }
 
     public double logPrior(Network<NetNodeInfo> net) {

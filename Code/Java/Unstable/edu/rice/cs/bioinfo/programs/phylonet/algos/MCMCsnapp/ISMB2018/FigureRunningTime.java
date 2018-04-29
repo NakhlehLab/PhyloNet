@@ -1,4 +1,4 @@
-package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.PaperFigures;
+package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.ISMB2018;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
@@ -26,7 +26,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 //TODO: move to a better place
-public class Figure5 {
+public class FigureRunningTime {
     private static void initNetHeights(Network<NetNodeInfo> network, double popSize) {
         for(NetNode<NetNodeInfo> node : Networks.postTraversal(network)) {
             if(node.isLeaf()) {
@@ -183,7 +183,7 @@ public class Figure5 {
 
         int numTaxa[] = {10, 20, 50, 100};
         int maxReti = 4;
-        boolean usePseudoLikelihood = false;
+        boolean usePseudoLikelihood = true;
 
         double timeConsumption[][] = new double[numTaxa.length][maxReti + 1];
         for(int i = 0 ; i < numTaxa.length ; i++) {

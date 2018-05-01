@@ -9,6 +9,7 @@ import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
     private Map<String, List<String>> _species2alleles = null;
     private double _pi0 = 0.5;
     private String _outFilePath = null;
+    private Double _theta = null;
 
 
     public SimBiMarkersinNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -116,6 +118,22 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
             } else {
                 errorDetected.execute("Expected value after switch -sd.",
                         sdParam.SwitchParam.getLine(), sdParam.SwitchParam.getColumn());
+            }
+        }
+
+        // using coalescent unit and give theta
+        ParamExtractor cuParam = new ParamExtractor("cu", this.params, this.errorDetected);
+        if(cuParam.ContainsSwitch){
+            if(cuParam.PostSwitchParam != null) {
+                try {
+                    _theta = Double.parseDouble(cuParam.PostSwitchValue);
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Unrecognized theta " + cuParam.PostSwitchValue,
+                            cuParam.PostSwitchParam.getLine(), cuParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -cu.",
+                        cuParam.SwitchParam.getLine(), cuParam.SwitchParam.getColumn());
             }
         }
 
@@ -266,13 +284,13 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
 
         noError = noError && checkForUnknownSwitches(
                 "diploid",
-                "dominant","polyploid","pi0",
+                "dominant","polyploid","pi0","cu",
                 "op", "sd", "num", "tm", "truenet", "out",
                 "sitespergt", "rvl", "rvm",
                 "a", "i", "g"
         );
         checkAndSetOutFile(
-                diploidParam,dominantParam,polyParam,onlyPolyParam,pi0Param,
+                diploidParam,dominantParam,polyParam,onlyPolyParam,pi0Param,cuParam,
                 numParam, sdParam, tmParam,snParam, fileParam,
                 sitespergtParam, rvlParam, rvmParam,
                 gammaShapeParam, gammaCatParam, invariantParam
@@ -324,6 +342,19 @@ public class SimBiMarkersinNetwork extends CommandBaseFileOut{
         }
         Network<Object> trueNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(s);
         trueNetwork.getRoot().setRootPopSize(rootPopSize);
+
+        if(_theta != null) {
+            for (Object nodeObject : edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.postTraversal(trueNetwork)) {
+                NetNode node = (NetNode) nodeObject;
+                for (Object parentObject : node.getParents()) {
+                    NetNode parent = (NetNode) parentObject;
+                    node.setParentSupport(parent, _theta);
+                    node.setParentDistance(parent, node.getParentDistance(parent) * _theta / 2.0);
+                }
+            }
+            trueNetwork.getRoot().setRootPopSize(_theta);
+        }
+
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, _species2alleles, numSites, !useOnlyPolymorphic);
 
         StringBuilder result = new StringBuilder();

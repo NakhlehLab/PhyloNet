@@ -38,8 +38,8 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
 
     private int _maxExamCount = 50000;
     private int _numRuns = 100;
-    private int _numOpt = 10;
-    private int _maxFailure = 50;
+    private int _numOpt = 5;
+    private int _maxFailure = 100;
 
 
     public MLE_BiMarkers(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,

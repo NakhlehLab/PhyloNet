@@ -209,7 +209,7 @@ public class ParentalTreeOperation {
         for(int i = 0 ; i < number ; i++) {
             DataGenerator dataGenerator = new DataGenerator();
             ParentalTreeOperation parentalTreeOperation = new ParentalTreeOperation();
-            Network<Object> trueNetwork = dataGenerator.getRandomNetwork();
+            Network<Object> trueNetwork = dataGenerator.getRandomNetwork(10);
 
             /*double gamma = 1 - 0.05;
 

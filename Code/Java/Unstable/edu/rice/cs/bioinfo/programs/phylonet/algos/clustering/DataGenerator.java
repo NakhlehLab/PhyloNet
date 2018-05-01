@@ -257,12 +257,11 @@ public class DataGenerator {
         }while(!successRearrangment);
     }
 
-    public Network<Object> getRandomNetwork() {
+    public Network<Object> getRandomNetwork(int taxa) {
         String[] leaves;
-        int taxa = 10;
         leaves = new String[taxa];
         for(int i = 0 ; i < taxa ; i++) {
-            leaves[i] = Integer.toString(i + 1);
+            leaves[i] = Character.toString((char)('A' + i));
         }
         int maxReticulations = 1;
 

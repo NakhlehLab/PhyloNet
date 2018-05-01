@@ -109,6 +109,37 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+
+        // taxon map
+        ParamExtractor tmParam = new ParamExtractor("tm", this.params, this.errorDetected);
+        if(tmParam.ContainsSwitch){
+            ParamExtractorAllelListMap aaParam = new ParamExtractorAllelListMap("tm", this.params, this.errorDetected);
+            noError = noError && aaParam.IsValidMap;
+            if(aaParam.IsValidMap){
+                Utils._TAXON_MAP = aaParam.ValueMap;
+
+                if(Utils._TAXON_MAP != null) {
+                    Set<String> alleleSet = new HashSet<>();
+                    for(String species :Utils._TAXON_MAP.keySet() ) {
+                        alleleSet.addAll(Utils._TAXON_MAP.get(species));
+                    }
+                    for(String locusName : this.sourceIdentToMultilocusData.keySet()) {
+                        Map<String, String> locus = this.sourceIdentToMultilocusData.get(locusName);
+                        Map<String, String> newLocus = new HashMap<>();
+                        for(String alleleName : locus.keySet()) {
+                            if(alleleSet.contains(alleleName)) {
+                                newLocus.put(alleleName, locus.get(alleleName));
+                            }
+                        }
+                        this.sourceIdentToMultilocusData.put(locusName, newLocus);
+                    }
+                }
+
+            }
+        }
+
+
+
         // ----- selected loci -----
         ParamExtractor dataParam = new ParamExtractor("loci", this.params, this.errorDetected);
         if(dataParam.ContainsSwitch){
@@ -284,16 +315,6 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             } else {
                 errorDetected.execute("Expected value after switch -mr.",
                         mrParam.SwitchParam.getLine(), mrParam.SwitchParam.getColumn());
-            }
-        }
-
-        // taxon map
-        ParamExtractor tmParam = new ParamExtractor("tm", this.params, this.errorDetected);
-        if(tmParam.ContainsSwitch){
-            ParamExtractorAllelListMap aaParam = new ParamExtractorAllelListMap("tm", this.params, this.errorDetected);
-            noError = noError && aaParam.IsValidMap;
-            if(aaParam.IsValidMap){
-                Utils._TAXON_MAP = aaParam.ValueMap;
             }
         }
 

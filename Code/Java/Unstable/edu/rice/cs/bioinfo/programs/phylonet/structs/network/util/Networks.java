@@ -981,6 +981,18 @@ public class Networks
         return false;
     }
 
+    public static <T> boolean hasParallelEdges(Network<T> net) {
+        for(NetNode<T> node : net.bfs()) {
+            if(node.isNetworkNode()) {
+                Iterator<NetNode<T>> it = node.getParents().iterator();
+                NetNode<T> parent1 = it.next();
+                NetNode<T> parent2 = it.next();
+                if (parent1 == parent2) return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * This function returns nodes in a network in dfs order

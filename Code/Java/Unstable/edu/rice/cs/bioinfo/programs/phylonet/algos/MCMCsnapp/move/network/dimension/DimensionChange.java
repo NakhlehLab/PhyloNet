@@ -39,11 +39,13 @@ public abstract class DimensionChange extends NetworkOperator {
         double a = Math.min(paramV1V4[1], paramV2V6[1]);
         double b = Math.max(paramV1V4[1], paramV2V6[1]);
         double logProb = Utils.varyPopSizeAcrossBranches() ?
-                getLogPopSizeProb(v1.getParentSupport(v3), a, b) +
+                getLogPopSizeProb(v3 != null ? v1.getParentSupport(v3) : v1.getRootPopSize(), a, b) +
                 getLogPopSizeProb(v2.getParentSupport(v1), a, b) +
                 getLogPopSizeProb(v2.getParentSupport(v5), a, b) : 0;
 
-        v3.removeChild(v1);
+        if(v3 != null) {
+            v3.removeChild(v1);
+        }
         v1.removeChild(v4);
         v5.removeChild(v2);
         v2.removeChild(v6);
@@ -69,8 +71,8 @@ public abstract class DimensionChange extends NetworkOperator {
         Tuple<Double, Double> popSizeV5V2 = sample(a, b);
         Tuple<Double, Double> popSizeV1V2 = sample(a, b);
 
-        v3.removeChild(v4);
-        v5.removeChild(v6);
+        if(v3 != null) v3.removeChild(v4);
+        if(v5 != null) v5.removeChild(v6);
 
         adopt(v3, v1, new double[] {NetNode.NO_PROBABILITY, popSizeV3V1.Item1} );
         adopt(v1, v4, paramV3V4);
@@ -92,8 +94,8 @@ public abstract class DimensionChange extends NetworkOperator {
         double a = Math.min(paramV3V4[1], paramV5V6[1]);
         double b = Math.max(paramV3V4[1], paramV5V6[1]);
 
-        v3.removeChild(v4);
-        v5.removeChild(v6);
+        if(v3 != null) v3.removeChild(v4);
+        if(v5 != null) v5.removeChild(v6);
 
         adopt(v3, v1, new double[] {NetNode.NO_PROBABILITY, popSizeV3V1} );
         adopt(v1, v4, paramV3V4);

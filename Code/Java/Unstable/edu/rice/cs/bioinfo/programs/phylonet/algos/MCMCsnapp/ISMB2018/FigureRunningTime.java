@@ -25,7 +25,7 @@ import java.util.*;
  * Time: 5:12 PM
  * To change this template use File | Settings | File Templates.
  */
-//TODO: move to a better place
+
 public class FigureRunningTime {
     private static void initNetHeights(Network<NetNodeInfo> network, double popSize) {
         for(NetNode<NetNodeInfo> node : Networks.postTraversal(network)) {

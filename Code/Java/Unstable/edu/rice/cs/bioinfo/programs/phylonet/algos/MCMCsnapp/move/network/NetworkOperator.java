@@ -42,12 +42,23 @@ public abstract class NetworkOperator extends Operator {
     }
 
     protected void adopt(NetNode<NetNodeInfo> par, NetNode<NetNodeInfo> child, double[] params) {
-        par.adoptChild(child, par.getData().getHeight() - child.getData().getHeight());
-        child.setParentProbability(par, params[0]);
-        child.setParentSupport(par, params[1]);
+        if(par == null) {
+
+            child.setRootPopSize(params[1] != NetNode.NO_SUPPORT ? params[1] : _network.getNetwork().getRoot().getRootPopSize());
+            _network.getNetwork().getRoot().setRootPopSize(NetNode.NO_ROOT_POPSIZE);
+            _network.getNetwork().resetRoot(child);
+        } else {
+
+            par.adoptChild(child, par.getData().getHeight() - child.getData().getHeight());
+            child.setParentProbability(par, params[0]);
+            child.setParentSupport(par, params[1]);
+        }
     }
 
     protected double[] getParameters(NetNode<NetNodeInfo> par, NetNode<NetNodeInfo> child) {
+        if(par == null) {
+            return new double[] {NetNode.NO_PROBABILITY, Utils.varyPopSizeAcrossBranches() ? child.getRootPopSize() : NetNode.NO_SUPPORT };
+        }
         return new double[] {child.getParentProbability(par), child.getParentSupport(par)};
     }
 

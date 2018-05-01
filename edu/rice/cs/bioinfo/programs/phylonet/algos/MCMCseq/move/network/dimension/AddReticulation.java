@@ -10,6 +10,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.List;
+import java.util.concurrent.atomic.DoubleAdder;
 
 /**
  * Created by wendingqiao on 3/6/16.
@@ -28,6 +29,14 @@ public class AddReticulation extends DimensionChange {
         _v1 = _v2 = _v3 = _v4 = _v5 = _v6 = null; // reset
 
         List<Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>> edges = Networks.getAllEdges(_network.getNetwork());
+        edges.add(new Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>(_network.getNetwork().getRoot(), null));
+
+        for(Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>> tuple : edges) {
+            if(!tuple.Item1.isRoot() && !Double.isNaN(tuple.Item1.getRootPopSize())) {
+                System.err.println("Not root but has root pop size!");
+            }
+        }
+
         int numEdges = edges.size();
         int numRetiNodes = _network.getNetwork().getReticulationCount();
 
@@ -42,12 +51,12 @@ public class AddReticulation extends DimensionChange {
         _v5 = edge2.Item2;
         _v6 = edge2.Item1;
 
-        double t3 = _v3.getData().getHeight();
+        double t3 = _v3 != null ? _v3.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND;
         double t4 = _v4.getData().getHeight();
         double l1 = t3 - t4;
         double t1 = t4 + Randomizer.getRandomDouble() * l1;
 
-        double t5 = _v5.getData().getHeight();
+        double t5 = _v5 != null ? _v5.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND;
         double t6 = _v6.getData().getHeight();
         double l2 = t5 - t6;
         double t2 = t6 + Randomizer.getRandomDouble() * l2;

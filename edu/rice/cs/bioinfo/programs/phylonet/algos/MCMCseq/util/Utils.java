@@ -26,7 +26,7 @@ public class Utils {
     public static long _SAMPLE_FREQUENCY = 5000;
     public static long _SEED = 12345678;
     public static int _NUM_THREADS = Runtime.getRuntime().availableProcessors();
-    public static String _OUT_DIRECTORY = System.getProperty("user.home");
+    public static String _OUT_DIRECTORY = System.getProperty("user.dir");
     // MC3
     public static List<Double> _MC3_CHAINS = null;
     // inference
@@ -68,7 +68,7 @@ public class Utils {
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
     public static final double DEFAULT_TREE_LEAF_HEIGHT = 0;
-    public static final double ROOT_TIME_UPPER_BOUND = 1000;
+    public static final double ROOT_TIME_UPPER_BOUND = 10;
     // --- moves ---
     public static final double INVALID_MOVE = Double.NEGATIVE_INFINITY;
     public static enum  MOVE_TYPE {TREE, NETWORK, ALL, PRIOR};

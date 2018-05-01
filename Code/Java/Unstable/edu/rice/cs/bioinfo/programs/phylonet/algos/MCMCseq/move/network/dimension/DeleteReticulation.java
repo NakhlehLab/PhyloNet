@@ -33,11 +33,11 @@ public class DeleteReticulation extends DimensionChange {
         List<NetNode<NetNodeInfo>> parents = IterableHelp.toList(_v2.getParents());
         _v1 = parents.get(Randomizer.getRandomInt(parents.size()));
 
-        if(_v1.isRoot() || _v1.isNetworkNode()) {
+        if(/*_v1.isRoot() ||*/ _v1.isNetworkNode()) {
             _violate = false;
             _logHR = Utils.INVALID_MOVE;
         } else {
-            _v3 = _v1.getParents().iterator().next();
+            _v3 = _v1.isRoot() ? null : _v1.getParents().iterator().next();
             _v4 = Networks.getOtherChild(_v1, _v2);
             if(_v4.hasParent(_v3)) {
                 _violate = false;
@@ -54,7 +54,7 @@ public class DeleteReticulation extends DimensionChange {
                     double pad = numRetiNodes == 1 ? 2.0 : 1.0;
                     double numRetiEdges = 2 * numRetiNodes;
                     double numEdges = 2 * (_network.getNetwork().getLeafCount() - 1) + 3 * (numRetiNodes - 1);
-                    double l1 = _v3.getData().getHeight() - _v4.getData().getHeight();
+                    double l1 = (_v3 != null ? _v3.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND) - _v4.getData().getHeight();
                     double l2 = _v5.getData().getHeight() - _v6.getData().getHeight();
 
                     double logPopSize = removeReticulation(_v1, _v2, _v3, _v4, _v5, _v6);

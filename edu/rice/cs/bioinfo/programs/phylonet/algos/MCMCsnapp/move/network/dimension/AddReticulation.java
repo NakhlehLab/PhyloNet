@@ -28,7 +28,17 @@ public class AddReticulation extends DimensionChange {
     public double propose() {
         _v1 = _v2 = _v3 = _v4 = _v5 = _v6 = null; // reset
 
+        Networks.autoLabelNodes(_network.getNetwork());
+
         List<Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>> edges = Networks.getAllEdges(_network.getNetwork());
+        edges.add(new Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>(_network.getNetwork().getRoot(), null));
+
+        for(Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>> tuple : edges) {
+            if(!tuple.Item1.isRoot() && !Double.isNaN(tuple.Item1.getRootPopSize())) {
+                System.err.println("Not root but has root pop size!");
+            }
+        }
+
         int numEdges = edges.size();
         int numRetiNodes = _network.getNetwork().getReticulationCount();
 
@@ -38,17 +48,19 @@ public class AddReticulation extends DimensionChange {
             edge2 = edges.get(Randomizer.getRandomInt(numEdges));
         } while (edge1 == edge2);
 
+        //System.out.println(edge1.Item1.getName() + "-" + (edge1.Item2!=null?edge1.Item2.getName():"") + " " + edge2.Item1.getName() + "-" + (edge2.Item2!=null?edge2.Item2.getName():""));
+
         _v3 = edge1.Item2;
         _v4 = edge1.Item1;
         _v5 = edge2.Item2;
         _v6 = edge2.Item1;
 
-        double t3 = _v3.getData().getHeight();
+        double t3 = _v3 != null ? _v3.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND;
         double t4 = _v4.getData().getHeight();
         double l1 = t3 - t4;
         double t1 = t4 + Randomizer.getRandomDouble() * l1;
 
-        double t5 = _v5.getData().getHeight();
+        double t5 = _v5 != null ? _v5.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND;
         double t6 = _v6.getData().getHeight();
         double l2 = t5 - t6;
         double t2 = t6 + Randomizer.getRandomDouble() * l2;
@@ -72,6 +84,10 @@ public class AddReticulation extends DimensionChange {
         double pda = numRetiNodes == 0 ? 0.5 : 1.0;
         double numRetiEdges = 2 * (numRetiNodes + 1);
         double hr = pda * l1 * l2 * numEdges * (numEdges-1.0) / numRetiEdges;
+
+        //if(Networks.hasTheSameTopology(_network.getNetwork(), Networks.readNetwork("[0.02](((((C:0.01)#H1:0.02::0.6,B:0.03):0.01)#H2:0.02::0.6,A:0.06):0.03,((D:0.02,#H1:0.01::0.4):0.03,#H2:0.01::0.4):0.04);"))) {
+        //    System.err.println("Got it!");
+        //}
 
         _violate = false;
         return Math.log(hr) + logPopSize;

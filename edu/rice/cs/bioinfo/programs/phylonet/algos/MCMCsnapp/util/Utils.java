@@ -74,7 +74,7 @@ public class Utils {
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
     public static final double DEFAULT_TREE_LEAF_HEIGHT = 0;
-    public static final double ROOT_TIME_UPPER_BOUND = 1000;
+    public static final double ROOT_TIME_UPPER_BOUND = 10;
     // --- moves ---
     public static final double INVALID_MOVE = Double.NEGATIVE_INFINITY;
     public static enum  MOVE_TYPE {TREE, NETWORK, ALL, PRIOR};

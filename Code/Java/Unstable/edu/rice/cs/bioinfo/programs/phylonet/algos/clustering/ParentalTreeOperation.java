@@ -12,7 +12,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
-import javafx.util.Pair;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -142,7 +142,7 @@ public class ParentalTreeOperation {
         for(Map.Entry<String, Integer> entry : nname2tamount.entrySet()) {
             if(stTaxa.contains(entry.getKey() + "_1")) {
                 if (entry.getValue() > 1) {
-                    stack.push(new Pair<String, Integer>(entry.getKey(), 1));
+                    stack.push(new Pair<>(entry.getKey(), 1));
                 }
                 leaves.add(entry.getKey() + "_1");
             }
@@ -155,15 +155,15 @@ public class ParentalTreeOperation {
             parentalTrees.add(getSubtree(mulTree, leaves));
             //if(parentalTrees.size() > 1000) break;
             leaves.remove(stack.get(k).getKey() + "_" + stack.get(k).getValue());
-            stack.set(k, new Pair<String, Integer>(stack.get(k).getKey(), stack.get(k).getValue() + 1));
+            stack.set(k, new Pair<>(stack.get(k).getKey(), stack.get(k).getValue() + 1));
             leaves.add(stack.get(k).getKey() + "_" + stack.get(k).getValue());
             while(k > 0 && stack.get(k).getValue() > nname2tamount.get(stack.get(k).getKey())) {
                 leaves.remove(stack.get(k).getKey() + "_" + stack.get(k).getValue());
-                stack.set(k, new Pair<String, Integer>(stack.get(k).getKey(), 1));
+                stack.set(k, new Pair<>(stack.get(k).getKey(), 1));
                 leaves.add(stack.get(k).getKey() + "_" + stack.get(k).getValue());
                 k--;
                 leaves.remove(stack.get(k).getKey() + "_" + stack.get(k).getValue());
-                stack.set(k, new Pair<String, Integer>(stack.get(k).getKey(), stack.get(k).getValue() + 1));
+                stack.set(k, new Pair<>(stack.get(k).getKey(), stack.get(k).getValue() + 1));
                 leaves.add(stack.get(k).getKey() + "_" + stack.get(k).getValue());
             }
             if(k == 0 && stack.get(k).getValue() > nname2tamount.get(stack.get(k).getKey()))

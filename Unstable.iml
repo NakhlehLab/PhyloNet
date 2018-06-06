@@ -257,5 +257,24 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="beagle" level="project" />
+    <orderEntry type="library" name="Jeigen" level="project" />
+    <orderEntry type="library" name="antlr-runtime-3.3-sources" level="project" />
+    <orderEntry type="library" name="junit-4.9b3" level="project" />
+    <orderEntry type="library" name="commons-math3-3.3" level="project" />
+    <orderEntry type="library" name="convolutionlib" level="project" />
+    <orderEntry type="library" name="jahmm-0.6.1" level="project" />
+    <orderEntry type="library" name="gson-1.4" level="project" />
+    <orderEntry type="library" name="jfreechart-1.0.17" level="project" />
+    <orderEntry type="library" name="commons-io-2.0.1-javadoc" level="project" />
+    <orderEntry type="library" name="jung-graph-impl-2.0.1" level="project" />
+    <orderEntry type="library" name="jung-api-2.0.1" level="project" />
+    <orderEntry type="library" name="guava-13.0.1" level="project" />
+    <orderEntry type="library" name="mockito-all-1.8.5" level="project" />
+    <orderEntry type="library" name="jcommon-1.0.21" level="project" />
+    <orderEntry type="library" name="reflections-0.9.8" level="project" />
+    <orderEntry type="library" name="freehep-jminuit-1.0" level="project" />
+    <orderEntry type="library" name="Jama-1.0.3" level="project" />
+    <orderEntry type="library" name="jung-algorithms-2.0.1" level="project" />
   </component>
 </module>

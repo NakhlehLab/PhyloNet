@@ -185,8 +185,11 @@ public class InferNetworkNCM{
         SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
         searcher.setLogFile(_logFile);
         searcher.setIntermediateResultFile(_intermediateResultFile);
+
         Func1<Network, Double> scorer = getScoreFunction(gts, allele2species, blParam);
+
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
+
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
 
         //To set inheritance probability // todo: rework after enabling multithreading
@@ -360,8 +363,9 @@ public class InferNetworkNCM{
                 }
 
                 GeneTreeProbabilityIntegrated gtp = new GeneTreeProbabilityIntegrated();
+                gtp.setBranchLengthExponentialPrior(blParam, blParam); // todo get both params
                 double prob = 0;
-                List<Double> probs_l = gtp.calculateGTDistribution(network, gts_stripped, allele2species, blParam, false);
+                List<Double> probs_l = gtp.calculateGTDistribution(network, gts_stripped, allele2species, false);
                 for (int i = 0; i < probs_l.size(); i++) {
                     prob += Math.log(probs_l.get(i)) * gts.get(i).Item2; // multiply log probability by weight factor
 //                    System.out.println("adding log of " + probs_l.get(i) + " times " + gts.get(i).Item2);

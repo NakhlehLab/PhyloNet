@@ -82,7 +82,7 @@ public class Test {
                 }
             }
 
-            gts.addAll(simgt.generateGTs(Networks.readNetworkWithRootPop(run._networkList.get(i)), null, 10, "/Users/zhujiafan/Documents/Luay/msdir/ms"));
+            gts.addAll(simgt.generateGTs(Networks.readNetworkWithRootPop(run._networkList.get(i)), null, 10, "/Users/hunter/rice_grad/ms_folder/msdir/ms"));
         }
 
         avgBL /= totalB;
@@ -105,7 +105,8 @@ public class Test {
         }
 
         GeneTreeProbabilityIntegrated probCalc = new GeneTreeProbabilityIntegrated();
-        List<Double> prob = probCalc.calculateGTDistribution(trueNetwork, summarizedGTs, null, 1.0, false);
+        probCalc.setBranchLengthExponentialPrior(1.0, Double.POSITIVE_INFINITY);
+        List<Double> prob = probCalc.calculateGTDistribution(trueNetwork, summarizedGTs, null, false);
 
         double sum = 0.0;
         for(int i = 0 ; i < distinctTrees.size() ; i++) {

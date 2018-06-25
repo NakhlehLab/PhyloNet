@@ -152,6 +152,7 @@ public class Summary<T> {
                     double pr = map.get(c).getParentProbability(map.get(cur));
                     double bl = map.get(c).getParentDistance(map.get(cur));
                     c.setParentDistance(cur, c.getParentDistance(cur) + bl);
+                    // todo: This causes problems when parent probability is exactly 0.5
                     if(c.isNetworkNode() && c.getParentProbability(cur) < 0.50) {
                         if(!probabilityMap.containsKey(c)) {
                             probabilityMap.put(c, c.getParentProbability(cur));

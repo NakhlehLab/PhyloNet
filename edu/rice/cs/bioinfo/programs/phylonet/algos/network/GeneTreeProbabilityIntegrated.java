@@ -53,9 +53,9 @@ public class GeneTreeProbabilityIntegrated {
     private Tree _mulTree;
 
     // Tau used as hyperparameter in coalescence likelihood integration
-    private double _tau_for_coalescence;
+    private double _branch_length_truncation;
     // Beta used as hyperparameter in coalescence likelihood integration
-    private double _beta_for_coalescence;
+    private double _branch_length_mean;
 
     // Count lineages in to a reticulation node from both parents
     // private Map<String, String> _hybrid_nodes;
@@ -79,8 +79,8 @@ public class GeneTreeProbabilityIntegrated {
         _hybrid_node_u_count = new HashMap<String, Integer>();
         _hybrid_node_check = new HashMap<String, Boolean>();
 
-        _tau_for_coalescence = 1.0;
-        _beta_for_coalescence = 1.0;
+        _branch_length_mean = 1.0;
+        _branch_length_truncation = Double.POSITIVE_INFINITY;
     }
 
     /**
@@ -93,6 +93,33 @@ public class GeneTreeProbabilityIntegrated {
         _hname2tnodes.clear();
         _tname2nname.clear();
         _printDetails = false;
+
+        _hybrid_node_to_netnode.clear();
+        _hybrid_node_u_count.clear();
+        _hybrid_node_check.clear();
+
+        _branch_length_mean = 1.0;
+        _branch_length_truncation = Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * Sets the parameters of the branch length prior distribution
+     */
+    public void setBranchLengthExponentialPrior(double mean, double truncation) {
+        // Default = 1
+        _branch_length_mean = mean;
+        // Default = Double.POSITIVE_INFINITY
+        _branch_length_truncation = truncation;
+    }
+
+    public double getTotalLogLikelihood(Network net, List<Tree> trees) {
+        // todo pass in the allele map
+        List<Double> probabilities = this.calculateGTDistribution(net, trees, null, false);
+        double logLikelihood = 0.;
+        for (Double d: probabilities) {
+            logLikelihood += Math.log(d);
+        }
+        return logLikelihood;
     }
 
     /**
@@ -105,9 +132,8 @@ public class GeneTreeProbabilityIntegrated {
      *
      * @return	a list of probabilities corresponding to the list of gene trees.
      */
-    public List<Double> calculateGTDistribution(Network<Double> net, List<Tree> gts, Map<String,String> allele2species, double branch_length_param, boolean toPrint){
-        _tau_for_coalescence = branch_length_param;
-        _beta_for_coalescence = branch_length_param;
+    public List<Double> calculateGTDistribution(Network<Double> net, List<Tree> gts, Map<String,String> allele2species, boolean toPrint) {
+
         _printDetails = toPrint;
         networkToTree(net);
         if(_printDetails){
@@ -506,7 +532,7 @@ public class GeneTreeProbabilityIntegrated {
             if(u==0)continue;
             int c = calculateC(b,history);
             //double gij = gij(b.getParentDistance(),u,u-c);
-            double gij = coalescence_from_scaled_exp(_beta_for_coalescence, u, u-c);
+            double gij = coalescence_from_scaled_exp(_branch_length_mean, u, u-c);
 
             if (b == _mulTree.getRoot()){
                 // Coalescence in root always has probability 1
@@ -610,7 +636,7 @@ public class GeneTreeProbabilityIntegrated {
 
 
             //double gij = gij(distance,sum_u,sum_u-sum_c);
-            double gij = coalescence_from_scaled_exp(_beta_for_coalescence, sum_u, sum_u-sum_c);
+            double gij = coalescence_from_scaled_exp(_branch_length_mean, sum_u, sum_u-sum_c);
             //System.out.println("\ngij params (below hybrid): " + distance + ", " + sum_u + ", " + (sum_u - sum_c) + "; gij old: " + gij1 + ", gij new: " + gij);
             long d = calculateD(sum_u,sum_c);
             prod_w *= fact(1,sum_c);

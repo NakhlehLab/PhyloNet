@@ -36,6 +36,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
+import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.*;
@@ -58,8 +59,12 @@ public class InferNetwork_NCM extends CommandBaseFileOut{
     private long _maxExaminations = -1;
     private int _moveDiameter = -1;
     private int _reticulationDiameter = -1;
-    private int _maxFailure = 100;
-    private int _returnNetworks = 1;
+    private int _maxFailure = 1000; // 200 works for s1bl1 but not s2bl1. 300 finds a problem network for s2bl1. 300 doesn't work for s2bl2
+    // 500 finds a problem network for s2bl2
+    // 500 works for all except s4bl1
+    // 800 doesn't work for s4bl1
+    // 1000 works for all! now run it for all.
+    private int _returnNetworks = 3;
     private int _numProcessors = 1;
     private boolean _dentroscropeOutput = false;
     private int _numRuns = 5;
@@ -512,6 +517,9 @@ public class InferNetwork_NCM extends CommandBaseFileOut{
         //long start = System.currentTimeMillis();
         //InferILSNetworkParsimoniouslyParallelBackup inference = new InferILSNetworkParsimoniouslyParallelBackup();
         InferNetworkNCM inference = new InferNetworkNCM();
+
+        //inference.setLogFile(search_log_file);
+
         inference.setSearchParameter(_maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, speciesNetwork, _fixedHybrid, _numProcessors, _operationWeight, _numRuns, _seed);
         List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(tuples, _species2alleles, _maxReticulations, _returnNetworks, _blParam);
         //System.out.print(System.currentTimeMillis()-start);

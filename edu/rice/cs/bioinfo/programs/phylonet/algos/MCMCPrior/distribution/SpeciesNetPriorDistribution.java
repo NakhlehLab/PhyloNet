@@ -28,7 +28,7 @@ public class SpeciesNetPriorDistribution {
     private ExponentialDistribution branchLength;
     private ExponentialDistribution nodeHeights;
     private ExponentialDistribution diameters;
-    private Double maxTau = null;
+    private Double maxTau;
     // pop size
     private PopulationSize popSize;
 
@@ -45,10 +45,10 @@ public class SpeciesNetPriorDistribution {
         this.numReticulation = new PoissonDistribution(poissonParam);
         nodeHeights = Utils._TIMES_EXP_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
         branchLength = Utils._BL_EXP_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
+        maxTau = Utils._BL_EXP_PRIOR ? Utils.EXP_CUTOFF : null;
         diameters = Utils._DIAMETER_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
         this.popSize = ps;
         inheritance = new BetaDistribution(2, 2);
-        maxTau = new Double(100.0);
     }
 
     public double logPrior(Network<NetNodeInfo> net) {

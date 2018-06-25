@@ -77,6 +77,7 @@ public class Utils {
     // --- priors ---
     public static double EXP_PARAM = 10; // Mr.Bayes
     public static double GAMMA_SHAPE = 2; // *BEAST
+    public static double EXP_CUTOFF = 100; // For truncated exponential prior
     // --- substitution model ---
     public static final boolean ESTIMATE_SUBSTITUTION = false; // TODO future improvement
     // --- samples ---

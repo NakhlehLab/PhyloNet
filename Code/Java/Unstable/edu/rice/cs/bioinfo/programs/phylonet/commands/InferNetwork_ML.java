@@ -610,7 +610,7 @@ public class InferNetwork_ML extends CommandBaseFileOut{
                 _postOptimization = false;
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","md","rd","p","l","r","i","t","di","bl","pl","h","w","x","rs","po","o");
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","md","rd","p","l","r","i","t","di","bl","pl","h","w","x","rs","po","o","f");
             checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, mdParam, rdParam, pParam, lParam, rParam, iParam,tParam, diParam, blParam,plParam,hParam,wParam,xParam,rsParam,poParam,oParam);
 
         }

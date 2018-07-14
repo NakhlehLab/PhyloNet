@@ -1,9 +1,10 @@
-package edu.rice.cs.bioinfo.programs.phylonet.algos.network;
+package edu.rice.cs.bioinfo.programs.phylonet.algos.network.test;
 
+import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCPrior.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCPrior.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkByMS;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -14,7 +15,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.*;
-import java.nio.Buffer;
 import java.util.*;
 
 
@@ -26,30 +26,38 @@ public class TestIntegratedProbability {
     private double _prior_bl_mean = 1;
     private double _prior_bl_max = Double.POSITIVE_INFINITY; // don't change this until you've updated GTPIntegrated
 
-    private List<Double> _branch_lengths = new ArrayList<>();
-
-    private GeneTreeProbabilityIntegrated gtpi = new GeneTreeProbabilityIntegrated();
+    private static GeneTreeProbabilityIntegrated gtpi = new GeneTreeProbabilityIntegrated();
 
     public static void main(String[] args) throws IOException {
         TestIntegratedProbability test = new TestIntegratedProbability();
-//        test.testFrequencyAgainstProbability();
-//        test.testFrequencyOfML();
-//        test.testBasicSampling();
-//        test.validateExperiment();
-        System.out.println(test.getScenario(1, 1));
-        System.out.println(test.getScenario(2, 1));
-        System.out.println(test.getScenario(3, 1));
-        System.out.println(test.getScenario(4, 1));
+        SearchSpeedComparison compare = new SearchSpeedComparison();
+
+//        compare.runSearches();
+//        test.troubleshoot();
+    }
+
+    private static void troubleshoot() {
+        Map a2s = null;
+        boolean printDetails = true;
+        Network<Double> net = Networks.readNetwork("(A,((B)I3#H1:1.0::0.5,((I3#H1:::0.5,C)I1,D)I2)I4)I0;");
+        List<Tree> gts = new ArrayList();
+        gts.add(Trees.readTree("(A, (B, (C, D)));"));
+        gts.add(Trees.readTree("(A, ((B, C), D));"));
+        gtpi.calculateGTDistribution(net, gts, a2s, printDetails);
+        net = Networks.readNetwork("(A,(((C,(D)I4#H1:1.0::0.5)I3,B)I2,I4#H1:::0.5)I1)I0;");
+        gtpi.calculateGTDistribution(net, gts, a2s, printDetails);
+        net = Networks.readNetwork("(A,(((C)I3#H1:::0.5,B)I2,(I3#H1:1.0::0.5,D)I4)I1)I0;");
+        gtpi.calculateGTDistribution(net, gts, a2s, printDetails);
     }
 
     private static boolean isUltrametric(Network n) {
+        double eps = 0.0001;
         Iterable<NetNode> leaves = n.getLeaves();
         Double netHeight = null;
         for (NetNode leaf: leaves) {
             if (netHeight == null) {
                 netHeight = getHeight(n, leaf);
-            } else if (netHeight != getHeight(n, leaf)) {
-                System.out.println(netHeight + " vs " + getHeight(n, leaf));
+            } else if (Math.abs(netHeight - getHeight(n, leaf)) > eps) {
                 return false;
             }
         }
@@ -79,7 +87,7 @@ public class TestIntegratedProbability {
      * @param bl
      * @return
      */
-    private Network getScenario(int i, double bl) {
+    public Network getScenario(int i, double bl) {
         String networkString = "";
         Network scenarioNetwork;
         double t1, t2, t3, t4, t5, t6;
@@ -312,12 +320,13 @@ public class TestIntegratedProbability {
         Network[] networksForTest = {s4bl1};
 
         SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
+        NcmSimulator ncmSim = new NcmSimulator();
 
         for (Network net: networksForTest) {
 
             List<Tree> simulatedTrees = simulator.generateGTs(net, null, trees_per_setting, "/Users/hunter/rice_grad/ms_folder/msdir/ms");
 
-            Map<Tree, Double> frequencies = getTopologyFrequencies(simulatedTrees);
+            Map<Tree, Double> frequencies = ncmSim.getTopologyFrequencies(simulatedTrees);
 
             GeneTreeProbability gtp = new GeneTreeProbability();
 
@@ -383,12 +392,14 @@ public class TestIntegratedProbability {
         Network s2bl1 = Networks.readNetwork("((E:5.0,(((D:2.0,(C:1.0)#H2:1.0::0.5):1.0,(#H2:1.0::0.5,B:2.0):1.0):1.0)#H1:1.0::0.5):1.0,(#H1:1.0::0.5,A:5.0):1.0);");
         Network[] networksForTest = {s2bl1};
 
+        NcmSimulator ncmSim = new NcmSimulator();
+
         for (Network net: networksForTest) {
             _prior_bl_mean = 1.0;
             _prior_bl_max = Double.POSITIVE_INFINITY;
-            List<Tree> simulatedTrees = simulateTreesUnderNCM(net, num_settings, trees_per_setting);
+            List<Tree> simulatedTrees = ncmSim.simulateTrees(net, num_settings, trees_per_setting);
 //            System.out.print(simulatedTrees.toString());
-            Map<Tree, Double> frequencies = getTopologyFrequencies(simulatedTrees);
+            Map<Tree, Double> frequencies = ncmSim.getTopologyFrequencies(simulatedTrees);
 //            System.out.println(frequencies.toString());
 
             gtpi.setBranchLengthExponentialPrior(_prior_bl_mean, _prior_bl_max);
@@ -449,125 +460,6 @@ public class TestIntegratedProbability {
             System.out.println("reference error: " + reference_error);
 
         }
-    }
-
-    private Map<Tree, Double> getTopologyFrequencies(List<Tree> trees) {
-        Map<Tree, Double> topologyCounts = new HashMap<>();
-        for (Tree tree: trees) {
-            boolean found = false;
-            for (Tree match: topologyCounts.keySet()) {
-                if (Trees.haveSameRootedTopology(tree, match)) {
-                    topologyCounts.put(match, topologyCounts.get(match) + 1.0 / trees.size());
-                    found = true;
-                    break;
-                }
-            }
-            if (! found) {
-                // strip the tree's branch lengths
-                for (TNode node: tree.getNodes()) {
-                    if (node != tree.getRoot()) {
-                        node.setParentDistance(TNode.NO_DISTANCE);
-                    }
-                }
-                topologyCounts.put(tree, 1.0 / trees.size());
-            }
-        }
-        return topologyCounts;
-    }
-
-    /**
-     * Use MCMC to simulate networks with a given topology and distribution for branch length/inheritance probability
-     * Then use those networks to simulate individual gene trees, matching the No Common Mechanism model
-     * @param network
-     * @param num_settings counts the intermediate simulated networks (with same topology)
-     * @return
-     * @throws IOException
-     */
-    private List<Tree> simulateTreesUnderNCM(Network network, int num_settings, int trees_per_setting) throws IOException {
-        List<Tree> trees = new ArrayList<>();
-        String treeFileString = "./tempTrees.txt";
-
-        Utils._START_NET = "[0.1]" + network.toString();
-        Utils._SAMPLE_FREQUENCY = 500;
-        Utils._BURNIN_LEN = 1000 * Utils._SAMPLE_FREQUENCY;
-        Utils._CHAIN_LEN = num_settings * Utils._SAMPLE_FREQUENCY + Utils._BURNIN_LEN;
-        Utils._BL_EXP_PRIOR = true;
-        Utils._TIMES_EXP_PRIOR = false;
-        Utils.EXP_PARAM = 2 * _prior_bl_mean; // todo: why does this need to be doubled?
-        Utils.EXP_CUTOFF = _prior_bl_max;
-        Utils._CONST_POP_SIZE = false;
-        Utils._ESTIMATE_POP_SIZE = false;
-        Utils._ESTIMATE_POP_PARAM = false;
-        Utils._NETWORK_SIZE_PRIOR = false;
-        Utils._SEED = 1;
-        Utils.DISABLE_TOPOLOGY_MOVES = true;
-
-        MC3Core run = new MC3Core();
-
-        PrintStream console = System.out;
-        File treeFile = new File(treeFileString);
-        FileOutputStream fos = new FileOutputStream(treeFile);
-        PrintStream ps = new PrintStream(fos);
-        System.setOut(ps);
-        // Run the MCMC network generation, writing stdout to treeFile
-        run.run();
-        // Return stdout to the console
-        System.setOut(console);
-
-        BufferedReader reader = new BufferedReader(new FileReader(treeFile));
-        String line = "";
-        String netString;
-        int lineNum = 0;
-        int netNum;
-
-        double average_bl = 0.0;
-
-        SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
-
-        while (reader.ready() && ! line.contains("Summarization")) {
-            line = reader.readLine();
-            if (lineNum % 5 == 3) {
-                netNum = (lineNum - 3) / 5;
-            } else {netNum = -1;}
-
-            if (netNum > Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY) {
-                netString = line.substring(line.indexOf("("));
-                Network networkWithParams = Networks.readNetwork(netString);
-
-                double bl_contribution = get_avg_branch_length(networkWithParams);
-                average_bl += bl_contribution;
-
-//                System.out.println("net: " + netString + ", bl: " + bl_contribution);
-                List<Tree> simulatedTrees = simulator.generateGTs(networkWithParams, null, trees_per_setting, "/Users/hunter/rice_grad/ms_folder/msdir/ms");
-//                trees.add(simulatedTrees.get(0));
-                trees.addAll(simulatedTrees);
-//                System.out.println("produced trees: " + simulatedTrees.toString());
-            }
-
-            lineNum += 1;
-        }
-
-        average_bl /= num_settings;
-        System.out.println("average bl was: " + average_bl);
-//        _prior_bl_mean = average_bl;
-
-
-        return trees;
-    }
-
-    private double get_avg_branch_length(Network<Double> net) {
-        final double[] total = {0.0};
-        for (NetNode<Double> node: Networks.postTraversal(net)) {
-//            if (node.isNetworkNode()) {
-                node.getParents().forEach((NetNode parent) -> {
-
-                    total[0] += node.getParentDistance(parent);
-                    _branch_lengths.add(node.getParentDistance(parent));
-                });
-//                total += node.getParentDistance(node.getParents().)
-//            }
-        }
-        return total[0] / net.getEdgeCount();
     }
 
     private void testBasicSampling() {

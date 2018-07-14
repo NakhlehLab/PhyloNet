@@ -259,4 +259,11 @@ public abstract class HillClimberBase extends SearchBase{
      * This function is to decide whether the search should be terminated
      */
     protected abstract boolean concludeSearch();
+
+    /**
+     * Function to change printing behavior
+     */
+    public void setPrintResultsAfterEachRun(boolean doYouWantToPrint) {
+        _printResultsAfterEachRun = doYouWantToPrint;
+    }
 }

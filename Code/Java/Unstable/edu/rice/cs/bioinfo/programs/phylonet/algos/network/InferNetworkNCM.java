@@ -95,6 +95,13 @@ public class InferNetworkNCM{
     }
 
     /**
+     * Set the number of searches
+     */
+    public void setNumRuns(int numRuns) {
+        _numRuns = numRuns;
+    }
+
+    /**
      * This function is to set all parameters used during the search
      *
      * @param maxExaminations       the maximal number of networks examined during the search; can be used as one of the termination criterion of the search
@@ -190,6 +197,7 @@ public class InferNetworkNCM{
 
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
 
+//        searcher.setPrintResultsAfterEachRun(false);
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
 
         //To set inheritance probability // todo: rework after enabling multithreading

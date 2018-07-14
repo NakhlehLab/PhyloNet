@@ -112,6 +112,12 @@ public class GeneTreeProbabilityIntegrated {
         _branch_length_truncation = truncation;
     }
 
+    /**
+     * Get total log likelihood (assuming equal weights for each tree)
+     * @param net
+     * @param trees
+     * @return
+     */
     public double getTotalLogLikelihood(Network net, List<Tree> trees) {
         // todo pass in the allele map
         List<Double> probabilities = this.calculateGTDistribution(net, trees, null, false);

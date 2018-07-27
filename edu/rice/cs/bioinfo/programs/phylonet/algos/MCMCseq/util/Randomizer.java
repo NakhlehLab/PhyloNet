@@ -23,4 +23,6 @@ public class Randomizer {
     public static void setSeed(long seed) {
         _rand.setSeed(seed);
     }
+
+    public static Random getRandom() { return _rand; }
 }

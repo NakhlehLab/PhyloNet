@@ -54,7 +54,7 @@ public class DeleteReticulation extends DimensionChange {
                     double pad = numRetiNodes == 1 ? 2.0 : 1.0;
                     double numRetiEdges = 2 * numRetiNodes;
                     double numEdges = 2 * (_network.getNetwork().getLeafCount() - 1) + 3 * (numRetiNodes - 1);
-                    double l1 = (_v3 != null ? _v3.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND) - _v4.getData().getHeight();
+                    double l1 = (_v3 != null ? _v3.getData().getHeight() : (_v4.getData().getHeight() * 2.0)) - _v4.getData().getHeight();
                     double l2 = _v5.getData().getHeight() - _v6.getData().getHeight();
 
                     double logPopSize = removeReticulation(_v1, _v2, _v3, _v4, _v5, _v6);

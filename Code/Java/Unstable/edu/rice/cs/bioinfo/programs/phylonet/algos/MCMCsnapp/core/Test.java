@@ -301,7 +301,7 @@ public class Test {
 
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
+        //System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
     }
 
     public static void testMCMC() {
@@ -579,7 +579,7 @@ public class Test {
 
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
+        //System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
         System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodMTC(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
 
         /*String[] gtTaxa = new String[onesnp.size()];
@@ -750,7 +750,7 @@ public class Test {
 
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
+        //System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihood(cloneNetwork, null, alns, BAGTRModel));
 
         long startTime = System.currentTimeMillis();
 
@@ -2377,7 +2377,7 @@ public class Test {
         System.out.println("True Network: " + trueNetwork.toString());
         Network cloneNetwork = Networks.readNetwork(trueNetwork.toString());
         cloneNetwork.getRoot().setRootPopSize(trueNetwork.getRoot().getRootPopSize());
-        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodMTCP(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
+        System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodMTC(cloneNetwork, alns.get(0)._RPatterns, BAGTRModel));
 
         //Utils._START_NET = "[0.036]" + trueNetwork.toString();
 
@@ -3465,10 +3465,10 @@ public class Test {
         }
 
         SNAPPLikelihood.ALGORITHM = 0;
-        System.out.println(SNAPPLikelihood.computeSNAPPLikelihood(trueNetwork, null, alns, BAGTRModel));
+        //System.out.println(SNAPPLikelihood.computeSNAPPLikelihood(trueNetwork, null, alns, BAGTRModel));
         //SNAPPLikelihood.ALGORITHM = 1;
         //System.out.println(SNAPPLikelihood.computeSNAPPLikelihood(trueNetwork, null, alns, BAGTRModel));
         SNAPPLikelihood.ALGORITHM = 2;
-        System.out.println(SNAPPLikelihood.computeSNAPPLikelihood(trueNetwork, null, alns, BAGTRModel));
+        //System.out.println(SNAPPLikelihood.computeSNAPPLikelihood(trueNetwork, null, alns, BAGTRModel));
     }
 }

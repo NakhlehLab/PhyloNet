@@ -318,6 +318,18 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        // fix net topology
+        ParamExtractor fixgtsParam = new ParamExtractor("fixgts", this.params, this.errorDetected);
+        if(fixgtsParam.ContainsSwitch) {
+            Utils._FIX_GENE_TREES = true;
+        }
+
+        // fix net topology
+        ParamExtractor fixNetTopoParam = new ParamExtractor("fixnettopo", this.params, this.errorDetected);
+        if(fixNetTopoParam.ContainsSwitch) {
+            Utils._FIX_NET_TOPOLOGY = true;
+        }
+
         // fix population size
         ParamExtractor fixPsParam = new ParamExtractor("fixps", this.params, this.errorDetected);
         if(fixPsParam.ContainsSwitch){
@@ -361,6 +373,12 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         }
 
         // disable diameter prior
+        ParamExtractor disableAllPriorParam = new ParamExtractor("disableallprior", this.params, this.errorDetected);
+        if(disableAllPriorParam.ContainsSwitch) {
+            Utils._DISABLE_ALL_PRIOR = true;
+        }
+
+        // disable diameter prior
         ParamExtractor ddParam = new ParamExtractor("dd", this.params, this.errorDetected);
         if(ddParam.ContainsSwitch) {
             Utils._DIAMETER_PRIOR = false;
@@ -398,17 +416,17 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                     if(!(sgtParam.PostSwitchParam instanceof ParameterIdentList)){
                         throw new RuntimeException();
                     }
-                    List<String> geneTrees = new ArrayList<>();
+                    Map<String, String> geneTrees = new HashMap<>();
                     ParameterIdentList gts = (ParameterIdentList) sgtParam.PostSwitchParam;
                     for(String ident: gts.Elements){
                         noError = noError && this.assertNetworkExists(ident,
                                 sgtParam.PostSwitchParam.getLine(), sgtParam.PostSwitchParam.getColumn());
                         if (noError) {
                             NetworkNonEmpty gt = this.sourceIdentToNetwork.get(ident);
-                            geneTrees.add(NetworkTransformer.toENewickTree(gt));
+                            geneTrees.put(ident, NetworkTransformer.toENewickTree(gt));
                         }
                     }
-                    List<List<String>> startGTs = new ArrayList<>();
+                    List<Map<String, String>> startGTs = new ArrayList<>();
                     startGTs.add(geneTrees);
                     Utils._START_GT_LIST = startGTs;
                 } catch(NumberFormatException e) {
@@ -533,6 +551,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "loci",
                 "cl", "bl", "sf", "sd", "pl", "dir",
                 "mc3", "mr", "tm", "fixps", "varyps",
+                "fixnettopo", "fixgts", "disableallprior",
                 "pp", "dd", "ee", "mu",
                 "sgt", "snet", "sps", "pre", "gtr"
         );
@@ -541,6 +560,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 dataParam,
                 clParam, blParam, sfParam, sdParam, plParam, dirParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
+                fixNetTopoParam, fixgtsParam, disableAllPriorParam,
                 ppParam, ddParam, eeParam, muParam,
                 sgtParam, snParam, spsParam, gtrParam
         );

@@ -183,7 +183,7 @@ public class FigureRunningTime {
 
         int numTaxa[] = {10, 20, 50, 100};
         int maxReti = 4;
-        boolean usePseudoLikelihood = true;
+        boolean usePseudoLikelihood = false;
 
         double timeConsumption[][] = new double[numTaxa.length][maxReti + 1];
         for(int i = 0 ; i < numTaxa.length ; i++) {

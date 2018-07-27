@@ -7,12 +7,16 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary;
  * Time: 6:13 PM
  * To change this template use File | Settings | File Templates.
  */
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.NetNodeInfo;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.ParentalTreeOperation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -27,6 +31,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SummaryBL {
+
+    private static void computeDivergenceTimes(Network<NetNodeInfo> network) {
+        for(NetNode<NetNodeInfo> node : Networks.postTraversal(network)) {
+            if(node.isLeaf()) {
+                node.setData(new NetNodeInfo(Utils.DEFAULT_NET_LEAF_HEIGHT));
+                continue;
+            }
+            double height = Double.MAX_VALUE;
+            for(NetNode<NetNodeInfo> child : node.getChildren()) {
+                height = Math.min(height, child.getParentDistance(node) + child.getData().getHeight());
+            }
+            node.setData(new NetNodeInfo(height));
+        }
+    }
 
     private class Info{
         private int count;
@@ -206,6 +224,7 @@ public class SummaryBL {
     private Network _net;
     private double _trueHeight;
     private Map<String, Branch> _branches;
+    private Map<String, List<Double>> _divergenceTimes = new HashMap<>();
     private int _size;
     private double _rootPopSizeAvg = 0;
     private double _rootPopSizeStd = 0;
@@ -307,7 +326,7 @@ public class SummaryBL {
             while((s = in.readLine()) != null) {
                 ss = s.split("\\s+");
                 if (notBeast) {
-                    if(s.contains("MCMC_SEQ")) {
+                    if(s.contains("MCMC_SEQ") || s.contains("SN_SEQ")) {
                         in.close();
                         addFileMCMCSEQ(file, startIter, endIter);
                         return;
@@ -504,6 +523,54 @@ public class SummaryBL {
 
     }
 
+    public Network getMeanNetwork() {
+        Map<String, BniNetNode> name2node = new HashMap<>();
+        BniNetNode root = null;
+        for(String key : this._branches.keySet()) {
+            Branch br = this._branches.get(key);
+            NetNode oldParent = br.parent;
+            NetNode oldChild = br.child;
+
+            if(oldParent != null) {
+
+                BniNetNode newParent;
+                if (name2node.containsKey(oldParent.getName())) {
+                    newParent = name2node.get(oldParent.getName());
+                } else {
+                    newParent = new BniNetNode();
+                    newParent.setName(oldParent.getName());
+                    name2node.put(oldParent.getName(), newParent);
+                }
+
+                BniNetNode newChild;
+                if (name2node.containsKey(oldChild.getName())) {
+                    newChild = name2node.get(oldChild.getName());
+                } else {
+                    newChild = new BniNetNode();
+                    newChild.setName(oldChild.getName());
+                    name2node.put(oldChild.getName(), newChild);
+                }
+
+                newParent.adoptChild(newChild, br.meanBL);
+                newChild.setParentSupport(newParent, br.meanSp);
+                newChild.setParentProbability(newParent, br.meanProb);
+            } else {
+                BniNetNode newChild;
+                if (name2node.containsKey(oldChild.getName())) {
+                    newChild = name2node.get(oldChild.getName());
+                } else {
+                    newChild = new BniNetNode();
+                    newChild.setName(oldChild.getName());
+                    name2node.put(oldChild.getName(), newChild);
+                }
+                newChild.setRootPopSize(br.meanSp);
+                root = newChild;
+            }
+        }
+        BniNetwork network = new BniNetwork(root);
+        return network;
+    }
+
     public void reportForTracer(String filename, long sf) {
         try {
             PrintWriter out = new PrintWriter(filename);
@@ -511,6 +578,9 @@ public class SummaryBL {
             for(String key : this._branches.keySet()) {
                 Branch br = this._branches.get(key);
                 results.putAll(br.gatherLists());
+            }
+            for(String key : _divergenceTimes.keySet()) {
+                results.put("Tau(" + key + ")", _divergenceTimes.get(key));
             }
 
             int size = -1;
@@ -521,9 +591,10 @@ public class SummaryBL {
                 if(results.get(key).size() != size) {
                     throw new RuntimeException("Got different size of lists!");
                 }
-
                 out.print(key + "\t");
             }
+
+
             out.println();
 
             if(posteriors.size() != size || priors.size() != size) {
@@ -666,6 +737,39 @@ public class SummaryBL {
         return res;
     }
 
+    private void addDivergenceTimes(Network net, Map<NetNode, NetNode> map) {
+        Network<NetNodeInfo> clonedNet = net.clone();
+
+        for(Object n1 : Networks.postTraversal(net)) {
+            NetNode child = (NetNode) n1;
+            for(Object n2 : child.getParents()) {
+                NetNode parent = (NetNode) n2;
+                NetNode ch = map!=null?map.get(child):child, par = map!=null?map.get(parent):parent;
+                clonedNet.findNode(child.getName()).setParentDistance(clonedNet.findNode(parent.getName()), ch.getParentDistance(par));
+            }
+        }
+        computeDivergenceTimes(clonedNet);
+        List<String> nameList = new ArrayList<>();
+        for(NetNode<NetNodeInfo> node : Networks.postTraversal(clonedNet)) {
+            nameList.add(node.getName());
+        }
+
+        // TODO: disable this debug code
+        if(nameList.size() < 9) {
+            for(int i = 4 ; i < 6 ; i++) {
+                nameList.add("I" + i);
+            }
+        }
+
+        for(String nodeName : nameList) {
+            NetNode<NetNodeInfo> node = clonedNet.findNode(nodeName);
+            if(!_divergenceTimes.containsKey(nodeName)) {
+                _divergenceTimes.put(nodeName, new ArrayList<>());
+            }
+            _divergenceTimes.get(nodeName).add(node!=null?node.getData().getHeight():0.0);
+        }
+    }
+
     private void addInformation(Network net, Map<NetNode, NetNode> map) {
         for(Object n1 : Networks.postTraversal(net)) {
             NetNode child = (NetNode) n1;
@@ -680,6 +784,10 @@ public class SummaryBL {
                 );
             }
         }
+        if(_divergenceTimes.size() == 0) {
+            addDivergenceTimes(net, null);
+        }
+        addDivergenceTimes(net, map);
     }
 
     public double getRootedRobinsonFouldsDistance(Tree tree1, Tree tree2) {

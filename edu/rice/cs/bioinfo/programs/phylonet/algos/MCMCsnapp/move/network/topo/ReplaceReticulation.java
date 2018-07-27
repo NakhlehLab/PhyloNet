@@ -13,6 +13,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.dimens
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.dimension.DeleteReticulation;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This is NOT a MCMC move! Only work with MLE!
@@ -29,7 +33,7 @@ public class ReplaceReticulation extends NetworkOperator {
 
     @Override
     public double propose() {
-        if(_network.getNetwork().getReticulationCount() == 0) {
+        if(_network.getNetwork().getReticulationCount() >= 0) {
             return Utils.INVALID_MOVE;
         }
 

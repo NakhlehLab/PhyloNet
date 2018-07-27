@@ -51,6 +51,10 @@ public class SpeciesNetPriorDistribution {
         double prior = getTopPrior(net) + getDiametersPrior(net) + getNodeHeightsPrior(net)
                 + getInheritanceProbPrior(net)
                 + getPopSizePrior(net);
+        if(Utils._DISABLE_ALL_PRIOR) {
+            prior = 0.0;
+        }
+
         return prior;
     }
 

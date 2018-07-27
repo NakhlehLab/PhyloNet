@@ -17,6 +17,7 @@ import java.util.*;
 public class Utils {
 
     public static final boolean DEBUG_MODE = false;
+    public static final boolean SHOW_DEBUG_STRINGS = true;
     public static double EPSILON = 2.220446049250313E-16;
 
     // --- settings ---
@@ -39,14 +40,18 @@ public class Utils {
     public static double _POISSON_PARAM = 1.0;
     public static boolean _TIMES_EXP_PRIOR = false;
     public static boolean _DIAMETER_PRIOR = true;
+    public static boolean _DISABLE_ALL_PRIOR = false;
     // Substitution model
     public static String _SUBSTITUTION_MODEL = "JC";
     public static double[] _BASE_FREQS = null;
     public static double[] _TRANS_RATES = null;
     // starting state
+    public static boolean _FIX_NET_TOPOLOGY = false;
+    public static boolean _FIX_GENE_TREES = false;
+    public static boolean _MLE_NETBL = false;
     public static double _POP_SIZE_MEAN = 0.036;
     public static List<String> _START_NET = null;
-    public static List<List<String>> _START_GT_LIST = null;
+    public static List<Map<String, String>> _START_GT_LIST = null;
     public static boolean _PRE_BURN_IN = true;
     public static int _PRE_BURN_IN_ITER = 10;
     // summary
@@ -112,7 +117,13 @@ public class Utils {
     private static Map<Character, String[]> PHASING_NUCLEOTIDES = null;
 
 
-    public static double[] getOperationWeights(double[] weights, int start, int end) {
+    public static double[] getOperationWeights(double[] weights, int start, int end, boolean enableTopologyMoves) {
+        if(!enableTopologyMoves) {
+            for(int i = 6 ; i < Math.min(end, 13) ; i++) {
+                weights[i] = 0.0;
+            }
+        }
+
         double[] arr = new double[weights.length];
         double sum = 0;
         for(int i = start; i < end; i++) {
@@ -130,7 +141,13 @@ public class Utils {
         return arr;
     }
 
-    public static double[] getOperationWeights(double[] weights) {
+    public static double[] getOperationWeights(double[] weights, boolean enableTopologyMoves) {
+        if(!enableTopologyMoves) {
+            for(int i = 6 ; i < Math.min(weights.length, 13) ; i++) {
+                weights[i] = 0.0;
+            }
+        }
+
         double[] arr = new double[weights.length];
         double sum = 0;
         for(double d : weights) {

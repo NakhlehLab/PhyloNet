@@ -138,7 +138,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
                 new TreeScaler(this), new TreeRootScaler(this),
                 new WilsonBalding(this), new WildNNI(this)
         };
-        this._opWeights = Utils.getOperationWeights(Utils.Tree_Op_Weights);
+        this._opWeights = Utils.getOperationWeights(Utils.Tree_Op_Weights, true);
     }
 
     @Override

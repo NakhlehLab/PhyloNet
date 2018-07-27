@@ -236,31 +236,31 @@ public class Utils {
 
     public static void printSettings() {
         System.out.println("Number of threads = " + Utils._NUM_THREADS);
-        System.out.println("Number of Chains = " + (Utils._MC3_CHAINS == null ? 1 : 1 + Utils._MC3_CHAINS.size()));
+        //System.out.println("Number of Chains = " + (Utils._MC3_CHAINS == null ? 1 : 1 + Utils._MC3_CHAINS.size()));
         //System.out.println("Max reticulation number = " + Utils._NET_MAX_RETI);
-        System.out.println("Diameter prior: " + Utils._DIAMETER_PRIOR);
-        System.out.println("Time exp prior: " + Utils._TIMES_EXP_PRIOR);
-        System.out.println("Estimate pop size: " + Utils._ESTIMATE_POP_SIZE);
-        System.out.println("Estimate pop param: " + Utils._ESTIMATE_POP_PARAM);
-        System.out.println("Const pop size: " + Utils._CONST_POP_SIZE);
-        System.out.println("Pop size mean: " + Utils._POP_SIZE_MEAN);
-        System.out.println("Exp param: " + Utils.EXP_PARAM);
-        System.out.println("Gamma shape: " + Utils.GAMMA_SHAPE);
-        System.out.println("Poisson param: " + Utils._POISSON_PARAM);
-        System.out.println("Network size prior: " + Utils._NETWORK_SIZE_PRIOR);
+        //System.out.println("Diameter prior: " + Utils._DIAMETER_PRIOR);
+        //System.out.println("Time exp prior: " + Utils._TIMES_EXP_PRIOR);
+        //System.out.println("Estimate pop size: " + Utils._ESTIMATE_POP_SIZE);
+        //System.out.println("Estimate pop param: " + Utils._ESTIMATE_POP_PARAM);
+        //System.out.println("Const pop size: " + Utils._CONST_POP_SIZE);
+        //System.out.println("Pop size mean: " + Utils._POP_SIZE_MEAN);
+        //System.out.println("Exp param: " + Utils.EXP_PARAM);
+        //System.out.println("Gamma shape: " + Utils.GAMMA_SHAPE);
+        //System.out.println("Poisson param: " + Utils._POISSON_PARAM);
+        //System.out.println("Network size prior: " + Utils._NETWORK_SIZE_PRIOR);
         //System.out.println("Dimension change weight: " + Utils.DIMENSION_CHANGE_WEIGHT);
         //System.out.println("Time window size: " + Utils._TIME_WINDOW_SIZE);
         //System.out.println("Pop size window size: " + Utils._POP_SIZE_WINDOW_SIZE);
         System.out.println("Seed: " + Utils._SEED);
 
-        System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);
+        //System.out.println("SNAPP algorithm: " + SNAPPLikelihood.ALGORITHM);
         System.out.println("useOnlyPolymorphic: " + SNAPPLikelihood.useOnlyPolymorphic);
-        System.out.println("timeSavingMode: " + SNAPPLikelihood.timeSavingMode);
-        System.out.println("CORRECTION_AT_LEAVES " + Algorithms.CORRECTION_AT_LEAVES);
-        System.out.println("HAS_DOMINANT_MARKER " + Algorithms.HAS_DOMINANT_MARKER);
-        System.out.println("SWITCH_FASTER_BIALLILE " + Algorithms.SWITCH_FASTER_BIALLILE);
-        System.out.println("SWITCH_EXP_APPROX " + Algorithms.SWITCH_EXP_APPROX);
-        System.out.println("SWITCH_APPROX_SPLIT " + Algorithms.SWITCH_APPROX_SPLIT);
+        //System.out.println("timeSavingMode: " + SNAPPLikelihood.timeSavingMode);
+        //System.out.println("CORRECTION_AT_LEAVES " + Algorithms.CORRECTION_AT_LEAVES);
+        //System.out.println("HAS_DOMINANT_MARKER " + Algorithms.HAS_DOMINANT_MARKER);
+        //System.out.println("SWITCH_FASTER_BIALLILE " + Algorithms.SWITCH_FASTER_BIALLILE);
+        //System.out.println("SWITCH_EXP_APPROX " + Algorithms.SWITCH_EXP_APPROX);
+        //System.out.println("SWITCH_APPROX_SPLIT " + Algorithms.SWITCH_APPROX_SPLIT);
 
 
     }

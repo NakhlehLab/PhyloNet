@@ -4,6 +4,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +57,15 @@ public class MC3 {
             logHastings = _state.propose();
             op = _state.getOperation().getName();
 
+            if(Utils.DEBUG_MODE) {
+                System.out.println(_temperature + " Proposed:"+ op + "\n" + _state.toString() + "\n" + _state.getNetwork());
+            }
+
             if(logHastings != Utils.INVALID_MOVE) {
 
                 if(Utils.DEBUG_MODE && !_state.isValidState()) {
+                    System.out.println("INVALID state after operation and validation!!!"
+                            + op + "\n" + _state.toString() + "\n" + _state.getNetwork());
                     throw new RuntimeException("INVALID state after operation and validation!!!"
                             + op + "\n" + _state.toString() + "\n" + _state.getNetwork());
                 }
@@ -76,15 +83,26 @@ public class MC3 {
                     _logPost = logNext;
                     accept = true;
                     _state.accept(_logAlpha);
+                    if(Utils.DEBUG_MODE) {
+                        System.out.println("Accepted");
+                    }
                 } else {
                     _state.undo(_logAlpha);
+                    if (Utils.DEBUG_MODE) {
+                        System.out.println("Rejected");
+                    }
                 }
             } else {
                 _state.undo(Utils.INVALID_MOVE);
             }
             if(Utils.DEBUG_MODE && !_state.isValidState()) {
+                System.out.println("INVALID state!!!"
+                        + op + "\n" + _state.toString() + "\n" + _state.getNetwork());
                 throw new RuntimeException("INVALID state!!!"
                         + op + "\n" + _state.toString() + "\n" + _state.getNetwork());
+            }
+            if(Utils.DEBUG_MODE) {
+                System.out.println("iteration=" + iteration + " i=" + i);
             }
 
             if(_main) {
@@ -93,17 +111,23 @@ public class MC3 {
         }
         if(!Utils._PRE_BURN_IN && doSample) {
             if(_main) {
+                if(Utils.DEBUG_MODE) {
+                    System.out.println("Doing sampling");
+                }
                 double essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
                 System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
                         iteration, _logPost, essPost,
                         _logLikelihood, _logPrior, essPrior,
                         _state.numOfReticulation());
+                System.out.println(Networks.getFullString(_state.getNetworkObject()));
                 _core.addSample(_state.toList());
                 List<Tuple<String,Double>> netSample = new ArrayList<>();
                 netSample.add(new Tuple<>(_state.getNetwork(), _logPost));
                 _core.addNetSample(netSample);
-                System.out.println(_state.toString());
+                if(Utils.DEBUG_MODE) {
+                    System.out.println("Sample added: " + _state.getNetwork().toString());
+                }
             }
         }
     }

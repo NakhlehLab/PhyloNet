@@ -116,16 +116,16 @@ public class UltrametricNetwork extends StateNode {
         };
         if (Utils._ESTIMATE_POP_SIZE) {
             this._treeSpaceOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 0, Utils.Net_Tree_Op_Weights.length - 1);
-            this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights);
-            this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights);
+                    Utils.Net_Tree_Op_Weights, 0, Utils.Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+            this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+            this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
         } else {
             this._treeSpaceOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length - 1);
+                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
             this._treeOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length);
+                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
             this._netOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length);
+                    Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
         }
     }
 
@@ -321,6 +321,7 @@ public class UltrametricNetwork extends StateNode {
             }
             node.setData(new NetNodeInfo(height));
         }
+
         boolean setPopSize = Utils.varyPopSizeAcrossBranches();
         for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)) {
             for(NetNode<NetNodeInfo> par : node.getParents()) {
@@ -347,7 +348,11 @@ public class UltrametricNetwork extends StateNode {
                 }
             }
             height *= Utils.NET_INTI_SCALE;
-            tup.Item1.setData(new NetNodeInfo(height));
+            if(tup.Item1.getData()!=null) {
+                tup.Item1.setData(new NetNodeInfo(Math.min(tup.Item1.getData().getHeight(), height)));
+            } else {
+                tup.Item1.setData(new NetNodeInfo(height));
+            }
             for(NetNode<NetNodeInfo> child : tup.Item1.getChildren()) {
                 if(child.isLeaf()) {
                     child.setData(new NetNodeInfo(Utils.DEFAULT_NET_LEAF_HEIGHT));

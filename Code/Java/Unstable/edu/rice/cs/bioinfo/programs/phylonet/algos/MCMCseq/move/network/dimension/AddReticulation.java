@@ -39,6 +39,7 @@ public class AddReticulation extends DimensionChange {
 
         int numEdges = edges.size();
         int numRetiNodes = _network.getNetwork().getReticulationCount();
+        double rootHeight = _network.getNetwork().getRoot().getData().getHeight();
 
         Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>> edge1, edge2;
         edge1 = edges.get(Randomizer.getRandomInt(numEdges));
@@ -51,15 +52,19 @@ public class AddReticulation extends DimensionChange {
         _v5 = edge2.Item2;
         _v6 = edge2.Item1;
 
-        double t3 = _v3 != null ? _v3.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND;
+        double t3 = _v3 != null ? _v3.getData().getHeight() : (rootHeight * 2.0);
         double t4 = _v4.getData().getHeight();
         double l1 = t3 - t4;
         double t1 = t4 + Randomizer.getRandomDouble() * l1;
 
-        double t5 = _v5 != null ? _v5.getData().getHeight() : Utils.ROOT_TIME_UPPER_BOUND;
+        double t5 = _v5 != null ? _v5.getData().getHeight() : (rootHeight * 2.0);
         double t6 = _v6.getData().getHeight();
         double l2 = t5 - t6;
         double t2 = t6 + Randomizer.getRandomDouble() * l2;
+
+        if(l1 <= 0 || l2 <= 0) {
+            throw new RuntimeException("Add reticulation error!");
+        }
 
         double gamma = Randomizer.getRandomDouble();
         _v1 = new BniNetNode<>();
@@ -83,6 +88,10 @@ public class AddReticulation extends DimensionChange {
 
     @Override
     public void undo() {
+        if(_v1 == null && _v2 == null && _v3 == null && _v4 == null && _v5 == null && _v6 == null) {
+            return;
+        }
+
         if(_v1.getData().getHeight() > _v2.getData().getHeight()) {
             removeReticulation(_v1, _v2, _v3, _v4, _v5, _v6);
         } else {

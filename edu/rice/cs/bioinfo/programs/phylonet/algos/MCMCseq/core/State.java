@@ -7,6 +7,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class State {
     private double _gtOpWeight;
     private double _popSizeParamWeight = 0.005;
     private PopulationSize _populationSize;
+    private int count = 0;
 
     private StateNode _moveNode;
 
@@ -32,7 +34,7 @@ public class State {
     private SpeciesNetPriorDistribution _priorDistribution;
 
     public State (String network,
-                  List<String> trees,
+                  Map<String, String> trees,
                   List<Alignment> alignments,
                   double poissonParameter,
                   Map<String, List<String>> species2alleles
@@ -43,7 +45,7 @@ public class State {
             if(trees == null) {
                 this._geneTrees.add(new UltrametricTree(alignments.get(i)));
             } else {
-                this._geneTrees.add(new UltrametricTree(trees.get(i), alignments.get(i)));
+                this._geneTrees.add(new UltrametricTree(trees.get(alignments.get(i).getName()), alignments.get(i)));
             }
         }
         this._speciesNet = new UltrametricNetwork(network, this._geneTrees, species2alleles);
@@ -87,19 +89,35 @@ public class State {
             _moveNode = _populationSize;
         }
         // tree operation
-        else if(rand < _gtOpWeight) {
+        else if(rand < _gtOpWeight && !Utils._FIX_GENE_TREES) {
             _moveNode = _geneTrees.get(Randomizer.getRandomInt(_geneTrees.size()));
+            if(Utils.DEBUG_MODE) {
+                System.out.println("Purposing gene tree operation.");
+            }
         }
         // network operation
         else {
             _moveNode = _speciesNet;
+            if(Utils.DEBUG_MODE) {
+                System.out.println("Purposing network operation.");
+            }
         }
         double logHR = _moveNode.propose();
         _moveNode.setDirty(true);
         if(getOperation().getName().contains("Scale-All")) {
+            if(Utils._FIX_GENE_TREES) {
+                return Utils.INVALID_MOVE;
+            }
+
             for(UltrametricTree ut : _geneTrees) {
                 ut.setDirty(true);
             }
+        }
+
+        count++;
+        //System.out.println(count);
+        if(Utils.DEBUG_MODE) {
+            System.out.println("Count: " + count + "Purposed: " + getOperation().getName() + " mayViolate: " + _moveNode.mayViolate() + " : " + _speciesNet.toString());
         }
 
         if(getOperation().getName().contains("Add-Reticulation") &&
@@ -199,6 +217,14 @@ public class State {
 
     public String getNetwork() {
         return _speciesNet.getNetwork().toString();
+    }
+
+    public Network getNetworkObject() {
+        return _speciesNet.getNetwork();
+    }
+
+    public UltrametricNetwork getUltrametricNetworkObject() {
+        return _speciesNet;
     }
 
     protected void setPreBurnInParams() {

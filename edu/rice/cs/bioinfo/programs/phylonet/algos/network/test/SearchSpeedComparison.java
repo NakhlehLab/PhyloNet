@@ -3,23 +3,25 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.network.test;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkByMS;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.*;
+import java.nio.Buffer;
 import java.util.*;
 
 /**
  * Created by hunter on 7/5/18.
  *
- * run the same search using ML and ML-NCM hill climbing; compare how many steps were taken
+ * run the same search using ML and ML-NCM hill climbing; compare the search time
  *
  */
 public class SearchSpeedComparison {
-    TestIntegratedProbability test = new TestIntegratedProbability();
-    NcmSimulator ncmSim = new NcmSimulator();
+    static TestIntegratedProbability test = new TestIntegratedProbability();
+    static NcmSimulator ncmSim = new NcmSimulator();
 
     List<MutableTuple<Tree,Double>> inputData;
     Network trueNetwork;
@@ -34,30 +36,36 @@ public class SearchSpeedComparison {
     public static void main(String[] args) throws IOException {
         SearchSpeedComparison search = new SearchSpeedComparison();
 //        search.runSearches();
-        for (int s = 1; s <= 4; s++) {
-            for (int b = 1; b <= 2; b++) {
+        for (int scen = 1; scen <= 4; scen++) {
+            for (int bl = 1; bl <= 2; bl++) {
                 int hybrids = 1;
-                if (s > 1) hybrids += 1;
-                System.out.println("\n\n\n////////////////////////////////////\ns" + s + "bl" + b + "(" + hybrids + "):\n////////////\n");
-                search.runSearches(s, b, hybrids);
+                if (scen > 1) hybrids = 2;
+                System.out.println("\n\n\n////////////////////////////////////\ns" + scen + "bl" + bl + "(h" + hybrids + "):\n////////////\n");
+                Network trueNetwork = test.getScenario(scen, bl);
+
+                ///////// Simulate
+//                ncmSim._prior_bl_max = Double.POSITIVE_INFINITY;
+//                ncmSim._prior_bl_mean = bl;
+//                List trees = ncmSim.simulateTrees(trueNetwork, 100, 1);
+                SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
+                List trees = simulator.generateGTs(trueNetwork, null, 100, "/Users/hunter/rice_grad/ms_folder/msdir/ms");
+                ///////// Simulate
+
+                Map<Tree, Double> treeFrequencies = ncmSim.getTopologyFrequencies(trees);
+                search.runSearches(trueNetwork, treeFrequencies, hybrids, bl);
             }
         }
+//        search.runSearches(1, 1.0, 1);
     }
 
     public void setData(List<MutableTuple<Tree,Double>> data) {
         inputData = data;
     }
 
-    public void runSearches(int scenN, double bl, int hybrids) throws IOException {
-        double blMean = bl;
-        Network<Double> trueNetwork = test.getScenario(scenN, blMean);
-        int numReticulations = hybrids;
+//    public void runSearches(int scenN, double bl, int hybrids) throws IOException {
+    public void runSearches(Network<Double> trueNetwork, Map<Tree, Double> treeFrequencies, int hybrids, double bl) throws IOException {
         int numResults = 2;
-        ncmSim._prior_bl_max = Double.POSITIVE_INFINITY;
-        ncmSim._prior_bl_mean = blMean;
 
-        List trees = ncmSim.simulateTrees(trueNetwork, 100, 1);
-        Map<Tree, Double> treeFrequencies = ncmSim.getTopologyFrequencies(trees);
         List<MutableTuple<Tree, Double>> data = new ArrayList<>();
         for (Tree topology: treeFrequencies.keySet()) {
             data.add(new MutableTuple<>(topology, treeFrequencies.get(topology)));
@@ -82,34 +90,85 @@ public class SearchSpeedComparison {
         Set<String> fixedHybrid = new HashSet<String>();;
         double[] topologyOperationWeights = {0.1,0.1,0.15,0.55,0.15,0.15};
         double[] topologyVsParameterOperation = {0.3,0.7}; // modify operationWeights if you want pure parameter operation
-        double[] operationWeights = {0.1,0.1,0.15,0.55,0.15,0.15, topologyVsParameterOperation[1] / topologyVsParameterOperation[0]}; // don't devide by 0
+        double[] operationWeights = {0.1,0.1,0.15,0.55,0.15,0.15, topologyVsParameterOperation[1] / topologyVsParameterOperation[0]}; // don't divide by 0
         int numRuns = 2;
-        boolean optimizeBL = false;
-        Long seed = Long.valueOf(100);
+        boolean optimizeBL = true; // this sets search to hillclimb in infernetML
+        Long seed = 300L;
 
 
 
         System.out.println("\n\nbeginning ncm inference");
 
         inferNCM = new InferNetworkNCM();
-//        inferNCM.setLogFile(NCMlogFile);
+        clearLogFile(NCMlogFile);
+        inferNCM.setLogFile(NCMlogFile);
         inferNCM.setSearchParameter(maxExaminations, maxFailure, moveDiameter, reticulationDiameter, startNetwork, fixedHybrid, numProcessors, topologyOperationWeights, numRuns, seed);
-        inferenceResultsNCM = inferNCM.inferNetwork(inputData, null, numReticulations, numResults, blMean);
+        inferenceResultsNCM = inferNCM.inferNetwork(inputData, null, hybrids, numResults, bl);
+
+        checkValidity(inferenceResultsNCM, trueNetwork);
+        System.out.println(countLines(NCMlogFile) + " lines");
+
+
+
+        System.out.println("\n\nbeginning ml inference");
 
         List<List<MutableTuple<Tree, Double>>> dataForML = new ArrayList<>();
         dataForML.add(inputData);
         inferenceResultsML = new LinkedList<>();
 
-        System.out.println("\n\nbeginning ml inference");
-
         inferML = new InferNetworkMLFromGTT_SingleTreePerLocus();
-//        inferML.setLogFile(MLlogFile);
+        clearLogFile(MLlogFile);
+        inferML.setLogFile(MLlogFile);
         inferML.setSearchParameter(maxRounds, maxTryPerBranch, improvementThreshold, maxBranchLength, Brent1, Brent2, maxExaminations, maxFailure, moveDiameter, reticulationDiameter, numProcessors, startNetwork, fixedHybrid, operationWeights, numRuns, optimizeBL, seed);
-        inferML.inferNetwork(dataForML, null, numReticulations, numResults, false, inferenceResultsML);
+        inferML.inferNetwork(dataForML, null, hybrids, numResults, false, inferenceResultsML);
 
+        checkValidity(inferenceResultsML, trueNetwork);
+        System.out.println(countLines(MLlogFile) + " lines");
 //        System.out.println("printing results");
 //
 //        printResults();
+    }
+
+    private int countLines(File f) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(f));
+            int lines = 0;
+            while (reader.readLine() != null) {
+                lines += 1;
+            }
+            return lines;
+
+        } catch(Exception e) {
+            System.err.print(e.getStackTrace());
+            return -1;
+        }
+
+    }
+
+    private void clearLogFile(File f) {
+        if (f != null) {
+            f.delete();
+        }
+    }
+
+    private void checkValidity(List<Tuple<Network, Double>> results, Network trueNetwork) {
+//        boolean somewhereOutThere = false;
+//        for (Tuple<Network, Double> t : results) {
+//            if (Networks.hasTheSameTopology(trueNetwork, t.Item1)) {
+//                somewhereOutThere = true;
+//            }
+//        }
+//        boolean noPointsForSecondPlace = Networks.hasTheSameTopology(results.get(0).Item1, trueNetwork);
+//        System.out.println("Correct network found: " + somewhereOutThere + "\nCorrect network first: " + noPointsForSecondPlace);
+        int placement = 99999;
+        for (int i = 0; i < results.size(); i++) {
+            Tuple<Network, Double> t = results.get(i);
+            if (Networks.hasTheSameTopology(trueNetwork, t.Item1)) {
+                placement = i;
+                break;
+            }
+        }
+        System.out.println("Correct network found at position: " + placement);
     }
 
     public void printResults() {

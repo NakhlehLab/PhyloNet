@@ -9,6 +9,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkByMS;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTreeEnumerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -34,6 +36,18 @@ public class TestIntegratedProbability {
 
 //        compare.runSearches();
 //        test.troubleshoot();
+        String[] stringsToClean = {};
+        for (String toClean: stringsToClean) {
+            Network n = Networks.readNetwork(toClean);
+            Networks.removeAllParameters(n);
+            System.out.println(n);
+        }
+//        Iterable<NetworkTree> enumerator = new NetworkTreeEnumerator(test.getScenario(4, 1));
+        Iterable<NetworkTree> altIterable = Networks.getTrees(test.getScenario(4, 1));
+//        Iterator<Tree> iter = enumerator.iterator();
+        for (NetworkTree nt: altIterable) {
+            System.out.println(nt.makeTree());
+        }
     }
 
     private static void troubleshoot() {

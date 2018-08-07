@@ -25,7 +25,9 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.HillClimberBase;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.search.HillClimbing.SimpleHillClimbing;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.search.SimulatedAnnealing.SimulatedAnnealingSalterPearL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
@@ -189,7 +191,9 @@ public class InferNetworkNCM{
         String startingNetwork = getStartNetwork(gts, species2alleles,_fixedHybrid, _startNetwork);
         NetworkRandomNeighbourGenerator allNeighboursStrategy = new NetworkRandomNeighbourGenerator(new NetworkRandomTopologyNeighbourGenerator(_operationWeights, maxReticulations, _moveDiameter, _reticulationDiameter, _fixedHybrid, _seed), 1, new NonUltrametricNetworkRandomParameterNeighbourGenerator(), 0, _seed);
         Comparator<Double> comparator = getDoubleScoreComparator();
-        SimpleHillClimbing searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+        HillClimberBase searcher = new SimpleHillClimbing(comparator, allNeighboursStrategy);
+//        Long simAnnealingSeed = 314159L;
+//        HillClimberBase searcher = new SimulatedAnnealingSalterPearL(comparator, allNeighboursStrategy, simAnnealingSeed);
         searcher.setLogFile(_logFile);
         searcher.setIntermediateResultFile(_intermediateResultFile);
 

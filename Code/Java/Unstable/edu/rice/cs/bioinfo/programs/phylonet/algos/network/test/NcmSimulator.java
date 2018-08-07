@@ -11,10 +11,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Exchanger;
 
 /**
  * Created by hunter on 7/12/18.
@@ -22,17 +20,27 @@ import java.util.Map;
 public class NcmSimulator {
     public double _prior_bl_mean = 1.0;
     public double _prior_bl_max = Double.POSITIVE_INFINITY;
-    /**
-     * Use MCMC to simulate networks with a given topology and distribution for branch length/inheritance probability
-     * Then use those networks to simulate individual gene trees, matching the No Common Mechanism model
-     * @param topology
-     * @param num_settings counts the intermediate simulated networks (with same topology)
-     * @return
-     * @throws IOException
-     */
-    public List<Tree> simulateTrees(Network topology, int num_settings, int trees_per_setting) throws IOException {
-        List<Tree> trees = new ArrayList<>();
-        String treeFileString = "./tempTrees.txt";
+
+    public static void main(String[] args) {
+        TestIntegratedProbability test = new TestIntegratedProbability();
+        NcmSimulator sim = new NcmSimulator();
+        Network net = test.getScenario(4, 1);
+        try {
+            List<Network> nets = sim.createNetsWithNcmPrior(net, 100);
+            List<Double> lengths = new ArrayList<>();
+            for (Network n: nets) {
+                lengths.addAll(sim.getBranchLengths(n));
+            }
+            Map<Double, Integer> histogram = sim.createBlHistogram(lengths, 50);
+            System.out.println(histogram);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<Network> createNetsWithNcmPrior(Network topology, int num_settings) throws IOException {
+        List<Network> nets = new ArrayList<>();
+        String netFileString = "./tempNets.txt";
 
         Utils._START_NET = "[0.1]" + topology.toString();
         Utils._SAMPLE_FREQUENCY = 500;
@@ -51,11 +59,10 @@ public class NcmSimulator {
 
         MC3Core run = new MC3Core();
 
-        // todo: is there a way to get results from MC3Core.run without this hack?
-        // yes: use MC3Core._networkList, which is public (for now...?)
+        // todo: use MC3Core._networkList, which is public (for now...?)
         PrintStream console = System.out;
-        File treeFile = new File(treeFileString);
-        FileOutputStream fos = new FileOutputStream(treeFile);
+        File netFile = new File(netFileString);
+        FileOutputStream fos = new FileOutputStream(netFile);
         PrintStream ps = new PrintStream(fos);
         System.setOut(ps);
         // Run the MCMC network generation, writing stdout to treeFile
@@ -63,15 +70,11 @@ public class NcmSimulator {
         // Return stdout to the console
         System.setOut(console);
 
-        BufferedReader reader = new BufferedReader(new FileReader(treeFile));
+        BufferedReader reader = new BufferedReader(new FileReader(netFile));
         String line = "";
         String netString;
         int lineNum = 0;
         int netNum;
-
-        double average_bl = 0.0;
-
-        SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
 
         while (reader.ready() && ! line.contains("Summarization")) {
             line = reader.readLine();
@@ -82,26 +85,74 @@ public class NcmSimulator {
             if (netNum > Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY) {
                 netString = line.substring(line.indexOf("("));
                 Network networkWithParams = Networks.readNetwork(netString);
+                nets.add(networkWithParams);
+//                System.out.println("net: " + netString);
 
-                double bl_contribution = get_avg_branch_length(networkWithParams);
-                average_bl += bl_contribution;
-
-//                System.out.println("net: " + netString + ", bl: " + bl_contribution);
-                List<Tree> simulatedTrees = simulator.generateGTs(networkWithParams, null, trees_per_setting, "/Users/hunter/rice_grad/ms_folder/msdir/ms");
-//                trees.add(simulatedTrees.get(0));
-                trees.addAll(simulatedTrees);
 //                System.out.println("produced trees: " + simulatedTrees.toString());
             }
 
             lineNum += 1;
         }
+        return nets;
+    }
 
-        average_bl /= num_settings;
+    /**
+     * Use MCMC to simulate networks with a given topology and distribution for branch length/inheritance probability
+     * Then use those networks to simulate individual gene trees, matching the No Common Mechanism model
+     * @param topology
+     * @param num_settings counts the intermediate simulated networks (with same topology)
+     * @return
+     * @throws IOException
+     */
+    public List<Tree> simulateTrees(Network topology, int num_settings, int trees_per_setting) throws IOException {
+        List<Tree> trees = new ArrayList<>();
+        SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
+        List<Network> nets = createNetsWithNcmPrior(topology, num_settings);
+        for (Network networkWithParams: nets) {
+            List<Tree> simulatedTrees = simulator.generateGTs(networkWithParams, null, trees_per_setting, "/Users/hunter/rice_grad/ms_folder/msdir/ms");
+            trees.addAll(simulatedTrees);
+        }
 //        System.out.println("average bl was: " + average_bl);
 //        _prior_bl_mean = average_bl;
 
 
         return trees;
+    }
+
+    private Map<Double, Integer> createBlHistogram(List<Double> bls, int numBins) {
+        Map<Double, Integer> histogram = new HashMap<>();
+        bls.sort(Comparator.<Double>naturalOrder());
+        Double[] range = {bls.get(0), bls.get(bls.size() - 1)};
+//        System.out.println(range[1]);
+//        System.out.println(bls);
+        Double[] bins = new Double[numBins];
+        for (int i = 0; i < numBins; i++) {
+            bins[i] = range[0] + i * (range[1] - range[0]) / numBins;
+        }
+
+        for (Double bl: bls) {
+            int binId = 0;
+//            System.out.printf("bin: %f, bl: %f", bins[binId], bl);
+            while (binId < bins.length && bins[binId] <= bl) binId += 1;
+            binId -= 1;
+//            histogram.put(bins[binId], 1);
+            histogram.put(bins[binId], 1 + histogram.getOrDefault(bins[binId], 0));
+        }
+        return histogram;
+    }
+
+    private List<Double> getBranchLengths(Network<Double> net) {
+        List<Double> branch_lengths = new ArrayList<>();
+        for (NetNode<Double> node: Networks.postTraversal(net)) {
+//            if (node.isNetworkNode()) {
+            node.getParents().forEach((NetNode parent) -> {
+
+                branch_lengths.add(node.getParentDistance(parent));
+            });
+//                total += node.getParentDistance(node.getParents().)
+//            }
+        }
+        return branch_lengths;
     }
 
     public Map<Tree, Double> getTopologyFrequencies(List<Tree> trees) {
@@ -129,18 +180,10 @@ public class NcmSimulator {
     }
 
     private double get_avg_branch_length(Network<Double> net) {
-        List<Double> branch_lengths = new ArrayList<>();
-        final double[] total = {0.0};
-        for (NetNode<Double> node: Networks.postTraversal(net)) {
-//            if (node.isNetworkNode()) {
-            node.getParents().forEach((NetNode parent) -> {
-
-                total[0] += node.getParentDistance(parent);
-                branch_lengths.add(node.getParentDistance(parent));
-            });
-//                total += node.getParentDistance(node.getParents().)
-//            }
+        double total = 0.0;
+        for (Double bl: getBranchLengths(net)) {
+            total += bl;
         }
-        return total[0] / net.getEdgeCount();
+        return total / net.getEdgeCount();
     }
 }

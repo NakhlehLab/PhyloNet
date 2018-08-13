@@ -115,7 +115,7 @@ public class Utils {
             0.02, 0.01, 0.00,
             0.04, 0.05,
             0.20, 0.15, 0.03, 0.10, SEARCH_DIMENSION_CHANGE_WEIGHT,
-            0.16 - SEARCH_DIMENSION_CHANGE_WEIGHT, 0.10, SEARCH_DIMENSION_CHANGE_WEIGHT, 0.16 - SEARCH_DIMENSION_CHANGE_WEIGHT, 0.20
+            0.16 - SEARCH_DIMENSION_CHANGE_WEIGHT, 0.10, SEARCH_DIMENSION_CHANGE_WEIGHT, 0.16 - SEARCH_DIMENSION_CHANGE_WEIGHT, 0.0
     };
     // ChangePopSize ScalePopSize ScaleAll ScaleTime ScaleRootTime
     // ChangeTime SlideSubNet SwapNodes MoveTail AddReticulation

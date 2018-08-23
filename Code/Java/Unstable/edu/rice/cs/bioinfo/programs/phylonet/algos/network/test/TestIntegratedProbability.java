@@ -95,6 +95,13 @@ public class TestIntegratedProbability {
         }
     }
 
+    public Network getRandomNetwork(int numLeaves, int numReticulations) {
+        return getScenario(1, 1);
+    }
+    public Network getRandomNetwork() {
+        return getScenario(1, 1);
+    }
+
     /**
      * Networks for test as seen in section 3.4 of Yun Yu's thesis
      * @param i

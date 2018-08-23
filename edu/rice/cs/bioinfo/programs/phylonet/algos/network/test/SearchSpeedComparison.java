@@ -33,23 +33,28 @@ public class SearchSpeedComparison {
     File NCMlogFile = new File("ncmlog.txt");
     File MLlogFile = new File("mllog.txt");
 
+//    static String msPath = "edu/rice/cs/bioinfo/programs/phylonet/algos/network/test/ms";
+    static String msPath = "./ms";
+
     public static void main(String[] args) throws IOException {
+        int gtCount = 1000;
         SearchSpeedComparison search = new SearchSpeedComparison();
 //        search.runSearches();
+//        for (int scen = 1; scen <= 4; scen++) {
+//            for (int bl = 1; bl <= 2; bl++) {
         for (int scen = 1; scen <= 4; scen++) {
             for (int bl = 1; bl <= 2; bl++) {
-                int hybrids = 1;
-                if (scen > 1) hybrids = 2;
-                System.out.println("\n\n\n////////////////////////////////////\ns" + scen + "bl" + bl + "(h" + hybrids + "):\n////////////\n");
                 Network trueNetwork = test.getScenario(scen, bl);
+                int hybrids = trueNetwork.getReticulationCount();
+                System.out.println("\n\n\n////////////////////////////////////\ns" + scen + "bl" + bl + "(h" + hybrids + "):\n////////////\n");
 
-                ///////// Simulate
+                ///////// Simulation
 //                ncmSim._prior_bl_max = Double.POSITIVE_INFINITY;
 //                ncmSim._prior_bl_mean = bl;
 //                List trees = ncmSim.simulateTrees(trueNetwork, 100, 1);
                 SimGTInNetworkByMS simulator = new SimGTInNetworkByMS();
-                List trees = simulator.generateGTs(trueNetwork, null, 100, "/Users/hunter/rice_grad/ms_folder/msdir/ms");
-                ///////// Simulate
+                List trees = simulator.generateGTs(trueNetwork, null, gtCount, msPath);
+                ///////// End Simulation
 
                 Map<Tree, Double> treeFrequencies = ncmSim.getTopologyFrequencies(trees);
                 search.runSearches(trueNetwork, treeFrequencies, hybrids, bl);
@@ -64,7 +69,7 @@ public class SearchSpeedComparison {
 
 //    public void runSearches(int scenN, double bl, int hybrids) throws IOException {
     public void runSearches(Network<Double> trueNetwork, Map<Tree, Double> treeFrequencies, int hybrids, double bl) throws IOException {
-        int numResults = 2;
+        int numResults = 6;
 
         List<MutableTuple<Tree, Double>> data = new ArrayList<>();
         for (Tree topology: treeFrequencies.keySet()) {
@@ -81,8 +86,9 @@ public class SearchSpeedComparison {
         double maxBranchLength = 6;
         double Brent1 = 0.01;
         double Brent2 = 0.005;
+
         long maxExaminations = 1000000;
-        int maxFailure = 100;
+        int maxFailure = 1000; // 100 is default
         int moveDiameter = -1;
         int reticulationDiameter = -1;
         int numProcessors = 1;
@@ -91,8 +97,8 @@ public class SearchSpeedComparison {
         double[] topologyOperationWeights = {0.1,0.1,0.15,0.55,0.15,0.15};
         double[] topologyVsParameterOperation = {0.3,0.7}; // modify operationWeights if you want pure parameter operation
         double[] operationWeights = {0.1,0.1,0.15,0.55,0.15,0.15, topologyVsParameterOperation[1] / topologyVsParameterOperation[0]}; // don't divide by 0
-        int numRuns = 2;
-        boolean optimizeBL = true; // this sets search to hillclimb in infernetML
+        int numRuns = 1;
+        boolean optimizeBL = false; // this sets search to hillclimb in infernetML
         Long seed = 300L;
 
 
@@ -106,7 +112,7 @@ public class SearchSpeedComparison {
         inferenceResultsNCM = inferNCM.inferNetwork(inputData, null, hybrids, numResults, bl);
 
         checkValidity(inferenceResultsNCM, trueNetwork);
-        System.out.println(countLines(NCMlogFile) + " lines");
+        System.out.println(countLines(NCMlogFile) + " lines (networks searched)");
 
 
 
@@ -123,7 +129,7 @@ public class SearchSpeedComparison {
         inferML.inferNetwork(dataForML, null, hybrids, numResults, false, inferenceResultsML);
 
         checkValidity(inferenceResultsML, trueNetwork);
-        System.out.println(countLines(MLlogFile) + " lines");
+        System.out.println(countLines(MLlogFile) + " lines (networks searched)");
 //        System.out.println("printing results");
 //
 //        printResults();
@@ -160,11 +166,11 @@ public class SearchSpeedComparison {
 //        }
 //        boolean noPointsForSecondPlace = Networks.hasTheSameTopology(results.get(0).Item1, trueNetwork);
 //        System.out.println("Correct network found: " + somewhereOutThere + "\nCorrect network first: " + noPointsForSecondPlace);
-        int placement = 99999;
+        String placement = ">= " + results.size();
         for (int i = 0; i < results.size(); i++) {
             Tuple<Network, Double> t = results.get(i);
             if (Networks.hasTheSameTopology(trueNetwork, t.Item1)) {
-                placement = i;
+                placement = "" + i;
                 break;
             }
         }

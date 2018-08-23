@@ -47,6 +47,7 @@ import java.util.*;
  *
  * Based on InferNetworkMP by Yun Yu
  * This class is to infer species networks from gene trees under No Common Mechanism model of Tuffley & Steel
+ * Using Multilabeled (MUL) Tree method
  */
 public class InferNetworkNCM{
     protected int _maxFailure = 100;
@@ -201,9 +202,10 @@ public class InferNetworkNCM{
 
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
 
-//        searcher.setPrintResultsAfterEachRun(false);
+        searcher.setPrintResultsAfterEachRun(true); // todo: refactor
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, true, resultList); // search starts here
-
+        // todo: this is temporary
+        System.out.println("searcher says: " + searcher.getExaminations());
         //To set inheritance probability // todo: rework after enabling multithreading
         if(_numProcessors != 1){
             for(Tuple<Network, Double> tuple: resultList){

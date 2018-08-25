@@ -3,8 +3,6 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.StateNode;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.GeneTreeBrSpeciesNetDistribution;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.GeneTreeBrSpeciesNetDistributionParallel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.Operator;
@@ -30,7 +28,6 @@ import static edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils._
 
 /**
  * Ultrametric network
- * Created by wendingqiao on 2/25/16.
  */
 public class UltrametricNetwork extends StateNode {
 
@@ -246,17 +243,7 @@ public class UltrametricNetwork extends StateNode {
         else {
             _logLtemp = Utils.copy(_logGeneTreeNetwork);
         }
-        // see if gene tree changed
-        // jiafan: only network
-        /*else {
-            _logLtemp = Utils.copy(_logGeneTreeNetwork);
-            GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistribution(_network, _species2alleles);
-            for(int i = 0; i < _geneTrees.size(); i++) {
-                if(_geneTrees.get(i).isDirty()) {
-                    _logLtemp[i] = likelihoodCal.calculateGTDistribution(_geneTrees.get(i));
-                }
-            }
-        }*/
+
         return Utils.sum(_logLtemp);
     }
 
@@ -349,22 +336,6 @@ public class UltrametricNetwork extends StateNode {
     /************ Likelihood computation **************/
 
     private double[] computeLikelihood() {
-        /*GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistributionParallel(
-                _network, _geneTrees, _species2alleles);
-        double[] likelihoodArray = new double[_geneTrees.size()];
-
-        Thread[] myThreads = new Thread[_numThreads];
-        for (int i = 0; i < _numThreads; i++) {
-            myThreads[i] = new MyThreadFromScratch(likelihoodCal, likelihoodArray);
-            myThreads[i].start();
-        }
-        for (int i = 0; i < _numThreads; i++) {
-            try {
-                myThreads[i].join();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-        }*/
         double[] likelihoodArray = new double[1];
         //likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alleles2species, _alignments, _BAGTRModel);
 
@@ -377,21 +348,6 @@ public class UltrametricNetwork extends StateNode {
         }
 
         return likelihoodArray;
-    }
-
-    private class MyThreadFromScratch extends Thread{
-
-        private GeneTreeBrSpeciesNetDistributionParallel _gtp;
-        private double[] _ls;
-
-        public MyThreadFromScratch(GeneTreeBrSpeciesNetDistribution gtp, double[] ls){
-            _gtp = (GeneTreeBrSpeciesNetDistributionParallel) gtp;
-            _ls = ls;
-        }
-
-        public void run() {
-            _gtp.calculateGTDistribution(_ls);
-        }
     }
 
     /************** init nodes **************/

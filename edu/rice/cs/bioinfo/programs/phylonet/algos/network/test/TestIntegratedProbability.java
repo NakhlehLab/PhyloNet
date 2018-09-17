@@ -96,10 +96,11 @@ public class TestIntegratedProbability {
     }
 
     public Network getRandomNetwork(int numLeaves, int numReticulations) {
+
         return getScenario(1, 1);
     }
     public Network getRandomNetwork() {
-        return getScenario(1, 1);
+        return getRandomNetwork(4, 1);
     }
 
     /**

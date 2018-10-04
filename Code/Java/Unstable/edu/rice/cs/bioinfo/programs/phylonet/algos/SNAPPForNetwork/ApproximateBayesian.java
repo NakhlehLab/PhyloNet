@@ -39,7 +39,7 @@ public class ApproximateBayesian {
 
     public ApproximateBayesian(Map<String, String> alleles2species, List<Alignment> alignments, boolean diploid, boolean dominant, boolean onlyPolymorphic, BiAllelicGTR BAGTRModel) {
         if(diploid && !dominant) {
-            throw new RuntimeException("Not support!");
+            //throw new RuntimeException("Not support!");
         }
 
         _diploid = diploid;

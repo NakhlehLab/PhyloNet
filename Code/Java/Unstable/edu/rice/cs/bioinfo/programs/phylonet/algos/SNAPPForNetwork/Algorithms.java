@@ -26,6 +26,7 @@ public class Algorithms
     public static final boolean SWITCH_EXP_APPROX = true;
     public static boolean SWITCH_APPROX_SPLIT = false;
     public static boolean SWITCH_FMATRIX_CACHE = false;
+    public static int[] targetSplittingIndices = null;
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
         for(int i=0; i<index1.length; i++) {
@@ -262,6 +263,7 @@ public class Algorithms
         {
             for (R r : R.loopOver(n))
             {
+                //if(r.getIndex() < eq.rows)
                 sum += rootFBot.get(r) * eq.get(r.getIndex(), 0);
             }
         }
@@ -293,6 +295,7 @@ public class Algorithms
             processInternalTreeNode(node, data, isArticulation, siteID);
         } else if(node.isNetworkNode()){
             processNetworkNode(node, data, numReticulations, reticulationID, siteID);
+            //examineBranchOfNode(Q, node, data);
         }
         if(PRINT_DETAILS){
             System.out.println("FBottoms:");
@@ -356,7 +359,51 @@ public class Algorithms
     }
 
 
+    private static void examineBranchOfNode(QParameters Q, NetNode<SNAPPData[]> node, SNAPPData data)
+    {
+        Iterator<NetNode<SNAPPData[]>> parentIt = node.getParents().iterator();
+        NetNode<SNAPPData[]> parent1 = parentIt.next();
+        NetNode<SNAPPData[]> parent2 = parentIt.next();
 
+        int mx = data.getFBottoms(parent1).get(data.getFBottoms(parent1).size() - 1).Item1.mx;
+        int index = 0;
+        double sum = 0;
+
+        Map<Integer, Double> sums = new TreeMap<>();
+
+        for (index = 0 ; index < data.getFBottoms(parent1).size() ; index++) {
+            Tuple<FMatrix, int[]> fBot1 = data.getFBottoms(parent1).get(index);
+            Tuple<FMatrix, int[]> fBot2 = data.getFBottoms(parent2).get(index);
+            int n = fBot1.Item1.mx + fBot2.Item1.mx;
+            if(!sums.containsKey(n))
+                sums.put(n, 0.0);
+            sums.put(n, sums.get(n) + fBot1.Item1.getSum() * fBot2.Item1.getSum());
+        }
+
+        for(Integer n : sums.keySet()) {
+            System.out.println(n + "\t" + sums.get(n));
+        }
+/*
+        for (int n = 1; n <= mx; n++) {
+            //System.out.println("n=" + n);
+            sum = 0;
+            for (R r : R.loopOver(n)) {
+
+                //System.out.println(r);
+                for (R[] splitRPair : splittingR(r)) {
+                    //System.out.println(r + " -> " + splitRPair[0] + " + " + splitRPair[1]);
+
+                    Tuple<FMatrix, int[]> fBot1 = data.getFBottoms(parent1).get(index);
+                    Tuple<FMatrix, int[]> fBot2 = data.getFBottoms(parent2).get(index);
+                    //System.out.println(fBot2.Item2[0] + "\t" + fBot1.Item1.getSum() * fBot2.Item1.getSum() + "\t" + r + " -> " + splitRPair[0] + " + " + splitRPair[1]);
+                    sum += fBot1.Item1.getSum() * fBot2.Item1.getSum();
+                    index++;
+                }
+            }
+            System.out.println(n + "\t" + sum);
+        }
+        System.out.println(sum);*/
+    }
 
 
     /**
@@ -392,6 +439,7 @@ public class Algorithms
             if(data.getFBottoms(parent).isEmpty()) {
 
             } else {
+                int index = 1;
                 for (Tuple<FMatrix, int[]> fBot : data.getFBottoms(parent)) {
                     FMatrix fTop = new FMatrix(fBot.Item1.mx, fBot.Item1.hasEmptyR);
                     if (fTop.mx != 0 && !fBot.Item1.isArrAllZero()) {
@@ -433,6 +481,9 @@ public class Algorithms
                         }
                     }
                     data.addFTop(parent, fTop, fBot.Item2);
+                    //if(node.getName().equals("I1"))
+                    //    System.out.println(index + "\t" + fTop.getSum());
+                    index++;
                 }
             }
         }
@@ -775,19 +826,20 @@ public class Algorithms
                 data.addFBottom(parents[0], fm, splittingIndex);
                 data.addFBottom(parents[1], fm, splittingIndex);
             }
-
-            for (int n = 1; n <= fTop.mx; n++)
+            int mx = fTop.mx;
+            for (int n = 1; n <= mx; n++)
             {
                 //System.out.println("n=" + n);
                 for (R r : R.loopOver(n)) {
                     double prob = fTop.get(r);
-                    if(SWITCH_APPROX_SPLIT) {
+                    /*if(SWITCH_APPROX_SPLIT) {
                         if (prob < 1e-3)
                             continue;
-                    }
+                    }*/
 
                     //System.out.println(r);
                     for(R[] splitRPair: splittingR(r)){
+                        //System.out.println(r.getNum(0) + "\t" + r.getNum(1) + "\t" + splitRPair[0].getNum(0) + "\t" + splitRPair[0].getNum(1) + "\t" + splitRPair[1].getNum(0) + "\t" + splitRPair[1].getNum(1) + "\t" + r + " -> " + splitRPair[0] + " + " + splitRPair[1]);
 
                         boolean probSet = false;
                         for(int i=0; i<2; i++){
@@ -802,9 +854,9 @@ public class Algorithms
                                     //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + Math.pow(inheritanceProbs[0],splitRPair[0].n) + " * " + Math.pow(inheritanceProbs[1],splitRPair[1].n) + " * " + weight);
                                     double newProb = prob / weight * Math.pow(inheritanceProbs[0],splitRPair[0].n) * Math.pow(inheritanceProbs[1],splitRPair[1].n);
                                     //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + newProb);
+                                    //System.out.println(index);
                                     fm.set(splitRPair[i],newProb);
                                     probSet = true;
-
                                 }
                             }
                             int[] splittingIndex = tuple.Item2.clone();
@@ -833,7 +885,98 @@ public class Algorithms
             }
         }
 
-        //data.pruneFBottom();
+        data.pruneFBottom(targetSplittingIndices);
+    }
+
+    private static void processNetworkNode2(NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations, int reticulationID, int siteID)
+    {
+        if (node.getChildCount() != 1)
+            throw new RuntimeException("SNAPP does not work on networks with reticulation node with 2 or more children per node");
+
+        int added[] = new int[]{0, 0};
+        int splittingIndexDimension = -1;
+        double[] inheritanceProbs = new double[2];
+        NetNode[] parents = new NetNode[2];
+        int index = 0;
+        for(NetNode parent: node.getParents()){
+            inheritanceProbs[index] = node.getParentProbability(parent);
+            parents[index++] = parent;
+        }
+
+        index = 1;
+        for(Tuple<FMatrix,int[]> tuple: node.getChildren().iterator().next().getData()[siteID].getFTops(node)){
+            index = 1;
+            FMatrix fTop = tuple.Item1;
+            if(splittingIndexDimension == -1)
+                splittingIndexDimension = tuple.Item2.length;
+            if(fTop.mx == 0) {
+                int[] splittingIndex = tuple.Item2.clone();
+                //splittingIndex[reticulationID] = index++;
+                FMatrix fm = new FMatrix(0, true);
+                data.addFBottom(parents[0], fm, splittingIndex);
+                data.addFBottom(parents[1], fm, splittingIndex);
+            }
+            int mx = fTop.mx;
+            if(SWITCH_APPROX_SPLIT) {
+                mx = Math.min(mx, 5);
+            }
+            for (int n = 1; n <= mx; n++)
+            {
+                //System.out.println("n=" + n);
+                for (R r : R.loopOver(n)) {
+                    double prob = fTop.get(r);
+                    /*if(SWITCH_APPROX_SPLIT) {
+                        if (prob < 1e-3)
+                            continue;
+                    }*/
+
+                    //System.out.println(r);
+                    for(R[] splitRPair: splittingR(r)){
+
+                        boolean probSet = false;
+                        for(int i=0; i<2; i++){
+                            FMatrix fm = new FMatrix(splitRPair[i].n, splitRPair[i].n==0);
+                            if(fm.mx != 0){
+                                if(probSet){
+                                    fm.set(splitRPair[i],1);
+                                }
+                                else{
+                                    //int weight = calculateRWeight(r, splitRPair[0]);
+                                    double weight = r.getProbabilityOfSelecting(splitRPair[0]) / calculateRWeight(r, splitRPair[0]);
+                                    //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + Math.pow(inheritanceProbs[0],splitRPair[0].n) + " * " + Math.pow(inheritanceProbs[1],splitRPair[1].n) + " * " + weight);
+                                    double newProb = prob / weight * Math.pow(inheritanceProbs[0],splitRPair[0].n) * Math.pow(inheritanceProbs[1],splitRPair[1].n);
+                                    //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + newProb);
+                                    fm.set(splitRPair[i],newProb);
+                                    probSet = true;
+                                }
+                            }
+                            int[] splittingIndex = tuple.Item2.clone();
+                            splittingIndex[reticulationID] = index;
+                            /*if(SWITCH_APPROX_SPLIT) {
+                                double threshold = 1e-10;
+                                if(numReticulations == 1)
+                                    threshold = 1e-5;
+                                else if(numReticulations == 2)
+                                    threshold = 1e-4;
+                                else if(numReticulations > 2)
+                                    threshold = 1e-3;
+                                threshold = 1e-5;
+                                if (!fm.ifHasEmptyR() && fm.getSum() < threshold && added[i] > 0) {
+                                    i = 2;
+                                    continue;
+                                }
+                            }*/
+                            added[i]++;
+                            data.addFBottom(parents[i], fm, splittingIndex);
+                        }
+                        index++;
+                    }
+                    //System.out.println(r.n + ": " + totalweight);
+                }
+            }
+        }
+        data.cleanFBottomSplittingIndices2();
+
     }
 
 
@@ -850,7 +993,7 @@ public class Algorithms
 
 
 
-    private static List<R[]> splittingR(R r){
+    public static List<R[]> splittingR(R r){
         List<R[]> splittingRs = new ArrayList<R[]>();
 
         if(R.dims == 3) {

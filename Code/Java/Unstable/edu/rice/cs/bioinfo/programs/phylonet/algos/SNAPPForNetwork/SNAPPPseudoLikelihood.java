@@ -176,7 +176,7 @@ public class SNAPPPseudoLikelihood {
                 leaves.add(triplet.Item2);
                 leaves.add(triplet.Item3);
             }
-            Network subNetwork = superNetwork.getSubNetwork(network, leaves, false, false);
+            Network subNetwork = superNetwork.getSubNetwork(network, leaves, Utils._CONST_POP_SIZE, false);
             Networks.autoLabelNodes(subNetwork);
             triplets2subnetworks.put(triplet, subNetwork);
         }
@@ -210,6 +210,7 @@ public class SNAPPPseudoLikelihood {
 
         ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
         DoubleAdder adder = new DoubleAdder();
+        long start = System.currentTimeMillis();
 
         for(Tuple3<String, String, String> triplet : triplets) {
             /*if(cache.containsKey(triplet)) {
@@ -233,13 +234,14 @@ public class SNAPPPseudoLikelihood {
 
         try {
             executor.shutdown();
-            executor.awaitTermination(1000, TimeUnit.SECONDS);
+            executor.awaitTermination(3600, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         SNAPPLikelihood.workloadCounter.increment();
 
         double sum = adder.sumThenReset();
+        System.out.println("Time to compute pseudo-likelihood(s): " + (System.currentTimeMillis()-start)/1000.0);
         return sum;
     }
 

@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
+import Jama.Matrix;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.RateModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.matrixexponentiation.GenericKrylovMethod;
@@ -518,6 +519,17 @@ public class MatrixQ{
         for(int i = 1 ; i < n ; i++)
             real[i] = r[i]._re;
         return real;
+    }
+
+    public static void main(String []args) {
+        double pi0 = 0.5;
+        double pi1 = 1.0 - pi0;
+        BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[]{pi0, pi1}, new double[]{1.0 / (2.0 * pi0)});
+
+        MatrixQ q = new MatrixQ(BAGTRModel, 1, 0.01);
+        double f[] = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0}; // first element is reserved
+        double g[] = q.cfexp(5, f, 2);
+        System.out.println(g);
     }
 
 }

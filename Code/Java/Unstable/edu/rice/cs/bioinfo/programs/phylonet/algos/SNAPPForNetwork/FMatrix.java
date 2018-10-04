@@ -130,6 +130,9 @@ public class FMatrix
         for(double value: arr){
             sum += value;
         }
+        if(arr.length == 0) {
+            sum = 1.0;
+        }
         return sum;
     }
 }

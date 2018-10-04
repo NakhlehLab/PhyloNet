@@ -7,6 +7,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.dimens
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.param.OptimizeAll;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.DataGenerator;
@@ -52,7 +54,7 @@ public class Test {
         //testBranchlength();
         //testSecondData(args);
         //testMosquitoData(args);
-        testOurisiaData(args);
+        //testOurisiaData(args);
         //test012Data(args);
         //trim012Data(args);
         //testWithDingqiaoNetwork(args);
@@ -67,7 +69,192 @@ public class Test {
         //generateSecondSNPdata();
         //processMosquitoData();
         //verifyLikelihood();
+        //testTrinet();
+        //while(true)
+        testTrinet2();
+    }
 
+    public static void testTrinet2() {
+        int mx = 10;
+        for (int n = 1; n <= mx; n++) {
+            //System.out.println("n=" + n);
+            for (R r : R.loopOver(n)) {
+                //System.out.println(r);
+                for (R[] splitRPair : Algorithms.splittingR(r)) {
+                    System.out.println(r.getNum(0) + "\t" + r.getNum(1) + "\t" + splitRPair[0].getNum(0) + "\t" + splitRPair[0].getNum(1) + "\t" + splitRPair[1].getNum(0) + "\t" + splitRPair[1].getNum(1) + "\t" + r + " -> " + splitRPair[0] + " + " + splitRPair[1]);
+                }
+            }
+        }
+
+        for(int si = 1 ; si <= 1000 ; si++) {
+
+            double alpha1 = 0.005;
+            double alpha2 = 0.004;
+            double alpha3 = 0.006;
+            double alpha4 = 0.008;
+            double a = 0;
+            double b = 0;
+            double c = 0;
+            double theta = 0.01;
+            double gamma = 0.6;
+            double pi0 = 0.5;
+            double pi1 = 1 - pi0;
+
+            Map<String, List<String>> species2alleles = new HashMap<>();
+            Map<String, String> alleles2species = new HashMap<>();
+
+            Algorithms.targetSplittingIndices = new int[]{si};
+
+            species2alleles.put("A", new ArrayList<>());
+            species2alleles.put("B", new ArrayList<>());
+            species2alleles.put("C", new ArrayList<>());
+            for (int i = 0; i < 10; i++) {
+                species2alleles.get("A").add("A_" + i);
+                species2alleles.get("B").add("B_" + i);
+                species2alleles.get("C").add("C_" + i);
+                alleles2species.put("A_" + i, "A");
+                alleles2species.put("B_" + i, "B");
+                alleles2species.put("C_" + i, "C");
+            }
+
+            BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[]{pi0, pi1}, new double[]{1.0 / (2.0 * pi0)});
+
+            String netstring = String.format("[%f](((B:%f)I3#H1:%f::%f,A:%f)I1:%f,(C:%f,I3#H1:%f::%f)I2:%f)I0;", theta, alpha2, alpha1 - alpha2, gamma, alpha1, alpha4 - alpha1, alpha3, alpha3 - alpha2, 1.0 - gamma, alpha4 - alpha3);
+            //String netstring = "[0.02]((((B:0.01)#H1:0.03::0.6)#H2:0.02::0.7,A:0.06):0.03,((C:0.02,#H1:0.01::0.4):0.03,#H2:0.01::0.3):0.04);";
+            //String netstring = "[0.02]((((A:0.17893722643238655,B:0.17893722643238655)I5:0.09988285933824922)II1#H1:0.0513748447556609::0.2602342615335457,C:0.33019493052629667)II0:0.008403149546356792,II1#H1:0.05977799430201769::0.7397657384664543)I4;";
+
+            Network trueNetwork = Networks.readNetworkWithRootPop(netstring);
+            for (Object nodeObj : Networks.postTraversal(trueNetwork)) {
+                NetNode node = (NetNode) nodeObj;
+                for (Object parentObj : node.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    node.setParentSupport(parent, theta);
+                }
+            }
+
+            Map<String, String> onesnp = new HashMap<>();
+            for (String species : species2alleles.keySet()) {
+                int i = 0;
+                for (String allele : species2alleles.get(species)) {
+                    if (species.equals("A")) {
+                        if (i < 5)
+                            onesnp.put(allele, "0");
+                        else
+                            onesnp.put(allele, "1");
+                    } else if (species.equals("B")) {
+                        if (i < 5)
+                            onesnp.put(allele, "0");
+                        else
+                            onesnp.put(allele, "1");
+                    } else if (species.equals("C")) {
+                        if (i < 5)
+                            onesnp.put(allele, "0");
+                        else
+                            onesnp.put(allele, "1");
+                    }
+
+                    i++;
+                }
+            }
+
+            List<Alignment> alns = new ArrayList<>();
+            Alignment aln = new Alignment(onesnp);
+            alns.add(aln);
+            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(alleles2species, alns);
+
+            for (RPattern r : aln._RPatterns.keySet()) {
+                double[] t = aln._RPatterns.get(r);
+                //System.out.println(r.toString() + " " + t[0] + " " + t[1]);
+            }
+
+            long start = System.currentTimeMillis();
+            double logL;
+            logL = SNAPPLikelihood.computeSNAPPLikelihoodST(trueNetwork, aln._RPatterns, BAGTRModel);
+            //System.out.println();
+            System.out.println(Math.exp(logL));
+            //System.out.println("Likelihood time(s): " + (System.currentTimeMillis()-start)/1000.0);
+        }
+
+    }
+
+    public static void testTrinet() {
+        List<Tuple<Double, Double>> pairs = new ArrayList<>();
+        long start = System.currentTimeMillis();
+        String tRPattern = "A: R{0=0,1=10,} B: R{0=10,1=0,} C: R{0=10,1=0,} ";
+        for(double sweep = 0.0045 ; sweep <= 0.0075 ; sweep += 0.0001) {
+            System.out.println(sweep);
+            double alpha1 = 0.005;
+            double alpha2 = 0.004;
+            double alpha3 = 0.006;
+            double alpha4 = 0.008;
+            double a = 0;
+            double b = 0;
+            double c = 0;
+            double theta = 0.01;
+            double gamma = 0.6;
+            double pi0 = 0.5;
+            double pi1 = 1 - pi0;
+
+            Map<String, List<String>> species2alleles = new HashMap<>();
+            Map<String, String> alleles2species = new HashMap<>();
+
+            species2alleles.put("A", new ArrayList<>());
+            species2alleles.put("B", new ArrayList<>());
+            species2alleles.put("C", new ArrayList<>());
+            for (int i = 0; i < 10; i++) {
+                species2alleles.get("A").add("A_" + i);
+                species2alleles.get("B").add("B_" + i);
+                species2alleles.get("C").add("C_" + i);
+                alleles2species.put("A_" + i, "A");
+                alleles2species.put("B_" + i, "B");
+                alleles2species.put("C_" + i, "C");
+            }
+
+            int numSites = 1000000;
+
+            BiAllelicGTR BAGTRModel = new BiAllelicGTR(new double[]{pi0, pi1}, new double[]{1.0 / (2.0 * pi0)});
+
+            String netstring = String.format("[%f](((B:%f)I3#H1:%f::%f,A:%f)I1:%f,(C:%f,I3#H1:%f::%f)I2:%f)I0;", theta, alpha2, alpha1 - alpha2, gamma, alpha1, alpha4 - alpha1, alpha3, alpha3 - alpha2, 1.0 - gamma, alpha4 - alpha3);
+
+            Network trueNetwork = Networks.readNetworkWithRootPop(netstring);
+            for (Object nodeObj : Networks.postTraversal(trueNetwork)) {
+                NetNode node = (NetNode) nodeObj;
+                for (Object parentObj : node.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    node.setParentSupport(parent, theta);
+                }
+            }
+
+            SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, 12345678L);
+            simulator._diploid = false;
+            start = System.currentTimeMillis();
+            Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, species2alleles, numSites, true);
+            System.out.println("Simulator time(s): " + (System.currentTimeMillis()-start)/1000.0);
+
+            List<Alignment> alns = new ArrayList<>();
+            Alignment aln = new Alignment(onesnp);
+            alns.add(aln);
+            start = System.currentTimeMillis();
+            aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(alleles2species, alns);
+            System.out.println("Summarizing patterns time(s): " + (System.currentTimeMillis()-start)/1000.0);
+            start = System.currentTimeMillis();
+            //System.out.println(SNAPPLikelihood.computeSNAPPLikelihoodST(trueNetwork, aln._RPatterns, BAGTRModel));
+            //System.out.println("Likelihood time(s): " + (System.currentTimeMillis()-start)/1000.0);
+
+            for (RPattern r : aln._RPatterns.keySet()) {
+                double[] t = aln._RPatterns.get(r);
+                if(r.toString().equals(tRPattern)) {
+                    pairs.add(new Tuple<>(sweep, t[0]));
+                    System.out.println(r.toString() + " " + t[0] + " " + t[1]);
+                    break;
+                }
+                System.out.println(r.toString() + " " + t[0] + " " + t[1]);
+            }
+        }
+
+        for(Tuple<Double, Double> tuple : pairs) {
+            System.out.println("{" + tuple.Item1 + "," + tuple.Item2 + "},");
+        }
     }
 
     public static void testMultiThread() {

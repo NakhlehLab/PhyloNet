@@ -281,6 +281,7 @@ public class SummaryBL {
                 if(net == null) {
                     continue;
                 }
+                _samples.add(Networks.readNetwork(s));
                 if(Networks.hasTheSameTopology(this._net, net)) {
                     Map<NetNode, NetNode> map = Networks.mapTwoNetworks(this._net, net);
                     this._size++;
@@ -453,6 +454,10 @@ public class SummaryBL {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Network> getSamples() {
+        return _samples;
     }
 
     public void report(double scale, double popScale) {

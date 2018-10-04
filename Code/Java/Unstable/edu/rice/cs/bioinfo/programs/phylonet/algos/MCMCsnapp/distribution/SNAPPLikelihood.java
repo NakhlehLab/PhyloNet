@@ -378,6 +378,8 @@ public class SNAPPLikelihood {
             }));
         }
 
+        //System.out.println(network.toString());
+
         int nameCount = 0;
         Network net = Networks.readNetwork(network.toString());
         net.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
@@ -436,7 +438,7 @@ public class SNAPPLikelihood {
         Network cloneNetwork = Networks.readNetwork(netstring);
         cloneNetwork.getRoot().setRootPopSize(network.getRoot().getRootPopSize());
         SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, BAGTRModel, theta, maxLineages);
-        //long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         for(RPattern pattern : patterns.keySet()) {
             double count = patterns.get(pattern)[0];
             double correction = patterns.get(pattern)[1];
@@ -466,7 +468,8 @@ public class SNAPPLikelihood {
             sum -= numsites * Math.log(1.0 - sumMono);
         }
 
-        //System.out.println((System.currentTimeMillis()-start)/1000.0);
+        // System.out.println("Time to compute likelihood for trinet " + network.toString() + " " + (System.currentTimeMillis()-start)/1000.0);
+
         return sum;
     }
 

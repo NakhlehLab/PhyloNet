@@ -34,6 +34,7 @@ import java.util.*;
 //TODO: Move out of MCMC package
 public class SimulatedAnnealing {
     public static boolean _printDetails = false;
+    private static boolean _enableStrategy = false;
     BiAllelicGTR _BAGTRModel = null;
     private boolean _scoreEachTopologyOnce = false;
     private List<Tuple<Network,Double>> _networksTried = new ArrayList<>();    //only used when _scoreEachTopologyOnce is true
@@ -292,11 +293,14 @@ public class SimulatedAnnealing {
         for(int i=startingI; i<=numRuns; i++){
             _currentRound = i;
             if(i == startingI) {
-                Utils._NET_MAX_RETI = 0;
+                Utils._NET_MAX_RETI = _enableStrategy ? 0 : _maxReticulations;
                 _maxExaminations = 5000;
             } else {
                 _maxExaminations = tempExaminations;
-                Utils._NET_MAX_RETI = Math.min(Utils._NET_MAX_RETI + 1, _maxReticulations);
+                if(_enableStrategy)
+                    Utils._NET_MAX_RETI = Math.min(Utils._NET_MAX_RETI + 1, _maxReticulations);
+                else
+                    Utils._NET_MAX_RETI = _maxReticulations;
             }
             //_maxExaminations = 10;
             long startingTime = System.currentTimeMillis();

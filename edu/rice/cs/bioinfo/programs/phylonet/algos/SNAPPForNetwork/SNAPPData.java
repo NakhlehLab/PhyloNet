@@ -90,17 +90,16 @@ public class SNAPPData {
         fBotList.add(matrixTuple);
     }
 
-    public void pruneFBottom() {
+    public void pruneFBottom(int[] targetSplittingIndex) {
+        if(targetSplittingIndex == null) return;
         for(NetNode node : FBottomsMap.keySet()) {
-            Collections.sort(FBottomsMap.get(node), new Comparator<Tuple<FMatrix, int[]>>(){
-                public int compare(Tuple<FMatrix, int[]> p1, Tuple<FMatrix, int[]> p2){
-                    return -Double.compare(p1.Item1.getSum(), p2.Item1.getSum());
+            Set<Tuple<FMatrix, int[]>> toRemove = new HashSet<>();
+            for(Tuple<FMatrix, int[]> tuple : FBottomsMap.get(node)) {
+                if(!Arrays.equals(tuple.Item2, targetSplittingIndex)) {
+                    toRemove.add(tuple);
                 }
-            });
-            for(int i = FBottomsMap.get(node).size() - 1 ; i >= 100 ; i--)
-                if(FBottomsMap.get(node).get(i).Item1.getSum() < 5e-3)
-                    FBottomsMap.get(node).remove(i);
-            //FBottomsMap.put(node, FBottomsMap.get(node).subList(0, Math.min(100, FBottomsMap.get(node).size())));
+            }
+            FBottomsMap.get(node).removeAll(toRemove);
         }
     }
 
@@ -136,18 +135,92 @@ public class SNAPPData {
         NetNode parent = FBottomsMap.keySet().iterator().next();
         double[] arr = new double[R.getMatrixSize(maxMX)];
         int splittingIndexDimension = -1;
+        int index = 1;
+        double [] div = null;
         for(Tuple<FMatrix, int[]> fm: FBottomsMap.get(parent)){
             if(splittingIndexDimension == -1){
                 splittingIndexDimension = fm.Item2.length;
             }
             int i = 0;
             for(double value: fm.Item1.arr){
+                //System.out.print(fm.Item1.arr[i] + "\t");
                 arr[i++] += value;
             }
+            //System.out.println();
+            //System.out.println(index + "\t" + fm.Item1.getSum());
+            index++;
         }
+
+        /*index = 1;
+        System.out.println();
+        for(Tuple<FMatrix, int[]> fm: FBottomsMap.get(parent)){
+            if(index == 120) {
+                div = fm.Item1.arr;
+            } else if(index > 120) {
+                for(int i = 0 ; i < div.length ; i++) {
+                    System.out.print(Math.log(fm.Item1.arr[i]) - Math.log(div[i]) + "\t");
+                }
+            }
+            System.out.println();
+            index++;
+        }*/
+
+
         int[] splittingIndex = new int[splittingIndexDimension];
         FMatrix fBot = new FMatrix(maxMX, arr, maxMX == 0);
         FBottomsMap.clear();
         addFBottom(parent, fBot, splittingIndex);
+
+        //System.out.println("Final");
+        //for(int i = 0 ; i < arr.length ; i++) {
+        //    System.out.print(arr[i] + ",");
+        //}
+    }
+
+    public void cleanFBottomSplittingIndices2() {
+        for (NetNode parent : FBottomsMap.keySet()) {
+            double[] arr = new double[R.getMatrixSize(maxMX)];
+            int splittingIndexDimension = -1;
+            int index = 1;
+            double[] div = null;
+            for (Tuple<FMatrix, int[]> fm : FBottomsMap.get(parent)) {
+                if (splittingIndexDimension == -1) {
+                    splittingIndexDimension = fm.Item2.length;
+                }
+                int i = 0;
+                for (double value : fm.Item1.arr) {
+                    //System.out.print(fm.Item1.arr[i] + "\t");
+                    arr[i++] += value;
+                }
+                //System.out.println();
+                //System.out.println(index + "\t" + fm.Item1.getSum());
+                index++;
+            }
+
+        /*index = 1;
+        System.out.println();
+        for(Tuple<FMatrix, int[]> fm: FBottomsMap.get(parent)){
+            if(index == 120) {
+                div = fm.Item1.arr;
+            } else if(index > 120) {
+                for(int i = 0 ; i < div.length ; i++) {
+                    System.out.print(Math.log(fm.Item1.arr[i]) - Math.log(div[i]) + "\t");
+                }
+            }
+            System.out.println();
+            index++;
+        }*/
+
+
+            int[] splittingIndex = new int[splittingIndexDimension];
+            FMatrix fBot = new FMatrix(maxMX, arr, maxMX == 0);
+            FBottomsMap.get(parent).clear();
+            addFBottom(parent, fBot, splittingIndex);
+
+            //System.out.println("Final");
+            //for(int i = 0 ; i < arr.length ; i++) {
+            //    System.out.print(arr[i] + ",");
+            //}
+        }
     }
 }

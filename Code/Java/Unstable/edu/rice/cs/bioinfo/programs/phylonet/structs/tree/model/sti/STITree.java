@@ -249,6 +249,7 @@ public class STITree<D extends Object> implements MutableTree {
 		for(TNode leaf: _root.getLeaves()){
 			leaves[index++]=leaf.getName();
 		}
+		Arrays.sort(leaves);
 		return leaves;
 	}
 

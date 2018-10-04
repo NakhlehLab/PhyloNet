@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -180,7 +181,7 @@ public class STITreeCluster<D extends Object> {
 	 * Returns the hash code of this cluster
 	 */
 	public int hashCode(){
-		return _cluster.hashCode()+_taxa.hashCode();
+		return _cluster.hashCode()+ Arrays.hashCode(_taxa);
 	}
 
 

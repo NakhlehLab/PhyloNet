@@ -945,6 +945,7 @@ public class GeneTreeProbabilityIntegrated {
      */
     private boolean[][] calculateSorR(Tree tree){
         int nnode = tree.getNodeCount();
+
         boolean[][] matrix = new boolean[nnode][nnode];
         for(int i=0; i<nnode; i++){
             for(int j=0; j<nnode; j++){

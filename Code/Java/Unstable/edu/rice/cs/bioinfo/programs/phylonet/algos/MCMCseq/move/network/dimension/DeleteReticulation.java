@@ -16,9 +16,10 @@ import java.util.List;
  */
 public class DeleteReticulation extends DimensionChange {
 
-    private double _logHR;
-    private NetNode<NetNodeInfo> _v1, _v2, _v3, _v4, _v5, _v6;
-    private double _oldGamma;
+    protected double _logHR;
+    protected NetNode<NetNodeInfo> _v1, _v2, _v3, _v4, _v5, _v6;
+    protected double _oldGamma;
+    private double _popSizeV3V1, _popSizeV5V2, _popSizeV1V2;
 
     public DeleteReticulation(UltrametricNetwork net) {
         super(net);
@@ -54,8 +55,12 @@ public class DeleteReticulation extends DimensionChange {
                     double pad = numRetiNodes == 1 ? 2.0 : 1.0;
                     double numRetiEdges = 2 * numRetiNodes;
                     double numEdges = 2 * (_network.getNetwork().getLeafCount() - 1) + 3 * (numRetiNodes - 1);
-                    double l1 = (_v3 != null ? _v3.getData().getHeight() : (_v4.getData().getHeight() * 2.0)) - _v4.getData().getHeight();
+                    double l1 = _v3 != null ? (_v3.getData().getHeight() - _v4.getData().getHeight()) : _time_scale ;
                     double l2 = _v5.getData().getHeight() - _v6.getData().getHeight();
+
+                    _popSizeV3V1 = getParameters(_v3, _v1)[1];
+                    _popSizeV5V2 = getParameters(_v5, _v2)[1];
+                    _popSizeV1V2 = getParameters(_v1, _v2)[1];
 
                     double logPopSize = removeReticulation(_v1, _v2, _v3, _v4, _v5, _v6);
 
@@ -63,6 +68,12 @@ public class DeleteReticulation extends DimensionChange {
                     // convert to coalescent unit
                     _logHR = Math.log(pad / l1 * _time_scale / l2 * _time_scale
                             * numRetiEdges / numEdges / (numEdges-1.0)) + logPopSize;
+
+                    if(_v3 == null) {
+                        double lambda = 1.0 / nodeHeights.getMean();
+                        double rootDelta = _v1.getData().getHeight() - _v4.getData().getHeight();
+                        _logHR += Math.log(lambda) - lambda * rootDelta;
+                    }
                 }
             }
         }
@@ -72,7 +83,7 @@ public class DeleteReticulation extends DimensionChange {
     @Override
     public void undo() {
         if(_logHR == Utils.INVALID_MOVE) return;
-        addReticulation(_v1, _v2, _v3, _v4, _v5, _v6, _oldGamma); // TODO: this is a bug: old parameters may be changed
+        undoDeleteReticulation(_v1, _v2, _v3, _v4, _v5, _v6, _oldGamma, _popSizeV3V1, _popSizeV5V2, _popSizeV1V2);
     }
 
     @Override

@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import java.util.List;
 import java.util.concurrent.atomic.DoubleAdder;
@@ -52,15 +53,18 @@ public class AddReticulation extends DimensionChange {
         _v5 = edge2.Item2;
         _v6 = edge2.Item1;
 
-        double t3 = _v3 != null ? _v3.getData().getHeight() : (rootHeight * 2.0);
-        double t4 = _v4.getData().getHeight();
-        double l1 = t3 - t4;
-        double t1 = t4 + Randomizer.getRandomDouble() * l1;
+        double rootDelta = -1;
+        if(_v3 == null || _v5 == null) rootDelta = nodeHeights.sample();
 
-        double t5 = _v5 != null ? _v5.getData().getHeight() : (rootHeight * 2.0);
+        double t3 = _v3 != null ? _v3.getData().getHeight() : (rootHeight + rootDelta);
+        double t4 = _v4.getData().getHeight();
+        double l1 = _v3 != null ? t3 - t4 : _time_scale;
+        double t1 = _v3 != null ? t4 + Randomizer.getRandomDouble() * l1 : t4 + rootDelta;
+
+        double t5 = _v5 != null ? _v5.getData().getHeight() : (rootHeight + rootDelta);
         double t6 = _v6.getData().getHeight();
-        double l2 = t5 - t6;
-        double t2 = t6 + Randomizer.getRandomDouble() * l2;
+        double l2 = _v5 != null ? t5 - t6 : _time_scale;
+        double t2 = _v5 != null ? t6 + Randomizer.getRandomDouble() * l2 : t6 + rootDelta;
 
         if(l1 <= 0 || l2 <= 0) {
             throw new RuntimeException("Add reticulation error!");
@@ -83,7 +87,14 @@ public class AddReticulation extends DimensionChange {
         double hr = pda * l1 / _time_scale * l2 / _time_scale * numEdges * (numEdges-1.0) / numRetiEdges;
 
         _violate = false;
-        return Math.log(hr) + logPopSize;
+
+        double logHasting = Math.log(hr) + logPopSize;
+        if(rootDelta > 0) {
+            double lambda = 1.0 / nodeHeights.getMean();
+            logHasting += -Math.log(lambda) + lambda * rootDelta;
+        }
+
+        return logHasting;
     }
 
     @Override

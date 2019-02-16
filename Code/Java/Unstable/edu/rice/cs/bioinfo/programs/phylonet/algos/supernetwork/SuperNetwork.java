@@ -24,9 +24,9 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class SuperNetwork {
-    private List<Network> _subnetworks = null;
+    public List<Network> _subnetworks = null;
     private Network _supernetwork = null;
-    private Network _trueNetwork = null;
+    public Network _trueNetwork = null;
     private List<String> _nodeLabels = null;
     private Map<String, List<String>> _connections = null;
     private double eps = 1e-6;
@@ -276,7 +276,7 @@ public class SuperNetwork {
                 NetNode leaf = (NetNode) leafObj;
                 leafLabels.add(leaf.getName());
             }
-            Network newsubnet = getSubNetwork(result, leafLabels, false, false);
+            Network newsubnet = NetworkUtils.getSubNetwork(result, leafLabels, false);
 
             for(Object nodeObj : net.bfs()) {
                 NetNode node = (NetNode) nodeObj;
@@ -448,7 +448,7 @@ public class SuperNetwork {
                 NetNode leaf = (NetNode) leafObj;
                 leafLabels.add(leaf.getName());
             }
-            Network newsubnet = getSubNetwork(_supernetwork, leafLabels, true, false);
+            Network newsubnet = NetworkUtils.getSubNetwork(_supernetwork, leafLabels, true);
 
             for(Object nodeObj : Networks.postTraversal(net)) {
                 NetNode node = (NetNode) nodeObj;
@@ -479,59 +479,6 @@ public class SuperNetwork {
         return Math.abs(dist) < 1e-6;
     }
 
-    public Network getSubNetwork(Network trueNetwork, List<String> selectedLeaves, boolean removeBinaryNodes, boolean alterHeights) {
-        int subsize = selectedLeaves.size();
-        Network currentNetwork = trueNetwork.clone();
-        if(alterHeights) {
-            changeHeight(currentNetwork);
-        }
-
-        // bottom-up build subnetwork
-        Map<NetNode, BniNetNode> old2new = new HashMap<>();
-        Map<NetNode, Integer> hitCount = new HashMap<>();
-        for(String leaf : selectedLeaves) {
-            Set<NetNode> visited = new HashSet<>();
-            Queue<NetNode> queue = new LinkedList<>();
-            NetNode node = currentNetwork.findNode(leaf);
-            BniNetNode newleaf = new BniNetNode();
-            newleaf.setName(node.getName());
-            old2new.put(node, newleaf);
-            queue.add(node);
-            while(queue.size() > 0) {
-                node = queue.poll();
-                if(visited.contains(node)) continue;
-                if(!hitCount.containsKey(node)) {
-                    hitCount.put(node, 0);
-                }
-                hitCount.put(node, hitCount.get(node) + 1);
-                visited.add(node);
-                for(Object parentObj : node.getParents()) {
-                    NetNode parent = (NetNode) parentObj;
-                    queue.add(parent);
-                    BniNetNode newParentNode;
-                    if(old2new.containsKey(parent)) {
-                        newParentNode = old2new.get(parent);
-                    } else {
-                        newParentNode = new BniNetNode();
-                        newParentNode.setName(parent.getName());
-                        old2new.put(parent, newParentNode);
-                    }
-
-                    newParentNode.adoptChild(old2new.get(node), node.getParentDistance(parent));
-                    old2new.get(node).setParentProbability(newParentNode, node.getParentProbability(parent));
-                    old2new.get(node).setParentSupport(newParentNode, node.getParentSupport(parent));
-                }
-            }
-        }
-
-        Network newsubnetwork = new BniNetwork(old2new.get(currentNetwork.getRoot()));
-        newsubnetwork.getRoot().setRootPopSize(currentNetwork.getRoot().getRootPopSize());
-        if(removeBinaryNodes) {
-            Networks.removeBinaryNodes(newsubnetwork);
-        }
-        return newsubnetwork.clone();
-    }
-
     public void genRandomSubNetworks(Network trueNetwork, int num, int subsize) {
         _subnetworks = new ArrayList<>();
 
@@ -550,101 +497,7 @@ public class SuperNetwork {
             }
 
 
-            _subnetworks.add(getSubNetwork(trueNetwork, selectedLeaves, true, false));
-        }
-    }
-
-    public List<Network> genAllSubNetworks(Network trueNetwork, int subsize) {
-        _subnetworks = new ArrayList<>();
-
-        List<String> allLeaves = new ArrayList<>();
-        for(Object leafObj : trueNetwork.getLeaves()) {
-            NetNode leaf = (NetNode) leafObj;
-            allLeaves.add(leaf.getName());
-        }
-        Collections.sort(allLeaves);
-
-        Combinations combinations = new Combinations(trueNetwork.getLeafCount(), subsize);
-        Iterator<int[]> combination = combinations.iterator();
-        while(combination.hasNext()) {
-            int[] indices = combination.next();
-            List<String> selectedLeaves = new ArrayList<>();
-            for(int i = 0 ; i < indices.length ; i++) {
-                selectedLeaves.add(allLeaves.get(indices[i]));
-            }
-            _subnetworks.add(getSubNetwork(trueNetwork, selectedLeaves, true, false));
-        }
-
-        return _subnetworks;
-
-    }
-
-    public double[] getLowerAndUpperBoundOfHeight(NetNode node, Map<NetNode, Double> heights) {
-        double[] bounds = new double[] {Double.MIN_VALUE, Double.MAX_VALUE};
-        for(Object childObj: node.getChildren()) {
-            NetNode child = (NetNode) childObj;
-            bounds[0] = Math.max(bounds[0], heights.get(child));
-        }
-        for(Object parentObj: node.getParents()) {
-            NetNode parent = (NetNode) parentObj;
-            bounds[1] = Math.min(bounds[1], heights.get(parent));
-        }
-        return bounds;
-    }
-
-    public void setNodeHeight(NetNode node, double newHeight, Map<NetNode, Double> heights) {
-        heights.put(node, newHeight);
-        for(Object childObj: node.getChildren()) {
-            NetNode child = (NetNode) childObj;
-            child.setParentDistance(node, newHeight - heights.get(child));
-        }
-        for(Object parentObj: node.getParents()) {
-            NetNode parent = (NetNode) parentObj;
-            node.setParentDistance(parent, heights.get(parent) - newHeight);
-        }
-    }
-
-    public Map<NetNode, Double> getNodeHeights(Network network) {
-        Map<NetNode, Double> heightMap = new HashMap<>();
-        for(Object nodeObj : Networks.postTraversal(network)) {
-            NetNode node = (NetNode) nodeObj;
-            if(node.isLeaf()) {
-                heightMap.put(node, 0.0);
-            }
-            // store height of parents
-            for(Object parentObj : node.getParents()) {
-                NetNode parent = (NetNode) parentObj;
-                double parentHeight = node.getParentDistance(parent) + heightMap.get(node);
-                // check if network is ultrametric
-                if(heightMap.containsKey(parent)) {
-                    if(Math.abs(heightMap.get(parent) - parentHeight) > eps) {
-                        System.out.println("Input network is not ultrametric!");
-                        System.out.println(network.toString());
-                        System.exit(1);
-                    }
-                } else {
-                    heightMap.put(parent, parentHeight);
-                }
-            }
-        }
-        return heightMap;
-    }
-
-    public void changeHeight(Network network) {
-        Map<NetNode, Double> heights = getNodeHeights(network);
-
-        for(Object nodeObj : network.bfs()) {
-            NetNode node = (NetNode) nodeObj;
-            if(node.isLeaf()) {
-                continue;
-            }
-            double[] bounds = getLowerAndUpperBoundOfHeight(node, heights);
-            double oldHeight = heights.get(node);
-            double bound = oldHeight * 0.1;
-            bound = Math.min(bound, oldHeight - bounds[0]);
-            bound = Math.min(bound, bounds[1] - oldHeight);
-            double newHeight = oldHeight + (_random.nextDouble() - 0.5) * 2 * bound;
-            setNodeHeight(node, newHeight, heights);
+            _subnetworks.add(NetworkUtils.getSubNetwork(trueNetwork, selectedLeaves, true));
         }
     }
 
@@ -776,7 +629,7 @@ public class SuperNetwork {
 
     public Network addRandomReticulations(Network net, int numReti) {
         Network network = net.clone();
-        Map<NetNode, Double> height = getNodeHeights(network);
+        Map<NetNode, Double> height = NetworkUtils.getNodeHeightMapping(network);
 
         if(numReti == 0) {
             return network;
@@ -821,7 +674,7 @@ public class SuperNetwork {
             System.out.println("Converted: " + subNetworks.get(0));
             superNetwork._trueNetwork = subNetworks.get(0);
 
-            superNetwork.genAllSubNetworks(trueNetwork, 3);
+            NetworkUtils.genAllSubNetworks(trueNetwork, 3);
             //List<Network> subNetworks = superNetwork.getSubNetworks();
             for (Network net : superNetwork._subnetworks) {
                 System.out.println(net.toString());

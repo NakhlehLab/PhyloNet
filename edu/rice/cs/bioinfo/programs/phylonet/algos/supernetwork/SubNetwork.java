@@ -17,15 +17,23 @@ public class SubNetwork {
 
     public static void main(String[] args) {
         SuperNetwork superNetwork = new SuperNetwork(new ArrayList<>());
-        Network trueNetwork = Networks.readNetworkWithRootPop("[0.01](((((C:0.0015:0.01)#H1:0.0045:0.01:0.5,B:0.006:0.01):0.003:0.01)#H2:0.0015:0.01:0.5,A:0.0105:0.01):0.0045:0.01,((D:0.003:0.01,#H1:0.0015:0.01:0.5):0.009:0.01,#H2:0.003:0.01:0.5):0.003:0.01);");
+        Network trueNetwork = Networks.readNetworkWithRootPop("(((((((P:4.723,(O:2.0)#H1:2.723::0.6):7.87,N:12.593):2.829,(M:6.976,(L:3.0)#H2:3.976::0.8):8.446):3.272,((K:11.378,(#H1:4.0::0.4,J:6.0):5.378):4.977,((H:10.99,((G:6.106,((I:1.0)#H3:1.106::0.7,F:2.106):4.0):3.462,E:9.568):1.422):2.74,(#H2:1.0::0.2,D:4.0):9.73):2.625):2.339):2.535,(#H3:6.229::0.3,C:7.229):14.0):6.136,B:27.365):12.913,A:40.278);");
         System.out.println("True network: " + trueNetwork.toString());
 
         superNetwork.setTrueNetwork(trueNetwork);
+        List<String> leaves = new ArrayList<>();
+        leaves.add("C");
+        leaves.add("I");
+        leaves.add("D");
+        leaves.add("H");
+        leaves.add("F");
+        leaves.add("J");
+        leaves.add("L");
+        leaves.add("O");
+        leaves.add("M");
+        leaves.add("P");
 
-        superNetwork.genAllSubNetworks(trueNetwork, 3);
-        for (Network net : superNetwork.getSubNetworks()) {
-            //System.out.println(net.toString());
-            System.out.println("-truenet \""+ Networks.getFullString(net) + "\"");
-        }
+        Network subnet = NetworkUtils.getSubNetwork(trueNetwork, leaves, true);
+        System.out.println(Networks.getFullString(subnet));
     }
 }

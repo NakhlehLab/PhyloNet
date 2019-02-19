@@ -85,12 +85,12 @@ public class GeneTreeBrSpeciesNetDistribution {
     public double calculateGTDistribution(List<UltrametricTree> geneTrees){
         double logL = 0.0;
         for(UltrametricTree gt : geneTrees) {
-            logL += calculateGTDistribution(gt);
+            logL += calculateGTDistribution(gt, null);
         }
         return logL;
     }
 
-    public double calculateGTDistribution(UltrametricTree geneTree){
+    public double calculateGTDistribution(UltrametricTree geneTree, TreeEmbedding embedding){
         double gtProb = 0;
         String[] gtTaxa = geneTree.getTree().getLeaves();
         List<STITreeCluster<Double>> gtClusters = new ArrayList<>();
@@ -104,7 +104,7 @@ public class GeneTreeBrSpeciesNetDistribution {
         int netNodeIndex = 0;
         for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)){
             List<Configuration> CACs = computeAC(node, gtTaxa, gtTaxaSet, edge2ACminus, invalidConfigs, gtClusters);
-            gtProb = computeACMinus(node, netNodeIndex, edge2ACminus, invalidConfigs, gtClusters, CACs, R);
+            gtProb = computeACMinus(node, netNodeIndex, edge2ACminus, invalidConfigs, gtClusters, CACs, R, embedding);
             if(node.isNetworkNode()){
                 netNodeIndex++;
             }
@@ -239,7 +239,8 @@ public class GeneTreeBrSpeciesNetDistribution {
                                   Set<IntArray> invalidConfigs,
                                   List<STITreeCluster<Double>> gtClusters,
                                   List<Configuration> CACs,
-                                  boolean[][] R){
+                                  boolean[][] R,
+                                  TreeEmbedding embedding){
         double gtProb = 0;
         double lowTau = node.getData().getHeight(); // node's height
         double rootPopSize = _network.getRoot().getRootPopSize();
@@ -290,30 +291,59 @@ public class GeneTreeBrSpeciesNetDistribution {
                 for(int lineage: config._lineages){
                     lineageArray[index++] = lineage;
                 }
-                for(int i=0; i<=config.getLineageCount(); i++){
-                    for(boolean[] selectedLineages: getSelected(config.getLineageCount(),i)){
-                        Configuration newConfig1 = new Configuration();
-                        Configuration newConfig2 = new Configuration();
-                        index = 0;
-                        for(int lin: lineageArray) {
-                            if(selectedLineages[index]){
-                                newConfig1.addLineage(lin, gtClusters);
-                            } else{
-                                newConfig2.addLineage(lin, gtClusters);
-                            }
-                            index ++;
-                        }
-                        newConfig1.setNetNodeChoice(config._netNodeIndex);
-                        newConfig1.setTotalProbability(config._totalProb);
-                        newConfig1.addNetNodeChoice(netNodeIndex, configIndex);
-                        newCACs1.add(newConfig1);
 
-                        newConfig2.setNetNodeChoice(config._netNodeIndex);
-                        newConfig2.setTotalProbability(1);
-                        newConfig2.addNetNodeChoice(netNodeIndex, configIndex);
-                        newCACs2.add(newConfig2);
-                        configIndex ++;
+                if(embedding == null) {
+                    for (int i = 0; i <= config.getLineageCount(); i++) {
+                        for (boolean[] selectedLineages : getSelected(config.getLineageCount(), i)) {
+                            Configuration newConfig1 = new Configuration();
+                            Configuration newConfig2 = new Configuration();
+                            index = 0;
+                            for (int lin : lineageArray) {
+                                if (selectedLineages[index]) {
+                                    newConfig1.addLineage(lin, gtClusters);
+                                } else {
+                                    newConfig2.addLineage(lin, gtClusters);
+                                }
+                                index++;
+                            }
+                            newConfig1.setNetNodeChoice(config._netNodeIndex);
+                            newConfig1.setTotalProbability(config._totalProb);
+                            newConfig1.addNetNodeChoice(netNodeIndex, configIndex);
+                            newCACs1.add(newConfig1);
+
+                            newConfig2.setNetNodeChoice(config._netNodeIndex);
+                            newConfig2.setTotalProbability(1);
+                            newConfig2.addNetNodeChoice(netNodeIndex, configIndex);
+                            newCACs2.add(newConfig2);
+                            configIndex++;
+                        }
                     }
+                } else {
+                    Iterator<NetNode<NetNodeInfo>> parentIt = node.getParents().iterator();
+                    NetNode<NetNodeInfo> parent1 = parentIt.next();
+                    NetNode<NetNodeInfo> parent2 = parentIt.next();
+                    Configuration newConfig1 = new Configuration();
+                    Configuration newConfig2 = new Configuration();
+                    if(embedding.embedding.containsKey(new Tuple<>(parent1, node))) {
+                        for (STITreeCluster cl : embedding.embedding.get(new Tuple<>(parent1, node))) {
+                            newConfig1.addLineage(gtClusters.indexOf(cl), gtClusters);
+                        }
+                    }
+                    if(embedding.embedding.containsKey(new Tuple<>(parent2, node))) {
+                        for (STITreeCluster cl : embedding.embedding.get(new Tuple<>(parent2, node))) {
+                            newConfig2.addLineage(gtClusters.indexOf(cl), gtClusters);
+                        }
+                    }
+
+                    newConfig1.setNetNodeChoice(config._netNodeIndex);
+                    newConfig1.setTotalProbability(config._totalProb);
+                    newConfig1.addNetNodeChoice(netNodeIndex, configIndex);
+                    newCACs1.add(newConfig1);
+
+                    newConfig2.setNetNodeChoice(config._netNodeIndex);
+                    newConfig2.setTotalProbability(1);
+                    newConfig2.addNetNodeChoice(netNodeIndex, configIndex);
+                    newCACs2.add(newConfig2);
                 }
             }
             Iterator<NetNode<NetNodeInfo>> parentIt = node.getParents().iterator();
@@ -484,6 +514,9 @@ public class GeneTreeBrSpeciesNetDistribution {
 
 
         public void addLineage(int index, List<STITreeCluster<Double>> gtClusters){
+            if(index == -1) {
+                throw new RuntimeException("!!!");
+            }
             _lineages.add(index);
             _coverage.or(gtClusters.get(index).getCluster());
         }

@@ -2,12 +2,18 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.UltrametricTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wendingqiao on 10/17/14.
@@ -26,6 +32,8 @@ public class MC3 {
     private double _logPost;
     private double _logLikelihood;
     private double _logPrior;
+
+    private int examed = 0;
 
     public MC3(MC3Core core,
                State start,
@@ -53,12 +61,58 @@ public class MC3 {
 
         for (int i = 0; i < _sampleFrequency; i++) {
             accept = false;
-
+            _state.getUltrametricNetworkObject().checkLogDensity();
             logHastings = _state.propose();
+            examed++;
             op = _state.getOperation().getName();
 
             if(Utils.DEBUG_MODE) {
-                System.out.println(_temperature + " Proposed:"+ op + "\n" + _state.toString() + "\n" + _state.getNetwork());
+                System.out.println(_temperature + " Proposed:"+ op + "\n" + _state.toString() + "\n" + _state.getNetwork() + "\n" + Networks.getTopologyString(_state.getNetworkObject()));
+                System.out.println("logHasting: " + logHastings);
+
+                Map<Tree, Integer> count = new HashMap<>();
+                for(UltrametricTree gt : _state._geneTrees) {
+                    boolean exist = false;
+                    for(Tree key : count.keySet()) {
+
+                        if(Trees.haveSameRootedTopology(key, gt.getTree())) {
+                            exist = true;
+                            count.put(key, count.get(key) + 1);
+                            break;
+                        }
+                    }
+
+                    if(!exist) {
+                        count.put(gt.getTree(), 1);
+                    }
+                }
+
+                for(Tree key : count.keySet()) {
+                    System.out.println(key + " " + count.get(key));
+                }
+            }
+
+            if(logHastings != Utils.INVALID_MOVE && Utils.SAMPLE_EMBEDDINGS) {
+                if(op.equals("Slide-SubNet")) {
+                    //System.out.println(logHastings);
+                }
+                double embeddingLogHR = _state.getUltrametricNetworkObject().rebuildEmbeddings();
+                if(_state.getNetworkObject().getReticulationCount() > 0) {
+                    //System.out.println(embeddingLogHR);
+                }
+                if(op.equals("Slide-SubNet")) {
+                   // System.out.println(logHastings + " " + embeddingLogHR);
+                }
+
+                if(embeddingLogHR == Utils.INVALID_MOVE) {
+                    logHastings = Utils.INVALID_MOVE;
+                } else {
+                    logHastings += embeddingLogHR;
+                }
+            } else if(logHastings != Utils.INVALID_MOVE) {
+                if(op.equals("Slide-SubNet")) {
+                    // System.out.println(logHastings);
+                }
             }
 
             if(logHastings != Utils.INVALID_MOVE) {
@@ -75,9 +129,22 @@ public class MC3 {
                 double logNext = logLikelihoodNext + logPriorNext;
                 _logAlpha = (logNext - _logPost) / _temperature + logHastings;
 
+                if(Utils.DEBUG_MODE) {
+                    System.out.println("logPosteriorNext: " + logNext + " logPosteriorPrev: " + _logPost + " logAlpha: " + _logAlpha);
+                }
+
                 _state.getOperation().optimize(_logAlpha);
 
+                if(op.equals("Slide-SubNet")) {
+                    //System.out.println("Likelihood " + logNext + " " + _logPost);
+                }
+
                 if( _logAlpha >= Math.log(Randomizer.getRandomDouble()) ) {
+                    if(op.equals("Slide-SubNet")) {
+                       // System.out.println("!!!!! ");
+                        //System.out.println(Networks.getDendroscopeCompatibleString(_state.getNetworkObject()));
+                        //System.out.println(Networks.getFullString(_state.getNetworkObject()));
+                    }
                     _logLikelihood = logLikelihoodNext;
                     _logPrior = logPriorNext;
                     _logPost = logNext;
@@ -103,6 +170,7 @@ public class MC3 {
             }
             if(Utils.DEBUG_MODE) {
                 System.out.println("iteration=" + iteration + " i=" + i);
+                System.out.println();
             }
 
             if(_main) {
@@ -165,5 +233,7 @@ public class MC3 {
     public double getPosterior() {
         return _logPost;
     }
+
+    public String getCurrentNetwork() { return _state.getNetworkObject().toString(); }
 
 }

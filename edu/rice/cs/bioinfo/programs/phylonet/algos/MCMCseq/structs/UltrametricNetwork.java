@@ -1,5 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.StateNode;
@@ -8,18 +10,26 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTree
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.all.ScaleAll;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.AddReticulation;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.AddReticulationToBackbone;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.DeleteReticulation;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.DeleteReticulationFromBackbone;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.param.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.topo.*;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.TemporalConstraints;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkWithTheta;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITreeCluster;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
+import sun.nio.ch.Net;
 
 import java.util.*;
 
@@ -29,12 +39,19 @@ import java.util.*;
  */
 public class UltrametricNetwork extends StateNode {
 
-    private Network<NetNodeInfo> _network;
+    private Network<NetNodeInfo> _network; // not being copied across states
     private List<UltrametricTree> _geneTrees;
+    private List<Tree> _oldGeneTrees = null;
+    protected List<TreeEmbedding> _embeddings;
+    private List<TreeEmbedding> _oldEmbeddings;
+    private List<Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>> _retiEdges = null;
+
+    private int proposes = 0;
+
     private Map<String, List<String>> _species2alleles;
     private Map<String, String> _alleles2species;
 
-    private double[] _logGeneTreeNetwork = null;
+    public double[] _logGeneTreeNetwork = null;
     private double[] _logLtemp = null;
 
     private double[] _treeSpaceOpWeights;
@@ -42,7 +59,7 @@ public class UltrametricNetwork extends StateNode {
     private double[] _netOpWeights;
     private Operator[] _operators;
 
-    private int _numThreads;
+    private int _numThreads = 1;
 
     public UltrametricNetwork(List<UltrametricTree> gts, Map<String, List<String>> species2alleles) {
         this(null, gts, species2alleles);
@@ -57,6 +74,8 @@ public class UltrametricNetwork extends StateNode {
         this._species2alleles = s2a;
         this._alleles2species = null;
         this._numThreads = Utils._NUM_THREADS;
+        if(Utils.ONLY_BACKBONE_OP)
+            this._retiEdges = new ArrayList<>();
         if(this._species2alleles != null) {
             this._alleles2species = new HashMap<>();
             for(String key: this._species2alleles.keySet()){
@@ -100,32 +119,61 @@ public class UltrametricNetwork extends StateNode {
         Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(gts, _species2alleles, _alleles2species);
         initNetHeights(popSize, constraints);
         setOperators();
+        initializeEmbeddings();
+        NetBurnin();
     }
 
     private void setOperators() {
-        this._operators = new Operator[] {
-                new ChangePopSize(this),
-                new ScalePopSize(this),
-                new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
-                new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
-                new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
-                new AddReticulation(this),
-                new FlipReticulation(this), new MoveHead(this),
-                new DeleteReticulation(this),
-                new ChangeInheritance(this)
-        };
-        if (Utils._ESTIMATE_POP_SIZE) {
-            this._treeSpaceOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 0, Utils.Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
-            this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
-            this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+        if(Utils.ONLY_BACKBONE_OP) {
+            this._operators = new Operator[]{
+                    new ChangePopSize(this),
+                    new ScalePopSize(this),
+                    new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
+                    new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new AddReticulationToBackbone(this),
+                    new FlipReticulationOnBackbone(this),
+                    new DeleteReticulationFromBackbone(this),
+                    new ChangeInheritance(this)
+            };
+            if (Utils._ESTIMATE_POP_SIZE) {
+                this._treeSpaceOpWeights = Utils.getOperationWeights(
+                        Utils.Backbone_Net_Tree_Op_Weights, 0, Utils.Backbone_Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+                this._treeOpWeights = Utils.getOperationWeights(Utils.Backbone_Net_Tree_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+                this._netOpWeights = Utils.getOperationWeights(Utils.Backbone_Net_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+            } else {
+                this._treeSpaceOpWeights = Utils.getOperationWeights(
+                        Utils.Backbone_Net_Tree_Op_Weights, 3, Utils.Backbone_Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+                this._treeOpWeights = Utils.getOperationWeights(
+                        Utils.Backbone_Net_Tree_Op_Weights, 3, Utils.Backbone_Net_Tree_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+                this._netOpWeights = Utils.getOperationWeights(
+                        Utils.Backbone_Net_Op_Weights, 3, Utils.Backbone_Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+            }
         } else {
-            this._treeSpaceOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
-            this._treeOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
-            this._netOpWeights = Utils.getOperationWeights(
-                    Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+
+            this._operators = new Operator[]{
+                    new ChangePopSize(this),
+                    new ScalePopSize(this),
+                    new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
+                    new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
+                    new AddReticulation(this),
+                    new FlipReticulation(this), new MoveHead(this),
+                    new DeleteReticulation(this),
+                    new ChangeInheritance(this)
+            };
+            if (Utils._ESTIMATE_POP_SIZE) {
+                this._treeSpaceOpWeights = Utils.getOperationWeights(
+                        Utils.Net_Tree_Op_Weights, 0, Utils.Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+                this._treeOpWeights = Utils.getOperationWeights(Utils.Net_Tree_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+                this._netOpWeights = Utils.getOperationWeights(Utils.Net_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+            } else {
+                this._treeSpaceOpWeights = Utils.getOperationWeights(
+                        Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+                this._treeOpWeights = Utils.getOperationWeights(
+                        Utils.Net_Tree_Op_Weights, 3, Utils.Net_Tree_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+                this._netOpWeights = Utils.getOperationWeights(
+                        Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+            }
         }
     }
 
@@ -134,6 +182,54 @@ public class UltrametricNetwork extends StateNode {
         this._network = Networks.readNetwork(s);
         this._geneTrees = null;
         initNetHeights(null);
+    }
+
+    // used only for debug only
+    public UltrametricNetwork(Network network, List<UltrametricTree> gts) {
+        this._network = network;
+        this._geneTrees = gts;
+        initNetHeights();
+        initializeEmbeddings();
+    }
+
+    private void NetBurnin() {
+        if(Utils._START_NET_BURN_IN) {
+            int iter = 0;
+            double prevLogL = this.logDensity();
+            while (iter < 100000) {
+                double logHR = this.propose();
+                if(this._operator.getName().contains("Add-Reticulation")) {
+                    logHR = Utils.INVALID_MOVE;
+                }
+//              else if(!this._operator.getName().contains("Time") /*&& !this._operator.getName().contains("Pop")*/) {
+//                    logHR = Utils.INVALID_MOVE;
+//                }
+                else if(!isValid()) {
+                    logHR = Utils.INVALID_MOVE;
+                }
+                this.setDirty(true);
+                if(logHR != Utils.INVALID_MOVE) {
+                    double newLogL = this.logDensity();
+                    System.out.println("Proposed: " + this._operator.getName());
+                    System.out.println(Networks.getDendroscopeCompatibleString(this._network));
+                    if(newLogL > prevLogL) {
+                        prevLogL = newLogL;
+                        this.accept();
+                        System.out.println("Accepted");
+                    } else {
+                        this.undo();
+                        this.reject();
+                    }
+                } else {
+                    this.undo();
+                    this.reject();
+                }
+                iter++;
+            }
+
+            System.out.println("Optimized starting network ");
+            System.out.println(Networks.getDendroscopeCompatibleString(this._network));
+        }
     }
 
     public Network<NetNodeInfo> getNetwork() {
@@ -180,13 +276,43 @@ public class UltrametricNetwork extends StateNode {
         } else {
             this._operator = getOp(_operators, _netOpWeights);
         }
-        return this._operator.propose();
+        proposes++;
+
+        double logHR = this._operator.propose();
+        if(logHR != Utils.INVALID_MOVE && !this._operator.getName().equals("Scale-All") && Utils.RESAMPLE_GENE_TREES ) {
+            double rand = Randomizer.getRandomDouble();
+            if(rand < Utils.RESAMPLE_GENE_TREE_RATE) {
+                logHR += rebuildGeneTrees();
+            }
+        }
+
+        return logHR;
     }
 
     @Override
     public void undo() {
-        if(this._operator == null) throw new IllegalArgumentException("null operator");
-        this._operator.undo();
+        Set<NetNode> s1 = new HashSet<>();
+        for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)) {
+            s1.add(node);
+        }
+        if(this._operator != null) {
+            if (this._operator == null) throw new IllegalArgumentException("null operator");
+            this._operator.undo();
+        }
+
+        Set<NetNode> s2 = new HashSet<>();
+        for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)) {
+            s2.add(node);
+        }
+
+        //if(!s1.containsAll(s2)) {
+        //    throw new RuntimeException("!!!!!");
+        //}
+    }
+
+    public List<Tuple<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>>> getRetiEdges() {
+        if(Utils.ONLY_BACKBONE_OP) return _retiEdges;
+        else return null;
     }
 
     @Override
@@ -196,7 +322,7 @@ public class UltrametricNetwork extends StateNode {
             return Utils.sum(_logLtemp);
         }
         // network changed
-        if(_dirty) {
+        if(_dirty || true) {
             _logLtemp = computeLikelihood();
             return Utils.sum(_logLtemp);
         }
@@ -206,11 +332,37 @@ public class UltrametricNetwork extends StateNode {
             GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistribution(_network, _species2alleles);
             for(int i = 0; i < _geneTrees.size(); i++) {
                 if(_geneTrees.get(i).isDirty()) {
-                    _logLtemp[i] = likelihoodCal.calculateGTDistribution(_geneTrees.get(i));
+                    if(Utils.SAMPLE_EMBEDDINGS) {
+                        _logLtemp[i] = likelihoodCal.calculateGTDistribution(_geneTrees.get(i), _embeddings.get(i));
+                    } else {
+                        _logLtemp[i] = likelihoodCal.calculateGTDistribution(_geneTrees.get(i), null);
+                    }
                 }
             }
         }
         return Utils.sum(_logLtemp);
+    }
+
+    public void checkLogDensity() {
+        if(_logGeneTreeNetwork != null) {
+            double[] l1s = logDensity1();
+            double l1 = Utils.sum(l1s);
+            double[] l2s = _logGeneTreeNetwork;
+            double l2 = Utils.sum(_logGeneTreeNetwork);
+            if (Math.abs(l1 - l2) > 0.001) {
+                for(int i = 0 ; i < l1s.length ; i++) {
+                    if(Math.abs(l1s[i] - l2s[i]) > 0.001) {
+                        System.out.print(i + " " + Math.abs(l1s[i] - l2s[i]) + " ");
+                    }
+                }
+                System.out.println();
+                throw new RuntimeException("!!!!! " + proposes);
+            }
+        }
+    }
+
+    public double[] logDensity1() {
+        return computeLikelihood();
     }
 
     @Override
@@ -220,6 +372,32 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public void accept() {
+        if(Utils.SAMPLE_EMBEDDINGS) {
+            for (int i = 0; i < _geneTrees.size(); i++) {
+                _oldEmbeddings.get(i).clear();
+            }
+        }
+
+        if(Utils.RESAMPLE_GENE_TREES) {
+            _oldGeneTrees = null;
+        }
+
+        if(_logGeneTreeNetwork != null) {
+            double[] l1s = logDensity1();
+            double l1 = Utils.sum(l1s);
+            double[] l2s = _logLtemp;
+            double l2 = Utils.sum(_logLtemp);
+            if (Math.abs(l1 - l2) > 0.001) {
+                for(int i = 0 ; i < l1s.length ; i++) {
+                    if(Math.abs(l1s[i] - l2s[i]) > 0.001) {
+                        System.out.print(i + " ");
+                    }
+                }
+                System.out.println();
+                throw new RuntimeException("!!!!! " + proposes);
+            }
+        }
+
         _dirty = false;
         if(_logLtemp != null) _logGeneTreeNetwork = _logLtemp;
         _logLtemp = null;
@@ -227,6 +405,27 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public void reject() {
+        if(Utils.SAMPLE_EMBEDDINGS) {
+            for (int i = 0; i < _geneTrees.size(); i++) {
+                if (_oldEmbeddings.get(i).initialized()) {
+                    _embeddings.get(i).setTo(_oldEmbeddings.get(i));
+                    _oldEmbeddings.get(i).clear();
+                }
+            }
+        }
+
+        if(Utils.RESAMPLE_GENE_TREES) {
+            if(_oldGeneTrees != null) {
+                System.out.println("Undo rebuilding gene trees");
+                for (int i = 0; i < _geneTrees.size(); i++) {
+                    _geneTrees.get(i).resetTree(_oldGeneTrees.get(i));
+                }
+                _oldGeneTrees = null;
+            }
+        }
+
+        checkLogDensity();
+
         _dirty = false;
         _logLtemp = null;
     }
@@ -270,8 +469,10 @@ public class UltrametricNetwork extends StateNode {
     /************ Likelihood computation **************/
 
     private double[] computeLikelihood() {
+        //System.out.println(_network.getReticulationCount());
+
         GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistributionParallel(
-                _network, _geneTrees, _species2alleles);
+                _network, _geneTrees, _embeddings, _species2alleles);
         double[] likelihoodArray = new double[_geneTrees.size()];
 
         Thread[] myThreads = new Thread[_numThreads];
@@ -376,6 +577,21 @@ public class UltrametricNetwork extends StateNode {
         _network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
     }
 
+    // used only for debug only
+    private void initNetHeights() {
+        for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)) {
+            if(node.getData() == null) {
+                node.setData(new NetNodeInfo(0.0));
+            }
+            for(NetNode<NetNodeInfo> par : node.getParents()) {
+                double dist = node.getParentDistance(par);
+                if(par.getData() == null) {
+                    par.setData(new NetNodeInfo(node.getData().getHeight() + dist));
+                }
+            }
+        }
+    }
+
     private static void updateWeights(double[] arr, int start) {
         double cutoff = arr[start-1];
         for(int i = 0; i < arr.length; i++) {
@@ -383,6 +599,208 @@ public class UltrametricNetwork extends StateNode {
         }
         if(Math.abs(arr[arr.length-1] - 1.0) > 0.0000001) {
             throw new IllegalArgumentException(Arrays.toString(arr));
+        }
+    }
+
+    public void initializeEmbeddings() {
+        if(Utils.SAMPLE_EMBEDDINGS) {
+            _oldEmbeddings = new ArrayList<>();
+            _embeddings = new ArrayList<>();
+            for (int i = 0; i < _geneTrees.size(); i++) {
+                _oldEmbeddings.add(new TreeEmbedding());
+                _embeddings.add(new TreeEmbedding());
+            }
+
+            for (int i = 0; i < _geneTrees.size(); i++) {
+                EmbeddingRebuilder rebuilder = new EmbeddingRebuilder();
+                double temp = rebuilder.rebuild(_geneTrees.get(i), _embeddings.get(i));
+                if (temp == Utils.INVALID_MOVE) {
+                    i--;
+                }
+            }
+        }
+    }
+
+    public double rebuildGeneTrees() {
+        double geneTreeLogHR = 0.0;
+
+        double oldLogLikelihood = Utils.sum(_logGeneTreeNetwork);
+
+        SimGTInNetworkWithTheta simulator = new SimGTInNetworkWithTheta();
+        simulator.setSeed((long) Randomizer.getRandomInt(99999999));
+        int numGT = _geneTrees.size();
+        Network<NetNodeInfo> net = _network.clone();
+
+        for(NetNode<NetNodeInfo> node : net.dfs()){
+            for(NetNode<NetNodeInfo> parent : node.getParents()) {
+                if(node.getParentSupport(parent) == NetNode.NO_SUPPORT) {
+                    node.setParentSupport(parent, net.getRoot().getRootPopSize());
+                }
+            }
+        }
+
+        List<Tree> simulatedGTs = new ArrayList<>();
+        for(int i = 0 ; i < numGT ; i++) {
+            List<Tree> onegt = simulator.generateGTs(net, _species2alleles, 1.0, 1);
+            Trees.autoLabelNodes((STITree)onegt.get(0));
+            simulatedGTs.add(onegt.get(0));
+        }
+
+        _oldGeneTrees = new ArrayList<>();
+        double l1s = 0.0;
+        double l2s = 0.0;
+        for(int i = 0 ; i < numGT ; i++) {
+            double l1 = _geneTrees.get(i).logDensity();
+            l1s += l1;
+            _oldGeneTrees.add(_geneTrees.get(i).getTree());
+            _geneTrees.get(i).resetTree(simulatedGTs.get(i));
+            //_geneTrees.get(i).resetTree(_oldGeneTrees.get(i));
+            double l2 = _geneTrees.get(i).logDensity();
+            l2s += l2;
+            //if(Math.abs(l1 - l2) > 0.001)
+            //    System.out.print("");
+            System.out.print("");
+        }
+
+        double newLogLikelihood = Utils.sum(computeLikelihood());
+
+        System.out.println("Rebuild gene trees: old " + oldLogLikelihood + " new " + newLogLikelihood);
+        System.out.println("old Log(L(gts)) " + l1s + " new Log(L(gts)) " + l2s);
+
+        return oldLogLikelihood - newLogLikelihood;
+    }
+
+    public double rebuildEmbeddings() {
+        double embeddingLogHR = 0.0;
+        if(proposes == 5772) {
+            //System.out.println(proposes);
+        }
+
+        if(Utils.SAMPLE_EMBEDDINGS) {
+            for (int i = 0; i < _geneTrees.size(); i++) {
+                _oldEmbeddings.get(i).setTo(_embeddings.get(i));
+                if (_dirty || _geneTrees.get(i).isDirty() /*|| true*/) {
+                    EmbeddingRebuilder rebuilder = new EmbeddingRebuilder();
+                    double temp = rebuilder.rebuild(_geneTrees.get(i), _embeddings.get(i));
+                    if (temp == Utils.INVALID_MOVE) {
+                        return Utils.INVALID_MOVE;
+                    }
+                    embeddingLogHR += temp;
+                }
+            }
+        }
+        return embeddingLogHR;
+    }
+
+    class EmbeddingRebuilder {
+        private Multimap<TNode, TNode> geneTreeNodeHeirs;
+        private Multimap<NetNode, TNode> networkNodeHeirs;
+
+        private String gtTaxa[];
+        private Map<TNode, STITreeCluster> clusterMap;
+
+        private String getSpecies(String allele) {
+            if(_alleles2species == null) return allele;
+            return _alleles2species.get(allele);
+        }
+
+        private double rebuild(UltrametricTree tree, TreeEmbedding embedding) {
+            gtTaxa = tree.getTree().getLeaves();
+            clusterMap = new HashMap<>();
+            for (TNode node : tree.getTree().postTraverse()) {
+                STITreeCluster cl = new STITreeCluster(gtTaxa);
+                if (node.isLeaf()) {
+                    cl.addLeaf(node.getName());
+                } else {
+                    for(TNode child : node.getChildren()) {
+                        cl = cl.merge(clusterMap.get(child));
+                    }
+                }
+                clusterMap.put(node, cl);
+            }
+
+            geneTreeNodeHeirs = HashMultimap.create();
+            networkNodeHeirs = HashMultimap.create();
+            for (TNode node : tree.getTree().postTraverse()) {
+                if (node.isLeaf()) {
+                    geneTreeNodeHeirs.put(node, node);
+                    networkNodeHeirs.put(_network.findNode(getSpecies(node.getName())), node);
+                } else {
+                    for(TNode child : node.getChildren()) {
+                        geneTreeNodeHeirs.putAll(node, geneTreeNodeHeirs.get(child));
+                    }
+                }
+            }
+
+            for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)) {
+                for(NetNode<NetNodeInfo> child : node.getChildren()) {
+                    networkNodeHeirs.putAll(node, networkNodeHeirs.get(child));
+                }
+            }
+
+            double logHR = 0.0;
+            logHR += Math.log(embedding.prob) - Math.log(embedding.probsum);
+
+            TreeEmbedding result = recursivelyRebuild(_network.getRoot(), tree.getTree().getRoot());
+            if(result == null) {
+                return Utils.INVALID_MOVE;
+            }
+            embedding.setTo(result);
+
+            logHR -= Math.log(embedding.prob) - Math.log(embedding.probsum);
+
+            return logHR;
+        }
+
+        private TreeEmbedding recursivelyRebuild(NetNode<NetNodeInfo> netnode, TNode treenode) {
+            if(treenode.getNodeHeight() < netnode.getData().getHeight()) {
+                TreeEmbedding[] altEmbeddings = new TreeEmbedding[2];
+                Collection<TNode> requiredHeirs = geneTreeNodeHeirs.get(treenode);
+                int i = 0;
+                double probsum = 0.0;
+                for(NetNode<NetNodeInfo> child : netnode.getChildren()) {
+                    if(networkNodeHeirs.get(child).containsAll(requiredHeirs)) {
+                        altEmbeddings[i] = recursivelyRebuild(child, treenode);
+                        if(altEmbeddings[i] == null) return null;
+                        altEmbeddings[i].setDirection(treenode, netnode, child);
+
+                        if(child.isNetworkNode()) {
+                            double gamma = child.getParentProbability(netnode);
+                            altEmbeddings[i].prob *= gamma;
+                            altEmbeddings[i].probsum *= gamma;
+                        }
+
+                        probsum += altEmbeddings[i].probsum;
+                        i++;
+                    }
+                }
+                if(i == 0 || probsum == 0.0)
+                    return null;
+
+                double u = Randomizer.getRandomDouble() * probsum;
+                if(u < altEmbeddings[0].probsum) {
+                    altEmbeddings[0].probsum = probsum;
+                    return altEmbeddings[0];
+                } else {
+                    altEmbeddings[1].probsum = probsum;
+                    return altEmbeddings[1];
+                }
+            } else if(treenode.isLeaf()) {
+                return new TreeEmbedding(gtTaxa, clusterMap);
+            } else {
+                TreeEmbedding embedding = null;
+                for(TNode childTreeNode : treenode.getChildren()) {
+                    TreeEmbedding childEmbedding = recursivelyRebuild(netnode, childTreeNode);
+                    if(childEmbedding == null) {
+                        return null;
+                    } else if(embedding == null) {
+                        embedding = childEmbedding;
+                    } else {
+                        embedding.merge(childEmbedding);
+                    }
+                }
+                return embedding;
+            }
         }
     }
 }

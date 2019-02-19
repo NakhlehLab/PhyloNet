@@ -30,6 +30,7 @@ public class MC3Core {
     private boolean _sampling = false;
     private int _accept = 0;
     private Map<String, OperatorLogger> _opMap = new HashMap<>();
+    private int MaxReticulation = Utils._NET_MAX_RETI;
 
 
     public MC3Core(List<Alignment> alignments) {
@@ -73,9 +74,13 @@ public class MC3Core {
         int total = (int) (Utils._CHAIN_LEN / Utils._SAMPLE_FREQUENCY);
         int burnin = (int) (Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY);
         int swap = (int) (Utils._SAMPLE_FREQUENCY / Utils.SWAP_FREQUENCY);
+        if (Utils._PRE_BURN_IN) {
+            Utils._NET_MAX_RETI = 0;
+        }
         for(int i = 1 - Utils._PRE_BURN_IN_ITER; i <= total; i++) {
             if (i == 1) {
                 Utils._PRE_BURN_IN = false;
+                Utils._NET_MAX_RETI = MaxReticulation;
                 MC3 main = getMain();
                 if(main == null) {
                     throw new RuntimeException("No main MC3 chain found!!!");
@@ -94,6 +99,13 @@ public class MC3Core {
             }
         }
         summarize();
+    }
+
+    public String getLastNetwork() {
+        for(MC3 mc3 : _mc3s) {
+            if(mc3.getMain()) return mc3.getCurrentNetwork();
+        }
+        return null;
     }
 
     private MC3 getMain() {

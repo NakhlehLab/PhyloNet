@@ -677,6 +677,10 @@ public class BeagleTreeLikelihood extends StateNode {
 
         } while (!done);
 
+        if((_hasDirt & 1) != 0) {
+            _hasDirt ^= 1;
+        }
+
         _updateSubstitutionModel = false;
         _updateSiteModel = false;
         _logP = logL;
@@ -689,6 +693,9 @@ public class BeagleTreeLikelihood extends StateNode {
         return _siteModel.getConditions();
     }
 
+    public void reset() {
+        _hasDirt |= 1;
+    }
 
     @Override
     public double propose() {

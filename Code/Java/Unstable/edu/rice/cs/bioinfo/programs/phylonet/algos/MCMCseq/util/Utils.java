@@ -17,7 +17,6 @@ import java.util.*;
 public class Utils {
 
     public static final boolean DEBUG_MODE = false;
-    public static final boolean SHOW_DEBUG_STRINGS = true;
     public static double EPSILON = 2.220446049250313E-16;
 
     // --- settings ---
@@ -47,13 +46,16 @@ public class Utils {
     public static double[] _TRANS_RATES = null;
     // starting state
     public static boolean _FIX_NET_TOPOLOGY = false;
+    public static boolean _FIX_GENE_TREE_TOPOLOGIES = false;
     public static boolean _FIX_GENE_TREES = false;
     public static boolean _MLE_NETBL = false;
-    public static double _POP_SIZE_MEAN = 0.036;
+    public static double _POP_SIZE_MEAN = 0.02;
     public static List<String> _START_NET = null;
     public static List<Map<String, String>> _START_GT_LIST = null;
-    public static boolean _PRE_BURN_IN = true;
-    public static int _PRE_BURN_IN_ITER = 10;
+    public static boolean _START_GT_BURN_IN = false;
+    public static boolean _START_NET_BURN_IN = false;
+    public static boolean _PRE_BURN_IN = false;
+    public static int _PRE_BURN_IN_ITER = 0;
     // summary
     public static int _TOPK_NETS = 10;
     // site model
@@ -62,14 +64,18 @@ public class Utils {
     public static Set<String> _DIPLOID_SPECIES = null;
     public static boolean _PHASING = false;
     // divergence time window size
-    public static double _TIME_WINDOW_SIZE = 0.01;
-    public static double _POP_SIZE_WINDOW_SIZE = 0.01;
+    public static double _TIME_WINDOW_SIZE = 0.006;
+    public static double _POP_SIZE_WINDOW_SIZE = 0.006;
 
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;
     public static final double DEFAULT_NET_LEAF_HEIGHT = 0;
     public static final double DEFAULT_NET_ROOT_HEIGHT = 6;
     public static final double NET_MAX_HEIGHT = 1000; // used in debug mode
+    public static double RESAMPLE_GENE_TREE_RATE = 0.5;
+    public static boolean RESAMPLE_GENE_TREES = false;
+    public static boolean SAMPLE_EMBEDDINGS = false;
+    public static boolean ONLY_BACKBONE_OP = false;
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
     public static final double DEFAULT_TREE_LEAF_HEIGHT = 0;
@@ -112,6 +118,28 @@ public class Utils {
             0.04, 0.05, 0.30,
             0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
+
+    // ChangePopSize ScalePopSize ScaleAll
+    // ScaleTime ScaleRootTime ChangeTime
+    //  AddReticulation
+    // FlipReticulation DeleteReticulation
+    // ChangeInheritance
+    public static final double BACKBONE_DIMENSION_CHANGE_WEIGHT = 0.005;
+    public static final double[] Backbone_Net_Op_Weights = new double[] {
+            0.03, 0.01,
+            0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
+            0.04, 0.05, 0.25,
+            BACKBONE_DIMENSION_CHANGE_WEIGHT,
+            0.06 - BACKBONE_DIMENSION_CHANGE_WEIGHT, BACKBONE_DIMENSION_CHANGE_WEIGHT,
+            0.06 - BACKBONE_DIMENSION_CHANGE_WEIGHT
+    };
+    public static final double[] Backbone_Net_Tree_Op_Weights = new double[] {
+            0.03, 0.01,
+            0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
+            0.04, 0.05, 0.30,
+            BACKBONE_DIMENSION_CHANGE_WEIGHT
+    };
+
     public static final double[] PopSize_Op_Weights = new double[]{0.5, 1.0};
     // phasing
     private static Map<Character, String[]> PHASING_NUCLEOTIDES = null;
@@ -141,8 +169,8 @@ public class Utils {
         return arr;
     }
 
-    public static double[] getOperationWeights(double[] weights, boolean enableTopologyMoves) {
-        if(!enableTopologyMoves) {
+    public static double[] getOperationWeights(double[] weights, boolean enableNetTopologyMoves) {
+        if(!enableNetTopologyMoves) {
             for(int i = 6 ; i < Math.min(weights.length, 13) ; i++) {
                 weights[i] = 0.0;
             }

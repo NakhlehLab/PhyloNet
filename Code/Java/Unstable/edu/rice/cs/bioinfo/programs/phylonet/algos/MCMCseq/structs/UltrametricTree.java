@@ -19,6 +19,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.StringReader;
@@ -36,6 +37,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
 
     // ----- tree states -----
     private Tree _tree;
+    private Tree _oldTree;
     private List<TNode> _nodes;
     private List<TNode> _internalNodes; // contains tree root
     private double _clockRate = 1.0; // TODO can be inferred from gamma distribution
@@ -79,6 +81,8 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         this._beagle = new BeagleTreeLikelihood(aln, this, new SiteModel(this._substModel), null);
 
         setOperators();
+
+        GTBurnin();
     }
 
 
@@ -103,7 +107,39 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
             if(_tree.getRoot().getChildren().iterator().next().getParentDistance() != TNode.NO_DISTANCE) {
                 buildNodeHeightMap();
             } else {
-                resetNodeHeights();
+                UPGMATree temp = new UPGMATree(new JCDistance( this._alignment.getAlignment() ));
+
+                for(TNode node : temp.getTree().postTraverse()) {
+                    if(node.isLeaf()) {
+                        node.setNodeHeight(Utils.DEFAULT_TREE_LEAF_HEIGHT);
+                    } else {
+                        double height = 0;
+                        for(TNode child : node.getChildren()) {
+                            height = Math.max(height, getNodeHeight(child) + child.getParentDistance());
+                        }
+                        node.setNodeHeight(height);
+                    }
+                }
+
+                double height = temp.getTree().getRoot().getNodeHeight();
+                double step = (height - 1e-4) / (this._tree.getLeafCount() -1 );
+
+                double hi = 1e-4;
+                for(Object nodeObj : this._tree.postTraverse()) {
+                    STINode node = (STINode) nodeObj;
+                    if(node.isLeaf()) node.setNodeHeight(Utils.DEFAULT_TREE_LEAF_HEIGHT);
+                    else {
+                        node.setNodeHeight(hi);
+                        hi+=step;
+                    }
+                }
+
+                for(Object nodeObj : this._tree.postTraverse()) {
+                    STINode node = (STINode) nodeObj;
+                    if(!node.isRoot()) {
+                        node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+                    }
+                }
             }
             this._nodes = IterableHelp.toList(this._tree.getNodes());
             this._internalNodes = Trees.getInternalNodes(_tree);
@@ -115,6 +151,10 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        GTBurnin();
+
+
     }
 
     // This constructor is only used for debug only
@@ -131,6 +171,44 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         this._internalNodes = Trees.getInternalNodes(_tree);
     }
 
+    private void GTBurnin() {
+        if(Utils._START_GT_BURN_IN) {
+            int iter = 0;
+            while (iter < 10000) {
+                double logHR = this.propose();
+                this.setDirty(true);
+                if(logHR != Utils.INVALID_MOVE) {
+                    double newLogL = this.logDensity();
+                    if(newLogL > _logL) {
+                        this.accept();
+                    } else {
+                        this.undo();
+                        this.reject();
+                    }
+                } else {
+                    this.undo();
+                    this.reject();
+                }
+                iter++;
+            }
+
+            System.out.println("Optimized starting gene tree for " + _alignment.getName());
+        }
+    }
+
+    public void resetTree(Tree tree) {
+        this._tree = new STITree<>(tree.getRoot().getName(), true);
+        copyNode(this._tree.getRoot(), tree.getRoot());
+        getNodeArray();
+        buildNodeHeightMap();
+        _dirty = true;
+        _nodes = IterableHelp.toList(_tree.getNodes());
+        this._internalNodes = Trees.getInternalNodes(_tree);
+        this._beagle.reset();
+        //this._beagle = new BeagleTreeLikelihood(_alignment, this, new SiteModel(this._substModel), null);
+
+    }
+
     private void setOperators() {
         this._operators = new TreeOperator[] {
                 new TNodeReheight(this),
@@ -138,7 +216,17 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
                 new TreeScaler(this), new TreeRootScaler(this),
                 new WilsonBalding(this), new WildNNI(this)
         };
-        this._opWeights = Utils.getOperationWeights(Utils.Tree_Op_Weights, true);
+
+        double[] Tree_Op_Weights = Utils.Tree_Op_Weights.clone();
+
+        if(Utils._FIX_GENE_TREE_TOPOLOGIES) {
+            Tree_Op_Weights[1] = 0.0;
+            Tree_Op_Weights[2] = 0.0;
+            Tree_Op_Weights[5] = 0.0;
+            Tree_Op_Weights[6] = 0.0;
+        }
+
+        this._opWeights = Utils.getOperationWeights(Tree_Op_Weights, true);
     }
 
     @Override
@@ -327,6 +415,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
 
     @Override
     public double propose() {
+        _oldTree = Trees.readTree(_tree.toNewick());
         this._operator = getOp(_operators, _opWeights);
         return this._operator.propose();
     }
@@ -335,6 +424,9 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
     public void undo() {
         if(this._operator == null) throw new IllegalArgumentException("null operator");
         this._operator.undo();
+        //if(!_oldTree.toNewick().equals(_tree.toNewick())) {
+        //    throw new RuntimeException("!!!!!! " + _oldTree.toNewick() + "\n" +_tree.toNewick() );
+        //}
     }
 
     public String toString() {

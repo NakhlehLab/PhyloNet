@@ -21,12 +21,13 @@ import java.util.Map;
 public class State {
 
     // inferred or fixed topologies/parameters
-    private List<UltrametricTree> _geneTrees;       // (gene tree and heights)s
+    List<UltrametricTree> _geneTrees;       // (gene tree and heights)s
     private UltrametricNetwork _speciesNet;         // species network, heights, population sizes
     private double _gtOpWeight;
     private double _popSizeParamWeight = 0.005;
     private PopulationSize _populationSize;
     private int count = 0;
+    private int gtMoveNum = -1;
 
     private StateNode _moveNode;
 
@@ -52,6 +53,7 @@ public class State {
         this._populationSize = new PopulationSize();
         this._priorDistribution = new SpeciesNetPriorDistribution(poissonParameter, _populationSize);
         _gtOpWeight = 1.0 - Math.min(0.3, Math.max(0.1, 8.0 / (this._geneTrees.size() + 8.0)));
+        if(Utils.ONLY_BACKBONE_OP) _gtOpWeight = 0.5;
     }
 
     /**
@@ -90,18 +92,24 @@ public class State {
         }
         // tree operation
         else if(rand < _gtOpWeight && !Utils._FIX_GENE_TREES) {
-            _moveNode = _geneTrees.get(Randomizer.getRandomInt(_geneTrees.size()));
+            _moveNode = _geneTrees.get(gtMoveNum = Randomizer.getRandomInt(_geneTrees.size()));
             if(Utils.DEBUG_MODE) {
                 System.out.println("Purposing gene tree operation.");
             }
         }
         // network operation
         else {
+            gtMoveNum = -1;
             _moveNode = _speciesNet;
             if(Utils.DEBUG_MODE) {
                 System.out.println("Purposing network operation.");
             }
         }
+
+        if(count == 10000) {
+            System.out.print("");
+        }
+
         double logHR = _moveNode.propose();
         _moveNode.setDirty(true);
         if(getOperation().getName().contains("Scale-All")) {
@@ -117,7 +125,7 @@ public class State {
         count++;
         //System.out.println(count);
         if(Utils.DEBUG_MODE) {
-            System.out.println("Count: " + count + "Purposed: " + getOperation().getName() + " mayViolate: " + _moveNode.mayViolate() + " : " + _speciesNet.toString());
+            System.out.println("Count: " + count + " Purposed: " + getOperation().getName() + " mayViolate: " + _moveNode.mayViolate() + " : " + _speciesNet.toString());
         }
 
         if(getOperation().getName().contains("Add-Reticulation") &&

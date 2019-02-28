@@ -653,6 +653,12 @@ public class Networks
         return metric.computeDistanceBetweenTwoNetworks(net1,net2)==0;
     }
 
+    public static <T> double computeDistanceBetweenTwoNetworks(Network<T> net1, Network<T> net2)
+    {
+        NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
+        return metric.computeDistanceBetweenTwoNetworks(net1,net2);
+    }
+
     public static <T> String getTopologyString(Network<T> net) {
         Network network = net.clone();
         for(Object nodeObject : Networks.postTraversal(network)) {
@@ -662,6 +668,20 @@ public class Networks
                 node.setParentSupport(parent, NetNode.NO_SUPPORT);
                 node.setParentDistance(parent, NetNode.NO_DISTANCE);
                 node.setParentProbability(parent, NetNode.NO_PROBABILITY);
+            }
+        }
+        return network.toString();
+    }
+
+    public static <T> String getCoalUnitString(Network<T> net) {
+        Network network = net.clone();
+        double popsize = network.getRoot().getRootPopSize();
+        for(Object nodeObject : Networks.postTraversal(network)) {
+            NetNode node = (NetNode) nodeObject;
+            for(Object parentObject :  node.getParents()) {
+                NetNode parent = (NetNode) parentObject;
+                node.setParentDistance(parent, node.getParentDistance(parent) / (popsize / 2));
+                node.setParentSupport(parent, NetNode.NO_SUPPORT);
             }
         }
         return network.toString();
@@ -1042,7 +1062,7 @@ public class Networks
      * @param <T>
      * @return        map successfully or not
      */
-    public static <T> boolean mapTwoNodes(NetNode<T> node1, NetNode<T> node2,
+    private static <T> boolean mapTwoNodes(NetNode<T> node1, NetNode<T> node2,
                                           Map<NetNode<T>, NetNode<T>> map) {
         if(node1.isLeaf() && node2.isLeaf()) {
             if(node1.getName().equals(node2.getName())) {

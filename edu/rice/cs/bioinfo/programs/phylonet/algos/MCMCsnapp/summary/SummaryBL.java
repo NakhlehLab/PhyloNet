@@ -316,6 +316,23 @@ public class SummaryBL {
         }
     }
 
+    public void addNetwork(Network net) {
+        _samples.add(Networks.readNetwork(net.toString()));
+        if(Networks.hasTheSameTopology(this._net, net)) {
+            Map<NetNode, NetNode> map = Networks.mapTwoNetworks(this._net, net);
+            if(map == null) return;
+            this._size++;
+            addInformation(this._net, map);
+            if(net.getRoot().getRootPopSize() != NetNode.NO_POP_SIZE) {
+                double popSize = net.getRoot().getRootPopSize();
+                _rootPopSizeAvg += popSize;
+                _rootPopSizeStd += popSize * popSize;
+                _rootPopSizeSize++;
+                _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
+            }
+        }
+    }
+
     public void addFile(String file, boolean notBeast, int startIter, int endIter) {
         try{
             BufferedReader in = new BufferedReader(new FileReader(file));
@@ -460,6 +477,27 @@ public class SummaryBL {
         return _samples;
     }
 
+    public void computeMean(double scale, double popScale) {
+        _rootPopSizeAvg /= _rootPopSizeSize;
+        _rootPopSizeStd = Math.sqrt(_rootPopSizeStd / _rootPopSizeSize - _rootPopSizeAvg * _rootPopSizeAvg);
+        for(String key : this._branches.keySet()) {
+            Branch br = this._branches.get(key);
+            if(br.parent == null) {
+                br.meanSp /= br.size;
+                continue;
+            }
+            br.report(scale, popScale);
+            br.child.setParentDistance(br.parent, br.meanBL);
+            br.child.setParentSupport(br.parent, br.child.NO_SUPPORT);
+        }
+
+        for(Network key : _topologyCount.keySet()) {
+            if(_topologyCount.get(key).count < _rootPopSizeSize * 0.005) {
+                continue;
+            }
+        }
+    }
+
     public void report(double scale, double popScale) {
         System.out.println(_size);
         _rootPopSizeAvg /= _rootPopSizeSize;
@@ -468,7 +506,10 @@ public class SummaryBL {
         System.out.println("edge: branch length - mean min max std : inheritance probability - mean min max std");
         for(String key : this._branches.keySet()) {
             Branch br = this._branches.get(key);
-            if(br.parent == null) continue;
+            if(br.parent == null) {
+                br.meanSp /= br.size;
+                continue;
+            }
             System.out.println(br.report(scale, popScale));
             br.child.setParentDistance(br.parent, br.meanBL);
             br.child.setParentSupport(br.parent, br.child.NO_SUPPORT);
@@ -481,6 +522,15 @@ public class SummaryBL {
             }
             System.out.println(_topologyCount.get(key).toString() + "  " + key.toString());
         }
+    }
+
+    public double getPercentage() {
+        int maxn = _size;
+        int total = _size;
+        for(Network key : _topologyCount.keySet()) {
+            total += _topologyCount.get(key).count;
+        }
+        return 1.0 * maxn / total;
     }
 
     public void reportForSlantedVideo(String scriptFilename, String videoFilename, List<String> leafOrder) {

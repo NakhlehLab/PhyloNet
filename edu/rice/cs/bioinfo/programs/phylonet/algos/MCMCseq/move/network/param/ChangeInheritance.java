@@ -24,6 +24,8 @@ public class ChangeInheritance extends NetworkOperator {
     private double _windowSize = 0.1;
     private Tuple3<NetNode<NetNodeInfo>, NetNode<NetNodeInfo>, NetNode<NetNodeInfo>> _target;
     private Double _oldRate;
+    public Double delta;
+    public Double _newRate;
 
     public ChangeInheritance(UltrametricNetwork net) {
         super(net);
@@ -47,11 +49,14 @@ public class ChangeInheritance extends NetworkOperator {
         _target = new Tuple3<>(target, parents.get(0), parents.get(1));
         _oldRate = Double.valueOf(target.getParentProbability(_target.Item2));
         double newRate = _oldRate.doubleValue() + (Randomizer.getRandomDouble()-0.50) * _windowSize;
+
         while(newRate > 1 || newRate < 0) {
             if(newRate > 1.0) newRate = 2.0 - newRate;
             if(newRate < 0.0) newRate = -newRate;
         }
+        delta = newRate - _oldRate;
         setRate(newRate);
+        _newRate = newRate;
 
         _violate = false;
         return 0;

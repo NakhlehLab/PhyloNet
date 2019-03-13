@@ -35,6 +35,7 @@ public class Utils {
     // pop size
     public static boolean _ESTIMATE_POP_SIZE = true;
     public static boolean _CONST_POP_SIZE = true;
+    public static boolean _ESTIMATE_POP_PARAM = true;
     // priors
     public static double _POISSON_PARAM = 1.0;
     public static boolean _TIMES_EXP_PRIOR = false;
@@ -45,6 +46,7 @@ public class Utils {
     public static double[] _BASE_FREQS = null;
     public static double[] _TRANS_RATES = null;
     // starting state
+    public static boolean _FIX_NET = false;
     public static boolean _FIX_NET_TOPOLOGY = false;
     public static boolean _FIX_GENE_TREE_TOPOLOGIES = false;
     public static boolean _FIX_GENE_TREES = false;

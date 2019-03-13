@@ -40,7 +40,7 @@ import java.util.*;
 public class UltrametricNetwork extends StateNode {
 
     private Network<NetNodeInfo> _network; // not being copied across states
-    private List<UltrametricTree> _geneTrees;
+    protected List<UltrametricTree> _geneTrees;
     private List<Tree> _oldGeneTrees = null;
     protected List<TreeEmbedding> _embeddings;
     private List<TreeEmbedding> _oldEmbeddings;
@@ -190,6 +190,11 @@ public class UltrametricNetwork extends StateNode {
         this._geneTrees = gts;
         initNetHeights();
         initializeEmbeddings();
+    }
+
+    public void setNetwork(String s) {
+        this._network = Networks.readNetwork(s);
+        initNetHeights();
     }
 
     private void NetBurnin() {
@@ -382,25 +387,13 @@ public class UltrametricNetwork extends StateNode {
             _oldGeneTrees = null;
         }
 
-        if(_logGeneTreeNetwork != null) {
-            double[] l1s = logDensity1();
-            double l1 = Utils.sum(l1s);
-            double[] l2s = _logLtemp;
-            double l2 = Utils.sum(_logLtemp);
-            if (Math.abs(l1 - l2) > 0.001) {
-                for(int i = 0 ; i < l1s.length ; i++) {
-                    if(Math.abs(l1s[i] - l2s[i]) > 0.001) {
-                        System.out.print(i + " ");
-                    }
-                }
-                System.out.println();
-                throw new RuntimeException("!!!!! " + proposes);
-            }
-        }
-
         _dirty = false;
         if(_logLtemp != null) _logGeneTreeNetwork = _logLtemp;
         _logLtemp = null;
+
+        if(Utils.DEBUG_MODE) {
+            checkLogDensity();
+        }
     }
 
     @Override
@@ -424,7 +417,9 @@ public class UltrametricNetwork extends StateNode {
             }
         }
 
-        checkLogDensity();
+        if(Utils.DEBUG_MODE) {
+            checkLogDensity();
+        }
 
         _dirty = false;
         _logLtemp = null;
@@ -672,9 +667,6 @@ public class UltrametricNetwork extends StateNode {
 
     public double rebuildEmbeddings() {
         double embeddingLogHR = 0.0;
-        if(proposes == 5772) {
-            //System.out.println(proposes);
-        }
 
         if(Utils.SAMPLE_EMBEDDINGS) {
             for (int i = 0; i < _geneTrees.size(); i++) {

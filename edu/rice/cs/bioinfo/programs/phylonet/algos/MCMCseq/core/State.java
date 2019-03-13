@@ -87,11 +87,11 @@ public class State {
     public double propose() {
         double rand = Randomizer.getRandomDouble();
 
-        if(Utils._ESTIMATE_POP_SIZE && rand < _popSizeParamWeight) {
+        if(Utils._ESTIMATE_POP_SIZE && Utils._ESTIMATE_POP_PARAM && rand < _popSizeParamWeight) {
             _moveNode = _populationSize;
         }
         // tree operation
-        else if(rand < _gtOpWeight && !Utils._FIX_GENE_TREES) {
+        else if((rand < _gtOpWeight || Utils._FIX_NET) && !Utils._FIX_GENE_TREES) {
             _moveNode = _geneTrees.get(gtMoveNum = Randomizer.getRandomInt(_geneTrees.size()));
             if(Utils.DEBUG_MODE) {
                 System.out.println("Purposing gene tree operation.");

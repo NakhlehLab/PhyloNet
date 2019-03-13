@@ -494,7 +494,7 @@ public class LizardDataset {
     }
 
     static void check() {
-        String resultFolder = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run70";
+        String resultFolder = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run66";
         File path = new File(resultFolder);
 
         List<String> filenames = new ArrayList<>();
@@ -511,13 +511,11 @@ public class LizardDataset {
 
         Collections.sort(filenames);
         SNOptions options = new SNOptions();
-        options.outgroup = "Lampropholis_guichenoti"; //"Lampropholis_coggeri";//"Pygmaeascincus_timlowi"; //Lampropholis_guichenoti
+        options.outgroup = "Lampropholis_guichenoti";
         options.eps = 0.01;
-        //options.trueNetwork = Networks.readNetwork("((((Lampropholis_coggeri:0.005421004068874944)I3#H1:0.009292050652544074,((Lygisaurus_macfarlani:0.0032689514794862575)I7#H2:0.007939200985418114,((((Carlia_vivax:0.003990805427495498)I11#H3:0.0036997156781629396,(Carlia_amax:0.002415459661965271)I12#H4:0.005275061443693167)I9:0.0021545692750479044,((I12#H4:0.005595162676113067,((Carlia_longipes:0.005875135856075196,Carlia_rhomboidalis:0.005875135856075196)I17:3.257814894150219E-4,I11#H3:0.0022101119179947218)I15:0.0018097049925881181)I13:0.0014377306412839724,(Lygisaurus_foliorum:0.007092727836841509,(Lygisaurus_sesbrauna:0.005873230850686941,I7#H2:0.0026042793712006836)I16:0.0012194969861545673)I14:0.0023556251425208012)I10:3.96737401344032E-4)I8:5.545968113897015E-4,Liburnascincus_mundivensis:0.010399687192096042)I6:8.084652728083285E-4)I5:0.003504902256514646)I4:7.926837682867198E-4,Pygmaeascincus_timlowi:0.015505738489705736)I2:0.008717091433705469,(I3#H1:0.007819181189534181,Lampropholis_guichenoti:0.013240185258409125)I1:0.01098264466500208)I0;");
 
         SuperNetwork3.printDetails_ = true;
-        //SNSummary summary = Pipeline.stage2(filenames, 6000000, 3000000, 5000, options);
-        SNSummary summary = Pipeline.stage2_1(filenames, 1000000, 500000, 5000, options);
+        SNSummary summary = Pipeline.stage2_1(filenames, 6000000, 3000000, 5000, options);
 
         Network inferred = summary.inferredNetwork;
         System.out.println(inferred);

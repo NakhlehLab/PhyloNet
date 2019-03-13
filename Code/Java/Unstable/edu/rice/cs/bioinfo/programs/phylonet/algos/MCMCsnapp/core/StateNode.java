@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public abstract class StateNode {
 
-    protected Operator _operator = null;
+    public Operator _operator = null;
     protected boolean _dirty = false;
 
     // propose and undo are for moved node

@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 
@@ -89,9 +88,8 @@ public class MC3 {
                 double logPriorNext = _state.calculatePrior();
                 double logLikelihoodNext = _state.calculateLikelihood();
                 double logNext = logLikelihoodNext + logPriorNext;
+
                 _logAlpha = (logNext - _logPost) / _temperature + logHastings;
-
-
 
                 _state.getOperation().optimize(_logAlpha);
 
@@ -100,11 +98,6 @@ public class MC3 {
                     _logPrior = logPriorNext;
                     _logPost = logNext;
                     accept = true;
-//                    if(_state.getOperation().getName().contains("Add-Reticulation")) {
-//                        System.out.println("Add-Reticulation!");
-//                        System.out.println(_state.getNetwork());
-//                        System.out.println(_logLikelihood);
-//                    }
                     _state.accept(_logAlpha);
                 } else {
                     _state.undo(_logAlpha);

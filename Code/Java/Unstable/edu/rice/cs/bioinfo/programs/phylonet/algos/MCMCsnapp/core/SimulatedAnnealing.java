@@ -1,22 +1,14 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
 import edu.rice.cs.bioinfo.library.programming.*;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.param.ChangeTime;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.param.OptimizeAll;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.counting.CoalescenceHistoriesCounting;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.optimization.GoalType;
-import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
 
 import java.util.*;
 
@@ -33,7 +25,7 @@ import java.util.*;
 
 //TODO: Move out of MCMC package
 public class SimulatedAnnealing {
-    public static boolean _printDetails = false;
+    public static boolean _printDetails = true;
     private static boolean _enableStrategy = false;
     BiAllelicGTR _BAGTRModel = null;
     private boolean _scoreEachTopologyOnce = false;
@@ -245,21 +237,21 @@ public class SimulatedAnnealing {
      * This function is to update the temperature
      */
     protected void updateTemperature(){
-        _temperature = 1.0+100.0/(1+getExaminations()); //_U/(1+getExaminations()*_beta);////
+        _temperature = 1.0+10000.0/(1+getExaminations()); //_U/(1+getExaminations()*_beta);////
     }
 
     /**
      * This is the main function for searching the network space
      *
      */
-    public void search(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList){
+    public void search(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList){
         Utils.DISABLE_PARAMETER_MOVES = scoreEachTopologyOnce;
         _maxReticulations = Utils._NET_MAX_RETI;
         _BAGTRModel = BAGTRModel;
         _state = new State(
                 Utils._START_NET,
                 Utils._START_GT_LIST,
-                alignments,
+                markerSeqs,
                 Utils._POISSON_PARAM,
                 Utils._TAXON_MAP,
                 BAGTRModel
@@ -333,7 +325,7 @@ public class SimulatedAnnealing {
                 _state = new State(
                         Utils._START_NET,
                         Utils._START_GT_LIST,
-                        alignments,
+                        markerSeqs,
                         Utils._POISSON_PARAM,
                         Utils._TAXON_MAP,
                         BAGTRModel
@@ -351,7 +343,7 @@ public class SimulatedAnnealing {
                 _state = new State(
                         Networks.getFullString(candidate),
                         Utils._START_GT_LIST,
-                        alignments,
+                        markerSeqs,
                         Utils._POISSON_PARAM,
                         Utils._TAXON_MAP,
                         BAGTRModel
@@ -624,18 +616,24 @@ public class SimulatedAnnealing {
             if(!name.startsWith("HYB")) return false;
         }*/
 
+        if(_examinationsCount % 100 == 0) {
+            System.out.println("States examined: " + _examinationsCount);
+        }
+
         if(!_state.getUltrametricNetworkObject().isValid()) {
             return false;
         }
 
-        //if(printDetails()){
+        if(printDetails()){
             System.out.println("Temperature: " + _temperature + " move: " + _state.getOperation().getName() + " current score: " + currentScore + " new score: " + newScore);
             System.out.println(Networks.getTopologyString(_state.getNetworkObject()));
             //System.out.println(_state);
-        //}
+        }
         if(compareTwoScores(newScore, currentScore)>0)
         {
-            System.out.println("Accept");
+            if(printDetails()) {
+                System.out.println("Accept");
+            }
             return true;
         }
         else{
@@ -654,15 +652,15 @@ public class SimulatedAnnealing {
             }
 
             if(random < acceptanceRatio){
-                //if(printDetails()){
+                if(printDetails()){
                     System.out.println("Accept: " + random + " < " + acceptanceRatio);
-                //}
+                }
                 return true;
             }
             else {
-                //if(printDetails()){
+                if(printDetails()){
                     System.out.println("Reject: " + random + " > " + acceptanceRatio);
-                //}
+                }
                 return false;
             }
         }

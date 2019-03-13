@@ -1,7 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.substitution;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.StateNode;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.datatype.DataType;
 
 import java.util.Arrays;
@@ -13,12 +13,12 @@ public class Frequencies extends StateNode {
 
     private static final double MIN_VAL = 1.0E-10;
 
-    protected Alignment _sequences; // Sequence data for which frequencies are calculated
+    protected MarkerSeq _sequences; // Sequence data for which frequencies are calculated
     protected boolean _estimate = false; // Whether to estimate the frequencies from data or not
     protected double[] _frequencies; // A set of frequencies specified as space separated values summing to 1
     boolean _needsUpdate;
 
-    public Frequencies(Alignment aln, boolean estimate) {
+    public Frequencies(MarkerSeq aln, boolean estimate) {
         _sequences = aln;
         _estimate = estimate;
         // initialization - equally distributed
@@ -33,7 +33,7 @@ public class Frequencies extends StateNode {
         }
     }
 
-    public Frequencies(Alignment aln, double[] frequencies) {
+    public Frequencies(MarkerSeq aln, double[] frequencies) {
         double sum = getSumOfFrequencies(frequencies);
         if (Math.abs(sum - 1.0) > 1e-6) {
             throw new IllegalArgumentException("Frequencies do not add up to 1");

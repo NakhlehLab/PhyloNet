@@ -1,6 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.substitution;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -75,7 +75,7 @@ public class GTR extends GeneralSubstitutionModel {
         map.put("A", "ATCG");
         map.put("B", "ATTG");
         map.put("C", "AGAG");
-        Alignment aln = new Alignment(map);
+        MarkerSeq aln = new MarkerSeq(map);
         Frequencies freq = new Frequencies(aln, false);
         double[] matrix = new double[16];
         GTR gtr = new GTR(freq);

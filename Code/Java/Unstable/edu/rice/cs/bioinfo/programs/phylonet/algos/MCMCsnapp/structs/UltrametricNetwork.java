@@ -4,7 +4,8 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.StateNode;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihoodSampling;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.all.ScaleAll;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.dimension.AddReticulation;
@@ -13,6 +14,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.param.
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.topo.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.TemporalConstraints;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.MDCInference_Rooted;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.Solution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
@@ -24,8 +26,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.util.*;
 
-import static edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils._Forbid_Net_Net;
-
 /**
  * Ultrametric network
  */
@@ -33,7 +33,7 @@ public class UltrametricNetwork extends StateNode {
 
     private Network<NetNodeInfo> _network;
     private List<UltrametricTree> _geneTrees;
-    private List<Alignment> _alignments;
+    private List<MarkerSeq> _markers; // This list always has size 1.
     private Map<String, List<String>> _species2alleles;
     private Map<String, String> _alleles2species;
 
@@ -44,6 +44,9 @@ public class UltrametricNetwork extends StateNode {
     private double[] _netOpWeights;
     private Operator[] _operators;
     private BiAllelicGTR _BAGTRModel;
+
+    private List<Splitting> _splittings;
+    private int _numSites = 0;
 
     private int _numThreads;
 
@@ -59,8 +62,9 @@ public class UltrametricNetwork extends StateNode {
         this(s, gts, null, null, null);
     }
 
-    public UltrametricNetwork(String s, List<UltrametricTree> gts, List<Alignment> alignments, Map<String, List<String>> s2a, BiAllelicGTR BAGTRModel) {
-        this._alignments = alignments;
+    public UltrametricNetwork(String s, List<UltrametricTree> gts, List<MarkerSeq> markerSeqs, Map<String, List<String>> s2a, BiAllelicGTR BAGTRModel) {
+        this._markers = markerSeqs;
+        this._numSites = markerSeqs.get(0).getSiteCount();
         this._geneTrees = gts;
         this._species2alleles = s2a;
         this._alleles2species = null;
@@ -109,6 +113,12 @@ public class UltrametricNetwork extends StateNode {
         }
         Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(gts, _species2alleles, _alleles2species);
         initNetHeights(popSize, constraints);
+
+        if(Utils.SAMPLE_SPLITTING) {
+            initSplitting();
+        } else {
+            _splittings = null;
+        }
 
         setOperators();
     }
@@ -162,12 +172,34 @@ public class UltrametricNetwork extends StateNode {
     }
 
     // used only for debug only
-    public UltrametricNetwork(String s) {
-        //this._network = Networks.readNetwork(s);
-        //this._geneTrees = null;
-        //initNetHeights(null);
+    public UltrametricNetwork(String s, List<MarkerSeq> markerSeqs, Map<String, List<String>> species2alleles, BiAllelicGTR BAGTRModel) {
+        this._network = Networks.readNetworkWithRootPop(s);
+        this._species2alleles = species2alleles;
+        if(this._species2alleles != null) {
+            this._alleles2species = new HashMap<>();
+            for(String key: this._species2alleles.keySet()){
+                for(String allele: this._species2alleles.get(key)){
+                    this._alleles2species.put(allele, key);
+                }
+            }
+        }
+        this._geneTrees = null;
+        this._markers = markerSeqs;
+        this._numSites = markerSeqs.get(0).getSiteCount();
+        initNetHeights();
+        this._BAGTRModel = BAGTRModel;
 
-        this(s, null, null, null, null);
+        if(Utils.SAMPLE_SPLITTING) {
+            initSplitting();
+        } else {
+            _splittings = null;
+        }
+    }
+
+    public UltrametricNetwork(String s) {
+        this._network = Networks.readNetworkWithRootPop(s);
+        initNetHeights();
+
     }
 
     public Network<NetNodeInfo> getNetwork() {
@@ -211,18 +243,36 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public double propose() {
-        if(_network.getReticulationCount() == 0) {
-            this._operator = getOp(_operators, _treeOpWeights);
-        } else {
-            this._operator = getOp(_operators, _netOpWeights);
+        double logHR = 0.0;
+
+        if(_operator != null) {
+//            if (_network.getReticulationCount() == 0) {
+//                this._operator = getOp(_operators, _treeOpWeights);
+//            } else {
+//                this._operator = getOp(_operators, _netOpWeights);
+//            }
+            logHR = this._operator.propose();
         }
-        return this._operator.propose();
+
+        if(Utils.SAMPLE_SPLITTING) {
+            Networks.autoLabelNodes(_network);
+            for(int i = 0 ; i < _splittings.size() ; i++) {
+                _splittings.get(i).propose();
+            }
+        }
+
+        return logHR;
     }
 
     @Override
     public void undo() {
-        if(this._operator == null) throw new IllegalArgumentException("null operator");
-        this._operator.undo();
+        if(this._operator != null)
+            this._operator.undo();
+        if(Utils.SAMPLE_SPLITTING) {
+            for(int i = 0 ; i < _splittings.size() ; i++) {
+                _splittings.get(i).undo();
+            }
+        }
     }
 
     @Override
@@ -260,14 +310,30 @@ public class UltrametricNetwork extends StateNode {
     @Override
     public void accept() {
         _dirty = false;
-        if(_logLtemp != null) _logGeneTreeNetwork = _logLtemp;
+        if(_logLtemp != null) {
+            _logGeneTreeNetwork = _logLtemp;
+            if(Utils.SAMPLE_SPLITTING) {
+            }
+        }
         _logLtemp = null;
+
+        if(Utils.SAMPLE_SPLITTING) {
+            for(int i = 0 ; i < _splittings.size() ; i++) {
+                _splittings.get(i).accept();
+            }
+        }
     }
 
     @Override
     public void reject() {
         _dirty = false;
         _logLtemp = null;
+
+        if(Utils.SAMPLE_SPLITTING) {
+            for(int i = 0 ; i < _splittings.size() ; i++) {
+                _splittings.get(i).reject();
+            }
+        }
     }
 
     @Override
@@ -337,14 +403,19 @@ public class UltrametricNetwork extends StateNode {
 
     private double[] computeLikelihood() {
         double[] likelihoodArray = new double[1];
-        //likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alleles2species, _alignments, _BAGTRModel);
+        //likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alleles2species, _markers, _BAGTRModel);
 
-        if(SNAPPLikelihood.usePseudoLikelihood) {
-            likelihoodArray[0] = SNAPPLikelihood.computeSNAPPPseudoLikelihood(_network, _alleles2species, _alignments, _BAGTRModel); // pseudo likelihood
-        } else if(SNAPPLikelihood.useApproximateBayesian) {
-            likelihoodArray[0] = SNAPPLikelihood.computeApproximateBayesian(_network, _alleles2species, _alignments, _BAGTRModel); // approximate bayesian
+        if(!Utils.SAMPLE_SPLITTING) {
+
+            if (SNAPPLikelihood.usePseudoLikelihood) {
+                likelihoodArray[0] = SNAPPLikelihood.computeSNAPPPseudoLikelihood(_network, _alleles2species, _markers, _BAGTRModel); // pseudo likelihood
+            } else if (SNAPPLikelihood.useApproximateBayesian) {
+                likelihoodArray[0] = SNAPPLikelihood.computeApproximateBayesian(_network, _alleles2species, _markers, _BAGTRModel); // approximate bayesian
+            } else {
+                likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _markers.get(0)._RPatterns, _BAGTRModel); // normal likelihood
+            }
         } else {
-            likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _alignments.get(0)._RPatterns, _BAGTRModel); // normal likelihood
+            likelihoodArray[0] = SNAPPLikelihoodSampling.computeSNAPPLikelihoodST(_network, _splittings, _markers.get(0)._RPatterns, _BAGTRModel);
         }
 
         return likelihoodArray;
@@ -415,6 +486,34 @@ public class UltrametricNetwork extends StateNode {
             }
         }
         _network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
+    }
+
+    private void initNetHeights() {
+        for(NetNode<NetNodeInfo> node : Networks.postTraversal(_network)) {
+            if(node.getData() == null) {
+                node.setData(new NetNodeInfo(0.0));
+            }
+            for(NetNode<NetNodeInfo> par : node.getParents()) {
+                double dist = node.getParentDistance(par);
+                if(par.getData() == null) {
+                    par.setData(new NetNodeInfo(node.getData().getHeight() + dist));
+                }
+            }
+        }
+    }
+
+    private void initSplitting() {
+        _splittings = new ArrayList<>();
+        for(RPattern pattern : this._markers.get(0)._RPatterns.keySet()) {
+            double count = this._markers.get(0)._RPatterns.get(pattern)[0];
+            for (int k = 0; k < count; k++) {
+                _splittings.add(new Splitting(this, _species2alleles, pattern, _BAGTRModel));
+            }
+        }
+
+        if(_splittings.size() != _numSites) {
+            throw new RuntimeException("Number of splittings != number of sites.");
+        }
     }
 
     private static void updateWeights(double[] arr, int start) {

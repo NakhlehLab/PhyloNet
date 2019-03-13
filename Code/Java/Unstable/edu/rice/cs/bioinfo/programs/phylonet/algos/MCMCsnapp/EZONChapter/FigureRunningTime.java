@@ -3,12 +3,10 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.EZONChapter;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.State;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPPseudoLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.counting.CoalescenceHistoriesCounting;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
@@ -228,8 +226,8 @@ public class FigureRunningTime {
                     simulator._diploid = false;
                     Map<String, String> onesnp = simulator.generateSNPs(currentNetwork, species2alleles, numSites, !useOnlyPolymorphic);
 
-                    List<Alignment> alns = new ArrayList<>();
-                    Alignment aln = new Alignment(onesnp);
+                    List<MarkerSeq> alns = new ArrayList<>();
+                    MarkerSeq aln = new MarkerSeq(onesnp);
                     aln._diploid = false;
                     alns.add(aln);
                     alns.get(0)._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(alleles2species, alns);

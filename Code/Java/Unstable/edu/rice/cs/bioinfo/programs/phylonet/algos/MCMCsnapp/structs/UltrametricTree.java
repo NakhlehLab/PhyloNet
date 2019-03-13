@@ -2,7 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs;
 
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.StateNode;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.likelihood.BeagleTreeLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.sitemodel.SiteModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.substitution.Frequencies;
@@ -34,7 +34,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
 
     // ----- sequences -----
     private SubstitutionModel _substModel;
-    private Alignment _alignment;
+    private MarkerSeq _markerSeq;
 
     // ----- tree states -----
     private Tree _tree;
@@ -52,8 +52,8 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
     private TreeOperator[] _operators;
 
 
-    public UltrametricTree(Alignment aln) {
-        this._alignment = aln;
+    public UltrametricTree(MarkerSeq aln) {
+        this._markerSeq = aln;
         if(Utils._SUBSTITUTION_MODEL.equals("GTR")) {
             Frequencies freq = Utils._BASE_FREQS == null ?
                     new Frequencies(aln, Utils.ESTIMATE_SUBSTITUTION) :
@@ -65,7 +65,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
             this._substModel = new JukesCantor(freq);
         }
 
-        UPGMATree temp = new UPGMATree(new JCDistance( this._alignment.getAlignment() ));
+        UPGMATree temp = new UPGMATree(new JCDistance( this._markerSeq.getAlignment() ));
         this._tree = temp.getTree();
         this._nodes = IterableHelp.toList(_tree.getNodes());
         for(TNode node : _tree.getNodes()) {
@@ -84,9 +84,9 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
     }
 
 
-    public UltrametricTree(String newick, Alignment aln) {
+    public UltrametricTree(String newick, MarkerSeq aln) {
         try {
-            this._alignment = aln;
+            this._markerSeq = aln;
             if(Utils._SUBSTITUTION_MODEL.equals("GTR")) {
                 Frequencies freq = Utils._BASE_FREQS == null ?
                         new Frequencies(aln, Utils.ESTIMATE_SUBSTITUTION) :

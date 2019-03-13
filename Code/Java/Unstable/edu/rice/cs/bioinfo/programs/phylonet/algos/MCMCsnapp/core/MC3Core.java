@@ -1,14 +1,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.SampleSummary;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.ESS;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.Summary;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -41,7 +39,7 @@ public class MC3Core {
     private Map<String, OperatorLogger> _opMap = new HashMap<>();
     ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
 
-    public MC3Core(List<Alignment> alignments,BiAllelicGTR BAGTRModel, String logFileName) {
+    public MC3Core(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel, String logFileName) {
         if(logFileName != null) {
             System.out.println("Last log file: " + logFileName);
             int burnin = (int) (Utils._BURNIN_LEN / Utils._SAMPLE_FREQUENCY);
@@ -114,14 +112,14 @@ public class MC3Core {
                 e.printStackTrace();
             }
         }
-        initializeChains(alignments, BAGTRModel);
+        initializeChains(markerSeqs, BAGTRModel);
     }
 
-    public MC3Core(List<Alignment> alignments,BiAllelicGTR BAGTRModel) {
-        initializeChains(alignments, BAGTRModel);
+    public MC3Core(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel) {
+        initializeChains(markerSeqs, BAGTRModel);
     }
 
-    private void initializeChains(List<Alignment> alignments,BiAllelicGTR BAGTRModel) {
+    private void initializeChains(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel) {
         try {
             int nChains = Utils._MC3_CHAINS == null ? 1 : 1 + Utils._MC3_CHAINS.size();
             this._mc3s = new ArrayList<>(nChains);
@@ -130,7 +128,7 @@ public class MC3Core {
                         new State(
                                 Utils._START_NET,
                                 Utils._START_GT_LIST,
-                                alignments,
+                                markerSeqs,
                                 Utils._POISSON_PARAM,
                                 Utils._TAXON_MAP,
                                 BAGTRModel
@@ -149,8 +147,8 @@ public class MC3Core {
         }
 
         //_samples.add(new SampleSummary("network", Utils.SampleType.Network));
-        /*for(int i = 0; i < alignments.size(); i++) {
-            String name = alignments.get(i).getName();
+        /*for(int i = 0; i < markerSeqs.size(); i++) {
+            String name = markerSeqs.get(i).getName();
             if (name == null) name = Integer.toString(i);
             _samples.add(new SampleSummary("tree_" +  name, Utils.SampleType.Tree));
         }*/

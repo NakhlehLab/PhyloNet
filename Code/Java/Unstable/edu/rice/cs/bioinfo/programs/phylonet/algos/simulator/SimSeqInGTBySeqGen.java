@@ -1,6 +1,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.*;
 import java.util.HashMap;
@@ -46,9 +50,16 @@ public class SimSeqInGTBySeqGen {
 
         try {
             PrintWriter out = new PrintWriter("seqgen.tree");
-            out.print(gt.toNewick());
+            STITree<Object> tree = new STITree(gt.toNewick());
+            for(Object t : tree.postTraverse()) {
+                STINode tt = (STINode)t;
+                if(!tt.isLeaf()) {
+                    tt.setName("");
+                }
+            }
+            out.print(tree.toNewick());
             out.close();
-        } catch (IOException ioe) {
+        } catch (Exception ioe) {
             ioe.printStackTrace();
         }
 

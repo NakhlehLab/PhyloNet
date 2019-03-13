@@ -1,13 +1,11 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,21 +27,23 @@ public class ApproximateBayesian {
     List<String> _alleles;
     Map<String, List<String>> _species2alleles;
     Map<String, String> _alleles2species;
-    ConcurrentHashMap<BitSet, DoubleAdder> _counter;
-    Map<BitSet, Double> _counter0;
+    ConcurrentHashMap<String, DoubleAdder> _counter;
+    Map<String, Double> _counter0;
     boolean _onlyPolymorphic;
-    int _simnum = 50000;
+    int _simnum = 10000;
     BiAllelicGTR _BAGTRModel;
     boolean _diploid;
     boolean _dominant;
+    Integer _polyploid = null;
 
-    public ApproximateBayesian(Map<String, String> alleles2species, List<Alignment> alignments, boolean diploid, boolean dominant, boolean onlyPolymorphic, BiAllelicGTR BAGTRModel) {
+    public ApproximateBayesian(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, boolean diploid, boolean dominant, Integer polyploid, boolean onlyPolymorphic, BiAllelicGTR BAGTRModel) {
         if(diploid && !dominant) {
             //throw new RuntimeException("Not support!");
         }
 
         _diploid = diploid;
         _dominant = dominant;
+        _polyploid = polyploid;
         _BAGTRModel = BAGTRModel;
         _simulators = new ArrayList<>();
         for(int i = 0 ; i < Utils._NUM_THREADS; i++) {
@@ -64,22 +64,73 @@ public class ApproximateBayesian {
 
         _counter0 = new HashMap<>();
         double scale = 0.0;
-        scale = 1.0 * _simnum / alignments.get(0).getSiteCount();
-        for(Alignment aln : alignments) {
+        scale = 1.0 * _simnum / markerSeqs.get(0).getSiteCount();
+        for(MarkerSeq aln : markerSeqs) {
             for (int i = 0; i < aln.getSiteCount(); i++) {
                 int j = 0;
-                BitSet key = new BitSet(_alleles.size());
-                for(String allele : _alleles) {
-                    char c = aln.getAlignment().get(allele).charAt(i);
-                    if(c == '1') {
-                        key.set(j);
+//                BitSet key = new BitSet(_alleles.size() * 2);
+//                for(String allele : _alleles) {
+//                    char c = aln.getAlignment().get(allele).charAt(i);
+//                    if(c == '1') {
+//                        key.set(j);
+//                    }
+//                    j++;
+//                }
+//                if(!_counter0.containsKey(key)) {
+//                    _counter0.put(key, 0.0);
+//                }
+//                _counter0.put(key, _counter0.get(key) + scale);
+
+                for(int j1 = 0 ; j1 < _alleles.size() ; j1++) {
+                    for(int j2 = j1 + 1 ; j2 < _alleles.size() ; j2++) {
+                        for(int j3 = j2 + 1 ; j3 < _alleles.size() ; j3++) {
+                            char c1 = aln.getAlignment().get(_alleles.get(j1)).charAt(i);
+                            char c2 = aln.getAlignment().get(_alleles.get(j2)).charAt(i);
+                            char c3 = aln.getAlignment().get(_alleles.get(j3)).charAt(i);
+                            StringBuilder keybuilder = new StringBuilder();
+                            for(int ii = 0 ; ii < _alleles.size() * 2 ; ii++) keybuilder.append("0");
+
+                            //BitSet key = new BitSet(_alleles.size() * 2);
+                            keybuilder.setCharAt(j1, '1');
+                            keybuilder.setCharAt(j2, '1');
+                            keybuilder.setCharAt(j3, '1');
+
+//                            key.flip(j1);
+//                            key.flip(j2);
+//                            key.flip(j3);
+//
+//                            if(c1 == '1') key.flip(j1 + _alleles.size());
+//                            if(c2 == '1') key.flip(j2 + _alleles.size());
+//                            if(c3 == '1') key.flip(j3 + _alleles.size());
+
+                            keybuilder.setCharAt(j1 + _alleles.size(), c1);
+                            keybuilder.setCharAt(j2 + _alleles.size(), c2);
+                            keybuilder.setCharAt(j3 + _alleles.size(), c3);
+
+                            String key = keybuilder.toString();
+
+                            if(!_counter0.containsKey(key)) {
+                                _counter0.put(key, 0.0);
+                            }
+                            _counter0.put(key, _counter0.get(key) + scale);
+                        }
                     }
-                    j++;
                 }
-                if(!_counter0.containsKey(key)) {
-                    _counter0.put(key, 0.0);
-                }
-                _counter0.put(key, _counter0.get(key) + scale);
+
+
+
+//                for(int k = 0 ; k < _alleles.size() ; k++) {
+//                    BitSet newkey = (BitSet) key.clone();
+//                    if(k == -1) {
+//                        newkey.flip(0, _alleles.size() - 1);
+//                    } else {
+//                        newkey.flip(k);
+//                    }
+//                    if(!_counter0.containsKey(newkey)) {
+//                        _counter0.put(newkey, 0.0);
+//                    }
+//                    _counter0.put(newkey, _counter0.get(newkey) + scale);
+//                }
             }
         }
 
@@ -99,11 +150,14 @@ public class ApproximateBayesian {
         DoubleAdder adder = new DoubleAdder();
         _counter = new ConcurrentHashMap<>();
 
+        //Utils._SEED = new Random().nextLong();//4385882401632407363L;
+        //System.out.println(Utils._SEED);
         _simulators = new ArrayList<>();
         for(int i = 0 ; i < Utils._NUM_THREADS; i++) {
             _simulators.add(new SimSNPInNetwork(_BAGTRModel, Utils._SEED + i * 10000));
             _simulators.get(i)._diploid = _diploid;
             _simulators.get(i)._dominant = _dominant;
+            _simulators.get(i)._polyploid = _polyploid;
         }
 
         //System.out.println(Networks.getFullString(network));
@@ -140,17 +194,64 @@ public class ApproximateBayesian {
                         }
                         Network net1 = net.clone();
                         onesnp = _simulators.get(index).generateSNPs(net1, species2alleles, 1, true);
-                        BitSet key = new BitSet(_alleles.size());
-                        int j = 0;
-                        for (String allele : _alleles) {
-                            char c = onesnp.get(allele).charAt(0);
-                            if (c == '1') {
-                                key.set(j);
+//                        BitSet key = new BitSet(_alleles.size());
+//                        int j = 0;
+//                        for (String allele : _alleles) {
+//                            char c = onesnp.get(allele).charAt(0);
+//                            if (c == '1') {
+//                                key.set(j);
+//                            }
+//                            j++;
+//                        }
+//                        _counter.putIfAbsent(key, new DoubleAdder());
+//                        _counter.get(key).add(1.0);
+
+                        for(int j1 = 0 ; j1 < _alleles.size() ; j1++) {
+                            for(int j2 = j1 + 1 ; j2 < _alleles.size() ; j2++) {
+                                for(int j3 = j2 + 1 ; j3 < _alleles.size() ; j3++) {
+                                    char c1 = onesnp.get(_alleles.get(j1)).charAt(0);
+                                    char c2 = onesnp.get(_alleles.get(j2)).charAt(0);
+                                    char c3 = onesnp.get(_alleles.get(j3)).charAt(0);
+
+                                    StringBuilder keybuilder = new StringBuilder();
+                                    for(int ii = 0 ; ii < _alleles.size() * 2 ; ii++) keybuilder.append("0");
+
+                                    keybuilder.setCharAt(j1, '1');
+                                    keybuilder.setCharAt(j2, '1');
+                                    keybuilder.setCharAt(j3, '1');
+
+                                    keybuilder.setCharAt(j1 + _alleles.size(), c1);
+                                    keybuilder.setCharAt(j2 + _alleles.size(), c2);
+                                    keybuilder.setCharAt(j3 + _alleles.size(), c3);
+
+                                    String key = keybuilder.toString();
+//                                    BitSet key = new BitSet(_alleles.size() * 2);
+
+//                                    key.flip(j1);
+//                                    key.flip(j2);
+//                                    key.flip(j3);
+//
+//                                    if(c1 == '1') key.flip(j1 + _alleles.size());
+//                                    if(c2 == '1') key.flip(j2 + _alleles.size());
+//                                    if(c3 == '1') key.flip(j3 + _alleles.size());
+
+                                    _counter.putIfAbsent(key, new DoubleAdder());
+                                    _counter.get(key).add(1.0);
+                                }
                             }
-                            j++;
                         }
-                        _counter.putIfAbsent(key, new DoubleAdder());
-                        _counter.get(key).add(1.0);
+
+//                        for(int kk = 0 ; kk < _alleles.size() ; kk++) {
+//                            BitSet newkey = (BitSet) key.clone();
+//                            if(kk == -1) {
+//                                newkey.flip(0, _alleles.size() - 1);
+//                            } else {
+//                                newkey.flip(kk);
+//                            }
+//
+//                            _counter.putIfAbsent(newkey, new DoubleAdder());
+//                            _counter.get(newkey).add(1.0);
+//                        }
                     }
                 }
             });
@@ -182,15 +283,20 @@ public class ApproximateBayesian {
 
 
         double sum = 0.0;
-        Set<BitSet> keys = new HashSet<>();
-        keys.addAll(_counter0.keySet());
+        Set<String> keys = new HashSet<>();
         keys.addAll(_counter.keySet());
+        keys.addAll(_counter0.keySet());
 
-        for(BitSet key : keys) {
+        for(String key : keys) {
             double value0 = _counter0.getOrDefault(key, 0.0);
             DoubleAdder value = _counter.getOrDefault(key, new DoubleAdder());
             double value1 = value.sum() / modifier;
-            sum += (value0 - value1) * (value0 - value1);
+            if(value1 == 0.0) value1 = 1.0;
+//            if(value1 / _simnum < 0.01) {
+//                continue;
+//            }
+
+            sum += (value0 - value1) * (value0 - value1) / value1;
         }
 
         return -sum;

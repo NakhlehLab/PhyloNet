@@ -2,12 +2,13 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Tests;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork.NetworkUtils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork.SuperNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -16,8 +17,6 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,8 +64,8 @@ public class SimulatorTest {
         simulator._polyploid = 3;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alnwarp = new ArrayList<>();
-        alnwarp.add(new Alignment(onesnp));
+        List<MarkerSeq> alnwarp = new ArrayList<>();
+        alnwarp.add(new MarkerSeq(onesnp));
 
         Map<RPattern, double[]> patterns;
         patterns = SNAPPLikelihood.polyploidSequenceToPatterns(null, alnwarp, 3);
@@ -121,8 +120,8 @@ public class SimulatorTest {
         simulator._diploid = false;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         List<Tuple3<String, String, String>> triplets = new ArrayList<>();
 
@@ -137,8 +136,8 @@ public class SimulatorTest {
                     sequence.put(triplet.Item1, alns.get(0).getAlignment().get(triplet.Item1));
                     sequence.put(triplet.Item2, alns.get(0).getAlignment().get(triplet.Item2));
                     sequence.put(triplet.Item3, alns.get(0).getAlignment().get(triplet.Item3));
-                    List<Alignment> alnwarp = new ArrayList<>();
-                    alnwarp.add(new Alignment(sequence));
+                    List<MarkerSeq> alnwarp = new ArrayList<>();
+                    alnwarp.add(new MarkerSeq(sequence));
 
                     Map<RPattern, double[]> patterns;
                     patterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
@@ -161,7 +160,7 @@ public class SimulatorTest {
             leaves.add(triplet.Item2);
             leaves.add(triplet.Item3);
 
-            Network subNetwork = superNetwork.getSubNetwork(trueNetwork, leaves, true, false);
+            Network subNetwork = NetworkUtils.getSubNetwork(trueNetwork, leaves, true);
             Networks.autoLabelNodes(subNetwork);
             triplets2subnetworks.put(triplet, subNetwork);
         }
@@ -186,8 +185,8 @@ public class SimulatorTest {
             // compare to the portion of pattern with full data
             /*Map<String, String> onesnp1 = simulator.generateSNPs(network, null, numSites, !useOnlyPolymorphic);
 
-            List<Alignment> alns1 = new ArrayList<>();
-            Alignment aln1 = new Alignment(onesnp1);
+            List<MarkerSeq> alns1 = new ArrayList<>();
+            MarkerSeq aln1 = new MarkerSeq(onesnp1);
             alns1.add(aln1);
             aln1._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns1);
 

@@ -119,6 +119,7 @@ public class IdealTest {
         if(args.length > 0) {
             filename = args[0];
         }
+        long starttime = System.currentTimeMillis();
 
         Map<Integer, Integer> countByReti = new TreeMap<>();
         Map<Integer, Integer> correctnessByReti = new TreeMap<>();
@@ -221,9 +222,35 @@ public class IdealTest {
             System.out.println("Count: " + countByReti.get(numReti));
             System.out.println("Correctness: " + correctnessByReti.get(numReti));
         }
+
+        System.out.println("Time (s): " + (System.currentTimeMillis()-starttime)/1000.0);
+    }
+
+    static void testOneNetwork(String args[]) {
+        String netstring = "((((((C:1.0)#H1:1.0::0.5,B:2.0):2.0)#H2:1.0::0.5,A:5.0):3.0,((D:3.0,#H1:2.0::0.5):3.0,#H2:2.0::0.5):2.0):2.0,E:10.0);";
+        Network trueNetwork = Networks.readNetwork(netstring);
+        List<Network> subnetworks = NetworkUtils.genAllSubNetworks(trueNetwork, 3);
+        List<Tuple3<Network, String, Double>> newnetlist = new ArrayList<>();
+
+        for (Network net : subnetworks) {
+            newnetlist.add(new Tuple3<>(net, "", 1.0));
+            System.out.println(net.toString());
+        }
+
+        SuperNetwork3.reconcileHeights = true;
+        SuperNetwork3.printDetails_ = true;
+
+        SuperNetwork3 superNetwork3 = new SuperNetwork3(newnetlist);
+        Network result = superNetwork3.compute();
+
+        boolean correctness = Networks.hasTheSameTopology(result, trueNetwork);
+
+
+        System.out.println(correctness);
+
     }
 
     public static void main(String[] args) {
-        test(args);
+        testOneNetwork(args);
     }
 }

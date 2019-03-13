@@ -70,15 +70,21 @@ public class SimSNPInGT {
         _invariantSitesProb = prob;
     }
 
-    public Map<String, String> generateSingeSite(Tree tree) {
+    public Map<String, String> generateSingeSite(Tree tree, Map<TNode, Character> markers) {
+        if(markers == null) {
+            markers = new HashMap<>();
+        }
+        markers.clear();
+
         if(_seed == null){
             _random = new Random();
         }
 
         Map<String, String> res = new HashMap<>();
         res = new HashMap<>();
-        Map<TNode, Character> markers = new HashMap<>();
         TNode root = tree.getRoot();
+        // Need to burn a random number, otherwise the bahavior is weird.
+        _random.nextDouble();
         markers.put(root, _random.nextDouble() < _pi0 ? '0' : '1');
 
         if(_rateVarAcrossMarkers) {
@@ -94,6 +100,10 @@ public class SimSNPInGT {
             res.put(leafName, markers.get(tree.getNode(leafName)).toString());
         }
         return res;
+    }
+
+    public Map<String, String> generateSingeSite(Tree tree) {
+        return generateSingeSite(tree, null);
     }
 
     private void processNode(TNode node, Map<TNode, Character> markers, boolean invariant) {

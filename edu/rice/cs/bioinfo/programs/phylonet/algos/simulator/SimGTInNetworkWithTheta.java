@@ -37,6 +37,109 @@ public class SimGTInNetworkWithTheta {
             _random = new Random();
     }
 
+    protected STITree generateOneGT(Network network, Map<String, List<String>> species2alleles, double mu, Map<Tuple<NetNode,NetNode>, List<STINode>> netEdge2geneLineages, Map<Tuple<NetNode,NetNode>, List<STINode>> netEdgeBottom2geneLineages) {
+        if(_seed == null){
+            _random = new Random();
+        }
+
+        if(species2alleles==null){
+            species2alleles = new HashMap<String, List<String>>();
+            for(Object leaf: network.getLeaves()){
+                String species = ((NetNode)leaf).getName();
+                List<String> alleles = new ArrayList<String>();
+                alleles.add(species);
+                species2alleles.put(species, alleles);
+            }
+        }
+
+        STITree gt = new STITree();
+        STINode root = gt.getRoot();
+
+        // (parent, child) -> [tree nodes, ...]
+        if(netEdge2geneLineages == null)
+            netEdge2geneLineages = new HashMap<Tuple<NetNode,NetNode>, List<STINode>>();
+        if(netEdgeBottom2geneLineages == null)
+            netEdgeBottom2geneLineages = new HashMap<Tuple<NetNode,NetNode>, List<STINode>>();
+        for(Object nodeObject: Networks.postTraversal(network)){
+            NetNode node = (NetNode)nodeObject;
+            if(_printDetails){
+                System.out.println("\nNetNode " + node.getName());
+            }
+            List<STINode> geneLineages = new ArrayList<STINode>();
+            if(node.isLeaf()){
+                for(String allele: species2alleles.get(node.getName())){
+                    STINode newNode = root.createChild(allele);
+                    newNode.setParentDistance(0.0);
+                    geneLineages.add(newNode);
+                }
+            }
+            else{
+                for(Object childObject: node.getChildren()){
+                    NetNode child = (NetNode)childObject;
+                    geneLineages.addAll(netEdge2geneLineages.get(new Tuple<NetNode, NetNode>(node, child)));
+                }
+            }
+
+            if(_printDetails){
+                System.out.println(geneLineages);
+            }
+
+
+
+            if(node.isRoot()){
+                netEdgeBottom2geneLineages.put(new Tuple<NetNode, NetNode>(node, node), new ArrayList<>(geneLineages) );
+                randomlyCoalGeneLineages(network, geneLineages, node, null, mu, root);
+            }
+            else if(node.isTreeNode()){
+                NetNode parent = (NetNode)node.getParents().iterator().next();
+                netEdgeBottom2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), new ArrayList<>(geneLineages));
+                randomlyCoalGeneLineages(network, geneLineages, node, parent, mu, root);
+                netEdge2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), geneLineages);
+            }
+            else{
+                NetNode parent1 = (NetNode)node.getParents().iterator().next();
+                double inheritanceProb = node.getParentProbability(parent1);
+                if(inheritanceProb == NetNode.NO_PROBABILITY){
+                    throw new RuntimeException("The network has network node that doesn't have inheritance probability.");
+
+                }
+                List<STINode> geneLineages1 = new ArrayList<STINode>();
+                List<STINode> geneLineages2 = new ArrayList<STINode>();
+                for(STINode gl: geneLineages){
+                    double random = _random.nextDouble();
+                    if(random < inheritanceProb){
+                        geneLineages1.add(gl);
+                    }
+                    else{
+                        geneLineages2.add(gl);
+                    }
+                }
+                if(_printDetails){
+                    System.out.println("Dividing into :" + geneLineages1);
+                    System.out.println("Dividing into :" + geneLineages2);
+                }
+
+                int index = 0;
+                for(Object parentObject: node.getParents()){
+                    NetNode parent = (NetNode)parentObject;
+                    if(index == 0){
+                        geneLineages = geneLineages1;
+                    }
+                    else{
+                        geneLineages = geneLineages2;
+                    }
+                    netEdgeBottom2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), new ArrayList<>(geneLineages));
+                    randomlyCoalGeneLineages(network, geneLineages, node, parent, mu, root);
+                    netEdge2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), geneLineages);
+                    index++;
+                }
+            }
+
+        }
+        Trees.removeBinaryNodes(gt);
+        return gt;
+    }
+
     //parent distance - tau - divergence time in units of expected number of mutations per site
     //parent support - theta - population size parameter in units of population mutation rate per site
 
@@ -60,91 +163,14 @@ public class SimGTInNetworkWithTheta {
                 System.out.println("\n\nConstructing gt#" + (i+1) +" ...");
             }
 
-            STITree gt = new STITree();
-            STINode root = gt.getRoot();
-
-            Map<Tuple<NetNode,NetNode>, List<TNode>> netEdge2geneLineages = new HashMap<Tuple<NetNode,NetNode>, List<TNode>>();
-            for(Object nodeObject: Networks.postTraversal(network)){
-                NetNode node = (NetNode)nodeObject;
-                if(_printDetails){
-                    System.out.println("\nNetNode " + node.getName());
-                }
-                List<TNode> geneLineages = new ArrayList<TNode>();
-                if(node.isLeaf()){
-                    for(String allele: species2alleles.get(node.getName())){
-                        TNode newNode = root.createChild(allele);
-                        newNode.setParentDistance(0.0);
-                        geneLineages.add(newNode);
-                    }
-                }
-                else{
-                    for(Object childObject: node.getChildren()){
-                        NetNode child = (NetNode)childObject;
-                        geneLineages.addAll(netEdge2geneLineages.get(new Tuple<NetNode, NetNode>(node, child)));
-                    }
-                }
-
-                if(_printDetails){
-                    System.out.println(geneLineages);
-                }
-
-
-
-                if(node.isRoot()){
-                    randomlyCoalGeneLineages(geneLineages, node, null, mu, root);
-                }
-                else if(node.isTreeNode()){
-                    NetNode parent = (NetNode)node.getParents().iterator().next();
-                    randomlyCoalGeneLineages(geneLineages, node, parent, mu, root);
-                    netEdge2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), geneLineages);
-                }
-                else{
-                    NetNode parent1 = (NetNode)node.getParents().iterator().next();
-                    double inheritanceProb = node.getParentProbability(parent1);
-                    if(inheritanceProb == NetNode.NO_PROBABILITY){
-                        throw new RuntimeException("The network has network node that doesn't have inheritance probability.");
-
-                    }
-                    List<TNode> geneLineages1 = new ArrayList<TNode>();
-                    List<TNode> geneLineages2 = new ArrayList<TNode>();
-                    for(TNode gl: geneLineages){
-                        double random = _random.nextDouble();
-                        if(random < inheritanceProb){
-                            geneLineages1.add(gl);
-                        }
-                        else{
-                            geneLineages2.add(gl);
-                        }
-                    }
-                    if(_printDetails){
-                        System.out.println("Dividing into :" + geneLineages1);
-                        System.out.println("Dividing into :" + geneLineages2);
-                    }
-
-                    int index = 0;
-                    for(Object parentObject: node.getParents()){
-                        NetNode parent = (NetNode)parentObject;
-                        if(index == 0){
-                            geneLineages = geneLineages1;
-                        }
-                        else{
-                            geneLineages = geneLineages2;
-                        }
-                        randomlyCoalGeneLineages(geneLineages, node, parent, mu, root);
-                        netEdge2geneLineages.put(new Tuple<NetNode, NetNode>(parent, node), geneLineages);
-                        index++;
-                    }
-                }
-
-            }
-            Trees.removeBinaryNodes(gt);
+            Tree gt = generateOneGT(network, species2alleles, mu, null, null);
             gts.add(gt);
         }
 
         return gts;
     }
 
-    private void randomlyCoalGeneLineages(List<TNode> geneLineages, NetNode node, NetNode parent, double mu, STINode root) {
+    private void randomlyCoalGeneLineages(Network network, List<STINode> geneLineages, NetNode node, NetNode parent, double mu, STINode root) {
         int k = geneLineages.size();
         if(k == 0) return;
         double height = 0.0;
@@ -152,7 +178,7 @@ public class SimGTInNetworkWithTheta {
         double theta = 0.0;
         if(parent != null) {
             length = node.getParentDistance(parent);
-            theta = node.getParentSupport(parent);
+            theta = node.getParentSupport(parent) == NetNode.NO_SUPPORT ? network.getRoot().getRootPopSize() : node.getParentSupport(parent);
         } else {
             theta = node.getRootPopSize();
             length = 1e8;

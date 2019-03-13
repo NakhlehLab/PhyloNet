@@ -1,22 +1,16 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.simulator;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.*;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.DiscreteGammaDistribution;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import org.apache.commons.math3.distribution.GammaDistribution;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by IntelliJ IDEA.
@@ -253,8 +247,8 @@ public class SimSNPInNetwork {
             System.out.println(c + ":" + counter.get(c));
         }
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
 
@@ -273,7 +267,7 @@ public class SimSNPInNetwork {
             double likelihood = 0;
             try {
                 long start = System.currentTimeMillis();
-                likelihood = run.getProbability(pattern);
+                likelihood = run.getProbability(pattern, null);
                 sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
@@ -346,8 +340,8 @@ public class SimSNPInNetwork {
         simulator._diploid = true;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alns);
 
@@ -364,7 +358,7 @@ public class SimSNPInNetwork {
             double likelihood = 0;
             try {
                 long start = System.currentTimeMillis();
-                likelihood = run.getProbability(pattern);
+                likelihood = run.getProbability(pattern, null);
                 sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
@@ -469,8 +463,8 @@ public class SimSNPInNetwork {
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, species2alleles, numSites, !useOnlyPolymorphic);
 
         System.out.println("Monomorphic patterns: ");
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alns);
         for(RPattern pattern : aln._RPatterns.keySet()) {
@@ -491,7 +485,7 @@ public class SimSNPInNetwork {
             double likelihood = 0;
             try {
                 long start = System.currentTimeMillis();
-                likelihood = run.getProbability(pattern);
+                likelihood = run.getProbability(pattern, null);
                 sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp( aln._RPatterns.get(pattern)[1] / aln._RPatterns.get(pattern)[0]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
@@ -595,8 +589,8 @@ public class SimSNPInNetwork {
         simulator._diploid = false;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
 
@@ -612,7 +606,7 @@ public class SimSNPInNetwork {
             double likelihood = 0;
             try {
                 long start = System.currentTimeMillis();
-                likelihood = run.getProbability(pattern);
+                likelihood = run.getProbability(pattern, null);
                 sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
@@ -625,13 +619,13 @@ public class SimSNPInNetwork {
 
 //        List<Map<String, String>> snpdata = new ArrayList<>();
 //        snpdata.add(onesnp);
-//        List<Alignment> alns = new ArrayList<>();
+//        List<MarkerSeq> alns = new ArrayList<>();
 //        for(Map<String, String> input : snpdata) {
 //            for(String allele : input.keySet()) {
 //                System.out.println(allele + " " + input.get(allele));
 //            }
 //            System.out.println();
-//            Alignment aln = new Alignment(input);
+//            MarkerSeq aln = new MarkerSeq(input);
 //
 //            Map<Integer, Integer> cache = new HashMap<>();
 //
@@ -659,7 +653,7 @@ public class SimSNPInNetwork {
 //            alns.add(aln);
 //
 //
-//            for(Alignment alg : alns) {
+//            for(MarkerSeq alg : alns) {
 //                double P0 = 0;
 //                double P1 = 0;
 //                Map<Integer, Double> likelihoods = new TreeMap<>();

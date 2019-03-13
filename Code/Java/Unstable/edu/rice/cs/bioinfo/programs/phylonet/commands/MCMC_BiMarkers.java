@@ -11,17 +11,14 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.Program;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.SimulatedAnnealing;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.Test;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 
-import java.io.File;
 import java.util.*;
 
 /**
@@ -730,8 +727,8 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
 
         Utils.printSettings();
 
-        List<Alignment> alnwarp = new ArrayList<>();
-        alnwarp.add(new Alignment(_sequence));
+        List<MarkerSeq> alnwarp = new ArrayList<>();
+        alnwarp.add(new MarkerSeq(_sequence));
 
         if(_polyploid != null) {
             alnwarp.get(0)._RPatterns = SNAPPLikelihood.polyploidSequenceToPatterns(allele2species, alnwarp, _polyploid);
@@ -765,7 +762,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             Network cloneNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(_trueNetwork.substring(_trueNetwork.indexOf(']') + 1));
             cloneNetwork.getRoot().setRootPopSize(trueRootPopSize);
             if(!SNAPPLikelihood.usePseudoLikelihood && !SNAPPLikelihood.useApproximateBayesian){
-                System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
+                //System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
             }
 
             if(SNAPPLikelihood.usePseudoLikelihood) {

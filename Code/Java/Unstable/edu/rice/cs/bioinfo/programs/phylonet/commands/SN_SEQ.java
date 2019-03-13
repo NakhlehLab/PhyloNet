@@ -161,7 +161,7 @@ public class SN_SEQ extends CommandBaseFileOutMultilocusData {
                     for(String locus: loci.Elements){
                         noError = noError && this.assertDataExists(locus, loci.getLine(), loci.getColumn());
                         if (noError) {
-                            //alignments.add(new Alignment(this.sourceIdentToMultilocusData.get(locus), locus));
+                            //alignments.add(new MarkerSeq(this.sourceIdentToMultilocusData.get(locus), locus));
                         }
                     }
                 } catch(NumberFormatException e) {
@@ -174,7 +174,7 @@ public class SN_SEQ extends CommandBaseFileOutMultilocusData {
             }
         } else {
             //for(String key : this.sourceIdentToMultilocusData.keySet()) {
-            //    alignments.add(new Alignment(this.sourceIdentToMultilocusData.get(key), key));
+            //    alignments.add(new MarkerSeq(this.sourceIdentToMultilocusData.get(key), key));
             //}
         }
 

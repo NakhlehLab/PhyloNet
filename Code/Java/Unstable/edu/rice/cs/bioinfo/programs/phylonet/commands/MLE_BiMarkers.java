@@ -9,10 +9,9 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.Program;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.SimulatedAnnealing;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
@@ -538,7 +537,9 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
             for(String taxon : _sequence.keySet()) {
                 String s = _sequence.get(taxon);
                 for(int i = 0 ; i < s.length() ; i++) {
-                    count[s.charAt(i) - '0']++;
+                    if(s.charAt(i) != '?') {
+                        count[s.charAt(i) - '0']++;
+                    }
                     totalSites++;
                 }
             }
@@ -572,8 +573,8 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
 
         Utils.printSettings();
 
-        List<Alignment> alnwarp = new ArrayList<>();
-        alnwarp.add(new Alignment(_sequence));
+        List<MarkerSeq> alnwarp = new ArrayList<>();
+        alnwarp.add(new MarkerSeq(_sequence));
 
         if(_polyploid != null) {
             alnwarp.get(0)._RPatterns = SNAPPLikelihood.polyploidSequenceToPatterns(allele2species, alnwarp, _polyploid);
@@ -586,6 +587,7 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
         // TODO: fix (pseudo likelihood) for polyploid
         alnwarp.get(0)._diploid = _diploid;
         alnwarp.get(0)._dominant = _dominant;
+        alnwarp.get(0)._polyploid = _polyploid;
 
         double polyCount = 0.0;
         for(RPattern key : alnwarp.get(0)._RPatterns.keySet()) {

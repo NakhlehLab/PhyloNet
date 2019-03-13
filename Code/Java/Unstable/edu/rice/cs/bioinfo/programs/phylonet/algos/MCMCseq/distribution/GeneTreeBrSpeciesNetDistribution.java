@@ -354,6 +354,13 @@ public class GeneTreeBrSpeciesNetDistribution {
                 NetNode<NetNodeInfo> parentNode = parentIt.next();
                 double highTau = parentNode.getData().getHeight(); // one parent's height
                 double gamma = node.getParentProbability(parentNode); // one parent's gamma
+//                if(embedding != null) {
+//                    if (newCACs.get(0)._lineages.size() == 0) {
+//                        gamma = 0;
+//                    } else {
+//                        gamma = 1;
+//                    }
+//                }
                 // one parent's pop size
                 double branchPopSize = _onePopSize ? rootPopSize : node.getParentSupport(parentNode);
                 if(Double.isNaN(branchPopSize)) {

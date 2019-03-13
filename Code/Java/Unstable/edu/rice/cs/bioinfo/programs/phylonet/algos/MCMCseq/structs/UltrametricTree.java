@@ -205,7 +205,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         _nodes = IterableHelp.toList(_tree.getNodes());
         this._internalNodes = Trees.getInternalNodes(_tree);
         this._beagle.reset();
-        //this._beagle = new BeagleTreeLikelihood(_alignment, this, new SiteModel(this._substModel), null);
+        //this._beagle = new BeagleTreeLikelihood(_markerSeq, this, new SiteModel(this._substModel), null);
 
     }
 

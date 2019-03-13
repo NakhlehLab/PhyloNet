@@ -3,12 +3,11 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Tests;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork.SuperNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -76,8 +75,8 @@ public class LikelihoodTest {
         simulator._diploid = false;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
 
@@ -90,7 +89,7 @@ public class LikelihoodTest {
             double likelihood = 0;
             try {
                 long start = System.currentTimeMillis();
-                likelihood = run.getProbability(pattern);
+                likelihood = run.getProbability(pattern, null);
                 sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
@@ -136,8 +135,8 @@ public class LikelihoodTest {
         //onesnp.put("Q", "1001011010101011001001010101010111001010011001100101111111001011110000001010001001100000110100001011011000111001011101101010111101000010100100011100011001100111101111000001100111101101000001001101001100110010010100001100011100000111001101110100100010001101011111000101101101110000101100011101110010001110011100001101100101111011000001111010111010011010001110100011000101110111101100110111101010100100011100000111110101001111111000011011011010111011011000000100101000100001010101101101011111111001001011011111100110001111111110001011000010010110111100011001101011001001010110111110111010010100110010001101001110011000010010101100101000100100111111110000010010110100001000000001011101000110010010010000011000001011011001011111000100000010111100101000000000111001101010111110100111110010000101100011010000110011010111001001100101110100001110000100010101111101010000101010101011000101000010100001110101101000111011000000011011000100010001111000011000101011111000000100011011100100100100111110000100000110");
         //onesnp.put("A", "1001011010101011001000010101010111001010011001100101111011000011111000001010001001100000110100001011001000111001011101101010111001000010100100011110011001100111101111000001101111101101000001001101001100110010010100001100011100000111001101110100100010001101011111000101100101110000101100010101110010001110011100001101100101111010000001111010111010011110001110100011000111110111101100110111101000101100011100000011110101001111111000010011011010111011011000000100101000100001010101101101010111101001001011011111100110001111111110001011000011010110111100010001101011001001010111111110111010010100010010001101001110011000110010001100101000100100111111110000010010110100001000000001011101010110000010010001011000001011011001011111000100000010111100101000000000111001101010111110100111110010000101100011010000110011010101001001100101110100001110010100010101111101010000101010101011000101000010100001110101101000111011000000011011000100010001111000001000101011111000000100011011100100100100111110000100000110");
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
 
@@ -176,8 +175,8 @@ public class LikelihoodTest {
         simulator._diploid = true;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alns);
 
@@ -196,7 +195,7 @@ public class LikelihoodTest {
             double likelihood = 0;
             try {
                 long start = System.currentTimeMillis();
-                likelihood = run.getProbability(pattern);
+                likelihood = run.getProbability(pattern, null);
                 sum += likelihood;
                 System.out.println(pattern + " " + likelihood * Math.exp(aln._RPatterns.get(pattern)[1]) * numSites  + " " + aln._RPatterns.get(pattern)[0] );
                 System.out.println("Time: " + (System.currentTimeMillis()-start)/1000.0);
@@ -250,8 +249,8 @@ public class LikelihoodTest {
         simulator._diploid = true;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(onesnp);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(onesnp);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alns);
 
@@ -341,8 +340,8 @@ public class LikelihoodTest {
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, 12345678L);
         Map<String, String> snps = simulator.generateSNPs(trueNetwork, null, numSites, true);
 
-        List<Alignment> alns = new ArrayList<>();
-        Alignment aln = new Alignment(snps);
+        List<MarkerSeq> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(snps);
         alns.add(aln);
         aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alns);
 

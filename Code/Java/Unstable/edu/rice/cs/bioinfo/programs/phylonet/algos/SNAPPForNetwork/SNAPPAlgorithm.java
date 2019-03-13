@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.Splitting;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.algorithm.NucleotideProbabilityAlgorithm;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.GTRModel;
@@ -12,7 +13,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -109,7 +109,11 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
     }
 
     public double getProbability(RPattern pattern) {
-        return getProbability(pattern, 0);
+        return getProbability(pattern, null, 0);
+    }
+
+    public double getProbability(RPattern pattern, Splitting splitting) {
+        return getProbability(pattern, splitting, 0);
     }
 
     public double getProbability(NucleotideObservation dna, int siteID) {
@@ -120,9 +124,13 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         return resultVal;
     }
 
-    public double getProbability(RPattern pattern, int siteID) {
+    public double getProbability(RPattern pattern, Splitting splitting, int siteID) {
         //Q._M = pattern.sumLineages();
-        double resultVal= Algorithms.getProbabilityObservationGivenNetwork(speciesNetwork, pattern, Q, siteID);
+        double resultVal;
+        if(splitting == null)
+            resultVal= Algorithms.getProbabilityObservationGivenNetwork(speciesNetwork, pattern, Q, siteID);
+        else
+            resultVal= AlgorithmsWithSampling.getProbabilityObservationGivenNetwork(speciesNetwork, pattern, Q, splitting, siteID);
 
         if (Double.isNaN(resultVal)||Double.isInfinite(resultVal))
             throw new RuntimeException("Result is not finite");
@@ -798,14 +806,14 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         }
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
 
         for(Map<String, String> input : snpdata) {
             for(String allele : input.keySet()) {
                 System.out.println(allele + " " + input.get(allele));
             }
             System.out.println();
-            Alignment aln = new Alignment(input);
+            MarkerSeq aln = new MarkerSeq(input);
 
             Map<Integer, Integer> cache = new HashMap<>();
 
@@ -834,7 +842,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -864,7 +872,7 @@ public class SNAPPAlgorithm extends NucleotideProbabilityAlgorithm {
         trueNetwork.getRoot().setRootPopSize(0.006176353468824599);
 
 
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             List<String> names = alg.getTaxaNames();
             double sum = 0;
 

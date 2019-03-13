@@ -2,12 +2,11 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.RateModel;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork.SuperNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork.NetworkUtils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
@@ -27,7 +26,7 @@ import static edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algori
  * To change this template use File | Settings | File Templates.
  */
 public class SNAPPPseudoLikelihood {
-
+    private boolean printDetails = false;
     private QParameters Q;
     private Network speciesNetwork;
     private Map<String, String> allele2species;
@@ -39,8 +38,8 @@ public class SNAPPPseudoLikelihood {
     public Map<Tuple3<String, String, String>, Double> cache = new HashMap<>();
 
     // by alleles
-    private void initialize1(Map<String, String> alleles2species, List<Alignment> alignments, boolean diploid) {
-        List<String> taxa = alignments.get(0).getTaxaNames();
+    private void initialize1(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, boolean diploid) {
+        List<String> taxa = markerSeqs.get(0).getTaxaNames();
         triplets = new ArrayList<>();
         triplets2patterns = new HashMap<>();
 
@@ -51,11 +50,11 @@ public class SNAPPPseudoLikelihood {
                     triplets.add(triplet);
 
                     Map<String, String> sequence = new HashMap<>();
-                    sequence.put(triplet.Item1, alignments.get(0).getAlignment().get(triplet.Item1));
-                    sequence.put(triplet.Item2, alignments.get(0).getAlignment().get(triplet.Item2));
-                    sequence.put(triplet.Item3, alignments.get(0).getAlignment().get(triplet.Item3));
-                    List<Alignment> alnwarp = new ArrayList<>();
-                    alnwarp.add(new Alignment(sequence));
+                    sequence.put(triplet.Item1, markerSeqs.get(0).getAlignment().get(triplet.Item1));
+                    sequence.put(triplet.Item2, markerSeqs.get(0).getAlignment().get(triplet.Item2));
+                    sequence.put(triplet.Item3, markerSeqs.get(0).getAlignment().get(triplet.Item3));
+                    List<MarkerSeq> alnwarp = new ArrayList<>();
+                    alnwarp.add(new MarkerSeq(sequence));
 
                     Map<RPattern, double[]> patterns;
                     if(diploid && !HAS_DOMINANT_MARKER) {
@@ -75,7 +74,7 @@ public class SNAPPPseudoLikelihood {
     }
 
     // by species
-    void initialize2(Map<String, String> alleles2species, List<Alignment> alignments, boolean diploid) {
+    void initialize2(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, boolean diploid) {
         triplets = new ArrayList<>();
         triplets2patterns = new HashMap<>();
 
@@ -103,17 +102,17 @@ public class SNAPPPseudoLikelihood {
                     triplets.add(triplet);
                     Map<String, String> sequence = new HashMap<>();
                     for(String allele : species2alleles.get(speciesList.get(i))) {
-                        sequence.put(allele, alignments.get(0).getAlignment().get(allele));
+                        sequence.put(allele, markerSeqs.get(0).getAlignment().get(allele));
                     }
                     for(String allele : species2alleles.get(speciesList.get(j))) {
-                        sequence.put(allele, alignments.get(0).getAlignment().get(allele));
+                        sequence.put(allele, markerSeqs.get(0).getAlignment().get(allele));
                     }
                     for(String allele : species2alleles.get(speciesList.get(k))) {
-                        sequence.put(allele, alignments.get(0).getAlignment().get(allele));
+                        sequence.put(allele, markerSeqs.get(0).getAlignment().get(allele));
                     }
 
-                    List<Alignment> alnwarp = new ArrayList<>();
-                    alnwarp.add(new Alignment(sequence));
+                    List<MarkerSeq> alnwarp = new ArrayList<>();
+                    alnwarp.add(new MarkerSeq(sequence));
 
                     Map<RPattern, double[]> patterns;
                     if(diploid && !HAS_DOMINANT_MARKER) {
@@ -131,14 +130,13 @@ public class SNAPPPseudoLikelihood {
         speciesInTriplets = true;
     }
 
-    public SNAPPPseudoLikelihood(Map<String, String> alleles2species, List<Alignment> alignments, boolean diploid) {
-        initialize2(alleles2species, alignments, diploid);
+    public SNAPPPseudoLikelihood(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, boolean diploid) {
+        initialize2(alleles2species, markerSeqs, diploid);
     }
 
     public SNAPPPseudoLikelihood(Network theSpeciesNetwork, RateModel rModel, Double theta) {
-        SuperNetwork superNetwork = new SuperNetwork(new ArrayList<>());
         rateModel = rModel;
-        subNetworks = superNetwork.genAllSubNetworks(theSpeciesNetwork, 3);
+        subNetworks = NetworkUtils.genAllSubNetworks(theSpeciesNetwork, 3);
     }
 
     public double getProbability(RPattern pattern) {
@@ -149,7 +147,7 @@ public class SNAPPPseudoLikelihood {
             Network cloneNetwork = Networks.readNetwork(subNetwork.toString());
             cloneNetwork.getRoot().setRootPopSize(subNetwork.getRoot().getRootPopSize());
             SNAPPAlgorithm run = new SNAPPAlgorithm(cloneNetwork, rateModel, theta);
-            double likelihood = run.getProbability(pattern);
+            double likelihood = run.getProbability(pattern, null);
             product *= likelihood;
             //System.out.println(subNetwork);
             //System.out.println(likelihood);
@@ -159,7 +157,6 @@ public class SNAPPPseudoLikelihood {
     }
 
     private Map<Tuple3<String, String, String>, Network> buildSubNetworks(Network network, Map<String, String> alleles2species) {
-        SuperNetwork superNetwork = new SuperNetwork(new ArrayList<>());
         Map<Tuple3<String, String, String>, Network> triplets2subnetworks = new HashMap<>();
         for(Tuple3<String, String, String> triplet : triplets) {
             List<String> leaves = new ArrayList<>();
@@ -176,7 +173,7 @@ public class SNAPPPseudoLikelihood {
                 leaves.add(triplet.Item2);
                 leaves.add(triplet.Item3);
             }
-            Network subNetwork = superNetwork.getSubNetwork(network, leaves, Utils._CONST_POP_SIZE, false);
+            Network subNetwork = NetworkUtils.getSubNetwork(network, leaves, Utils._CONST_POP_SIZE);
             Networks.autoLabelNodes(subNetwork);
             triplets2subnetworks.put(triplet, subNetwork);
         }
@@ -241,7 +238,8 @@ public class SNAPPPseudoLikelihood {
         SNAPPLikelihood.workloadCounter.increment();
 
         double sum = adder.sumThenReset();
-        System.out.println("Time to compute pseudo-likelihood(s): " + (System.currentTimeMillis()-start)/1000.0);
+        if(printDetails)
+            System.out.println("Time to compute pseudo-likelihood(s): " + (System.currentTimeMillis()-start)/1000.0);
         return sum;
     }
 

@@ -2,6 +2,8 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.Splitting;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.algorithm.FelsensteinAlgorithm;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.NucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Algorithms
 {
     private static final boolean PRINT_DETAILS = false;
-    public static final boolean CORRECTION_AT_LEAVES = false;
+    public static boolean CORRECTION_AT_LEAVES = false;
     public static boolean HAS_DOMINANT_MARKER = false;
     public static final boolean SWITCH_FASTER_BIALLILE = true;
     public static final boolean SWITCH_EXP_APPROX = true;
@@ -246,7 +248,7 @@ public class Algorithms
      * @param Q           A SNAPP transition matrix.
      * @return The probability
      */
-    private static double getProbabilityOfNetwork(Network<SNAPPData[]> speciesNetwork, QParameters Q, int siteID)
+    protected static double getProbabilityOfNetwork(Network<SNAPPData[]> speciesNetwork, QParameters Q, int siteID)
     {
         FMatrix rootFBot = speciesNetwork.getRoot().getData()[siteID].getFBottoms(null).iterator().next().Item1;
 
@@ -790,7 +792,105 @@ public class Algorithms
         return sum;
     }
 
+    private static void processNetworkNodeSampling(NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations, int reticulationID, Splitting splitting, int siteID) {
+        if (node.getChildCount() != 1)
+            throw new RuntimeException("SNAPP does not work on networks with reticulation node with 2 or more children per node");
 
+        int splittingIndexDimension = -1;
+        double[] inheritanceProbs = new double[2];
+        NetNode[] parents = new NetNode[2];
+        int index = 0;
+        for(NetNode parent: node.getParents()){
+            inheritanceProbs[index] = node.getParentProbability(parent);
+            parents[index++] = parent;
+        }
+
+        if(node.getChildren().iterator().next().getData()[siteID].getFTops(node).size() > 1) {
+            throw new RuntimeException("Not in sampling mode!");
+        }
+
+        double weight_sum = 0.0;
+        R sampled_r = null;
+
+        Tuple<FMatrix,int[]> tuple = node.getChildren().iterator().next().getData()[siteID].getFTops(node).get(0);
+        FMatrix fTop = tuple.Item1;
+        if(fTop.mx == 0) {
+            int[] splittingIndex = tuple.Item2.clone();
+            //splittingIndex[reticulationID] = index++;
+            FMatrix fm = new FMatrix(0, true);
+            data.addFBottom(parents[0], fm, splittingIndex);
+            data.addFBottom(parents[1], fm, splittingIndex);
+        } else {
+            int mx = fTop.mx;
+            int k = 1;
+            for (int n = 1; n <= mx; n++) {
+                for (R r : R.loopOver(n)) {
+                    double prob = fTop.get(r);
+
+                    if(sampled_r == null) {
+                        sampled_r = new R(r);;
+                        weight_sum += prob;
+                    } else {
+                        weight_sum += prob;
+                        double p = prob / weight_sum;
+                        double j = Randomizer.getRandomDouble();
+                        if (j <= p) {
+                            sampled_r = new R(r);
+                        }
+                    }
+                }
+            }
+
+            int n0 = 0, n1 = 0; // to parents[0]
+            for(int i0 = 1 ; i0 <= sampled_r.getNum(0) ; i0++) {
+                double p = Randomizer.getRandomDouble();
+                if(p < inheritanceProbs[0]) {
+                    n0++;
+                    splitting.logWeight += Math.log(inheritanceProbs[0]);
+                } else {
+                    splitting.logWeight += Math.log(inheritanceProbs[1]);
+                }
+            }
+
+            for(int i1 = 1 ; i1 <= sampled_r.getNum(1) ; i1++) {
+                double p = Randomizer.getRandomDouble();
+                if(p < inheritanceProbs[0]) {
+                    n1++;
+                    splitting.logWeight += Math.log(inheritanceProbs[0]);
+                } else {
+                    splitting.logWeight += Math.log(inheritanceProbs[1]);
+                }
+            }
+
+            R[] splitRPair = new R[]{new R(n0 + n1, new int[]{n0}), new R(sampled_r.n - n0 - n1, new int[]{sampled_r.getNum(0) - n0})};
+            double prob = fTop.get(sampled_r);
+
+            splitting.logWeight += Math.log(prob / weight_sum);
+
+            boolean probSet = false;
+            for(int i=0; i<2; i++){
+                FMatrix fm = new FMatrix(splitRPair[i].n, splitRPair[i].n==0);
+                if(fm.mx != 0){
+                    if(probSet){
+                        fm.set(splitRPair[i],1);
+                    }
+                    else{
+                        double weight = sampled_r.getProbabilityOfSelecting(splitRPair[0]) / calculateRWeight(sampled_r, splitRPair[0]);
+                        //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + Math.pow(inheritanceProbs[0],splitRPair[0].n) + " * " + Math.pow(inheritanceProbs[1],splitRPair[1].n) + " * " + weight);
+                        double newProb = prob / weight * Math.pow(inheritanceProbs[0],splitRPair[0].n) * Math.pow(inheritanceProbs[1],splitRPair[1].n);
+                        //System.out.println(splitRPair[0].n + " vs. " + splitRPair[1].n + ": " + newProb);
+                        //System.out.println(index);
+                        fm.set(splitRPair[i],newProb);
+                        probSet = true;
+                    }
+                }
+                int[] splittingIndex = tuple.Item2.clone();
+                splittingIndex[reticulationID] = 0;
+                data.addFBottom(parents[i], fm, splittingIndex);
+            }
+        }
+
+    }
 
     /**
      * Process a network node.
@@ -800,6 +900,7 @@ public class Algorithms
      */
     private static void processNetworkNode(NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations, int reticulationID, int siteID)
     {
+
         if (node.getChildCount() != 1)
             throw new RuntimeException("SNAPP does not work on networks with reticulation node with 2 or more children per node");
 
@@ -980,7 +1081,7 @@ public class Algorithms
     }
 
 
-    private static int calculateRWeight(R fromR, R toR){
+    protected static int calculateRWeight(R fromR, R toR){
         int weight = 1;
         for(int type = 0; type<(R.dims + 1); type++){
             weight *= ArithmeticUtils.binomialCoefficient(fromR.getNum(type), toR.getNum(type));
@@ -1036,7 +1137,7 @@ public class Algorithms
      * @param node               The node to process.
      * @param data               The data for that node.
      */
-    private static void processLeaf(Map<String, R> nucleotideIndexMap, NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations)
+    protected static void processLeaf(Map<String, R> nucleotideIndexMap, NetNode<SNAPPData[]> node, SNAPPData data, int numReticulations)
     {
         NetNode parent = node.getParents().iterator().next();
         int[] splittingIndex = new int[numReticulations];

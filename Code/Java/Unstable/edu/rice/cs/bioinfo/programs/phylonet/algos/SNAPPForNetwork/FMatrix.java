@@ -135,4 +135,12 @@ public class FMatrix
         }
         return sum;
     }
+
+    public double getRealSum() {
+        double sum = 0.0;
+        for(double value: arr){
+            sum += value;
+        }
+        return sum;
+    }
 }

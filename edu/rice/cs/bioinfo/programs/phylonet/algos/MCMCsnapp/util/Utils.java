@@ -91,6 +91,8 @@ public class Utils {
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
     public static boolean DISABLE_PARAMETER_MOVES = false;
+    public static boolean DISABLE_TOPOLOGY_MOVES = true;
+    public static boolean SAMPLE_SPLITTING = true;
 
     public static double DIMENSION_CHANGE_WEIGHT = 0.005;
 
@@ -109,7 +111,7 @@ public class Utils {
             0.30, 0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
 
-    public static double SEARCH_DIMENSION_CHANGE_WEIGHT = 0.02;
+    public static double SEARCH_DIMENSION_CHANGE_WEIGHT = 0.03;
 
     public static final double[] Search_Net_Op_Weights = new double[] {
             0.02, 0.01, 0.00,
@@ -131,6 +133,19 @@ public class Utils {
 
     public static double[] getOperationWeights(double[] weights, int start, int end) {
         if(DISABLE_PARAMETER_MOVES) {
+            weights[0] = 0.0;
+            weights[1] = 0.0;
+            weights[2] = 0.0;
+            weights[3] = 0.0;
+            weights[4] = 0.0;
+            weights[5] = 0.0;
+        }
+
+        if(DISABLE_TOPOLOGY_MOVES) {
+            for(int i = 6 ; i < Math.min(end, 13) ; i++) {
+                weights[i] = 0.0;
+            }
+
             weights[0] = 0.0;
             weights[1] = 0.0;
             weights[2] = 0.0;
@@ -164,6 +179,18 @@ public class Utils {
             weights[3] = 0.0;
             weights[4] = 0.0;
             weights[5] = 0.0;
+        }
+
+        if(DISABLE_TOPOLOGY_MOVES) {
+            for(int i = 6 ; i < Math.min(weights.length, 13) ; i++) {
+                weights[i] = 0.0;
+            }
+//            weights[0] = 0.0;
+//            weights[1] = 0.0;
+//            weights[2] = 0.0;
+//            weights[3] = 0.0;
+//            weights[4] = 0.0;
+//            weights[5] = 0.0;
         }
 
         double[] arr = new double[weights.length];

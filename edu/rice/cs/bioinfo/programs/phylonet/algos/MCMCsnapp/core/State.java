@@ -2,14 +2,13 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SpeciesNetPriorDistribution;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.PopulationSize;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.UltrametricTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
@@ -37,7 +36,7 @@ public class State {
 
     public State (String network,
                   List<String> trees,
-                  List<Alignment> alignments,
+                  List<MarkerSeq> markerSeqs,
                   double poissonParameter,
                   Map<String, List<String>> species2alleles,
                   BiAllelicGTR BAGTRModel
@@ -47,15 +46,15 @@ public class State {
             SNAPPLikelihood.pseudoLikelihood.cache.clear();
         }
 
-        this._geneTrees = new ArrayList<>(alignments.size());
-        for(int i = 0; i < alignments.size(); i++) {
+        this._geneTrees = new ArrayList<>(markerSeqs.size());
+        for(int i = 0; i < markerSeqs.size(); i++) {
             if(trees == null) {
-                this._geneTrees.add(new UltrametricTree(alignments.get(i)));
+                this._geneTrees.add(new UltrametricTree(markerSeqs.get(i)));
             } else {
-                this._geneTrees.add(new UltrametricTree(trees.get(i), alignments.get(i)));
+                this._geneTrees.add(new UltrametricTree(trees.get(i), markerSeqs.get(i)));
             }
         }
-        this._speciesNet = new UltrametricNetwork(network, _geneTrees, alignments, species2alleles, BAGTRModel);
+        this._speciesNet = new UltrametricNetwork(network, _geneTrees, markerSeqs, species2alleles, BAGTRModel);
         this._populationSize = new PopulationSize();
         this._priorDistribution = new SpeciesNetPriorDistribution(poissonParameter, _populationSize);
         //_gtOpWeight = 1.0 - Math.min(0.3, Math.max(0.1, 8.0 / (this._geneTrees.size() + 8.0)));

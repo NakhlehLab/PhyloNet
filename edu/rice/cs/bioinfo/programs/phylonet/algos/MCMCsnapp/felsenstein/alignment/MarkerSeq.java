@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * Created by wendingqiao on 5/3/16.
  */
-public class Alignment {
+public class MarkerSeq {
 
     protected List<String> _taxaNames = new ArrayList<>(); // sorted
     protected List<Sequence> _sequences = new ArrayList<>(); // corresponds to _taxaNames
@@ -51,13 +51,14 @@ public class Alignment {
 
     public boolean _diploid;
     public Character _dominant = null;
+    public Integer _polyploid = null;
 
-    public Alignment(Map<String, String> sequences, String name) {
+    public MarkerSeq(Map<String, String> sequences, String name) {
         this(sequences);
         this._name = name;
     }
 
-    public Alignment(Map<String, String> sequences) {
+    public MarkerSeq(Map<String, String> sequences) {
         _aln = sequences;
         for(String key : sequences.keySet()) {
             if (_taxaNames.contains(key)) {
@@ -268,7 +269,7 @@ public class Alignment {
     }
 
 
-    public static String getSequence(Alignment data, int taxonIndex) {
+    public static String getSequence(MarkerSeq data, int taxonIndex) {
 
         int[] states = new int[data.getPatternCount()];
         for (int i = 0; i < data.getPatternCount(); i++) {
@@ -290,7 +291,7 @@ public class Alignment {
         input.put("A", "ATATCG");
         input.put("B", "ATATG-");
         input.put("C", "CTAT-G");
-        Alignment aln = new Alignment(input);
+        MarkerSeq aln = new MarkerSeq(input);
         System.out.println(aln.getTaxonSize() == 3);
         List<String> taxa = aln.getTaxaNames();
         System.out.println(taxa.get(0) == "A" && taxa.get(1) == "B" && taxa.get(2) == "C");

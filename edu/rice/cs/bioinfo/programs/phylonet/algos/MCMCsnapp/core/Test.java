@@ -2,38 +2,31 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihoodSampling;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.dimension.AddReticulation;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.move.network.param.OptimizeAll;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.Splitting;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.Algorithms;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.RPattern;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.SNAPPAlgorithm;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.DataGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.counting.CoalescenceHistoriesCounting;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferMLNetworkFromSequences;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.concurrent.Exchanger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import javax.rmi.CORBA.Util;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.w3c.dom.*;
 
@@ -76,15 +69,15 @@ public class Test {
 
     public static void testTrinet2() {
         int mx = 10;
-        for (int n = 1; n <= mx; n++) {
-            //System.out.println("n=" + n);
-            for (R r : R.loopOver(n)) {
-                //System.out.println(r);
-                for (R[] splitRPair : Algorithms.splittingR(r)) {
-                    System.out.println(r.getNum(0) + "\t" + r.getNum(1) + "\t" + splitRPair[0].getNum(0) + "\t" + splitRPair[0].getNum(1) + "\t" + splitRPair[1].getNum(0) + "\t" + splitRPair[1].getNum(1) + "\t" + r + " -> " + splitRPair[0] + " + " + splitRPair[1]);
-                }
-            }
-        }
+//        for (int n = 1; n <= mx; n++) {
+//            //System.out.println("n=" + n);
+//            for (R r : R.loopOver(n)) {
+//                //System.out.println(r);
+//                for (R[] splitRPair : Algorithms.splittingR(r)) {
+//                    System.out.println(r.getNum(0) + "\t" + r.getNum(1) + "\t" + splitRPair[0].getNum(0) + "\t" + splitRPair[0].getNum(1) + "\t" + splitRPair[1].getNum(0) + "\t" + splitRPair[1].getNum(1) + "\t" + r + " -> " + splitRPair[0] + " + " + splitRPair[1]);
+//                }
+//            }
+//        }
 
         for(int si = 1 ; si <= 1000 ; si++) {
 
@@ -103,7 +96,7 @@ public class Test {
             Map<String, List<String>> species2alleles = new HashMap<>();
             Map<String, String> alleles2species = new HashMap<>();
 
-            Algorithms.targetSplittingIndices = new int[]{si};
+            //Algorithms.targetSplittingIndices = new int[]{si};
 
             species2alleles.put("A", new ArrayList<>());
             species2alleles.put("B", new ArrayList<>());
@@ -157,8 +150,8 @@ public class Test {
                 }
             }
 
-            List<Alignment> alns = new ArrayList<>();
-            Alignment aln = new Alignment(onesnp);
+            List<MarkerSeq> alns = new ArrayList<>();
+            MarkerSeq aln = new MarkerSeq(onesnp);
             alns.add(aln);
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(alleles2species, alns);
 
@@ -169,7 +162,7 @@ public class Test {
 
             long start = System.currentTimeMillis();
             double logL;
-            logL = SNAPPLikelihood.computeSNAPPLikelihoodST(trueNetwork, aln._RPatterns, BAGTRModel);
+            logL = SNAPPLikelihoodSampling.computeSNAPPLikelihoodST(trueNetwork, null, aln._RPatterns, BAGTRModel);
             //System.out.println();
             System.out.println(Math.exp(logL));
             //System.out.println("Likelihood time(s): " + (System.currentTimeMillis()-start)/1000.0);
@@ -231,8 +224,8 @@ public class Test {
             Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, species2alleles, numSites, true);
             System.out.println("Simulator time(s): " + (System.currentTimeMillis()-start)/1000.0);
 
-            List<Alignment> alns = new ArrayList<>();
-            Alignment aln = new Alignment(onesnp);
+            List<MarkerSeq> alns = new ArrayList<>();
+            MarkerSeq aln = new MarkerSeq(onesnp);
             alns.add(aln);
             start = System.currentTimeMillis();
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(alleles2species, alns);
@@ -304,14 +297,14 @@ public class Test {
         }
     }
 
-    public static void testPropose(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
+    public static void testPropose(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
         //Utils._SEED = new Random().nextLong();
         Utils._NET_MAX_RETI = 0;
         Utils._CONST_POP_SIZE = true;
         State state = new State(
                 Utils._START_NET,
                 Utils._START_GT_LIST,
-                alignments,
+                markerSeqs,
                 Utils._POISSON_PARAM,
                 Utils._TAXON_MAP,
                 BAGTRModel
@@ -320,7 +313,7 @@ public class Test {
 
         while(true) {
             double pseudo1 = state.getUltrametricNetworkObject().logDensity();
-            double full1 = SNAPPLikelihood.computeSNAPPLikelihood(state.getNetworkObject(), alignments.get(0)._RPatterns, BAGTRModel);
+            double full1 = SNAPPLikelihood.computeSNAPPLikelihood(state.getNetworkObject(), markerSeqs.get(0)._RPatterns, BAGTRModel);
             String s1 = Networks.getFullString(state.getNetworkObject());
             String s2 = Networks.getTopologyString(state.getNetworkObject());
             state.propose();
@@ -329,7 +322,7 @@ public class Test {
                 continue;
             }
             double pseudo2 = state.getUltrametricNetworkObject().logDensity();
-            double full2 = SNAPPLikelihood.computeSNAPPLikelihood(state.getNetworkObject(), alignments.get(0)._RPatterns, BAGTRModel);
+            double full2 = SNAPPLikelihood.computeSNAPPLikelihood(state.getNetworkObject(), markerSeqs.get(0)._RPatterns, BAGTRModel);
             if((pseudo1 - pseudo2) * (full1 - full2) < -1e-6) {
                 System.out.println("========================");
                 System.out.println(s1);
@@ -353,12 +346,12 @@ public class Test {
 
     }
 
-    public static void testOptimizeAll(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
+    public static void testOptimizeAll(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
         Utils._SEED = new Random().nextLong();
         State state = new State(
                 Utils._START_NET,
                 Utils._START_GT_LIST,
-                alignments,
+                markerSeqs,
                 Utils._POISSON_PARAM,
                 Utils._TAXON_MAP,
                 BAGTRModel
@@ -370,12 +363,12 @@ public class Test {
 
     }
 
-    public static void testAddReticulation(List<Alignment> alignments, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
+    public static void testAddReticulation(List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel, int numOptimums, int numRuns, long maxExaminationsCount, int maxFailures, boolean scoreEachTopologyOnce, LinkedList<Tuple<Network,Double>> resultList) {
         Utils._SEED = new Random().nextLong();
         State state = new State(
                 Utils._START_NET,
                 Utils._START_GT_LIST,
-                alignments,
+                markerSeqs,
                 Utils._POISSON_PARAM,
                 Utils._TAXON_MAP,
                 BAGTRModel
@@ -448,11 +441,11 @@ public class Test {
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence2);
 
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
 
             System.out.println();
-            Alignment aln = new Alignment(input);
+            MarkerSeq aln = new MarkerSeq(input);
 
             Map<Integer, Integer> cache = new HashMap<>();
 
@@ -550,15 +543,15 @@ public class Test {
         // List<Map<String, String>> snpdata = simulator.generateGTs(Networks.readNetwork("((B:0.5)X#H1:1.5::0.5,((X#H1:0.5::0.5,A:1)n1:0.5,C:1.5)n2:0.5)root;"), null, 100, "/scratch/jz55/Luay/msdir/ms");
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(onesnp);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
             for(String allele : input.keySet()) {
                 System.out.println(allele + " " + input.get(allele));
             }
             System.out.println();
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(onesnp));
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
+            alnwarp.add(new MarkerSeq(onesnp));
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
 
 
@@ -569,7 +562,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -711,11 +704,11 @@ public class Test {
         snpdata.add(sequence2);
 
         //snpdata.add(onesnp);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
 
             System.out.println();
-            Alignment aln = new Alignment(input);
+            MarkerSeq aln = new MarkerSeq(input);
 
             Map<Integer, Integer> cache = new HashMap<>();
 
@@ -736,8 +729,8 @@ public class Test {
 
             aln.setCache(cache);
 
-            List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(onesnp));
+            List<MarkerSeq> alnwarp = new ArrayList<>();
+            alnwarp.add(new MarkerSeq(onesnp));
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
 
             alns.add(aln);
@@ -747,7 +740,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -882,11 +875,11 @@ public class Test {
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
 
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
 
             System.out.println();
-            Alignment aln = new Alignment(input);
+            MarkerSeq aln = new MarkerSeq(input);
 
             Map<Integer, Integer> cache = new HashMap<>();
 
@@ -913,7 +906,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -1025,13 +1018,13 @@ public class Test {
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
 
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
 
             System.out.println();
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(sequence));
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
+            alnwarp.add(new MarkerSeq(sequence));
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
 
             Map<Integer, Integer> cache = new HashMap<>();
@@ -1059,7 +1052,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -1233,13 +1226,13 @@ public class Test {
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
 
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
 
             System.out.println();
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(sequence));
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
+            alnwarp.add(new MarkerSeq(sequence));
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alnwarp);
 
 
@@ -1268,7 +1261,7 @@ public class Test {
         double [] rate = new double[1];
 
        int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -1509,17 +1502,17 @@ public class Test {
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
 
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
 
             System.out.println();
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
             if(randomlyPhasing) {
-                alnwarp.add(new Alignment(sequence));
+                alnwarp.add(new MarkerSeq(sequence));
                 aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
             } else {
-                alnwarp.add(new Alignment(sequence2));
+                alnwarp.add(new MarkerSeq(sequence2));
                 aln._RPatterns = SNAPPLikelihood.diploidSequenceToPatterns(null, alnwarp);
             }
             System.out.println("Got " + aln._RPatterns.size() + " patterns.");
@@ -1549,7 +1542,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-//        for(Alignment alg : alns) {
+//        for(MarkerSeq alg : alns) {
 //            int count = 0;
 //            for(String s : alg.getAlignment().values()) {
 //                for(int i = 0 ; i < s.length() ; i++) {
@@ -1947,7 +1940,7 @@ public class Test {
         }
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         Utils._TAXON_MAP = species2allele;
 
         for(Map<String, String> input : snpdata) {
@@ -1955,7 +1948,7 @@ public class Test {
             //System.out.println(allele + " " + input.get(allele));
             //}
 //            System.out.println();
-//            Alignment aln = new Alignment(input);
+//            MarkerSeq aln = new MarkerSeq(input);
 //
 //            Map<Integer, Integer> cache = new HashMap<>();
 //
@@ -1977,16 +1970,16 @@ public class Test {
 //            aln.setCache(cache);
 //            alns.add(aln);
 
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(sequence));
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
+            alnwarp.add(new MarkerSeq(sequence));
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(allele2species, alnwarp);
             alns.add(aln);
         }
 
         /*pi[0] = pi[1] = 0;
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -2068,14 +2061,14 @@ public class Test {
         }
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
 
         for(Map<String, String> input : snpdata) {
             for(String allele : input.keySet()) {
                 System.out.println(allele + " " + input.get(allele));
             }
             System.out.println();
-            Alignment aln = new Alignment(input);
+            MarkerSeq aln = new MarkerSeq(input);
 
             Map<Integer, Integer> cache = new HashMap<>();
 
@@ -2102,7 +2095,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -2509,14 +2502,14 @@ public class Test {
         }
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
 
         for(Map<String, String> input : snpdata) {
             //for(String allele : input.keySet()) {
             //System.out.println(allele + " " + input.get(allele));
             //}
 //            System.out.println();
-//            Alignment aln = new Alignment(input);
+//            MarkerSeq aln = new MarkerSeq(input);
 //
 //            Map<Integer, Integer> cache = new HashMap<>();
 //
@@ -2538,16 +2531,16 @@ public class Test {
 //            aln.setCache(cache);
 //            alns.add(aln);
 
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
-            alnwarp.add(new Alignment(sequence));
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
+            alnwarp.add(new MarkerSeq(sequence));
             aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
             alns.add(aln);
         }
 
 
 //        int totalSites = 0;
-//        for(Alignment alg : alns) {
+//        for(MarkerSeq alg : alns) {
 //            int count = 0;
 //            for(String s : alg.getAlignment().values()) {
 //                for(int i = 0 ; i < s.length() ; i++) {
@@ -2818,21 +2811,21 @@ public class Test {
 
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(sequence);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
 
         for(Map<String, String> input : snpdata) {
             //for(String allele : input.keySet()) {
             //System.out.println(allele + " " + input.get(allele));
             //}
             System.out.println();
-            Alignment aln = new Alignment(input);
-            List<Alignment> alnwarp = new ArrayList<>();
+            MarkerSeq aln = new MarkerSeq(input);
+            List<MarkerSeq> alnwarp = new ArrayList<>();
             if(randomlyPhasing) {
                 sequence = SNAPPLikelihood.randomlyPhasing(sequence, random);
-                alnwarp.add(new Alignment(sequence));
+                alnwarp.add(new MarkerSeq(sequence));
                 aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
             } else {
-                alnwarp.add(new Alignment(sequence));
+                alnwarp.add(new MarkerSeq(sequence));
                 if(Algorithms.HAS_DOMINANT_MARKER)
                     aln._RPatterns = SNAPPLikelihood.haploidSequenceToPatterns(null, alnwarp);
                 else
@@ -2846,7 +2839,7 @@ public class Test {
         double [] rate = new double[1];
 
         int totalSites = 0;
-        for(Alignment alg : alns) {
+        for(MarkerSeq alg : alns) {
             int count = 0;
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
@@ -3621,13 +3614,13 @@ public class Test {
 
         List<Map<String, String>> snpdata = new ArrayList<>();
         snpdata.add(onesnp);
-        List<Alignment> alns = new ArrayList<>();
+        List<MarkerSeq> alns = new ArrayList<>();
         for(Map<String, String> input : snpdata) {
             for(String allele : input.keySet()) {
                 System.out.println(allele + " " + input.get(allele));
             }
             System.out.println();
-            Alignment aln = new Alignment(input);
+            MarkerSeq aln = new MarkerSeq(input);
 
             Map<Integer, Integer> cache = new HashMap<>();
 

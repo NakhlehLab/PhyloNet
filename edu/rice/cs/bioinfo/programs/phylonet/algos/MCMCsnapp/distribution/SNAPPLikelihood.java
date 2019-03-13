@@ -1,24 +1,20 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.*;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.observations.OneNucleotideObservation;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.util.ArithmeticUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.DoubleAdder;
-import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -39,7 +35,7 @@ public class SNAPPLikelihood {
     public static SNAPPPseudoLikelihood pseudoLikelihood = null;
     public static ApproximateBayesian approximateBayesian = null;
 
-    static public BiAllelicGTR getModel(List<Alignment> alignments) {
+    static public BiAllelicGTR getModel(List<MarkerSeq> markerSeqs) {
         double [] pi =  new double[2];
         double [] rate = new double[1];
         rate[0] = 0.0;
@@ -49,7 +45,7 @@ public class SNAPPLikelihood {
 
         int [] count = new int[3];
         count[0] = count[1] = count[2] = 0;
-        for(Alignment alg : alignments) {
+        for(MarkerSeq alg : markerSeqs) {
             for(String s : alg.getAlignment().values()) {
                 for(int i = 0 ; i < s.length() ; i++) {
                     count[s.charAt(i) - '0']++;
@@ -99,10 +95,10 @@ public class SNAPPLikelihood {
     }
 
     // TODO: not fully tested
-    static public Map<RPattern, double[]> polyploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments, int totalPerSpecies) {
+    static public Map<RPattern, double[]> polyploidSequenceToPatterns(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, int totalPerSpecies) {
         Map<RPattern, double[]> result = new HashMap<>();
         Map<String, Integer> maxLineages = new HashMap<>();
-        for(Alignment aln : alignments) {
+        for(MarkerSeq aln : markerSeqs) {
             for(int i = 0 ; i < aln.getSiteCount() ; i++) {
                 Map<String, Tuple<int[], int[]>> currentPattern = new HashMap<>(); //item1[0]: n, item2[0]: R0
                 double weight = 1.0;
@@ -166,10 +162,10 @@ public class SNAPPLikelihood {
         return result;
     }
 
-    static public Map<RPattern, double[]> diploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments) {
+    static public Map<RPattern, double[]> diploidSequenceToPatterns(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs) {
         Map<RPattern, double[]> result = new HashMap<>();
         Map<String, Integer> maxLineages = new HashMap<>();
-        for(Alignment aln : alignments) {
+        for(MarkerSeq aln : markerSeqs) {
             for(int i = 0 ; i < aln.getSiteCount() ; i++) {
                 Map<String, Tuple<int[], int[]>> currentPattern = new HashMap<>(); //item1[0]: n, item2[0]: R0
                 double weight = 1.0;
@@ -235,10 +231,10 @@ public class SNAPPLikelihood {
         return result;
     }
 
-    static public Map<RPattern, double[]> haploidSequenceToPatterns(Map<String, String> alleles2species, List<Alignment> alignments) {
+    static public Map<RPattern, double[]> haploidSequenceToPatterns(Map<String, String> alleles2species, List<MarkerSeq> markerSeqs) {
         Map<RPattern, double[]> result = new HashMap<>();
         Map<String, Integer> maxLineages = new HashMap<>();
-        for(Alignment aln : alignments) {
+        for(MarkerSeq aln : markerSeqs) {
             for(int i = 0 ; i < aln.getSiteCount() ; i++) {
                 Map<String, Tuple<int[], int[]>> currentPattern = new HashMap<>();
                 double weight = 1.0;
@@ -301,10 +297,10 @@ public class SNAPPLikelihood {
         return result;
     }
 
-    static public double computeApproximateBayesian(Network network, Map<String, String> alleles2species, List<Alignment> alignments, BiAllelicGTR BAGTRModel) {
+    static public double computeApproximateBayesian(Network network, Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel) {
         if(approximateBayesian == null) {
             System.out.println("Initiating approximate bayesian");
-            approximateBayesian = new ApproximateBayesian(alleles2species, alignments, alignments.get(0)._diploid, alignments.get(0)._dominant != null, useOnlyPolymorphic, BAGTRModel);
+            approximateBayesian = new ApproximateBayesian(alleles2species, markerSeqs, markerSeqs.get(0)._diploid, markerSeqs.get(0)._dominant != null, markerSeqs.get(0)._polyploid, useOnlyPolymorphic, BAGTRModel);
             System.out.println("Finished initiating approximate bayesian");
         }
 
@@ -323,10 +319,10 @@ public class SNAPPLikelihood {
 
     }
 
-    static public double computeSNAPPPseudoLikelihood(Network network, Map<String, String> alleles2species, List<Alignment> alignments, BiAllelicGTR BAGTRModel) {
+    static public double computeSNAPPPseudoLikelihood(Network network, Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel) {
         if(pseudoLikelihood == null) {
             System.out.println("Initiating pseudo-likelihood");
-            pseudoLikelihood = new SNAPPPseudoLikelihood(alleles2species, alignments, alignments.get(0)._diploid);
+            pseudoLikelihood = new SNAPPPseudoLikelihood(alleles2species, markerSeqs, markerSeqs.get(0)._diploid);
             System.out.println("Finished initiating pseudo-likelihood");
         }
 
@@ -753,8 +749,8 @@ public class SNAPPLikelihood {
 
         BiAllelicGTR gtrModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
 
-        Alignment aln = new Alignment(colorMap);
-        List<Alignment> alns = new ArrayList<>();
+        MarkerSeq aln = new MarkerSeq(colorMap);
+        List<MarkerSeq> alns = new ArrayList<>();
         alns.add(aln);
 
         sum += computeSNAPPLikelihoodST(speciesNetworkTopology, diploidSequenceToPatterns(allele2species, alns), gtrModel);
@@ -814,8 +810,8 @@ public class SNAPPLikelihood {
 
                             BiAllelicGTR gtrModel = new BiAllelicGTR(new double[] {0.5, 0.5}, new double[] {1.0});
 
-                            Alignment aln = new Alignment(colorMap);
-                            List<Alignment> alns = new ArrayList<>();
+                            MarkerSeq aln = new MarkerSeq(colorMap);
+                            List<MarkerSeq> alns = new ArrayList<>();
                             alns.add(aln);
 
                             sum += Math.exp(computeSNAPPLikelihoodST(speciesNetworkTopology, diploidSequenceToPatterns(allele2species, alns), gtrModel));

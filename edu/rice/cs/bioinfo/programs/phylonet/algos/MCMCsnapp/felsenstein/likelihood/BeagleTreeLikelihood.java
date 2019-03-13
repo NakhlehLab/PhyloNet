@@ -3,7 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.likeli
 import beagle.*;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core.StateNode;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.branchRate.BranchRateModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.branchRate.StrictClockModel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.sitemodel.SiteModel;
@@ -34,7 +34,7 @@ public class BeagleTreeLikelihood extends StateNode {
     protected double _storedLogP = Double.NaN;
 
     // --- generic tree likelihood ---
-    protected Alignment _alignment;
+    protected MarkerSeq _markerSeq;
     protected UltrametricTree _geneTree;
     protected SiteModel _siteModel;
     protected BranchRateModel _branchRateModel;
@@ -218,7 +218,7 @@ public class BeagleTreeLikelihood extends StateNode {
         }
     }
 
-    public BeagleTreeLikelihood(Alignment aln, UltrametricTree tree,
+    public BeagleTreeLikelihood(MarkerSeq aln, UltrametricTree tree,
                                 SiteModel site,
                                 BranchRateModel branch) {
         // sanity check: alignment should have same #taxa as tree
@@ -227,11 +227,11 @@ public class BeagleTreeLikelihood extends StateNode {
         }
         boolean forceJava = Boolean.valueOf(System.getProperty("java.only"));
         if (forceJava) return;
-        _alignment = aln;
+        _markerSeq = aln;
         _geneTree = tree;
         _nNodeCount = _geneTree.getTree().getNodeCount();
         _siteModel = site;
-        _siteModel.setDataType(_alignment.getDataType());
+        _siteModel.setDataType(_markerSeq.getDataType());
         _branchRateModel = branch;
         if(_branchRateModel == null) {
             _branchRateModel = new StrictClockModel();
@@ -241,8 +241,8 @@ public class BeagleTreeLikelihood extends StateNode {
         _prevBranchLengths = new double[_nNodeCount];
         _storedBranchLengths = new double[_nNodeCount];
 
-        _nStateCount = _alignment.getMaxStateCount();
-        _patternCount = _alignment.getPatternCount();
+        _nStateCount = _markerSeq.getMaxStateCount();
+        _patternCount = _markerSeq.getPatternCount();
         _eigenCount = 1;
 
         double[] categoryRates = _siteModel.getCategoryRates(null, null);
@@ -251,8 +251,8 @@ public class BeagleTreeLikelihood extends StateNode {
             for (int i = 0; i < categoryRates.length; i++) {
                 if (categoryRates[i] == 0) {
                     _proportionInvariant = _siteModel.getRateForCategory(i, _geneTree, null);
-                    int stateCount = _alignment.getMaxStateCount();
-                    int patterns = _alignment.getPatternCount();
+                    int stateCount = _markerSeq.getMaxStateCount();
+                    int patterns = _markerSeq.getPatternCount();
                     calcConstantPatternIndices(patterns, stateCount);
                     _invariantCategory = i;
 
@@ -267,7 +267,7 @@ public class BeagleTreeLikelihood extends StateNode {
                     break;
                 }
             }
-            if (_constantPattern != null && _constantPattern.size() > _alignment.getPatternCount()) {
+            if (_constantPattern != null && _constantPattern.size() > _markerSeq.getPatternCount()) {
                 // if there are many more constant patterns than patterns (each pattern can
                 // have a number of constant patters, one for each state) it is less efficient
                 // to just calculate the TreeLikelihood for constant sites than optimising
@@ -421,7 +421,7 @@ public class BeagleTreeLikelihood extends StateNode {
 
         TNode[] nodes = _geneTree.getNodeArray();
         for (int i = 0; i < _tipCount; i++) {
-            int taxon = _alignment.getTaxonIndex(nodes[i].getName());
+            int taxon = _markerSeq.getTaxonIndex(nodes[i].getName());
             if (_useAmbiguities || _useTipLikelihoods) {
                 setPartials(_beagle, i, taxon);
             } else {
@@ -429,13 +429,13 @@ public class BeagleTreeLikelihood extends StateNode {
             }
         }
 
-        if (_alignment._isAscertained) {
+        if (_markerSeq._isAscertained) {
             _useAscertainedSitePatterns = true;
         }
 
         double[] patternWeights = new double[_patternCount];
         for (int i = 0; i < _patternCount; i++) {
-            patternWeights[i] = _alignment.getPatternWeight(i);
+            patternWeights[i] = _markerSeq.getPatternWeight(i);
         }
         _beagle.setPatternWeights(patternWeights);
 
@@ -622,11 +622,11 @@ public class BeagleTreeLikelihood extends StateNode {
 
             if (_useAscertainedSitePatterns) {
                 _beagle.getSiteLogLikelihoods(_patternLogLikelihoods);
-                logL = getAscertainmentCorrectedLogLikelihood(_alignment,
-                        _patternLogLikelihoods, _alignment.getPatternWeights(), frequencies);
+                logL = getAscertainmentCorrectedLogLikelihood(_markerSeq,
+                        _patternLogLikelihoods, _markerSeq.getPatternWeights(), frequencies);
             } else if (_invariantCategory >= 0) {
                 _beagle.getSiteLogLikelihoods(_patternLogLikelihoods);
-                int [] patternWeights = _alignment.getPatternWeights();
+                int [] patternWeights = _markerSeq.getPatternWeights();
                 _proportionInvariant = _siteModel.getProportionInvariant();
 
                 for (int k : _constantPattern) {
@@ -808,12 +808,12 @@ public class BeagleTreeLikelihood extends StateNode {
     private void calcConstantPatternIndices(final int patterns, final int stateCount) {
         _constantPattern = new ArrayList<>();
         for (int i = 0; i < patterns; i++) {
-            final int[] pattern = _alignment.getPattern(i);
+            final int[] pattern = _markerSeq.getPattern(i);
             final boolean[] isInvariant = new boolean[stateCount];
             Arrays.fill(isInvariant, true);
             for (final int state : pattern) {
-                final boolean[] isStateSet = _alignment.getStateSet(state);
-                if (_useAmbiguities || !_alignment.getDataType().isAmbiguousState(state)) {
+                final boolean[] isStateSet = _markerSeq.getStateSet(state);
+                if (_useAmbiguities || !_markerSeq.getDataType().isAmbiguousState(state)) {
                     for (int k = 0; k < stateCount; k++) {
                         isInvariant[k] &= isStateSet[k];
                     }
@@ -837,14 +837,14 @@ public class BeagleTreeLikelihood extends StateNode {
 
         int v = 0;
         for (int i = 0; i < _patternCount; i++) {
-            double[] tipProbabilities = _alignment.getTipLikelihoods(taxon, i);
+            double[] tipProbabilities = _markerSeq.getTipLikelihoods(taxon, i);
             if (tipProbabilities != null) {
                 for (int state = 0; state < _nStateCount; state++) {
                     partials[v++] = tipProbabilities[state];
                 }
             } else {
-                int stateCount = _alignment.getPattern(taxon, i);
-                boolean[] stateSet = _alignment.getStateSet(stateCount);
+                int stateCount = _markerSeq.getPattern(taxon, i);
+                boolean[] stateSet = _markerSeq.getStateSet(stateCount);
                 for (int state = 0; state < _nStateCount; state++) {
                     partials[v++] = (stateSet[state] ? 1.0 : 0.0);
                 }
@@ -867,7 +867,7 @@ public class BeagleTreeLikelihood extends StateNode {
 
         int[] states = new int[_patternCount];
         for (int i = 0; i < _patternCount; i++) {
-            int state = _alignment.getPattern(taxon, i);
+            int state = _markerSeq.getPattern(taxon, i);
             states[i] = state;
         }
         beagle.setTipStates(nodeIndex, states);
@@ -877,7 +877,7 @@ public class BeagleTreeLikelihood extends StateNode {
         _beagle.setPartials(_partialBufferHelper.getOffsetIndex(number), partials);
     }
 
-    private double getAscertainmentCorrectedLogLikelihood(Alignment patternList,
+    private double getAscertainmentCorrectedLogLikelihood(MarkerSeq patternList,
                                                           double[] patternLogLikelihoods,
                                                           int[] patternWeights,
                                                           double [] frequencies) {
@@ -954,7 +954,7 @@ public class BeagleTreeLikelihood extends StateNode {
         omap.put("Q", "GTCCTTCGACTCGTCTGATCCCGACGCGGACCCGGCGCCCCTGCCATGACTCGGGGCGCAGGCAGGCGCACCGTCAAATCGAGCCCAGTGCAGGTCGTGGATGTCACGCTAGCGCTATCTGTGCATCAAGGGGTAACTGTTCGCCGTAGTGCCCTTGTGGCCTCGCCATCAGTGCGGCCCATCGACCAGGTCTCTGGAAGGCTGGATAACCACTTTGCGAAGACGGGAGTCCGAAGTGGCGTATGTGTCCAGAGCAGAGAAGGGATAAACTGCCCGAATGCGTAGAGCGCGACCGTGCGCTAGGCAAAGTCTGAGCTAGCCGAATCGGCGCGCACTTTATTGCGGCCGCAGTGCCTTGGTCCCTGTGCGTCCCGCAACGTAAGGGTATGGGGCACCGCGCTTCGGCGCCTATCCTTGCCGCCTGGACGGCGCTTCTTCTCATGGATTCCACGCAACGACCGGCACCTGCGAACGGTCCGCCAGACACTTTTCGTACACTA");
         omap.put("A", "GTCCTCCGACTCATCTGATCCCGACGCGGACCCGGCGCCCCGGCCATGACTCGGGGCGCAGGCGGGCGCACCGTCAAGCCTTGCCCGGTGCAGGTCGTGGATGTCACGCTAGCGCTATCTGCGCATCAAAAGGTAACTGTTCGACGTGGTGCCCTTGTGGCCTCGCCATCAGTGCGGCCCATCGACCAGGTCTCTGGAAGGCTGTATAACCACTTTGCGACGACGGGAGTCCGAAGTGGCGTAAGTGTCCGGAGCAGAGAAGGGATAAACTGCCTGAATGCGCAGAGCGCGACCGTGCGCTAGGCAAAGTTTGAGCTAGCCGAATCGGCGCGCACTTTATTGCGGCCGCAGTGTGTTGGTCCCTGTGCGTCCCGCAACGTAAGGGTATGGGGCACCGCGCTTCGGCGCCTATCGTTGCCGCCTGTACGGCGATTCTTCTCATGAATCCCACACATCGACCGGCACCTGCGAACGGTCCGCCAGACACTTTTCGTACACTA");
 
-        Alignment aln = new Alignment(omap);
+        MarkerSeq aln = new MarkerSeq(omap);
 
         double[] base = {0.2112, 0.2888, 0.2896, 0.2104};
         double[] trans = {0.2173/0.2070, 0.9798/0.2070, 0.2575/0.2070, 0.1038/0.2070, 1/0.2070, 1.0};

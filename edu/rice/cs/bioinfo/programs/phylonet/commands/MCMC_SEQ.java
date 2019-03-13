@@ -318,6 +318,12 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        // sample embeddings
+        ParamExtractor seParam = new ParamExtractor("se", this.params, this.errorDetected);
+        if(seParam.ContainsSwitch) {
+            Utils.SAMPLE_EMBEDDINGS = true;
+        }
+
         // fix net topology
         ParamExtractor fixgtsParam = new ParamExtractor("fixgts", this.params, this.errorDetected);
         if(fixgtsParam.ContainsSwitch) {
@@ -552,7 +558,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "cl", "bl", "sf", "sd", "pl", "dir",
                 "mc3", "mr", "tm", "fixps", "varyps",
                 "fixnettopo", "fixgts", "disableallprior",
-                "pp", "dd", "ee", "mu",
+                "pp", "dd", "ee", "mu", "se",
                 "sgt", "snet", "sps", "pre", "gtr"
         );
         checkAndSetOutFile(
@@ -561,7 +567,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 clParam, blParam, sfParam, sdParam, plParam, dirParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
                 fixNetTopoParam, fixgtsParam, disableAllPriorParam,
-                ppParam, ddParam, eeParam, muParam,
+                ppParam, ddParam, eeParam, muParam, seParam,
                 sgtParam, snParam, spsParam, gtrParam
         );
 

@@ -240,21 +240,19 @@ public class UltrametricNetwork extends StateNode {
     }
 
     /************ State node methods ************/
-
     @Override
     public double propose() {
         double logHR = 0.0;
 
-        if(_operator != null) {
-//            if (_network.getReticulationCount() == 0) {
-//                this._operator = getOp(_operators, _treeOpWeights);
-//            } else {
-//                this._operator = getOp(_operators, _netOpWeights);
-//            }
-            logHR = this._operator.propose();
+        if(_network.getReticulationCount() == 0) {
+            this._operator = getOp(_operators, _treeOpWeights);
+        } else {
+            this._operator = getOp(_operators, _netOpWeights);
         }
+        logHR = this._operator.propose();
 
         if(Utils.SAMPLE_SPLITTING) {
+            // experimental!
             Networks.autoLabelNodes(_network);
             for(int i = 0 ; i < _splittings.size() ; i++) {
                 _splittings.get(i).propose();
@@ -266,9 +264,10 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public void undo() {
-        if(this._operator != null)
-            this._operator.undo();
+        if(this._operator == null) throw new IllegalArgumentException("null operator");
+        this._operator.undo();
         if(Utils.SAMPLE_SPLITTING) {
+            // experimental!
             for(int i = 0 ; i < _splittings.size() ; i++) {
                 _splittings.get(i).undo();
             }
@@ -312,8 +311,6 @@ public class UltrametricNetwork extends StateNode {
         _dirty = false;
         if(_logLtemp != null) {
             _logGeneTreeNetwork = _logLtemp;
-            if(Utils.SAMPLE_SPLITTING) {
-            }
         }
         _logLtemp = null;
 

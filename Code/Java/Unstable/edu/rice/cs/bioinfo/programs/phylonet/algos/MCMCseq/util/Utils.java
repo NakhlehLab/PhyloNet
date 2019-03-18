@@ -76,7 +76,7 @@ public class Utils {
     public static final double NET_MAX_HEIGHT = 1000; // used in debug mode
     public static double RESAMPLE_GENE_TREE_RATE = 0.5;
     public static boolean RESAMPLE_GENE_TREES = false;
-    public static boolean SAMPLE_EMBEDDINGS = false;
+    public static boolean SAMPLE_EMBEDDINGS = false; // experimental!!!
     public static boolean ONLY_BACKBONE_OP = false;
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;

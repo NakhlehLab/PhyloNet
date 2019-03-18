@@ -91,8 +91,8 @@ public class Utils {
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
     public static boolean DISABLE_PARAMETER_MOVES = false;
-    public static boolean DISABLE_TOPOLOGY_MOVES = true;
-    public static boolean SAMPLE_SPLITTING = true;
+    public static boolean DISABLE_TOPOLOGY_MOVES = false;
+    public static boolean SAMPLE_SPLITTING = false; // experimental!
 
     public static double DIMENSION_CHANGE_WEIGHT = 0.005;
 

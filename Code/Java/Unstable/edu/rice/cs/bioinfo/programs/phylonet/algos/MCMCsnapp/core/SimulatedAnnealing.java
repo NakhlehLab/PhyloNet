@@ -25,7 +25,7 @@ import java.util.*;
 
 //TODO: Move out of MCMC package
 public class SimulatedAnnealing {
-    public static boolean _printDetails = true;
+    public static boolean _printDetails = false;
     private static boolean _enableStrategy = false;
     BiAllelicGTR _BAGTRModel = null;
     private boolean _scoreEachTopologyOnce = false;

@@ -287,6 +287,7 @@ public class UltrametricNetwork extends StateNode {
         if(logHR != Utils.INVALID_MOVE && !this._operator.getName().equals("Scale-All") && Utils.RESAMPLE_GENE_TREES ) {
             double rand = Randomizer.getRandomDouble();
             if(rand < Utils.RESAMPLE_GENE_TREE_RATE) {
+                // experimental!
                 logHR += rebuildGeneTrees();
             }
         }

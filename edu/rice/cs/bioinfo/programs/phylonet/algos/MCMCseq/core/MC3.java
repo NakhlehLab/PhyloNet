@@ -93,16 +93,8 @@ public class MC3 {
             }
 
             if(logHastings != Utils.INVALID_MOVE && Utils.SAMPLE_EMBEDDINGS) {
-                if(op.equals("Slide-SubNet")) {
-                    //System.out.println(logHastings);
-                }
+                // experimental!
                 double embeddingLogHR = _state.getUltrametricNetworkObject().rebuildEmbeddings();
-                if(_state.getNetworkObject().getReticulationCount() > 0) {
-                    //System.out.println(embeddingLogHR);
-                }
-                if(op.equals("Slide-SubNet")) {
-                   // System.out.println(logHastings + " " + embeddingLogHR);
-                }
 
                 if(embeddingLogHR == Utils.INVALID_MOVE) {
                     logHastings = Utils.INVALID_MOVE;
@@ -110,9 +102,6 @@ public class MC3 {
                     logHastings += embeddingLogHR;
                 }
             } else if(logHastings != Utils.INVALID_MOVE) {
-                if(op.equals("Slide-SubNet")) {
-                    // System.out.println(logHastings);
-                }
             }
 
             if(logHastings != Utils.INVALID_MOVE) {

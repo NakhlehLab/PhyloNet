@@ -53,26 +53,26 @@ abstract class CommandBaseFileOutMatrix extends CommandBaseFileOut {
             }
 
             while((s = br.readLine().trim()) != null) {
-                if(s.startsWith("Format")) continue;
-                if(s.startsWith("Matrix")) continue;
+                if(s.toLowerCase().startsWith("format")) continue;
+                if(s.toLowerCase().startsWith("matrix")) continue;
                 if(s.toLowerCase().endsWith("end;")) {
                     break;
                 }
-                for(int i = 0; i < nTaxon; i++) {
-                    ss = br.readLine().trim().split("\\s+");
-                    if(ss.length != 2 ) {
-                        br.close();
-                        throw new RuntimeException(s);
-                    }
+                ss = s.trim().split("\\s+");
+                if(ss.length == 2) {
                     sourceIdentToMatrixData.put(ss[0], ss[1]);
                 }
-                break;
             }
             if(sourceIdentToMatrixData.size() == 0) {
                 sourceIdentToMatrixData = null;
             }
             br.close();
+
+            if(sourceIdentToMatrixData.size() != nTaxon ) {
+                throw new RuntimeException("\nWrong number of taxa\nIndicated: " + nTaxon + "\nRead: " + sourceIdentToMatrixData.size() + "\n");
+            }
         } catch (Exception ex) {
+            ex.printStackTrace();
             sourceIdentToMatrixData = null;
         }
     }

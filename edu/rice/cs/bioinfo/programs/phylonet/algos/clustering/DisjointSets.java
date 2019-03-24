@@ -16,7 +16,7 @@ public class DisjointSets<T> {
     int[] _parents;
     int[] _sizes;
 
-    DisjointSets(Set<T> elements) {
+    public DisjointSets(Set<T> elements) {
         _n = elements.size();
         _parents = new int[_n];
         _sizes = new int[_n];

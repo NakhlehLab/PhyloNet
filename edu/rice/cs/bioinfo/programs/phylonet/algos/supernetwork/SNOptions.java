@@ -2,7 +2,9 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,4 +21,6 @@ public class SNOptions {
     public Network trueNetwork = null;
     public String tripletFilename = null;
     public Map<String, String> allele2species = null;
+    public List<String> buildOrder = null;
+    public Set<String> backboneLeaves = null;
 }

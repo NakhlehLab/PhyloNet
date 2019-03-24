@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.NetNodeInfo;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.DisjointSets;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
@@ -10,6 +11,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import javafx.beans.binding.ObjectExpression;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import sun.nio.ch.Net;
@@ -44,7 +46,7 @@ public class SuperNetwork3 {
 
         NetworkWithInfo(Network<NetNodeInfo> net, String name, double percentage) {
             network = net;
-            backup = net.toString();
+            backup = Networks.getFullString(net);
             filename = name;
             this.percentage = percentage;
 
@@ -129,14 +131,25 @@ public class SuperNetwork3 {
     List<NetworkWithInfo> subnetworks_reduceed_;
     private List<String> leafnames_;
     private Set<String> leavesUnderReticulation;
-    private List<String> buildOrder;
+    private Map<String, Integer> underRetiCount = new HashMap<>();
+    private Map<String, Map<Integer, Integer>> retiBorderStats = new HashMap<>();
+    private List<String> buildOrder = null;
+    private Set<String> backboneLeaves = null;
+    private boolean reducedSet = false;
     Map<Tuple<String, String>, List<Double>> ehm; // Extended height matrix
     protected static double eps = 0.01;
     protected static boolean trustReticulationTime = true;
     public static boolean printDetails_ = false;
+    public static boolean DemoMode = false;
     protected static boolean reconcileHeights = false;
     public static String outgroup = "Z";
     private double popsize = Double.NaN;
+
+    private List<Double> getEH(Map<Tuple<String, String>, List<Double>> ehm, String l1, String l2) {
+        if(l1.compareTo(l2) < 0) return ehm.get(new Tuple<>(l1, l2));
+        return ehm.get(new Tuple<>(l2, l1));
+    }
+
 
     public static void initNetHeights(Network<NetNodeInfo> network) {
         for(NetNode<NetNodeInfo> node : Networks.postTraversal(network)) {
@@ -275,6 +288,10 @@ public class SuperNetwork3 {
         }
 
         return dist;
+    }
+
+    public static List<String> getTaxaNameUnderNode(NetNode node) {
+        return getTaxaNamesUnderReticulation(node);
     }
 
     public static List<String> getTaxaNamesUnderReticulation(NetNode reticulationNode) {
@@ -487,6 +504,18 @@ public class SuperNetwork3 {
 
     }
 
+    public void AddBackReduceTrinet(List<Set<String>> requiredTriplets) {
+        for(Set<String> triplet : requiredTriplets) {
+            for(NetworkWithInfo netinfo : subnetworks_reduceed_) {
+                if(triplet.containsAll(netinfo.taxa) ) {
+                    subnetworks_reduceed_.remove(netinfo);
+                    subnetworks_.add(netinfo);
+                    break;
+                }
+            }
+        }
+    }
+
     void CheckReducedTrinets() {
         Prepare();
         for(int i = 0 ; i < leafnames_.size() ; i++) {
@@ -555,75 +584,295 @@ public class SuperNetwork3 {
 
     }
 
-    void Prepare() {
-        if(reconcileHeights)
-            ReconcileSubnetHeights();
+    public List<String> GetBuildOrder() {
+        return buildOrder;
+    }
 
-        leavesUnderReticulation = new HashSet<>();
-        Map<String, Integer> underRetiCount = new HashMap<>();
-        Map<String, Map<Integer, Integer>> retiBorderStats = new HashMap<>();
-        Set<String> leafnames = new HashSet<>();
-        for(NetworkWithInfo netinfo : subnetworks_) {
+    public void SetBuildOrder(List<String> newBuildOrder) {
+        reducedSet = true;
+        buildOrder = new ArrayList<>(newBuildOrder);
+    }
 
-            leafnames.addAll(netinfo.taxa);
-            leavesUnderReticulation.addAll(Networks.getTaxaNamesUnderReticulation(netinfo.network));
-            for(String name : Networks.getTaxaNamesUnderReticulation(netinfo.network)) {
-                if(!underRetiCount.containsKey(name)) {
-                    underRetiCount.put(name, 0);
-                }
-                underRetiCount.put(name, underRetiCount.get(name) + 1);
+    public Set<String> GetBackboneLeaves() {
+        return this.backboneLeaves;
+    }
 
-                if(!retiBorderStats.containsKey(name)) {
-                    retiBorderStats.put(name, new TreeMap<>());
+    public void SetBackboneLeaves(Set<String> backboneLeaves) {
+        this.backboneLeaves = new HashSet<>(backboneLeaves);
+    }
+
+    public List<Set<String>> FindMoreRequiredTrinets() {
+        reducedSet = true;
+        Prepare();
+
+        List<Set<String>> results = new ArrayList<>();
+        backboneLeaves = new HashSet<>();
+        Network<NetNodeInfo> net = ElectBackbone3(backboneLeaves);
+        if(net.getReticulationCount() > 0) {
+            double minPD = Double.MAX_VALUE;
+            String minpdl1 = null;
+            String minpdl2 = null;
+            double allheight = net.getRoot().getData().getHeight();
+            for(String l1 : backboneLeaves) {
+                for(String l2 : backboneLeaves) {
+                    if(l1.compareTo(l2) < 0) {
+                        List<Double> eh = getEH(ehm, l1, l2);
+                        if(eh != null) {
+                            Double pd = eh.get(0);
+                            if(minPD > pd) {
+                                minPD = pd;
+                                minpdl1 = l1;
+                                minpdl2 = l2;
+                            }
+                        }
+                    }
                 }
-                Set<NetNode> component1 = getComponent(netinfo, name);
-                Set<NetNode> border1 = getBorder(component1);
-                int borderSize = border1.size();
-                if(!retiBorderStats.get(name).containsKey(borderSize)) {
-                    retiBorderStats.get(name).put(borderSize, 0);
-                }
-                retiBorderStats.get(name).put(borderSize, retiBorderStats.get(name).get(borderSize) + 1);
             }
+
+            List<String> taxa3 = new ArrayList<>(backboneLeaves);
+            taxa3.remove(minpdl1);
+            taxa3.remove(minpdl2);
+
+            String minpdl3 = taxa3.get(0);
+            net = Networks.readNetwork(String.format("((%s:%f,%s:%f):%f,%s:%f);", minpdl1, minPD, minpdl2, minPD, allheight - minPD, minpdl3, allheight));
+            initNetHeights(net);
         }
 
-        int retiCountThreshold = leafnames.size() - 2;
+        Set<String> curLeaves = new HashSet<>(backboneLeaves);
 
+        List<Set<String>> currentTriplets = new ArrayList<>();
         for(NetworkWithInfo netinfo : subnetworks_) {
-            for(String name : Networks.getTaxaNamesUnderReticulation(netinfo.network)) {
-                if(underRetiCount.get(name) < retiCountThreshold / 2) {
-                    netinfo.trustTime = false;
-                    break;
-                }
-
-                Set<NetNode> component1 = getComponent(netinfo, name);
-                Set<NetNode> border1 = getBorder(component1);
-                int borderSize = border1.size();
-
-                if(retiBorderStats.get(name).get(borderSize) < retiCountThreshold / 2) {
-                    netinfo.trustTime = false;
-                    break;
-                }
-            }
+            if(!netinfo.trustTime) continue;
+            currentTriplets.add(new HashSet<>(netinfo.taxa));
         }
 
         if(printDetails_) {
-            System.out.println("Leaves under reticulations:");
-            for(String name : underRetiCount.keySet()) {
-                System.out.println(name + " " + underRetiCount.get(name));
-            }
-            System.out.println();
+            System.out.println("Backbone:");
+            for(String leaf : curLeaves)
+                System.out.println(leaf);
         }
 
-        for(String name : underRetiCount.keySet()) {
-            if(underRetiCount.get(name) < retiCountThreshold) {
-                leavesUnderReticulation.remove(name);
+        for(String targetLeafName : buildOrder) {
+            if (curLeaves.contains(targetLeafName)) continue;
+
+            // Find min HT pair and try to build a tree.
+            double minPD = Double.MAX_VALUE;
+            String minPDLeaf = null;
+            for(String l1 : curLeaves) {
+                List<Double> eh = getEH(ehm, l1, targetLeafName);
+                if(eh != null) {
+                    Double pd = eh.get(0);
+                    if(minPD > pd) {
+                        minPD = pd;
+                        minPDLeaf = l1;
+                    }
+                }
             }
+
+            if(minPDLeaf == null || minPDLeaf.equals(outgroup)) {
+                for(NetNode<NetNodeInfo> node : net.dfs()) {
+                    if(!node.isLeaf() && !node.isNetworkNode()) {
+                        Iterator<NetNode<NetNodeInfo>> it = node.getChildren().iterator();
+                        NetNode<NetNodeInfo> child1 = it.next();
+                        NetNode<NetNodeInfo> child2 = it.next();
+                        List<String> taxa1 = getTaxaNameUnderNode(child1);
+                        List<String> taxa2 = getTaxaNameUnderNode(child2);
+
+                        Set<String> requiredTaxa = new HashSet<>();
+                        requiredTaxa.add(targetLeafName);
+                        requiredTaxa.add(taxa1.get(0));
+                        requiredTaxa.add(taxa2.get(0));
+                        if(!results.contains(requiredTaxa) && !currentTriplets.contains(requiredTaxa))
+                            results.add(requiredTaxa);
+                    }
+                }
+                return results;
+            }
+
+            NetNode<NetNodeInfo> node = net.findNode(minPDLeaf);
+            while(!node.isRoot()) {
+                NetNode<NetNodeInfo> prevnode = node;
+                node = node.getParents().iterator().next();
+                if(Math.abs(node.getData().getHeight() - minPD) < eps ) {
+                    Iterator<NetNode<NetNodeInfo>> it = node.getChildren().iterator();
+                    NetNode<NetNodeInfo> child1 = it.next();
+                    NetNode<NetNodeInfo> child2 = it.next();
+
+                    List<String> taxa1 = getTaxaNameUnderNode(child1);
+                    List<String> taxa2 = getTaxaNameUnderNode(child2);
+
+                    NetNode<NetNodeInfo> childI = null;
+                    List<String> taxaI = null;
+
+                    if (taxa1.contains(minPDLeaf)) {
+                        childI = child2;
+                        taxaI = taxa1;
+                    }else {
+                        childI = child1;
+                        taxaI = taxa2;
+                    }
+
+                    for(String t1 : taxa1) {
+                        for(String t2 : taxa2) {
+                            Set<String> requiredTaxa = new HashSet<>();
+                            requiredTaxa.add(targetLeafName);
+                            requiredTaxa.add(t1);
+                            requiredTaxa.add(t2);
+
+                            if(!results.contains(requiredTaxa) && !currentTriplets.contains(requiredTaxa))
+                                results.add(requiredTaxa);
+                        }
+                    }
+
+
+
+
+//                    if(taxaI.size() >= 2) {
+//                        double goodpd = Double.MAX_VALUE;
+//                        NetNode<NetNodeInfo> goodnode = null;
+//                        for(int i = 0 ; i < taxaI.size() ; i++) {
+//                            NetNode<NetNodeInfo> parent = net.findNode(taxaI.get(i)).getParents().iterator().next();
+//                            if(goodpd > parent.getData().getHeight()) {
+//                                goodpd = parent.getData().getHeight();
+//                                goodnode = parent;
+//                            }
+//                        }
+//                        requiredTaxa = new HashSet<>();
+//                        requiredTaxa.add(targetLeafName);
+//                        requiredTaxa.addAll(getTaxaNameUnderNode(goodnode));
+//
+//                        if(!results.contains(requiredTaxa) && !currentTriplets.contains(requiredTaxa))
+//                            results.add(requiredTaxa);
+//                    }
+
+                    double newheight = (node.getData().getHeight() + childI.getData().getHeight()) / 2.0;
+                    NetNode<NetNodeInfo> newnode = new BniNetNode<>();
+                    newnode.setData(new NetNodeInfo(newheight));
+                    node.removeChild(childI);
+                    node.adoptChild(newnode, node.getData().getHeight() - newheight);
+                    newnode.adoptChild(childI, newheight - childI.getData().getHeight());
+
+                    NetNode<NetNodeInfo> newleaf = new BniNetNode<>();
+                    newleaf.setName(targetLeafName);
+                    newleaf.setData(new NetNodeInfo(0.0));
+                    newnode.adoptChild(newleaf, newheight);
+
+                    //node = null;
+                    return results;
+                } else if(node.getData().getHeight() > minPD) {
+                    double newheight = minPD;
+                    NetNode<NetNodeInfo> newnode = new BniNetNode<>();
+                    newnode.setData(new NetNodeInfo(newheight));
+                    node.removeChild(prevnode);
+                    node.adoptChild(newnode, node.getData().getHeight() - newheight);
+                    newnode.adoptChild(prevnode, newheight - prevnode.getData().getHeight());
+
+                    NetNode<NetNodeInfo> newleaf = new BniNetNode<>();
+                    newleaf.setName(targetLeafName);
+                    newleaf.setData(new NetNodeInfo(0.0));
+                    newnode.adoptChild(newleaf, newheight);
+
+                    break;
+                }
+            }
+
+            if(node != null)
+                curLeaves.add(targetLeafName);
         }
 
-        leafnames_ = new ArrayList<>();
-        leafnames_.addAll(leafnames);
-        Collections.sort(leafnames_);
+//        for(String targetLeafName : buildOrder) {
+//            if(curLeaves.contains(targetLeafName)) continue;
+//
+////            for(String l1 : curLeaves) {
+////                for(String l2 : curLeaves) {
+////                    if(l1.compareTo(l2) < 0) {
+////                        List<Double> eh0 = getEH(ehm, l1, l2);
+////                        List<Double> eh1 = getEH(ehm, l1, targetLeafName);
+////                        List<Double> eh2 = getEH(ehm, targetLeafName, l2);
+////
+////                        double maxpd = 0;
+////                        double minpd = Double.MAX_VALUE;
+////
+////                        if(eh0 != null) {
+////                            Double pd0 = eh0.get(0);
+////                            maxpd = Math.max(maxpd, pd0);
+////                            minpd = Math.min(minpd, pd0);
+////                        }
+////
+////                        if(eh1 != null) {
+////                            Double pd1 = eh1.get(0);
+////                            maxpd = Math.max(maxpd, pd1);
+////                            minpd = Math.min(minpd, pd1);
+////                        }
+////
+////                        if(eh2 != null) {
+////                            Double pd2 = eh2.get(0);
+////                            maxpd = Math.max(maxpd, pd2);
+////                            minpd = Math.min(minpd, pd2);
+////                        }
+////
+////                        if(maxpd - minpd < eps) {
+////                            Set<String> requiredTaxa = new HashSet<>();
+////                            requiredTaxa.add(targetLeafName);
+////                            requiredTaxa.add(l1);
+////                            requiredTaxa.add(l2);
+////
+////                            if(!results.contains(requiredTaxa))
+////                                results.add(requiredTaxa);
+////                        }
+////                    }
+////                }
+////            }
+//
+//            boolean ok = false;
+//            int count = 0;
+//            for(NetworkWithInfo netinfo : subnetworks_) {
+//                if(!netinfo.trustTime) continue;
+//                if(!netinfo.taxa.contains(targetLeafName)) continue;
+//                List<String> leavesIntersection = new ArrayList<>();
+//                leavesIntersection.addAll(curLeaves);
+//                //leavesIntersection.remove(outgroup);
+//                leavesIntersection.retainAll(netinfo.taxa);
+//                if(leavesIntersection.size() < 2) continue;
+//
+//                ok = true;
+//            }
+//            for(Set<String> taxa : results) {
+//                if(!taxa.contains(targetLeafName)) continue;
+//                List<String> leavesIntersection = new ArrayList<>(taxa);
+//                leavesIntersection.addAll(curLeaves);
+//                if(leavesIntersection.size() < 2) continue;
+//                ok = true;
+//            }
+//
+//            if(!ok) {
+//                String pickone = null;
+//                int index = 0;
+//
+//                for(String leaf : curLeaves) {
+//                    if(!leaf.equals(outgroup)) {
+//                        pickone = leaf;
+//                        break;
+//                    }
+//                }
+//                Set<String> requiredTaxa = new HashSet<>();
+//                requiredTaxa.add(outgroup);
+//                requiredTaxa.add(targetLeafName);
+//                requiredTaxa.add(pickone);
+//
+//                if(!results.contains(requiredTaxa) && !currentTriplets.contains(requiredTaxa))
+//                    results.add(requiredTaxa);
+//            }
+//
+//            curLeaves.add(targetLeafName);
+//        }
 
+        return results;
+
+
+    }
+
+    private void GenerateBuildOrder() {
         // Compute build order according to reticulations
         buildOrder = new ArrayList<>();
         Map<String, Integer> indeg = new HashMap<>();
@@ -649,6 +898,18 @@ public class SuperNetwork3 {
         for(String s : buildBefore.keySet()) {
             for(String r : buildBefore.get(s)) {
                 indeg.put(r, indeg.get(r) + 1);
+            }
+        }
+
+        if(DemoMode) {
+            for(String s : buildBefore.keySet()) {
+                System.out.print("Add " + s + " before ");
+                for(String r : buildBefore.get(s)) {
+                    System.out.print( r + " ");
+
+                }
+                System.out.println(" Indegree: " + indeg.get(s));
+
             }
         }
 
@@ -688,9 +949,124 @@ public class SuperNetwork3 {
             }
             System.out.println();
         }
+    }
+
+    void Prepare() {
+        if(reconcileHeights)
+            ReconcileSubnetHeights();
+
+        leavesUnderReticulation = new HashSet<>();
+        underRetiCount = new HashMap<>();
+        retiBorderStats = new HashMap<>();
+        Set<String> leafnames = new HashSet<>();
+        for(NetworkWithInfo netinfo : subnetworks_) {
+
+            leafnames.addAll(netinfo.taxa);
+            leavesUnderReticulation.addAll(Networks.getTaxaNamesUnderReticulation(netinfo.network));
+            for(String name : Networks.getTaxaNamesUnderReticulation(netinfo.network)) {
+                if(!underRetiCount.containsKey(name)) {
+                    underRetiCount.put(name, 0);
+                }
+                underRetiCount.put(name, underRetiCount.get(name) + 1);
+
+                if(!retiBorderStats.containsKey(name)) {
+                    retiBorderStats.put(name, new TreeMap<>());
+                }
+                Set<NetNode> component1 = getComponent(netinfo, name);
+                Set<NetNode> border1 = getBorder(component1);
+                int borderSize = border1.size();
+                if(!retiBorderStats.get(name).containsKey(borderSize)) {
+                    retiBorderStats.get(name).put(borderSize, 0);
+                }
+                retiBorderStats.get(name).put(borderSize, retiBorderStats.get(name).get(borderSize) + 1);
+            }
+        }
+
+        int retiCountThreshold = leafnames.size() - 2;
+
+        if(!reducedSet) {
+            for (NetworkWithInfo netinfo : subnetworks_) {
+                for (String name : Networks.getTaxaNamesUnderReticulation(netinfo.network)) {
+                    if (underRetiCount.get(name) < retiCountThreshold / 2) {
+                        netinfo.trustTime = false;
+                        break;
+                    }
+
+                    Set<NetNode> component1 = getComponent(netinfo, name);
+                    Set<NetNode> border1 = getBorder(component1);
+                    int borderSize = border1.size();
+
+                    if (retiBorderStats.get(name).get(borderSize) < retiCountThreshold / 2) {
+                        netinfo.trustTime = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(printDetails_) {
+            System.out.println("Leaves under reticulations:");
+            for(String name : underRetiCount.keySet()) {
+                System.out.println(name + " " + underRetiCount.get(name));
+            }
+            System.out.println();
+        }
+
+        if(DemoMode) {
+            System.out.println("Trust");
+            for(NetworkWithInfo netinfo : subnetworks_) {
+                for(String taxon : netinfo.taxa) {
+                    System.out.print(taxon + " ");
+                }
+                System.out.println(" " + netinfo.trustTime);
+            }
+            System.out.println();
+        }
+
+        if(!reducedSet) {
+            for (String name : underRetiCount.keySet()) {
+                if (underRetiCount.get(name) < retiCountThreshold) {
+                    leavesUnderReticulation.remove(name);
+                }
+            }
+        }
+
+        leafnames_ = new ArrayList<>();
+        leafnames_.addAll(leafnames);
+        Collections.sort(leafnames_);
+
+        // Generate the order of adding leaves.
+        if(buildOrder == null)
+            GenerateBuildOrder();
 
         // Compute extended height matrix
         ComputeExtendedHeightMatrix();
+
+        if(DemoMode) {
+            System.out.println("Individual EHMs:");
+            for(NetworkWithInfo netinfo : subnetworks_) {
+                for(String taxon : netinfo.taxa) {
+                    System.out.print(taxon + " ");
+                }
+                System.out.println();
+                for(Tuple<String, String> tuple : netinfo.ehm.keySet() ) {
+                    System.out.print(tuple.Item1 + " " + tuple.Item2 + " ");
+                    for(double height : netinfo.ehm.get(tuple)) {
+                        System.out.print(height + " ");
+                    }
+                    System.out.println();
+                }
+            }
+            System.out.println();
+            System.out.println("Overall EHM:");
+            for(Tuple<String, String> tuple : ehm.keySet() ) {
+                System.out.print(tuple.Item1 + " " + tuple.Item2 + " ");
+                for(double height : ehm.get(tuple)) {
+                    System.out.print(height + " ");
+                }
+                System.out.println();
+            }
+        }
 
 
         // Recompute build order
@@ -707,6 +1083,14 @@ public class SuperNetwork3 {
 
     void ReconcileSubnetHeights() {
         Map<NetNode, Mean> heights = new HashMap<>();
+        Set<NetNode> allnodes = new HashSet<>();
+        for(int ii = 0 ; ii < subnetworks_.size() ; ii++) {
+            for(NetNode<NetNodeInfo> node : subnetworks_.get(ii).network.dfs()) {
+                allnodes.add(node);
+            }
+        }
+
+        DisjointSets<NetNode> nodeDisjointSets = new DisjointSets<>(allnodes);
 
         for(int ii = 0 ; ii < subnetworks_.size() ; ii++) {
             NetworkWithInfo curNet = subnetworks_.get(ii);
@@ -742,6 +1126,7 @@ public class SuperNetwork3 {
                                     heights.put(cNode, new Mean());
                                 }
                                 heights.get(cNode).increment(((NetNodeInfo)nNode.getData()).getHeight());
+                                nodeDisjointSets.union(cNode, nNode);
                             }
                         }
                     }
@@ -749,13 +1134,25 @@ public class SuperNetwork3 {
             }
         }
 
-        for(NetNode node : heights.keySet()) {
-            ((NetNodeInfo) node.getData()).setHeight(heights.get(node).getResult());
+        Set<Set<NetNode>> nodesets = nodeDisjointSets.getDisjointSets();
+        for(Set<NetNode> oneset : nodesets) {
+            Mean mean = new Mean();
+            for(NetNode node : oneset) {
+                mean.increment(((NetNodeInfo) node.getData()).getHeight());
+            }
+            for(NetNode node : oneset) {
+                ((NetNodeInfo) node.getData()).setHeight(mean.getResult());
+            }
         }
+
+//        for(NetNode node : heights.keySet()) {
+//            ((NetNodeInfo) node.getData()).setHeight(heights.get(node).getResult());
+//        }
 
         for(NetworkWithInfo net : subnetworks_) {
             resetBranchLengths(net.network);
             net.ehm = getEHMFromNetwork(net.network);
+            net.backup = net.network.toString();
         }
 
 
@@ -1361,6 +1758,13 @@ public class SuperNetwork3 {
 
         Collections.sort(heightVSname, (Tuple<Double, String> a, Tuple<Double, String> b)->Double.compare(a.Item1, b.Item1));
 
+        if(DemoMode) {
+            System.out.println("Heights to resolve for " + targetName);
+            for(Tuple<Double, String> tuple : heightVSname) {
+                System.out.println(tuple.Item1 + " " + tuple.Item2);
+            }
+        }
+
         for(List<NetNode<NetNodeInfo>> borderListToTry : Permutate(borderList)) {
             enumerateDFS_EHM(backbone, component, borderListToTry, targetName, heightVSname, 0, results);
         }
@@ -1447,23 +1851,26 @@ public class SuperNetwork3 {
     }
 
     Network ElectBackbone3(Set<String> curleaves) {
+        Collections.sort(subnetworks_, (NetworkWithInfo a, NetworkWithInfo b)->Double.compare(b.PairwiseDistanceSum, a.PairwiseDistanceSum));
+
         Network backbone = null;
         int skip = 0;
         double bestScore = Double.MAX_VALUE;
-
         leavesUnderReticulation.remove(outgroup);
-        for(NetworkWithInfo candidate : subnetworks_ ) {
+        for (NetworkWithInfo candidate : subnetworks_) {
             double score = 0.0;
 
-            for(String taxon : candidate.taxa) {
-                if(leavesUnderReticulation.contains(taxon)) {
+            if(!candidate.taxa.contains(outgroup)) continue;
+
+            for (String taxon : candidate.taxa) {
+                if (leavesUnderReticulation.contains(taxon)) {
                     score += 1.0;
                     break;
                 }
             }
 
             for (NetworkWithInfo netinfo : subnetworks_) {
-                if(!netinfo.trustTime) continue;
+                if (!netinfo.trustTime) continue;
 
                 if (netinfo.dirty) {
                     netinfo.network = Networks.readNetwork(netinfo.backup);
@@ -1473,11 +1880,18 @@ public class SuperNetwork3 {
                 List<String> leavesIntersection = new ArrayList<>();
                 leavesIntersection.addAll(candidate.taxa);
                 leavesIntersection.retainAll(netinfo.taxa);
-                if(leavesIntersection.size() < 2) continue;
+                if (leavesIntersection.size() < 2) continue;
                 score += compareTwoSubNetwork(candidate.network, netinfo.network, leavesIntersection) * netinfo.percentage;
             }
 
-            if(score < bestScore) {
+            if (DemoMode) {
+                for (String taxon : candidate.taxa) {
+                    System.out.print(taxon + " ");
+                }
+                System.out.println(score);
+            }
+
+            if (score < bestScore) {
                 backbone = candidate.network.clone();
                 bestScore = score;
                 curleaves.clear();
@@ -1543,6 +1957,9 @@ public class SuperNetwork3 {
     double ComputeBestScoreOpt(List<Network> networksToTry, List<Network> bestNetworks) {
         double bestScore = Double.MAX_VALUE;
         for(Network netToTry : networksToTry) {
+            if(DemoMode) {
+                System.out.println("Trying: " + netToTry.toString());
+            }
             double score = 0.0;
 
             for (NetworkWithInfo netinfo : subnetworks_) {
@@ -1575,9 +1992,16 @@ public class SuperNetwork3 {
                     if(minScore == 0) break;
                 }
                 score += minScore * netinfo.percentage;
+                if(DemoMode) {
+                    for(String taxon : netinfo.taxa) System.out.print(taxon + " ");
+                    System.out.println(minScore);
+                }
             }
 
             score += netToTry.getReticulationCount() * netToTry.getReticulationCount();
+            if(DemoMode) {
+                System.out.println("Current score: " + score);
+            }
             if (score < bestScore) {
                 bestScore = score;
                 bestNetworks.clear();
@@ -1592,14 +2016,31 @@ public class SuperNetwork3 {
     Network compute() {
         Prepare();
 
+        if(DemoMode) {
+            for(NetworkWithInfo netinfo : subnetworks_) {
+                System.out.println(netinfo.network);
+            }
+        }
+
         if(printDetails_)
             System.out.println("Start building...");
-        Collections.sort(subnetworks_, (NetworkWithInfo a, NetworkWithInfo b)->Double.compare(b.PairwiseDistanceSum, a.PairwiseDistanceSum));
         Network backbone = null;
         Set<String> curleaves = new HashSet<>();
         int skip = 0;
 
-        backbone = ElectBackbone3(curleaves);
+        if(backboneLeaves != null) {
+            for(NetworkWithInfo candidate : subnetworks_ ) {
+                if(backboneLeaves.containsAll(candidate.taxa)) {
+                    backbone = candidate.network.clone();
+                    curleaves.clear();
+                    curleaves.addAll(candidate.taxa);
+                    break;
+                }
+            }
+            initNetHeights(backbone);
+        } else {
+            backbone = ElectBackbone3(curleaves);
+        }
 
         if(printDetails_) {
             System.out.println("Backbone taxa:");
@@ -1642,6 +2083,11 @@ public class SuperNetwork3 {
                     Set<NetNode> component1 = getComponent(netinfo, targetLeafName);
                     Set<NetNode> border1 = getBorder(component1);
 
+                    if(DemoMode) {
+                        for(String taxon : netinfo.taxa) System.out.print(taxon + " ");
+                        System.out.println(" |it(" + targetLeafName + ")|=" + component1.size() + " |rt(" + targetLeafName + ")|=" + border1.size());
+                    }
+
                     if(subnetsToTry.containsKey(border1.size())) {
                         Set<NetNode> component3 = getComponent(subnetsToTry.get(border1.size()), targetLeafName);
                         if(component1.size() < component3.size()
@@ -1657,15 +2103,36 @@ public class SuperNetwork3 {
             for(NetworkWithInfo netinfo : subnetsToTry.values()) {
                 netinfo.dirty = true;
                 Set<NetNode> component = getComponent(netinfo, targetLeafName);
-                if(component.size() > 5) continue;
                 Set<NetNode> border = cutBorder(component);
+                if(border.size() > 5) continue;
                 networksToTry.addAll(enumerate_EHM(backbone, component, border, curleaves, targetLeafName));
+
+                if(DemoMode) {
+                    System.out.println("Selected: ");
+                    for(String taxon : netinfo.taxa) System.out.print(taxon + " ");
+                    System.out.println(" |it(" + targetLeafName + ")|=" + component.size() + " |rt(" + targetLeafName + ")|=" + border.size());
+                }
 
                 if(printDetails_) {
                     System.out.println("Component size: " + component.size());
                     System.out.println("Border size: " + border.size());
                 }
             }
+            List<Network> networksToTryDedup = new ArrayList<>();
+            for(Network netToTry : networksToTry) {
+                boolean dup = false;
+                for(Network net : networksToTryDedup) {
+                    if(Networks.hasTheSameTopology(net, netToTry)) {
+                        dup = true;
+                        break;
+                    }
+                }
+                if(!dup) {
+                    networksToTryDedup.add(netToTry);
+                }
+            }
+            networksToTry = networksToTryDedup;
+
             if(printDetails_) {
                 System.out.println("Networks to try: " + networksToTry.size());
                 System.out.println("SubNetworks to check: " + subnetworks_.size());
@@ -1679,6 +2146,10 @@ public class SuperNetwork3 {
             curleaves.add(targetLeafName);
             if(bestNetworks.size() == 0) return null;
             backbone = duplicateNetworkTopDown(bestNetworks.get(0));
+            if(DemoMode) {
+                System.out.println("New backbone before reconciliation: ");
+                System.out.println(backbone);
+            }
 
             // Reassign heights
             Map<NetNode, Mean> heights = new HashMap<>();

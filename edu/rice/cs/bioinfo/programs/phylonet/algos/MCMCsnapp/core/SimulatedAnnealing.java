@@ -311,8 +311,10 @@ public class SimulatedAnnealing {
 
             if(printDetails() || _printResultsAfterEachRun) {
                 System.out.println("\nResults after run #" + i);
-                System.out.println("State: " + _state.toString());
-                System.out.println("Likelihood: " + _state.calculateLikelihood());
+                //System.out.println("State: " + _state.toString());
+                //System.out.println("Likelihood: " + _state.calculateLikelihood());
+                System.out.println("Current best results: ");
+                System.out.println("Likelihood : Topology : Full network string");
                 for (Tuple<Network, Double> result: resultList) {
 
                     System.out.println(result.Item2 + ": " + Networks.getTopologyString(result.Item1) + " : " + Networks.getFullString(result.Item1));

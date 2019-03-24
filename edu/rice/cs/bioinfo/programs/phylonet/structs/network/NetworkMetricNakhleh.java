@@ -67,6 +67,11 @@ public class NetworkMetricNakhleh<T> {
     }
 
     public double computeDistanceBetweenTwoNetworks(Network<T> network1, Network<T> network2){
+        Tuple<Integer, Integer> tuple = computeDistanceTupleBetweenTwoNetworks(network1, network2);
+        return (tuple.Item1 + tuple.Item2) / 2;
+    }
+
+    public Tuple<Integer, Integer> computeDistanceTupleBetweenTwoNetworks(Network<T> network1, Network<T> network2){
         Map<NetNode<T>, MutableTuple<Integer, NetNode<T>>> KInfoInNet1 = new HashMap<NetNode<T>, MutableTuple<Integer, NetNode<T>>>();
         Map<NetNode<T>, MutableTuple<Integer, NetNode<T>>> KInfoInNet2 = new HashMap<NetNode<T>, MutableTuple<Integer, NetNode<T>>>();
         computeEquivalentNodeSets(network1, network2, KInfoInNet1, KInfoInNet2);
@@ -434,8 +439,7 @@ public class NetworkMetricNakhleh<T> {
 
     }
 
-
-    private double computeDistance(Map<NetNode<T>, MutableTuple<Integer, NetNode<T>>> KInfoInNet1, Map<NetNode<T>, MutableTuple<Integer, NetNode<T>>> KInfoInNet2){
+    private Tuple<Integer, Integer> computeDistance(Map<NetNode<T>, MutableTuple<Integer, NetNode<T>>> KInfoInNet1, Map<NetNode<T>, MutableTuple<Integer, NetNode<T>>> KInfoInNet2){
         int totalDiff1 = 0;
         for(MutableTuple<Integer, NetNode<T>> kInfo: KInfoInNet1.values()){
             int KV = kInfo.Item1;
@@ -456,7 +460,8 @@ public class NetworkMetricNakhleh<T> {
             totalDiff2 += KV-KVPrime>0 ? KV-KVPrime:0;
         }
 
-        return (totalDiff1+totalDiff2) / 2;
+        return new Tuple<>(totalDiff1, totalDiff2);
+        //return (totalDiff1+totalDiff2) / 2;
     }
 
 

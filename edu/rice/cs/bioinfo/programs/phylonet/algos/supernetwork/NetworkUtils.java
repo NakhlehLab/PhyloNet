@@ -148,6 +148,10 @@ public class NetworkUtils {
     }
 
     public static void alterHeights(Network network, Random random) {
+        alterHeights(network, random, 0.001);
+    }
+
+    public static void alterHeights(Network network, Random random, double range) {
         Map<NetNode, Double> heights = getNodeHeightMapping(network);
 
         for(Object nodeObj : network.bfs()) {
@@ -157,7 +161,7 @@ public class NetworkUtils {
             }
             double[] bounds = getLowerAndUpperBoundOfHeight(node, heights);
             double oldHeight = heights.get(node);
-            double bound = oldHeight * 0.001;
+            double bound = oldHeight * range;
             bound = Math.min(bound, oldHeight - bounds[0]);
             bound = Math.min(bound, bounds[1] - oldHeight);
             double newHeight = oldHeight + (random.nextDouble() - 0.5) * 2 * bound;
@@ -178,51 +182,6 @@ public class NetworkUtils {
 
     public static int GetNumAllRetiAboveLeaf(Network network, String leafname) {
         return GetAllRetiAboveLeaf(network, leafname).size();
-    }
-
-    public static double ComputeScore(Network netToTry, SNProblem problem) {
-        double score = 0.0;
-        //List<Network> backbonesToTry = Pipeline.getAllBackboneNets(netToTry);
-        List<Network> backbonesToTry = new ArrayList<>();
-        backbonesToTry.add(netToTry.clone());
-        SuperNetwork3 sn = new SuperNetwork3(problem);
-        sn.Prepare();
-
-        for (SuperNetwork3.NetworkWithInfo netinfo : sn.subnetworks_) {
-            if(!netinfo.trustTime) {
-                continue;
-            }
-
-            if (netinfo.dirty) {
-                netinfo.network = Networks.readNetwork(netinfo.backup);
-                SuperNetwork3.initNetHeights(netinfo.network);
-                netinfo.dirty = false;
-            }
-            List<String> leavesIntersection = new ArrayList<>();
-            for(Object leafObj : netToTry.getLeaves()) {
-                NetNode leaf = (NetNode) leafObj;
-                leavesIntersection.add(leaf.getName());
-            }
-            leavesIntersection.retainAll(netinfo.taxa);
-            if(leavesIntersection.size() < 2) continue;
-
-            double minScore = Double.MAX_VALUE;
-            for(Network backbone : backbonesToTry) {
-                double curScore = SuperNetwork3.compareTwoSubNetwork(netinfo.network, backbone, leavesIntersection);
-                minScore = Math.min(minScore, curScore);
-                if(minScore == 0) break;
-            }
-//
-//            if(minScore == 0) minScore = 1;
-//            else minScore = 0;
-//            score += minScore;
-
-            score += minScore * netinfo.percentage;
-        }
-
-        score += netToTry.getReticulationCount() * 8.0;
-
-        return score;
     }
 
     public static double ComputeScore(Network netToTry, SuperNetwork3 sn) {

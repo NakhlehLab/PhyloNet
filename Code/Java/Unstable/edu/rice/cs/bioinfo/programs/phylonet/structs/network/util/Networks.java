@@ -701,7 +701,7 @@ public class Networks
     }
 
     public static <T> String getFullString(Network<T> net) {
-        return "[" + net.getRoot().getRootPopSize() + "]" + net.toString();
+        return (!Double.isNaN(net.getRoot().getRootPopSize()) ? ("[" + net.getRoot().getRootPopSize() + "]") : "") + net.toString();
     }
 
 

@@ -18,11 +18,9 @@ public class SNSolver {
 
         SuperNetwork3 sn = new SuperNetwork3(problem);
         SNSummary summary = new SNSummary();
-        if(options.tripletFilename != null) {
-            sn.ReduceTrinets(options.allele2species, options.tripletFilename);
-            sn.CheckReducedTrinets();
-        }
 
+        if(options.backboneLeaves != null) sn.SetBackboneLeaves(options.backboneLeaves);
+        if(options.buildOrder != null) sn.SetBuildOrder(options.buildOrder);
 
         summary.inferredNetwork = sn.compute();
         summary.netinfos = new SuperNetwork3(problem).subnetworks_;

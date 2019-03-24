@@ -595,9 +595,31 @@ public class Pipeline {
             problem0.AddSubNetwork(meannet, filename, tuple.Item2);
         }
         SuperNetwork3 sn0 = new SuperNetwork3(problem0);
+        List<String> buildOrder = null;
+        Set<String> backboneLeaves = null;
         if(options.tripletFilename != null) {
             sn0.ReduceTrinets(options.allele2species, options.tripletFilename);
-            sn0.CheckReducedTrinets();
+            SuperNetwork3.eps = 0.001;
+            List<Set<String>> requiredTrinets = sn0.FindMoreRequiredTrinets();
+            buildOrder = sn0.GetBuildOrder();
+            backboneLeaves = sn0.GetBackboneLeaves();
+
+            while(requiredTrinets.size() > 0) {
+
+                System.out.println("Need more trinets: " + requiredTrinets.size());
+                for (Set<String> requiredTaxa : requiredTrinets) {
+                    List<String> taxa = new ArrayList<>(requiredTaxa);
+                    System.out.println(taxa.get(0) + " " + taxa.get(1) + " " + taxa.get(2));
+                }
+
+                sn0.AddBackReduceTrinet(requiredTrinets);
+                requiredTrinets = sn0.FindMoreRequiredTrinets();
+                buildOrder = sn0.GetBuildOrder();
+                backboneLeaves = sn0.GetBackboneLeaves();
+            }
+
+            sn0.SetBackboneLeaves(backboneLeaves);
+            sn0.SetBuildOrder(buildOrder);
 
             List<String> reducedFilenames = new ArrayList<>();
             List<String> removedFilenames = new ArrayList<>();
@@ -612,19 +634,31 @@ public class Pipeline {
                 file2samples.remove(filename);
                 file2topsample.remove(filename);
             }
-
+            SuperNetwork3.eps = 0.01;
             options.tripletFilename = null;
+            options.buildOrder = buildOrder;
+            options.backboneLeaves = backboneLeaves;
         }
 
-//        if(true) {
-//            SNSummary summary = new SNSummary();
-//            summary.netinfos = sn0.subnetworks_;
-//            summary.inferredNetwork = null;
-//            summary.taxaNames = sn0.getTaxaNames();
+//        if(options.tripletFilename != null) {
+//            sn0.ReduceTrinets(options.allele2species, options.tripletFilename);
+//            sn0.CheckReducedTrinets();
 //
-//            System.out.println("Time (s): " + (System.currentTimeMillis()-starttime)/1000.0);
+//            List<String> reducedFilenames = new ArrayList<>();
+//            List<String> removedFilenames = new ArrayList<>();
+//            for (SuperNetwork3.NetworkWithInfo netinfo : sn0.subnetworks_) {
+//                reducedFilenames.add(netinfo.filename);
+//            }
 //
-//            return summary ;
+//            removedFilenames.addAll(filenames);
+//            removedFilenames.removeAll(reducedFilenames);
+//
+//            for(String filename : removedFilenames) {
+//                file2samples.remove(filename);
+//                file2topsample.remove(filename);
+//            }
+//
+//            options.tripletFilename = null;
 //        }
 
 
@@ -637,7 +671,7 @@ public class Pipeline {
         Map<Network, SummaryBL> summaryBL = new HashMap<>();
         Map<Network, List<Integer>> indexList = new HashMap<>();
 
-        while(!finished) {
+        while(!finished && i < 100) {
             SNProblem problem = new SNProblem();
             for(String filename : file2samples.keySet()) {
 //                if(i >= file2samples.get(filename).size()) {

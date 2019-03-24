@@ -94,6 +94,84 @@ public class RunningTimeReviewer {
         return result;
     }
 
+    static void checkLizardTime() {
+        String folder = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run72";
+        File path = new File(folder);
+
+        List<String> filenames = new ArrayList<>();
+        Map<String, Tuple<List<String>, Double>> result = new HashMap<>();
+
+        File [] files = path.listFiles();
+        for (int i = 0; i < files.length; i++){
+            if (files[i].isFile()){ //this line weeds out other directories/folders
+                if(files[i].toString().endsWith(".out")) {
+                    //System.out.println(files[i]);
+                    filenames.add(files[i].toString());
+                }
+            }
+        }
+
+        Collections.sort(filenames);
+
+        for(String filename : filenames) {
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(filename));
+                String s;
+                double time = 3600 * 24;
+                int total = 0;
+                int end = 1200;
+                boolean begin = false;
+                Network curSample = null;
+
+                while((s = in.readLine()) != null) {
+                    if (begin) {
+                        if (s.startsWith("[")) {
+                            curSample = Networks.readNetworkWithRootPop(s);
+                            total++;
+
+                        } else if(s.contains("Summarization")) {
+                            begin = false;
+                        }
+                    } else {
+                        if (s.contains("Logger")) {
+                            begin = true;
+                        } else if (s.startsWith("Total elapsed time : ")) {
+                            time = Double.parseDouble(s.substring(s.indexOf(":") + 2, s.length() - 2));
+                            break;
+                        }
+                    }
+                }
+
+                if(curSample == null) continue;
+
+                List<String> leafname = new ArrayList<>();
+                for(Object leafObj : curSample.getLeaves()) {
+                    NetNode leaf = (NetNode) leafObj;
+                    leafname.add(leaf.getName());
+                }
+                Collections.sort(leafname);
+
+                if(total != end) {
+                    time = time / total * end;
+                    //System.out.println(filename + " " + total);
+                }
+
+                result.put(filename, new Tuple<>(leafname, time));
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        double total = 0;
+        for(String filename : result.keySet()) {
+            total += result.get(filename).Item2;
+        }
+        System.out.println("Total time (s): " + total);
+        System.out.println("Total CPU-Hours: " + total / 3600 * 2); // 2 cores
+    }
+
     public void ReduceTrinets(Map<String, String> allele2species, String list_path) {
         Set<Set<String>> triset = new HashSet<>();
         String outgroup = "Z";
@@ -179,14 +257,20 @@ public class RunningTimeReviewer {
     static Integer visitReducedSize(String stage2file) {
         double time = 0;
         List<List<String>> trinets = new ArrayList<>();
+        int num = 0;
+        int count = 0;
 
         try {
             BufferedReader in = new BufferedReader(new FileReader(stage2file));
             String s;
 
             while((s = in.readLine()) != null) {
-                if(s.startsWith("After check, number of trinets is")) {
-                    return Integer.parseInt(s.substring(s.lastIndexOf(" ") + 1));
+                if(s.startsWith("Reduce number of trinets to")) {
+                    count = 1;
+                    num = Integer.parseInt(s.substring(s.lastIndexOf(" ") + 1));
+                } else if(s.startsWith("Need more trinets: ")) {
+                    count++;
+                    num += Integer.parseInt(s.substring(s.lastIndexOf(" ") + 1));
                 }
             }
 
@@ -194,6 +278,7 @@ public class RunningTimeReviewer {
             e.printStackTrace();
             return null;
         }
+        System.out.println("\t" + num + "\t" + count);
         return  null;
     }
 
@@ -253,7 +338,7 @@ public class RunningTimeReviewer {
     public static void checkAllReduced(String args[]) {
         String networkfilename = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/Networks/networks.json";
         String resultRoot = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run61/"; // run61 run47
-        String stage2root = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/simtest_reduce_partial/";
+        String stage2root = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/simtest_revison3_reduce/";
 
         SimTest.NetworkListJson networkListjson = null;
         try {
@@ -271,11 +356,9 @@ public class RunningTimeReviewer {
         for(SimTest.NetworkListJson.NetworkJson networkJson : networkListjson.networks) {
             if(index++ < requiredIndex) {continue;}
             String resultFile = stage2root + "/simtest_reduce_run61_" + index + ".txt";
-            int num = visitReducedSize(resultFile);
+            visitReducedSize(resultFile);
 
-            //System.out.println(networkJson.tag + "\t" + num);
-
-            System.out.println(networkJson.tag + "\t" + visitStage2Time(resultFile));
+            //System.out.println(networkJson.tag + "\t" + visitStage2Time(resultFile));
 
             //break;
         }
@@ -283,8 +366,8 @@ public class RunningTimeReviewer {
 
     public static void checkAllFull(String args[]) {
         String networkfilename = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/Networks/networks.json";
-        String resultRoot = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run61/"; // run61 run47
-        String stage2root = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/simtest_partial/";
+        String resultRoot = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run61/";
+        String stage2root = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/simtest_revison3/";
 
         SimTest.NetworkListJson networkListjson = null;
         try {
@@ -301,7 +384,7 @@ public class RunningTimeReviewer {
         int requiredIndex = -1;
         for(SimTest.NetworkListJson.NetworkJson networkJson : networkListjson.networks) {
             if(index++ < requiredIndex) {continue;}
-            String resultFile = stage2root + "/simtest_" + index + ".txt";
+            String resultFile = stage2root + "/simtest_run61_" + index + ".txt";
 
             System.out.println(networkJson.tag + "\t" + visitStage2Time(resultFile));
 
@@ -310,6 +393,8 @@ public class RunningTimeReviewer {
     }
 
     public static void main(String args[]) {
-        checkAllFull(args);
+        checkAllReduced(args);
+        //checkAllFull(args);
+        //checkLizardTime();
     }
 }

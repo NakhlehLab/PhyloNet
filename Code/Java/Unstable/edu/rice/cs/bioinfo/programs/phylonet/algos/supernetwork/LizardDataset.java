@@ -345,7 +345,7 @@ public class LizardDataset {
                 }
 
                 out.println("BEGIN PHYLONET; \n");
-                out.println("SN_SEQ -cl 6000000 -bl 3000000 -sf 5000 -ee -sd 123456 -subsetloci 150 -fixgttopo -gtburnin -pre 10 -varyps -pl 2 ");
+                out.println("SN_SEQ -cl 6000000 -bl 3000000 -sf 5000 -ee -sd 123456 -fixgttopo -gtburnin -pre 10 -mc3 (2.0, 4.0) -varyps -pl 2 ");
                 if(outgroup != null) {
                     out.println("-outgroup \"" + outgroup +"\"");
                 }
@@ -387,6 +387,61 @@ public class LizardDataset {
             }
 
              //break;
+        }
+    }
+
+    void writeToNEXUS_MPL() {
+
+        Map<String, String> locus2tree = null;
+        locus2tree = readIQTree(root + "/data/iqtree/");
+
+        String nexusPath = root + "/run_MPL.nex";
+        System.out.println(nexusPath);
+
+        try {
+            PrintWriter out = new PrintWriter(nexusPath);
+
+            out.println("#NEXUS");
+            out.println();
+            out.println("BEGIN TREES;");
+            out.println();
+
+            for(String locus : loci2seq.keySet()) {
+                if(!locus2tree.containsKey(locus))
+                    System.out.println(locus);
+                STITree stitree = new STITree(Trees.readTree(locus2tree.get(locus)));
+
+                stitree.rerootTreeAtEdge(gtoutgroup);
+                stitree.removeNode(gtoutgroup);
+                Trees.removeBinaryNodes(stitree);
+                out.println("Tree " + locus + " = " + stitree.toNewick());
+            }
+
+            species2alleles.get(outgroup).remove(gtoutgroup);
+            out.println("End;");
+            out.println();
+
+            out.println("BEGIN PHYLONET; \n");
+            out.println("InferNetwork_MPL (all) 2 ");
+
+            out.print("-a <");
+            int index = 0;
+            for (String species : species2alleles.keySet()) {
+                if (index > 0) out.print(";");
+                out.print(species + ":");
+                for (int i = 0; i < species2alleles.get(species).size(); i++) {
+                    if (i > 0) out.print(",");
+                    out.print(species2alleles.get(species).get(i));
+                }
+                index++;
+            }
+
+            out.println("> ;");
+            out.println("END;");
+
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -433,8 +488,8 @@ public class LizardDataset {
         }
     }
 
-    void read() {
-        List<String> loci = readLociList(root + "/data/lists/loci_complete_informative_data_filtered.txt");
+    void read(String lociFilename) {
+        List<String> loci = readLociList(root + "/data/lists/" + lociFilename);
 
         for(String locus : loci) {
             String locusPath = root + "/data/phy/" + locus + ".NT.TNR.trim.gt.phy";
@@ -451,15 +506,35 @@ public class LizardDataset {
         String path = args.length > 0 ? args[0] : "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard";
         LizardDataset lizardDataset = new LizardDataset(path);
 
-        lizardDataset.read();
+        lizardDataset.read("loci_complete_informative_data_filtered.txt");
 
         lizardDataset.writeToNEXUS();
 
     }
 
+    static void prepare_100loci(String[] args) {
+        String path = args.length > 0 ? args[0] : "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard";
+        LizardDataset lizardDataset = new LizardDataset(path);
+
+        lizardDataset.read("locilist_100.txt");
+
+        lizardDataset.writeToNEXUS();
+
+    }
+
+    static void prepareMPL(String[] args) {
+        String path = args.length > 0 ? args[0] : "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard";
+        LizardDataset lizardDataset = new LizardDataset(path);
+
+        lizardDataset.read("locilist_100.txt");
+
+        lizardDataset.writeToNEXUS_MPL();
+
+    }
+
     static void prepare_astral(String[] args) {
         LizardDataset lizardDataset = new LizardDataset(args[0]);
-        lizardDataset.read();
+        lizardDataset.read("loci_complete_informative_data_filtered.txt");
 
         try {
 
@@ -480,13 +555,13 @@ public class LizardDataset {
 
     }
 
-    static void prepare_iqtree(String[] args) {
+    static void prepare_iqtree_input(String[] args) {
         LizardDataset lizardDataset = new LizardDataset(args[0]);
-        lizardDataset.read();
+        lizardDataset.read("loci_complete_informative_data.txt");
 
         for(String locus : lizardDataset.loci2seq.keySet()) {
 
-            writeFastaFile(lizardDataset.loci2seq.get(locus), args[0] + "/data/iqtree_4taxa/iqtree_" + locus + "_input.fasta");
+            writeFastaFile(lizardDataset.loci2seq.get(locus), args[0] + "/data/iqtree/iqtree_" + locus + "_input.fasta");
         }
 
 
@@ -494,7 +569,7 @@ public class LizardDataset {
     }
 
     static void check() {
-        String resultFolder = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run66";
+        String resultFolder = "/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/results/run72"; // run72 is good
         File path = new File(resultFolder);
 
         List<String> filenames = new ArrayList<>();
@@ -542,7 +617,7 @@ public class LizardDataset {
 
     static void prepareMCMCSEQ() {
         LizardDataset lizardDataset = new LizardDataset("/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard");
-        lizardDataset.read();
+        lizardDataset.read("loci_complete_informative_data_filtered.txt");
         lizardDataset.writeFullToNEXUS("/Users/zhujiafan/Documents/BioinfoData/Debug/mcmcseq.nex", "/Users/zhujiafan/Documents/BioinfoData/Debug/locilist.txt");
     }
 
@@ -573,8 +648,10 @@ public class LizardDataset {
         //printMapping();
         //printAstralMapping();
         //prepare_astral(new String[]{"/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard/"});
-        //prepare_iqtree(new String[]{"/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard/"});
+        //prepare_iqtree_input(new String[]{"/Users/zhujiafan/Documents/BioinfoData/SuperNetwork/lizard/"});
         //prepare(args);
+        //prepare_100loci(args);
+        //prepareMPL(args);
         check();
 
 

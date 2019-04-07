@@ -124,7 +124,8 @@ public class FigureConvergencePlot {
                             System.out.println("Exceptional network");
                         }
                         System.out.println(pattern + " " + triplets2patterns.get(triplet).get(pattern)[0] + " " + likelihood);
-                        double difference = triplets2patterns.get(triplet).get(pattern)[0] / numSites - likelihood;
+                        double difference = (triplets2patterns.get(triplet).get(pattern)[0] / numSites - likelihood); // unnormalized
+                        //double difference = (triplets2patterns.get(triplet).get(pattern)[0] / numSites - likelihood) / likelihood; // normalized - in my PhD thesis
                         out.println(difference);
                         mean.increment(difference);
                         standardDeviation.increment(difference);

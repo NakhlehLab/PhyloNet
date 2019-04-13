@@ -232,14 +232,14 @@ public class Test {
         species2alleles.get("I0").add("B");
         species2alleles.get("I0").add("C");
 
-        int numSites = 1000;
+        int numSites = 1;
         boolean useOnlyPolymorphic = false;
         SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, 12345678L);
         simulator._diploid = false;
         Map<String, String> onesnp = simulator.generateSNPs(trueNetwork, null, numSites, !useOnlyPolymorphic);
-        //onesnp.clear();
-        //onesnp.put("A", "0");
-        //onesnp.put("B", "0");
+        onesnp.clear();
+        onesnp.put("A", "0");
+        onesnp.put("B", "0");
         //onesnp.put("A", "00000000000000000000000000000000000000000000000000000000000000000000000000000000");
         //onesnp.put("B", "00000000000000000000000000000000000000000000000000000000000000000000000000000000");
 
@@ -298,6 +298,7 @@ public class Test {
                 network.reject();
                 nextLikelihood = network.logDensity();
                 if(nextLikelihood != prevLikelihood) throw new RuntimeException("!!!!!");
+                System.out.println("Rejected");
             }
             heightMean.increment(network.getNetwork().getRoot().getData().getHeight());
         }

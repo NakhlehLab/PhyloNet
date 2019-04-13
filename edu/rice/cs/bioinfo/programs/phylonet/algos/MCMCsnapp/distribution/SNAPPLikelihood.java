@@ -297,7 +297,7 @@ public class SNAPPLikelihood {
         return result;
     }
 
-    static public double computeApproximateBayesian(Network network, Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel) {
+    static public double computeApproximateBayesian(Network network, Map<String, String> alleles2species, List<MarkerSeq> markerSeqs, BiAllelicGTR BAGTRModel, Map<String, Double> abcData) {
         if(approximateBayesian == null) {
             System.out.println("Initiating approximate bayesian");
             approximateBayesian = new ApproximateBayesian(alleles2species, markerSeqs, markerSeqs.get(0)._diploid, markerSeqs.get(0)._dominant != null, markerSeqs.get(0)._polyploid, useOnlyPolymorphic, BAGTRModel);
@@ -315,7 +315,7 @@ public class SNAPPLikelihood {
             }
         }
 
-        return approximateBayesian.computeApproximateBayesianMT(net);
+        return approximateBayesian.computeApproximateBayesianMT(net, abcData);
 
     }
 

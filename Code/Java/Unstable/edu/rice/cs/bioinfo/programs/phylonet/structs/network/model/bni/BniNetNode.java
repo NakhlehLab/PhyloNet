@@ -341,7 +341,8 @@ public class BniNetNode<T> implements NetNode<T> {
 		int i = _parents.indexOf(parent);
 
 		if(distance < 0 && distance != NetNode.NO_DISTANCE) {
-			//System.out.println(parent + " " + distance + "!!!!!!");
+//			System.out.println(parent + " " + distance + "!!!!!!");
+//			 throw new RuntimeException("Negative distance!");
 		}
 
 		if (i == -1) {	// parent is not a parent of this node. Operation failed.
@@ -578,7 +579,7 @@ public class BniNetNode<T> implements NetNode<T> {
 	public void setParentProbability(NetNode<T> parent, double probability)
 	{
 
-        if(probability != NetNode.NO_PROBABILITY && (probability < 0 || probability > 1))
+        if(probability != NetNode.NO_PROBABILITY && (probability < -0.0000001 || probability > 1.0000001))
         {
             throw new IllegalArgumentException("Probability values must be between zer and one.  Found: " + probability);
         }

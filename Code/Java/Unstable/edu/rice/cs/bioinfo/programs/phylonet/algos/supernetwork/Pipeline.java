@@ -1181,6 +1181,282 @@ public class Pipeline {
         return 0;
     }
 
+    static public List<Set<String>> convertAlleleTripletsToSpeciesTriplets(Map<String, List<String>> species2alleles, String outgroup, Set<String[]> alleleTriplets) {
+        List<Set<String>> result = new ArrayList<>();
+        if(species2alleles == null) {
+            for(String[] triplet : alleleTriplets) {
+                Set<String> cur_alleles = new HashSet<>();
+                cur_alleles.add(triplet[0]);
+                cur_alleles.add(triplet[1]);
+                cur_alleles.add(triplet[2]);
+                result.add(cur_alleles);
+            }
+
+            return result;
+        }
+
+        Map<String, String> allele2species = new HashMap<>();
+        for(String species : species2alleles.keySet()) {
+            for(String allele : species2alleles.get(species)) {
+                allele2species.put(allele, species);
+            }
+        }
+
+        for(String[] triplet : alleleTriplets) {
+            List<String> cur_alleles = new ArrayList<>();
+            cur_alleles.add(triplet[0]);
+            cur_alleles.add(triplet[1]);
+            cur_alleles.add(triplet[2]);
+
+            Set<String> cur_species = new HashSet<>();
+
+            for(String allele : cur_alleles) {
+                cur_species.add(allele2species.get(allele));
+            }
+
+            if(cur_species.size() == 1) {
+                continue;
+            } else if(cur_species.size() == 2) {
+                cur_species.add(outgroup);
+            }
+
+            if(!result.contains(cur_species)) {
+                result.add(cur_species);
+            }
+        }
+
+        return result;
+    }
+
+    public static SNSummary mergeBayesianResults(List<String> filenames, int chainlen, int burnin, int sample_freq, SNOptions options) {
+
+        long starttime = System.currentTimeMillis();
+
+        class Interceptor extends PrintStream
+        {
+            public Interceptor(OutputStream out)
+            {
+                super(out, true);
+            }
+            @Override
+            public void println(String s)
+            {//do what ever you like
+                //super.print(s);
+            }
+            @Override
+            public void println(char c) {
+
+            }
+            @Override
+            public void println(int i) {
+
+            }
+
+        }
+
+        PrintStream origOut = System.out;
+        PrintStream interceptor = new Interceptor(origOut);
+
+        if(!printDetails_) {
+            System.setOut(interceptor);
+        }
+
+        int start = (int)(burnin / sample_freq) + 1;
+        int end = (int)(chainlen / sample_freq);
+
+        Map<String, List<String>> file2samples = new HashMap<>();
+        Map<String, Tuple<String, Double>> file2topsample = new HashMap<>();
+
+        GetInputFromFolder(filenames, start, end, file2samples, file2topsample);
+
+        SNProblem problem0 = new SNProblem();
+        for(String filename : file2topsample.keySet()) {
+            Tuple<String, Double> tuple = file2topsample.get(filename);
+            SummaryBL summaryBL = new SummaryBL(tuple.Item1);
+            for(String sample : file2samples.get(filename)) {
+                Network curnet = Networks.readNetworkWithRootPop(sample);
+                if(Networks.hasTheSameTopology(Networks.readNetworkWithRootPop(tuple.Item1), curnet)) {
+                    summaryBL.addNetwork(curnet);
+                }
+            }
+            summaryBL.computeMean(1,1);
+            Network meannet = summaryBL.getMeanNetwork();
+
+            problem0.AddSubNetwork(meannet, filename, tuple.Item2);
+        }
+        SuperNetwork3 sn0 = new SuperNetwork3(problem0);
+        List<String> buildOrder = null;
+        Set<String> backboneLeaves = null;
+
+
+        // Check whether trinets are enough
+        SuperNetwork3.eps = options.eps / 10.;
+        List<Set<String>> requiredTrinets = sn0.FindMoreRequiredTrinets();
+        buildOrder = sn0.GetBuildOrder();
+        backboneLeaves = sn0.GetBackboneLeaves();
+
+        if(requiredTrinets.size() > 0) {
+
+            System.out.println("Need more trinets: " + requiredTrinets.size());
+            for (Set<String> requiredTaxa : requiredTrinets) {
+                List<String> taxa = new ArrayList<>(requiredTaxa);
+                System.out.println(taxa.get(0) + " " + taxa.get(1) + " " + taxa.get(2));
+            }
+
+            System.out.println("Order:");
+            for(String s : buildOrder) {
+                System.out.print(s + " ");
+            }
+
+            System.out.println("Backbone:");
+            for(String s : backboneLeaves) {
+                System.out.print(s + " ");
+            }
+            System.out.println();
+
+            return null;
+        }
+
+        SuperNetwork3.eps = options.eps;
+        options.tripletFilename = null;
+        options.buildOrder = buildOrder;
+        options.backboneLeaves = backboneLeaves;
+
+
+
+        int i = 0;
+        int totalNumber = 0;
+        int goodNumber = 0;
+        boolean finished = false;
+        SNSummary allsummary = new SNSummary();
+        Map<Network, Integer> count = new HashMap<>();
+        Map<Network, SummaryBL> summaryBL = new HashMap<>();
+        Map<Network, List<Integer>> indexList = new HashMap<>();
+
+        while(!finished && i < 100) {
+            SNProblem problem = new SNProblem();
+            for(String filename : file2samples.keySet()) {
+//                if(i >= file2samples.get(filename).size()) {
+//                    finished = true;
+//                    System.out.println(filename);
+//                    break;
+//                }
+
+                //problem.AddSubNetwork(Networks.readNetworkWithRootPop(file2samples.get(filename).get(i)), filename, 1.0);
+                problem.AddSubNetwork(Networks.readNetworkWithRootPop(file2samples.get(filename).get(Randomizer.getRandomInt(file2samples.get(filename).size()))), filename, 1.0);
+            }
+            if(finished) break;
+
+            //if(i < 18) {i++;continue;}
+
+            SNSummary summary = SNSolver.Solve(problem, options);
+            System.out.println(i);
+            totalNumber++;
+
+            if(summary.inferredNetwork == null) {i++;continue;}
+
+            if(options.trueNetwork != null) {
+                if (Networks.hasTheSameTopology(summary.inferredNetwork, options.trueNetwork.clone())) {
+                    System.out.println("Good");
+                    goodNumber++;
+                } else {
+                    System.out.println("Not Good");
+                }
+            }
+
+            boolean exist = false;
+            for (Network net : count.keySet()) {
+                if (Networks.hasTheSameTopology(net, summary.inferredNetwork)) {
+                    count.put(net, count.get(net) + 1);
+                    summaryBL.get(net).addNetwork(summary.inferredNetwork);
+                    indexList.get(net).add(i);
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                count.put(summary.inferredNetwork, 1);
+                summaryBL.put(summary.inferredNetwork, new SummaryBL(Networks.getFullString(summary.inferredNetwork)));
+                summaryBL.get(summary.inferredNetwork).addNetwork(summary.inferredNetwork.clone());
+                indexList.put(summary.inferredNetwork,  new ArrayList<>());
+                indexList.get(summary.inferredNetwork).add(i);
+            }
+
+            System.out.println(Networks.getDendroscopeCompatibleString(summary.inferredNetwork));
+
+            //System.out.println(NetworkUtils.ComputeScore(summary.inferredNetwork, problem));
+            System.out.println(NetworkUtils.ComputeScore(summary.inferredNetwork, sn0));
+
+            i++;
+            if(i == 100) break;
+
+            //break;
+            //return summary;
+
+        }
+
+        SuperNetwork3.printDetails_ = false;
+        int bestCount = 0;
+        double bestScore = 0;
+        Network bestMeanNet = null;
+        for (Network net : count.keySet()) {
+            summaryBL.get(net).computeMean(1,1);
+            Network meannet = summaryBL.get(net).getMeanNetwork();
+            if(Double.isNaN(meannet.findNode(SuperNetwork3.outgroup).getParentDistance((NetNode) meannet.findNode(SuperNetwork3.outgroup).getParents().iterator().next()))) continue;
+            meannet = SuperNetwork3.getSubNetwork(meannet, sn0.getTaxaNames(), true).Item1;
+            System.out.println(Networks.getFullString(meannet));
+            System.out.println(Networks.getCoalUnitString(meannet));
+            System.out.println(Networks.getDendroscopeCompatibleString(meannet));
+            System.out.println(count.get(net));
+            double score = NetworkUtils.ComputeScore(net, sn0);
+            System.out.println(score);
+            System.out.print("Indices: ");
+            for(Integer index : indexList.get(net)) {
+                System.out.print(index + " ");
+            }
+            System.out.println();
+            System.out.println();
+
+            //if(count.get(net) <= 1) continue;
+            if(1.0 * count.get(net) / totalNumber > 2.0/3.0) {
+                bestCount = count.get(net);
+                bestScore = score;
+                bestMeanNet = meannet;
+                break;
+            }
+
+            //if(bestCount < count.get(net) || (bestCount == count.get(net) && bestScore < score)) {
+            if(bestScore < score || (bestScore == score && bestCount < count.get(net))) {
+                bestCount = count.get(net);
+                bestScore = score;
+                bestMeanNet = meannet;
+            }
+        }
+
+        if(!printDetails_) {
+            System.setOut(origOut);
+        }
+
+        System.out.println("Good number: " + goodNumber);
+        System.out.println("Total number: " + totalNumber);
+        System.out.println();
+
+        System.out.println("Final number: " + bestCount);
+        System.out.println("Final score: " + bestScore);
+        System.out.println("Final result: ");
+        System.out.println(bestMeanNet);
+
+
+        SNSummary summary = new SNSummary();
+        summary.netinfos = sn0.subnetworks_;
+        summary.inferredNetwork = bestMeanNet;
+        summary.taxaNames = sn0.getTaxaNames();
+
+        System.out.println("Time (s): " + (System.currentTimeMillis()-starttime)/1000.0);
+
+        return summary ;
+    }
+
     static public void main(String []args) {
         //Network trueNetwork = Networks.readNetwork("(Z:100.0,(((((D:7.430083706879999,((N:1.2)#H2:2.3831808)#H1:3.846902906879999)S20:3.2692368310271975,(I:2.9859839999999997,H:2.9859839999999997)S19:7.713336537907196)S18:4.707701036679165,#H1:11.823840774586362)S17:22.93057834988837,((E:6.191736422399999)#H4:25.756263514662276)#H3:6.389599987412456)S16:41.159247278916055,((A:55.206143891243606,(((F:5.159780351999999,(J:2.48832,((M:1.44)#H5:0.6335999999999999,K:2.0736)S15:0.41472)S14:2.6714603519999995)S13:7.679404293488635,(#H2:3.099816959999999,G:4.299816959999999)S12:8.539367685488635)S11:33.16593526388104,((#H4:12.296689467103633,(B:8.916100448255998,C:8.916100448255998)S10:9.572325441247633)S9:8.1349073913816,((#H5:0.28800000000000003,L:1.728)S8:20.458111067404356,(O:1.0,P:1.0)S7:21.186111067404358)S6:4.437222213480872)S5:19.381786628484445)S4:9.20102398187393)S3:11.041228778248716,#H3:34.299372732430044)S2:13.249474533898464)S1:20.503152796609214);");
         //Network inferredNetwork = Networks.readNetwork("(Z:0.7096995771149552,(((((H:0.029034319213268003,I:0.029034319213268003)I12:0.07571284181423195,(D:0.07054975280170007,((N:0.01677046154182873)I13#H2:0.03547962985339541::0.29734002016051975)I8#H1:0.018299661406475938::0.45197743073632335)I11:0.03419740822579988)I7:0.04215771020355635,I8#H1:0.09465477983583218::0.5480225692636767)I4:0.21268141868533277,(E:0.14551081013277983)I5#H3:0.21407547978360925::0.2643208014344447)I2:0.23803919763961257,(((((P:0.009021966743936025,O:0.009021966743936025)I20:0.194039105912683,(L:0.015768583495269863,(M:0.015668583495269863)I22#H4:9.99999999999994E-5::0.7841851661421151)I19:0.18729248916134916)I15:0.04056689988800191,((B:0.08646536587599503,C:0.08646536587599503)I18:0.0852119469162843,I5#H3:0.02616650265949949::0.7356791985655553)I14:0.0719506597523416)I9:0.14730339578831697,((G:0.039965889280701807,I13#H2:0.023195427738873075::0.7026599798394803)I16:0.0830744882850622,(F:0.050398625425341764,(J:0.024499579087946654,(I22#H4:0.003481035489195875::0.2158148338578849,K:0.01914961898446574)I23:0.005349960103480916)I21:0.02589904633739511)I17:0.07264175214042223)I10:0.26789099076717393)I6:0.06327200779650383,A:0.4542033761294417)I3:0.14342211142655992)I1:0.1120740895589536)I0;");

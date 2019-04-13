@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.felsenstein.alignment.MarkerSeq;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimSNPInNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.substitution.model.BiAllelicGTR;
@@ -112,7 +113,7 @@ public class ApproximateBayesian {
                             if(!_counter0.containsKey(key)) {
                                 _counter0.put(key, 0.0);
                             }
-                            _counter0.put(key, _counter0.get(key) + scale);
+                            _counter0.put(key, _counter0.get(key) + 1.0);
                         }
                     }
                 }
@@ -145,7 +146,7 @@ public class ApproximateBayesian {
         }
     }
 
-    public double computeApproximateBayesianMT(Network network) {
+    public double computeApproximateBayesianMT(Network network, Map<String, Double> abcData) {
         ExecutorService executor = Executors.newFixedThreadPool(Utils._NUM_THREADS);
         DoubleAdder adder = new DoubleAdder();
         _counter = new ConcurrentHashMap<>();
@@ -154,7 +155,7 @@ public class ApproximateBayesian {
         //System.out.println(Utils._SEED);
         _simulators = new ArrayList<>();
         for(int i = 0 ; i < Utils._NUM_THREADS; i++) {
-            _simulators.add(new SimSNPInNetwork(_BAGTRModel, Utils._SEED + i * 10000));
+            _simulators.add(new SimSNPInNetwork(_BAGTRModel, Randomizer.getRandom().nextLong()));
             _simulators.get(i)._diploid = _diploid;
             _simulators.get(i)._dominant = _dominant;
             _simulators.get(i)._polyploid = _polyploid;
@@ -283,22 +284,33 @@ public class ApproximateBayesian {
 
 
         double sum = 0.0;
+        double total = 0.0;
         Set<String> keys = new HashSet<>();
+        keys.addAll(abcData.keySet());
         keys.addAll(_counter.keySet());
+        for(String key : keys) {
+            abcData.put(key, abcData.getOrDefault(key, 0.0) + _counter.getOrDefault(key, new DoubleAdder()).sum());
+            total += abcData.getOrDefault(key, 0.0);
+        }
+
         keys.addAll(_counter0.keySet());
+        //if(total > 10000)
+            //System.out.println(total);
 
         for(String key : keys) {
             double value0 = _counter0.getOrDefault(key, 0.0);
-            DoubleAdder value = _counter.getOrDefault(key, new DoubleAdder());
-            double value1 = value.sum() / modifier;
-            if(value1 == 0.0) value1 = 1.0;
+            //DoubleAdder value = _counter.getOrDefault(key, new DoubleAdder());
+            //double value1 = value.sum() / modifier;
+            double value1 = abcData.getOrDefault(key, 0.0) / total;
+            if(value1 == 0.0) value1 = 0.618;
 //            if(value1 / _simnum < 0.01) {
 //                continue;
 //            }
 
-            sum += (value0 - value1) * (value0 - value1) / value1;
+            //sum -= (value0 - value1) * (value0 - value1) / value1;
+            sum += value0 * Math.log(value1);
         }
 
-        return -sum;
+        return sum;
     }
 }

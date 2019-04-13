@@ -147,27 +147,27 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
         // ----- selected taxa -----
         ParamExtractor dataParam = new ParamExtractor("taxa", this.params, this.errorDetected);
         if(dataParam.ContainsSwitch){
-            if(dataParam.PostSwitchParam != null) {
-                try {
-                    if(!(dataParam.PostSwitchParam instanceof ParameterIdentList)){
-                        throw new RuntimeException();
-                    }
-                    ParameterIdentList taxa = (ParameterIdentList) dataParam.PostSwitchParam;
-                    _sequence = new HashMap<>();
-                    for(String taxon: taxa.Elements){
-                        noError = noError && this.assertDataExists(taxon, taxa.getLine(), taxa.getColumn());
-                        if (noError) {
-                            _sequence.put(taxon, this.sourceIdentToMatrixData.get(taxon));
-                        }
-                    }
-                } catch(NumberFormatException e) {
-                    errorDetected.execute("Unrecognized data " + dataParam.PostSwitchValue,
-                            dataParam.PostSwitchParam.getLine(), dataParam.PostSwitchParam.getColumn());
-                }
-            } else {
-                errorDetected.execute("Expected value after switch -taxa." + dataParam.PostSwitchValue,
-                        dataParam.PostSwitchParam.getLine(), dataParam.PostSwitchParam.getColumn());
-            }
+//            if(dataParam.PostSwitchParam != null) {
+//                try {
+//                    if(!(dataParam.PostSwitchParam instanceof ParameterIdentList)){
+//                        throw new RuntimeException();
+//                    }
+//                    ParameterIdentList taxa = (ParameterIdentList) dataParam.PostSwitchParam;
+//                    _sequence = new HashMap<>();
+//                    for(String taxon: taxa.Elements){
+//                        noError = noError && this.assertDataExists(taxon, taxa.getLine(), taxa.getColumn());
+//                        if (noError) {
+//                            _sequence.put(taxon, this.sourceIdentToMatrixData.get(taxon));
+//                        }
+//                    }
+//                } catch(NumberFormatException e) {
+//                    errorDetected.execute("Unrecognized data " + dataParam.PostSwitchValue,
+//                            dataParam.PostSwitchParam.getLine(), dataParam.PostSwitchParam.getColumn());
+//                }
+//            } else {
+//                errorDetected.execute("Expected value after switch -taxa." + dataParam.PostSwitchValue,
+//                        dataParam.PostSwitchParam.getLine(), dataParam.PostSwitchParam.getColumn());
+//            }
         }
 
         // seed
@@ -287,6 +287,22 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
             noError = noError && aaParam.IsValidMap;
             if(aaParam.IsValidMap){
                 Utils._TAXON_MAP = aaParam.ValueMap;
+                _sequence = new HashMap<>();
+
+                Set<String> alleleSet = new HashSet<>();
+                for(String species :Utils._TAXON_MAP.keySet() ) {
+                    alleleSet.addAll(Utils._TAXON_MAP.get(species));
+                }
+                for(String alleleName : alleleSet) {
+                    if(alleleSet.contains(alleleName)) {
+                        _sequence.put(alleleName, this.sourceIdentToMatrixData.get(alleleName));
+                    }
+                }
+            }
+        } else {
+            _sequence = new HashMap<>();
+            for(String alleleName : this.sourceIdentToMatrixData.keySet()) {
+                _sequence.put(alleleName, this.sourceIdentToMatrixData.get(alleleName));
             }
         }
 
@@ -617,7 +633,7 @@ public class MLE_BiMarkers extends CommandBaseFileOutMatrix {
             }
 
             if(SNAPPLikelihood.useApproximateBayesian) {
-                System.out.println("True Approximate Bayesian = " + SNAPPLikelihood.computeApproximateBayesian(cloneNetwork, allele2species, alnwarp, BAGTRModel));
+                System.out.println("True Approximate Bayesian = " + SNAPPLikelihood.computeApproximateBayesian(cloneNetwork, allele2species, alnwarp, BAGTRModel, new HashMap<>()));
             }
         }
 

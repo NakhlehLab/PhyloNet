@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.core;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.distribution.SNAPPLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 
@@ -101,6 +102,10 @@ public class MC3 {
                     _state.accept(_logAlpha);
                 } else {
                     _state.undo(_logAlpha);
+                    if(SNAPPLikelihood.useApproximateBayesian) {
+                        _logLikelihood = _state.calculateLikelihood();
+                        _logPost = _logPrior + _logLikelihood;
+                    }
                 }
 
                 /*double n1 = _state.recalculateLikelihood();

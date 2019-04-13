@@ -14,6 +14,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Convergence;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.File;
 import java.util.*;
@@ -25,6 +29,7 @@ import java.util.*;
 public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
 
     private List<Alignment> alignments = new ArrayList<>();
+    private String gtoutgroup = null;
 
     // for summarization
     private List<String> _files = new ArrayList<>();
@@ -324,7 +329,19 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             Utils.SAMPLE_EMBEDDINGS = true;
         }
 
-        // fix net topology
+        // fix all gene tree topologies
+        ParamExtractor gtburninParam = new ParamExtractor("gtburnin", this.params, this.errorDetected);
+        if(gtburninParam.ContainsSwitch) {
+            Utils._START_GT_BURN_IN = true;
+        }
+
+        // fix all gene tree topologies
+        ParamExtractor fixgttopoParam = new ParamExtractor("fixgttopo", this.params, this.errorDetected);
+        if(fixgttopoParam.ContainsSwitch) {
+            Utils._FIX_GENE_TREE_TOPOLOGIES = true;
+        }
+
+        // fix all gene trees
         ParamExtractor fixgtsParam = new ParamExtractor("fixgts", this.params, this.errorDetected);
         if(fixgtsParam.ContainsSwitch) {
             Utils._FIX_GENE_TREES = true;
@@ -445,6 +462,17 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        // If gene trees are unrooted, this can root them.
+        ParamExtractor gtoutgroupParam = new ParamExtractor("gtoutgroup", this.params, this.errorDetected);
+        if(gtoutgroupParam.ContainsSwitch){
+            if(gtoutgroupParam.PostSwitchParam != null) {
+                gtoutgroup = gtoutgroupParam.PostSwitchValue;
+            } else {
+                errorDetected.execute("Expected value after switch -gtoutgroup.",
+                        gtoutgroupParam.SwitchParam.getLine(), gtoutgroupParam.SwitchParam.getColumn());
+            }
+        }
+
         // starting networks
         ParamExtractor snParam = new ParamExtractor("snet", this.params, this.errorDetected);
         if(snParam.ContainsSwitch){
@@ -501,6 +529,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                         throw new RuntimeException("pre-burn-in iterations should be an integer >= 0");
                     }
                     Utils._PRE_BURN_IN_ITER = pre;
+                    Utils._PRE_BURN_IN = true;
                 } catch(NumberFormatException e) {
                     errorDetected.execute(
                             "Unrecognized pre-burn-in iterations (an integer >= 0)" + preParam.PostSwitchValue,
@@ -558,8 +587,10 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "cl", "bl", "sf", "sd", "pl", "dir",
                 "mc3", "mr", "tm", "fixps", "varyps",
                 "fixnettopo", "fixgts", "disableallprior",
+                "fixgttopo", "gtburnin",
                 "pp", "dd", "ee", "mu", "se",
-                "sgt", "snet", "sps", "pre", "gtr"
+                "sgt", "snet", "sps", "pre", "gtr",
+                "gtoutgroup"
         );
         checkAndSetOutFile(
                 diploidParam,
@@ -567,11 +598,49 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 clParam, blParam, sfParam, sdParam, plParam, dirParam,
                 tpParam, mrParam, tmParam, fixPsParam, varyPsParam,
                 fixNetTopoParam, fixgtsParam, disableAllPriorParam,
+                fixgttopoParam, gtburninParam,
                 ppParam, ddParam, eeParam, muParam, seParam,
-                sgtParam, snParam, spsParam, gtrParam
+                sgtParam, snParam, spsParam, gtrParam,
+                gtoutgroupParam
         );
 
         return  noError;
+    }
+
+    private void preprocessGeneTrees() {
+        // Remove the outgroup of gene trees from data.
+        for(String species : Utils._TAXON_MAP.keySet()) {
+            if(Utils._TAXON_MAP.get(species).contains(gtoutgroup)) {
+                Utils._TAXON_MAP.get(species).remove(gtoutgroup);
+                for (String locus : this.sourceIdentToMultilocusData.keySet()) {
+                    this.sourceIdentToMultilocusData.get(locus).remove(gtoutgroup);
+                }
+            }
+        }
+
+        for(int i = 0 ; i < Utils._START_GT_LIST.size() ; i++) {
+            for (String locus : Utils._START_GT_LIST.get(i).keySet()) {
+                STITree stitree = new STITree(Trees.readTree(Utils._START_GT_LIST.get(i).get(locus)));
+                List<String> leaves = new ArrayList<>();
+                for(String species : Utils._TAXON_MAP.keySet()) {
+                    for(String allele : Utils._TAXON_MAP.get(species)) {
+                        leaves.add(allele);
+                    }
+                }
+
+                stitree.rerootTreeAtEdge(gtoutgroup);
+                stitree.removeNode(gtoutgroup);
+                Trees.removeBinaryNodes(stitree);
+                stitree.constrainByLeaves(leaves);
+
+                for(Object nodeObj : stitree.postTraverse()) {
+                    STINode node = (STINode) nodeObj;
+                    node.setParentDistance(TNode.NO_DISTANCE);
+                }
+
+                Utils._START_GT_LIST.get(i).put(locus, stitree.toNewick());
+            }
+        }
     }
 
     @Override
@@ -595,6 +664,10 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         System.out.println("\nOutput files under " + Utils._OUT_DIRECTORY);
 
         long startTime = System.currentTimeMillis();
+
+        if(Utils._START_GT_LIST != null && gtoutgroup != null) {
+            preprocessGeneTrees();
+        }
 
         Collections.sort(alignments);
         MC3Core mc3 = new MC3Core(alignments);

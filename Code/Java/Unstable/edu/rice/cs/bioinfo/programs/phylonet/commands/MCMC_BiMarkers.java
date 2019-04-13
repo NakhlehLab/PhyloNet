@@ -770,7 +770,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             }
 
             if(SNAPPLikelihood.useApproximateBayesian) {
-                System.out.println("True Approximate Bayesian = " + SNAPPLikelihood.computeApproximateBayesian(cloneNetwork, allele2species, alnwarp, BAGTRModel));
+                System.out.println("True Approximate Bayesian = " + SNAPPLikelihood.computeApproximateBayesian(cloneNetwork, allele2species, alnwarp, BAGTRModel, new HashMap<>()));
             }
         }
 

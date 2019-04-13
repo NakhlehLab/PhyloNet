@@ -26,6 +26,8 @@ import java.util.*;
  * Time: 10:17 AM
  * To change this template use File | Settings | File Templates.
  */
+// Deprecated
+// For analysis published on ISMB 2019 only
 @CommandName("SN_SEQ")
 public class SN_SEQ extends CommandBaseFileOutMultilocusData {
 

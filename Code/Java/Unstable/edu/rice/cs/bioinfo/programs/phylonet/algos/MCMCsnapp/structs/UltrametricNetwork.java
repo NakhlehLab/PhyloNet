@@ -47,6 +47,8 @@ public class UltrametricNetwork extends StateNode {
 
     private List<Splitting> _splittings;
     private int _numSites = 0;
+    private Map<String, Double> _abcData;
+    private Map<String, Double> _abcDataPrev;
 
     private int _numThreads;
 
@@ -118,6 +120,10 @@ public class UltrametricNetwork extends StateNode {
             initSplitting();
         } else {
             _splittings = null;
+        }
+
+        if(SNAPPLikelihood.useApproximateBayesian) {
+            _abcData = new HashMap<>();
         }
 
         setOperators();
@@ -259,6 +265,11 @@ public class UltrametricNetwork extends StateNode {
             }
         }
 
+        if(SNAPPLikelihood.useApproximateBayesian) {
+            _abcDataPrev = new HashMap<>(_abcData) ;
+            _abcData = new HashMap<>();
+        }
+
         return logHR;
     }
 
@@ -271,6 +282,12 @@ public class UltrametricNetwork extends StateNode {
             for(int i = 0 ; i < _splittings.size() ; i++) {
                 _splittings.get(i).undo();
             }
+        }
+
+        if(SNAPPLikelihood.useApproximateBayesian) {
+            _abcData = new HashMap<>(_abcDataPrev);
+            _abcDataPrev.clear();
+            _logGeneTreeNetwork = computeLikelihood(); // approximate bayesian
         }
     }
 
@@ -318,6 +335,10 @@ public class UltrametricNetwork extends StateNode {
             for(int i = 0 ; i < _splittings.size() ; i++) {
                 _splittings.get(i).accept();
             }
+        }
+
+        if(SNAPPLikelihood.useApproximateBayesian) {
+            _abcDataPrev.clear();
         }
     }
 
@@ -407,7 +428,7 @@ public class UltrametricNetwork extends StateNode {
             if (SNAPPLikelihood.usePseudoLikelihood) {
                 likelihoodArray[0] = SNAPPLikelihood.computeSNAPPPseudoLikelihood(_network, _alleles2species, _markers, _BAGTRModel); // pseudo likelihood
             } else if (SNAPPLikelihood.useApproximateBayesian) {
-                likelihoodArray[0] = SNAPPLikelihood.computeApproximateBayesian(_network, _alleles2species, _markers, _BAGTRModel); // approximate bayesian
+                likelihoodArray[0] = SNAPPLikelihood.computeApproximateBayesian(_network, _alleles2species, _markers, _BAGTRModel, _abcData); // approximate bayesian
             } else {
                 likelihoodArray[0] = SNAPPLikelihood.computeSNAPPLikelihood(_network, _markers.get(0)._RPatterns, _BAGTRModel); // normal likelihood
             }

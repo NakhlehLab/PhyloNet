@@ -649,7 +649,9 @@ public class SimulatedAnnealing {
             double acceptanceRatio = Math.exp((newScore-currentScore)/_temperature);
             double random = _random.nextDouble();
             if(random < 0.01 && _state.getOperation().getName().equals("Delete-Reticulation")) {
-                System.out.println("Accept: Delete-Reticulation " + random);
+                if(printDetails()) {
+                    System.out.println("Accept: Delete-Reticulation " + random);
+                }
                 return true;
             }
 

@@ -59,7 +59,7 @@ public abstract class HillClimberBase extends SearchBase{
     /**
      * This function is to return the number of networks that have been tried
      */
-    protected long getExaminations(){
+    public long getExaminations(){
         return _examinationsCount;
     }
 

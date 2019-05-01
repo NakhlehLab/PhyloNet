@@ -149,6 +149,9 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
                 int index = 0;
                 for(String triplet: allTriplets){
                     double[] baseFreq = triple2count.get(triplet);
+                    if (baseFreq == null) { // based on NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus lines 106-109
+                        baseFreq = new double[3];
+                    }
                     for(int i=0; i<3; i++){
                         gtTripleFreq[index][i] = baseFreq[i];
                     }
@@ -159,8 +162,6 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
 
     }
 
-
-
     /**
      * This function is to calculate the final log likelihood using the correspondences between the summarized gene trees and the original gene trees
      *
@@ -169,26 +170,59 @@ public class NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus extends NetworkPs
      */
     protected double calculateFinalLikelihood(double[][] probs, List tripletFrequencies){
         double totalProb = 0;
+
         for(Object o: tripletFrequencies){
-            List<Tuple<double[][],Double>> freqForOneLocus = (List<Tuple<double[][],Double>>)o;
-            double probForOneLocus = 0;
+            List<Tuple<double[][],Double>> freqForOneLocus = (List<Tuple<double[][],Double>>) o;
+            final int gtCount = freqForOneLocus.size();
+
             double totalWeight = 0;
-            for(Tuple<double[][],Double> freqs: freqForOneLocus){
-                double probForOneTree = 1;
+
+            for (final Tuple<double[][],Double> freqs: freqForOneLocus) {
                 totalWeight += freqs.Item2;
-                for(int i=0; i<probs.length; i++){
-                    for(int j=0; j<3; j++){
-                        if(probs[i][j] == 0)return Double.NEGATIVE_INFINITY;
-                        probForOneTree *= Math.pow(probs[i][j],freqs.Item1[i][j]);
+            }
+
+            final double[] gtLogProbs = new double[gtCount];
+
+            int k = 0;
+            for (final Tuple<double[][],Double> freqs: freqForOneLocus) {
+                gtLogProbs[k] = Math.log(freqs.Item2 / totalWeight); // multiply this gene tree prob by the gt weight
+
+                for (int i = 0; i < probs.length; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        if (probs[i][j] == 0) {
+                            return Double.NEGATIVE_INFINITY;
+                        }
+
+                        gtLogProbs[k] += freqs.Item1[i][j] * Math.log(probs[i][j]);
                     }
                 }
-                probForOneLocus += probForOneTree * freqs.Item2;
-            }
-            probForOneLocus /= totalWeight;
-            totalProb += Math.log(probForOneLocus);
 
+                k++;
+            }
+
+            totalProb += logSumExp(gtLogProbs);
         }
+
         return totalProb;
+    }
+
+    /* Uses log-sum-exp trick to calculate the log of the sum of exponentials of an array x */
+    private double logSumExp(double[] x) {
+        double max_x = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < x.length; i++) {
+            if (x[i] > max_x) {
+                max_x = x[i];
+            }
+        }
+
+        double sum_exp_diff = 0.0;
+
+        for (int i = 0; i < x.length; i++) {
+            sum_exp_diff += Math.exp(x[i] - max_x);
+        }
+
+        return max_x + Math.log(sum_exp_diff);
     }
 
 /*

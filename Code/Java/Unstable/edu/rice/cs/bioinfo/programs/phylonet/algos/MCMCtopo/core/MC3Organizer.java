@@ -6,6 +6,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.OperatorInfo
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.summary.Summary;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 /**
@@ -103,9 +104,10 @@ public class MC3Organizer {
     private void initMC3(int idx, Network start, Map<String, List<String>> taxonMap,
                          List<Double> temps, double[] weights, int parallel) {
         try{
-            State state = (State) _stateClass.getConstructor(new Class[] {
+            Constructor stateClassConstructor = _stateClass.getConstructor(new Class[] {
                     Network.class, List.class, long.class, int.class, int.class, double[].class, Map.class
-            }).newInstance(start, _trees, _seed, maxReti, parallel, weights, taxonMap);
+            });
+            State state = (State) stateClassConstructor.newInstance(start, _trees, _seed, maxReti, parallel, weights, taxonMap);
 
             mc3s[idx] = (MCMCMC) _mcmcClass.getConstructor(new Class[] {
                     MC3Organizer.class, State.class, long.class, double.class, long.class
@@ -113,6 +115,7 @@ public class MC3Organizer {
 
             mc3s[idx].setTemperature(temps.get(idx));
         } catch (Exception ex) {
+            ex.getCause().printStackTrace();
             ex.printStackTrace();
         }
     }

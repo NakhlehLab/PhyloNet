@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork;
 
+import com.google.common.collect.Lists;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -37,6 +38,8 @@ public class SNAPPData {
      * The F Top matrix as described in the article.
      */
     Map<NetNode, List<Tuple<FMatrix, int[]>>> FTopsMap;
+
+    Map<NetNode, Double> inheritanceProb;
 
 
     public SNAPPData(){
@@ -90,12 +93,14 @@ public class SNAPPData {
         fBotList.add(matrixTuple);
     }
 
-    public void pruneFBottom(int[] targetSplittingIndex) {
+    public void pruneFBottom(List<List<Integer>> targetSplittingIndex) {
         if(targetSplittingIndex == null) return;
         for(NetNode node : FBottomsMap.keySet()) {
             Set<Tuple<FMatrix, int[]>> toRemove = new HashSet<>();
             for(Tuple<FMatrix, int[]> tuple : FBottomsMap.get(node)) {
-                if(!Arrays.equals(tuple.Item2, targetSplittingIndex)) {
+                List<Integer> temp = new ArrayList<>();
+                for(int t : tuple.Item2) temp.add(t);
+                if(!targetSplittingIndex.contains(temp)) {
                     toRemove.add(tuple);
                 }
             }

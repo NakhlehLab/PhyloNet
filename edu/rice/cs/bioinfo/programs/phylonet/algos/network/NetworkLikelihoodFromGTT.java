@@ -317,7 +317,7 @@ public abstract class NetworkLikelihoodFromGTT extends NetworkLikelihood {
      *
      * @return likelihood
      */
-    protected double computeProbability(Network<Object> speciesNetwork, List distinctTrees, List gtCorrespondences, Map<String, List<String>> species2alleles) {
+    public double computeProbability(Network<Object> speciesNetwork, List distinctTrees, List gtCorrespondences, Map<String, List<String>> species2alleles) {
         double[] probs = new double[distinctTrees.size()];
         Thread[] myThreads = new Thread[_numThreads];
 

@@ -565,7 +565,7 @@ public abstract class NetworkLikelihoodFromGTTBL extends NetworkLikelihood {
      *
      * @return likelihood
      */
-    protected double computeProbability(Network<Object> speciesNetwork, List geneTrees, List gtCorrespondences, Map<String, List<String>> species2alleles) {
+    public double computeProbability(Network<Object> speciesNetwork, List geneTrees, List gtCorrespondences, Map<String, List<String>> species2alleles) {
         double[] probArray = new double[geneTrees.size()];
 
         GeneTreeWithBranchLengthProbabilityYF gtp = new GeneTreeWithBranchLengthProbabilityYF(speciesNetwork, geneTrees, species2alleles);

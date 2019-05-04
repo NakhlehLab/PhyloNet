@@ -7,6 +7,7 @@ import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.StateNode;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTreeBrSpeciesNetDistribution;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTreeBrSpeciesNetDistributionParallel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTreeBrSpeciesNetPseudoLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.all.ScaleAll;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.AddReticulation;
@@ -467,21 +468,33 @@ public class UltrametricNetwork extends StateNode {
     private double[] computeLikelihood() {
         //System.out.println(_network.getReticulationCount());
 
-        GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistributionParallel(
-                _network, _geneTrees, _embeddings, _species2alleles);
-        double[] likelihoodArray = new double[_geneTrees.size()];
+        double[] likelihoodArray;
 
-        Thread[] myThreads = new Thread[_numThreads];
-        for (int i = 0; i < _numThreads; i++) {
-            myThreads[i] = new MyThreadFromScratch(likelihoodCal, likelihoodArray);
-            myThreads[i].start();
-        }
-        for (int i = 0; i < _numThreads; i++) {
-            try {
-                myThreads[i].join();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
+        if(true) {
+            // Compute full likelihood
+            GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistributionParallel(
+                    _network, _geneTrees, _embeddings, _species2alleles);
+            likelihoodArray = new double[_geneTrees.size()];
+
+            Thread[] myThreads = new Thread[_numThreads];
+            for (int i = 0; i < _numThreads; i++) {
+                myThreads[i] = new MyThreadFromScratch(likelihoodCal, likelihoodArray);
+                myThreads[i].start();
             }
+            for (int i = 0; i < _numThreads; i++) {
+                try {
+                    myThreads[i].join();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } else {
+            // Compute pseudo-likelihood (experimental)
+
+            likelihoodArray = new double[1];
+
+            GeneTreeBrSpeciesNetPseudoLikelihood likelihood = new GeneTreeBrSpeciesNetPseudoLikelihood();
+            likelihoodArray[0] = likelihood.calculateGTDistribution(this, _geneTrees);
         }
         return likelihoodArray;
     }

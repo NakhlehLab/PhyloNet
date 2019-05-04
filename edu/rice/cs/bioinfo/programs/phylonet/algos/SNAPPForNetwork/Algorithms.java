@@ -28,7 +28,7 @@ public class Algorithms
     public static final boolean SWITCH_EXP_APPROX = true;
     public static boolean SWITCH_APPROX_SPLIT = false;
     public static boolean SWITCH_FMATRIX_CACHE = false;
-    public static int[] targetSplittingIndices = null;
+    public static List<List<Integer>> targetSplittingIndices = null;
 
     private static int[] mergeTwoSplittingIndices(int[] index1, int[] index2){
         for(int i=0; i<index1.length; i++) {
@@ -1143,6 +1143,12 @@ public class Algorithms
         int[] splittingIndex = new int[numReticulations];
         R r = nucleotideIndexMap.get(node.getName());
         FMatrix fBot;
+
+        if(r == null || r.n == 0) {
+            data.addFBottom(parent, 0, true, splittingIndex);
+            return;
+        }
+
         if(!HAS_DOMINANT_MARKER)
             fBot = data.addFBottom(parent, r.n, false, splittingIndex);
         else

@@ -501,7 +501,7 @@ public abstract class NetworkPseudoLikelihoodFromGTT extends NetworkLikelihood {
      *
      * @return likelihood
      */
-    protected double computeProbability(Network<Object> speciesNetwork, List allTriplets, List tripleFrequencies, Map<String, List<String>> species2alleles) {
+    public double computeProbability(Network<Object> speciesNetwork, List allTriplets, List tripleFrequencies, Map<String, List<String>> species2alleles) {
         GeneTreeProbabilityPseudo calculator = new GeneTreeProbabilityPseudo();
         if(_numThreads!=0){
             int batchSize = allTriplets.size()/_numThreads;

@@ -177,7 +177,7 @@ public abstract class NetworkLikelihood extends MDCOnNetworkYFFromRichNewickJung
      * @param summarizedData        summarized data
      * @param dataCorrespondences   the correspondences between the summarized data and the original data
      */
-    abstract protected double computeProbability(Network<Object> speciesNetwork, List summarizedData, List dataCorrespondences, Map<String, List<String>> species2alleles);
+    abstract public double computeProbability(Network<Object> speciesNetwork, List summarizedData, List dataCorrespondences, Map<String, List<String>> species2alleles);
 
 
     /**

@@ -691,7 +691,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             for(String taxon : _sequence.keySet()) {
                 String s = _sequence.get(taxon);
                 for(int i = 0 ; i < s.length() ; i++) {
-                    if(s.charAt(i) != '?') {
+                    if(s.charAt(i) != '?' && s.charAt(i) != '-') {
                         count[s.charAt(i) - '0']++;
                     }
                     totalSites++;

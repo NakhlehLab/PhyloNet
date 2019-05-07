@@ -470,7 +470,7 @@ public class UltrametricNetwork extends StateNode {
 
         double[] likelihoodArray;
 
-        if(true) {
+        if(!Utils.PSEUDO_LIKELIHOOD) {
             // Compute full likelihood
             GeneTreeBrSpeciesNetDistribution likelihoodCal = new GeneTreeBrSpeciesNetDistributionParallel(
                     _network, _geneTrees, _embeddings, _species2alleles);

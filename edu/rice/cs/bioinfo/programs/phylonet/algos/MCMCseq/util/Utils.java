@@ -78,6 +78,7 @@ public class Utils {
     public static boolean RESAMPLE_GENE_TREES = false;
     public static boolean SAMPLE_EMBEDDINGS = false; // experimental!!!
     public static boolean ONLY_BACKBONE_OP = false;
+    public static boolean PSEUDO_LIKELIHOOD = false;
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
     public static final double DEFAULT_TREE_LEAF_HEIGHT = 0;

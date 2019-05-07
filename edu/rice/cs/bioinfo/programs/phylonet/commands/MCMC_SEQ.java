@@ -329,6 +329,12 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             Utils.SAMPLE_EMBEDDINGS = true;
         }
 
+        // use pseudo likelihood (Yun 2015) to compute net likelihood
+        ParamExtractor pseudoParam = new ParamExtractor("pseudo", this.params, this.errorDetected);
+        if(pseudoParam.ContainsSwitch) {
+            Utils.PSEUDO_LIKELIHOOD = true;
+        }
+
         // fix all gene tree topologies
         ParamExtractor gtburninParam = new ParamExtractor("gtburnin", this.params, this.errorDetected);
         if(gtburninParam.ContainsSwitch) {
@@ -590,7 +596,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "fixgttopo", "gtburnin",
                 "pp", "dd", "ee", "mu", "se",
                 "sgt", "snet", "sps", "pre", "gtr",
-                "gtoutgroup"
+                "gtoutgroup", "pseudo"
         );
         checkAndSetOutFile(
                 diploidParam,
@@ -601,7 +607,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 fixgttopoParam, gtburninParam,
                 ppParam, ddParam, eeParam, muParam, seParam,
                 sgtParam, snParam, spsParam, gtrParam,
-                gtoutgroupParam
+                gtoutgroupParam, pseudoParam
         );
 
         return  noError;

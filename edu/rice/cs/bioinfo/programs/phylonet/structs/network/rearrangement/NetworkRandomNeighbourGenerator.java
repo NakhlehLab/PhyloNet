@@ -40,6 +40,7 @@ public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerat
     }
 
 
+
     /**
      * Constructor of this class
      *
@@ -93,5 +94,23 @@ public class NetworkRandomNeighbourGenerator extends NetworkNeighbourhoodGenerat
         return _previousOperation;
     }
 
+
+    /**
+     * This function is to set the window size for changing parameters
+     */
+    public void resetList(){
+        _topologyMutate.resetList();
+
+    }
+
+    public int getOperationID(){
+        if(_previousOperation == 0){
+            return _topologyMutate.getOperationID();
+
+        }
+        else{
+            return 6;//length-1
+        }
+    }
 
 }

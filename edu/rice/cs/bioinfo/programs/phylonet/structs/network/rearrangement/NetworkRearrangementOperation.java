@@ -212,4 +212,14 @@ public abstract class NetworkRearrangementOperation {
      * This function is to undo the operation
      */
     abstract public void undoOperation();
+
+    public Tuple<NetNode, NetNode> getTargetEdge(){
+        return _targetEdge;
+    }
+    public Tuple<NetNode, NetNode> getSourceEdge(){
+        return _sourceEdge;
+    }
+    public Tuple<NetNode, NetNode> getDestiniationEdge(){
+        return _destinationEdge;
+    }
 }

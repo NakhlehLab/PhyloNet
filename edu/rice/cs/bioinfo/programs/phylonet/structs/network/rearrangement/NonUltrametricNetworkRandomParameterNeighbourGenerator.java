@@ -104,6 +104,10 @@ public class NonUltrametricNetworkRandomParameterNeighbourGenerator extends Netw
     }
 
 
+    public void resetList(){}
+    public int getOperationID(){
+        return -1;
+    }
 
 
 }

@@ -26,6 +26,7 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.InferNetworkMP;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.treeAugment.treeAugmentInferNetworkMDC;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
@@ -46,6 +47,8 @@ import java.util.*;
  * Date: 3/13/12
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
+ *
+ * Edited by Zhen Cao on 6/11/2019: added the option -fs for tree-based inference
  */
 @CommandName("infernetwork_mp")
 public class InferNetwork_MP extends CommandBaseFileOut{
@@ -67,6 +70,7 @@ public class InferNetwork_MP extends CommandBaseFileOut{
     private Long _seed = null;
 
     private Set<String> _fixedHybrid = new HashSet<String>();
+    private boolean _fixStartSpeciesNetwork = false;
 
 
     public InferNetwork_MP(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
@@ -266,6 +270,18 @@ public class InferNetwork_MP extends CommandBaseFileOut{
                 }
             }
 
+            ParamExtractor fsParam = new ParamExtractor("fs", this.params, this.errorDetected);
+            if(fsParam.ContainsSwitch){
+                if(fsParam.PostSwitchParam != null && !fsParam.PostSwitchValue.startsWith("-"))
+                {
+                    errorDetected.execute("No value expected after switch -fs.", fsParam.SwitchParam.getLine(), fsParam.SwitchParam.getColumn());
+                }
+                else
+                {
+                    _fixStartSpeciesNetwork = true;
+                }
+            }
+
             ParamExtractor hParam = new ParamExtractor("h", this.params, this.errorDetected);
             if(hParam.ContainsSwitch)
             {
@@ -417,7 +433,7 @@ public class InferNetwork_MP extends CommandBaseFileOut{
                 _dentroscropeOutput = true;
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","n", "m", "md", "rd", "di", "h","f","pl","x","rs","w");
+            noError = noError && checkForUnknownSwitches("a","b","s","n", "m", "md", "rd", "di", "h","f","pl","x","rs","w","fs");
             checkAndSetOutFile(aParam, bParam, sParam, nParam, mParam, mdParam, rdParam, diParam, hParam, fParam, plParam,xParam,rsParam,wParam);
         }
 
@@ -490,7 +506,14 @@ public class InferNetwork_MP extends CommandBaseFileOut{
 
         //long start = System.currentTimeMillis();
         //InferILSNetworkParsimoniouslyParallelBackup inference = new InferILSNetworkParsimoniouslyParallelBackup();
-        InferNetworkMP inference = new InferNetworkMP();
+        InferNetworkMP inference = null;
+        if(_fixStartSpeciesNetwork && speciesNetwork != null){
+            inference = new treeAugmentInferNetworkMDC();
+        }
+        else{
+            inference = new InferNetworkMP();
+
+        }
         inference.setSearchParameter(_maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, speciesNetwork, _fixedHybrid, _numProcessors, _operationWeight, _numRuns, _seed);
         List<Tuple<Network, Double>> resultTuples = inference.inferNetwork(tuples,_species2alleles,_maxReticulations, _returnNetworks);
         //System.out.print(System.currentTimeMillis()-start);

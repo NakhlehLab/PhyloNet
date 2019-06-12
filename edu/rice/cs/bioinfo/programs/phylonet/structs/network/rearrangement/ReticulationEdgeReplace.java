@@ -44,4 +44,14 @@ public class ReticulationEdgeReplace extends NetworkRearrangementOperation {
         _addition.undoOperation();
 
     }
+
+    public Tuple<NetNode, NetNode> getTargetEdge(){
+        return _addition.getTargetEdge();
+    }
+    public Tuple<NetNode, NetNode> getSourceEdge(){
+        return _deletion.getSourceEdge();
+    }
+    public Tuple<NetNode, NetNode> getDestiniationEdge(){
+        return _deletion.getDestiniationEdge();
+    }
 }

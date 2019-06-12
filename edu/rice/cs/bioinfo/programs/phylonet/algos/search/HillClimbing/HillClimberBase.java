@@ -266,4 +266,5 @@ public abstract class HillClimberBase extends SearchBase{
     public void setPrintResultsAfterEachRun(boolean doYouWantToPrint) {
         _printResultsAfterEachRun = doYouWantToPrint;
     }
+    public abstract int [] GetAcceptCount();
 }

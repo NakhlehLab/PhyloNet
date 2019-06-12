@@ -546,7 +546,9 @@ public class NetworkNeighbourhoodRandomWalkGenerator extends NetworkNeighbourhoo
         _networkOperators[operation].performOperation();
     }
 
-
-
+    public void resetList(){}
+    public int getOperationID(){
+        return -1;
+    }
 
 }

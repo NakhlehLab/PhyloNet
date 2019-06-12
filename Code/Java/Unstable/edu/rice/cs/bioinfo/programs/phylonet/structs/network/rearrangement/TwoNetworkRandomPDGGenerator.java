@@ -86,4 +86,12 @@ public class TwoNetworkRandomPDGGenerator extends NetworkNeighbourhoodGenerator 
         }
         return true;
     }
+
+
+
+    public void resetList(){}
+
+    public int getOperationID(){
+        return -1;
+    }
 }

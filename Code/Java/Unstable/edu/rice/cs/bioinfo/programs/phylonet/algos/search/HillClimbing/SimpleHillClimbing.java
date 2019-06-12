@@ -106,6 +106,9 @@ public class SimpleHillClimbing extends HillClimberBase{
         return reachMaxConsecutiveFailures() || reachMaxExaminations();
     }
 
+    public int [] GetAcceptCount(){
 
+        return new int[] {0,0,0,0,0,0,0};
+    }
 
 }

@@ -78,7 +78,10 @@ public class UltrametricNetworkRandomParameterNeighbourGenerator extends Network
         }
     }
 
+    public void resetList(){}
 
-
+    public int getOperationID(){
+        return -1;
+    }
 
 }

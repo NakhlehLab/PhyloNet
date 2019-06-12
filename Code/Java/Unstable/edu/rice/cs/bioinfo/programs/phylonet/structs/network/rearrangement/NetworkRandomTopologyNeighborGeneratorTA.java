@@ -1,4 +1,11 @@
 package edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement;
+/*
+ *@ClassName: NetworkRandomTopologyNeighborGeneratorTA
+ *@Description: This class is for tree-based network mutation
+ *@Author: Zhen Cao
+ *@Date:  2019-06-11 21:28
+ *@Version: 1.0
+ */
 
 import edu.rice.cs.bioinfo.library.programming.Ref;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
@@ -8,13 +15,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.util.*;
 
-/**
- * Created by Yun Yu
- *
- * This class is a subclass of NetworkNeighbourhoodGenerator.
- * It generates a random neighbor of a given network by changing its topology
- */
-public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoodGenerator{
+
+public class NetworkRandomTopologyNeighborGeneratorTA extends NetworkNeighbourhoodGenerator{
     private double[] _operationProbabilities;
     private int _operationID;
     private Tuple<NetNode,NetNode> _targetEdge;
@@ -28,12 +30,15 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     private NetworkRearrangementOperation[] _networkOperators;
     private int _maxReticulations;
     private Set<String> _fixedHybrid;
-
+    private ArrayList<Tuple<NetNode, NetNode>> _allAddedRetiEdges;
+    private ArrayList<Tuple<NetNode, NetNode>> _allAddedRetiEdgesBest;
+    private Network _startNetwork;
+    private boolean _debug;
 
 
     /**
      * Constructor of this class
-     *
+     * @param startNetwork          the start tree that will not be changed
      * @param probabilities         the weights of different rearrangement moves
      * @param maxReticulations      the maximum number of reticulations allowed
      * @param moveDiameterLimit     the maximum diameter for random move
@@ -41,13 +46,16 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
      * @param fixedHybrid           the user-specified set of hybrid species
      * @param seed                  the seed for controlling randomness
      */
-    public NetworkRandomTopologyNeighbourGenerator(double[] probabilities, int maxReticulations, int moveDiameterLimit, int reticulationDiameterLimit, Set<String> fixedHybrid, Long seed)
+    public NetworkRandomTopologyNeighborGeneratorTA(Network startNetwork, double[] probabilities, int maxReticulations, int moveDiameterLimit, int reticulationDiameterLimit, Set<String> fixedHybrid, Long seed)
     {
+        _startNetwork = startNetwork.clone();
+        _printDetails = false;
+        _debug = false;
         _networkOperators = new NetworkRearrangementOperation[6];
         _networkOperators[0] = new ReticulationEdgeAddition();
         _networkOperators[1] = new ReticulationEdgeDeletion();
         _networkOperators[2] = new ReticulationEdgeDestinationChange();
-        _networkOperators[3] = new EdgeSourceChange();
+        _networkOperators[3] = new ReticulationEdgeSourceChange();
         _networkOperators[4] = new ReticulationFlip();
         _networkOperators[5] = new ReticulationEdgeReplace();
         _reticulationDiameterLimit = reticulationDiameterLimit;
@@ -76,18 +84,26 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
         if(_fixedHybrid!=null && _fixedHybrid.isEmpty()){
             _fixedHybrid = null;
         }
+        _allAddedRetiEdges = new ArrayList<>();
+        _allAddedRetiEdgesBest = new ArrayList<>();
     }
 
+    public void resetList(){
+        _allAddedRetiEdgesBest = new ArrayList<>();
+        _allAddedRetiEdges = new ArrayList<>();
+    }
 
     /**
      * This function is to mutate the current network by changing its topology
      */
     public void mutateNetwork(Network network){
         ArrayList<Tuple<NetNode, NetNode>> allEdges = new ArrayList<>();
-        ArrayList<Tuple<NetNode, NetNode>> allRemovableReticulationEdges = new ArrayList<>();
+        ArrayList<Tuple<NetNode, NetNode>> allRemovableEdges = new ArrayList<>();
         Ref<Boolean> incrementHybrid = new Ref<>(false);
         Set<String> taxa = new HashSet<>();
-        getNetworkInfo(network, taxa, allEdges, allRemovableReticulationEdges, incrementHybrid);
+        getNetworkInfo(network, taxa, allEdges, allRemovableEdges, incrementHybrid);
+
+        _allAddedRetiEdgesBest = new ArrayList<>(_allAddedRetiEdges);
 
         if(_reticulationDiameterLimit!=-1 || _moveDiameterLimit!=-1){
             _node2ID = new HashMap<NetNode, Integer>();
@@ -100,33 +116,58 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
         if(_printDetails){
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("Before rearrangement: "+ network.toString());
+            System.out.print("allRemovableReticulationEdges:[");
+            for(int i=0; i<allRemovableEdges.size(); i++){
+                System.out.print(allRemovableEdges.get(i).Item1.getName()+","+allRemovableEdges.get(i).Item2.getName()+";");
+            }
+            System.out.print("]\n");
         }
         boolean successRearrangment;
         boolean[] triedOperations = new boolean[_operationProbabilities.length];
         do{
+
             do {
-                _operationID = getNextOperationID(incrementHybrid.get(), allRemovableReticulationEdges.size()!=0);
+                _operationID = getNextOperationID(incrementHybrid.get(), allRemovableEdges.size()!=0);
+                if(_operationID == -1){
+                    return;
+                }
             }while(triedOperations[_operationID]);
+
             Set<Integer> previousTriedEdges = new HashSet<>();
             successRearrangment = false;
             if(_printDetails){
                 System.out.println("Select operation: "+ _networkOperators[_operationID].getClass().getSimpleName());
             }
-            while(!successRearrangment && setNextMove(network, allEdges, allRemovableReticulationEdges, previousTriedEdges)){
-                if (_networkOperators[_operationID].performOperation()) {
+            int count = 0;
+            while(!successRearrangment && setNextMove(network, allEdges, allRemovableEdges, previousTriedEdges)){
 
+                if (_networkOperators[_operationID].performOperation()) {
                     if (Networks.hasCycle(network) || !isNetworkValid(network, taxa) || !checkHybrid(network, _fixedHybrid)) {
                         if(_printDetails){
                             System.out.println(": Invalid");
                         }
                         successRearrangment = false;
                         _networkOperators[_operationID].undoOperation();
+
                     }
                     else{
                         successRearrangment = true;
+                        update_allAddedRetiEdges();
+                        if (_debug){
+                            HashSet<Tuple<NetNode,NetNode>> hashSet = new HashSet<>(_allAddedRetiEdges);
+                            System.out.println(_allAddedRetiEdges.size()+" "+hashSet.size());
+
+                        }
+
                         if(_printDetails){
                             System.out.println();
                         }
+                    }
+                }
+                else{
+                    count ++;
+                    if(count == allRemovableEdges.size()*(network.getLeafCount()*2-2)){
+                        break;
                     }
                 }
             }
@@ -137,16 +178,217 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
 
         if(_printDetails){
             System.out.println("After rearrangement: " + network.toString());
+            System.out.println("Network node count:"+network.getReticulationCount());
+            System.out.print("_allAddedRetiEdges:[");
+            for(int i=0; i<_allAddedRetiEdges.size(); i++){
+                System.out.print(_allAddedRetiEdges.get(i).Item1.getName()+","+_allAddedRetiEdges.get(i).Item2.getName()+";");
+            }
+
+            System.out.print("]\n");
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         }
     }
 
+    //This function: udpate _allAddedEdges with _targetEdge
+    private void update_allAddedRetiEdges(){
+        Tuple<NetNode, NetNode> target;
+        Tuple<NetNode, NetNode> sourceEdge;
+        Tuple<NetNode, NetNode> destinationEdge;
+        int edgeSize=0;
+        switch(_operationID){
+            case 0:
+                target = _networkOperators[_operationID].getTargetEdge();
+
+                _allAddedRetiEdges.add(target);
+                if(_printDetails){
+                    System.out.println("add"+target.Item1.getName()+";"+target.Item2.getName());
+
+                }
+
+                edgeSize = _allAddedRetiEdges.size();
+                for(int i = 0; i < edgeSize; i++){
+                    Tuple<NetNode, NetNode> edge = _allAddedRetiEdges.get(i);
+                    if(edge.equals(_sourceEdge)){
+                        _allAddedRetiEdges.set(i, new Tuple<>(target.Item1, _sourceEdge.Item2));
+                        _allAddedRetiEdges.add(new Tuple<>(_sourceEdge.Item1, target.Item1));
+                        if (_debug){
+                            System.out.println("checkpoint: add 1");
+                        }
+                    }
+                    else if(edge.equals(_destinationEdge)){
+                        _allAddedRetiEdges.set(i, new Tuple<>(_destinationEdge.Item1, target.Item2));
+                        _allAddedRetiEdges.add(new Tuple<>(target.Item2, _destinationEdge.Item2));
+                        if (_debug){
+                            System.out.println("checkpoint: add 2");
+
+                        }
+                    }
+                }
+                break;
+            case 1:
+                sourceEdge = _networkOperators[_operationID].getSourceEdge();
+                destinationEdge = _networkOperators[_operationID].getDestiniationEdge();
+                _allAddedRetiEdges.remove(_targetEdge);
+                if (_printDetails){
+                    System.out.println("remove"+_targetEdge.Item1.getName()+";"+_targetEdge.Item2.getName());
+
+                }
+
+                for(int i = 0; i < _allAddedRetiEdges.size(); i++){
+                    Tuple<NetNode, NetNode> edge = _allAddedRetiEdges.get(i);
+
+                    if(edge.Item1.equals(_targetEdge.Item1) || edge.Item2.equals(_targetEdge.Item1)) {//&& edge.Item2.equals(sourceEdge.Item2))
+                        _allAddedRetiEdges.set(i, sourceEdge);
+                        if (_debug){
+                            System.out.println("checkpoint: deletion 1");
+
+                        }
+                    }
+                    else if(edge.Item2.equals(_targetEdge.Item2) || edge.Item1.equals(_targetEdge.Item2)){
+                        _allAddedRetiEdges.set(i, destinationEdge);
+                        if (_debug) {
+                            System.out.println("checkpoint: deletion 2");
+                        }
+                    }
+                }
+                _allAddedRetiEdges  = new ArrayList<Tuple<NetNode, NetNode>>(new HashSet<Tuple<NetNode, NetNode>>(_allAddedRetiEdges));
+                break;
+            case 2:
+                if (_printDetails){
+                    System.out.println("change destination of:"+_targetEdge.Item1.getName()+";"+_targetEdge.Item2.getName()+" to: "+_destinationEdge.Item1.getName()+";"+_destinationEdge.Item2.getName());
+
+                }
+                sourceEdge = _networkOperators[_operationID].getSourceEdge();
+                edgeSize = _allAddedRetiEdges.size();
+                for(int i = 0; i < edgeSize; i++){
+                    Tuple<NetNode, NetNode> edge = _allAddedRetiEdges.get(i);
+                    if(edge.equals(_destinationEdge)){
+                        _allAddedRetiEdges.set(i, new Tuple<>(_destinationEdge.Item1, _targetEdge.Item2));
+                        _allAddedRetiEdges.add(new Tuple<>(_targetEdge.Item2,_destinationEdge.Item2));
+                        if (_debug){
+                            System.out.println("checkpoint: destination 1");
+
+                        }
+                    }
+                    else if((edge.Item2.equals(_targetEdge.Item2) && !edge.Item1.equals(_targetEdge.Item1)) || (edge.Item1.equals(_targetEdge.Item2))){
+                        _allAddedRetiEdges.set(i, sourceEdge);
+                        if (_debug){
+                            System.out.println("checkpoint: destination 2 ("+edge.Item1.getName()+","+edge.Item2.getName()+")");
+
+                        }
+
+                    }
+                }
+                _allAddedRetiEdges  = new ArrayList<Tuple<NetNode, NetNode>>(new HashSet<Tuple<NetNode, NetNode>>(_allAddedRetiEdges));
+
+                break;
+            case 3:
+                if (_printDetails){
+                    System.out.println("change source of:"+_targetEdge.Item1.getName()+";"+_targetEdge.Item2.getName()+" to: "+_destinationEdge.Item1.getName()+";"+_destinationEdge.Item2.getName());
+
+                }
+                sourceEdge = _networkOperators[_operationID].getSourceEdge();
+                edgeSize = _allAddedRetiEdges.size();
+                for(int i = 0; i < edgeSize; i++){
+                    Tuple<NetNode, NetNode> edge = _allAddedRetiEdges.get(i);
+                    if(edge.equals(_destinationEdge)){
+                        _allAddedRetiEdges.set(i, new Tuple<>(_targetEdge.Item1, _destinationEdge.Item2));
+                        _allAddedRetiEdges.add(new Tuple<>(_destinationEdge.Item1, _targetEdge.Item1));
+                        if (_debug){
+                            System.out.println("checkpoint: source 1");
+
+                        }
+                    }
+                    else if((edge.Item1.equals(_targetEdge.Item1) && !edge.Item2.equals(_targetEdge.Item2))||((edge.Item2.equals(_targetEdge.Item1)))){
+                        //Todo: check network node
+                        _allAddedRetiEdges.set(i, sourceEdge);
+                        if (_debug){
+                            System.out.println("checkpoint: source 2");
+
+                        }
+
+                    }
+                }
+                _allAddedRetiEdges  = new ArrayList<Tuple<NetNode, NetNode>>(new HashSet<Tuple<NetNode, NetNode>>(_allAddedRetiEdges));
+
+                break;
+            case 4:
+                if (_printDetails){
+                    System.out.println("remove"+_targetEdge.Item1.getName()+";"+_targetEdge.Item2.getName());
+                    System.out.println("add"+_networkOperators[_operationID].getTargetEdge().Item1.getName()+";"+_networkOperators[_operationID].getTargetEdge().Item2.getName());
+                }
+
+                _allAddedRetiEdges.remove(_targetEdge);
+                break;
+            case 5:
+
+                sourceEdge = _networkOperators[_operationID].getSourceEdge();
+                destinationEdge = _networkOperators[_operationID].getDestiniationEdge();
+                _allAddedRetiEdges.remove(_targetEdge);
+
+                if (_printDetails){
+                    System.out.println("remove"+_targetEdge.Item1.getName()+";"+_targetEdge.Item2.getName());
+
+                }
+
+                edgeSize = _allAddedRetiEdges.size();
+                for(int i = 0; i < edgeSize; i++){
+                    Tuple<NetNode, NetNode> edge = _allAddedRetiEdges.get(i);
+                    if(edge.Item1.equals(_targetEdge.Item1) || edge.Item2.equals(_targetEdge.Item1)) {//&& edge.Item2.equals(sourceEdge.Item2))
+                        _allAddedRetiEdges.set(i, sourceEdge);
+                        if (_debug){
+                            System.out.println("checkpoint: replace deletion 1");
+
+                        }
+                    }
+                    else if(edge.Item2.equals(_targetEdge.Item2) || edge.Item1.equals(_targetEdge.Item2)){
+                        _allAddedRetiEdges.set(i, destinationEdge);
+                        if (_debug) {
+                            System.out.println("checkpoint: replace deletion 2");
+                        }
+                    }
+
+                }
+                _allAddedRetiEdges  = new ArrayList<Tuple<NetNode, NetNode>>(new HashSet<Tuple<NetNode, NetNode>>(_allAddedRetiEdges));
+
+                target = _networkOperators[_operationID].getTargetEdge();
+                _allAddedRetiEdges.add(target);
+                edgeSize = _allAddedRetiEdges.size();
+                for(int i = 0; i < edgeSize; i++){
+                    Tuple<NetNode, NetNode> edge = _allAddedRetiEdges.get(i);
+                    if(edge.equals(_sourceEdge)){
+                        _allAddedRetiEdges.set(i, new Tuple<>(target.Item1, _sourceEdge.Item2));
+                        _allAddedRetiEdges.add(new Tuple<>(_sourceEdge.Item1, target.Item1));
+                        if (_debug){
+                            System.out.println("checkpoint: replace add 1");
+                        }
+                    }
+                    else if(edge.equals(_destinationEdge)){
+                        _allAddedRetiEdges.set(i, new Tuple<>(_destinationEdge.Item1, target.Item2));
+                        _allAddedRetiEdges.add(new Tuple<>(target.Item2, _destinationEdge.Item2));
+                        if (_debug){
+                            System.out.println("checkpoint: replace add 2");
+                        }
+                    }
+                }
+                _allAddedRetiEdges  = new ArrayList<Tuple<NetNode, NetNode>>(new HashSet<Tuple<NetNode, NetNode>>(_allAddedRetiEdges));
+                break;
+            default:
+                break;
+        }
+
+    }
 
     /**
      * This function is to undo the last rearrangement move
      */
     public void undo(){
+        if(_operationID == -1){
+            return;
+        }
         _networkOperators[_operationID].undoOperation();
+        //Todo : update _addedEdge list
+        _allAddedRetiEdges = new ArrayList<>(_allAddedRetiEdgesBest);
     }
 
 
@@ -206,6 +448,7 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
      *
      * @param incrementHybrid   whether adding reticulations is allowed
      * @param decrementHybrid   whether deleting reticulations is allowed
+     * @return NextOperationID
      */
     private int getNextOperationID(boolean incrementHybrid, boolean decrementHybrid){
         boolean stop;
@@ -219,8 +462,12 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
                     break;
                 }
             }
-            if((operationID == 0 && !incrementHybrid) || ((operationID == 1||operationID == 2) && !decrementHybrid)){
+            if((operationID == 0 && !incrementHybrid) || ((operationID == 1||operationID == 2|| operationID == 3||operationID == 4 || operationID == 5) && !decrementHybrid)){
                 stop = false;
+            }
+            if(!stop && !incrementHybrid && !decrementHybrid){
+                stop = true;
+                operationID = -1;
             }
 
         }while(!stop);
@@ -233,11 +480,9 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
      *
      * @param network       the given species network
      * @param allEdges      all edges in the species network
-     * @param removableReticulationEdges      all reticulation edges that can be removed
-     *                                        note that a reticulation edge can be removed only if removing it reduces the number of reticulations in the network by one
      * @param increaseReticulations     whether adding reticulations is allowed
      */
-    private void getNetworkInfo(Network network, Set<String> taxa, ArrayList<Tuple<NetNode, NetNode>> allEdges, ArrayList<Tuple<NetNode, NetNode>> removableReticulationEdges, Ref<Boolean> increaseReticulations){
+    private void getNetworkInfo(Network network, Set<String> taxa, ArrayList<Tuple<NetNode, NetNode>> allEdges,ArrayList<Tuple<NetNode, NetNode>> allRemovableEdges, Ref<Boolean> increaseReticulations){
         int numReticulations = 0;
         for(Object nodeO: Networks.postTraversal(network)){
             NetNode node = (NetNode)nodeO;
@@ -251,14 +496,18 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
                 NetNode childNode = (NetNode)childO;
                 Tuple<NetNode,NetNode> edge = new Tuple<>(node, childNode);
                 allEdges.add(edge);
-                if(childNode.isNetworkNode()) {
-                    if (node.isTreeNode()) {
-                        removableReticulationEdges.add(edge);
-                    }
-                }
 
             }
         }
+
+
+        for(int i=0; i<_allAddedRetiEdges.size(); i++){
+            Tuple<NetNode,NetNode> edge = _allAddedRetiEdges.get(i);
+            if(edge.Item1.isTreeNode() && edge.Item2.isNetworkNode()){
+                allRemovableEdges.add(edge);
+            }
+        }
+
         if(numReticulations>=_maxReticulations){
             increaseReticulations.set(false);
         }
@@ -271,7 +520,7 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
     /**
      * This function is to set the next move
      *
-     * @param network       the given species network
+     * @param network       the current species network
      * @param allEdges      all edges in the species network
      * @param allRemovableReticulationEdges      all reticulation edges that can be removed
      *                                        note that a reticulation edge can be removed only if removing it reduces the number of reticulations in the network by one
@@ -289,8 +538,9 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
             case 2:
                 successMove = setParametersForReticulationEdgeDestinationChange(allRemovableReticulationEdges,allEdges, previousTriedEdges);
                 break;
-            case 3:
-                successMove = setParametersForEdgeSourceChange(allEdges, previousTriedEdges);
+            case 3://changed here
+                successMove = setParametersForReticulationEdgeSourceChange(network, allRemovableReticulationEdges, allEdges, previousTriedEdges);
+//                System.out.println("successMove: "+successMove);
                 break;
             case 4:
                 successMove = setParametersForReticulationFlip(allRemovableReticulationEdges, previousTriedEdges);
@@ -439,17 +689,105 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
 
     /**
      * This function is to set parameters for changing the head of a reticulation edge
-     *
+     * @param allRemovableReticulationEdges   all reticulation edges in the species network that can be edited
+     *                                        note that a reticulation edge can be edited only if editing it without deleting does not change the number of reticulations in the network
+     * @param allEdges      all edges in the species network
+     * @param edgesTried    all edges that have been tried which results in invalid networks
+     */
+    private boolean setParametersForReticulationEdgeSourceChange(Network network, ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
+        _sourceEdge = null;
+        int edgeSize = allEdges.size();
+        int reticulationEdgeSize = allRemovableReticulationEdges.size();
+        boolean endSampling;
+        do{
+            if(edgesTried.size()==reticulationEdgeSize*edgeSize){
+                return false;
+            }
+            endSampling = true;
+            int targetID = _random.nextInt(reticulationEdgeSize);
+            _targetEdge = allRemovableReticulationEdges.get(targetID);
+            int count=0;
+            while(_targetEdge.Item1.hasParent(network.getRoot()) && _targetEdge.Item2.hasParent(network.getRoot()) && count <4){
+                targetID = _random.nextInt(reticulationEdgeSize);
+                _targetEdge = allRemovableReticulationEdges.get(targetID);
+                count++;
+            }
+            if(count>=4){
+                if(_printDetails){
+                    System.out.println("networkTopoChange sourceChange wrong 4 times");
+                }
+                return false;
+            }
+
+            int destinationID = targetID;
+            while(targetID == destinationID){
+                destinationID = _random.nextInt(edgeSize);
+            }
+
+            int tupleID = (int)(Math.pow(10,new String(edgeSize+"").length()))*targetID + destinationID;
+            if(edgesTried.contains(tupleID)){
+                endSampling = false;
+                continue;
+            }
+            edgesTried.add(tupleID);
+            _destinationEdge = allEdges.get(destinationID);
+
+            if(_moveDiameterLimit!=-1){
+                if(_nodeDistanceMatrix[_node2ID.get(_targetEdge.Item1)][_node2ID.get(_destinationEdge.Item2)]>_moveDiameterLimit){
+                    endSampling = false;
+                    continue;
+                }
+            }
+
+            if(_reticulationDiameterLimit!=-1 && _targetEdge.Item2.isNetworkNode()){//can omit the second one
+                if(_nodeDistanceMatrix[_node2ID.get(_targetEdge.Item2)][_node2ID.get(_destinationEdge.Item2)]>_reticulationDiameterLimit){
+                    endSampling = false;
+                    continue;
+                }
+            }
+
+            if(_targetEdge.Item1.isRoot()){
+                boolean valid = true;
+                for(Object anotherChild: _targetEdge.Item1.getChildren()){
+                    if(anotherChild!=_targetEdge.Item2 && ((NetNode)anotherChild).isNetworkNode()){
+                        valid = false;
+                    }
+                }
+                if(!valid){
+                    for(int i=0; i<edgeSize; i++){
+                        if(i!=targetID)
+                            edgesTried.add((int)(Math.pow(10,new String(edgeSize+"").length()))*targetID + i);
+                    }
+                    endSampling = false;
+                    continue;
+                }
+            }
+
+            if(_targetEdge.Item1.equals(_destinationEdge.Item1) || _targetEdge.Item1.equals(_destinationEdge.Item2) ||
+                    _targetEdge.Item2.equals(_destinationEdge.Item1) || _targetEdge.Item2.equals(_destinationEdge.Item2)){
+                endSampling = false;
+                continue;
+            }
+
+        }while(!endSampling);
+
+        if(_printDetails){
+            System.out.print("Redirect source of " + printEdge(_targetEdge) + " to " + printEdge(_destinationEdge));
+        }
+        return true;
+    }
+
+    /**
+     * This function is to set parameters for changing the head of a reticulation edge
      * @param allEdges      all edges in the species network
      * @param edgesTried    all edges that have been tried which results in invalid networks
      */
     private boolean setParametersForEdgeSourceChange(ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
         _sourceEdge = null;
         int allEdgeSize = allEdges.size();
-
         boolean endSampling;
         do{
-            if(edgesTried.size()==allEdgeSize*(allEdgeSize-1)){
+            if(edgesTried.size()==allEdgeSize*(allEdgeSize-1)/2){
                 return false;
             }
             endSampling = true;
@@ -565,6 +903,7 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
      *
      * @param allRemovableReticulationEdges   all reticulation edges in the species network that can be replaced
      *                                        note that a reticulation edge can be edited only if replacing it does not change the number of reticulations in the network
+     * @param allEdges
      * @param edgesTried    all edges that have been tried which results in invalid networks
      */
     private boolean setParametersForReticulationEdgeReplace(ArrayList<Tuple<NetNode,NetNode>> allRemovableReticulationEdges, ArrayList<Tuple<NetNode,NetNode>> allEdges, Set<Integer> edgesTried){
@@ -647,10 +986,14 @@ public class NetworkRandomTopologyNeighbourGenerator extends NetworkNeighbourhoo
         _networkOperators[operation].performOperation();
     }
 
-
-    public void resetList(){}
+    /**
+     * @return _operationID
+     */
     public int getOperationID(){
-        return -1;
+        return _operationID;
+
     }
+
+
 
 }

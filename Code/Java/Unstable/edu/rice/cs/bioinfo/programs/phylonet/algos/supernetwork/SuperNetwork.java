@@ -692,4 +692,59 @@ public class SuperNetwork {
             }
         }
     }
+
+    public Network getSubNetwork(Network trueNetwork, List<String> selectedLeaves, boolean removeBinaryNodes, boolean alterHeights) {
+//        int subsize = selectedLeaves.size();
+        Network currentNetwork = trueNetwork.clone();
+//        if(alterHeights) {
+//            changeHeight(currentNetwork);
+//        }
+
+        // bottom-up build subnetwork
+        Map<NetNode, BniNetNode> old2new = new HashMap<>();
+        Map<NetNode, Integer> hitCount = new HashMap<>();
+        for(String leaf : selectedLeaves) {
+            Set<NetNode> visited = new HashSet<>();
+            Queue<NetNode> queue = new LinkedList<>();
+            NetNode node = currentNetwork.findNode(leaf);
+            BniNetNode newleaf = new BniNetNode();
+            newleaf.setName(node.getName());
+            old2new.put(node, newleaf);
+            queue.add(node);
+            while(queue.size() > 0) {
+                node = queue.poll();
+                if(visited.contains(node)) continue;
+                if(!hitCount.containsKey(node)) {
+                    hitCount.put(node, 0);
+                }
+                hitCount.put(node, hitCount.get(node) + 1);
+                visited.add(node);
+                for(Object parentObj : node.getParents()) {
+                    NetNode parent = (NetNode) parentObj;
+                    queue.add(parent);
+                    BniNetNode newParentNode;
+                    if(old2new.containsKey(parent)) {
+                        newParentNode = old2new.get(parent);
+                    } else {
+                        newParentNode = new BniNetNode();
+                        newParentNode.setName(parent.getName());
+                        old2new.put(parent, newParentNode);
+                    }
+
+                    newParentNode.adoptChild(old2new.get(node), node.getParentDistance(parent));
+                    old2new.get(node).setParentProbability(newParentNode, node.getParentProbability(parent));
+                    old2new.get(node).setParentSupport(newParentNode, node.getParentSupport(parent));
+                }
+            }
+        }
+
+        Network newsubnetwork = new BniNetwork(old2new.get(currentNetwork.getRoot()));
+        newsubnetwork.getRoot().setRootPopSize(currentNetwork.getRoot().getRootPopSize());
+        if(removeBinaryNodes) {
+            Networks.removeBinaryNodes(newsubnetwork);
+        }
+        return newsubnetwork.clone();
+    }
+
+
 }

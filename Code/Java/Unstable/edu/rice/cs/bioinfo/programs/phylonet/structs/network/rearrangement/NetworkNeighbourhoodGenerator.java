@@ -116,4 +116,13 @@ public abstract class NetworkNeighbourhoodGenerator{
         return hybridSet.size() == requiredHybridSet.size();
     }
 
+
+
+    /**
+     * This function is to reset the list of edges in start tree
+     */
+    public abstract void resetList();
+
+    public abstract int getOperationID();
+
 }

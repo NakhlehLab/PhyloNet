@@ -26,6 +26,7 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.network.*;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.treeAugment.treeAugmentInferNetworkMPL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
@@ -44,7 +45,11 @@ import java.util.*;
  * Date: 3/13/12
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
+ * modified by Zhen Cao: add the option to fix the start species network for inference.
+ *
+ * Edited by Zhen Cao on 6/11/2019: added the option -fs for tree-based inference
  */
+
 @CommandName("infernetwork_MPL")
 public class InferNetwork_MPL extends CommandBaseFileOut{
     private HashMap<String, List<String>> _taxonMap = null;
@@ -72,6 +77,7 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
     private int _numRuns = 10;
     private Long _seed = null;
     private boolean _oneGTPerLocus = true;
+    private boolean _fixStartSpeciesNetwork = false;
 
 
 
@@ -143,12 +149,25 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
 
 
 
+
             ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
             if(aParam.ContainsSwitch){
                 ParamExtractorAllelListMap aaParam = new ParamExtractorAllelListMap("a", this.params, this.errorDetected);
                 noError = noError && aaParam.IsValidMap;
                 if(aaParam.IsValidMap){
                     _taxonMap = aaParam.ValueMap;
+                }
+            }
+
+            ParamExtractor fsParam = new ParamExtractor("fs", this.params, this.errorDetected);
+            if(fsParam.ContainsSwitch){
+                if(fsParam.PostSwitchParam != null && !fsParam.PostSwitchValue.startsWith("-"))
+                {
+                    errorDetected.execute("No value expected after switch -fs.", fsParam.SwitchParam.getLine(), fsParam.SwitchParam.getColumn());
+                }
+                else
+                {
+                    _fixStartSpeciesNetwork = true;
                 }
             }
 
@@ -601,7 +620,7 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a","b","s","m","n","md","rd","p","l","r","i","t","di","pl","h","w","x","rs","o","po");
+            noError = noError && checkForUnknownSwitches("a","b","s","m","n","md","rd","p","l","r","i","t","di","pl","h","w","x","rs","o","po","fs");
             checkAndSetOutFile(aParam, bParam, sParam, mParam, nParam, mdParam, rdParam, pParam, lParam, rParam, iParam,tParam, diParam,plParam,hParam,wParam,xParam,rsParam,oParam,poParam);
 
         }
@@ -679,10 +698,18 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
 
 
         InferNetworkMLFromGT inference;
-        if(_oneGTPerLocus)
-            inference = new InferNetworkPseudoMLFromGTT_SingleTreePerLocus();
-        else
+        if(_oneGTPerLocus){
+            if(_fixStartSpeciesNetwork && speciesNetwork != null){
+                inference = new treeAugmentInferNetworkMPL();
+            }
+            else{
+                inference = new InferNetworkPseudoMLFromGTT_SingleTreePerLocus();
+            }
+        }
+        else{
             inference = new InferNetworkPseudoMLFromGTT_MultiTreesPerLocus();
+
+        }
 
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _optimizeBL, _seed);
         LinkedList<Tuple<Network, Double>> resultTuples = new LinkedList<>();

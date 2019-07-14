@@ -41,7 +41,7 @@ public class treeAugmentInferNetworkMDC extends InferNetworkMP {
     protected Network<Object> _startNetwork = null;
     private int _numProcessors = 1;
     protected double[] _operationWeights = {0.1,0.1,0.15,0.55,0.15,0.15};
-    private int _numRuns = 20;
+    private int _numRuns = 5;
     protected File _logFile = null;
     protected File _intermediateResultFile = null;
     private Long _seed = null;

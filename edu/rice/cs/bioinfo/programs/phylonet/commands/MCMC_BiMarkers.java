@@ -723,6 +723,17 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                     allele2species.put(allele, species);
                 }
             }
+
+            // If different, a common subset of -tm and -taxa will be used for inference.
+            Set<String> toRemove = new HashSet<>();
+            for(String taxon : _sequence.keySet()) {
+                if(!allele2species.containsKey(taxon)) {
+                    toRemove.add(taxon);
+                }
+            }
+            for(String taxon : toRemove) {
+                _sequence.remove(taxon);
+            }
         }
 
         Utils.printSettings();

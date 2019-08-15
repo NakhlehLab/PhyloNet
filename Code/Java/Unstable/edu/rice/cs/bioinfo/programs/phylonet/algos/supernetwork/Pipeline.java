@@ -1042,6 +1042,50 @@ public class Pipeline {
         }
 
     }
+    /**
+     * @Description:        This function is to remove leaves without names, which shouldn't be leaves,
+     *                      due to dependencies of reticulations
+     * @Param: results      the list of networks that needed to remove leaves.
+     * @Author: Zhen Cao
+     * @Date: 2019-08-14
+     */
+    public static void removeEmptyLeaf(List<Network> results){
+        for (Network<String> network: results){
+            for (NetNode<String> node: network.getLeaves()){
+                if (node.getName().isEmpty()){
+                    node.removeItself();
+                }
+            }
+            Networks.removeBinaryNodes(network);
+        }
+    }
+
+    /**
+     * @Description:            This function is to remove topological duplications in a list of networks
+     * @Param: backboneList     list of networks to remove topological duplications
+     * @Author: Zhen Cao
+     * @Date: 2019-08-14
+     */
+    public static List<Network>  removeDuplication(List<Network> backboneList){
+        List<Network> noduplist = new ArrayList<>();
+        for(Network bb : backboneList){
+            boolean dup = false;
+            for (Network n: noduplist){
+                if (Networks.hasTheSameTopology(n, bb)){
+                    dup = true;
+                    break;
+                }
+            }
+
+            if (bb.getReticulationCount() > 0) continue;
+            if (!dup){
+                noduplist.add(bb);
+            }
+        }
+        return noduplist;
+    }
+
+
 
     public static List<Network> getAllBackboneNets(Network network, int retiLimit) {
         Network clonedNetwork = network.clone();
@@ -1064,7 +1108,12 @@ public class Pipeline {
 
         }
 
+        //added by Zhen, because of reticulation dependency
+        Collections.reverse(trueReticulations);
+
         getAllBackbonesDfs(0, retiLimit, clonedNetwork, trueReticulations, results);
+        //added by Zhen, because of reticulation dependency
+        removeEmptyLeaf(results);
         return results;
     }
 
@@ -1457,22 +1506,52 @@ public class Pipeline {
         return summary ;
     }
 
+    public static void test(){
+        Network<String> n3 = Networks.readNetwork("((L:1.0)#H1:1.0::0.697176914245199,(((((K:1.0,(P:1.0)#H3:1.0::0.6779314464962011):1.0884181724604034)#H2:5.934653324530301::0.38618142938381267,(C:1.0,#H1:1.0::0.302823085754801):5.9084237144406755):5.9397822589449465,((#H3:1.0::0.3220685535037989)#H4:1.0::0.017142685450424855,(#H4:1.0::0.9828573145495751,O:1.0):0.00808293691880342):2.7714903993551276):5.904173024132873,(#H2:2.012640927894127::0.6138185706161874,F:1.0):5.904657745927051):5.937801402829414);");
+        List<Network> backbonelist = Pipeline.getAllBackboneNets(n3, Integer.MAX_VALUE);
+        List<Network>  noduplist = new ArrayList<>();
+        System.out.println("------------------------Pipeline.getAllBackboneNets------------------------");
+        for(Network bb: backbonelist){
+            boolean dup = false;
+
+            for (Network n: noduplist){
+                if (Networks.hasTheSameTopology(n, bb)){
+                    dup = true;
+                    break;
+                }
+            }
+
+            if (bb.getReticulationCount() > 0) continue;
+            if (!dup){
+                noduplist.add(bb);
+            }
+            System.out.println(bb.toString());
+        }
+
+        System.out.println(backbonelist.size());
+
+        for (Network n: noduplist){
+            System.out.println(n.toString());
+        }
+    }
+
     static public void main(String []args) {
         //Network trueNetwork = Networks.readNetwork("(Z:100.0,(((((D:7.430083706879999,((N:1.2)#H2:2.3831808)#H1:3.846902906879999)S20:3.2692368310271975,(I:2.9859839999999997,H:2.9859839999999997)S19:7.713336537907196)S18:4.707701036679165,#H1:11.823840774586362)S17:22.93057834988837,((E:6.191736422399999)#H4:25.756263514662276)#H3:6.389599987412456)S16:41.159247278916055,((A:55.206143891243606,(((F:5.159780351999999,(J:2.48832,((M:1.44)#H5:0.6335999999999999,K:2.0736)S15:0.41472)S14:2.6714603519999995)S13:7.679404293488635,(#H2:3.099816959999999,G:4.299816959999999)S12:8.539367685488635)S11:33.16593526388104,((#H4:12.296689467103633,(B:8.916100448255998,C:8.916100448255998)S10:9.572325441247633)S9:8.1349073913816,((#H5:0.28800000000000003,L:1.728)S8:20.458111067404356,(O:1.0,P:1.0)S7:21.186111067404358)S6:4.437222213480872)S5:19.381786628484445)S4:9.20102398187393)S3:11.041228778248716,#H3:34.299372732430044)S2:13.249474533898464)S1:20.503152796609214);");
         //Network inferredNetwork = Networks.readNetwork("(Z:0.7096995771149552,(((((H:0.029034319213268003,I:0.029034319213268003)I12:0.07571284181423195,(D:0.07054975280170007,((N:0.01677046154182873)I13#H2:0.03547962985339541::0.29734002016051975)I8#H1:0.018299661406475938::0.45197743073632335)I11:0.03419740822579988)I7:0.04215771020355635,I8#H1:0.09465477983583218::0.5480225692636767)I4:0.21268141868533277,(E:0.14551081013277983)I5#H3:0.21407547978360925::0.2643208014344447)I2:0.23803919763961257,(((((P:0.009021966743936025,O:0.009021966743936025)I20:0.194039105912683,(L:0.015768583495269863,(M:0.015668583495269863)I22#H4:9.99999999999994E-5::0.7841851661421151)I19:0.18729248916134916)I15:0.04056689988800191,((B:0.08646536587599503,C:0.08646536587599503)I18:0.0852119469162843,I5#H3:0.02616650265949949::0.7356791985655553)I14:0.0719506597523416)I9:0.14730339578831697,((G:0.039965889280701807,I13#H2:0.023195427738873075::0.7026599798394803)I16:0.0830744882850622,(F:0.050398625425341764,(J:0.024499579087946654,(I22#H4:0.003481035489195875::0.2158148338578849,K:0.01914961898446574)I23:0.005349960103480916)I21:0.02589904633739511)I17:0.07264175214042223)I10:0.26789099076717393)I6:0.06327200779650383,A:0.4542033761294417)I3:0.14342211142655992)I1:0.1120740895589536)I0;");
 
-        Network trueNetwork = Networks.readNetwork("(((((I:2.0736,H:2.0736)S9:0.9123839999999999,F:2.9859839999999997)S8:5.9301164482559985,(((L:1.44,K:1.44)S7:0.28800000000000003,J:1.728)S6:0.7603199999999999,G:2.48832)S5:6.427780448255998)S4:9.572325441247633,(((M:1.2,N:1.2)S18:4.991736422399999,A:6.191736422399999)S17:9.215285152186361,(((E:3.5831807999999996,(O:1.0,P:1.0)S14:2.5831807999999996)S13:0.7166361599999997,D:4.299816959999999)S12:8.539367685488635,(C:5.159780351999999,B:5.159780351999999)S15:7.679404293488635)S11:2.5678369290977265)S10:3.08140431491727)S3:81.51157411049637,Z:100.0);");
-        Network inferredNetwork = Networks.readNetwork("(Z:0.7098935326187776,(((((P:0.00934308447367168,O:0.00934308447367168)I13:0.02678146831338358,E:0.03612455278705526)I8:0.005426082481262834,D:0.04155063526831809)I4:0.0808717831323044,(C:0.049349787332531966,B:0.049349787332531966)I5:0.07307263106809053)I2:0.043025824302415736,(((N:0.012697205524323789,M:0.012697205524323789)I14:0.04801980392309516,A:0.06071700944741895)I9:0.1046312332556193,((((L:0.013593236724210435,K:0.013593236724210435)I17:0.004007457531740718,J:0.017600694255951153)I16:0.007174349510463831,G:0.024775043766414984)I12:0.06306047173805217,(F:0.02934114268517848,(I:0.019812564232474315,H:0.019812564232474315)I15:0.009528578452704165)I11:0.05849437281928867)I7:0.0775127271985711)I3:9.999999999998899E-5)I1:0.5444452899157394)I0;");
-
-        Tuple3<Network, Network, Double> closest = Pipeline.CheckWithTrueNetwork(inferredNetwork, trueNetwork);
-        System.out.println("Closest true # Reti: " + closest.Item1.getReticulationCount());
-        System.out.println(closest.Item2);
-        System.out.println("Closest inferred # Reti: " + closest.Item2.getReticulationCount());
-        System.out.println(closest.Item1);
-        System.out.println("Distance: " + closest.Item3);
-
-        System.out.println(Networks.hasTheSameTopology(inferredNetwork, trueNetwork));
-        System.out.println(CompareNodes(inferredNetwork, trueNetwork));
+//        Network trueNetwork = Networks.readNetwork("(((((I:2.0736,H:2.0736)S9:0.9123839999999999,F:2.9859839999999997)S8:5.9301164482559985,(((L:1.44,K:1.44)S7:0.28800000000000003,J:1.728)S6:0.7603199999999999,G:2.48832)S5:6.427780448255998)S4:9.572325441247633,(((M:1.2,N:1.2)S18:4.991736422399999,A:6.191736422399999)S17:9.215285152186361,(((E:3.5831807999999996,(O:1.0,P:1.0)S14:2.5831807999999996)S13:0.7166361599999997,D:4.299816959999999)S12:8.539367685488635,(C:5.159780351999999,B:5.159780351999999)S15:7.679404293488635)S11:2.5678369290977265)S10:3.08140431491727)S3:81.51157411049637,Z:100.0);");
+//        Network inferredNetwork = Networks.readNetwork("(Z:0.7098935326187776,(((((P:0.00934308447367168,O:0.00934308447367168)I13:0.02678146831338358,E:0.03612455278705526)I8:0.005426082481262834,D:0.04155063526831809)I4:0.0808717831323044,(C:0.049349787332531966,B:0.049349787332531966)I5:0.07307263106809053)I2:0.043025824302415736,(((N:0.012697205524323789,M:0.012697205524323789)I14:0.04801980392309516,A:0.06071700944741895)I9:0.1046312332556193,((((L:0.013593236724210435,K:0.013593236724210435)I17:0.004007457531740718,J:0.017600694255951153)I16:0.007174349510463831,G:0.024775043766414984)I12:0.06306047173805217,(F:0.02934114268517848,(I:0.019812564232474315,H:0.019812564232474315)I15:0.009528578452704165)I11:0.05849437281928867)I7:0.0775127271985711)I3:9.999999999998899E-5)I1:0.5444452899157394)I0;");
+//
+//        Tuple3<Network, Network, Double> closest = Pipeline.CheckWithTrueNetwork(inferredNetwork, trueNetwork);
+//        System.out.println("Closest true # Reti: " + closest.Item1.getReticulationCount());
+//        System.out.println(closest.Item2);
+//        System.out.println("Closest inferred # Reti: " + closest.Item2.getReticulationCount());
+//        System.out.println(closest.Item1);
+//        System.out.println("Distance: " + closest.Item3);
+//
+//        System.out.println(Networks.hasTheSameTopology(inferredNetwork, trueNetwork));
+//        System.out.println(CompareNodes(inferredNetwork, trueNetwork));
+        test();
     }
 
 }

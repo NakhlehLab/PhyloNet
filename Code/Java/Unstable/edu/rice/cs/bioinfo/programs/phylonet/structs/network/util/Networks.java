@@ -1345,4 +1345,18 @@ public class Networks
 
     // Data members
     public static final String NAME_PREFIX = "I";	// Name prefix for interior nodes.
+
+    /**
+     * @Description: remove names of all the internal nodes in network net
+     * @Param: net: The network to remove names
+     * @Author: Zhen Cao
+     * @Date: 2019-08-15
+     */
+    public static <T> void removeInternalNodeNames(Network<T> net){
+        for(NetNode<T> node : postTraversal(net)) {
+            if (!node.isLeaf()){
+                node.setName("");
+            }
+        }
+    }
 }

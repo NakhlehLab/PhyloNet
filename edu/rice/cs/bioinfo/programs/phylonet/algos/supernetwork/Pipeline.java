@@ -507,6 +507,116 @@ public class Pipeline {
         }
     }
 
+    /**
+     * @Description:                   This function is to get file2topsample:
+     *                                 <network, support, average posterior>
+     * @Param: filenames
+     * @Param: start
+     * @Param: end
+     * @Param: file2samples
+     * @Param: file2topsample          The hashmap we get <filename, <network, <support, average posterior>>>
+     * @return:                        The hashmap of <filename, <lastESS, lastposterior>>, but due to the
+     *                                 range of samples we choose, the last ESS is possible to be 0, and has no information
+     * @Author: Zhen Cao
+     * @Date: 2019-08-12
+     */
+    public static Map<String, Tuple<Double, Double>> GetInputPostFromFolder(List<String> filenames, int start, int end, Map<String, List<String>> file2samples, Map<String, Tuple3<String, Double, Double>> file2topsample) {
+        Map<String, Tuple<Double, Double>> filePostMap = new HashMap<>();
+        for(String filename : filenames) {
+            file2samples.put(filename, new ArrayList<>());
+
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(filename));
+                String s;
+                int index = 0;
+                String topSample = null;
+                Map<Network, Integer> count = new HashMap<>();
+                Map<Network, Double> posterior = new HashMap<>();
+                boolean begin = false;
+                int total = 0;
+                double lastESS = 0.0;
+                double poster = 0.0;
+
+                while((s = in.readLine()) != null) {
+
+                    if(begin) {
+                        if (s.startsWith("[")) {
+                            Network curSample = Networks.readNetworkWithRootPop(s);
+                            total++;
+                            if(total >= start) {
+                                if(total > end) break; // !!!!!
+
+                                file2samples.get(filename).add(s);
+                                boolean exist = false;
+                                for (Network net : count.keySet()) {
+                                    if (Networks.hasTheSameTopology(net, curSample)) {
+                                        count.put(net, count.get(net) + 1);
+                                        posterior.put(net, posterior.get(net)+poster);
+                                        exist = true;
+                                        break;
+                                    }
+                                }
+                                if (!exist) {
+                                    count.put(curSample, 1);
+                                    posterior.put(curSample, poster);
+                                }
+                            }
+                        }
+                        else {
+                            String ss[] = s.split("\\s+");
+                            if(ss.length == 7 && Character.isDigit(ss[2].charAt(0)) && ss[2].charAt(ss[2].length() - 1) == ';'){
+                                lastESS = Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                                poster = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
+                                if (lastESS > 0){
+                                    System.out.println(lastESS);
+                                }
+                            }
+
+                        }
+
+                    } else {
+                        if(s.contains("Logger")) {
+                            begin = true;
+                        }
+                    }
+                    index++;
+                }
+                filePostMap.put(filename, new Tuple<>(lastESS, poster));
+                int totalValue = 0;
+                int maxValue = 0;
+                Network netkey = null;
+                for(Network net : count.keySet()) {
+                    if(maxValue < count.get(net)) {
+                        topSample = Networks.getFullString(net);
+                        maxValue = count.get(net);
+                        netkey = net;
+                    }
+                    totalValue += count.get(net);
+                }
+
+
+                in.close();
+
+
+                if(topSample == null) {
+                    file2samples.remove(filename);
+                    continue;
+                }
+
+                if(file2samples.get(filename).size() == 0) {
+                    file2samples.remove(filename);
+                    continue;
+                }
+
+                file2topsample.put(filename, new Tuple3<>(topSample, 1.0 * maxValue / totalValue, posterior.get(netkey)/maxValue));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return filePostMap;
+    }
+
     private static void GetInputFromTrueNetwork(List<String> filenames, int num, Network trueNetworkInput, Random random, Map<String, List<String>> file2samples, Map<String, Tuple<String, Double>> file2topsample) {
         Network trueNetwork = trueNetworkInput.clone();
 

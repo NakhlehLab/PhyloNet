@@ -29,6 +29,14 @@ public class SNProblem {
         return subnetworks.size();
     }
 
+    /*
+     * @Author: Zhen Cao
+     * @Date: 2019-10-22
+     */
+    public List<Tuple3<Network, String, Double>> getSubnetworks(){
+        return subnetworks;
+    }
+
 //    @Override
 //    public String toString() {
 //        StringBuilder sb = new StringBuilder();

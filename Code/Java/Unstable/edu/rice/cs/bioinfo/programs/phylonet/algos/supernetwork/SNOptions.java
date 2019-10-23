@@ -15,6 +15,7 @@ import java.util.Set;
  */
 public class SNOptions {
     public double eps = 0.01;
+    public double support = 0.85; //added by Zhen 08/16/19
     public boolean trustReticulationTime = true;
     public boolean reconcileHeights = false;
     public String outgroup = "Z";

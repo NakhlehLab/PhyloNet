@@ -622,6 +622,7 @@ public class InferNetwork_ML extends CommandBaseFileOut{
 
     @Override
     protected String produceResult() {
+        long startingTime = System.currentTimeMillis();
         StringBuffer result = new StringBuffer();
         List<List<MutableTuple<Tree,Double>>> gts = new ArrayList<List<MutableTuple<Tree,Double>>>();
         //List<Tree> gts2 = new ArrayList<Tree>();
@@ -731,7 +732,8 @@ public class InferNetwork_ML extends CommandBaseFileOut{
                 result.append("\nVisualize in Dendroscope : " + n.toString());
             }
         }
-
+        double time = (System.currentTimeMillis()-startingTime)/60000.0;
+        result.append("Running time:"+time);
         return result.toString();
 
     }

@@ -6,11 +6,13 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary;
  * Date: 1/19/17
  * Time: 6:13 PM
  * To change this template use File | Settings | File Templates.
+ * Edited by Zhen: add likelihood for summary
  */
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.ParentalTreeOperation;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.trinetInference.Summary.SimplifyNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
@@ -232,6 +234,7 @@ public class SummaryBL {
     private Map<Network, Info> _topologyCount = new HashMap<>();
     private List<Network> _samples = new ArrayList<>();
     private List<Double> posteriors = new ArrayList<>();
+    private List<Double> likelihoods = new ArrayList<>();
     private List<Double> priors = new ArrayList<>();
     private List<String> _leafOrder;
 
@@ -248,6 +251,7 @@ public class SummaryBL {
         this._branches = getBranches(this._net);
         this._size = 0;
         posteriors.add(0.0);
+        likelihoods.add(0.0);
         priors.add(0.0);
     }
 
@@ -274,6 +278,7 @@ public class SummaryBL {
                 }
                 double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
                 double ess = Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                double likelihood = Double.parseDouble(ss[3].substring(0, ss[3].length() - 1));
                 double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
                 if(ess <= 0 && !start) continue;
                 start = true;
@@ -294,6 +299,7 @@ public class SummaryBL {
                         _rootPopSizeSize++;
                         _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
                     }
+                    likelihoods.add(likelihood);
                     posteriors.add(posterior);
                     priors.add(prior);
                 } else {
@@ -301,6 +307,84 @@ public class SummaryBL {
                     for(Network key : _topologyCount.keySet()) {
                         if(Networks.hasTheSameTopology(key, net)) {
 //                                        _topologyCount.get(key).add(popSize);
+                            _topologyCount.get(key).add(posterior);
+                            add = true;
+                            break;
+                        }
+                    }
+//                  if(!add) _topologyCount.put(net, new Info(popSize));
+                    if(!add) _topologyCount.put(net, new Info(posterior));
+                }
+            }
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * @Description:
+     * @Param: file
+     * @Param: startIter
+     * @Param: endIter
+     * @Author: Zhen Cao
+     * @Date: 2019-12-02 
+     */
+    public void addFileMCMCtrinet(String file, int startIter, int endIter) {
+        try{
+            SimplifyNetwork simplifier = new SimplifyNetwork();
+            BufferedReader in = new BufferedReader(new FileReader(file));
+            String s;
+            String[] ss;
+            boolean start = false;
+            while((s = in.readLine()) != null) {
+                ss = s.trim().split("\\s+");
+                if(ss.length != 7 || ss[0].startsWith("I") || !ss[0].endsWith(";")) continue;
+                s = in.readLine();
+                int iter = Integer.parseInt(ss[0].substring(0, ss[0].length() - 1));
+                if(iter < startIter) {
+                    continue;
+                }
+                if(iter > endIter) {
+                    break;
+                }
+                double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
+                double ess = Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                double likelihood = Double.parseDouble(ss[3].substring(0, ss[3].length() - 1));
+                double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
+                if(ess <= 0 && !start) continue;
+                start = true;
+//                Network net = Networks.readNetwork(s);
+//                if(net == null) {
+//                    continue;
+//                }
+                Network net = Networks.readNetwork(s);
+                if (net == null) {
+                    continue;
+                }
+
+                simplifier.simplify(net);
+                _samples.add(net);
+                if(Networks.hasTheSameTopology(this._net, net)) {
+                    Map<NetNode, NetNode> map = Networks.mapTwoNetworks(this._net, net);
+                    this._size++;
+                    addInformation(this._net, map);
+                    if(s.startsWith("[")) {
+                        double popSize = Double.parseDouble(s.substring(1, s.indexOf("]")));
+                        _rootPopSizeAvg += popSize;
+                        _rootPopSizeStd += popSize * popSize;
+                        s = s.substring(s.indexOf("]") + 1);
+                        _rootPopSizeSize++;
+                        _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
+                    }
+                    posteriors.add(posterior);
+                    priors.add(prior);
+                    likelihoods.add(likelihood);
+                } else {
+                    boolean add = false;
+                    for(Network key : _topologyCount.keySet()) {
+                        if(Networks.hasTheSameTopology(key, net)) {
+//                          _topologyCount.get(key).add(popSize);
                             _topologyCount.get(key).add(posterior);
                             add = true;
                             break;
@@ -344,10 +428,16 @@ public class SummaryBL {
             while((s = in.readLine()) != null) {
                 ss = s.split("\\s+");
                 if (notBeast) {
-                    if(s.contains("MCMC_SEQ") || s.contains("SN_SEQ")) {
+                    //todo recover
+//                    if(s.contains("MCMC_SEQ") || s.contains("SN_SEQ")) {
+//                        in.close();
+//                        addFileMCMCSEQ(file, startIter, endIter);
+//                        return;
+//                    }
+                    if (true){
                         in.close();
                         addFileMCMCSEQ(file, startIter, endIter);
-                        return;
+                        break;
                     }
 
                     if(s.contains("MC BEGINS")) {
@@ -377,6 +467,7 @@ public class SummaryBL {
                         }
                         double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
                         double ess = 1; //Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                        double likelihood = Double.parseDouble(ss[3].substring(0, ss[3].length() - 1));
                         double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
 
                         if(ess > 0 || start) {
@@ -407,6 +498,7 @@ public class SummaryBL {
                                     _branches.get("root").addInfo(NetNode.NO_DISTANCE, NetNode.NO_PROBABILITY, popSize);
                                 }
                                 posteriors.add(posterior);
+                                likelihoods.add(likelihood);
                                 priors.add(prior);
 
                             } else {
@@ -639,7 +731,7 @@ public class SummaryBL {
             }
 
             int size = -1;
-            out.print("Sample\tPosterior\tPrior\t");
+            out.print("Sample\tPosterior\tLikelihood\tPrior\t");
             for(String key : results.keySet()) {
                 if(size == -1)
                     size = results.get(key).size();
@@ -652,7 +744,7 @@ public class SummaryBL {
 
             out.println();
 
-            if(posteriors.size() != size || priors.size() != size) {
+            if(posteriors.size() != size || priors.size() != size || likelihoods.size() != size) {
                 throw new RuntimeException("Got different size of lists!");
             }
 
@@ -660,6 +752,7 @@ public class SummaryBL {
             for(int i = 1 ; i < size ; i++) {
                 out.print((i - 1) * sf + "\t");
                 out.print(posteriors.get(i) + "\t");
+                out.print(likelihoods.get(i) + "\t");
                 out.print(priors.get(i) + "\t");
                 for(String key : results.keySet()) {
                     out.print(results.get(key).get(i) + "\t");
@@ -886,6 +979,10 @@ public class SummaryBL {
         return t;
     }
 
+
+    public Map<String, Branch> getBranches(){
+        return _branches;
+    }
     public static void main(String[] args) {
         String netA = "[0.036](((C:0.025199999999999997:0.036,(A:0.012599999999999998:0.036)I6#H1:0.012599999999999998:0.036:0.2)I5:0.010799999999999999:0.036,G:0.036:0.036)I1:0.05399999999999999:0.036,(R:0.072:0.036,(L:0.05399999999999999:0.036,(Q:0.036:0.036,I6#H1:0.0234:0.036:0.8)I4:0.018:0.036)I3:0.018:0.036)I2:0.018:0.036)I0;";
         String netB = "[0.036](((C:0.036,G:0.036)I1:0.036,((L:0.05399999999999999,(A:0.036,Q:0.036)I4:0.018)I3:0.009)I8#H1:0.009::0.3)I7:0.018,(R:0.072,I8#H1:0.009::0.7)I2:0.018)I0;";

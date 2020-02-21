@@ -120,7 +120,7 @@ public class SummarizeNetworks extends CommandBaseFileOut {
         if(normalizeParam.ContainsSwitch){
             if(normalizeParam.PostSwitchParam != null && !normalizeParam.PostSwitchValue.startsWith("-"))
             {
-                errorDetected.execute("No value expected after switch -o.", normalizeParam.SwitchParam.getLine(), normalizeParam.SwitchParam.getColumn());
+                errorDetected.execute("No value expected after switch -n.", normalizeParam.SwitchParam.getLine(), normalizeParam.SwitchParam.getColumn());
             }
             else
             {
@@ -129,7 +129,7 @@ public class SummarizeNetworks extends CommandBaseFileOut {
         }
 
         noError = noError && checkForUnknownSwitches(
-                "outfile", "n"
+                "o", "n"
         );
         checkAndSetOutFile(outfileParam,normalizeParam);
 

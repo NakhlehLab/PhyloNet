@@ -1022,28 +1022,36 @@ public class Trees {
 	}
 
 	/**
-	 * Extract a tree with a given bootstrap threshold
+	 * Extract a tree with a given bootstrap threshold by collapsing low support nodes
+	 * if all nodes have no boostrap value, return -1; otherwise return 1.
 	 */
 	public static int handleBootStrapInTree(Tree tr, double threshold){
 		List<TNode> nodestomodify = new ArrayList<TNode>();
+		int numNodes = 0;
+		int numNodesWithoutSupport = 0;
 
 		for(TNode node: new PostTraversal<Object>(tr.getRoot())){
             if(node.isLeaf() || node.isRoot()){
                 continue;
             }
 			Double bootstrap = ((STINode<Double>)node).getData();
+            numNodes ++;
+            if (bootstrap == null || bootstrap == TNode.NO_SUPPORT) {
+            	numNodesWithoutSupport ++;
+			}
+
             if(bootstrap == null)continue;
 			if(bootstrap!=TNode.NO_SUPPORT && bootstrap < threshold){
 				nodestomodify.add(node);
 			}
 		}
 
+		if (numNodes == numNodesWithoutSupport) {
+			return -1;
+		}
+
 		for(TNode node: nodestomodify){
 			TNode parent = node.getParent();
-			double distance = node.getParentDistance();
-			for(TNode child: node.getChildren()){
-				child.setParentDistance(child.getParentDistance()+distance);
-			}
 			((STINode)parent).removeChild((TMutableNode)node, true);
 		}
 		return 0;

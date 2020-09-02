@@ -63,7 +63,7 @@ public class ModelTree extends StateNode {
         }
         initTreeNodes();
         this._recombRate = rate;
-        //TODO: continue?
+        // continue?
     }
 
     /**

@@ -208,7 +208,7 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
                         rParam.SwitchParam.getLine(), rParam.SwitchParam.getColumn());
             }
         } else {
-            throw new RuntimeException("Required cross_over_rate -r for inference! See format here: " +
+            throw new RuntimeException("Required crossover rate -r for inference! See format here: " +
                     _website);
         }
 
@@ -342,9 +342,6 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
                 errorDetected.execute("Expected value after switch -nhsigmamin.",
                         nhsigmaminParam.SwitchParam.getLine(), nhsigmaminParam.SwitchParam.getColumn());
             }
-        } else {
-            throw new RuntimeException("Required minimum value of node height posterior standard deviation -nhsigmamin for inference! See format here: " +
-                    _website);
         }
 
         // minimum value of population size posterior standard deviation, default 3000
@@ -361,12 +358,7 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
                 errorDetected.execute("Expected value after switch -pssigmamin.",
                         pssigmaminParam.SwitchParam.getLine(), pssigmaminParam.SwitchParam.getColumn());
             }
-        } else {
-            throw new RuntimeException("Required minimum value of population size posterior standard deviation -pssigmamin for inference! See format here: " +
-                    _website);
         }
-
-
 
         noError = noError && checkForUnknownSwitches(
                 "st", "mu", "rho", "nhsigma", "pssigma",
@@ -405,13 +397,13 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
         System.out.println("");
         System.out.println("===================================== Final results =====================================");
         VariationalModel posterior = algo.getVariationalPosterior();
-        System.out.println("********************* Node heights in postorder *********************");
+        System.out.println("********************* Node heights in postorder traversal *********************");
         int nodeIndex = 1;
         for (VariationalVariable var:posterior.getNodeHeightVariableList()) {
             System.out.println("Node " + nodeIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
             nodeIndex += 1;
         }
-        System.out.println("********************* Population sizes in postorder *********************");
+        System.out.println("********************* Population sizes in postorder traversal *********************");
         int branchIndex = 1;
         for (VariationalVariable var:posterior.getPopSizeVariableList()) {
             System.out.println("Branch " + branchIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());

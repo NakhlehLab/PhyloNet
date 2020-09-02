@@ -1,9 +1,12 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.hmm;
 
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,11 +35,6 @@ public class HiddenState {
         return index;
     }
 
-    //TODO: beagle likelihood?
-
-    //TODO: List of Alignment in util?
-    // what is clock rate?
-
     private Map<TNode, Integer> nodeLabel;
 
     public TNode[] getNodeArray() {
@@ -60,5 +58,31 @@ public class HiddenState {
 
     public int getNodeLabel(TNode node) {
         return nodeLabel.get(node);
+    }
+
+    /**
+     * ***************ONLY FOR TESTING HCG!***************
+     * THIS IS HARD CODED!
+     * Convert gene tree to its name in one of {HC1, HC2, HG, CG}
+     */
+    public String getStateName() {
+        try {
+            if (Trees.haveSameRootedTopology(coalescentTree, new STITree<>("((H,G), C);"))) {
+                return "HG";
+            } else if (Trees.haveSameRootedTopology(coalescentTree, new STITree<>("((C,G), H);"))) {
+                return "CG";
+            } else {
+                if (Trees.getInternalNodes(coalescentTree).get(0).getNodeHeight() >= 5.5) {
+                    return "HC2";
+                } else if (Trees.getInternalNodes(coalescentTree).get(0).getNodeHeight() < 5.5) {
+                    return "HC1";
+                }
+                System.out.println("ERROR!!!!!!!");
+                System.exit(1);
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

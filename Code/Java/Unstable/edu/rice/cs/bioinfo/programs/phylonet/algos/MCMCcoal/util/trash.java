@@ -1,20 +1,35 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.util;
 
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs.ModelTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs.TreeNodeInfo;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.test.HCGModelBuilder;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.distribution.Prior;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variationalMulti.MultiVariateGaussian;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
+import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 public class trash {
     public static void main(String[] args) throws IOException, ParseException {
-//        STITree<TreeNodeInfo> tree = model.getTree();
+//        testPopsizePrior();
+//        NormalDistribution dist =  new NormalDistribution(0, 2);
+//        System.out.println(dist.density(0.6));
+        trash5();
+    }
+
+    public static void trash1() throws IOException, ParseException {
+        //        STITree<TreeNodeInfo> tree = model.getTree();
 //        for (TNode node:tree.postTraverse()) {
 //            STINode<TreeNodeInfo> stiNode = (STINode<TreeNodeInfo>) node;
 //            System.out.println(stiNode.getData().getPopSize());
@@ -89,6 +104,85 @@ public class trash {
         double num = 1.5E-8;
         System.out.println(num);
         System.out.println(BigDecimal.valueOf(num).toPlainString());
-
     }
+
+    public static void trash2() {
+        NormalDistribution dist = new NormalDistribution(1, 0.25);
+
+        System.out.println(dist.sample());
+        System.out.println(dist.probability(1));
+        System.out.println(dist.logDensity(1));
+
+        double scaleFactor = 1E-8;
+
+
+
+        System.out.println(8 * scaleFactor);
+
+        System.out.println(1E-8/1E-8);
+    }
+
+    public static void testPopsizePrior() {
+        ModelTree model = HCGModelBuilder.getHCGModelInit();
+        Prior prior = new Prior();
+        System.out.println(prior.logPrior(model));
+    }
+
+    public static void testLogTime() {
+        long startTime = System.currentTimeMillis();
+        System.out.println(startTime);
+        trash2();
+        long endTime = System.currentTimeMillis();
+        System.out.println((double)(endTime - startTime) / 1000);
+        
+    }
+
+    public static void trash3() {
+        int b = 2;
+        System.out.println(1.0 / b);
+    }
+
+    public static void trash4() {
+        double[] mean = new double[]{0, 0, 0, 0};
+        double[][] matrixArray = new double[][]{
+                {2.6708760497203845E8, 6334072.357230105, -8.628748560974622E7, -4500290.9125669},
+                {0.0, 3.3590023193667424E8, 1.749093196237955E7, -8.292803416448978E7},
+                {0.0, 0.0, 4.801235808567999E7, -2.027825400179901E7},
+                {0.0, 0.0, 0.0, 3.43132036513448E7}
+        };
+//        RealMatrix matrix = MatrixUtils.createRealMatrix(MultiVariateGaussian.full(matrixArray));
+//        MatrixUtils.inverse(matrix);
+        double[][] fullMatrix = MultiVariateGaussian.full(matrixArray);
+        for (double[] row:fullMatrix) {
+            System.out.println(Arrays.toString(row));
+        }
+
+        EigenDecomposition eigend = new EigenDecomposition(MatrixUtils.createRealMatrix(fullMatrix));
+        System.out.println("Eigen values are: " + Arrays.toString(eigend.getRealEigenvalues()));
+
+        MultivariateNormalDistribution dist = new MultivariateNormalDistribution(mean, fullMatrix);
+    }
+
+    private static void buildGTNodeHeight(STITree<TreeNodeInfo> gt) {
+        for (TNode node:gt.postTraverse()) {
+            if (node.isLeaf()) {
+                node.setNodeHeight(0);
+            } else {
+                double height = 0;
+                for (TNode child:node.getChildren()) {
+                    height = Math.max(height, child.getNodeHeight() + child.getParentDistance());
+                }
+                node.setNodeHeight(height);
+            }
+        }
+    }
+
+    public static void trash5() throws IOException, ParseException {
+        STITree<TreeNodeInfo> tree = new STITree<>("((H:150000,C:150000):150000, G:300000);");
+//        STITree<TreeNodeInfo> tree = new STITree<>("((A: 5, B: 5):5, (C: 5, D: 5):5);");
+        System.out.println(tree.toNewick());
+//        buildGTNodeHeight(tree);
+        System.out.println(tree.getRoot().getChildren().iterator().next().getParentDistance());
+    }
+
 }

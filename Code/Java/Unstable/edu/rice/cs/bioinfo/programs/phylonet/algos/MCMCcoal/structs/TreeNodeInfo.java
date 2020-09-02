@@ -5,6 +5,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs;
  * Stores:
  * 1. population size of the branch incident into this node
  * 2. index of this node used for generating MS command
+ *
  * Created by Xinhao Liu on 11/1/19.
  */
 public class TreeNodeInfo {

@@ -24,6 +24,36 @@ public class ModelTree extends StateNode {
     private STITree<TreeNodeInfo> _tree;
     private RecombinationRate _recombRate;
 
+    public ModelTree(String s, RecombinationRate rate, boolean heightIncluded) {
+        this._recombRate = rate;
+        try {
+            this._tree = new STITree<>(s);
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        buildSTITreeNodeHeight(_tree);
+        // build pop sizes
+        for (TNode node:_tree.postTraverse()) {
+            STINode<TreeNodeInfo> stiNode = (STINode<TreeNodeInfo>) node;
+            if (node.isLeaf()) {
+                stiNode.setData(new TreeNodeInfo(Utils.N0));
+            } else {
+                stiNode.setData(new TreeNodeInfo(Utils.POP_SIZE_MEAN));
+            }
+        }
+        // set label for each node for generating coalescent history
+        int label = 1;
+        for (TNode node:_tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight()); // might not be necessary here because parsed STITree already has parent distance set
+            }
+            if (!node.isLeaf()) {
+                STINode<TreeNodeInfo> stiNode = (STINode<TreeNodeInfo>) node;
+                stiNode.getData().setLabel(label++);
+            }
+        }
+    }
 
     public ModelTree(String s, RecombinationRate rate) {
         try {
@@ -33,12 +63,12 @@ public class ModelTree extends StateNode {
         }
         initTreeNodes();
         this._recombRate = rate;
-        //TODO: continue
+        //TODO: continue?
     }
 
     /**
      * Initialize population size (in unit of individuals) and branch length (in unit of generations) for each branch
-     * Initialize label of species tree (TODO: for now assume model tree topology does not change. Does it matter?)
+     * Initialize label of species tree (for now assume model tree topology does not change.)
      */
     private void initTreeNodes() {
         Stack<Tuple<STINode<TreeNodeInfo>, Integer>> stack = new Stack<>();
@@ -67,6 +97,38 @@ public class ModelTree extends StateNode {
             if (!node.isLeaf()) {
                 STINode<TreeNodeInfo> stiNode = (STINode<TreeNodeInfo>) node;
                 stiNode.getData().setLabel(label++);
+            }
+        }
+    }
+
+    /**
+     * In setTreeBySample() in VariationalModel we would modify each node height and pop size.
+     * Set each parent distance for the tree after node heights are modified so that the model tree is correct.
+     */
+    public void refresh() {
+        // setparentdistance is actually not necessary. what else do we need?
+        for (TNode node:_tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+            }
+        }
+    }
+
+    /**
+     * STITree parsed from string does not have associated node height. It only has parent distance for each node.
+     * This function builds the node height of each node of a newly parsed STITree.
+     * Also used in HmmBuilder.
+     */
+    private void buildSTITreeNodeHeight(STITree<TreeNodeInfo> gt) {
+        for (TNode node:gt.postTraverse()) {
+            if (node.isLeaf()) {
+                node.setNodeHeight(0);
+            } else {
+                double height = 0;
+                for (TNode child:node.getChildren()) {
+                    height = Math.max(height, child.getNodeHeight() + child.getParentDistance());
+                }
+                node.setNodeHeight(height);
             }
         }
     }

@@ -213,20 +213,20 @@ public class VariationalInference {
             }
 
             // gradient update
-            System.out.println("********************* Node heights in postorder *********************");
+            System.out.println("********************* Node heights in postorder traversal *********************");
             for (Tuple3<VariationalVariable, Double, Double> gradientTuple:TGradientList) {
                 VariationalVariable var = gradientTuple.Item1;
-                System.out.println("Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
+                System.out.println("Current mean: " + var.getMean() + ", Current standard deviation: " + var.getStandardDeviation());
                 double meanGradient = gradientTuple.Item2;
                 double stdDevGradient = gradientTuple.Item3;
                 var.meanGradientUpdate(meanGradient);
                 var.standardDeviationGradientUpdate(stdDevGradient);
                 System.out.println("-----");
             }
-            System.out.println("********************* Population sizes in postorder *********************");
+            System.out.println("********************* Population sizes in postorder traversal *********************");
             for (Tuple3<VariationalVariable, Double, Double> gradientTuple:NGradientList) {
                 VariationalVariable var = gradientTuple.Item1;
-                System.out.println("Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
+                System.out.println("Current mean: " + var.getMean() + ", Current standard deviation: " + var.getStandardDeviation());
                 double meanGradient = gradientTuple.Item2;
                 double stdDevGradient = gradientTuple.Item3;
                 var.meanGradientUpdate(meanGradient);

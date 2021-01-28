@@ -23,9 +23,10 @@ import java.util.*;
 
 public class treeAugmentInferNetworkMPL extends InferNetworkPseudoMLFromGTT_SingleTreePerLocus {
     protected boolean test = true;
-    protected  int[] _acceptCount = new int[7];
-    protected int _mode = 0;//0: mpl, 1: aic, 2: bic
-    protected int _geneTreeNum;
+    private  int[] _acceptCount = new int[7];
+    private int _mode = 0;//0: mpl, 1: aic, 2: bic
+    private int _geneTreeNum;
+
     public treeAugmentInferNetworkMPL(File intermediate){
         _intermediateResultFile = intermediate;
     }
@@ -37,7 +38,6 @@ public class treeAugmentInferNetworkMPL extends InferNetworkPseudoMLFromGTT_Sing
      *
      * This function is to infer a species network from input data
      *
-     * @return
      */
     public int[] getAcceptCount()
     {
@@ -75,7 +75,6 @@ public class treeAugmentInferNetworkMPL extends InferNetworkPseudoMLFromGTT_Sing
         String startingNetwork = getStartNetwork(dataForStartingNetwork, species2alleles, _fixedHybrid, _startNetwork);
         dataForStartingNetwork.clear();
         Network speciesNetwork = Networks.readNetwork(startingNetwork);
-//        Network speciesNetwork =;
         Set<String> singleAlleleSpecies = new HashSet<>();
         findSingleAlleleSpeciesSet(speciesNetwork, species2alleles, singleAlleleSpecies);
 
@@ -102,15 +101,16 @@ public class treeAugmentInferNetworkMPL extends InferNetworkPseudoMLFromGTT_Sing
         Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, dataCorrespondence, species2alleles, singleAlleleSpecies);
 
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
-        if(postOptimization){
-            LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_likelihoodCalculator, dataForNetworkInference, dataCorrespondence, species2alleles, singleAlleleSpecies, resultList);
+        if(postOptimization) {
+            List summarizedGTs = new ArrayList();
+            List gtCorrespondence = new ArrayList();
+            _fullLikelihoodCalculator.summarizeData(originalData, allele2species, summarizedGTs, gtCorrespondence);
+            LinkedList<Tuple<Network, Double>> updatedResult = optimizeResultingNetworks(_fullLikelihoodCalculator, summarizedGTs, gtCorrespondence, species2alleles, singleAlleleSpecies, resultList);
             resultList.clear();
             resultList.addAll(updatedResult);
+            _acceptCount = searcher.GetAcceptCount();
+
         }
-
-        _acceptCount = searcher.GetAcceptCount();
-
-
 /*
         //this is for searching using genetic algorithm
         NetworkRandomTopologyNeighbourGenerator topologyMutator = new NetworkRandomTopologyNeighbourGenerator(_topologyOperationWeight, maxReticulations, _moveDiameter, _reticulationDiameter, _seed);

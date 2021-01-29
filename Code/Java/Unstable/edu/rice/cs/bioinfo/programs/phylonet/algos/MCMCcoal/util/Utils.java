@@ -68,6 +68,12 @@ public class Utils {
     public static double NODE_HEIGHT_MIN_STDDEV = 10000;
     public static double POP_SIZE_MIN_STDDEV = 3000;
 
+    // --- variational inference settings, learning settings for reparametrized model---
+    public static double BRANCH_LENGTH_INIT_STDDEV = 20000;
+    public static double BRANCH_LENGTH_MEAN_LEARNING_RATE = 20000;
+    public static double BRANCH_LENGTH_STDDEV_LEARNING_RATE = 500;
+    public static double BRANCH_LENGTH_MIN_STDDEV = 10000;
+
     // --- logging ---
     public static long buildingTime = 0;
     public static long likelihoodTime = 0;

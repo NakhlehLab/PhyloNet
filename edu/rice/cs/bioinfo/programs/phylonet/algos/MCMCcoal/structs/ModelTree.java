@@ -115,6 +115,53 @@ public class ModelTree extends StateNode {
     }
 
     /**
+     * In setTreeBySample() in VariationalModel we would modify each pop size and some branch lengths.
+     * Reset node heights and parent distances after some branch lengths are modified so that the model tree is correct.
+     */
+    public void refreshNewBranchLength() {
+        // set node heights in _tree according to the branch lengths set in BranchLengthVariable()
+        for (TNode n:_tree.postTraverse()) {
+            STINode<TreeNodeInfo> node = (STINode<TreeNodeInfo>) n;
+            if (node.isLeaf()) {
+                node.setNodeHeight(0);
+            } else {
+                if (node.countLeafChildren() == 2) {
+                    STINode<TreeNodeInfo> connectedLeaf = node.getChildren().iterator().next(); // TODO need to make sure this leaf is indeed the one passed to BranchLengthVariable
+                    double height = connectedLeaf.getNodeHeight() + connectedLeaf.getParentDistance();
+                    node.setNodeHeight(height);
+                } else if (node.countLeafChildren() == 1) {
+                    STINode<TreeNodeInfo> nonleafChild = null;
+                    for (STINode<TreeNodeInfo> child : node.getChildren()) {
+                        if (!child.isLeaf()) {
+                            nonleafChild = child;
+                            break;
+                        }
+                    }
+                    double height = nonleafChild.getNodeHeight() + nonleafChild.getParentDistance();
+                    node.setNodeHeight(height);
+                } else if (node.countLeafChildren() == 0) {
+                    STINode<TreeNodeInfo> leftChild = null;
+                    for (STINode<TreeNodeInfo> child : node.getChildren()) {
+                        leftChild = child;
+                        break;
+                    }
+                    double height = leftChild.getNodeHeight() + leftChild.getParentDistance();
+                    node.setNodeHeight(height);
+                } else {
+                    System.out.println("Shouldn't be here.");
+                    System.exit(1);
+                }
+            }
+        }
+        // set all parent distances according to the newly set node heights
+        for (TNode node:_tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+            }
+        }
+    }
+
+    /**
      * STITree parsed from string does not have associated node height. It only has parent distance for each node.
      * This function builds the node height of each node of a newly parsed STITree.
      * Also used in HmmBuilder.

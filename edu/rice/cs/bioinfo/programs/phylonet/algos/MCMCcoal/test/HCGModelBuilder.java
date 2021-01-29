@@ -47,6 +47,30 @@ public class HCGModelBuilder {
         return model;
     }
 
+    public static ModelTree getHCGModelSetValue(double t_hc, double t_hcg, double n_hc, double n_hcg) {
+        RecombinationRate dummyRecombRate = new RecombinationRate(trueRecombRate);
+        ModelTree model = new ModelTree("((H,C), G);", dummyRecombRate);
+        STITree<TreeNodeInfo> tree = model.getTree();
+        for (String leafName:tree.getLeaves()) {
+            STINode<TreeNodeInfo> leafNode = tree.getNode(leafName);
+            leafNode.getData().setPopSize(10000);
+        }
+        for (STINode<TreeNodeInfo> node:tree.getNodes()) {
+            if (!node.isLeaf() && !node.isRoot()) {
+                node.getData().setPopSize((int) n_hc);
+                node.setNodeHeight(t_hc);
+            }
+        }
+        tree.getRoot().getData().setPopSize((int) n_hcg);
+        tree.getRoot().setNodeHeight(t_hcg);
+        for (TNode node:tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+            }
+        }
+        return model;
+    }
+
     public static ModelTree getHCGModelBad() {
         // Set HC and HCG population size to 60000, change HC divergence time to 100000 gens
         //RecombinationRate dummyRecombRate = new RecombinationRate(1.5E-8);
@@ -266,6 +290,7 @@ public class HCGModelBuilder {
             System.out.println(state.getTree().toNewick());
         }
     }
+
 
 
 }

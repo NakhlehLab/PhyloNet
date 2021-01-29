@@ -13,7 +13,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs.ModelTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs.RecombinationRate;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.VariationalInference;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.VariationalInferenceReparam;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.VariationalModel;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.VariationalModelReparam;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.distribution.Prior;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.distribution.VariationalVariable;
 
@@ -30,6 +32,8 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
     private String _startTree = null;
     private double _originalMu;
     private double _recombRate;
+
+    private boolean _inferBranchLength = false;
 
     public VI_coalHMM(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                       Map<String, NetworkNonEmpty> sourceIdentToNetwork,
@@ -50,6 +54,12 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
     @Override
     protected boolean checkParamsForCommand() {
         boolean noError = true;
+
+        // ----- Reparametrization. Infer branch lengths instead of node heights. -----
+        ParamExtractor blParam = new ParamExtractor("bl", this.params, this.errorDetected);
+        if (blParam.ContainsSwitch) {
+            _inferBranchLength = true;
+        }
 
         // ----- DNA sequences -----
         this.parseMatrixData(Program.inputNexusFileName);
@@ -156,6 +166,22 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
             } else {
                 errorDetected.execute("Expected value after switch -pssigma.",
                         pssigmaParam.SwitchParam.getLine(), pssigmaParam.SwitchParam.getColumn());
+            }
+        }
+
+        // branch length variational posterior initial standard deviation, default 20000
+        ParamExtractor blsigmaParam = new ParamExtractor("blsigma", this.params, this.errorDetected);
+        if (blsigmaParam.ContainsSwitch) {
+            if (blsigmaParam.PostSwitchParam != null) {
+                try {
+                    Utils.BRANCH_LENGTH_INIT_STDDEV = Double.parseDouble(blsigmaParam.PostSwitchValue);
+                } catch (NumberFormatException e) {
+                    errorDetected.execute("Unrecognized branch length posterior initial standard deviation " + blsigmaParam.PostSwitchValue,
+                            blsigmaParam.PostSwitchParam.getLine(), blsigmaParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -blsigma.",
+                        blsigmaParam.SwitchParam.getLine(), blsigmaParam.SwitchParam.getColumn());
             }
         }
 
@@ -296,6 +322,22 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
             }
         }
 
+        // learning rate for mean of branch length variational posterior, default 20000
+        ParamExtractor blmeanlrParam = new ParamExtractor("blmeanlr", this.params, this.errorDetected);
+        if (blmeanlrParam.ContainsSwitch) {
+            if (blmeanlrParam.PostSwitchParam != null) {
+                try {
+                    Utils.BRANCH_LENGTH_MEAN_LEARNING_RATE = Double.parseDouble(blmeanlrParam.PostSwitchValue);
+                } catch (NumberFormatException e) {
+                    errorDetected.execute("Unrecognized learning rate for mean of branch length posterior " + blmeanlrParam.PostSwitchValue,
+                            blmeanlrParam.PostSwitchParam.getLine(), blmeanlrParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -blmeanlr.",
+                        blmeanlrParam.SwitchParam.getLine(), blmeanlrParam.SwitchParam.getColumn());
+            }
+        }
+
         // learning rate for standard deviation of node height variational posterior, default 500
         ParamExtractor nhsigmalrParam = new ParamExtractor("nhsigmalr", this.params, this.errorDetected);
         if (nhsigmalrParam.ContainsSwitch) {
@@ -325,6 +367,22 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
             } else {
                 errorDetected.execute("Expected value after switch -pssigmalr.",
                         pssigmalrParam.SwitchParam.getLine(), pssigmalrParam.SwitchParam.getColumn());
+            }
+        }
+
+        // learning rate for standard deviation of branch length variational posterior, default 500
+        ParamExtractor blsigmalrParam = new ParamExtractor("blsigmalr", this.params, this.errorDetected);
+        if (blsigmalrParam.ContainsSwitch) {
+            if (blsigmalrParam.PostSwitchParam != null) {
+                try {
+                    Utils.BRANCH_LENGTH_STDDEV_LEARNING_RATE = Double.parseDouble(blsigmalrParam.PostSwitchValue);
+                } catch (NumberFormatException e) {
+                    errorDetected.execute("Unrecognized learning rate for standard deviation of branch length posterior " + blsigmalrParam.PostSwitchValue,
+                            blsigmalrParam.PostSwitchParam.getLine(), blsigmalrParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -blsigmalr.",
+                        blsigmalrParam.SwitchParam.getLine(), blsigmalrParam.SwitchParam.getColumn());
             }
         }
 
@@ -360,18 +418,36 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
             }
         }
 
+        // minimum value of branch length posterior standard deviation, default 10000
+        ParamExtractor blsigmaminParam = new ParamExtractor("blsigmamin", this.params, this.errorDetected);
+        if (blsigmaminParam.ContainsSwitch) {
+            if (blsigmaminParam.PostSwitchParam != null) {
+                try {
+                    Utils.BRANCH_LENGTH_MIN_STDDEV = Double.parseDouble(blsigmaminParam.PostSwitchValue);
+                } catch (NumberFormatException e) {
+                    errorDetected.execute("Unrecognized minimum value of branch length posterior standard deviation " + blsigmaminParam.PostSwitchValue,
+                            blsigmaminParam.PostSwitchParam.getLine(), blsigmaminParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -blsigmamin.",
+                        blsigmaminParam.SwitchParam.getLine(), blsigmaminParam.SwitchParam.getColumn());
+            }
+        }
+
         noError = noError && checkForUnknownSwitches(
-                "st", "mu", "rho", "nhsigma", "pssigma",
+                "bl",
+                "st", "mu", "rho", "nhsigma", "pssigma", "blsigma",
                 "psp",
                 "n0", "r", "nb",
-                "ns", "niter", "nhmeanlr", "psmeanlr", "nhsigmalr", "pssigmalr", "nhsigmamin", "pssigmamin"
+                "ns", "niter", "nhmeanlr", "psmeanlr", "blmeanlr" ,"nhsigmalr", "pssigmalr", "blsigmalr","nhsigmamin", "pssigmamin", "blsigmamin"
         );
 
         checkAndSetOutFile(
-                stParam, muParam, rhoParam, nhsigmaParam, pssigmaParam,
+                blParam,
+                stParam, muParam, rhoParam, nhsigmaParam, pssigmaParam, blsigmaParam,
                 pspParam,
                 n0Param, rParam, nbParam,
-                nsParam, niterParam, nhmeanlrParam, psmeanlrParam, nhsigmalrParam, pssigmalrParam, nhsigmaminParam, pssigmaminParam
+                nsParam, niterParam, nhmeanlrParam, psmeanlrParam, blmeanlrParam, nhsigmalrParam, pssigmalrParam, blsigmalrParam, nhsigmaminParam, pssigmaminParam, blsigmaminParam
         );
 
         return noError;
@@ -386,34 +462,68 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
         RecombinationRate recombRate = new RecombinationRate(_recombRate);
         ModelTree initModel = new ModelTree(_startTree, recombRate, true);
         Prior prior = new Prior();
-        VariationalInference algo = new VariationalInference(initModel, prior);
 
-        // log time used by algo.run()
-        long startTime = System.currentTimeMillis();
-        algo.run();
-        long endTime = System.currentTimeMillis();
-        long totalTimeMillis = endTime - startTime;
+        if (_inferBranchLength) {
+            // reparametrized inference
+            VariationalInferenceReparam algoReparam = new VariationalInferenceReparam(initModel, prior);
 
-        System.out.println("");
-        System.out.println("===================================== Final results =====================================");
-        VariationalModel posterior = algo.getVariationalPosterior();
-        System.out.println("********************* Node heights in postorder traversal *********************");
-        int nodeIndex = 1;
-        for (VariationalVariable var:posterior.getNodeHeightVariableList()) {
-            System.out.println("Node " + nodeIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
-            nodeIndex += 1;
+            // log time used by algo.run()
+            long startTime = System.currentTimeMillis();
+            algoReparam.run();
+            long endTime = System.currentTimeMillis();
+            long totalTimeMillis = endTime - startTime;
+
+            System.out.println("");
+            System.out.println("===================================== Final results =====================================");
+            VariationalModelReparam posteriorReparam = algoReparam.getVariationalPosterior();
+            System.out.println("********************* Branch lengths in postorder traversal (ordering described on the method website) *********************");
+            int branchIndex = 1;
+            for (VariationalVariable var : posteriorReparam.getBranchLengthVariableList()) {
+                System.out.println("Branch " + branchIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
+                branchIndex += 1;
+            }
+            System.out.println("********************* Population sizes in postorder traversal *********************");
+            int internalBranchIndex = 1;
+            for (VariationalVariable var : posteriorReparam.getPopSizeVariableList()) {
+                System.out.println("Internal branch " + internalBranchIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
+                internalBranchIndex += 1;
+            }
+
+            System.out.println("");
+            System.out.println("Total execution time: " + totalTimeMillis / 1000.0 + " s");
+            System.out.println("Time used to build HMM: " + Utils.buildingTime / 1000.0 + " s");
+            System.out.println("Time used in forward algorithm: " + Utils.likelihoodTime / 1000.0 + " s");
+
+        } else {
+            VariationalInference algo = new VariationalInference(initModel, prior);
+
+            // log time used by algo.run()
+            long startTime = System.currentTimeMillis();
+            algo.run();
+            long endTime = System.currentTimeMillis();
+            long totalTimeMillis = endTime - startTime;
+
+            System.out.println("");
+            System.out.println("===================================== Final results =====================================");
+            VariationalModel posterior = algo.getVariationalPosterior();
+            System.out.println("********************* Node heights in postorder traversal *********************");
+            int nodeIndex = 1;
+            for (VariationalVariable var : posterior.getNodeHeightVariableList()) {
+                System.out.println("Node " + nodeIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
+                nodeIndex += 1;
+            }
+            System.out.println("********************* Population sizes in postorder traversal *********************");
+            int branchIndex = 1;
+            for (VariationalVariable var : posterior.getPopSizeVariableList()) {
+                System.out.println("Branch " + branchIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
+                branchIndex += 1;
+            }
+
+            System.out.println("");
+            System.out.println("Total execution time: " + totalTimeMillis / 1000.0 + " s");
+            System.out.println("Time used to build HMM: " + Utils.buildingTime / 1000.0 + " s");
+            System.out.println("Time used in forward algorithm: " + Utils.likelihoodTime / 1000.0 + " s");
         }
-        System.out.println("********************* Population sizes in postorder traversal *********************");
-        int branchIndex = 1;
-        for (VariationalVariable var:posterior.getPopSizeVariableList()) {
-            System.out.println("Branch " + branchIndex + "; Mean: " + var.getMean() + ", Standard deviation: " + var.getStandardDeviation());
-            branchIndex += 1;
-        }
-
-        System.out.println("");
-        System.out.println("Total execution time: " + totalTimeMillis / 1000.0 + " s");
-        System.out.println("Time used to build HMM: " + Utils.buildingTime / 1000.0 + " s");
-        System.out.println("Time used in forward algorithm: " + Utils.likelihoodTime / 1000.0 + " s");
 
         return "";
     }

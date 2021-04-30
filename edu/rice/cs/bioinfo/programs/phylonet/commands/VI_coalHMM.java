@@ -257,6 +257,22 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
                     _website);
         }
 
+        // simulation short region length
+        ParamExtractor lenParam = new ParamExtractor("len", this.params, this.errorDetected);
+        if (lenParam.ContainsSwitch) {
+            if (lenParam.PostSwitchParam != null) {
+                try {
+                    Utils.sequenceLength = Integer.parseInt(lenParam.PostSwitchValue);
+                } catch (NumberFormatException e) {
+                    errorDetected.execute("Unrecognized short region length " + lenParam.PostSwitchValue,
+                            lenParam.PostSwitchParam.getLine(), lenParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -len.",
+                        lenParam.SwitchParam.getLine(), lenParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- BBVI Settings -----
         // number of samples per iteration, default 50
         ParamExtractor nsParam = new ParamExtractor("ns", this.params, this.errorDetected);
@@ -438,7 +454,7 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
                 "bl",
                 "st", "mu", "rho", "nhsigma", "pssigma", "blsigma",
                 "psp",
-                "n0", "r", "nb",
+                "n0", "r", "nb", "len",
                 "ns", "niter", "nhmeanlr", "psmeanlr", "blmeanlr" ,"nhsigmalr", "pssigmalr", "blsigmalr","nhsigmamin", "pssigmamin", "blsigmamin"
         );
 
@@ -446,7 +462,7 @@ public class VI_coalHMM extends CommandBaseFileOutMatrix {
                 blParam,
                 stParam, muParam, rhoParam, nhsigmaParam, pssigmaParam, blsigmaParam,
                 pspParam,
-                n0Param, rParam, nbParam,
+                n0Param, rParam, nbParam, lenParam,
                 nsParam, niterParam, nhmeanlrParam, psmeanlrParam, blmeanlrParam, nhsigmalrParam, pssigmalrParam, blsigmalrParam, nhsigmaminParam, pssigmaminParam, blsigmaminParam
         );
 

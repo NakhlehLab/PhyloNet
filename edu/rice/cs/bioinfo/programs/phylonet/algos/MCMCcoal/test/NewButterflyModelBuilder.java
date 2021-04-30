@@ -20,7 +20,8 @@ import java.util.Arrays;
  * Created by Xinhao Liu on 06/02/20.
  */
 public class NewButterflyModelBuilder {
-    public static double trueRecombRate = 1E-8;
+//    public static double trueRecombRate = 1E-8;
+    public static double trueRecombRate = 5E-8;
 
     public static ModelTree getButterflyModel() {
         RecombinationRate dummyRecombRate = new RecombinationRate(trueRecombRate);
@@ -44,6 +45,60 @@ public class NewButterflyModelBuilder {
         }
         tree.getRoot().getData().setPopSize(2000000);
         tree.getRoot().setNodeHeight(8400000);
+        for (TNode node:tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+            }
+        }
+        return model;
+    }
+
+    public static ModelTree getButterflyModelRealData() {
+        RecombinationRate dummyRecombRate = new RecombinationRate(trueRecombRate);
+        ModelTree model = new ModelTree("((cydno, timareta), numata);", dummyRecombRate);
+        STITree<TreeNodeInfo> tree = model.getTree();
+        for (String leafName:tree.getLeaves()) {
+            STINode<TreeNodeInfo> leafNode = tree.getNode(leafName);
+            leafNode.getData().setPopSize(1000000); // this set to be N0, but probably does not matter
+        }
+        for (STINode<TreeNodeInfo> node:tree.getNodes()) {
+            if (!node.isLeaf() && !node.isRoot()) {
+                node.getData().setPopSize(2000000);
+                //node.setNodeHeight(4800000);
+                node.setNodeHeight(4500000);
+                //node.setNodeHeight(1954217);
+            }
+        }
+        tree.getRoot().getData().setPopSize(2000000);
+        //tree.getRoot().setNodeHeight(8400000);
+        tree.getRoot().setNodeHeight(9000000);
+        //tree.getRoot().setNodeHeight(9990000);
+        for (TNode node:tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+            }
+        }
+        return model;
+    }
+
+    public static ModelTree getButterflyModelRealDataMyValue() {
+        RecombinationRate dummyRecombRate = new RecombinationRate(trueRecombRate);
+        ModelTree model = new ModelTree("((cydno, timareta), numata);", dummyRecombRate);
+        STITree<TreeNodeInfo> tree = model.getTree();
+        for (String leafName:tree.getLeaves()) {
+            STINode<TreeNodeInfo> leafNode = tree.getNode(leafName);
+            leafNode.getData().setPopSize(1000000);
+        }
+        for (STINode<TreeNodeInfo> node:tree.getNodes()) {
+            if (!node.isLeaf() && !node.isRoot()) {
+                node.getData().setPopSize((int) 1871361.916489458);
+                //node.setNodeHeight(4800000);
+                node.setNodeHeight(4805009.498395706);
+            }
+        }
+        tree.getRoot().getData().setPopSize((int) 3526556.798017917);
+        //tree.getRoot().setNodeHeight(8400000);
+        tree.getRoot().setNodeHeight(1.0129150087520199E7);
         for (TNode node:tree.postTraverse()) {
             if (!node.isRoot()) {
                 node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
@@ -154,5 +209,29 @@ public class NewButterflyModelBuilder {
         }
         System.out.println(Arrays.toString(hmm.getPi()));
         System.out.println(Arrays.deepToString(hmm.getA()));
+    }
+
+    public static ModelTree getbutterflymodel4LocalGenealogy() {
+        RecombinationRate dummyRecombRate = new RecombinationRate(trueRecombRate);
+        ModelTree model = new ModelTree("((H,C),G);", dummyRecombRate);
+        STITree<TreeNodeInfo> tree = model.getTree();
+        for (String leafName:tree.getLeaves()) {
+            STINode<TreeNodeInfo> leafNode = tree.getNode(leafName);
+            leafNode.getData().setPopSize(1000000); // this set to be N0, but probably does not matter
+        }
+        for (STINode<TreeNodeInfo> node:tree.getNodes()) {
+            if (!node.isLeaf() && !node.isRoot()) {
+                node.getData().setPopSize(2000000);
+                node.setNodeHeight(4800000);
+            }
+        }
+        tree.getRoot().getData().setPopSize(2000000);
+        tree.getRoot().setNodeHeight(8400000);
+        for (TNode node:tree.postTraverse()) {
+            if (!node.isRoot()) {
+                node.setParentDistance(node.getParent().getNodeHeight() - node.getNodeHeight());
+            }
+        }
+        return model;
     }
 }

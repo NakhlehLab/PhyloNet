@@ -47,6 +47,11 @@ public class ControlFileParser {
                 } else if (Trees.getInternalNodes(gt).get(0).getNodeHeight() < 5.5) {
                     return "HC1";
                 }
+//                if (Trees.getInternalNodes(gt).get(0).getNodeHeight() >= 5.5) {
+//                    return "HC";
+//                } else if (Trees.getInternalNodes(gt).get(0).getNodeHeight() < 5.5) {
+//                    return "HC";
+//                }
                 System.out.println("ERROR IN ControlFileParser.treeString2GenealogyClass!!!!!!!!");
                 System.exit(1);
             }

@@ -6,6 +6,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.hmm.HmmBuilder;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.hmm.HmmCore;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs.ModelTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.test.HCGModelBuilder;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.test.NewButterflyModelBuilder;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
 
@@ -388,6 +389,105 @@ public class InferLocalGenealogy {
             writeOutPosteriorDecoding(path);
             writeOutTrueGenealogy(path);
             System.out.println("Done with " + i);
+        }
+    }
+
+    public static void runAllDatasetCTN() throws IOException, ParseException {
+        String[] stateNames = new String[] {"HC", "HG", "CG"};
+        // Initialize confusion matrix as a map of map
+        Map<String, Map<String, Integer>> confusionMatrix = new HashMap<>();
+        for (String trueState:stateNames) {
+            confusionMatrix.put(trueState, new HashMap<>());
+            for (String inferredState:stateNames) {
+                confusionMatrix.get(trueState).put(inferredState, 0);
+            }
+        }
+
+        for (int datasetIdx = 1; datasetIdx <= 5; datasetIdx++) {
+            /*
+             * load data
+             */
+            Map<String, String> msName2SpeciesName = new HashMap<>();
+            msName2SpeciesName.put("1", "H");
+            msName2SpeciesName.put("2", "C");
+            msName2SpeciesName.put("3", "G");
+            // Read file
+            Map<String, String> omap = new HashMap<>();
+            File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/CTN_500000_1_5/" + datasetIdx + "/aligned.fasta");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            String taxon = null;
+            while ((line = br.readLine()) != null) {
+                if (line.length() == 2) {
+                    taxon = line.substring(1);
+                } else {
+                    omap.put(msName2SpeciesName.get(taxon), line);
+                }
+            }
+            Utils.DATA = new Alignment(omap);
+
+            // Build model and do posterior decoding
+            ModelTree trueModel = NewButterflyModelBuilder.getbutterflymodel4LocalGenealogy();
+            HmmBuilder builder = new HmmBuilder(trueModel.getTree(), trueModel.getRecombRate());
+            HmmCore hmm = builder.build();
+            double[][] posteriorMatrix = hmm.posteriorDecoding();
+            double[] HC = new double[Utils.DATA.getSiteCount()];
+            double[] HG = new double[Utils.DATA.getSiteCount()];
+            double[] CG = new double[Utils.DATA.getSiteCount()];
+
+            // Parse true states
+            List<String> trueStateSequence = ControlFileParser.parse("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/CTN_500000_1_5/" + datasetIdx + "/control.txt");
+            // Iterate over sites
+            for (int siteIdx = 0; siteIdx < Utils.DATA.getSiteCount(); siteIdx++) {
+                double maxProb = -1;
+                String MAP = "ERROR";
+                for (int stateIdx = 0; stateIdx < hmm.getNumStates(); stateIdx++) {
+                    switch (hmm.getState(stateIdx).getStateName()) {
+                        case "HC1":
+                        case "HC2":
+                            HC[siteIdx] += posteriorMatrix[stateIdx][siteIdx];
+                            if (HC[siteIdx] > maxProb) {
+                                maxProb = HC[siteIdx];
+                                MAP = "HC";
+                            }
+                            break;
+                        case "HG":
+                            HG[siteIdx] += posteriorMatrix[stateIdx][siteIdx];
+                            if (HG[siteIdx] > maxProb) {
+                                maxProb = HG[siteIdx];
+                                MAP = "HG";
+                            }
+                            break;
+                        case "CG":
+                            CG[siteIdx] += posteriorMatrix[stateIdx][siteIdx];
+                            if (CG[siteIdx] > maxProb) {
+                                maxProb = CG[siteIdx];
+                                MAP = "CG";
+                            }
+                            break;
+                        default:
+                            System.out.println("ERROR IN InferLocalGenealogy!!!!");
+                            break;
+                    }
+                }
+                String trueState = trueStateSequence.get(siteIdx);
+                confusionMatrix.get(trueState).put(MAP, confusionMatrix.get(trueState).get(MAP) + 1);
+            }
+            System.out.println("Finished dataset " + datasetIdx);
+//            // Print results
+//            System.out.println("==========================" + "DATASET " + datasetIdx + "==========================");
+//            for (String trueState:stateNames) {
+//                for (String inferredState:stateNames) {
+//                    System.out.println("True: " + trueState + ", Inferred: " + inferredState + ", count = " + confusionMatrix.get(trueState).get(inferredState));
+//                }
+//            }
+        }
+        // Print results
+        System.out.println("==========================FINAL==========================");
+        for (String trueState:stateNames) {
+            for (String inferredState:stateNames) {
+                System.out.println("True: " + trueState + ", Inferred: " + inferredState + ", count = " + confusionMatrix.get(trueState).get(inferredState));
+            }
         }
     }
 }

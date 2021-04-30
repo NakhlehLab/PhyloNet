@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.hmm.HmmBuilder;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.hmm.HmmBuilderShortLoci;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.hmm.HmmCore;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.structs.ModelTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.util.Utils;
@@ -9,6 +10,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.distribu
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCcoal.variational.distribution.VariationalVariable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +55,8 @@ public class VariationalInference {
                 // not sure why. maybe beagle screwed up.
                 double likelihood = 1;
                 while (likelihood >= 0) {
-                    HmmBuilder builder = new HmmBuilder(sampledVariationalPosterior.getTree(), sampledVariationalPosterior.getRecombRate());
+                    //HmmBuilder builder = new HmmBuilder(sampledVariationalPosterior.getTree(), sampledVariationalPosterior.getRecombRate());
+                    HmmBuilderShortLoci builder = new HmmBuilderShortLoci(sampledVariationalPosterior.getTree(), sampledVariationalPosterior.getRecombRate());
                     // log time used by builder.build(), add up to time used by building HMM by simulation
                     long buildingStartTime = System.currentTimeMillis();
                     HmmCore hmm = builder.build();

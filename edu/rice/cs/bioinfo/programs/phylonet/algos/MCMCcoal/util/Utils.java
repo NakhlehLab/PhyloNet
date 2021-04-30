@@ -16,8 +16,11 @@ public class Utils {
 
     // --- simulation ---
     public static int N0 = 10000;  // N0 for ms
-    public static int sequenceLength = -1; // simulated sequence length for ms, be modified according to -r
+//    public static int N0 = 2000000;  // test butterfly
+    public static int sequenceLength = 5000; // simulated subregion length for ms, depending on how many independent simulations to run for building one HMM
+    public static int simulationActualTotalLength = -1; // simulated total sequence length for ms, be modified according to -r, round up according to Utils.sequenceLength
     public static int CROSS_OVER_RATE = 1000; // -r parameter of ms
+    // public static int CROSS_OVER_RATE = 5000; // test ABC, butterfly
     public static final int hmmSmoothingParam = 3; // smoothing on transition probability of hmm hidden states 3
 
     // --- likelihood calculation ---
@@ -27,7 +30,9 @@ public class Utils {
 //    public static double MUTATION_RATE = 0.02; // this is HCG mutation rate of 3.0e-7 (20 folds)
     //public static double MUTATION_RATE = 0.05; // this is HCG mutation rate of 1.25e-6 (50 folds)
     //public static double MUTATION_RATE = 0.00094; // this is HCG mutation rate of 0.094% change per million years (from 09 coalhmm paper)
-//    public static double MUTATION_RATE = 0.0116; // this is butterfly mutation rate of 2.9e-9/site/generation, assuming pop size 1000000
+    //public static double MUTATION_RATE = 0.0116; // this is butterfly mutation rate of 2.9e-9/site/generation, assuming pop size 1000000
+    //public static double MUTATION_RATE = 0.008;
+//    public static double MUTATION_RATE = 0.016; // test butterfly
 //    public static final double MUTATION_RATE = 0.04; // this is butterfly mutation rate of 1e-8/site/generation, assuming pop size 1000000
 //    public static final double MUTATION_RATE = 0.116; // this is butterfly mutation rate of 2.9e-8/site/generation, assuming pop size 1000000
     public static Alignment DATA = null;
@@ -43,20 +48,22 @@ public class Utils {
     public static final int DEFAULT_TREE_LEAF_HEIGHT = 0;
     public static final double TREE_INTI_SCALE = 0.5;
     public static int POP_SIZE_MEAN = 50000;
+//    public static int POP_SIZE_MEAN = 2000000; // test butterfly
 
     // --- variational inference settings, learning settings---
     public static boolean ILLEGAL_SAMPLE_GENERATED = false;
-//    public static final double NODE_HEIGHT_INIT_STDDEV = 10000.0;
-//    public static final double POP_SIZE_INIT_STDDEV = 5000.0;
+//    public static double NODE_HEIGHT_INIT_STDDEV = 10000; //800000; //150000;//1000000.0; ABC4
+//    public static double POP_SIZE_INIT_STDDEV = 5000; //300000;//300000.0; ABC4
     public static double NODE_HEIGHT_INIT_STDDEV = 20000.0;
     public static double POP_SIZE_INIT_STDDEV = 10000.0;
     public static final double RECOMB_RATE_INIT_STDDEV = 0.8;
     public static int nSamples = 50;
     public static int nIterations = 200;
-//    public static double NODE_HEIGHT_MEAN_LEARNING_RATE = 20000;
-//    public static double NODE_HEIGHT_STDDEV_LEARNING_RATE = 5000; // 1500 too low?
-//    public static double POP_SIZE_MEAN_LEARNING_RATE = 10000;
-//    public static double POP_SIZE_STDDEV_LEARNING_RATE = 5000;
+//    public static int nIterations = 50; // test ABC4
+//    public static double NODE_HEIGHT_MEAN_LEARNING_RATE = 300000;//500000; //200000; test butterfly
+//    public static double NODE_HEIGHT_STDDEV_LEARNING_RATE = 25000;//25000; //10000;
+//    public static double POP_SIZE_MEAN_LEARNING_RATE = 200000;//300000; //100000;
+//    public static double POP_SIZE_STDDEV_LEARNING_RATE = 25000;//25000; //10000;
     public static double NODE_HEIGHT_MEAN_LEARNING_RATE = 20000;
     public static double NODE_HEIGHT_STDDEV_LEARNING_RATE = 500;
     public static double POP_SIZE_MEAN_LEARNING_RATE = 10000;
@@ -65,6 +72,8 @@ public class Utils {
     public static final double RECOMB_RATE_STDDEV_LEARNING_RATE = 0.000001;
 //    public static double RECOMB_RATE_SCALE = 1E-8; // not useful anymore
     public static double SIGMA_LEARNING_RATE = 25000000; // 5000^2
+//    public static double NODE_HEIGHT_MIN_STDDEV = 300000;//300000; //500000; // test butterfly
+//    public static double POP_SIZE_MIN_STDDEV = 100000;//60000;
     public static double NODE_HEIGHT_MIN_STDDEV = 10000;
     public static double POP_SIZE_MIN_STDDEV = 3000;
 

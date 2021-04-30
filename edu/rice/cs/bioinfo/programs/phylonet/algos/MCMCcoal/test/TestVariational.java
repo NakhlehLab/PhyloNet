@@ -25,10 +25,10 @@ import java.util.Map;
  */
 public class TestVariational {
     public static void main(String[] args) throws IOException {
-        //testHCG();
+        testHCG();
         //convergencePlot(3);
         //convergencePlot(4);
-        testHCGreparam();
+        //testHCGreparam();
     }
 
     private static void testDaC_HCO() throws IOException {
@@ -304,7 +304,7 @@ public class TestVariational {
         //msName2SpeciesName.put("4", "O");
         // Read file
         Map<String, String> omap = new HashMap<>();
-        File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/TrueHCG_500000/100/aligned.fasta");
+        File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/TrueHCG_500000/69/aligned.fasta");
         //File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/TrueHCG_500000/aligned.fasta");
         //File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/HCG10mut_500000/aligned.fasta");
         //File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/HMMtestdata/10recomb50mut/HCG_100000/aligned.fasta");
@@ -321,7 +321,7 @@ public class TestVariational {
         //omap.remove("O");
         Utils.DATA = new Alignment(omap);
 
-        System.out.println("HCG_HCG 100");
+        System.out.println("HCG_HCG 69");
         /*
          * initialize inference
          */

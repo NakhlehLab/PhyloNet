@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class TestABC {
     public static void main(String[] args) throws IOException {
-        testABC2();
+        testABC4();
     }
 
     private static void testABC1() throws IOException {
@@ -136,7 +136,22 @@ public class TestABC {
         }
         Utils.DATA = new Alignment(omap);
 
-        System.out.println("ABC4 5000 2");
+        /*
+         * Print hyperparameters for bookkeeping
+         */
+        System.out.println("long region simulation");
+        System.out.println("ABC4 5000 5");
+        System.out.println("1.25e-6 mutation rate");
+        System.out.println("N0 is " + Utils.N0);
+        System.out.println(Utils.NUM_BIN + "-" + Utils.CROSS_OVER_RATE);
+        System.out.println("NODE_HEIGHT_INIT_STDDEV = " + Utils.NODE_HEIGHT_INIT_STDDEV);
+        System.out.println("POP_SIZE_INIT_STDDEV = " + Utils.POP_SIZE_INIT_STDDEV);
+        System.out.println("NODE_HEIGHT_MIN_STDDEV = " + Utils.NODE_HEIGHT_MIN_STDDEV);
+        System.out.println("POP_SIZE_MIN_STDDEV = " + Utils.POP_SIZE_MIN_STDDEV);
+        System.out.println("NODE_HEIGHT_MEAN_LEARNING_RATE = " + Utils.NODE_HEIGHT_MEAN_LEARNING_RATE);
+        System.out.println("NODE_HEIGHT_STDDEV_LEARNING_RATE = " + Utils.NODE_HEIGHT_STDDEV_LEARNING_RATE);
+        System.out.println("POP_SIZE_MEAN_LEARNING_RATE = " + Utils.POP_SIZE_MEAN_LEARNING_RATE);
+        System.out.println("POP_SIZE_STDDEV_LEARNING_RATE = " + Utils.POP_SIZE_STDDEV_LEARNING_RATE);
         /*
          * initialize inference
          */
@@ -144,7 +159,24 @@ public class TestABC {
         Prior prior = new Prior();
         VariationalInference algo = new VariationalInference(initModel, prior);
 
+//        algo.run();
+//
+//        VariationalModel posterior = algo.getVariationalPosterior();
+//        for (VariationalVariable var:posterior.getNodeHeightVariableList()) {
+//            System.out.println(var.getMean());
+//            System.out.println(var.getStandardDeviation());
+//        }
+//        for (VariationalVariable var:posterior.getPopSizeVariableList()) {
+//            System.out.println(var.getMean());
+//            System.out.println(var.getStandardDeviation());
+//        }
+
+
+        // log time used by algo.run()
+        long startTime = System.currentTimeMillis();
         algo.run();
+        long endTime = System.currentTimeMillis();
+        long totalTimeMillis = endTime - startTime;
 
         VariationalModel posterior = algo.getVariationalPosterior();
         for (VariationalVariable var:posterior.getNodeHeightVariableList()) {
@@ -155,5 +187,10 @@ public class TestABC {
             System.out.println(var.getMean());
             System.out.println(var.getStandardDeviation());
         }
+
+        System.out.println("");
+        System.out.println("Total execution time: " + totalTimeMillis / 1000.0 + " s");
+        System.out.println("Time used to build HMM: " + Utils.buildingTime / 1000.0 + " s");
+        System.out.println("Time used in forward algorithm: " + Utils.likelihoodTime / 1000.0 + " s");
     }
 }

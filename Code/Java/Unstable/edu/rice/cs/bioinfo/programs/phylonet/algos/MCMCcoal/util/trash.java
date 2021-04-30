@@ -15,7 +15,7 @@ import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.DoubleStream;
@@ -25,7 +25,7 @@ public class trash {
 //        testPopsizePrior();
 //        NormalDistribution dist =  new NormalDistribution(0, 2);
 //        System.out.println(dist.density(0.6));
-        trash5();
+        parseRAxMLTopo("/Users/xinhaoliu/Desktop/Research/Scripts/butterfly/fourtaxa_vicar_ml/201019_1/0_500000_500", 0, 500000, 500);
     }
 
     public static void trash1() throws IOException, ParseException {
@@ -183,6 +183,67 @@ public class trash {
         System.out.println(tree.toNewick());
 //        buildGTNodeHeight(tree);
         System.out.println(tree.getRoot().getChildren().iterator().next().getParentDistance());
+    }
+
+    public static void trash6() throws IOException, ParseException {
+        File file = new File("/Users/xinhaoliu/Desktop/Research/Scripts/butterfly/fourtaxa_vicar_ml/201019_1/200000_300000_1000/200000_201000/RAxML_bestTree.window1000");
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line;
+        line = br.readLine();
+        System.out.println(line);
+        STITree tree = new STITree<>(line);
+        tree.removeNode("HeraRef");
+        System.out.println(tree.toNewick());
+        System.out.println(Trees.haveSameRootedTopology(tree, new STITree<>("((Htim, Hnum), Hcyd);")));
+        System.out.println(Trees.haveSameRootedTopology(tree, new STITree<>("((Htim, Hcyd), Hnum);")));
+    }
+
+    public static void parseRAxMLTopo(String path, int lo, int hi, int step) throws IOException, ParseException {
+        for (int i = lo; i < hi; i += step) {
+            int start = i;
+            int end = i + step;
+            String dir = path + "/" + start + "_" + end;
+            String infilepath = dir + "/RAxML_bestTree.window500";
+            String outfilepath = dir + "/topology";
+
+            BufferedReader br = null;
+            boolean badAlignment = false;
+            try {
+                br = new BufferedReader(new FileReader(infilepath));
+            } catch (Exception e) {
+                badAlignment = true;
+            }
+
+            STITree tree = null;
+            if (!badAlignment) {
+                String line;
+                line = br.readLine();
+                tree = new STITree<>(line);
+                Trees.rootAndRemoveOutgroup(tree, "HeraRef");
+            } else {
+                tree = new STITree<>("((Hcyd, Htim), Hnum);");
+            }
+
+            String topology = null;
+            try {
+                // ((Hcyd, Htim), Hnum);
+                if (Trees.haveSameRootedTopology(tree, new STITree<>("((Hcyd, Hnum), Htim);"))) {
+                    topology = "CN";
+                } else if (Trees.haveSameRootedTopology(tree, new STITree<>("((Htim, Hnum), Hcyd);"))) {
+                    topology = "TN";
+                } else {
+                    assert Trees.haveSameRootedTopology(tree, new STITree<>("((Hcyd, Htim), Hnum);"));
+                    topology = "CT";
+                }
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+            }
+            System.out.println(topology);
+//            BufferedWriter topoWriter = new BufferedWriter(new FileWriter(outfilepath));
+//            assert topology != null;
+//            topoWriter.write(topology);
+//            topoWriter.close();
+        }
     }
 
 }

@@ -85,4 +85,34 @@ public class HiddenState {
         }
         return null;
     }
+
+    /**
+     * ***************ONLY FOR TESTING cydno-timareta-numata!***************
+     * THIS IS HARD CODED!
+     * Convert gene tree to its name in one of {CT1, CT2, CN, TN}
+     *
+     * rootHeight is in coalescent units!
+     */
+    public String getStateNameButterfly(double rootHeight) {
+        try {
+            // ((cydno, timareta), numata);
+            if (Trees.haveSameRootedTopology(coalescentTree, new STITree<>("((cydno, numata), timareta);"))) {
+                return "CN";
+            } else if (Trees.haveSameRootedTopology(coalescentTree, new STITree<>("((timareta, numata), cydno);"))) {
+                return "TN";
+            } else {
+                assert Trees.haveSameRootedTopology(coalescentTree, new STITree<>("((cydno, timareta), numata);"));
+                if (Trees.getInternalNodes(coalescentTree).get(0).getNodeHeight() >= rootHeight) {
+                    return "CT2";
+                } else if (Trees.getInternalNodes(coalescentTree).get(0).getNodeHeight() < rootHeight) {
+                    return "CT1";
+                }
+                System.out.println("ERROR!!!!!!!");
+                System.exit(1);
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

@@ -687,7 +687,7 @@ public class HmmBuilder {
                                             Tuple<Integer, Integer> element = new Tuple<>(stiStNode.getData().getLabel(), binIdx);
                                             h.add(element);
                                         } else {
-                                            //TODO: This must be modified according to specific problem as well!
+                                            // TODO: What is the best way to segment root branch?
                                             //if (generationGtNodeHeight - generationRootNodeHeight < binIdx * 0.69 * speciesTree.getRoot().getData().getPopSize()) { //40000
                                             if (generationGtNodeHeight - generationRootNodeHeight < binIdx * (speciesTree.getLeafCount() - 2) * StrictMath.log(2) * speciesTree.getRoot().getData().getPopSize()) { //40000
                                                 Tuple<Integer, Integer> element = new Tuple<>(stiStNode.getData().getLabel(), binIdx);

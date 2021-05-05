@@ -70,7 +70,7 @@ public class ModelTree extends StateNode {
      * Initialize population size (in unit of individuals) and branch length (in unit of generations) for each branch
      * Initialize label of species tree (assume model tree topology does not change.)
      *
-     * DO NOT USE THE NODE HEIGHTS INITIALIZED HERE!!! USE THE PREVIOUS CONSTRUCTOR TO PASS IN HEIGHTS
+     * DO NOT USE THE NODE HEIGHTS INITIALIZED HERE!!! USE THE FIRST CONSTRUCTOR TO PASS IN HEIGHTS
      */
     private void initTreeNodes() {
         Stack<Tuple<STINode<TreeNodeInfo>, Integer>> stack = new Stack<>();

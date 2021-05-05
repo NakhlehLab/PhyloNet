@@ -345,7 +345,7 @@ public class HmmBuilderShortLoci {
                                             Tuple<Integer, Integer> element = new Tuple<>(stiStNode.getData().getLabel(), binIdx);
                                             h.add(element);
                                         } else {
-                                            // This could be modified according to specific problem as well!
+                                            // TODO: What is the best way to segment root branch?
                                             //if (generationGtNodeHeight - generationRootNodeHeight < binIdx * 0.69 * speciesTree.getRoot().getData().getPopSize()) { //40000
                                             if (generationGtNodeHeight - generationRootNodeHeight < binIdx * (speciesTree.getLeafCount() - 2) * StrictMath.log(2) * speciesTree.getRoot().getData().getPopSize()) { //40000
                                             //if (generationGtNodeHeight - generationRootNodeHeight < binIdx * 0.5 * 4 * Utils.N0) { // test butterfly. half coalescent unit

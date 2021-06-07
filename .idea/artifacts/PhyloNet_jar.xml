@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PhyloNet:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PhyloNet_jar</output-path>
+    <root id="archive" name="PhyloNet.jar">
+      <element id="module-output" name="PhyloNet" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/rn2dot" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/isolatepipeline" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/rn2ms" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/networksearchgen" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/phmm" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/addreticulationedges" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/morphylonet" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/vaal2sequencings" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/richnewick2hybridsimnewick" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/mdcnetworksearch" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/InferTransMapSnitkin12" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/ms2dot" />
+      <excludeFolder url="file://$MODULE_DIR$/src/edu/rice/cs/bioinfo/programs/soranus" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

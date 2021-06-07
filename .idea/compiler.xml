@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="jung-visualization" />
+        <module name="jung-algorithms" />
+        <module name="jung-api" />
+        <module name="jung-io" />
+        <module name="jung-graph-impl" />
+        <module name="jung-samples" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="jung-algorithms" target="1.8" />
+      <module name="jung-api" target="1.8" />
+      <module name="jung-graph-impl" target="1.8" />
+      <module name="jung-io" target="1.8" />
+      <module name="jung-parent" target="1.5" />
+      <module name="jung-samples" target="1.8" />
+      <module name="jung-visualization" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

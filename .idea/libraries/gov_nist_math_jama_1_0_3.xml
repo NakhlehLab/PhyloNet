@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="gov.nist.math:jama:1.0.3" type="repository">
+    <properties maven-id="gov.nist.math:jama:1.0.3" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jama-1.0.3.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/jama-1.0.3-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/jama-1.0.3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

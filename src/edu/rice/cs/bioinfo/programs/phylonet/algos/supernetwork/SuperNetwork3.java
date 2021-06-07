@@ -12,7 +12,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwor
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import javafx.beans.binding.ObjectExpression;
+// import javafx.beans.binding.ObjectExpression;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 
 import java.io.BufferedReader;

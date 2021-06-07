@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="convolutionlib">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/convolutionlib.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

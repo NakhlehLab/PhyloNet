@@ -658,6 +658,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
 
     @Override
     protected String produceResult() {
+        final int matrixLength = _sequence.values().iterator().next().length();
 
         StringBuffer result = new StringBuffer("\n");
         System.out.println("\nOutput files under " + Utils._OUT_DIRECTORY);
@@ -677,7 +678,11 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
                         newseq.setCharAt(i, '0');
                 }
                 _sequence.put(taxon, newseq.toString());
-                System.out.println(taxon + " " + _sequence.get(taxon).substring(0, 10) + "..." + _sequence.get(taxon).substring(_sequence.get(taxon).length() - 10, _sequence.get(taxon).length()));
+                if (matrixLength <= 20) {
+                    System.out.println(taxon + " " + _sequence.get(taxon));
+                } else {
+                    System.out.println(taxon + " " + _sequence.get(taxon).substring(0, 10) + "..." + _sequence.get(taxon).substring(matrixLength - 10));
+                }
             }
         }
 

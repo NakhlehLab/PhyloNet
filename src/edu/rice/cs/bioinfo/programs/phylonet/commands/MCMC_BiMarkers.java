@@ -778,7 +778,7 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
             Network cloneNetwork = edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks.readNetwork(_trueNetwork.substring(_trueNetwork.indexOf(']') + 1));
             cloneNetwork.getRoot().setRootPopSize(trueRootPopSize);
             if(!SNAPPLikelihood.usePseudoLikelihood && !SNAPPLikelihood.useApproximateBayesian){
-                //System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
+                System.out.println("True Likelihood = " + SNAPPLikelihood.computeSNAPPLikelihoodST(cloneNetwork, alnwarp.get(0)._RPatterns, BAGTRModel));
             }
 
             if(SNAPPLikelihood.usePseudoLikelihood) {
@@ -787,6 +787,10 @@ public class MCMC_BiMarkers extends CommandBaseFileOutMatrix {
 
             if(SNAPPLikelihood.useApproximateBayesian) {
                 System.out.println("True Approximate Bayesian = " + SNAPPLikelihood.computeApproximateBayesian(cloneNetwork, allele2species, alnwarp, BAGTRModel, new HashMap<>()));
+            }
+
+            if (_chainlen == 0) {
+                return "";
             }
         }
 

@@ -94,7 +94,8 @@
 
     <target name="compile">
         <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" includeantruntime="false" debug="true">
+        <!-- add the argument bootclasspath="/path/to/java8/jre/lib/rt.jar" setting the path as appropriate for your system -->
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" includeantruntime="false" source="1.8" target="1.8" debug="true">
             <patternset refid="excluded.source.files"/>
         </javac>
     </target>

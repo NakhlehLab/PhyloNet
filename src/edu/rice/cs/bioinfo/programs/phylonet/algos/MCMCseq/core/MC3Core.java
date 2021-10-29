@@ -68,6 +68,13 @@ public class MC3Core {
         if(Utils._ESTIMATE_POP_SIZE) {
             _samples.add(new SampleSummary("popSizePrior", Utils.SampleType.DoubleParam));
         }
+        if(Utils.SAMPLE_MUTATION_RATE){
+            for(int i = 0; i < alignments.size(); i++) {
+                String name = alignments.get(i).getName();
+                if (name == null) name = Integer.toString(i);
+                _samples.add(new SampleSummary("mutationRate_"+name, Utils.SampleType.DoubleParam));
+            }
+        }
     }
 
     public void run() {

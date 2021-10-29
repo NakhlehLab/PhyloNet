@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.PopulationSize;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.UltrametricTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCtopo.core.NetworkPrior;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -27,6 +28,9 @@ public class SpeciesNetPriorDistribution {
     // pop size
     private PopulationSize popSize;
 
+    //mutation rates prior
+    private DirichletDistribution mutationRates;
+
     // valid test
     private Set<String> taxa = null;
 
@@ -39,6 +43,11 @@ public class SpeciesNetPriorDistribution {
         nodeHeights = Utils._TIMES_EXP_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
         diameters = Utils._DIAMETER_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
         this.popSize = ps;
+        double[] alphas = new double[Utils.NUM_LOCI];
+        for (int i = 0; i < alphas.length; i++){
+            alphas[i] = Utils._DIRICHLET_ALPHA;
+        }
+        mutationRates = Utils.SAMPLE_MUTATION_RATE ? new DirichletDistribution(alphas) : null;
     }
 
     public double logPrior(Network<NetNodeInfo> net) {
@@ -51,6 +60,25 @@ public class SpeciesNetPriorDistribution {
         double prior = getTopPrior(net) + getDiametersPrior(net) + getNodeHeightsPrior(net)
                 + getInheritanceProbPrior(net)
                 + getPopSizePrior(net);
+        if(Utils._DISABLE_ALL_PRIOR) {
+            prior = 0.0;
+        }
+
+        return prior;
+    }
+
+    public double logPrior(Network<NetNodeInfo> net, List<UltrametricTree> genetrees) {
+        if(taxa == null) {
+            taxa = new HashSet<>();
+            for(NetNode<NetNodeInfo> node : net.getLeaves()) {
+                taxa.add(node.getName());
+            }
+        }
+        double prior = getTopPrior(net) + getDiametersPrior(net) + getNodeHeightsPrior(net)
+                + getInheritanceProbPrior(net)
+                + getPopSizePrior(net)
+                + getMutationRatePrior(genetrees);
+//        System.out.println("dirichlet distribution prior alpha=2 is:"+getMutationRatePrior(genetrees));
         if(Utils._DISABLE_ALL_PRIOR) {
             prior = 0.0;
         }
@@ -125,6 +153,19 @@ public class SpeciesNetPriorDistribution {
         return logP + popSize.logDensity(); // prior + hyper-prior
     }
 
+    //todo by zhen: test
+    private double getMutationRatePrior(List<UltrametricTree> genetrees){
+        if (!Utils.SAMPLE_MUTATION_RATE || !Utils._MUTATION_RATE_PRIOR){
+            return 0;
+        }
+        double[] mr = new double[Utils.NUM_LOCI];
+        for (int i = 0; i < Utils.NUM_LOCI; i++){
+            //scale to make the sum 1
+            mr[i] = genetrees.get(i).get_mutationRate() / Utils.NUM_LOCI;
+        }
+        double logP = mutationRates.logdensity(mr);
+        return logP;
+    }
 
     public boolean isValid(Network<NetNodeInfo> net) {
         if (Networks.hasCycle(net)) {

@@ -957,6 +957,11 @@ public class BeagleTreeLikelihood extends StateNode {
         return order;
     }
 
+    public void updateMutationRate(double mu){
+        this._siteModel.updateMuParameter(mu);
+        _updateSiteModel = true;
+    }
+
     // test
     public static void main(String[] args) {
         String newick1 = "((C:0.002859330148428049,G:0.002859330148428049):0.010473421735219215,(R:0.010936563366414687,(L:0.008340943025951807,(A:0.004491653225077681,Q:0.004491653225077681):0.0038492898008741254):0.00259562034046288):0.0023961885172325784);";

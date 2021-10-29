@@ -9,6 +9,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTree
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTreeBrSpeciesNetDistributionParallel;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.distribution.GeneTreeBrSpeciesNetPseudoLikelihood;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.all.DeltaExchange;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.all.ScaleAll;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.AddReticulation;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.dimension.AddReticulationToBackbone;
@@ -148,7 +149,38 @@ public class UltrametricNetwork extends StateNode {
                 this._netOpWeights = Utils.getOperationWeights(
                         Utils.Backbone_Net_Op_Weights, 3, Utils.Backbone_Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
             }
-        } else {
+        }
+
+        // todo : test by zhen
+        else if (Utils.SAMPLE_MUTATION_RATE){
+            this._operators = new Operator[]{
+                    new ChangePopSize(this),
+                    new ScalePopSize(this),
+                    new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
+                    new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
+                    new AddReticulation(this),
+                    new DeltaExchange(_geneTrees), // for delta exchange
+                    new FlipReticulation(this), new MoveHead(this),
+                    new DeleteReticulation(this),
+                    new ChangeInheritance(this)
+            };
+            Utils.NUM_OPERATORS = _operators.length;
+            if (Utils._ESTIMATE_POP_SIZE) {
+                this._treeSpaceOpWeights = Utils.getOperationWeights(
+                        Utils.Murate_Net_Tree_Op_Weights, 0, Utils.Murate_Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+                this._treeOpWeights = Utils.getOperationWeights(Utils.Murate_Net_Tree_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+                this._netOpWeights = Utils.getOperationWeights(Utils.Murate_Net_Op_Weights, !Utils._FIX_NET_TOPOLOGY);
+            } else {
+                this._treeSpaceOpWeights = Utils.getOperationWeights(
+                        Utils.Murate_Net_Tree_Op_Weights, 3, Utils.Murate_Net_Tree_Op_Weights.length - 1, !Utils._FIX_NET_TOPOLOGY);
+                this._treeOpWeights = Utils.getOperationWeights(
+                        Utils.Murate_Net_Tree_Op_Weights, 3, Utils.Murate_Net_Tree_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+                this._netOpWeights = Utils.getOperationWeights(
+                        Utils.Murate_Net_Op_Weights, 3, Utils.Murate_Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
+            }
+        }
+        else {
 
             this._operators = new Operator[]{
                     new ChangePopSize(this),
@@ -175,6 +207,7 @@ public class UltrametricNetwork extends StateNode {
                         Utils.Net_Op_Weights, 3, Utils.Net_Op_Weights.length, !Utils._FIX_NET_TOPOLOGY);
             }
         }
+
     }
 
     // used only for debug only
@@ -274,7 +307,10 @@ public class UltrametricNetwork extends StateNode {
 
     @Override
     public double propose() {
-        if(Utils._PRE_BURN_IN) {
+        if (Utils.MUTATION_RATE_ONLY && Utils.SAMPLE_MUTATION_RATE){
+            this._operator = _operators[10];
+        }
+        else if(Utils._PRE_BURN_IN) {
             this._operator = getOp(_operators, _treeSpaceOpWeights);
         } else if(_network.getReticulationCount() == 0) {
             this._operator = getOp(_operators, _treeOpWeights);

@@ -41,6 +41,8 @@ public class Utils {
     public static boolean _TIMES_EXP_PRIOR = false;
     public static boolean _DIAMETER_PRIOR = true;
     public static boolean _DISABLE_ALL_PRIOR = false;
+    public static final double _DIRICHLET_ALPHA = 2.0; //todo: test dirichlet distribution prior for delta exchange
+    public static int NUM_LOCI = 0;
     // Substitution model
     public static String _SUBSTITUTION_MODEL = "JC";
     public static double[] _BASE_FREQS = null;
@@ -79,6 +81,8 @@ public class Utils {
     public static boolean SAMPLE_EMBEDDINGS = false; // experimental!!!
     public static boolean ONLY_BACKBONE_OP = false;
     public static boolean PSEUDO_LIKELIHOOD = false;
+    public static boolean SAMPLE_MUTATION_RATE = false; //todo by zhen
+    public static int NUM_OPERATORS = 14;
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
     public static final double DEFAULT_TREE_LEAF_HEIGHT = 0;
@@ -88,6 +92,14 @@ public class Utils {
     public static enum  MOVE_TYPE {TREE, NETWORK, ALL, PRIOR};
     public static final double TARGET_ACRATE = 0.345;
     public static enum Transform {None, Log, Sqrt};
+    // --- delta exchange operator ---
+    public static List<Integer> _WEIGHT_VECTOR = new ArrayList<>();
+    public static List<Double> _PARAMETER_INPUT = new ArrayList<>();
+    public static boolean _IS_INTEGER_OPERATOR = false;
+    public static double _DELTA = 1.0;
+    public static double _LOWERBOUND = 0.0;
+    public static boolean _MUTATION_RATE_PRIOR = false;
+    public static boolean MUTATION_RATE_ONLY = false; //for debug only
     // --- MCMC chain ---
     public static final int SWAP_FREQUENCY = 100;
     // --- priors ---
@@ -102,11 +114,33 @@ public class Utils {
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
+    //todo by zhen: just for temp use, need to test
+//    public static final double[] Tree_Op_Weights = new double[] {
+//            0.4, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.1
+//    };
     // ChangePopSize ScalePopSize --// ScaleAll
     // ScaleTime ScaleRootTime ChangeTime
     // SlideSubNet SwapNodes MoveTail AddReticulation
     // FlipReticulation MoveHead DeleteReticulation
     // ChangeInheritance
+    public static final double[] Murate_Net_Op_Weights = new double[] {
+            0.03, 0.01,
+            0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
+            0.04, 0.05, 0.25,
+            0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
+            0.1, // deltaexchange TODO by zhen, check mixing
+            0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT,
+            0.06 - DIMENSION_CHANGE_WEIGHT
+
+    };
+    public static final double[] Murate_Net_Tree_Op_Weights = new double[] {
+            0.03, 0.01,
+            0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
+            0.04, 0.05, 0.30,
+            0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2,
+            0.1 // deltaexchange TODO by zhen, check mixing
+    };
+
     public static final double[] Net_Op_Weights = new double[] {
             0.03, 0.01,
             0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
@@ -121,7 +155,6 @@ public class Utils {
             0.04, 0.05, 0.30,
             0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
-
     // ChangePopSize ScalePopSize ScaleAll
     // ScaleTime ScaleRootTime ChangeTime
     //  AddReticulation
@@ -150,7 +183,7 @@ public class Utils {
 
     public static double[] getOperationWeights(double[] weights, int start, int end, boolean enableTopologyMoves) {
         if(!enableTopologyMoves) {
-            for(int i = 6 ; i < Math.min(end, 13) ; i++) {
+            for(int i = 6 ; i < Math.min(end, NUM_OPERATORS-1) ; i++) {
                 weights[i] = 0.0;
             }
         }
@@ -174,7 +207,7 @@ public class Utils {
 
     public static double[] getOperationWeights(double[] weights, boolean enableNetTopologyMoves) {
         if(!enableNetTopologyMoves) {
-            for(int i = 6 ; i < Math.min(weights.length, 13) ; i++) {
+            for(int i = 6 ; i < Math.min(weights.length, NUM_OPERATORS-1) ; i++) {
                 weights[i] = 0.0;
             }
         }

@@ -384,6 +384,34 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             Utils._CONST_POP_SIZE = false;
         }
 
+        // vary mutation rate of loci
+        ParamExtractor murateParam = new ParamExtractor("murate", this.params, this.errorDetected);
+        if(murateParam.ContainsSwitch) {
+            Utils.SAMPLE_MUTATION_RATE = true;
+        }
+        //mutation rate parameter input of loci
+        ParamExtractor murateListParam = new ParamExtractor("mupi", this.params, this.errorDetected);
+        if(murateListParam.ContainsSwitch) {
+            if(murateListParam.PostSwitchParam != null) {
+                try {
+                    if(!(murateListParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    ParameterIdentList rates = (ParameterIdentList) murateListParam.PostSwitchParam;
+                    for(String item: rates.Elements){
+                        double r = Double.parseDouble(item.trim());
+                        Utils._PARAMETER_INPUT.add(r);
+                    }
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Invalid value after switch -mupi.",
+                            murateListParam.PostSwitchParam.getLine(), murateListParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -mupi.",
+                        murateListParam.SwitchParam.getLine(), murateListParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Prior Settings -----
         // poisson parameter
         ParamExtractor ppParam = new ParamExtractor("pp", this.params, this.errorDetected);
@@ -577,6 +605,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                     }
                     Utils._BASE_FREQS = baseFreqs;
                     Utils._TRANS_RATES = transRates;
+                    Utils._SUBSTITUTION_MODEL = "GTR";
                 } catch(NumberFormatException e) {
                     errorDetected.execute("Invalid value after switch -gtr.",
                             gtrParam.PostSwitchParam.getLine(), gtrParam.PostSwitchParam.getColumn());
@@ -596,7 +625,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "fixgttopo", "gtburnin",
                 "pp", "dd", "ee", "mu", "se",
                 "sgt", "snet", "sps", "pre", "gtr",
-                "gtoutgroup", "pseudo"
+                "gtoutgroup", "pseudo", "murate", "mupi"
         );
         checkAndSetOutFile(
                 diploidParam,
@@ -607,7 +636,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 fixgttopoParam, gtburninParam,
                 ppParam, ddParam, eeParam, muParam, seParam,
                 sgtParam, snParam, spsParam, gtrParam,
-                gtoutgroupParam, pseudoParam
+                gtoutgroupParam, pseudoParam, murateParam
         );
 
         return  noError;

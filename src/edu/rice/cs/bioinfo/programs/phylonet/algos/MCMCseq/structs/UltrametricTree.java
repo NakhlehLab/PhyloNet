@@ -12,14 +12,12 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitut
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.tree.*;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.start.UPGMATree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.start.distance.JCDistance;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.PostTraversal;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.StringReader;
@@ -41,6 +39,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
     private List<TNode> _nodes;
     private List<TNode> _internalNodes; // contains tree root
     private double _clockRate = 1.0; // TODO can be inferred from gamma distribution
+    private double _mutationRate = 1.0; //Todo by zhen: for mutation rate
 
     // ----- likelihood -----
     private BeagleTreeLikelihood _beagle;
@@ -456,5 +455,15 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
 
     public int getNodeLabel(TNode node) {
         return nodeLabel.get(node);
+    }
+
+    public void updateMutationRate(double mu){
+        this._mutationRate = mu;
+        this._beagle.updateMutationRate(_mutationRate);
+        this._beagle.reset();
+    }
+
+    public double get_mutationRate(){
+        return _mutationRate;
     }
 }

@@ -226,6 +226,10 @@ public class SiteModel extends SiteModelInterface.Base {
         return true;
     }
 
+    public void updateMuParameter(double mu){
+        this._muParameter = mu;
+    }
+
     // test
     public static void main(String[] args) {
         Map<String, String> omap = new HashMap<>();

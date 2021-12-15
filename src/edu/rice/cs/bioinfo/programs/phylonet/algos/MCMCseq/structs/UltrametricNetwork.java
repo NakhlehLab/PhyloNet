@@ -303,6 +303,11 @@ public class UltrametricNetwork extends StateNode {
         return true;
     }
 
+    public void setNetworkByObject(Network net) {
+        this._network = net;
+    }
+
+
     /************ State node methods ************/
 
     @Override

@@ -389,6 +389,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         if(murateParam.ContainsSwitch) {
             Utils.SAMPLE_MUTATION_RATE = true;
         }
+
         //mutation rate parameter input of loci
         ParamExtractor murateListParam = new ParamExtractor("mupi", this.params, this.errorDetected);
         if(murateListParam.ContainsSwitch) {

@@ -32,6 +32,7 @@ public class MC3 {
     private double _logPost;
     private double _logLikelihood;
     private double _logPrior;
+    private double _essPost;
 
     private int examed = 0;
 
@@ -171,10 +172,10 @@ public class MC3 {
                 if(Utils.DEBUG_MODE) {
                     System.out.println("Doing sampling");
                 }
-                double essPost = _core.addPosteriorESS(_logPost);
+                _essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
                 System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-                        iteration, _logPost, essPost,
+                        iteration, _logPost, _essPost,
                         _logLikelihood, _logPrior, essPrior,
                         _state.numOfReticulation());
                 System.out.println(Networks.getFullString(_state.getNetworkObject()));
@@ -225,4 +226,13 @@ public class MC3 {
 
     public String getCurrentNetwork() { return _state.getNetworkObject().toString(); }
 
+    public State getState() { return _state; }
+
+    public double getLikelihood() { return _logLikelihood; }
+
+    public double getPrior() { return _logPrior; }
+
+    public double getESS() {
+        return _essPost;
+    }
 }

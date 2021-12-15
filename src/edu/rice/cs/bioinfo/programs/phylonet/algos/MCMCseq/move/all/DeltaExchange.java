@@ -1,8 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.all;
 /*
  * @ClassName:   DeltaExchange
- * @Description:
- * @Author:      Zhen Cao
+ * @Description: Migrated by zhen from BEAST
  * @Date:        8/17/21 8:09 PM
  */
 

@@ -10,10 +10,10 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.*;
 
 /**
  * Created by wendingqiao on 2/2/16.
@@ -55,6 +55,86 @@ public class State {
         this._priorDistribution = new SpeciesNetPriorDistribution(poissonParameter, _populationSize);
         _gtOpWeight = 1.0 - Math.min(0.3, Math.max(0.1, 8.0 / (this._geneTrees.size() + 8.0)));
         if(Utils.ONLY_BACKBONE_OP) _gtOpWeight = 0.5;
+    }
+
+    public State (List<Alignment> alignments, String lastStatePath) {
+        String snet = "";
+        double popSizeMean = 0.0;
+        Network<NetNodeInfo> startSNet = null;
+        File stateFile = new File(lastStatePath);
+        this._geneTrees = new ArrayList<>(alignments.size());
+        try {
+            if (!stateFile.exists())
+                throw new Exception(stateFile+":Error opening file saving last states!");
+            BufferedReader r = new BufferedReader(new FileReader(lastStatePath));
+
+            for (int i = 0; i < alignments.size(); i++) {
+                this._geneTrees.add(new UltrametricTree(r.readLine().trim(), alignments.get(i)));
+                this._geneTrees.get(i).resetNodeHeights();
+            }
+            for (int i = 0; i < alignments.size(); i++) {
+                this._geneTrees.get(i).updateMutationRate(Double.parseDouble(r.readLine().trim()));
+            }
+            snet = r.readLine().trim();
+            startSNet = Networks.readNetworkWithRootPop(snet);
+            this._speciesNet = new UltrametricNetwork(snet, this._geneTrees, Utils._TAXON_MAP);
+            this._speciesNet.setNetworkByObject(startSNet);
+            Map<String, NetNode> nodes = new HashMap<String, NetNode>();
+            for (NetNode<NetNodeInfo> node : Networks.postTraversal(this._speciesNet.getNetwork())) {
+                nodes.put(node.getName(), node);
+            }
+            String[] nodeNames = new String[nodes.size()];
+            double[] heights = new double[nodes.size()];
+            int[] indexes = new int[nodes.size()];
+            double[] preHeights = new double[nodes.size()];
+            ArrayList<Map<String, Double>> parentSupports= new ArrayList<>();
+            Map<String, Integer> nameMap = new HashMap<String, Integer>();
+            String s;
+            String[] ss;
+            for(int i = 0; i< nodes.size(); i++) {
+                String[] lines = r.readLine().trim().split("\t");
+                nodeNames[i] = lines[0];
+                nameMap.put(nodeNames[i], i);
+                heights[i] = Double.valueOf(lines[1]);
+                indexes[i] = Integer.valueOf(lines[2]);
+                preHeights[i] = Double.valueOf(lines[3]);
+                Map<String, Double> curNodeParentSupport = new HashMap<>();
+                for (int k = 4; k < lines.length; k++) {
+                    s = lines[k];
+                    if (s.startsWith("[") && s.endsWith("]")) {
+                        ss = s.substring(1, s.length() - 1).replaceAll("\\s+", "").split(",");
+                        if(ss.length < 2) {
+                            System.err.println( "Node "+ nodeNames[i] + ": Incomplete information of population size!");
+                            System.exit(1);
+                        }
+                        String parentName = ss[0];
+                        double parentSupport = Double.valueOf(ss[1]);
+                        curNodeParentSupport.put(parentName, parentSupport);
+                    }
+                }
+                parentSupports.add(i, curNodeParentSupport);
+            }
+            for (NetNode<NetNodeInfo> netNode : Networks.postTraversal(this._speciesNet.getNetwork())) {
+                String name = netNode.getName();
+                int index = nameMap.get(name);
+                netNode.setData(new NetNodeInfo(heights[index],indexes[index],preHeights[index]));
+                Map<String, Double> nodeParentSupport = parentSupports.get(index);
+                for (NetNode<NetNodeInfo> parent : netNode.getParents()) {
+                    double psize = nodeParentSupport.get(parent.getName());
+                    netNode.setParentSupport(parent, psize);
+                }
+            }
+
+            popSizeMean = Double.valueOf(r.readLine().trim());
+            Utils._SEED = Long.valueOf(r.readLine().trim());
+            r.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        this._populationSize = new PopulationSize();
+        this._populationSize.setGammaMean(popSizeMean);
+        this._priorDistribution = new SpeciesNetPriorDistribution(Utils._POISSON_PARAM, _populationSize);
     }
 
     /**
@@ -273,6 +353,14 @@ public class State {
         Collections.sort(list);
         Utils._TIME_WINDOW_SIZE = list.get(list.size() / 2) * 0.05;
         System.out.println("SET _TIME_WINDOW_SIZE = " + Utils._TIME_WINDOW_SIZE);
+    }
+
+    public List<UltrametricTree> getGeneTrees() {
+        return _geneTrees;
+    }
+
+    public double getPopSize() {
+        return _populationSize.getGammaMean();
     }
 
 }

@@ -8,6 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -107,6 +108,18 @@ public class Utils {
     public static final double GAMMA_SHAPE = 2; // *BEAST
     // --- substitution model ---
     public static final boolean ESTIMATE_SUBSTITUTION = false; // TODO future improvement
+
+    // --- resume running a chain ---
+    public static boolean _PreRun;
+    public static String _START_STATE = "";
+    public static long _START_TIME;
+    public static String _CGT_DIRECTORY = "";
+    public static int _SubrunIndex;
+    public static int _SubrunNum;
+    public static int _SAMPLE_NUM;
+    public static boolean _TRUE_START;
+    public static int resourceNum;
+    public static String _IN_DIRECTORY;
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
@@ -336,5 +349,13 @@ public class Utils {
                 heights.put(node, h);
             }
         }
+    }
+
+    public static boolean isExistsDir(String filePath) {
+        File f = new File(filePath);
+        if (!f.exists()) {
+            f.mkdirs();
+        }
+        return f.exists() && f.isDirectory();
     }
 }

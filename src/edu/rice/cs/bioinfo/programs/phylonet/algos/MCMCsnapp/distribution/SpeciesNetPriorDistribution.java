@@ -121,7 +121,7 @@ public class SpeciesNetPriorDistribution {
             for(NetNode<NetNodeInfo> par : node.getParents()) {
                 double ps = node.getParentSupport(par);
                 if(Double.isNaN(ps) || ps <= 0) {
-                    System.err.println("Wrong pop size: " + node.getName() + "->" + par.getName());
+                    System.err.println("Wrong pop size: " + node.getName() + "->" + par.getName()+":"+ps);
                 }
                 logP += Math.log(popSize.density(ps));
             }

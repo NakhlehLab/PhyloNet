@@ -15,6 +15,12 @@ public class NetNodeInfo {
         this._index = -1;
     }
 
+    public NetNodeInfo(double height, int index, double prevHeight) {
+        this._height = height;
+        this._index = index;
+        this._prevHeight = prevHeight;
+    }
+
     public void setHeight(double newHeight) {
         this._height = newHeight;
     }
@@ -41,5 +47,9 @@ public class NetNodeInfo {
     public void recoverHeight() {
         this._height = this._prevHeight;
         this._prevHeight = -1;
+    }
+
+    public double getPrevHeight() {
+        return this._prevHeight;
     }
 }

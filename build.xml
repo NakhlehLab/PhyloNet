@@ -7,6 +7,7 @@
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="jar.dir"     value="${build.dir}/jar"/>
     <property name="lib.dir"     value="lib"/>
+    <property name="report.dir" value="${build.dir}/junitreport" />
 
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="*.jar"/>
@@ -148,5 +149,26 @@
     <target name="clean-build" depends="clean,jar"/>
 
     <target name="main" depends="clean,run"/>
+
+    <!-- Core BEAST unit tests -->
+    <target name="junit">
+        <mkdir dir="${report.dir}" />
+        <junit printsummary="yes" failureproperty="junitfailed">
+            <!--showoutput='yes'-->
+            <classpath>
+                <path refid="classpath" />
+                <path location="${build.dir}" />
+            </classpath>
+
+            <formatter type="xml" />
+
+            <batchtest fork="yes" todir="${report.dir}">
+                <fileset dir="${src.dir}">
+                    <include name="edu/rice/cs/bioinfo/programs/phylonet/**/?*Test.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <echo message="JUnit test finished." />
+    </target>
 
 </project>

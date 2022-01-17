@@ -150,14 +150,13 @@
 
     <target name="main" depends="clean,run"/>
 
-    <!-- Core BEAST unit tests -->
-    <target name="junit">
+    <target name="junit" depends="jar">
         <mkdir dir="${report.dir}" />
         <junit printsummary="yes" failureproperty="junitfailed">
             <!--showoutput='yes'-->
             <classpath>
                 <path refid="classpath" />
-                <path location="${build.dir}" />
+                <path location="${jar.dir}/${ant.project.name}.jar"/>
             </classpath>
 
             <formatter type="xml" />

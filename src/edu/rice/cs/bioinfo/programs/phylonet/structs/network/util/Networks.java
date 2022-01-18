@@ -41,6 +41,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFa
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceAlignment;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 import java.io.ByteArrayInputStream;
@@ -1357,5 +1358,24 @@ public class Networks
                 node.setName("");
             }
         }
+    }
+
+    /**
+     * @return <code>true</code> if these networks have identical leafsets
+     * by name.
+     */
+    public static final <T> boolean leafSetsAgree(Network<T> network1, Network<T> network2) {
+        // They definitely can't agree if they are different sizes
+        if (network1.getLeafCount() != network2.getLeafCount()) {
+            return false;
+        }
+
+        Set<String> network1Leaves = new HashSet<>();
+        Set<String> network2Leaves = new HashSet<>();
+
+        network1.getLeaves().forEach(leaf -> network1Leaves.add(leaf.getName()));
+        network2.getLeaves().forEach(leaf -> network2Leaves.add(leaf.getName()));
+
+        return network1Leaves.containsAll(network2Leaves) && network2Leaves.containsAll(network1Leaves);
     }
 }

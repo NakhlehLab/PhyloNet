@@ -25,10 +25,15 @@ public class MatrixBasedDissimilarity<T> {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        Double[][] matrix1 = computeMeanDistanceMatrix(this.network1);
-        Double[][] matrix2 = computeMeanDistanceMatrix(this.network2);
+        double[][] matrix1 = computeMeanDistanceMatrix(this.network1);
+        double[][] matrix2 = computeMeanDistanceMatrix(this.network2);
+        double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
-        return Double.NaN;
+        System.out.println(Arrays.deepToString(matrix1));
+        System.out.println(Arrays.deepToString(matrix2));
+        System.out.println(Arrays.deepToString(differenceMatrix));
+
+        return frobeniusNorm(differenceMatrix);
     }
 
     /**
@@ -38,7 +43,7 @@ public class MatrixBasedDissimilarity<T> {
      * @param <T> Indicates the type of additional data this node will store.
      * @return Mean distance matrix.
      */
-    private static <T> Double[][] computeMeanDistanceMatrix(Network<T> network) {
+    private static <T> double[][] computeMeanDistanceMatrix(Network<T> network) {
         // Get distances in between each pair of leaves.
         HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> leafDistances = computeLeafDistances(network);
 
@@ -49,7 +54,7 @@ public class MatrixBasedDissimilarity<T> {
         int numTaxa = taxaToIndexMapping.keySet().size();
 
         // Initialize our matrix.
-        Double[][] meanDistanceMatrix = new Double[numTaxa][numTaxa];
+        double[][] meanDistanceMatrix = new double[numTaxa][numTaxa];
 
         for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry : leafDistances.entrySet()) {
             NetNode<T> leaf1 = entry.getKey();
@@ -212,15 +217,15 @@ public class MatrixBasedDissimilarity<T> {
         }
 
         // DEBUG PRINT FOR DISTANCES VARIABLE
-//        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
-//            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry1.getValue().entrySet()) {
-//                System.out.print(entry1.getKey().getName());
-//                System.out.print(" -> ");
-//                System.out.print(entry2.getKey().getName());
-//                System.out.print(" : ");
-//                System.out.println(entry2.getValue());
-//            }
-//        }
+        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
+            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry1.getValue().entrySet()) {
+                System.out.print(entry1.getKey().getName());
+                System.out.print(" -> ");
+                System.out.print(entry2.getKey().getName());
+                System.out.print(" : ");
+                System.out.println(entry2.getValue());
+            }
+        }
 
         // DEBUG PRINT FOR DISTANCES MATRIX
 //        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
@@ -234,5 +239,42 @@ public class MatrixBasedDissimilarity<T> {
 //        }
 
         return distanceMatrix;
+    }
+
+    private static float frobeniusNorm(double[][] matrix)
+    {
+        // To store the sum of squares of the
+        // elements of the given matrix
+        int sumSq = 0;
+        for (int i = 0; i < matrix.length; i++)
+        {
+            for (int j = 0; j < matrix[i].length; j++)
+            {
+                sumSq += (int)Math.pow(matrix[i][j], 2);
+            }
+        }
+
+        // Return the square root of
+        // the sum of squares
+        float res = (float)Math.sqrt(sumSq);
+        return res;
+    }
+
+    private static double[][] matrixDifference(double[][] matrix1, double[][] matrix2) {
+        double[][] newMatrix = new double[matrix1.length][matrix1[0].length];
+
+        if (matrix1.length != matrix2.length)
+            throw new RuntimeException("Both matrices should have the same dimension");
+
+        for (int i = 0; i < matrix1.length; i++) {
+            if (matrix1[i].length != matrix2[i].length)
+                throw new RuntimeException("Both matrices should have the same dimension");
+
+            for (int j = 0; j < matrix1[i].length; j++) {
+                newMatrix[i][j] = matrix1[i][j] - matrix2[i][j];
+            }
+        }
+
+        return newMatrix;
     }
 }

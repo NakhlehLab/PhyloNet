@@ -20,25 +20,87 @@ public class MatrixBasedDissimilarity<T> {
         this.network2 = network2;
     }
 
-    public double compute() {
+    public double computeMeanDistance() {
         if (!Networks.leafSetsAgree(this.network1, this.network2)) {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        computeDistanceMatrix(this.network1);
-        computeDistanceMatrix(this.network2);
+        Double[][] matrix1 = computeMeanDistanceMatrix(this.network1);
+        Double[][] matrix2 = computeMeanDistanceMatrix(this.network2);
 
         return Double.NaN;
     }
 
     /**
-     * Builds and returns a distance matrix for all leaves of the given network.
+     * Given network, we compute mean distance matrix, which is the average of all distances in between leaves i and j.
      *
-     * @param network Network to build the distance matrix from.
+     * @param network Network to get list of taxa from.
      * @param <T> Indicates the type of additional data this node will store.
-     * @return A distance matrix for all leaves of the given network.
+     * @return Mean distance matrix.
      */
-    private static <T> HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> computeDistanceMatrix(Network<T> network) {
+    private static <T> Double[][] computeMeanDistanceMatrix(Network<T> network) {
+        // Get distances in between each pair of leaves.
+        HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> leafDistances = computeLeafDistances(network);
+
+        // Get taxa to index mapping to build the matrix.
+        Map<String, Integer> taxaToIndexMapping = computeTaxaToIndexMapping(network);
+
+        // Get number of taxa.
+        int numTaxa = taxaToIndexMapping.keySet().size();
+
+        // Initialize our matrix.
+        Double[][] meanDistanceMatrix = new Double[numTaxa][numTaxa];
+
+        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry : leafDistances.entrySet()) {
+            NetNode<T> leaf1 = entry.getKey();
+
+            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry.getValue().entrySet()) {
+                NetNode<T> leaf2 = entry2.getKey();
+
+                // Compute average distance by taking mean of all distances and place it in the matrix.
+                meanDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
+                        [taxaToIndexMapping.get(leaf2.getName())] =
+                        entry2.getValue().stream().mapToDouble(i -> i).average().orElse(0);
+            }
+        }
+
+        return meanDistanceMatrix;
+    }
+
+    /**
+     * Compute and return taxa name to their index in the matrix mapping.
+     *
+     * @param network Network to get list of taxa from.
+     * @param <T> Indicates the type of additional data this node will store.
+     * @return Taxa name to their index in the matrix mapping.
+     */
+    private static <T> Map<String, Integer> computeTaxaToIndexMapping(Network<T> network) {
+        Map<String, Integer> mapping = new HashMap<>();
+
+        List<String> taxa = new ArrayList<>();
+        network.getLeaves().forEach(leaf -> taxa.add(leaf.getName()));
+
+        // Sort taxa in alphabetical order.
+        Collections.sort(taxa);
+
+        int i = 0;
+        for (String taxon : taxa) {
+            mapping.put(taxon, i);
+            i += 1;
+        }
+
+        return mapping;
+    }
+
+    /**
+     * Builds and returns a distances for all leaves of the given network.
+     *
+     * @param network Network to build the distances from.
+     * @param <T> Indicates the type of additional data this node will store.
+     * @return A distance mapping for all leaves of the given network. For each pair of leaves, it encodes all possible
+     * distances inside a nested hashmap.
+     */
+    private static <T> HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> computeLeafDistances(Network<T> network) {
         // Create a distance matrix and set diagonals to 0.
         HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> distanceMatrix = new HashMap<>();
         for (NetNode<T> leaf1 : network.getLeaves()) {
@@ -107,10 +169,14 @@ public class MatrixBasedDissimilarity<T> {
                             if (childNode1.equals(childNode2))
                                 continue;
 
-                            if (considered.contains(Set.of(childNode1, childNode2)))
+                            Set<NetNode<T>> set = new HashSet<>();
+                            set.add(childNode1);
+                            set.add(childNode2);
+
+                            if (considered.contains(set))
                                 continue;
 
-                            considered.add(Set.of(childNode1, childNode2));
+                            considered.add(set);
 
                             double dist1 = childNode1.getParentDistance(curNode);
                             double dist2 = childNode2.getParentDistance(curNode);

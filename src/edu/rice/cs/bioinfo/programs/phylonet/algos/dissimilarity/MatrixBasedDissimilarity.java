@@ -29,10 +29,6 @@ public class MatrixBasedDissimilarity<T> {
         double[][] matrix2 = computeMeanDistanceMatrix(this.network2);
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
-        System.out.println(Arrays.deepToString(matrix1));
-        System.out.println(Arrays.deepToString(matrix2));
-        System.out.println(Arrays.deepToString(differenceMatrix));
-
         return frobeniusNorm(differenceMatrix);
     }
 
@@ -153,6 +149,10 @@ public class MatrixBasedDissimilarity<T> {
                 // multiple branches, then we add a new entry to the list mapped to the leaf node.
                 for (NetNode<T> childNode : curNode.getChildren()) {
                     double dist = childNode.getParentDistance(curNode);
+
+                    if (Double.isInfinite(dist) || Double.isNaN(dist))
+                        throw new RuntimeException("Branch length cannot be infinite or undefined");
+
                     for (Map.Entry<NetNode<T>, List<Double>> entry : distances.get(childNode).entrySet()) {
                         NetNode<T> leafNode = entry.getKey();
                         distances.get(curNode).putIfAbsent(leafNode, new ArrayList<>());
@@ -217,15 +217,15 @@ public class MatrixBasedDissimilarity<T> {
         }
 
         // DEBUG PRINT FOR DISTANCES VARIABLE
-        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
-            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry1.getValue().entrySet()) {
-                System.out.print(entry1.getKey().getName());
-                System.out.print(" -> ");
-                System.out.print(entry2.getKey().getName());
-                System.out.print(" : ");
-                System.out.println(entry2.getValue());
-            }
-        }
+//        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
+//            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry1.getValue().entrySet()) {
+//                System.out.print(entry1.getKey().getName());
+//                System.out.print(" -> ");
+//                System.out.print(entry2.getKey().getName());
+//                System.out.print(" : ");
+//                System.out.println(entry2.getValue());
+//            }
+//        }
 
         // DEBUG PRINT FOR DISTANCES MATRIX
 //        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {

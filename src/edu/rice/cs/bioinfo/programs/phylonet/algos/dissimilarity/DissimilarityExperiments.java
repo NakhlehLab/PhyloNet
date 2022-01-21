@@ -17,8 +17,7 @@ public class DissimilarityExperiments {
         for (int i = minRet; i <= maxRet; i++) {
             Network<BniNetwork> newNetwork = originalNetwork.clone();
             Networks.addRandomReticulationEdge(newNetwork, i);
-
-            System.out.println(newNetwork.toString());
+            Networks.autoLabelNodes(newNetwork);
 
             MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, newNetwork);
 

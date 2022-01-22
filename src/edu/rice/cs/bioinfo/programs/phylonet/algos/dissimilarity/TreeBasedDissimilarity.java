@@ -124,6 +124,12 @@ public class TreeBasedDissimilarity<T> {
             throw new RuntimeException("Trees must have same number of branches");
         }
 
+        if (Double.isInfinite(tree1BranchLengthSum) || Double.isNaN(tree1BranchLengthSum))
+            throw new RuntimeException("Branch length cannot be infinite or undefined");
+
+        if (Double.isInfinite(tree2BranchLengthSum) || Double.isNaN(tree2BranchLengthSum))
+            throw new RuntimeException("Branch length cannot be infinite or undefined");
+
         double sum = 0;
         for (int i = 0; i < tree1BranchLengths.size(); i++) {
             sum += Math.abs(tree1BranchLengths.get(i) / tree1BranchLengthSum - tree2BranchLengths.get(i) / tree2BranchLengthSum);
@@ -167,6 +173,9 @@ public class TreeBasedDissimilarity<T> {
                 dist = clusters1.get(cl1).getParentDistance() * scale1;
             }
 
+            if (Double.isInfinite(dist) || Double.isNaN(dist))
+                throw new RuntimeException("Branch length cannot be infinite or undefined");
+
             sum += dist * dist;
         }
 
@@ -178,6 +187,10 @@ public class TreeBasedDissimilarity<T> {
             }
 
             dist = clusters2.get(cl2).getParentDistance() * scale2;
+
+            if (Double.isInfinite(dist) || Double.isNaN(dist))
+                throw new RuntimeException("Branch length cannot be infinite or undefined");
+
             sum += dist * dist;
         }
 

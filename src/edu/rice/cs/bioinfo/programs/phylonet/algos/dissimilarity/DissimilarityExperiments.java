@@ -8,7 +8,22 @@ public class DissimilarityExperiments {
     public static void main(String[] args) {
         String richNewick1 = "(E:10.0,((((B:2.0,(C:1.0)I7#H2:1.0::0.5)I6:2.0)I4#H1:2.0::0.5,(I7#H2:2.0::0.5,D:3.0)I5:3.0)I3:2.0,(A:5.0,I4#H1:1.0::0.5)I2:3.0)I1:2.0)I0;";
 
-        reticulationExperiment(richNewick1, 0, 5);
+        uniformScalingExperiment(richNewick1, 5, 1.2);
+    }
+
+    private static void uniformScalingExperiment(String richNewick, int numScales, double scaleFactor) {
+        Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
+
+        double curScale = 1.0;
+        for (int i = 0; i <= numScales; i++) {
+            Network<BniNetwork> newNetwork = originalNetwork.clone();
+            Networks.scaleNetwork(newNetwork, curScale *= scaleFactor);
+
+            TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, newNetwork);
+            double dissimilarity = treeBasedDissimilarity.computeRootedBranchScore();
+
+            System.out.println("Scale Factor: " + curScale + " - Dissimilarity: " + dissimilarity);
+        }
     }
 
     private static void reticulationExperiment(String richNewick, int minRet, int maxRet) {
@@ -19,9 +34,9 @@ public class DissimilarityExperiments {
             Networks.addRandomReticulationEdge(newNetwork, i);
             Networks.autoLabelNodes(newNetwork);
 
-            MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, newNetwork);
 
-            double dissimilarity = matrixBasedDissimilarity.computeMeanDistance();
+            TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, newNetwork);
+            double dissimilarity = treeBasedDissimilarity.computeRootedBranchScore();
 
             System.out.println("# Added reticulations: " + i + " - Dissimilarity: " + dissimilarity);
         }

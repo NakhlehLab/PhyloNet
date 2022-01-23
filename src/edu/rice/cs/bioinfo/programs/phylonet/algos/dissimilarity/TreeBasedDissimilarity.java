@@ -93,7 +93,7 @@ public class TreeBasedDissimilarity<T> {
      * @param scale2 Scale factor for branch lengths of tree2.
      * @return Normalized tree distance.
      */
-    private static double computeNormalizedTreeDistance(Tree tree1, double scale1, Tree tree2, double scale2) {
+     static double computeNormalizedTreeDistance(Tree tree1, double scale1, Tree tree2, double scale2) {
         if (!Trees.leafSetsAgree(tree1, tree2)) {
             throw new RuntimeException("Trees must have identical leaf sets");
         }
@@ -154,7 +154,7 @@ public class TreeBasedDissimilarity<T> {
      * @param scale2 Scale factor for branch lengths of tree2.
      * @return Rooted branch score.
      */
-    private static double computeRootedBranchScore(Tree tree1, double scale1, Tree tree2, double scale2) {
+     static double computeRootedBranchScore(Tree tree1, double scale1, Tree tree2, double scale2) {
         if (!Trees.leafSetsAgree(tree1, tree2)) {
             throw new RuntimeException("Trees must have identical leaf sets");
         }

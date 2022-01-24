@@ -152,6 +152,21 @@ public class Trees {
 		return;
 	}
 
+	/**
+	 * Get total branch length of tree.
+	 */
+	public static final double getTotalBranchLength(Tree tree) {
+		double length = 0;
+
+		for(TNode n : tree.getNodes()) {
+			if(n.getParentDistance() != TNode.NO_DISTANCE) {
+				length += n.getParentDistance();
+			}
+		}
+
+		return length;
+	}
+
 
 	/**
 	 * Apply a labeling to ensure that all nodes are labeled in the tree.  Any node

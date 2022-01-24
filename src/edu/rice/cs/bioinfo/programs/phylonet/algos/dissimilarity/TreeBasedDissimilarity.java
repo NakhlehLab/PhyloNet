@@ -56,11 +56,12 @@ public class TreeBasedDissimilarity<T> {
                     continue;
                 }
                 double weight = computeNormalizedTreeDistance(trees1.get(l), 1.0, trees2.get(r), 1.0);
+                weight /= Math.min(Trees.getTotalBranchLength(trees1.get(l)), Trees.getTotalBranchLength(trees2.get(r)));
                 BG.addEdge(l, r, weight);
             }
         }
 
-        return BG.getMinEdgeCoverWeight();
+        return BG.getMinEdgeCoverWeight() / BG.getMinEdgeCoverSize();
     }
 
     /**
@@ -75,11 +76,12 @@ public class TreeBasedDissimilarity<T> {
         for (int l = 0; l < trees1.size(); l++) {
             for (int r = 0; r < trees2.size(); r++) {
                 double weight = computeRootedBranchScore(trees1.get(l), 1.0, trees2.get(r), 1.0);
+                weight /= Math.min(Trees.getTotalBranchLength(trees1.get(l)), Trees.getTotalBranchLength(trees2.get(r)));
                 BG.addEdge(l, r, weight);
             }
         }
 
-        return BG.getMinEdgeCoverWeight();
+        return BG.getMinEdgeCoverWeight() / BG.getMinEdgeCoverSize();
     }
 
     /**

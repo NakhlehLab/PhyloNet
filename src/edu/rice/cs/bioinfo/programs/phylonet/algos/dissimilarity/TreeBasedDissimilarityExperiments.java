@@ -1,11 +1,15 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.ReticulationEdgeDeletion;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.distribution.NormalDistribution;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TreeBasedDissimilarityExperiments {
     public static void main(String[] args) {
@@ -15,7 +19,7 @@ public class TreeBasedDissimilarityExperiments {
         System.out.println();
         uniformScalingExperiment(richNewick1, 10, 1.2);
         System.out.println();
-        reticulationExperiment(richNewick1, 3, 5);
+        reticulationExperiment(richNewick1, 0);
     }
 
     private static void uniformScalingExperiment(String richNewick, int numScales, double scaleFactor) {
@@ -60,33 +64,40 @@ public class TreeBasedDissimilarityExperiments {
         }
     }
 
-    private static void reticulationExperiment(String richNewick, int minRet, int maxRet) {
+    private static void reticulationExperiment(String richNewick, int minRet) {
         Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
+        Network<BniNetwork> newNetwork = originalNetwork.clone();
 
-        for (int i = minRet; i <= maxRet; i++) {
-            double[] topologyOperationWeights = {1, 0, 0, 0, 0, 0};
-            int maxReticulations = i;
-            int moveDiameter = -1;
-            int reticulationDiameter = -1;
+        System.out.println("Reticulation experiment (startReti=" + originalNetwork.getReticulationCount() +", minReti=" + minRet + ")");
+        System.out.println("Reticulation Offset,Dissimilarity");
 
-            NetworkRandomTopologyNeighbourGenerator gen = new NetworkRandomTopologyNeighbourGenerator(
-                    topologyOperationWeights,
-                    maxReticulations,
-                    moveDiameter,
-                    reticulationDiameter,
-                    null,
-                    null);
 
-            Network<BniNetwork> newNetwork = originalNetwork.clone();
-
-            while (newNetwork == null || newNetwork.getReticulationCount() != i) {
-                gen.mutateNetwork(newNetwork);
-            }
-
+        for (int i = originalNetwork.getReticulationCount(); i >= minRet; i--) {
             TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, newNetwork);
             double dissimilarity = treeBasedDissimilarity.computeRootedBranchScore();
 
-            System.out.println("# Added reticulations: " + i + " - Dissimilarity: " + dissimilarity);
+            System.out.println((i - originalNetwork.getReticulationCount()) + "," + dissimilarity);
+
+            if (newNetwork.getReticulationCount() == 0)
+                break;
+            newNetwork.getNetworkNodes();
+            ReticulationEdgeDeletion ed = new ReticulationEdgeDeletion();
+            ed.setParameters(newNetwork, getReticulationEdges(newNetwork).get(0), null, null);
+            ed.performOperation();
         }
+    }
+
+
+    private static List<Tuple<NetNode, NetNode>> getReticulationEdges(Network<BniNetwork> network) {
+        List<Tuple<NetNode, NetNode>> list = new ArrayList<>();
+        for (NetNode<BniNetwork> node : Networks.getInternalNodes(network)) {
+            for (NetNode<BniNetwork> childNode : node.getChildren()) {
+                if (node.isTreeNode() && childNode.isNetworkNode()) {
+                    list.add(new Tuple<>(node , childNode));
+                }
+            }
+        }
+
+        return list;
     }
 }

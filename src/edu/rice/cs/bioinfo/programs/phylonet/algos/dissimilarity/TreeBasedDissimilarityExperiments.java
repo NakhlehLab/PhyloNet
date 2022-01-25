@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.NetworkRandomTopologyNeighbourGenerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -13,6 +14,8 @@ public class TreeBasedDissimilarityExperiments {
         scalingExperiment(richNewick1, 10, 1.5, 0.1);
         System.out.println();
         uniformScalingExperiment(richNewick1, 10, 1.2);
+        System.out.println();
+        reticulationExperiment(richNewick1, 3, 5);
     }
 
     private static void uniformScalingExperiment(String richNewick, int numScales, double scaleFactor) {
@@ -61,10 +64,24 @@ public class TreeBasedDissimilarityExperiments {
         Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
 
         for (int i = minRet; i <= maxRet; i++) {
-            Network<BniNetwork> newNetwork = originalNetwork.clone();
-            Networks.addRandomReticulationEdge(newNetwork, i);
-            Networks.autoLabelNodes(newNetwork);
+            double[] topologyOperationWeights = {1, 0, 0, 0, 0, 0};
+            int maxReticulations = i;
+            int moveDiameter = -1;
+            int reticulationDiameter = -1;
 
+            NetworkRandomTopologyNeighbourGenerator gen = new NetworkRandomTopologyNeighbourGenerator(
+                    topologyOperationWeights,
+                    maxReticulations,
+                    moveDiameter,
+                    reticulationDiameter,
+                    null,
+                    null);
+
+            Network<BniNetwork> newNetwork = originalNetwork.clone();
+
+            while (newNetwork == null || newNetwork.getReticulationCount() != i) {
+                gen.mutateNetwork(newNetwork);
+            }
 
             TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, newNetwork);
             double dissimilarity = treeBasedDissimilarity.computeRootedBranchScore();

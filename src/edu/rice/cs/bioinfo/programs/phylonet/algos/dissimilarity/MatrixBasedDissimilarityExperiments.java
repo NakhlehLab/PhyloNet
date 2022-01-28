@@ -1,18 +1,28 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.ReticulationEdgeDeletion;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MatrixBasedDissimilarityExperiments {
     public static void main(String[] args) {
-        String richNewick1 = "(E:10.0,((((B:2.0,(C:1.0)I7#H2:1.0::0.5)I6:2.0)I4#H1:2.0::0.5,(I7#H2:2.0::0.5,D:3.0)I5:3.0)I3:2.0,(A:5.0,I4#H1:1.0::0.5)I2:3.0)I1:2.0)I0;";
+        if (args.length != 1)
+            return;
 
-        scalingExperiment(richNewick1, 10, 1.5, 0.1);
+        String richNewick = args[0];
+
+        scalingExperiment(richNewick, 10, 1.5, 0.1);
         System.out.println();
-        uniformScalingExperiment(richNewick1, 10, 1.2);
+        uniformScalingExperiment(richNewick, 10, 1.2);
+        System.out.println();
+        reticulationExperiment(richNewick, 0);
     }
 
     private static void uniformScalingExperiment(String richNewick, int numScales, double scaleFactor) {
@@ -27,7 +37,7 @@ public class MatrixBasedDissimilarityExperiments {
             Networks.scaleNetwork(newNetwork, curScale *= scaleFactor);
 
             MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, newNetwork);
-            double dissimilarity = matrixBasedDissimilarity.computeMeanDistance();
+            double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
 
             System.out.println(curScale + "," + dissimilarity);
         }
@@ -43,10 +53,10 @@ public class MatrixBasedDissimilarityExperiments {
         System.out.println("# Iterations,Dissimilarity");
 
         for (int i = 0; i <= numScales; i++) {
-            TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, currentNetwork);
-            double dissimilarity = treeBasedDissimilarity.computeRootedBranchScore();
+            MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
+            double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
 
-            System.out.println( i + "," + dissimilarity);
+            System.out.println(i + "," + dissimilarity);
 
             for(NetNode<BniNetwork> node : Networks.postTraversal(currentNetwork)) {
                 for(NetNode<BniNetwork> child : node.getChildren()) {
@@ -55,5 +65,42 @@ public class MatrixBasedDissimilarityExperiments {
                 }
             }
         }
+    }
+
+    private static void reticulationExperiment(String richNewick, int minRet) {
+        Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
+        Network<BniNetwork> currentNetwork = Networks.readNetwork(richNewick);
+
+        System.out.println("Reticulation experiment (startReti=" + originalNetwork.getReticulationCount() +", minReti=" + minRet + ")");
+        System.out.println("Reticulations Deleted,Dissimilarity");
+
+
+        for (int i = originalNetwork.getReticulationCount(); i >= minRet; i--) {
+            MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
+            double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
+
+            System.out.println(originalNetwork.getReticulationCount() - i + "," + dissimilarity);
+
+            if (currentNetwork.getReticulationCount() == 0)
+                break;
+
+            ReticulationEdgeDeletion ed = new ReticulationEdgeDeletion();
+            ed.setParameters(currentNetwork, getReticulationEdges(currentNetwork).get(0), null, null);
+            ed.performOperation();
+        }
+    }
+
+
+    private static List<Tuple<NetNode, NetNode>> getReticulationEdges(Network<BniNetwork> network) {
+        List<Tuple<NetNode, NetNode>> list = new ArrayList<>();
+        for (NetNode<BniNetwork> node : Networks.getInternalNodes(network)) {
+            for (NetNode<BniNetwork> childNode : node.getChildren()) {
+                if (node.isTreeNode() && childNode.isNetworkNode()) {
+                    list.add(new Tuple<>(node , childNode));
+                }
+            }
+        }
+
+        return list;
     }
 }

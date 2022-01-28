@@ -22,7 +22,7 @@ public class MatrixBasedDissimilarity<T> {
         this.network2 = network2;
     }
 
-    public double computeMeanDistance() {
+    public double computeWeightedAveragePathDistance() {
         if (!Networks.leafSetsAgree(this.network1, this.network2)) {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
@@ -68,15 +68,15 @@ public class MatrixBasedDissimilarity<T> {
      */
     private static <T> double[][] computeWeightedAveragePathDistance(Network<T> network) {
         // Create a distance matrix and set diagonals to 0.
-        HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> distanceMatrix = new HashMap<>();
+        HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> weightedPathDistanceMatrix = new HashMap<>();
         for (NetNode<T> leaf1 : network.getLeaves()) {
-            distanceMatrix.put(leaf1, new HashMap<>());
+            weightedPathDistanceMatrix.put(leaf1, new HashMap<>());
 
             for (NetNode<T> leaf2 : network.getLeaves()) {
-                distanceMatrix.get(leaf1).put(leaf2, new ArrayList<>());
+                weightedPathDistanceMatrix.get(leaf1).put(leaf2, new ArrayList<>());
 
                 if (leaf1.equals(leaf2)) {
-                    distanceMatrix.get(leaf1).get(leaf2).add(0.0);
+                    weightedPathDistanceMatrix.get(leaf1).get(leaf2).add(0.0);
                 }
             }
         }
@@ -155,6 +155,21 @@ public class MatrixBasedDissimilarity<T> {
                     if (Double.isInfinite(probFromChildToCur) || Double.isNaN(probFromChildToCur))
                         probFromChildToCur = 1.0;
 
+                    if (childNode.getParentCount() > 1) {
+                        boolean unknownProb = false;
+
+                        for (NetNode<T> parentNode : childNode.getParents()) {
+                            double probFromChildToPar = childNode.getParentProbability(parentNode);
+                            if (Double.isInfinite(probFromChildToPar) || Double.isNaN(probFromChildToPar)) {
+                                unknownProb = true;
+//                                System.err.println("Network node has at least 1 unknown incoming probability. Letting each edge have 1.0/numdeg prob.");
+                            }
+                        }
+
+                        if (unknownProb)
+                            probFromChildToCur = 1.0 / childNode.getParentCount();
+                    }
+
                     for (Map.Entry<NetNode<T>, List<Double>> entry : distances.get(childNode).entrySet()) {
                         NetNode<T> leafNode = entry.getKey();
                         distances.get(curNode).putIfAbsent(leafNode, new ArrayList<>());
@@ -191,10 +206,17 @@ public class MatrixBasedDissimilarity<T> {
                     HashMap<NetNode<T>, List<Double>> curProbabilities = probabilities.get(curNode);
                     HashMap<NetNode<T>, List<List<NetNode<T>>>> curPaths = paths.get(curNode);
 
-                    assert curDistances.keySet().containsAll(curProbabilities.keySet());
-                    assert curProbabilities.keySet().containsAll(curDistances.keySet());
-                    assert curDistances.keySet().containsAll(curPaths.keySet());
-                    assert curPaths.keySet().containsAll(curDistances.keySet());
+                    if (!curDistances.keySet().containsAll(curProbabilities.keySet()))
+                        throw new RuntimeException("Assertion failure. There's a bug in the code.");
+
+                    if (!curProbabilities.keySet().containsAll(curDistances.keySet()))
+                        throw new RuntimeException("Assertion failure. There's a bug in the code.");
+
+                    if (!curDistances.keySet().containsAll(curPaths.keySet()))
+                        throw new RuntimeException("Assertion failure. There's a bug in the code.");
+
+                    if (!curPaths.keySet().containsAll(curDistances.keySet()))
+                        throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
                     Set<NetNode<T>> accessibleLeaves = curDistances.keySet();
 
@@ -203,10 +225,17 @@ public class MatrixBasedDissimilarity<T> {
                             if (leaf1.equals(leaf2))
                                 continue;
 
-                            assert curDistances.get(leaf1).size() == curProbabilities.get(leaf1).size();
-                            assert curDistances.get(leaf1).size() == curDistances.get(leaf1).size();
-                            assert curDistances.get(leaf2).size() == curProbabilities.get(leaf2).size();
-                            assert curDistances.get(leaf2).size() == curDistances.get(leaf2).size();
+                            if (curDistances.get(leaf1).size() != curProbabilities.get(leaf1).size())
+                                throw new RuntimeException("Assertion failure. There's a bug in the code.");
+
+                            if (curDistances.get(leaf1).size() != curDistances.get(leaf1).size())
+                                throw new RuntimeException("Assertion failure. There's a bug in the code.");
+
+                            if (curDistances.get(leaf2).size() != curProbabilities.get(leaf2).size())
+                                throw new RuntimeException("Assertion failure. There's a bug in the code.");
+
+                            if (curDistances.get(leaf2).size() != curDistances.get(leaf2).size())
+                                throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
                             for (int i = 0; i < curDistances.get(leaf1).size(); i++) {
                                 for (int j = 0; j < curDistances.get(leaf2).size(); j++) {
@@ -216,7 +245,9 @@ public class MatrixBasedDissimilarity<T> {
                                     .collect(Collectors.toSet());
 
                                     if (commonNodes.size() == 1 && commonNodes.contains(curNode)) {
-                                        distanceMatrix.get(leaf1).get(leaf2).add(curDistances.get(leaf1).get(i) + curDistances.get(leaf2).get(j));
+                                        weightedPathDistanceMatrix.get(leaf1).get(leaf2).add(
+                                                curDistances.get(leaf1).get(i) * curProbabilities.get(leaf1).get(i) +
+                                                curDistances.get(leaf2).get(j) * curProbabilities.get(leaf2).get(j));
                                         probabilityMatrix.get(leaf1).get(leaf2).add(curProbabilities.get(leaf1).get(i) * curProbabilities.get(leaf2).get(j));
                                     }
                                 }
@@ -244,47 +275,44 @@ public class MatrixBasedDissimilarity<T> {
         // Initialize our matrix.
         double[][] weightedAveragePathDistanceMatrix = new double[numTaxa][numTaxa];
 
-        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry : distanceMatrix.entrySet()) {
+        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry : weightedPathDistanceMatrix.entrySet()) {
             NetNode<T> leaf1 = entry.getKey();
 
             for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry.getValue().entrySet()) {
                 NetNode<T> leaf2 = entry2.getKey();
 
                 // Assert that all probabilities add up to 1.
-                assert probabilityMatrix.get(leaf1).get(leaf2).stream().mapToDouble(Double::doubleValue).sum() == 1.0;
+                if (probabilityMatrix.get(leaf1).get(leaf2).stream().reduce(Double::sum).get() != 1.0)
+                    throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
                 // Assert each distance has a probability.
-                assert probabilityMatrix.get(leaf1).get(leaf2).size() == distanceMatrix.get(leaf1).get(leaf2).size();
-
-                double weightedAveragePathDistance = 0.0;
-                for (int i = 0; i < probabilityMatrix.get(leaf1).get(leaf2).size(); i++) {
-                    weightedAveragePathDistance += probabilityMatrix.get(leaf1).get(leaf2).get(i) * distanceMatrix.get(leaf1).get(leaf2).get(i);
-                }
+                if (probabilityMatrix.get(leaf1).get(leaf2).size() != weightedPathDistanceMatrix.get(leaf1).get(leaf2).size())
+                    throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
                 weightedAveragePathDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
-                        [taxaToIndexMapping.get(leaf2.getName())] = weightedAveragePathDistance;
+                        [taxaToIndexMapping.get(leaf2.getName())] = weightedPathDistanceMatrix.get(leaf1).get(leaf2).stream().reduce(Double::sum).get();
             }
         }
 
         return weightedAveragePathDistanceMatrix;
     }
 
-    private static float frobeniusNorm(double[][] matrix)
+    private static double frobeniusNorm(double[][] matrix)
     {
         // To store the sum of squares of the
         // elements of the given matrix
-        int sumSq = 0;
+        double sumSq = 0;
         for (int i = 0; i < matrix.length; i++)
         {
             for (int j = 0; j < matrix[i].length; j++)
             {
-                sumSq += (int)Math.pow(matrix[i][j], 2);
+                sumSq += Math.pow(matrix[i][j], 2);
             }
         }
 
         // Return the square root of
         // the sum of squares
-        float res = (float)Math.sqrt(sumSq);
+        double res = Math.sqrt(sumSq);
         return res;
     }
 

@@ -17,6 +17,6 @@ public class MatrixBasedDissimilarityTest {
 
         MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity<>(network1, network2);
 
-        Assert.assertEquals(0.0, matrixBasedDissimilarity.computeMeanDistance(), 1e-5);
+        Assert.assertEquals(0.0, matrixBasedDissimilarity.computeWeightedAveragePathDistance(), 1e-5);
     }
 }

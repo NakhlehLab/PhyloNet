@@ -31,7 +31,7 @@ public class MatrixBasedDissimilarity<T> {
         double[][] matrix2 = computeWeightedAveragePathDistance(this.network2);
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
-        return frobeniusNorm(differenceMatrix);
+        return frobeniusNorm(differenceMatrix) / Math.min(frobeniusNorm(matrix1), frobeniusNorm(matrix2));
     }
 
     /**

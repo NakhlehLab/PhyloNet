@@ -84,9 +84,18 @@ public class TreeBasedDissimilarityExperiments {
             if (currentNetwork.getReticulationCount() == 0)
                 break;
 
-            ReticulationEdgeDeletion ed = new ReticulationEdgeDeletion();
-            ed.setParameters(currentNetwork, getReticulationEdges(currentNetwork).get(0), null, null);
-            ed.performOperation();
+            int j = 0;
+            while (true) {
+                ReticulationEdgeDeletion ed = new ReticulationEdgeDeletion();
+                if (getReticulationEdges(currentNetwork).size() <= j)
+                    throw new RuntimeException("Failed to perform reticulation deletion");
+
+                ed.setParameters(currentNetwork, getReticulationEdges(currentNetwork).get(j), null, null);
+                if (ed.performOperation())
+                    break;
+
+                j += 1;
+            }
         }
     }
 

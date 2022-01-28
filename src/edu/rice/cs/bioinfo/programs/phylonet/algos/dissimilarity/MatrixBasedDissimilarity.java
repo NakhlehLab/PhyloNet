@@ -3,8 +3,10 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import org.apache.commons.math3.util.ArithmeticUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MatrixBasedDissimilarity<T> {
     private Network<T> network1;
@@ -25,47 +27,11 @@ public class MatrixBasedDissimilarity<T> {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        double[][] matrix1 = computeMeanDistanceMatrix(this.network1);
-        double[][] matrix2 = computeMeanDistanceMatrix(this.network2);
+        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1);
+        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2);
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
         return frobeniusNorm(differenceMatrix);
-    }
-
-    /**
-     * Given network, we compute mean distance matrix, which is the average of all distances in between leaves i and j.
-     *
-     * @param network Network to get list of taxa from.
-     * @param <T> Indicates the type of additional data this node will store.
-     * @return Mean distance matrix.
-     */
-    private static <T> double[][] computeMeanDistanceMatrix(Network<T> network) {
-        // Get distances in between each pair of leaves.
-        HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> leafDistances = computeLeafDistances(network);
-
-        // Get taxa to index mapping to build the matrix.
-        Map<String, Integer> taxaToIndexMapping = computeTaxaToIndexMapping(network);
-
-        // Get number of taxa.
-        int numTaxa = taxaToIndexMapping.keySet().size();
-
-        // Initialize our matrix.
-        double[][] meanDistanceMatrix = new double[numTaxa][numTaxa];
-
-        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry : leafDistances.entrySet()) {
-            NetNode<T> leaf1 = entry.getKey();
-
-            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry.getValue().entrySet()) {
-                NetNode<T> leaf2 = entry2.getKey();
-
-                // Compute average distance by taking mean of all distances and place it in the matrix.
-                meanDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
-                        [taxaToIndexMapping.get(leaf2.getName())] =
-                        entry2.getValue().stream().mapToDouble(i -> i).average().orElse(0);
-            }
-        }
-
-        return meanDistanceMatrix;
     }
 
     /**
@@ -94,14 +60,13 @@ public class MatrixBasedDissimilarity<T> {
     }
 
     /**
-     * Builds and returns a distances for all leaves of the given network.
+     * Given network, we compute weighted average path distance.
      *
-     * @param network Network to build the distances from.
+     * @param network Network to get list of taxa from.
      * @param <T> Indicates the type of additional data this node will store.
-     * @return A distance mapping for all leaves of the given network. For each pair of leaves, it encodes all possible
-     * distances inside a nested hashmap.
+     * @return Mean distance matrix.
      */
-    private static <T> HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> computeLeafDistances(Network<T> network) {
+    private static <T> double[][] computeWeightedAveragePathDistance(Network<T> network) {
         // Create a distance matrix and set diagonals to 0.
         HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> distanceMatrix = new HashMap<>();
         for (NetNode<T> leaf1 : network.getLeaves()) {
@@ -112,7 +77,20 @@ public class MatrixBasedDissimilarity<T> {
 
                 if (leaf1.equals(leaf2)) {
                     distanceMatrix.get(leaf1).get(leaf2).add(0.0);
-                    distanceMatrix.get(leaf2).get(leaf1).add(0.0);
+                }
+            }
+        }
+
+        // Create a probability matrix and set diagonals to 1.
+        HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> probabilityMatrix = new HashMap<>();
+        for (NetNode<T> leaf1 : network.getLeaves()) {
+            probabilityMatrix.put(leaf1, new HashMap<>());
+
+            for (NetNode<T> leaf2 : network.getLeaves()) {
+                probabilityMatrix.get(leaf1).put(leaf2, new ArrayList<>());
+
+                if (leaf1.equals(leaf2)) {
+                    probabilityMatrix.get(leaf1).get(leaf2).add(1.0);
                 }
             }
         }
@@ -128,6 +106,18 @@ public class MatrixBasedDissimilarity<T> {
         //     List<Distance from Current Node to Leaf Node>
         HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> distances = new HashMap<>();
 
+        // Create a very nested hashmap:
+        // Current Node:
+        //   Leaf Node:
+        //     List<Probability from Current Node to Leaf Node>
+        HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> probabilities = new HashMap<>();
+
+        // Create a very nested hashmap:
+        // Current Node:
+        //   Leaf Node:
+        //     List<List<Path from Current Node to Leaf Node>>
+        HashMap<NetNode<T>, HashMap<NetNode<T>, List<List<NetNode<T>>>>> paths = new HashMap<>();
+
         // Create a queue and add all leaf nodes to the queue.
         List<NetNode<T>> queue = new ArrayList<>();
         for (NetNode<T> node : network.getLeaves()) {
@@ -138,67 +128,96 @@ public class MatrixBasedDissimilarity<T> {
             NetNode<T> curNode = queue.remove(0);
 
             distances.put(curNode, new HashMap<>());
+            probabilities.put(curNode, new HashMap<>());
+            paths.put(curNode, new HashMap<>());
 
             if (curNode.isLeaf()) {
-                // If it is a leaf node, then add itself as with distance of 0.0.
+                // If it is a leaf node, then add itself as with distance of 0.0, and set probability to 1.0.
                 distances.get(curNode).putIfAbsent(curNode, new ArrayList<>());
                 distances.get(curNode).get(curNode).add(0.0);
+
+                probabilities.get(curNode).putIfAbsent(curNode, new ArrayList<>());
+                probabilities.get(curNode).get(curNode).add(1.0);
+
+                paths.get(curNode).putIfAbsent(curNode, new ArrayList<>());
+                paths.get(curNode).get(curNode).add(new ArrayList<>());
+                paths.get(curNode).get(curNode).get(0).add(curNode);
             } else {
                 // For any internal node, obtain distances from its children, and add distance between current node and
                 // the distances retrieved from children. If there are multiple paths leading to a leaf node from
                 // multiple branches, then we add a new entry to the list mapped to the leaf node.
                 for (NetNode<T> childNode : curNode.getChildren()) {
-                    double dist = childNode.getParentDistance(curNode);
-
-                    if (Double.isInfinite(dist) || Double.isNaN(dist))
+                    double distFromChildToCur = childNode.getParentDistance(curNode);
+                    if (Double.isInfinite(distFromChildToCur) || Double.isNaN(distFromChildToCur))
                         throw new RuntimeException("Branch length cannot be infinite or undefined");
+
+                    double probFromChildToCur = childNode.getParentProbability(curNode);
+                    if (Double.isInfinite(probFromChildToCur) || Double.isNaN(probFromChildToCur))
+                        probFromChildToCur = 1.0;
 
                     for (Map.Entry<NetNode<T>, List<Double>> entry : distances.get(childNode).entrySet()) {
                         NetNode<T> leafNode = entry.getKey();
                         distances.get(curNode).putIfAbsent(leafNode, new ArrayList<>());
 
-                        for (Double oldDist : entry.getValue()) {
-                            distances.get(curNode).get(leafNode).add(oldDist + dist);
+                        for (Double distFromChildToLeaf : entry.getValue()) {
+                            distances.get(curNode).get(leafNode).add(distFromChildToLeaf + distFromChildToCur);
+                        }
+                    }
+
+                    for (Map.Entry<NetNode<T>, List<Double>> entry : probabilities.get(childNode).entrySet()) {
+                        NetNode<T> leafNode = entry.getKey();
+                        probabilities.get(curNode).putIfAbsent(leafNode, new ArrayList<>());
+
+                        for (Double probFromChildToLeaf : entry.getValue()) {
+                            probabilities.get(curNode).get(leafNode).add(probFromChildToLeaf * probFromChildToCur);
+                        }
+                    }
+
+                    for (Map.Entry<NetNode<T>, List<List<NetNode<T>>>> entry : paths.get(childNode).entrySet()) {
+                        NetNode<T> leafNode = entry.getKey();
+                        paths.get(curNode).putIfAbsent(leafNode, new ArrayList<>());
+
+                        for (List<NetNode<T>> pathFromChildToLeaf : entry.getValue()) {
+                            List<NetNode<T>> pathFromCurToLeaf = new ArrayList<>();
+                            pathFromCurToLeaf.add(curNode);
+                            pathFromCurToLeaf.addAll(pathFromChildToLeaf);
+                            paths.get(curNode).get(leafNode).add(pathFromCurToLeaf);
                         }
                     }
                 }
 
                 if (curNode.getChildCount() > 1) {
-                    // For any network node, where the there are more than 2 branches, we look at if this node connects
-                    // two leaves through a new path, and if so, we add the distance between two leaves in our distance
-                    // matrix.
-                    List<Set<NetNode<T>>> considered = new ArrayList<>();
+                    HashMap<NetNode<T>, List<Double>> curDistances = distances.get(curNode);
+                    HashMap<NetNode<T>, List<Double>> curProbabilities = probabilities.get(curNode);
+                    HashMap<NetNode<T>, List<List<NetNode<T>>>> curPaths = paths.get(curNode);
 
-                    for (NetNode<T> childNode1 : curNode.getChildren()) {
-                        for (NetNode<T> childNode2 : curNode.getChildren()) {
-                            if (childNode1.equals(childNode2))
+                    assert curDistances.keySet().containsAll(curProbabilities.keySet());
+                    assert curProbabilities.keySet().containsAll(curDistances.keySet());
+                    assert curDistances.keySet().containsAll(curPaths.keySet());
+                    assert curPaths.keySet().containsAll(curDistances.keySet());
+
+                    Set<NetNode<T>> accessibleLeaves = curDistances.keySet();
+
+                    for (NetNode<T> leaf1 : accessibleLeaves) {
+                        for (NetNode<T> leaf2 : accessibleLeaves) {
+                            if (leaf1.equals(leaf2))
                                 continue;
 
-                            Set<NetNode<T>> set = new HashSet<>();
-                            set.add(childNode1);
-                            set.add(childNode2);
+                            assert curDistances.get(leaf1).size() == curProbabilities.get(leaf1).size();
+                            assert curDistances.get(leaf1).size() == curDistances.get(leaf1).size();
+                            assert curDistances.get(leaf2).size() == curProbabilities.get(leaf2).size();
+                            assert curDistances.get(leaf2).size() == curDistances.get(leaf2).size();
 
-                            if (considered.contains(set))
-                                continue;
+                            for (int i = 0; i < curDistances.get(leaf1).size(); i++) {
+                                for (int j = 0; j < curDistances.get(leaf2).size(); j++) {
+                                    Set<NetNode<T>> commonNodes = curPaths.get(leaf1).get(i).stream()
+                                    .distinct()
+                                    .filter(curPaths.get(leaf2).get(j)::contains)
+                                    .collect(Collectors.toSet());
 
-                            considered.add(set);
-
-                            double dist1 = childNode1.getParentDistance(curNode);
-                            double dist2 = childNode2.getParentDistance(curNode);
-
-                            for (Map.Entry<NetNode<T>, List<Double>> entry1 : distances.get(childNode1).entrySet()) {
-                                for (Map.Entry<NetNode<T>, List<Double>> entry2 : distances.get(childNode2).entrySet()) {
-                                    NetNode<T> leafNode1 = entry1.getKey();
-                                    NetNode<T> leafNode2 = entry2.getKey();
-
-                                    if (leafNode1.equals(leafNode2))
-                                        continue;
-
-                                    for (double oldDist1 : entry1.getValue()) {
-                                        for (double oldDist2 : entry2.getValue()) {
-                                            distanceMatrix.get(leafNode1).get(leafNode2).add(dist1 + dist2 + oldDist1 + oldDist2);
-                                            distanceMatrix.get(leafNode2).get(leafNode1).add(dist1 + dist2 + oldDist1 + oldDist2);
-                                        }
+                                    if (commonNodes.size() == 1 && commonNodes.contains(curNode)) {
+                                        distanceMatrix.get(leaf1).get(leaf2).add(curDistances.get(leaf1).get(i) + curDistances.get(leaf2).get(j));
+                                        probabilityMatrix.get(leaf1).get(leaf2).add(curProbabilities.get(leaf1).get(i) * curProbabilities.get(leaf2).get(j));
                                     }
                                 }
                             }
@@ -216,29 +235,38 @@ public class MatrixBasedDissimilarity<T> {
             });
         }
 
-        // DEBUG PRINT FOR DISTANCES VARIABLE
-//        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
-//            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry1.getValue().entrySet()) {
-//                System.out.print(entry1.getKey().getName());
-//                System.out.print(" -> ");
-//                System.out.print(entry2.getKey().getName());
-//                System.out.print(" : ");
-//                System.out.println(entry2.getValue());
-//            }
-//        }
+        // Get taxa to index mapping to build the matrix.
+        Map<String, Integer> taxaToIndexMapping = computeTaxaToIndexMapping(network);
 
-        // DEBUG PRINT FOR DISTANCES MATRIX
-//        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry1 : distanceMatrix.entrySet()) {
-//            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry1.getValue().entrySet()) {
-//                System.out.print(entry1.getKey().getName());
-//                System.out.print(" -> ");
-//                System.out.print(entry2.getKey().getName());
-//                System.out.print(" : ");
-//                System.out.println(entry2.getValue());
-//            }
-//        }
+        // Get number of taxa.
+        int numTaxa = taxaToIndexMapping.keySet().size();
 
-        return distanceMatrix;
+        // Initialize our matrix.
+        double[][] weightedAveragePathDistanceMatrix = new double[numTaxa][numTaxa];
+
+        for (Map.Entry<NetNode<T>, HashMap<NetNode<T>, List<Double>>> entry : distanceMatrix.entrySet()) {
+            NetNode<T> leaf1 = entry.getKey();
+
+            for (Map.Entry<NetNode<T>, List<Double>> entry2 : entry.getValue().entrySet()) {
+                NetNode<T> leaf2 = entry2.getKey();
+
+                // Assert that all probabilities add up to 1.
+                assert probabilityMatrix.get(leaf1).get(leaf2).stream().mapToDouble(Double::doubleValue).sum() == 1.0;
+
+                // Assert each distance has a probability.
+                assert probabilityMatrix.get(leaf1).get(leaf2).size() == distanceMatrix.get(leaf1).get(leaf2).size();
+
+                double weightedAveragePathDistance = 0.0;
+                for (int i = 0; i < probabilityMatrix.get(leaf1).get(leaf2).size(); i++) {
+                    weightedAveragePathDistance += probabilityMatrix.get(leaf1).get(leaf2).get(i) * distanceMatrix.get(leaf1).get(leaf2).get(i);
+                }
+
+                weightedAveragePathDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
+                        [taxaToIndexMapping.get(leaf2.getName())] = weightedAveragePathDistance;
+            }
+        }
+
+        return weightedAveragePathDistanceMatrix;
     }
 
     private static float frobeniusNorm(double[][] matrix)

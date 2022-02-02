@@ -9,39 +9,65 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class MatrixBasedDissimilarityExperiments {
-    public static void main(String[] args) throws IOException {
-        if (args.length != 2)
-            return;
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Command-line arguments:\n" +
+                    "\t[.trees file] [results directory]");
+            System.exit(-1);
+        }
 
         List<String> richNewicks = new ArrayList<>();
 
-        Scanner fileReader = new Scanner(new File(args[0]));
-        while (fileReader.hasNextLine()) {
-            String line = fileReader.nextLine();
+        try {
+            Scanner fileReader = new Scanner(new File(args[0]));
 
-            if (line.startsWith("tree ")) {
-                richNewicks.add(line.substring(line.indexOf("=") + 1));
+            while (fileReader.hasNextLine()) {
+                String line = fileReader.nextLine();
+
+                if (line.startsWith("tree ")) {
+                    richNewicks.add(line.substring(line.indexOf("=") + 1));
+                }
             }
+            fileReader.close();
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Could not find .trees file to read networks from.");
+            System.exit(-1);
         }
-        fileReader.close();
 
-        int i = 0;
-        for (String richNewick : richNewicks) {
-            System.out.println("Running " + i);
-            BufferedWriter writer = new BufferedWriter(new FileWriter(args[1] + "/net" + i + ".txt"));
+        File saveDir = new File(args[1]);
 
-            scalingExperiment(richNewick, writer, 10, 1.5, 0.1);
-            uniformScalingExperiment(richNewick, writer, 10, 1.2);
-            reticulationExperiment(richNewick, writer, Math.max(Networks.readNetwork(richNewick).getReticulationCount() - 10, 0));
+        if (!saveDir.exists() || !saveDir.isDirectory()) {
+            System.err.println("The results directory to write experiment results to does not exist.");
+            System.exit(-1);
+        }
 
-            i += 1;
+        try {
+            int i = 0;
+            for (String richNewick : richNewicks) {
+                System.out.println("Running " + i);
 
-            writer.close();
+                BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(args[1], "net" + i + ".txt").toFile()));
+
+                scalingExperiment(richNewick, writer, 10, 1.5, 0.1);
+                uniformScalingExperiment(richNewick, writer, 10, 1.2);
+                reticulationExperiment(richNewick, writer, Math.max(Networks.readNetwork(richNewick).getReticulationCount() - 10, 0));
+
+                i += 1;
+
+                writer.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Could not write experiment results.");
+            e.printStackTrace();
+            System.exit(-1);
         }
     }
 

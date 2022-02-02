@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 
+import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkInfo;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -9,24 +10,39 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.function.BiFunction;
 
-public class MatrixBasedDissimilarityExperiments {
+public class DissimilarityExperiments {
+
+    public static Map<String, BiFunction<Network<BniNetwork>, Network<BniNetwork>, Double>> metrics = new HashMap<>();
+    static {
+        metrics.put("matrix", DissimilarityExperiments::getMatrixBasedDissimilarity);
+        metrics.put("tree", DissimilarityExperiments::getTreeBasedDissimilarity);
+    }
+
+    private static String metric = "matrix";
+    private static int maxReti = 10;
+
     public static void main(String[] args) {
-        if (args.length != 2) {
+        if (args.length != 3) {
             System.err.println("Command-line arguments:\n" +
-                    "\t[.trees file] [results directory]");
+                    "\t[matrix/tree] [.trees file] [results directory]");
+            System.exit(-1);
+        }
+
+        metric = args[0];
+
+        if (!Objects.equals(metric, "matrix") && !Objects.equals(metric, "tree")) {
+            System.err.println("Can only use matrix or tree as a parameter.");
             System.exit(-1);
         }
 
         List<String> richNewicks = new ArrayList<>();
 
         try {
-            Scanner fileReader = new Scanner(new File(args[0]));
+            Scanner fileReader = new Scanner(new File(args[1]));
 
             while (fileReader.hasNextLine()) {
                 String line = fileReader.nextLine();
@@ -42,7 +58,7 @@ public class MatrixBasedDissimilarityExperiments {
             System.exit(-1);
         }
 
-        File saveDir = new File(args[1]);
+        File saveDir = new File(args[2]);
 
         if (!saveDir.exists() || !saveDir.isDirectory()) {
             System.err.println("The results directory to write experiment results to does not exist.");
@@ -52,13 +68,19 @@ public class MatrixBasedDissimilarityExperiments {
         try {
             int i = 0;
             for (String richNewick : richNewicks) {
-                System.out.println("Running " + i);
 
-                BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(args[1], "net" + i + ".txt").toFile()));
+                if (Networks.readNetwork(richNewick).getReticulationCount() > maxReti) {
+                    System.out.println("Skipping " + i);
+                    continue;
+                } else {
+                    System.out.println("Running " + i);
+                }
+
+                BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + ".txt").toFile()));
 
                 scalingExperiment(richNewick, writer, 10, 1.5, 0.1);
                 uniformScalingExperiment(richNewick, writer, 10, 1.2);
-                reticulationExperiment(richNewick, writer, Math.max(Networks.readNetwork(richNewick).getReticulationCount() - 10, 0));
+                reticulationExperiment(richNewick, writer, 0);
 
                 i += 1;
 
@@ -82,8 +104,7 @@ public class MatrixBasedDissimilarityExperiments {
             Network<BniNetwork> newNetwork = originalNetwork.clone();
             Networks.scaleNetwork(newNetwork, curScale *= scaleFactor);
 
-            MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, newNetwork);
-            double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
+            double dissimilarity = metrics.get(metric).apply(originalNetwork, newNetwork);
 
             writer.write(curScale + "," + dissimilarity + "\n");
         }
@@ -99,8 +120,7 @@ public class MatrixBasedDissimilarityExperiments {
         writer.write("# Iterations,Dissimilarity\n");
 
         for (int i = 0; i <= numScales; i++) {
-            MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
-            double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
+            double dissimilarity = metrics.get(metric).apply(originalNetwork, currentNetwork);
 
             writer.write(i + "," + dissimilarity + "\n");
 
@@ -122,8 +142,7 @@ public class MatrixBasedDissimilarityExperiments {
 
 
         for (int i = originalNetwork.getReticulationCount(); i >= minRet; i--) {
-            MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
-            double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
+            double dissimilarity = metrics.get(metric).apply(originalNetwork, currentNetwork);
 
             writer.write(originalNetwork.getReticulationCount() - i + "," + dissimilarity + "\n");
 
@@ -163,5 +182,15 @@ public class MatrixBasedDissimilarityExperiments {
         }
 
         return list;
+    }
+
+    private static double getMatrixBasedDissimilarity(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
+        return matrixBasedDissimilarity.computeWeightedAveragePathDistance();
+    }
+
+    private static double getTreeBasedDissimilarity(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, currentNetwork);
+        return treeBasedDissimilarity.computeRootedBranchScore();
     }
 }

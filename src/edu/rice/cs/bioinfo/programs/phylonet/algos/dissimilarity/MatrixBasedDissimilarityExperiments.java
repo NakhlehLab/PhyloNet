@@ -8,28 +8,48 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.rearrangement.Retic
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class MatrixBasedDissimilarityExperiments {
-    public static void main(String[] args) {
-        if (args.length != 1)
+    public static void main(String[] args) throws IOException {
+        if (args.length != 2)
             return;
 
-        String richNewick = args[0];
+        List<String> richNewicks = new ArrayList<>();
 
-        scalingExperiment(richNewick, 10, 1.5, 0.1);
-        System.out.println();
-        uniformScalingExperiment(richNewick, 10, 1.2);
-        System.out.println();
-        reticulationExperiment(richNewick, 0);
+        Scanner fileReader = new Scanner(new File(args[0]));
+        while (fileReader.hasNextLine()) {
+            String line = fileReader.nextLine();
+
+            if (line.startsWith("tree ")) {
+                richNewicks.add(line.substring(line.indexOf("=") + 1));
+            }
+        }
+        fileReader.close();
+
+        int i = 0;
+        for (String richNewick : richNewicks) {
+            System.out.println("Running " + i);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(args[1] + "/net" + i + ".txt"));
+
+            scalingExperiment(richNewick, writer, 10, 1.5, 0.1);
+            uniformScalingExperiment(richNewick, writer, 10, 1.2);
+            reticulationExperiment(richNewick, writer, Math.max(Networks.readNetwork(richNewick).getReticulationCount() - 10, 0));
+
+            i += 1;
+
+            writer.close();
+        }
     }
 
-    private static void uniformScalingExperiment(String richNewick, int numScales, double scaleFactor) {
+    private static void uniformScalingExperiment(String richNewick, BufferedWriter writer, int numScales, double scaleFactor) throws IOException {
         Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
 
-        System.out.println("Uniform scaling experiment (numScales=" + numScales +", scaleFactor=" + scaleFactor + ")");
-        System.out.println("Scale Factor,Dissimilarity");
+        writer.write("Uniform scaling experiment (numScales=" + numScales +", scaleFactor=" + scaleFactor + ")\n");
+        writer.write("Scale Factor,Dissimilarity\n");
 
         double curScale = 1.0;
         for (int i = 0; i <= numScales; i++) {
@@ -39,24 +59,24 @@ public class MatrixBasedDissimilarityExperiments {
             MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, newNetwork);
             double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
 
-            System.out.println(curScale + "," + dissimilarity);
+            writer.write(curScale + "," + dissimilarity + "\n");
         }
     }
 
-    private static void scalingExperiment(String richNewick, int numScales, double mean, double std) {
+    private static void scalingExperiment(String richNewick, BufferedWriter writer, int numScales, double mean, double std) throws IOException {
         Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
         Network<BniNetwork> currentNetwork = Networks.readNetwork(richNewick);
 
         NormalDistribution normalDistribution = new NormalDistribution(mean, std);
 
-        System.out.println("Scaling experiment (numScales=" + numScales +", mean=" + mean + ", std=" + std + ")");
-        System.out.println("# Iterations,Dissimilarity");
+        writer.write("Scaling experiment (numScales=" + numScales +", mean=" + mean + ", std=" + std + ")\n");
+        writer.write("# Iterations,Dissimilarity\n");
 
         for (int i = 0; i <= numScales; i++) {
             MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
             double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
 
-            System.out.println(i + "," + dissimilarity);
+            writer.write(i + "," + dissimilarity + "\n");
 
             for(NetNode<BniNetwork> node : Networks.postTraversal(currentNetwork)) {
                 for(NetNode<BniNetwork> child : node.getChildren()) {
@@ -67,19 +87,19 @@ public class MatrixBasedDissimilarityExperiments {
         }
     }
 
-    private static void reticulationExperiment(String richNewick, int minRet) {
+    private static void reticulationExperiment(String richNewick, BufferedWriter writer, int minRet) throws IOException {
         Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
         Network<BniNetwork> currentNetwork = Networks.readNetwork(richNewick);
 
-        System.out.println("Reticulation experiment (startReti=" + originalNetwork.getReticulationCount() +", minReti=" + minRet + ")");
-        System.out.println("Reticulations Deleted,Dissimilarity");
+        writer.write("Reticulation experiment (startReti=" + originalNetwork.getReticulationCount() +", minReti=" + minRet + ")\n");
+        writer.write("Reticulations Deleted,Dissimilarity\n");
 
 
         for (int i = originalNetwork.getReticulationCount(); i >= minRet; i--) {
             MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
             double dissimilarity = matrixBasedDissimilarity.computeWeightedAveragePathDistance();
 
-            System.out.println(originalNetwork.getReticulationCount() - i + "," + dissimilarity);
+            writer.write(originalNetwork.getReticulationCount() - i + "," + dissimilarity + "\n");
 
             if (currentNetwork.getReticulationCount() == 0)
                 break;
@@ -87,18 +107,24 @@ public class MatrixBasedDissimilarityExperiments {
             int j = 0;
             while (true) {
                 ReticulationEdgeDeletion ed = new ReticulationEdgeDeletion();
-                if (getReticulationEdges(currentNetwork).size() <= j)
-                    throw new RuntimeException("Failed to perform reticulation deletion");
+                if (getReticulationEdges(currentNetwork).size() <= j) {
+                    System.err.println("Failed to perform reticulation deletion");
+                    break;
+                }
 
                 ed.setParameters(currentNetwork, getReticulationEdges(currentNetwork).get(j), null, null);
-                if (ed.performOperation())
+                try {
+                    if (ed.performOperation())
+                        break;
+                } catch (RuntimeException e) {
+                    System.err.println("Failed to perform reticulation deletion");
                     break;
+                }
 
                 j += 1;
             }
         }
     }
-
 
     private static List<Tuple<NetNode, NetNode>> getReticulationEdges(Network<BniNetwork> network) {
         List<Tuple<NetNode, NetNode>> list = new ArrayList<>();

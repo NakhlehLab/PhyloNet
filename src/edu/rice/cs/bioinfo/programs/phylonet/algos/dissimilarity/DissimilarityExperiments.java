@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 
-import edu.rice.cs.bioinfo.library.language.richnewick._1_0.reading.ast.NetworkInfo;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -18,24 +17,26 @@ public class DissimilarityExperiments {
 
     public static Map<String, BiFunction<Network<BniNetwork>, Network<BniNetwork>, Double>> metrics = new HashMap<>();
     static {
-        metrics.put("matrix", DissimilarityExperiments::getMatrixBasedDissimilarity);
-        metrics.put("tree", DissimilarityExperiments::getTreeBasedDissimilarity);
+        metrics.put("WAPD", DissimilarityExperiments::getWAPD);
+        metrics.put("normWAPD", DissimilarityExperiments::getNormWAPD);
+        metrics.put("rNBS", DissimilarityExperiments::getRNBS);
+        metrics.put("NormRNBS", DissimilarityExperiments::getNormRNBS);
     }
 
-    private static String metric = "matrix";
+    private static String metric = "WAPD";
     private static int maxReti = 10;
 
     public static void main(String[] args) {
         if (args.length != 3) {
             System.err.println("Command-line arguments:\n" +
-                    "\t[matrix/tree] [.trees file] [results directory]");
+                    "\t[WAPD/normWAPD/rNBS/NormRNBS] [.trees file] [results directory]");
             System.exit(-1);
         }
 
         metric = args[0];
 
-        if (!Objects.equals(metric, "matrix") && !Objects.equals(metric, "tree")) {
-            System.err.println("Can only use matrix or tree as a parameter.");
+        if (!metrics.containsKey(metric)) {
+            System.err.println("Can use the following measures: WAPD/normWAPD/rNBS/NormRNBS");
             System.exit(-1);
         }
 
@@ -184,13 +185,23 @@ public class DissimilarityExperiments {
         return list;
     }
 
-    private static double getMatrixBasedDissimilarity(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
-        MatrixBasedDissimilarity<BniNetwork> matrixBasedDissimilarity = new MatrixBasedDissimilarity(originalNetwork, currentNetwork);
-        return matrixBasedDissimilarity.computeWeightedAveragePathDistance();
+    private static double getWAPD(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        WeightedAveragePathDistance<BniNetwork> WAPD = new WeightedAveragePathDistance(originalNetwork, currentNetwork);
+        return WAPD.compute();
     }
 
-    private static double getTreeBasedDissimilarity(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
-        TreeBasedDissimilarity<BniNetwork> treeBasedDissimilarity = new TreeBasedDissimilarity(originalNetwork, currentNetwork);
-        return treeBasedDissimilarity.computeRootedBranchScore();
+    private static double getNormWAPD(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        WeightedAveragePathDistance<BniNetwork> WAPD = new WeightedAveragePathDistance(originalNetwork, currentNetwork);
+        return WAPD.computeNormalized();
+    }
+
+    private static double getRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        RootedNetworkBranchScore<BniNetwork> RNBS = new RootedNetworkBranchScore(originalNetwork, currentNetwork);
+        return RNBS.compute();
+    }
+
+    private static double getNormRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        RootedNetworkBranchScore<BniNetwork> RNBS = new RootedNetworkBranchScore(originalNetwork, currentNetwork);
+        return RNBS.computeNormalized();
     }
 }

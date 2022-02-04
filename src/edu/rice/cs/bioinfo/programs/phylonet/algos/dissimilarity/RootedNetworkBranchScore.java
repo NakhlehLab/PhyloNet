@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class TreeBasedDissimilarity<T> {
+public class RootedNetworkBranchScore<T> {
     private Network<T> network1;
     private Network<T> network2;
 
@@ -29,7 +29,7 @@ public class TreeBasedDissimilarity<T> {
      * @param network1 First network.
      * @param network2 Second network.
      */
-    public TreeBasedDissimilarity(Network<T> network1, Network<T> network2){
+    public RootedNetworkBranchScore(Network<T> network1, Network<T> network2){
         this.network1 = network1;
         this.network2 = network2;
         this.networkTrees1 = Networks.getTrees(this.network1);
@@ -42,21 +42,17 @@ public class TreeBasedDissimilarity<T> {
     }
 
     /**
-     * Computes the distance in between two networks using tree-based dissimilarity metric.
+     * Compute rNBS.
      *
-     * @return A dissimilarity measure.
+     * @return rNBS of two networks.
      */
-    public double computeNormalizedTreeDistance() {
+    public double compute() {
         // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
         BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
 
         for (int l = 0; l < trees1.size(); l++) {
             for (int r = 0; r < trees2.size(); r++) {
-                if (!Trees.haveSameRootedTopology(trees1.get(l), trees2.get(r))) {
-                    continue;
-                }
-                double weight = computeNormalizedTreeDistance(trees1.get(l), 1.0, trees2.get(r), 1.0);
-                weight /= Math.min(Trees.getTotalBranchLength(trees1.get(l)), Trees.getTotalBranchLength(trees2.get(r)));
+                double weight = computeRootedBranchScore(trees1.get(l), 1.0, trees2.get(r), 1.0);
                 BG.addEdge(l, r, weight);
             }
         }
@@ -65,11 +61,11 @@ public class TreeBasedDissimilarity<T> {
     }
 
     /**
-     * Computes the distance in between two networks using tree-based dissimilarity metric.
+     * Compute normalized rNBS.
      *
-     * @return A dissimilarity measure.
+     * @return Normalized rNBs of two networks.
      */
-    public double computeRootedBranchScore() {
+    public double computeNormalized() {
         // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
         BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
 
@@ -82,62 +78,6 @@ public class TreeBasedDissimilarity<T> {
         }
 
         return BG.getMinEdgeCoverWeight() / BG.getMinEdgeCoverSize();
-    }
-
-    /**
-     * Compute normalized tree distance for trees tree1 and tree2. The method is described in:
-     * Zheng, Yichen et al. A scale-free method for testing the proportionality of branch lengths between two
-     * phylogenetic trees. arXiv: Quantitative Methods (2015): n. pag.
-     *
-     * @param tree1 First tree.
-     * @param scale1 Scale factor for branch lengths of tree1.
-     * @param tree2 Second tree.
-     * @param scale2 Scale factor for branch lengths of tree2.
-     * @return Normalized tree distance.
-     */
-     static double computeNormalizedTreeDistance(Tree tree1, double scale1, Tree tree2, double scale2) {
-        if (!Trees.leafSetsAgree(tree1, tree2)) {
-            throw new RuntimeException("Trees must have identical leaf sets");
-        }
-
-        if (!Trees.haveSameRootedTopology(tree1, tree2)) {
-            throw new RuntimeException("Trees must have identical topology");
-        }
-
-        List<Double> tree1BranchLengths = new ArrayList<>();
-        double tree1BranchLengthSum = 0;
-        for (TNode node : tree1.postTraverse()) {
-            if (!node.isRoot()) {
-                tree1BranchLengthSum += node.getParentDistance() * scale1;
-                tree1BranchLengths.add(node.getParentDistance() * scale1);
-            }
-        }
-
-        List<Double> tree2BranchLengths = new ArrayList<>();
-        double tree2BranchLengthSum = 0;
-        for (TNode node : tree2.postTraverse()) {
-            if (!node.isRoot()) {
-                tree2BranchLengthSum += node.getParentDistance() * scale2;
-                tree2BranchLengths.add(node.getParentDistance() * scale2);
-            }
-        }
-
-        if (tree1BranchLengths.size() != tree2BranchLengths.size()) {
-            throw new RuntimeException("Trees must have same number of branches");
-        }
-
-        if (Double.isInfinite(tree1BranchLengthSum) || Double.isNaN(tree1BranchLengthSum))
-            throw new RuntimeException("Branch length cannot be infinite or undefined");
-
-        if (Double.isInfinite(tree2BranchLengthSum) || Double.isNaN(tree2BranchLengthSum))
-            throw new RuntimeException("Branch length cannot be infinite or undefined");
-
-        double sum = 0;
-        for (int i = 0; i < tree1BranchLengths.size(); i++) {
-            sum += Math.abs(tree1BranchLengths.get(i) / tree1BranchLengthSum - tree2BranchLengths.get(i) / tree2BranchLengthSum);
-        }
-
-        return sum / 2.0;
     }
 
     /**
@@ -156,7 +96,7 @@ public class TreeBasedDissimilarity<T> {
      * @param scale2 Scale factor for branch lengths of tree2.
      * @return Rooted branch score.
      */
-     static double computeRootedBranchScore(Tree tree1, double scale1, Tree tree2, double scale2) {
+     private static double computeRootedBranchScore(Tree tree1, double scale1, Tree tree2, double scale2) {
         if (!Trees.leafSetsAgree(tree1, tree2)) {
             throw new RuntimeException("Trees must have identical leaf sets");
         }

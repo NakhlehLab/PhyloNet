@@ -3,26 +3,31 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import org.apache.commons.math3.util.ArithmeticUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MatrixBasedDissimilarity<T> {
+public class WeightedAveragePathDistance<T> {
     private Network<T> network1;
     private Network<T> network2;
 
     /**
      * Constructor for Matrix-Based Dissimilarity metric.
+     *
      * @param network1 First network.
      * @param network2 Second network.
      */
-    public MatrixBasedDissimilarity(Network<T> network1, Network<T> network2){
+    public WeightedAveragePathDistance(Network<T> network1, Network<T> network2){
         this.network1 = network1;
         this.network2 = network2;
     }
 
-    public double computeWeightedAveragePathDistance() {
+    /**
+     * Compute WAPD.
+     *
+     * @return WAPD of two networks.
+     */
+    public double compute() {
         if (!Networks.leafSetsAgree(this.network1, this.network2)) {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
@@ -32,6 +37,23 @@ public class MatrixBasedDissimilarity<T> {
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
         return frobeniusNorm(differenceMatrix) / Math.min(frobeniusNorm(matrix1), frobeniusNorm(matrix2));
+    }
+
+    /**
+     * Compute NormWAPD.
+     *
+     * @return NormWAPD of two networks.
+     */
+    public double computeNormalized() {
+        if (!Networks.leafSetsAgree(this.network1, this.network2)) {
+            throw new RuntimeException("Networks must have identical leaf sets");
+        }
+
+        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1);
+        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2);
+        double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
+
+        return frobeniusNorm(differenceMatrix);
     }
 
     /**
@@ -297,10 +319,12 @@ public class MatrixBasedDissimilarity<T> {
         return weightedAveragePathDistanceMatrix;
     }
 
-    private static double frobeniusNorm(double[][] matrix)
-    {
-        // To store the sum of squares of the
-        // elements of the given matrix
+    /**
+     * Compute Frobenius norm.
+     * @param matrix Matrix.
+     * @return Frobenius norm of matrix.
+     */
+    private static double frobeniusNorm(double[][] matrix) {
         double sumSq = 0;
         for (int i = 0; i < matrix.length; i++)
         {
@@ -310,12 +334,15 @@ public class MatrixBasedDissimilarity<T> {
             }
         }
 
-        // Return the square root of
-        // the sum of squares
-        double res = Math.sqrt(sumSq);
-        return res;
+        return Math.sqrt(sumSq);
     }
 
+    /**
+     * Compute matrix difference.
+     * @param matrix1 First matrix.
+     * @param matrix2 Second matrix.
+     * @return Difference matrix.
+     */
     private static double[][] matrixDifference(double[][] matrix1, double[][] matrix2) {
         double[][] newMatrix = new double[matrix1.length][matrix1[0].length];
 

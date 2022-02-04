@@ -118,7 +118,7 @@ public class DissimilarityExperiments {
         NormalDistribution normalDistribution = new NormalDistribution(mean, std);
 
         writer.write("Scaling experiment (numScales=" + numScales +", mean=" + mean + ", std=" + std + ")\n");
-        writer.write("# Iterations,Dissimilarity\n");
+        writer.write("Number of Iterations,Dissimilarity\n");
 
         for (int i = 0; i <= numScales; i++) {
             double dissimilarity = metrics.get(metric).apply(originalNetwork, currentNetwork);
@@ -139,7 +139,7 @@ public class DissimilarityExperiments {
         Network<BniNetwork> currentNetwork = Networks.readNetwork(richNewick);
 
         writer.write("Reticulation experiment (startReti=" + originalNetwork.getReticulationCount() +", minReti=" + minRet + ")\n");
-        writer.write("Reticulations Deleted,Dissimilarity\n");
+        writer.write("Number of Iterations,Dissimilarity\n");
 
 
         for (int i = originalNetwork.getReticulationCount(); i >= minRet; i--) {

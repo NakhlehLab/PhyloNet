@@ -11,15 +11,31 @@ public class WeightedAveragePathDistance<T> {
     private Network<T> network1;
     private Network<T> network2;
 
+    private boolean uniformInheritance;
+
     /**
      * Constructor for Matrix-Based Dissimilarity metric.
      *
      * @param network1 First network.
      * @param network2 Second network.
      */
-    public WeightedAveragePathDistance(Network<T> network1, Network<T> network2){
+    public WeightedAveragePathDistance(Network<T> network1, Network<T> network2) {
         this.network1 = network1;
         this.network2 = network2;
+        this.uniformInheritance = true;
+    }
+
+    /**
+     * Constructor for Matrix-Based Dissimilarity metric.
+     *
+     * @param network1 First network.
+     * @param network2 Second network.
+     * @param uniformInheritance True if all inheritance probabilities are uniform (i.e. if in-degree is 2, then 0.5 each).
+     */
+    public WeightedAveragePathDistance(Network<T> network1, Network<T> network2, boolean uniformInheritance) {
+        this.network1 = network1;
+        this.network2 = network2;
+        this.uniformInheritance = uniformInheritance;
     }
 
     /**
@@ -32,8 +48,8 @@ public class WeightedAveragePathDistance<T> {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1);
-        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2);
+        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1, this.uniformInheritance);
+        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2, this.uniformInheritance);
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
         return frobeniusNorm(differenceMatrix);
@@ -49,8 +65,8 @@ public class WeightedAveragePathDistance<T> {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1);
-        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2);
+        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1, this.uniformInheritance);
+        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2, this.uniformInheritance);
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
         return frobeniusNorm(differenceMatrix) / Math.min(frobeniusNorm(matrix1), frobeniusNorm(matrix2));
@@ -85,10 +101,11 @@ public class WeightedAveragePathDistance<T> {
      * Given network, we compute weighted average path distance.
      *
      * @param network Network to get list of taxa from.
+     * @param uniformInheritance True if all inheritance probabilities are uniform (i.e. if in-degree is 2, then 0.5 each).
      * @param <T> Indicates the type of additional data this node will store.
      * @return Mean distance matrix.
      */
-    private static <T> double[][] computeWeightedAveragePathDistance(Network<T> network) {
+    private static <T> double[][] computeWeightedAveragePathDistance(Network<T> network, boolean uniformInheritance) {
         // Create a distance matrix and set diagonals to 0.
         HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> weightedPathDistanceMatrix = new HashMap<>();
         for (NetNode<T> leaf1 : network.getLeaves()) {
@@ -188,7 +205,7 @@ public class WeightedAveragePathDistance<T> {
                             }
                         }
 
-                        if (unknownProb)
+                        if (uniformInheritance || unknownProb)
                             probFromChildToCur = 1.0 / childNode.getParentCount();
                     }
 

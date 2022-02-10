@@ -7,49 +7,35 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class WeightedAveragePathDistance<T> {
-    private Network<T> network1;
-    private Network<T> network2;
-
-    private boolean uniformInheritance;
-
-    /**
-     * Constructor for Matrix-Based Dissimilarity metric.
-     *
-     * @param network1 First network.
-     * @param network2 Second network.
-     */
-    public WeightedAveragePathDistance(Network<T> network1, Network<T> network2) {
-        this.network1 = network1;
-        this.network2 = network2;
-        this.uniformInheritance = true;
-    }
-
-    /**
-     * Constructor for Matrix-Based Dissimilarity metric.
-     *
-     * @param network1 First network.
-     * @param network2 Second network.
-     * @param uniformInheritance True if all inheritance probabilities are uniform (i.e. if in-degree is 2, then 0.5 each).
-     */
-    public WeightedAveragePathDistance(Network<T> network1, Network<T> network2, boolean uniformInheritance) {
-        this.network1 = network1;
-        this.network2 = network2;
-        this.uniformInheritance = uniformInheritance;
-    }
-
+public class WeightedAveragePathDistance {
     /**
      * Compute WAPD.
      *
+     * @param <T> Type of the network.
+     * @param network1 First network.
+     * @param network2 Second network.
      * @return WAPD of two networks.
      */
-    public double compute() {
-        if (!Networks.leafSetsAgree(this.network1, this.network2)) {
+    public static <T> double compute(Network<T> network1, Network<T> network2, boolean uniformInheritance) {
+        if (!Networks.leafSetsAgree(network1, network2)) {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1, this.uniformInheritance);
-        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2, this.uniformInheritance);
+        double[][] matrix1 = computeMatrix(network1, uniformInheritance);
+        double[][] matrix2 = computeMatrix(network2, uniformInheritance);
+        double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
+
+        return frobeniusNorm(differenceMatrix);
+    }
+
+    /**
+     * Compute WAPD, where matrices are pre-computed.
+     *
+     * @param matrix1 M1 representing first network.
+     * @param matrix2 M2 representing second network.
+     * @return WAPD of two networks.
+     */
+    public static double compute(double[][] matrix1, double[][] matrix2) {
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
         return frobeniusNorm(differenceMatrix);
@@ -58,15 +44,31 @@ public class WeightedAveragePathDistance<T> {
     /**
      * Compute NormWAPD.
      *
+     * @param <T> Type of the network.
+     * @param network1 First network.
+     * @param network2 Second network.
      * @return NormWAPD of two networks.
      */
-    public double computeNormalized() {
-        if (!Networks.leafSetsAgree(this.network1, this.network2)) {
+    public static <T> double computeNormalized(Network<T> network1, Network<T> network2, boolean uniformInheritance) {
+        if (!Networks.leafSetsAgree(network1, network2)) {
             throw new RuntimeException("Networks must have identical leaf sets");
         }
 
-        double[][] matrix1 = computeWeightedAveragePathDistance(this.network1, this.uniformInheritance);
-        double[][] matrix2 = computeWeightedAveragePathDistance(this.network2, this.uniformInheritance);
+        double[][] matrix1 = computeMatrix(network1, uniformInheritance);
+        double[][] matrix2 = computeMatrix(network2, uniformInheritance);
+        double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
+
+        return frobeniusNorm(differenceMatrix) / Math.min(frobeniusNorm(matrix1), frobeniusNorm(matrix2));
+    }
+
+    /**
+     * Compute NormWAPD, where matrices are pre-computed.
+     *
+     * @param matrix1 M1 representing first network.
+     * @param matrix2 M2 representing second network.
+     * @return NormWAPD of two networks.
+     */
+    public static double computeNormalized(double[][] matrix1, double[][] matrix2) {
         double[][] differenceMatrix = matrixDifference(matrix1, matrix2);
 
         return frobeniusNorm(differenceMatrix) / Math.min(frobeniusNorm(matrix1), frobeniusNorm(matrix2));
@@ -105,7 +107,7 @@ public class WeightedAveragePathDistance<T> {
      * @param <T> Indicates the type of additional data this node will store.
      * @return Mean distance matrix.
      */
-    private static <T> double[][] computeWeightedAveragePathDistance(Network<T> network, boolean uniformInheritance) {
+    public static <T> double[][] computeMatrix(Network<T> network, boolean uniformInheritance) {
         // Create a distance matrix and set diagonals to 0.
         HashMap<NetNode<T>, HashMap<NetNode<T>, List<Double>>> weightedPathDistanceMatrix = new HashMap<>();
         for (NetNode<T> leaf1 : network.getLeaves()) {
@@ -208,6 +210,9 @@ public class WeightedAveragePathDistance<T> {
                         if (uniformInheritance || unknownProb)
                             probFromChildToCur = 1.0 / childNode.getParentCount();
                     }
+
+                    // TODO: Uncomment this for Luay's Simplified WAPD
+//                    probFromChildToCur = 1.0;
 
                     for (Map.Entry<NetNode<T>, List<Double>> entry : distances.get(childNode).entrySet()) {
                         NetNode<T> leafNode = entry.getKey();
@@ -321,6 +326,7 @@ public class WeightedAveragePathDistance<T> {
                 NetNode<T> leaf2 = entry2.getKey();
 
                 // Assert that all probabilities add up to 1.
+                // TODO: Uncomment this for Original WAPD
                 if (probabilityMatrix.get(leaf1).get(leaf2).stream().reduce(Double::sum).get() != 1.0)
                     throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
@@ -328,8 +334,13 @@ public class WeightedAveragePathDistance<T> {
                 if (probabilityMatrix.get(leaf1).get(leaf2).size() != weightedPathDistanceMatrix.get(leaf1).get(leaf2).size())
                     throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
+                // TODO: Uncomment this for Original WAPD
                 weightedAveragePathDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
                         [taxaToIndexMapping.get(leaf2.getName())] = weightedPathDistanceMatrix.get(leaf1).get(leaf2).stream().reduce(Double::sum).get();
+
+                // TODO: Uncomment this for Luay's Simplified WAPD
+//                weightedAveragePathDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
+//                        [taxaToIndexMapping.get(leaf2.getName())] = weightedPathDistanceMatrix.get(leaf1).get(leaf2).stream().mapToDouble(i -> i).average().getAsDouble();
             }
         }
 

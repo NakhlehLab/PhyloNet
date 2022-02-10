@@ -15,9 +15,7 @@ public class WeightedAveragePathDistanceTest {
         Network<BniNetwork> network1 = Networks.readNetwork(richNewick1);
         Network<BniNetwork> network2 = Networks.readNetwork(richNewick2);
 
-        WeightedAveragePathDistance<BniNetwork> WAPD = new WeightedAveragePathDistance<>(network1, network2);
-
-        Assert.assertEquals(0.0, WAPD.compute(), 1e-5);
-        Assert.assertEquals(0.0, WAPD.computeNormalized(), 1e-5);
+        Assert.assertEquals(0.0, WeightedAveragePathDistance.compute(network1, network2, true), 1e-5);
+        Assert.assertEquals(0.0, WeightedAveragePathDistance.computeNormalized(network1, network2, true), 1e-5);
     }
 }

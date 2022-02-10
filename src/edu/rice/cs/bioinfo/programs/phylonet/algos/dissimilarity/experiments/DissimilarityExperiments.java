@@ -1,6 +1,8 @@
-package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
+package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.experiments;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.RootedNetworkBranchScore;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.WeightedAveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
@@ -69,7 +71,7 @@ public class DissimilarityExperiments {
         try {
             int i = 0;
             for (String richNewick : richNewicks) {
-
+                i += 1;
                 if (Networks.readNetwork(richNewick).getReticulationCount() > maxReti) {
                     System.out.println("Skipping " + i);
                     continue;
@@ -77,15 +79,18 @@ public class DissimilarityExperiments {
                     System.out.println("Running " + i);
                 }
 
-                BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + ".txt").toFile()));
+                BufferedWriter scalingExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_scale.txt").toFile()));
+                scalingExperiment(richNewick, scalingExperimentWriter, 10, 1.5, 0.1);
 
-                scalingExperiment(richNewick, writer, 10, 1.5, 0.1);
-                uniformScalingExperiment(richNewick, writer, 10, 1.2);
-                reticulationExperiment(richNewick, writer, 0);
+                BufferedWriter uniformScalingExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_uscale.txt").toFile()));
+                uniformScalingExperiment(richNewick, uniformScalingExperimentWriter, 10, 1.2);
 
-                i += 1;
+                BufferedWriter reticulationExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_ret.txt").toFile()));
+                reticulationExperiment(richNewick, reticulationExperimentWriter, 0);
 
-                writer.close();
+                scalingExperimentWriter.close();
+                uniformScalingExperimentWriter.close();
+                reticulationExperimentWriter.close();
             }
         } catch (IOException e) {
             System.err.println("Could not write experiment results.");
@@ -186,13 +191,11 @@ public class DissimilarityExperiments {
     }
 
     private static double getWAPD(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
-        WeightedAveragePathDistance<BniNetwork> WAPD = new WeightedAveragePathDistance(originalNetwork, currentNetwork);
-        return WAPD.compute();
+        return WeightedAveragePathDistance.compute(originalNetwork, currentNetwork, true);
     }
 
     private static double getNormWAPD(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
-        WeightedAveragePathDistance<BniNetwork> WAPD = new WeightedAveragePathDistance(originalNetwork, currentNetwork);
-        return WAPD.computeNormalized();
+        return WeightedAveragePathDistance.computeNormalized(originalNetwork, currentNetwork, true);
     }
 
     private static double getRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {

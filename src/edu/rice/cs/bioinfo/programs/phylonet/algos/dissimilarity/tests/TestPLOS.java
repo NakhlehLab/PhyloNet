@@ -143,9 +143,7 @@ public class TestPLOS {
         System.out.println("rNBS: " + RNBS.compute());
         System.out.println("NormRNBS: " + RNBS.computeNormalized());
 
-        WeightedAveragePathDistance WAPD = new WeightedAveragePathDistance(net1, net2);
-        System.out.println("WAPD: " + WAPD.compute());
-        System.out.println("NormWAPD: " + WAPD.computeNormalized());
-
+        System.out.println("WAPD: " + WeightedAveragePathDistance.compute(net1, net2, true));
+        System.out.println("NormWAPD: " + WeightedAveragePathDistance.computeNormalized(net1, net2, true));
     }
 }

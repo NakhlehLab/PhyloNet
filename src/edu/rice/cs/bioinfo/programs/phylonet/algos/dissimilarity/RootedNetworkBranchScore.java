@@ -1,7 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.BipartiteGraph;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
@@ -14,31 +13,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RootedNetworkBranchScore<T> {
-    private Network<T> network1;
-    private Network<T> network2;
-
-    private Iterable<NetworkTree<T>> networkTrees1;
-    private Iterable<NetworkTree<T>> networkTrees2;
-
-    private List<Tree> trees1;
-    private List<Tree> trees2;
+public class RootedNetworkBranchScore {
 
     /**
-     * Constructor for Tree-Based Dissimilarity metric.
-     * @param network1 First network.
-     * @param network2 Second network.
+     * Compute rNBS.
+     *
+     * @return rNBS of two networks.
      */
-    public RootedNetworkBranchScore(Network<T> network1, Network<T> network2){
-        this.network1 = network1;
-        this.network2 = network2;
-        this.networkTrees1 = Networks.getTrees(this.network1);
-        this.networkTrees2 = Networks.getTrees(this.network2);
+    public static <T> double compute(Network<T> network1, Network<T> network2) {
+        List<Tree> trees1 = new ArrayList<>();
+        List<Tree> trees2 = new ArrayList<>();
+        Networks.getTrees(network1).iterator().forEachRemaining(i-> trees1.add(i.makeTree()));
+        Networks.getTrees(network2).iterator().forEachRemaining(i-> trees2.add(i.makeTree()));
 
-        this.trees1 = new ArrayList<>();
-        this.trees2 = new ArrayList<>();
-        this.networkTrees1.iterator().forEachRemaining(i-> this.trees1.add(i.makeTree()));
-        this.networkTrees2.iterator().forEachRemaining(i-> this.trees2.add(i.makeTree()));
+        // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
+        BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
+
+        for (int l = 0; l < trees1.size(); l++) {
+            for (int r = 0; r < trees2.size(); r++) {
+                double weight = computeRootedBranchScore(trees1.get(l), 1.0, trees2.get(r), 1.0);
+                BG.addEdge(l, r, weight);
+            }
+        }
+
+        return BG.getMinEdgeCoverWeight() / BG.getMinEdgeCoverSize();
     }
 
     /**
@@ -46,7 +44,7 @@ public class RootedNetworkBranchScore<T> {
      *
      * @return rNBS of two networks.
      */
-    public double compute() {
+    public static double compute(List<Tree> trees1, List<Tree> trees2) {
         // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
         BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
 
@@ -65,7 +63,32 @@ public class RootedNetworkBranchScore<T> {
      *
      * @return Normalized rNBs of two networks.
      */
-    public double computeNormalized() {
+    public static <T> double computeNormalized(Network<T> network1, Network<T> network2) {
+        List<Tree> trees1 = new ArrayList<>();
+        List<Tree> trees2 = new ArrayList<>();
+        Networks.getTrees(network1).iterator().forEachRemaining(i-> trees1.add(i.makeTree()));
+        Networks.getTrees(network2).iterator().forEachRemaining(i-> trees2.add(i.makeTree()));
+
+        // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
+        BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
+
+        for (int l = 0; l < trees1.size(); l++) {
+            for (int r = 0; r < trees2.size(); r++) {
+                double weight = computeRootedBranchScore(trees1.get(l), 1.0, trees2.get(r), 1.0);
+                weight /= Math.min(Trees.getTotalBranchLength(trees1.get(l)), Trees.getTotalBranchLength(trees2.get(r)));
+                BG.addEdge(l, r, weight);
+            }
+        }
+
+        return BG.getMinEdgeCoverWeight() / BG.getMinEdgeCoverSize();
+    }
+
+    /**
+     * Compute normalized rNBS.
+     *
+     * @return Normalized rNBs of two networks.
+     */
+    public static double computeNormalized(List<Tree> trees1, List<Tree> trees2) {
         // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
         BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
 

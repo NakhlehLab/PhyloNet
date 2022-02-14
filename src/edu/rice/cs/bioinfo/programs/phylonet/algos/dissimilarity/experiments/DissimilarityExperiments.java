@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.experiments;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.AveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.RootedNetworkBranchScore;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.WeightedAveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -21,8 +22,11 @@ public class DissimilarityExperiments {
     static {
         metrics.put("WAPD", DissimilarityExperiments::getWAPD);
         metrics.put("normWAPD", DissimilarityExperiments::getNormWAPD);
+        metrics.put("APD", DissimilarityExperiments::getAPD);
+        metrics.put("normAPD", DissimilarityExperiments::getNormAPD);
         metrics.put("rNBS", DissimilarityExperiments::getRNBS);
         metrics.put("NormRNBS", DissimilarityExperiments::getNormRNBS);
+        metrics.put("Nakhleh", DissimilarityExperiments::getNakhleh);
     }
 
     private static String metric = "WAPD";
@@ -31,14 +35,14 @@ public class DissimilarityExperiments {
     public static void main(String[] args) {
         if (args.length != 3) {
             System.err.println("Command-line arguments:\n" +
-                    "\t[WAPD/normWAPD/rNBS/NormRNBS] [.trees file] [results directory]");
+                    "\t[WAPD/normWAPD/APD/normAPD/rNBS/NormRNBS/Nakhleh] [.trees file] [results directory]");
             System.exit(-1);
         }
 
         metric = args[0];
 
         if (!metrics.containsKey(metric)) {
-            System.err.println("Can use the following measures: WAPD/normWAPD/rNBS/NormRNBS");
+            System.err.println("Can use the following measures: WAPD/normWAPD/APD/normAPD/rNBS/NormRNBS/Nakhleh");
             System.exit(-1);
         }
 
@@ -198,13 +202,23 @@ public class DissimilarityExperiments {
         return WeightedAveragePathDistance.computeNormalized(originalNetwork, currentNetwork, true);
     }
 
+    private static double getAPD(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        return AveragePathDistance.compute(originalNetwork, currentNetwork);
+    }
+
+    private static double getNormAPD(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        return AveragePathDistance.computeNormalized(originalNetwork, currentNetwork);
+    }
+
     private static double getRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
-        RootedNetworkBranchScore<BniNetwork> RNBS = new RootedNetworkBranchScore(originalNetwork, currentNetwork);
-        return RNBS.compute();
+        return RootedNetworkBranchScore.compute(originalNetwork, currentNetwork);
     }
 
     private static double getNormRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
-        RootedNetworkBranchScore<BniNetwork> RNBS = new RootedNetworkBranchScore(originalNetwork, currentNetwork);
-        return RNBS.computeNormalized();
+        return RootedNetworkBranchScore.computeNormalized(originalNetwork, currentNetwork);
+    }
+
+    private static double getNakhleh(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+        return Networks.computeDistanceBetweenTwoNetworks(originalNetwork, currentNetwork);
     }
 }

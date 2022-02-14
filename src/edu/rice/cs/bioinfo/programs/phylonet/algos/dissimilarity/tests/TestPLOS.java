@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.tests;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.SNAPPForNetwork.R;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.RootedNetworkBranchScore;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.WeightedAveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -139,9 +138,8 @@ public class TestPLOS {
 
         System.out.println();
 
-        RootedNetworkBranchScore RNBS = new RootedNetworkBranchScore(net1, net2);
-        System.out.println("rNBS: " + RNBS.compute());
-        System.out.println("NormRNBS: " + RNBS.computeNormalized());
+        System.out.println("rNBS: " + RootedNetworkBranchScore.compute(net1, net2));
+        System.out.println("NormRNBS: " + RootedNetworkBranchScore.computeNormalized(net1, net2));
 
         System.out.println("WAPD: " + WeightedAveragePathDistance.compute(net1, net2, true));
         System.out.println("NormWAPD: " + WeightedAveragePathDistance.computeNormalized(net1, net2, true));

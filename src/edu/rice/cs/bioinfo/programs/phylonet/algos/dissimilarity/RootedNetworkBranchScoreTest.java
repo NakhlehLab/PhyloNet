@@ -3,8 +3,6 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,9 +19,7 @@ public class RootedNetworkBranchScoreTest {
         Network<BniNetwork> network1 = Networks.readNetwork(richNewick);
         Network<BniNetwork> network2 = Networks.readNetwork(richNewick);
 
-        RootedNetworkBranchScore<BniNetwork> RNBS = new RootedNetworkBranchScore<>(network1, network2);
-
-        Assert.assertEquals(0.0, RNBS.compute(), 1e-5);
-        Assert.assertEquals(0.0, RNBS.computeNormalized(), 1e-5);
+        Assert.assertEquals(0.0, RootedNetworkBranchScore.compute(network1, network2), 1e-5);
+        Assert.assertEquals(0.0, RootedNetworkBranchScore.computeNormalized(network1, network2), 1e-5);
     }
 }

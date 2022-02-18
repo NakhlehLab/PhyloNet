@@ -15,7 +15,7 @@ public class AveragePathDistanceTest {
         Network<BniNetwork> network1 = Networks.readNetwork(richNewick1);
         Network<BniNetwork> network2 = Networks.readNetwork(richNewick2);
 
-        Assert.assertEquals(0.0, AveragePathDistance.compute(network1, network2, true), 1e-5);
-        Assert.assertEquals(0.0, AveragePathDistance.computeNormalized(network1, network2, true), 1e-5);
+        Assert.assertEquals(0.0, AveragePathDistance.compute(network1, network2), 1e-5);
+        Assert.assertEquals(0.0, AveragePathDistance.computeNormalized(network1, network2), 1e-5);
     }
 }

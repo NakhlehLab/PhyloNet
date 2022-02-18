@@ -1,5 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.tests;
 
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.AveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.RootedNetworkBranchScore;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.WeightedAveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
@@ -76,8 +77,8 @@ public class TestPLOS {
 
     private static Network<BniNetwork> getNetwork2() {
         Random random = new Random();
-        double y = random.nextDouble() * lambdas.get(7);
-        double x = -y + (Math.min(lambdas.get(6), lambdas.get(5) + lambdas.get(8)) + y) * random.nextDouble();
+        int y = (int) (random.nextDouble() * lambdas.get(7));
+        int x = (int) (-y + (Math.min(lambdas.get(6), lambdas.get(5) + lambdas.get(8)) + y) * random.nextDouble());
 
         Network<BniNetwork> plosNet = Networks.readNetwork("Root;");
 
@@ -138,10 +139,16 @@ public class TestPLOS {
 
         System.out.println();
 
+        System.out.println("Net1: " + net1);
+        System.out.println("Net2: " + net2);
+
         System.out.println("rNBS: " + RootedNetworkBranchScore.compute(net1, net2));
         System.out.println("NormRNBS: " + RootedNetworkBranchScore.computeNormalized(net1, net2));
 
         System.out.println("WAPD: " + WeightedAveragePathDistance.compute(net1, net2, true));
         System.out.println("NormWAPD: " + WeightedAveragePathDistance.computeNormalized(net1, net2, true));
+
+        System.out.println("APD: " + AveragePathDistance.compute(net1, net2));
+        System.out.println("NormAPD: " + AveragePathDistance.computeNormalized(net1, net2));
     }
 }

@@ -29,9 +29,9 @@ public class McmcseqPairwiseExperiments {
     private static String metric = "WAPD";
 
     public static void main(String[] args) {
-        if (args.length != 4) {
+        if (args.length != 5) {
             System.err.println("Command-line arguments:\n" +
-                    "\t[WAPD/normWAPD/rNBS/NormRNBS/Nakhleh] [.out file] [results directory] [Nth Network]");
+                    "\t[WAPD/normWAPD/rNBS/NormRNBS/Nakhleh] [.out file] [results directory] [Nth Network] [burn-in-skip]");
             System.exit(-1);
         }
 
@@ -72,6 +72,7 @@ public class McmcseqPairwiseExperiments {
         }
 
         int Nth = Integer.parseInt(args[3]);
+        int burnInSkip = Integer.parseInt(args[4]);
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(args[2], "mcmcseq_pairwise.txt").toFile()));
@@ -79,10 +80,10 @@ public class McmcseqPairwiseExperiments {
             writer.write("MCMC_SEQ experiment\n");
             writer.write("X,Y,Z\n");
 
-            for (int i = 0; i < networks.size(); i++) {
+            for (int i = burnInSkip; i < networks.size(); i++) {
                 if (i % Nth != 0)
                     continue;
-                for (int j = 0; j <= i; j++) {
+                for (int j = burnInSkip; j <= i; j++) {
                     if (j % Nth != 0)
                         continue;
 

@@ -308,7 +308,6 @@ public class AveragePathDistance {
                 if (probabilityMatrix.get(leaf1).get(leaf2).size() != pathDistanceMatrix.get(leaf1).get(leaf2).size())
                     throw new RuntimeException("Assertion failure. There's a bug in the code.");
 
-                System.out.println(pathDistanceMatrix.get(leaf1).get(leaf2).stream().count());
                 averagePathDistanceMatrix[taxaToIndexMapping.get(leaf1.getName())]
                         [taxaToIndexMapping.get(leaf2.getName())] = pathDistanceMatrix.get(leaf1).get(leaf2).stream().mapToDouble(i -> i).average().getAsDouble();
             }

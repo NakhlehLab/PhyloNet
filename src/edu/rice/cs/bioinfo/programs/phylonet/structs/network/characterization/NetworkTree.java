@@ -279,6 +279,22 @@ public class NetworkTree<T> {
 				if (!((NetworkTree) nt)._clusters.contains(nc)) {
 					identical = false;
 				}
+//
+//				for (Object edge : ((NetworkTree) nt)._edges) {
+//					NetworkEdge edge1 = (NetworkEdge) edge;
+//
+//					if (!_edges.contains(edge1)) {
+//						identical = false;
+//					}
+//				}
+//
+//				for (Object edge : _edges) {
+//					NetworkEdge edge1 = (NetworkEdge) edge;
+//
+//					if (!((NetworkTree<?>) nt)._edges.contains(edge1)) {
+//						identical = false;
+//					}
+//				}
 			}
 
 			return identical;

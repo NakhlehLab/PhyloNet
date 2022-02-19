@@ -25,7 +25,6 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadRes
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.bipartitematching.HungarianBipartiteMatcher;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.fitchpars.ParsimonyCalculator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -34,18 +33,15 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.Ne
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTreeEnumerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTripartition;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceAlignment;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -150,6 +146,22 @@ public class Networks
                 if (!trees.contains(nt)) {
                     trees.add(nt);
                 }
+            }
+        }
+
+        return trees;
+    }
+
+    public static <T> Iterable<NetworkTree<T>> getExtendedTrees(Network<T> net)
+    {
+        List<NetworkTree<T>> trees = new LinkedList<NetworkTree<T>>();
+
+        if (!net.isEmpty()) {
+            NetworkTreeEnumerator<T> enumerator = new NetworkTreeEnumerator<T>(net);
+            for (NetworkTree<T> nt : enumerator) {
+//                if (!trees.contains(nt)) {
+                trees.add(nt);
+//                }
             }
         }
 

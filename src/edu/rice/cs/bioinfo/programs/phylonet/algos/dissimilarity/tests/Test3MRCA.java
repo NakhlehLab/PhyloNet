@@ -1,8 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.tests;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.AveragePathDistance;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.RootedNetworkBranchScore;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.WeightedAveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
@@ -10,10 +8,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 public class Test3MRCA {
     private static Network<BniNetwork> getNetwork1() {
@@ -48,8 +43,15 @@ public class Test3MRCA {
     public static void main(String[] args) {
         Network<BniNetwork> net1 = getNetwork1();
 
-        System.out.println(net1);
+        System.out.println("Topology Trees: ");
         for (NetworkTree<BniNetwork> tree : Networks.getTrees(net1)) {
+            System.out.println(tree.makeTree());
+        }
+
+        System.out.println();
+
+        System.out.println("Length Trees: ");
+        for (NetworkTree<BniNetwork> tree : Networks.getExtendedTrees(net1)) {
             System.out.println(tree.makeTree());
         }
 

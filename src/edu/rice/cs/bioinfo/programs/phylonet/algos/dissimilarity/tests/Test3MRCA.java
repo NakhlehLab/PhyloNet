@@ -7,6 +7,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.Ne
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 import java.util.Arrays;
 
@@ -51,8 +53,8 @@ public class Test3MRCA {
         System.out.println();
 
         System.out.println("Length Trees: ");
-        for (NetworkTree<BniNetwork> tree : Networks.getExtendedTrees(net1)) {
-            System.out.println(tree.makeTree());
+        for (STITree tree : Networks.getExtendedTrees(net1)) {
+            System.out.println(tree);
         }
 
         System.out.println();

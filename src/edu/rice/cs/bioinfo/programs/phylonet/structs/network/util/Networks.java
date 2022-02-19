@@ -40,6 +40,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceAlig
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -152,16 +153,16 @@ public class Networks
         return trees;
     }
 
-    public static <T> Iterable<NetworkTree<T>> getExtendedTrees(Network<T> net)
+    public static <T> Iterable<STITree> getExtendedTrees(Network<T> net)
     {
-        List<NetworkTree<T>> trees = new LinkedList<NetworkTree<T>>();
+        List<STITree> trees = new LinkedList<>();
 
         if (!net.isEmpty()) {
             NetworkTreeEnumerator<T> enumerator = new NetworkTreeEnumerator<T>(net);
             for (NetworkTree<T> nt : enumerator) {
-//                if (!trees.contains(nt)) {
-                trees.add(nt);
-//                }
+                if (!trees.contains(nt.makeTree())) {
+                    trees.add((STITree) nt.makeTree());
+                }
             }
         }
 

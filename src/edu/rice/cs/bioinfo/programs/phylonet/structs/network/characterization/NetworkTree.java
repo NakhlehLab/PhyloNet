@@ -81,7 +81,7 @@ public class NetworkTree<T> {
 				if (child.isTreeNode() || _edges.contains(new NetworkEdge<T>(parent, child))) {
 					// Create a tree node corresponding to child under peer.
 					TMutableNode copy;
-					if (child.getName() == NetNode.NO_NAME) {
+					if (child.getName().equals(NetNode.NO_NAME)) {
 						copy = peer.createChild(TNode.NO_NAME);
 					}
 					else {
@@ -118,6 +118,7 @@ public class NetworkTree<T> {
 			removeOrphan(node);
 		}
 
+		tree.getRoot().setParentDistance(NetNode.NO_DISTANCE); // TODO ALP: Investigate why..
 		return tree;
 	}
 
@@ -279,22 +280,6 @@ public class NetworkTree<T> {
 				if (!((NetworkTree) nt)._clusters.contains(nc)) {
 					identical = false;
 				}
-//
-//				for (Object edge : ((NetworkTree) nt)._edges) {
-//					NetworkEdge edge1 = (NetworkEdge) edge;
-//
-//					if (!_edges.contains(edge1)) {
-//						identical = false;
-//					}
-//				}
-//
-//				for (Object edge : _edges) {
-//					NetworkEdge edge1 = (NetworkEdge) edge;
-//
-//					if (!((NetworkTree<?>) nt)._edges.contains(edge1)) {
-//						identical = false;
-//					}
-//				}
 			}
 
 			return identical;

@@ -30,7 +30,9 @@ public class DissimilarityExperiments {
     }
 
     private static String metric = "WAPD";
-    private static int maxReti = 10;
+    private static int maxReti = 7;
+    private static int minReti = 5;
+    private static int totalProcess = 500;
 
     public static void main(String[] args) {
         if (args.length != 3) {
@@ -74,27 +76,30 @@ public class DissimilarityExperiments {
 
         try {
             int i = 0;
+            int cnt = 0;
             for (String richNewick : richNewicks) {
                 i += 1;
-                if (Networks.readNetwork(richNewick).getReticulationCount() > maxReti) {
+                if (Networks.readNetwork(richNewick).getReticulationCount() > maxReti || cnt > totalProcess) {
                     System.out.println("Skipping " + i);
                     continue;
                 } else {
                     System.out.println("Running " + i);
+                    cnt += 1;
                 }
 
                 BufferedWriter scalingExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_scale.txt").toFile()));
                 scalingExperiment(richNewick, scalingExperimentWriter, 10, 1.5, 0.1);
+                scalingExperimentWriter.close();
 
                 BufferedWriter uniformScalingExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_uscale.txt").toFile()));
-                uniformScalingExperiment(richNewick, uniformScalingExperimentWriter, 10, 1.2);
-
-                BufferedWriter reticulationExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_ret.txt").toFile()));
-                reticulationExperiment(richNewick, reticulationExperimentWriter, 0);
-
-                scalingExperimentWriter.close();
+                uniformScalingExperiment(richNewick, uniformScalingExperimentWriter, 10, 1.5);
                 uniformScalingExperimentWriter.close();
-                reticulationExperimentWriter.close();
+
+                if (Networks.readNetwork(richNewick).getReticulationCount() >= minReti) {
+                    BufferedWriter reticulationExperimentWriter = new BufferedWriter(new FileWriter(Paths.get(args[2], "net" + i + "_ret.txt").toFile()));
+                    reticulationExperiment(richNewick, reticulationExperimentWriter, 0);
+                    reticulationExperimentWriter.close();
+                }
             }
         } catch (IOException e) {
             System.err.println("Could not write experiment results.");
@@ -105,18 +110,18 @@ public class DissimilarityExperiments {
 
     private static void uniformScalingExperiment(String richNewick, BufferedWriter writer, int numScales, double scaleFactor) throws IOException {
         Network<BniNetwork> originalNetwork = Networks.readNetwork(richNewick);
+        Network<BniNetwork> currentNetwork = Networks.readNetwork(richNewick);
 
         writer.write("Uniform scaling experiment (numScales=" + numScales +", scaleFactor=" + scaleFactor + ")\n");
-        writer.write("Scale Factor,Dissimilarity\n");
+        writer.write("Iteration,Dissimilarity\n");
 
-        double curScale = 1.0;
         for (int i = 0; i <= numScales; i++) {
-            Network<BniNetwork> newNetwork = originalNetwork.clone();
-            Networks.scaleNetwork(newNetwork, curScale *= scaleFactor);
+            double dissimilarity = metrics.get(metric).apply(originalNetwork, currentNetwork);
 
-            double dissimilarity = metrics.get(metric).apply(originalNetwork, newNetwork);
+            writer.write(i + "," + dissimilarity + "\n");
+            System.out.println("USCALE " + i);
 
-            writer.write(curScale + "," + dissimilarity + "\n");
+            Networks.scaleNetwork(currentNetwork, scaleFactor);
         }
     }
 
@@ -127,12 +132,13 @@ public class DissimilarityExperiments {
         NormalDistribution normalDistribution = new NormalDistribution(mean, std);
 
         writer.write("Scaling experiment (numScales=" + numScales +", mean=" + mean + ", std=" + std + ")\n");
-        writer.write("Number of Iterations,Dissimilarity\n");
+        writer.write("Iteration,Dissimilarity\n");
 
         for (int i = 0; i <= numScales; i++) {
             double dissimilarity = metrics.get(metric).apply(originalNetwork, currentNetwork);
 
             writer.write(i + "," + dissimilarity + "\n");
+            System.out.println("SCALE " + i);
 
             for(NetNode<BniNetwork> node : Networks.postTraversal(currentNetwork)) {
                 for(NetNode<BniNetwork> child : node.getChildren()) {
@@ -148,13 +154,14 @@ public class DissimilarityExperiments {
         Network<BniNetwork> currentNetwork = Networks.readNetwork(richNewick);
 
         writer.write("Reticulation experiment (startReti=" + originalNetwork.getReticulationCount() +", minReti=" + minRet + ")\n");
-        writer.write("Number of Iterations,Dissimilarity\n");
+        writer.write("Iteration,Dissimilarity\n");
 
 
         for (int i = originalNetwork.getReticulationCount(); i >= minRet; i--) {
             double dissimilarity = metrics.get(metric).apply(originalNetwork, currentNetwork);
 
             writer.write(originalNetwork.getReticulationCount() - i + "," + dissimilarity + "\n");
+            System.out.println("RETI " + (originalNetwork.getReticulationCount() - i));
 
             if (currentNetwork.getReticulationCount() == 0)
                 break;

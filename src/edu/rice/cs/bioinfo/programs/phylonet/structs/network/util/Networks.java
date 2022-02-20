@@ -160,8 +160,9 @@ public class Networks
         if (!net.isEmpty()) {
             NetworkTreeEnumerator<T> enumerator = new NetworkTreeEnumerator<T>(net);
             for (NetworkTree<T> nt : enumerator) {
-                if (!trees.contains(nt.makeTree())) {
-                    trees.add((STITree) nt.makeTree());
+                STITree t = (STITree) nt.makeTree();
+                if (!trees.contains(t)) {
+                    trees.add(t);
                 }
             }
         }

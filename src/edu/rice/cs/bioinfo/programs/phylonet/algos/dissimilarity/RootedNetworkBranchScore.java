@@ -23,8 +23,8 @@ public class RootedNetworkBranchScore {
     public static <T> double compute(Network<T> network1, Network<T> network2) {
         List<Tree> trees1 = new ArrayList<>();
         List<Tree> trees2 = new ArrayList<>();
-        Networks.getExtendedTrees(network1).iterator().forEachRemaining(i-> trees1.add(i));
-        Networks.getExtendedTrees(network2).iterator().forEachRemaining(i-> trees2.add(i));
+        Networks.getExtendedTrees(network1).iterator().forEachRemaining(trees1::add);
+        Networks.getExtendedTrees(network2).iterator().forEachRemaining(trees2::add);
 
         // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
         BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());
@@ -66,8 +66,8 @@ public class RootedNetworkBranchScore {
     public static <T> double computeNormalized(Network<T> network1, Network<T> network2) {
         List<Tree> trees1 = new ArrayList<>();
         List<Tree> trees2 = new ArrayList<>();
-        Networks.getExtendedTrees(network1).iterator().forEachRemaining(i-> trees1.add(i));
-        Networks.getExtendedTrees(network2).iterator().forEachRemaining(i-> trees2.add(i));
+        Networks.getExtendedTrees(network1).iterator().forEachRemaining(trees1::add);
+        Networks.getExtendedTrees(network2).iterator().forEachRemaining(trees2::add);
 
         // Initialize a bipartite graph with nodes corresponding to trees in the two networks.
         BipartiteGraph BG = new BipartiteGraph(trees1.size(), trees2.size());

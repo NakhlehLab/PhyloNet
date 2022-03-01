@@ -153,14 +153,20 @@ public class Networks
         return trees;
     }
 
-    public static <T> Iterable<STITree> getExtendedTrees(Network<T> net)
+    /**
+     * This function returns a list of trees decomposed from the network that display unique lengths.
+     * @param net: The network from which trees are generated.
+     * @return Iterable object over trees.
+     */
+    public static <T> Iterable<Tree> getExtendedTrees(Network<T> net)
     {
-        List<STITree> trees = new LinkedList<>();
+        List<Tree> trees = new LinkedList<>();
 
         if (!net.isEmpty()) {
             NetworkTreeEnumerator<T> enumerator = new NetworkTreeEnumerator<T>(net);
             for (NetworkTree<T> nt : enumerator) {
-                STITree t = (STITree) nt.makeTree();
+                Tree t = nt.makeTree();
+                t.getRoot().setParentDistance(NetNode.NO_DISTANCE); // TODO ALP: Investigate why..
                 if (!trees.contains(t)) {
                     trees.add(t);
                 }

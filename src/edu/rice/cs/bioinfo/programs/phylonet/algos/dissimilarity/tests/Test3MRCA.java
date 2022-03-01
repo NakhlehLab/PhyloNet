@@ -53,7 +53,7 @@ public class Test3MRCA {
         System.out.println();
 
         System.out.println("Length Trees: ");
-        for (STITree tree : Networks.getExtendedTrees(net1)) {
+        for (Tree tree : Networks.getExtendedTrees(net1)) {
             System.out.println(tree);
         }
 

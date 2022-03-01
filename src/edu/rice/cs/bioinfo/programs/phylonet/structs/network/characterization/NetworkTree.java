@@ -118,7 +118,6 @@ public class NetworkTree<T> {
 			removeOrphan(node);
 		}
 
-		tree.getRoot().setParentDistance(NetNode.NO_DISTANCE); // TODO ALP: Investigate why..
 		return tree;
 	}
 

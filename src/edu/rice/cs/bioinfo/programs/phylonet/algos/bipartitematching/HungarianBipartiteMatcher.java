@@ -397,6 +397,9 @@ public class HungarianBipartiteMatcher {
 		boolean l_side = false;
 
 		while(idx != SOURCE) {
+			if (path.length <= path_idx)
+				return false;
+
 			path[path_idx] = idx;
 
 			if(l_side) {

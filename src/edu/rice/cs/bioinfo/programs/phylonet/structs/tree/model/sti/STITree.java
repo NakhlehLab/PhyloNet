@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti;
 
+import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickWriter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.ParseException;
@@ -989,5 +990,32 @@ public class STITree<D extends Object> implements MutableTree {
 	 */
 	public Iterable<TNode> postTraverse() {
 		return new PostTraversal<D>(_root);
-	}	
+	}
+
+	public boolean equals(Object t) {
+		assert (t instanceof STITree);
+
+		if (!Trees.leafSetsAgree(this, (STITree) t)){
+			return false;
+		}
+
+		String[] taxa = getLeaves();
+		Map<STITreeCluster, TNode> clusters1 = getClusters(taxa);
+		Map<STITreeCluster, TNode> clusters2 = ((STITree) t).getClusters(taxa);
+
+		if(clusters1.size() != clusters2.size()){
+			return false;
+		}
+
+		for (STITreeCluster cl1: clusters1.keySet()) {
+			if (!clusters2.containsKey(cl1)) {
+				return false;
+			}
+
+			if (clusters1.get(cl1).getParentDistance() != clusters2.get(cl1).getParentDistance()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

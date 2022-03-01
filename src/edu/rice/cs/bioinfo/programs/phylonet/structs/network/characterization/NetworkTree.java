@@ -81,7 +81,7 @@ public class NetworkTree<T> {
 				if (child.isTreeNode() || _edges.contains(new NetworkEdge<T>(parent, child))) {
 					// Create a tree node corresponding to child under peer.
 					TMutableNode copy;
-					if (child.getName() == NetNode.NO_NAME) {
+					if (child.getName().equals(NetNode.NO_NAME)) {
 						copy = peer.createChild(TNode.NO_NAME);
 					}
 					else {

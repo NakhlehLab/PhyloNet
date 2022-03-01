@@ -25,7 +25,6 @@ import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReadRes
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.SymmetricDifference;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.bipartitematching.HungarianBipartiteMatcher;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.fitchpars.ParsimonyCalculator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -34,7 +33,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.Ne
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTreeEnumerator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTripartition;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFactoryFromRNNetwork;
@@ -42,9 +40,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceAlig
 import edu.rice.cs.bioinfo.programs.phylonet.structs.sequence.model.SequenceException;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -148,6 +146,29 @@ public class Networks
             for (NetworkTree<T> nt : enumerator) {
                 if (!trees.contains(nt)) {
                     trees.add(nt);
+                }
+            }
+        }
+
+        return trees;
+    }
+
+    /**
+     * This function returns a list of trees decomposed from the network that display unique lengths.
+     * @param net: The network from which trees are generated.
+     * @return Iterable object over trees.
+     */
+    public static <T> Iterable<Tree> getExtendedTrees(Network<T> net)
+    {
+        List<Tree> trees = new LinkedList<>();
+
+        if (!net.isEmpty()) {
+            NetworkTreeEnumerator<T> enumerator = new NetworkTreeEnumerator<T>(net);
+            for (NetworkTree<T> nt : enumerator) {
+                Tree t = nt.makeTree();
+                t.getRoot().setParentDistance(NetNode.NO_DISTANCE); // TODO ALP: Investigate why..
+                if (!trees.contains(t)) {
+                    trees.add(t);
                 }
             }
         }
@@ -1357,5 +1378,24 @@ public class Networks
                 node.setName("");
             }
         }
+    }
+
+    /**
+     * @return <code>true</code> if these networks have identical leafsets
+     * by name.
+     */
+    public static final <T> boolean leafSetsAgree(Network<T> network1, Network<T> network2) {
+        // They definitely can't agree if they are different sizes
+        if (network1.getLeafCount() != network2.getLeafCount()) {
+            return false;
+        }
+
+        Set<String> network1Leaves = new HashSet<>();
+        Set<String> network2Leaves = new HashSet<>();
+
+        network1.getLeaves().forEach(leaf -> network1Leaves.add(leaf.getName()));
+        network2.getLeaves().forEach(leaf -> network2Leaves.add(leaf.getName()));
+
+        return network1Leaves.containsAll(network2Leaves) && network2Leaves.containsAll(network1Leaves);
     }
 }

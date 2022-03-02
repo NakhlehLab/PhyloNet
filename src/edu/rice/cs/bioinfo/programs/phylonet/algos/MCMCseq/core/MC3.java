@@ -33,6 +33,8 @@ public class MC3 {
     private double _logLikelihood;
     private double _logPrior;
 
+    private long _lastSampleTime;
+
     private int examed = 0;
 
     public MC3(MC3Core core,
@@ -49,6 +51,7 @@ public class MC3 {
         this._logLikelihood = _state.calculateLikelihood();
         this._logPrior = _state.calculatePrior();
         this._logPost = this._logLikelihood + this._logPrior;
+        this._lastSampleTime = System.currentTimeMillis();
     }
 
     /**
@@ -173,10 +176,13 @@ public class MC3 {
                 }
                 double essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
-                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
+                long curTime = System.currentTimeMillis();
+                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;     %2.5f sec/sample;\n",
                         iteration, _logPost, essPost,
                         _logLikelihood, _logPrior, essPrior,
-                        _state.numOfReticulation());
+                        _state.numOfReticulation(),
+                        (curTime - _lastSampleTime) / 1000.0);
+                _lastSampleTime = curTime;
                 System.out.println(Networks.getFullString(_state.getNetworkObject()));
                 _core.addSample(_state.toList());
                 List<Tuple<String,Double>> netSample = new ArrayList<>();

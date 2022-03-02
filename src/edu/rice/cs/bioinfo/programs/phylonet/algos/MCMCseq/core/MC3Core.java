@@ -87,7 +87,7 @@ public class MC3Core {
                 }
                 main.setPreBurnInParams();
                 System.out.println("----------------------- Logger: -----------------------");
-                System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation");
+                System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation;     Throughput;");
             }
             if(i > burnin) {
                 _sampling = true;

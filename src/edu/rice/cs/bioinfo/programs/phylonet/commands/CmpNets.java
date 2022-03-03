@@ -24,6 +24,9 @@ import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCo
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.AveragePathDistance;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.RootedNetworkBranchScore;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.dissimilarity.WeightedAveragePathDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhleh;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkCluster;
@@ -51,7 +54,7 @@ public class CmpNets extends CommandBaseFileOut {
 
     enum Method
     {
-        Tree,Tri,Cluster,Luay;
+        Tree,Tri,Cluster,Luay,rNBS,APD,normAPD,WAPD,normWAPD;
     }
 
     private Method _method;
@@ -112,6 +115,26 @@ public class CmpNets extends CommandBaseFileOut {
                  {
                      _method = Method.Luay;
                  }
+                 else if(simplePlusOneValueLower.equals("rnbs"))
+                 {
+                     _method = Method.rNBS;
+                 }
+                 else if(simplePlusOneValueLower.equals("apd"))
+                 {
+                     _method = Method.APD;
+                 }
+                 else if(simplePlusOneValueLower.equals("wapd"))
+                 {
+                     _method = Method.WAPD;
+                 }
+                 else if(simplePlusOneValueLower.equals("normapd"))
+                 {
+                     _method = Method.normAPD;
+                 }
+                 else if(simplePlusOneValueLower.equals("normwapd"))
+                 {
+                     _method = Method.normWAPD;
+                 }
                  else
                  {
                      this.errorDetected.execute("Unknown method '" + mSwitch.PostSwitchValue + "'", mSwitch.PostSwitchParam.getLine(), mSwitch.PostSwitchParam.getColumn());
@@ -120,14 +143,14 @@ public class CmpNets extends CommandBaseFileOut {
              }
             else
              {
-                 this.errorDetected.execute("Expected subsequent method value 'tree', 'tri' or 'cluster'.", mSwitch.SwitchParam.getLine(), mSwitch.SwitchParam.getColumn());
+                 this.errorDetected.execute("Expected subsequent method value 'tree', 'tri', 'cluster', 'luay', 'rnbs', 'apd', 'normapd', 'wapd', or 'normwapd'.", mSwitch.SwitchParam.getLine(), mSwitch.SwitchParam.getColumn());
                     noError = false;
 
              }
         }
         else
         {
-             this.errorDetected.execute("Expected mandatory parameter '-m [tree|tri|cluster]'", this.getDefiningSyntaxCommand().getLine(),
+             this.errorDetected.execute("Expected mandatory parameter '-m [tree|tri|cluster|luay|rnbs|apd|normapd|wapd|normwapd]'", this.getDefiningSyntaxCommand().getLine(),
                                                                                                    this.getDefiningSyntaxCommand().getColumn());
              noError = false;
         }
@@ -244,6 +267,31 @@ public class CmpNets extends CommandBaseFileOut {
            NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
            double distance = metric.computeDistanceBetweenTwoNetworks(net1, net2);
            result.append("\nThe Luay's distance between two networks: " + distance);
+       }
+       else if(_method == Method.rNBS)
+       {
+           double dissimilarity = RootedNetworkBranchScore.compute(net1, net2);
+           result.append("\nrNBS dissimilarity between two networks: " + dissimilarity);
+       }
+       else if(_method == Method.APD)
+       {
+           double dissimilarity = AveragePathDistance.compute(net1, net2);
+           result.append("\nAPD dissimilarity between two networks: " + dissimilarity);
+       }
+       else if(_method == Method.normAPD)
+       {
+           double dissimilarity = AveragePathDistance.computeNormalized(net1, net2);
+           result.append("\nNormAPD dissimilarity between two networks: " + dissimilarity);
+       }
+       else if(_method == Method.WAPD)
+       {
+           double dissimilarity = WeightedAveragePathDistance.compute(net1, net2, true);
+           result.append("\nWAPD dissimilarity between two networks: " + dissimilarity);
+       }
+       else if(_method == Method.normWAPD)
+       {
+           double dissimilarity = WeightedAveragePathDistance.computeNormalized(net1, net2, true);
+           result.append("\nNormWAPD dissimilarity between two networks: " + dissimilarity);
        }
 
         return result.toString();

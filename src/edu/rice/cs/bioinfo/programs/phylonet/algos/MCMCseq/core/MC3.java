@@ -33,7 +33,6 @@ public class MC3 {
     private double _logLikelihood;
     private double _logPrior;
     private double _essPost;
-
     private long _lastSampleTime;
 
     private int examed = 0;
@@ -176,14 +175,11 @@ public class MC3 {
                     System.out.println("Doing sampling");
                 }
                 _essPost = _core.addPosteriorESS(_logPost);
-                double essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
 
                 long curTime = System.currentTimeMillis();
                 System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;     %2.5f sec/sample;\n",
-                        iteration, _logPost, essPost,
-//                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-//                        iteration, _logPost, _essPost,
+                        iteration, _logPost, _essPost,
                         _logLikelihood, _logPrior, essPrior,
                         _state.numOfReticulation(),
                         (curTime - _lastSampleTime) / 1000.0);

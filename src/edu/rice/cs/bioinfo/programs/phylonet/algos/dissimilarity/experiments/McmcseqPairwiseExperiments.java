@@ -43,7 +43,8 @@ public class McmcseqPairwiseExperiments {
         }
 
         List<Network<BniNetwork>> networks = new ArrayList<>();
-        List<double[][]> networksMatrices = new ArrayList<>();
+        List<double[][]> networksMatricesWAPD = new ArrayList<>();
+        List<double[][]> networksMatricesAPD = new ArrayList<>();
 
         try {
             Scanner fileReader = new Scanner(new File(args[1]));
@@ -51,10 +52,14 @@ public class McmcseqPairwiseExperiments {
             while (fileReader.hasNextLine()) {
                 String line = fileReader.nextLine();
 
-                if (line.startsWith("[")) {
-                    String richNewick = line.substring(line.indexOf("]") + 1);
+                if (line.startsWith("tree STATE_")) {
+                    String richNewick = line.substring(line.indexOf("=") + 1);
                     networks.add(Networks.readNetwork(richNewick));
-                    networksMatrices.add(WeightedAveragePathDistance.computeMatrix(Networks.readNetwork(richNewick), true));
+
+                    if (metric.equals("WAPD"))
+                        networksMatricesWAPD.add(WeightedAveragePathDistance.computeMatrix(Networks.readNetwork(richNewick), true));
+                    else if (metric.equals("APD"))
+                        networksMatricesAPD.add(AveragePathDistance.computeMatrix(Networks.readNetwork(richNewick)));
                 }
             }
             fileReader.close();
@@ -90,8 +95,10 @@ public class McmcseqPairwiseExperiments {
                     double dissimilarity = Double.NaN;
                     if (metrics.containsKey(metric))
                         dissimilarity = metrics.get(metric).apply(networks.get(i), networks.get(j));
-                    else if (metrics2.containsKey(metric))
-                        dissimilarity = metrics2.get(metric).apply(networksMatrices.get(i), networksMatrices.get(j));
+                    else if (metrics2.containsKey(metric) && metric.equals("APD"))
+                        dissimilarity = metrics2.get(metric).apply(networksMatricesAPD.get(i), networksMatricesAPD.get(j));
+                    else if (metrics2.containsKey(metric) && metric.equals("WAPD"))
+                        dissimilarity = metrics2.get(metric).apply(networksMatricesWAPD.get(i), networksMatricesWAPD.get(j));
 
                     writer.write(i + "," + j + "," + dissimilarity + "\n");
                 }

@@ -27,11 +27,15 @@ public class Resumer {
                 Integer.parseInt(args[2]),
                 Integer.parseInt(args[3]), Integer.parseInt(args[4]),
                 Integer.parseInt(args[5]), Integer.parseInt(args[6]),
-                Integer.parseInt(args[7]), Integer.parseInt(args[8]), args[9]);
+                Integer.parseInt(args[7]), Integer.parseInt(args[8]), args[9],
+                Boolean.parseBoolean(args[10]),
+                Boolean.parseBoolean(args[11]),
+                Boolean.parseBoolean(args[12]),
+                Integer.parseInt(args[13]));
 
-//        multiRuns("/Users/zhen/Desktop/Zhen/research/phylogenetics/InferDistance/data/empirical/butterfly/round2/mcmctrinet_constantPs/mcmc1/",
-//                "/Users/zhen/Desktop/Zhen/research/phylogenetics/InferDistance/data/empirical/butterfly/round2/mcmctrinet_constantPs/mcmc1/mcmc1.nex",
-//                5000, 2000, 2, 500, 0, 20, 0, null);
+//        multiRuns("/Users/zhen/Desktop/Zhen/research/phylogenetics/butterfly/data/trinets_output/mcmc1/",
+//                "/Users/zhen/Desktop/Zhen/research/phylogenetics/butterfly/data/trinets_output/mcmc1/mcmc_1.nex",
+//                40000000, 10000000, 2, 5000, 0, 20, 0, null, true, false, true, 50);
     }
 
     /**
@@ -48,7 +52,7 @@ public class Resumer {
      * @param seedID
      * @param gtrRates
      */
-    public static void multiRuns(String basePath, String nexFilePath, int chainLen, int burnInLen, int subrunIndex, int sampleFreq, int lociSetId, int subrunNum, int seedID, String gtrRates) {
+    public static void multiRuns(String basePath, String nexFilePath, int chainLen, int burnInLen, int subrunIndex, int sampleFreq, int lociSetId, int subrunNum, int seedID, String gtrRates, boolean sample_murate, boolean const_popsize, boolean diameter_prior, int locisubset) {
         Utils._NUM_THREADS = Runtime.getRuntime().availableProcessors();
         Utils._CHAIN_LEN = chainLen;
         Utils._BURNIN_LEN = burnInLen;
@@ -56,8 +60,9 @@ public class Resumer {
         Utils._SubrunIndex = subrunIndex;
         Utils._SAMPLE_FREQUENCY = sampleFreq;
         Utils._SAMPLE_NUM = chainLen / sampleFreq;
-        Utils.SAMPLE_MUTATION_RATE = true;
-        Utils._CONST_POP_SIZE = false;
+        Utils.SAMPLE_MUTATION_RATE = sample_murate;
+        Utils._CONST_POP_SIZE = const_popsize;
+        Utils._DIAMETER_PRIOR = diameter_prior;
 
         // set substitution rates
         if ((!Strings.isNullOrEmpty(gtrRates)) && (!"null".equals(gtrRates))) {
@@ -97,7 +102,8 @@ public class Resumer {
         Utils._CGT_DIRECTORY = Utils._OUT_DIRECTORY;
         Utils._OUT_DIRECTORY += String.valueOf(chainLen) + "_" + String.valueOf(subrunIndex) + "/";
         Utils.isExistsDir(Utils._OUT_DIRECTORY);
-        Map<String, Map<String,String>> multiLociSeq = Tools.parseNexusFile(nexFilePath);
+        Map<String, Map<String,String>> multiLociSeq = Tools.parseNexusFile(nexFilePath, locisubset);
+
 
         List<Alignment> alns = Tools.readSeq(multiLociSeq);
         Collections.sort(alns);

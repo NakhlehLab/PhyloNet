@@ -413,6 +413,28 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        ParamExtractor weightListParam = new ParamExtractor("muweight", this.params, this.errorDetected);
+        if(weightListParam.ContainsSwitch) {
+            if(weightListParam.PostSwitchParam != null) {
+                try {
+                    if(!(weightListParam.PostSwitchParam instanceof ParameterIdentList)){
+                        throw new RuntimeException();
+                    }
+                    ParameterIdentList rates = (ParameterIdentList) weightListParam.PostSwitchParam;
+                    for(String item: rates.Elements){
+                        int r = Integer.parseInt(item.trim());
+                        Utils._WEIGHT_VECTOR.add(r);
+                    }
+                } catch(NumberFormatException e) {
+                    errorDetected.execute("Invalid value after switch -muweight.",
+                            weightListParam.PostSwitchParam.getLine(), murateListParam.PostSwitchParam.getColumn());
+                }
+            } else {
+                errorDetected.execute("Expected value after switch -muweight.",
+                        weightListParam.SwitchParam.getLine(), murateListParam.SwitchParam.getColumn());
+            }
+        }
+
         // ----- Prior Settings -----
         // poisson parameter
         ParamExtractor ppParam = new ParamExtractor("pp", this.params, this.errorDetected);
@@ -626,7 +648,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
                 "fixgttopo", "gtburnin",
                 "pp", "dd", "ee", "mu", "se",
                 "sgt", "snet", "sps", "pre", "gtr",
-                "gtoutgroup", "pseudo", "murate", "mupi"
+                "gtoutgroup", "pseudo", "murate", "mupi", "muweight"
         );
         checkAndSetOutFile(
                 diploidParam,

@@ -42,12 +42,12 @@ public class DeltaExchange extends Operator {
             }
             for(int i = 0; i < _parameter_input.size(); i++){
                 UltrametricTree ut = _alltrees.get(i);
-                ut.scale(_parameter_input.get(i), false);
+                ut.updateMutationRate(_parameter_input.get(i));
             }
         }
         else{
             for(int i = 0; i < _alltrees.size(); i++){
-                _parameter_input.add(1.0);
+                _parameter_input.add(_alltrees.get(i).get_mutationRate());
             }
         }
     }

@@ -413,6 +413,7 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
             }
         }
 
+        //mutation rate weight input of loci
         ParamExtractor weightListParam = new ParamExtractor("muweight", this.params, this.errorDetected);
         if(weightListParam.ContainsSwitch) {
             if(weightListParam.PostSwitchParam != null) {

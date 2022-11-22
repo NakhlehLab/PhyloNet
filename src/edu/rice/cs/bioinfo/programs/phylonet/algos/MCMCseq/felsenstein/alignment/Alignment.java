@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment;
 
-import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.DataType;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.Nucleotide;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.likelihood.BeagleTreeLikelihood;

@@ -236,6 +236,6 @@ public class DeltaExchange extends Operator {
     }
 
     public boolean mayViolate() {
-        return _violate;
+        return false;
     }
 }

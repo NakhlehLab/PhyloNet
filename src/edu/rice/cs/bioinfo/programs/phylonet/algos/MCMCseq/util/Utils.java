@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -39,11 +38,15 @@ public class Utils {
     public static boolean _ESTIMATE_POP_PARAM = true;
     // priors
     public static double _POISSON_PARAM = 1.0;
-    public static boolean _TIMES_EXP_PRIOR = false;
+//    public static double _POISSON_PARAM = 0.5; //butterfly
+//    public static boolean _TIMES_EXP_PRIOR = false;
+    public static boolean _TIMES_EXP_PRIOR = true;//buttefly
     public static boolean _DIAMETER_PRIOR = true;
     public static boolean _DISABLE_ALL_PRIOR = false;
-    public static final double _DIRICHLET_ALPHA = 2.0; //todo: test dirichlet distribution prior for delta exchange
+    public static final double _DIRICHLET_ALPHA = 2.0;
     public static int NUM_LOCI = 0;
+    public static double _GAMMA_MEAN_UPPER_BOUND = 0.232;
+    public static double _GAMMA_MEAN_LOWER_BOUND = 0.00232;
     // Substitution model
     public static String _SUBSTITUTION_MODEL = "JC";
     public static double[] _BASE_FREQS = null;
@@ -76,13 +79,13 @@ public class Utils {
     public static final double NET_INTI_SCALE = 0.95;
     public static final double DEFAULT_NET_LEAF_HEIGHT = 0;
     public static final double DEFAULT_NET_ROOT_HEIGHT = 6;
-    public static final double NET_MAX_HEIGHT = 1000; // used in debug mode
+    public static final double NET_MAX_HEIGHT = 1; // used in debug mode for butterfly
     public static double RESAMPLE_GENE_TREE_RATE = 0.5;
     public static boolean RESAMPLE_GENE_TREES = false;
     public static boolean SAMPLE_EMBEDDINGS = false; // experimental!!!
     public static boolean ONLY_BACKBONE_OP = false;
     public static boolean PSEUDO_LIKELIHOOD = false;
-    public static boolean SAMPLE_MUTATION_RATE = false; //todo by zhen
+    public static boolean SAMPLE_MUTATION_RATE = false; //substitution rates
     public static int NUM_OPERATORS = 14;
     // --- tree ---
     public static final double TREE_INTI_SCALE = 1.05;
@@ -105,7 +108,9 @@ public class Utils {
     public static final int SWAP_FREQUENCY = 100;
     // --- priors ---
     public static final double EXP_PARAM = 10; // Mr.Bayes
-    public static final double GAMMA_SHAPE = 2; // *BEAST
+//    public static final double EXP_PARAM = 20; //butterfly
+//    public static final double EXP_PARAM = 6.6; //butterfly
+    public static final double GAMMA_SHAPE = 2;
     // --- substitution model ---
     public static final boolean ESTIMATE_SUBSTITUTION = false; // TODO future improvement
 
@@ -123,7 +128,8 @@ public class Utils {
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
-    public static final double DIMENSION_CHANGE_WEIGHT = 0.015;
+//    public static final double DIMENSION_CHANGE_WEIGHT = 0.015;
+    public static final double DIMENSION_CHANGE_WEIGHT = 0.03;
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
@@ -141,7 +147,7 @@ public class Utils {
             0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
             0.04, 0.05, 0.25,
             0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
-            0.1, // deltaexchange TODO by zhen, check mixing
+            0.05, // deltaexchange: 0.1
             0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT,
             0.06 - DIMENSION_CHANGE_WEIGHT
 

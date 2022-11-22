@@ -52,7 +52,7 @@ public class ScalePopSizeParam extends Operator{
 
     @Override
     public boolean mayViolate() {
-        return false;
+        return true;
     }
 
     @Override

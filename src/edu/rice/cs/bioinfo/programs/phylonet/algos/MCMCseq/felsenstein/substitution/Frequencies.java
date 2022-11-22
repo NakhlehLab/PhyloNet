@@ -3,7 +3,6 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitu
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.StateNode;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.DataType;
-import org.jfree.ui.Align;
 
 import java.util.Arrays;
 

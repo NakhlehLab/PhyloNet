@@ -1,13 +1,10 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.optimizer;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.MC3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.State;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.summary.SampleSummary;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

@@ -1,9 +1,6 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitution;
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.DataType;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.datatype.Nucleotide;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 
 import java.util.Arrays;
 import java.util.HashMap;

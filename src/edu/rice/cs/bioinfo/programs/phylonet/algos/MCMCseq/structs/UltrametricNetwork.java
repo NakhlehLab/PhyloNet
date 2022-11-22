@@ -151,7 +151,6 @@ public class UltrametricNetwork extends StateNode {
             }
         }
 
-        // todo : test by zhen
         else if (Utils.SAMPLE_MUTATION_RATE){
             this._operators = new Operator[]{
                     new ChangePopSize(this),
@@ -477,6 +476,18 @@ public class UltrametricNetwork extends StateNode {
             if(constraints.get(key) < lowerBound.get(key)) {
                 return false;
             }
+        }
+        //Bound for population sizes
+        for (NetNode<NetNodeInfo> netnode: _network.dfs()){
+            for (NetNode<NetNodeInfo> parent: netnode.getParents()){
+                if((netnode.getParentSupport(parent) > Utils._GAMMA_MEAN_UPPER_BOUND) || (netnode.getParentSupport(parent) < Utils._GAMMA_MEAN_LOWER_BOUND)){
+                    return false;
+                }
+            }
+        }
+        double rootPopSize = _network.getRoot().getRootPopSize();
+        if((rootPopSize > Utils._GAMMA_MEAN_UPPER_BOUND) || (rootPopSize < Utils._GAMMA_MEAN_LOWER_BOUND)){
+            return false;
         }
         return true;
     }

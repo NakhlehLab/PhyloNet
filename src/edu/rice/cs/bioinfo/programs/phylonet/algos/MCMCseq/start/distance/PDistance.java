@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.start.distance;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.start.distance.Distance;
-
 import java.util.*;
 
 /**

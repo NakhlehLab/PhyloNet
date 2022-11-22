@@ -112,16 +112,20 @@ public class State {
                         curNodeParentSupport.put(parentName, parentSupport);
                     }
                 }
-                parentSupports.add(i, curNodeParentSupport);
+                if (Utils._ESTIMATE_POP_SIZE && !Utils._CONST_POP_SIZE){
+                    parentSupports.add(i, curNodeParentSupport);
+                }
             }
             for (NetNode<NetNodeInfo> netNode : Networks.postTraversal(this._speciesNet.getNetwork())) {
                 String name = netNode.getName();
                 int index = nameMap.get(name);
                 netNode.setData(new NetNodeInfo(heights[index],indexes[index],preHeights[index]));
-                Map<String, Double> nodeParentSupport = parentSupports.get(index);
-                for (NetNode<NetNodeInfo> parent : netNode.getParents()) {
-                    double psize = nodeParentSupport.get(parent.getName());
-                    netNode.setParentSupport(parent, psize);
+                if (Utils._ESTIMATE_POP_SIZE && !Utils._CONST_POP_SIZE) {
+                    Map<String, Double> nodeParentSupport = parentSupports.get(index);
+                    for (NetNode<NetNodeInfo> parent : netNode.getParents()) {
+                        double psize = nodeParentSupport.get(parent.getName());
+                        netNode.setParentSupport(parent, psize);
+                    }
                 }
             }
 
@@ -132,9 +136,12 @@ public class State {
             e.printStackTrace();
         }
 
+        Utils.NUM_LOCI = alignments.size();
         this._populationSize = new PopulationSize();
         this._populationSize.setGammaMean(popSizeMean);
         this._priorDistribution = new SpeciesNetPriorDistribution(Utils._POISSON_PARAM, _populationSize);
+        _gtOpWeight = 1.0 - Math.min(0.3, Math.max(0.1, 8.0 / (this._geneTrees.size() + 8.0)));
+        if(Utils.ONLY_BACKBONE_OP) _gtOpWeight = 0.5;
     }
 
     /**
@@ -225,6 +232,9 @@ public class State {
 //            System.out.println();
 //        }
 
+//        if(getOperation().getName().contains("Change-Time")){
+//            System.out.println("debug");
+//        }
         if(getOperation().getName().contains("Add-Reticulation") &&
                 _speciesNet.getNetwork().getReticulationCount() > Utils._NET_MAX_RETI) {
             logHR = Utils.INVALID_MOVE;
@@ -233,6 +243,9 @@ public class State {
                 if(Utils.DEBUG_MODE) System.err.println(getOperation());
                 logHR = Utils.INVALID_MOVE;
             } else if(!_speciesNet.isValid()) {
+                logHR = Utils.INVALID_MOVE;
+            }
+            else if(!_populationSize.isValid()){
                 logHR = Utils.INVALID_MOVE;
             }
         }

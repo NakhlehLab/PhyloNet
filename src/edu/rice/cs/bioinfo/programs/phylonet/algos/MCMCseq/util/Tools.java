@@ -37,7 +37,7 @@ public class Tools {
         return alns;
     }
 
-    public static Map<String, Map<String, String>> parseNexusFile(String file) {
+    public static Map<String, Map<String, String>> parseNexusFile(String file, int locisubset) {
         Map<String, Map<String, String>> multiLociData = new HashMap<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -73,6 +73,17 @@ public class Tools {
                         throw new RuntimeException(s);
                     }
                     String locusName = ss[0];
+                    boolean inset = false;
+                    if (locisubset != 100 ){
+                        int loci_num = Integer.parseInt(locusName.replace("loci", ""));
+                        if (loci_num <= locisubset){
+                            inset = true;
+                        }
+                        else{
+                            inset = false;
+                        }
+                    }
+
                     int seqLength = Integer.parseInt(ss[1]);
                     Map<String, String> taxonSeqMap = new HashMap<>();
                     s = br.readLine().trim();
@@ -83,7 +94,10 @@ public class Tools {
                         taxonSeqMap.put(ss[0], ss[1]);
                         s = br.readLine().trim();
                     }
-                    multiLociData.put(locusName, taxonSeqMap);
+                    if (inset){
+                        multiLociData.put(locusName, taxonSeqMap);
+                    }
+
                 } else {
                     s = br.readLine().trim();
                 }
@@ -128,11 +142,11 @@ public class Tools {
                         }
                     }
 
-                    if (s.contains("-varyps")){
-                        Utils._ESTIMATE_POP_SIZE = true;
-                        Utils._CONST_POP_SIZE = false;
-                    }
-                    else if (s.contains("-fixps")) {
+//                    if (s.contains("-varyps")){
+//                        Utils._ESTIMATE_POP_SIZE = true;
+//                        Utils._CONST_POP_SIZE = false;
+//                    }
+                    if (s.contains("-fixps")) {
                         Utils._ESTIMATE_POP_SIZE = false;
                         Utils._CONST_POP_SIZE = true;
                         String sb = s.substring(s.indexOf("-fixps")+6).trim();

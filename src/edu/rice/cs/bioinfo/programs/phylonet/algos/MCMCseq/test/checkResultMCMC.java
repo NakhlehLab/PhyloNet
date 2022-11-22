@@ -24,6 +24,8 @@ public class checkResultMCMC {
     private int sample_frequency;
     private double lowest_ESS = 0;
     private double last_ESS = 0;
+    private double max_posteriori = Double.NEGATIVE_INFINITY;
+    private Network map_net = null;
 
     /* Constructor */
 //    public checkResultMCMC(String path) {
@@ -85,18 +87,26 @@ public class checkResultMCMC {
         this.lowest_ESS = lowest_ESS;
     }
 
+    public Network get_MAP_net(){
+        return this.map_net;
+    }
 
 
     public int read_mcmc_out(String path){
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String s;
-            int start = burn_in/sample_frequency + 1;
+            int start = 0;
+            if (this.network_list.isEmpty()){
+                start = burn_in/sample_frequency + 1;
+            }
+
             double lastESS = 0;
             boolean begin = false;
             boolean finished = false;
             int cnt = 0;
             List<Network> net_list = new ArrayList<>();
+            boolean update_map_net = false;
             while((s = br.readLine()) != null) {
                 s = s.trim();
                 if(s.contains("Logger:")) {
@@ -104,17 +114,29 @@ public class checkResultMCMC {
                 }
                 if(begin && s.startsWith("[")) {
                     cnt += 1;
+                    s = s.substring(s.indexOf("]") + 1);
+                    Network net = Networks.readNetwork(s);
                     if (cnt >= start){
-                        s = s.substring(s.indexOf("]") + 1);
-                        Network net = Networks.readNetwork(s);
                         net_list.add(net);
-
                     }
+                    if(update_map_net){
+                        this.map_net = net;
+                    }
+
                 }
                 else {
                     String ss[] = s.split("\\s+");
-                    if(ss.length == 7 && Character.isDigit(ss[2].charAt(0)) && ss[2].charAt(ss[2].length() - 1) == ';'){
+                    if(ss.length == 9 && Character.isDigit(ss[2].charAt(0)) && ss[2].charAt(ss[2].length() - 1) == ';'){
                         lastESS = Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
+                        double post = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
+                        if (max_posteriori < post){
+                            max_posteriori = post;
+                            update_map_net = true;
+                        }
+                        else{
+                            update_map_net = false;
+                        }
+
                     }
                 }
             }
@@ -291,7 +313,7 @@ public class checkResultMCMC {
         String directory = "/Users/zhen/Desktop/Zhen/research/phylogenetics/tree_sim/experiment/butterfly/seed3/";
         String output_path = directory;
         boolean murate = true;
-        int burnin = 5000000;
+        int burnin = 2000000;
         int sample_frequency = 5000;
         int lowest_ess = 200;
         List<String> path_list = new ArrayList<>();
@@ -301,7 +323,7 @@ public class checkResultMCMC {
         else{
             output_path += "mcmc_original.csv";
         }
-        for(int i = 11; i <= 20; i++){
+        for(int i = 1; i <= 10; i++){
             if (murate){
                 path_list.add(directory+i+"/murate/mcmc.out");
 

@@ -48,7 +48,8 @@ public class ChangeTime extends NetworkOperator {
         double newHeight = bounds[0] + Randomizer.getRandomDouble() * (bounds[1] - bounds[0]);
         setNodeHeight(_target, newHeight);
 
-        _violate = newHeight > _oldHeight;
+//        _violate = newHeight > _oldHeight;
+        _violate = true;
         return 0;
     }
 

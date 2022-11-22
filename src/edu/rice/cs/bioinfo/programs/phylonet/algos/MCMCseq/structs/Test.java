@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs;
 
-import edu.rice.cs.bioinfo.library.programming.MutableTuple;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.move.network.param.ChangeInheritance;

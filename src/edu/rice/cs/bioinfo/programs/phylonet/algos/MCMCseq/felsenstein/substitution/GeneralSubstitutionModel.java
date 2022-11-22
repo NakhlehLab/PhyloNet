@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.substitution;
 
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.StateNode;
-
 /**
  * Created by wendingqiao on 5/3/16.
  * Specifies transition probability matrix with no restrictions on the rates other

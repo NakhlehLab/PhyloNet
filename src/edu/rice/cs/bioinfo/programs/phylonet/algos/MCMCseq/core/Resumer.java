@@ -22,7 +22,9 @@ public class Resumer {
     }
 
     public static void main(String[] args) {
-
+        for (int i =0; i < args.length; i++){
+            System.out.println(args[i]);
+        }
         multiRuns(args[0], args[1],
                 Integer.parseInt(args[2]),
                 Integer.parseInt(args[3]), Integer.parseInt(args[4]),
@@ -31,7 +33,8 @@ public class Resumer {
                 Boolean.parseBoolean(args[10]),
                 Boolean.parseBoolean(args[11]),
                 Boolean.parseBoolean(args[12]),
-                Integer.parseInt(args[13]));
+                Integer.parseInt(args[13]),
+                Boolean.parseBoolean(args[14]));
 
 //        multiRuns("/Users/zhen/Desktop/Zhen/research/phylogenetics/butterfly/data/trinets_output/mcmc1/",
 //                "/Users/zhen/Desktop/Zhen/research/phylogenetics/butterfly/data/trinets_output/mcmc1/mcmc_1.nex",
@@ -52,7 +55,7 @@ public class Resumer {
      * @param seedID
      * @param gtrRates
      */
-    public static void multiRuns(String basePath, String nexFilePath, int chainLen, int burnInLen, int subrunIndex, int sampleFreq, int lociSetId, int subrunNum, int seedID, String gtrRates, boolean sample_murate, boolean const_popsize, boolean diameter_prior, int locisubset) {
+    public static void multiRuns(String basePath, String nexFilePath, int chainLen, int burnInLen, int subrunIndex, int sampleFreq, int lociSetId, int subrunNum, int seedID, String gtrRates, boolean sample_murate, boolean const_popsize, boolean diameter_prior, int locisubset, boolean nodeheight_exp) {
         Utils._NUM_THREADS = Runtime.getRuntime().availableProcessors();
         Utils._CHAIN_LEN = chainLen;
         Utils._BURNIN_LEN = burnInLen;
@@ -63,6 +66,7 @@ public class Resumer {
         Utils.SAMPLE_MUTATION_RATE = sample_murate;
         Utils._CONST_POP_SIZE = const_popsize;
         Utils._DIAMETER_PRIOR = diameter_prior;
+        Utils._TIMES_EXP_PRIOR = nodeheight_exp;
 
         // set substitution rates
         if ((!Strings.isNullOrEmpty(gtrRates)) && (!"null".equals(gtrRates))) {

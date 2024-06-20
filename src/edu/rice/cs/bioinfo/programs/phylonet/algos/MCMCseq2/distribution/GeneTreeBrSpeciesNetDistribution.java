@@ -87,7 +87,8 @@ public class GeneTreeBrSpeciesNetDistribution {
 
     public double calculateGTDistribution(UltrametricTree geneTree, TreeEmbedding embedding){
         double gtProb = 0;
-        String[] gtTaxa = geneTree.getTree().getLeaves();
+//        String[] gtTaxa = geneTree.getTree().getLeaves();
+        String[] gtTaxa = geneTree.getTaxa();
         List<STITreeCluster<Double>> gtClusters = new ArrayList<>();
         boolean[][] R = processGT(geneTree, gtTaxa, gtClusters);
 

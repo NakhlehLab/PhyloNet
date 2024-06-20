@@ -3,6 +3,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.core;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.structs.UltrametricTree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.util.Randomizer;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.util.TemporalConstraints;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
@@ -48,7 +49,11 @@ public class MC3 {
         this._sampleFrequency = sampleFrequency;
         this._logLikelihood = _state.calculateLikelihood();
         this._logPrior = _state.calculatePrior();
+//        System.out.println("\nPopsize mean:"+_state.getNetworkObject().getRoot().getRootPopSize());
+//        System.out.println("loglikelihood:"+this._logLikelihood);
+//        System.out.println(_state.getNetwork());
         this._logPost = this._logLikelihood + this._logPrior;
+//        System.out.println("logPosterior:"+this._logPost);
         this._lastSampleTime = System.currentTimeMillis();
     }
 
@@ -62,10 +67,21 @@ public class MC3 {
 
         for (int i = 0; i < _sampleFrequency; i++) {
             accept = false;
-            _state.getUltrametricNetworkObject().checkLogDensity();
+//          _state.getUltrametricNetworkObject().checkLogDensity();
             logHastings = _state.propose();
             examed++;
             op = _state.getOperation().getName();
+
+//            if (op.equals("WilsonBalding2") && logHastings == Utils.INVALID_MOVE)
+//            {
+//                for (int x=0; x<_state._geneTrees.size(); x++){
+//                    if (_state._geneTrees.get(i).isDirty()){
+//                        System.out.println();
+//                    }
+//                }
+//
+//                System.out.println("WilsonBalding2:"+logHastings+_state.toString());
+//            }
 
             if(Utils.DEBUG_MODE) {
                 System.out.println(_temperature + " Proposed:"+ op + "\n" + _state.toString() + "\n" + _state.getNetwork() + "\n" + Networks.getTopologyString(_state.getNetworkObject()));
@@ -110,6 +126,9 @@ public class MC3 {
                 if(Utils.DEBUG_MODE && !_state.isValidState()) {
                     System.out.println("INVALID state after operation and validation!!!"
                             + op + "\n" + _state.toString() + "\n" + _state.getNetwork());
+                    for(String s: _state.toList()){
+                        System.out.println(s);
+                    }
                     throw new RuntimeException("INVALID state after operation and validation!!!"
                             + op + "\n" + _state.toString() + "\n" + _state.getNetwork());
                 }
@@ -164,9 +183,14 @@ public class MC3 {
             }
 
             if(_main) {
-                _core.addInfo(accept, op);
+//                if (op.equals("WilsonBalding2") && logHastings == Utils.INVALID_MOVE)
+//                {
+//                    System.out.println("WilsonBalding2:"+logHastings+_state.toString());
+//                }
+                _core.addInfo(accept, op, logHastings);
             }
         }
+
         if(!Utils._PRE_BURN_IN && doSample) {
             if(_main) {
                 if(Utils.DEBUG_MODE) {
@@ -174,16 +198,14 @@ public class MC3 {
                 }
                 _essPost = _core.addPosteriorESS(_logPost);
 
-                double essPost = _core.addPosteriorESS(_logPost);
+//                double essPost = _core.addPosteriorESS(_logPost);
                 double essPrior = _core.addPriorESS(_logPrior);
+                double essLikelihood = _core.addLikelihoodESS(_logLikelihood);
 
                 long curTime = System.currentTimeMillis();
-                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;     %2.5f sec/sample;\n",
-//                        iteration, _logPost, _essPost,
-                        iteration, _logPost, essPost,
-//                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;    %2.5f;    %d;\n",
-//                        iteration, _logPost, _essPost,
-                        _logLikelihood, _logPrior, essPrior,
+                System.out.printf("%d;    %2.5f;    %2.5f;    %2.5f;   %2.5f;   %2.5f;    %2.5f;    %d;     %2.5f sec/sample;\n",
+                        iteration, _logPost, _essPost,
+                        _logLikelihood, essLikelihood, _logPrior, essPrior,
                         _state.numOfReticulation(),
                         (curTime - _lastSampleTime) / 1000.0);
                 _lastSampleTime = curTime;

@@ -38,8 +38,8 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
     private Tree _oldTree;
     private List<TNode> _nodes;
     private List<TNode> _internalNodes; // contains tree root
-    private double _clockRate = 1.0; // TODO can be inferred from gamma distribution
-    private double _mutationRate = 1.0; //Todo by zhen: for mutation rate
+    private double _clockRate = 1.0; // TODO
+    private double _mutationRate = 1.0; //for mutation rate
 
     // ----- likelihood -----
     private BeagleTreeLikelihood _beagle;
@@ -49,6 +49,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
     // ---- moves -----
     private double[] _opWeights;
     private TreeOperator[] _operators;
+    private String[] _gtTaxa;
 
 
     public UltrametricTree(Alignment aln) {
@@ -78,7 +79,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         this._internalNodes = Trees.getInternalNodes(_tree);
 
         this._beagle = new BeagleTreeLikelihood(aln, this, new SiteModel(this._substModel), null);
-
+        this._gtTaxa = this._tree.getLeaves();
         setOperators();
 
         GTBurnin();
@@ -103,6 +104,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
             STITree tree = new STITree<>();
             nr.readTree(tree);
             this._tree = tree;
+            this._gtTaxa = this._tree.getLeaves();
             if(_tree.getRoot().getChildren().iterator().next().getParentDistance() != TNode.NO_DISTANCE) {
                 buildNodeHeightMap();
             } else {
@@ -162,12 +164,14 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
         buildNodeHeightMap();
         _nodes = IterableHelp.toList(_tree.getNodes());
         this._internalNodes = Trees.getInternalNodes(_tree);
+        this._gtTaxa = this._tree.getLeaves();
     }
     public UltrametricTree(UltrametricTree temp) {
         this._tree = new STITree<>(temp._tree.getRoot().getName(), true);
         copyNode(this._tree.getRoot(), temp._tree.getRoot());
         _nodes = IterableHelp.toList(_tree.getNodes());
         this._internalNodes = Trees.getInternalNodes(_tree);
+        this._gtTaxa = this._tree.getLeaves();
     }
 
     private void GTBurnin() {
@@ -191,7 +195,7 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
                 iter++;
             }
 
-            System.out.println("Optimized starting gene tree for " + _alignment.getName());
+            System.out.println("Optimized starting gene tree for " + _alignment.getName()+": "+_tree.toNewick());
         }
     }
 
@@ -213,7 +217,11 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
                 new TNodeReheight(this),
                 new SubtreeSlide(this), new NarrowNNI(this),
                 new TreeScaler(this), new TreeRootScaler(this),
-                new WilsonBalding(this), new WildNNI(this)
+//                new WilsonBalding2(this),
+                new WilsonBalding(this),
+//                new CoordindatedWideNNI(this)
+                new WildNNI(this)
+//                new CoordinatedExchange(this)
         };
 
         double[] Tree_Op_Weights = Utils.Tree_Op_Weights.clone();
@@ -255,6 +263,10 @@ public class UltrametricTree extends StateNode implements Comparable<Ultrametric
 
     public Tree getTree() {
         return _tree;
+    }
+
+    public String[] getTaxa(){
+        return _gtTaxa;
     }
 
     public double getNodeHeight(TNode node) {

@@ -48,7 +48,7 @@ public class ScalePopSize extends NetworkOperator {
         }
         scalePopSize(scale, false);
 
-        _violate = true;
+        _violate = false;
         return Math.log(scale) * (dimension - 2);
     }
 

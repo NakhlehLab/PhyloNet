@@ -1,11 +1,17 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.move.tree;
+/*
+ * @ClassName:   WilsonBalding2
+ * @Description:
+ * @Author:      Zhen Cao
+ * @Date:        12/16/22 10:02 AM
+ */
 
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.felsenstein.alignment.Alignment;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.move.Operator;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.start.UPGMATree;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.start.distance.JCDistance;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.structs.UltrametricTree;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.util.Randomizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
@@ -14,71 +20,104 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by wendingqiao on 2/20/16.
- * NNI, Adapted from
- * https://github.com/CompEvol/beast2/blob/master/src/beast/evolution/operators/Exchange.java -- method narrow()
- */
-public class NarrowNNI extends TreeOperator {
-
+public class WilsonBalding2 extends TreeOperator{
+    /* Constructor */
+    private TNode _parent;
+    private TNode _target;
+    private TNode _oldSibling;
+    private double _oldHeihgt;
     private double _logHR;
-    private TNode _target1;
-    private TNode _target2;
+//    public static int a = 0;
+//    public static int b = 0;
 
-    public NarrowNNI(UltrametricTree tree) {
+    public WilsonBalding2(UltrametricTree tree) {
         super(tree);
     }
 
     @Override
     public double propose() {
-        _logHR = Utils.INVALID_MOVE;
         _violate = false;
 
-        List<TNode> internalNodes = _tree.getInternalNodes();
-        if(internalNodes.size() < 2) return _logHR;
+        List<TNode> nodes = _tree.getNodes();
+        _logHR = Utils.INVALID_MOVE;
 
-        TNode grandParent;
+        // choose a random node avoiding root
         do {
-            grandParent = internalNodes.get(Randomizer.getRandomInt(internalNodes.size()));
-        } while (((STINode) grandParent).countLeafChildren() == 2);
-
-        TNode parent = getHigherChild(grandParent);
-        if(parent.isLeaf()) return _logHR;
-        _target2 = getOtherChild(grandParent, parent); // uncle
+            _target = nodes.get(Randomizer.getRandomInt(nodes.size()));
+            _parent = _target.getParent();
+        } while (_target.isRoot() || _parent.isRoot());
 
 
-        int validGP = 0;
-        for(TNode node : internalNodes) {
-            validGP += isValidGrandparent(node);
+        // choose another random node to insert i above
+        TNode j;
+        TNode jP;
+        // make sure that the target branch <k, j> is above the subtree being moved
+        do {
+            j = nodes.get(Randomizer.getRandomInt(nodes.size()));
+            jP = j.getParent();
+        } while (j.isRoot() || (jP != null && _tree.getNodeHeight(jP) <= _tree.getNodeHeight(_target)) || (_target == j) || jP == _parent || j == _parent || jP == _target);
+
+
+        // disallow moves that change the root & disallow ij share same parent or is parent of another
+//        if (j.isRoot() || _parent.isRoot() ||
+//                jP == _parent || j == _parent || jP == _target) {
+//            return _logHR;
+//        }
+
+//        if (jP == _parent || j == _parent || jP == _target) {
+//            return _logHR;
+//        }
+
+        _oldSibling = getOtherChild(_parent, _target);
+        TNode PiP = _parent.getParent();
+
+        _oldHeihgt = _tree.getNodeHeight(_parent);
+
+        double newMinAge = Math.max(_tree.getNodeHeight(_target), _tree.getNodeHeight(j));
+        double newRange = _tree.getNodeHeight(jP) - newMinAge;
+        double newAge = newMinAge + (Randomizer.getRandomDouble() * newRange);
+        double oldRange = _tree.getNodeHeight(PiP) - Math.max(_tree.getNodeHeight(_target), _tree.getNodeHeight(_oldSibling));
+
+
+        if (oldRange == 0 || newRange == 0) {
+            return _logHR;
         }
-        int c2 = isValidGrandparent(parent) + isValidGrandparent(_target2);
 
-        _target1 = Randomizer.getRandomDouble() < 0.5 ? getChild(parent, 0) : getChild(parent, 1);
-        if(_target1 == null) return _logHR;
-
+        // remove subtree rooted by i, remove p with the subtree because otherwise it has only one child CiP
+        // attach p & i subtree in between jP->j
+        // the new edge is PiP->CiP, jP->p, p->j
         _violate = true;
-        exchangeParents(_target1, _target2);
+        _logHR = Math.log(newRange / oldRange);
+        move(_parent, _target, j, newAge);
 
-        int c1 = isValidGrandparent(parent) + isValidGrandparent(_target2);
-        int validGPafter = validGP - c2 + c1;
-
-        _logHR = Math.log((double) validGP / (double) validGPafter);
+        if (Utils.DEBUG_MODE && _logHR == Utils.INVALID_MOVE) {
+            System.out.println("wilsonBalding2:"+newRange+","+oldRange+","+_logHR);
+        }
         return _logHR;
     }
 
     @Override
     public void undo() {
         if(_logHR == Utils.INVALID_MOVE) return;
-        exchangeParents(_target1, _target2);
+        move(_parent, _target, _oldSibling, _oldHeihgt);
     }
 
     @Override
     public String getName() {
-        return "NarrowNNI";
+        return "WilsonBalding2";
     }
 
-    private int isValidGrandparent(TNode node) {
-        return (!node.isLeaf() && ((STINode) node).countLeafChildren() < 2) ? 1 : 0;
+    private void move(TNode p, TNode i, TNode j, double newAge) {
+        TNode CiP = getOtherChild(p, i);
+        TNode PiP = p.getParent();
+        TNode jP = j.getParent();
+
+        ((STINode) CiP).setParent2((STINode) PiP);
+        ((STINode) j).setParent2((STINode) p);
+        ((STINode) p).setParent2((STINode) jP);
+
+        _tree.setNodeHeight(p, newAge);
+        _tree.setNodeHeight(PiP, _tree.getNodeHeight(PiP));
     }
 
     public static void main(String[] args) {
@@ -89,7 +128,7 @@ public class NarrowNNI extends TreeOperator {
             locus.put("C", "CTACGTGACGGGCCCGGCTCGCACGGTCAATGGCACCTGCGCTAGGCAACTCGAGACGGGCGAGGGTCCCGCTACTACGGACAAGGGTGTGCAGCGTCGAACATAGAACCACGGGACCTCCGGTACTCGCTCAACCGCGGTCGGTGGTACTACGATTGGACGGGCACTTTCGGCAATTTACAGTTAGCGAGAGGTCTGCGCGGCAAAAGACTCCAATTCACCCGGCGTTACCTGACTCGCGGCACTGACCGTTCGCCGTAAGCGTTGACAATTTTCGGTAGCATCGCCAAAGTGCTGGAGTACGGGTTTCACACTTGTAGCCACCGACAGCCCAACGGATCAATTCGCCAGTTGCCCTTCACTCCTGTTAGCAGAGGATGCTAGCGTGAGTTTCATCCATCTGTCCTGTCGAGCGGACTCGCACAGATACTCCAAACAAGTGAGATCCGTCCGGTACTCTACCCCTCACAAAGCGGGATTTCAGCGTCTCGTAGTGAGTAGGCATCCGGTCCAGGGGCACGTAGAGCACTCACCGTCCTCAGCCCCCTTCTATTCATTGCTGTGTTGAAGCGAAGTTCCCCGAAATCGTACTAACCGGTATGCAACCCAGATCTGCCCATAGTTTCCACATCATACTACAGCCAGAAAACTCGGAGTGTATGGCTTGACTAATGTCCGTACTGCCAGCGCTAGGTAAGTACGTGCTCGAACGCTTACACCCCTGCTGGCACCTGGTTGCGCATGATCCACCAATGCAGCCCGAGCGCTTGCTGTGACTTCCGTCCAAAAGTATTGAATTAAGCCTCAGCAATATGGGCCACCCAGACTGAGCCACGCTCCCCTCCGTACGGATGAAGTCCCCACCGGGGCAGGGGGGACGCTTCTATTGAACACTTCGCCTCACCGAAGTCGCCCCCGAGTACGCCAGTGACGTACGGTCGCACGCGGGTTCGGTAAGGAGGGGTCAGATCGCGTCTGCATGTTGAGTAGGTCCCTGCGC");
             locus.put("G", "CTACGTGACGGGCCTGGCTCGCACGGTCAATGGCACTTGAGCTAGGCAACCCAAGACGGGCGAGGGTCCCGCTACTACGGAAAAGGGTGTGCAGCTTCGAACATAGAACCACGGGACCTCCGGGACTCGCTCAATTGCGGTCGGTGGTACTACGATTGGACGGGCACTTTCGGCAATTTACAATTAGCGAGAGGTCTGCGCAGCAAAAGACTCCAATTCACCCGGCGCTACCTGATTCGCGGCACTGACCGTTCGCCGTAAGCGTTGACAAATTTCGGTAGCATCGCCAAAGTGCTGGAGTACGGGCTTCACACTTGTAGCCACCGACAGCCCAACGAATCAATTCGCCAGTTGCCCTTCACTCCTGTTAGCAGAGGATGCCAGCATGAGATTCATCCATCTGTCCTTTCGAGCGGACTCGCACAGATACTCCAAACAAGCGAGATCCGACCGGTACTCTACCCCTCACAAAGCGGGATTTCAGCGTCTCGTAGTGAGTAGGTATCCGGTCCAGAGGCACGTAGAGCCCTCACTGTCCTCAGCCCCCCTCTACTCATTGCTGTGTTGAGGTGAAGTTCCCCGAAATCGTACTAACCGGTATGCAACCCAGATCTGCCCATAGGCTACACATCATACTACAGCCAGTAAACCCGGAGTGTATGGCTTGACTAAGGTCCGTACAGCCAGCGCTCGATAAGTACGTGCTCGAACGCTTACACCCCTGCTGGCACCAGGTAGCGTATGATCCACCGATGCAGCCCGAGCGCTTGCTGTGACTTCCGTCCGAAAGTATTGAGTTAAGCCTCAGCAATATGGGCCACCCTGACTGAGCTACGCTCCCTTCCGTACGGATGAAGTCCCCACCGGGACAGGGGGGACGCTTCTATTGAACACTTCACCTCACCGAAGTCGCCCCCGAGTACACCAGTGACGTACAGTCGCACGCGGGTTCGATAAGGAGGGGCCAGATCGCGTCTACATGTTGAGTAGGTCCCTGCGC");
             locus.put("R", "TTGTGCGACGGGCGCGGCCCGGGCGATCAAGGGTACCAGAGTCAGGCAACTTAAGATGGGCGAGAGCCCCGCTAATACGGAAAGGAGTATGCAGCTCCGGACATGGGATCACTGGATCTCCAGGACTCGGTCGACTGCGGTCGGCGTTACTACAATCGGAGAGGCACATTCGCTAACTCATAGTTTGCGAGAGATCTGCGGAGCAAAGGATTCCCCTCTACTCGGCGCTACCTGACTCGCTACGCAGACCGTTCGCCGTAAGTGTTGCCAATCCCCGGAGGCATCGCCAAAGTACTGGAGTACGGGCTTAACACCTACAGCCACCGACAGCGCAACGAATCATTTCACCAGTTGCCTTTTACCCTTGTTAGCTGAGGATGCTAGCTTAACTTTCATCCTATGTTCCTCTCGGGCGGACTCTAACTGATCCCCCGAATGAGCGAGGTCTGACCGATACTCTGCCCCAGGCAAGGGGGGAGCCCATCCCCTTATAGTAAGCAAATCCCCAGTTCAGAGGCACATAGAGCACCCACCGTCCACAGCCCCTTTCCACTCACTGGTGCGCTGAGGTGAAAGTGCCCGAAATCCTACGAATTGGTATGCAACCCAGATCTGTAGGCAGGCTACATGTCATACTACAGCTCGTAAACTTGGAGTGTATGGCTAGACTGATATCCGAACAAACAACGCTCGACAAGCGCGACCTCGACCGCTCACACCCTTGCTGACACCAAGCAACACATGATCCATCAGTGCAGCCCCAACGTTTTTTGTGACCTCCGTCCGAAAGTATGGATTTGAGCCTCAGCAATGTGGCCCACCATGGCCGAGCTACGCTCCCCTACGTACGGATGATTTCCCCGCCGGGACAGGCGGGACGGTTCTATTAAACATCTCACCTTACTGATGTCGCCCCCGGGTACGGCAGCGACGTACAGCCGCACGCGAGCTTGGTAAGGAGGAGCCAGATCGTGCCTACATGTTGAGTAGGTCCCTACTC");
-//            locus.put("Q", "CCATACGATGGGCTCGGCTCGTATGATTGAGGGCACCGAAGCTAGGCGACTCAAGATGGGCGAGGGCTCCGCGAATACGGAAAAGGGTATGCAGCTTCGGCCATAGGACCACGTGATCTCCGGGACTCGCCCAATTGAGATCGGCGTTACTACAATTAGACGAGCACATTCGCCAATTTATAGTTAACAAGAGATCTGCGTAGCAAAAGATTCAACGTTACCCGGCGCTACCAGACCCGCGGCACAGGCCGTTTGCCCTAAGCGTTGACAATCTTCGGATTCATCGCCAAAGTGCTGGAGTACAGGCTTCACACCTACAGCCACTGACAGCCTAACGAATCACTTCACCAATTGCCTTTCACCCCTGTTAGCGGAGGGCGCTAGCATAACTTTCGTCCTACGTTCCTCTCGTACGGATTCGGACAGATCCTCCGAGCAAGCGAAGTCCGGCCGATACTCTGCCCCTAGCAAGGCGGGATCCCGTCGCCTTGTAGTGAGCAGATATCCAGTTTGGGAGCACATAGAGCACCGACCGTCCACAGTCCCCTTCTCTTCATTGGTGCGTTGAGGTGAAAGTTCCCGAAATCCTACAAACTGGTATGCAAACCGGATCTGCAGGTTGGCTACGTATCATACTACAGCCCGTAAACTCGGAGTGCATGGCTTGACTAACATCCGTACAAACAGCGCTCGATGAGTGCGACCTCGGCAGCTTACACCCTTGCTGACACCAAATAGCGCATGATCCACCAGTACAGCCCAAGCGCCTTTCGCGTCCTCCGCCCGAATGTATGGATGTAAGCCTGAGTCACGTGGACCACCGTGCCCGAGCTACGCTCCCTTACGTGCGGATGATGTCCCCGCCGGGACAGGCGGAACGCTTCTATTGAACATTTCACCTCGCTGAAGTCGCCCCTGAGTACGCCAGCAACGTACAGTCGCACGCGAGCTCAGTAAGGAGGAGCCATATCGCGTCTACATGATGCGTAGGTCCCTGCGC");
+            locus.put("Q", "CCATACGATGGGCTCGGCTCGTATGATTGAGGGCACCGAAGCTAGGCGACTCAAGATGGGCGAGGGCTCCGCGAATACGGAAAAGGGTATGCAGCTTCGGCCATAGGACCACGTGATCTCCGGGACTCGCCCAATTGAGATCGGCGTTACTACAATTAGACGAGCACATTCGCCAATTTATAGTTAACAAGAGATCTGCGTAGCAAAAGATTCAACGTTACCCGGCGCTACCAGACCCGCGGCACAGGCCGTTTGCCCTAAGCGTTGACAATCTTCGGATTCATCGCCAAAGTGCTGGAGTACAGGCTTCACACCTACAGCCACTGACAGCCTAACGAATCACTTCACCAATTGCCTTTCACCCCTGTTAGCGGAGGGCGCTAGCATAACTTTCGTCCTACGTTCCTCTCGTACGGATTCGGACAGATCCTCCGAGCAAGCGAAGTCCGGCCGATACTCTGCCCCTAGCAAGGCGGGATCCCGTCGCCTTGTAGTGAGCAGATATCCAGTTTGGGAGCACATAGAGCACCGACCGTCCACAGTCCCCTTCTCTTCATTGGTGCGTTGAGGTGAAAGTTCCCGAAATCCTACAAACTGGTATGCAAACCGGATCTGCAGGTTGGCTACGTATCATACTACAGCCCGTAAACTCGGAGTGCATGGCTTGACTAACATCCGTACAAACAGCGCTCGATGAGTGCGACCTCGGCAGCTTACACCCTTGCTGACACCAAATAGCGCATGATCCACCAGTACAGCCCAAGCGCCTTTCGCGTCCTCCGCCCGAATGTATGGATGTAAGCCTGAGTCACGTGGACCACCGTGCCCGAGCTACGCTCCCTTACGTGCGGATGATGTCCCCGCCGGGACAGGCGGAACGCTTCTATTGAACATTTCACCTCGCTGAAGTCGCCCCTGAGTACGCCAGCAACGTACAGTCGCACGCGAGCTCAGTAAGGAGGAGCCATATCGCGTCTACATGATGCGTAGGTCCCTGCGC");
             locus.put("L", "CTACGCGACGGGCTCGGCTCGTACAATAAAGGGCACCAGAGCTAGGTAACCCAAGATAGGCGAGGGCTTCGCTAATACGGAGAAGGGTATTCAGCTTCGGTCACAGGGCCACGTGATCTCCGGGACTCGCCCAGTTGCGATCGGCGTTACTACAATTGGAGGGGCACATTCGCCAACTTACAGTTAGTGAGGGATCTGCGTATCAAAAAACTCCACACTACTCGGCGCGACCTGGCTCGTGGCGCAGGCCGTTTGCCGTAAGTGTTGAGAATTTTCGGAAGAATGGCCGGAGTGTTAGAGTCCAGGCTTCACACCTACAGCCATTGACAGCTCAACGAGTCATTTCACCAGTTGCCTTTCACCCCTGTTAGCAGAGGGAGCTAGCGCAGCTTTCATCCTATGTCCATCTCGGGCGGACTCGGACAGATCCTCCGAACAAGCGAGGTCCGGTCGATACTCTGCCCCTAACAAGGCAGGATCCCATCGCCTTGTAGTGAGCAGATATCCAGTTTAGGGGCGCATAGAGCACCCACCGTCCACAGCCCCCTTGTACTTATTGGTGTGTTGAGGTGAAAGTCCCCGAAATCCCAGGAACTTGTATGCAACCCAGATCTGCAGGTAGGCTACGTATCATACTGTACCCCGCAAACTCGGAGTGTGTGACTGGACTAACGTCCGTACAAACAGCGCTCGATAGGTGCGACCTCGACAGCTTACACCCTTGCTGGCACCAAATAGCGCGTGATCCACCAGTGCAGACCAAACGTTTTCTGCGCCCTCCGTCCGAAAGTACGGGTTTAAGTCTCAGTAACATGGTCCACTATGACCGAACTATACCCCCTTACGTACGGGTGATGTCCCCGCCGGGACGGGCGGGACGCTTCTACTGAACGCTTCACTTCACTGAAGTCGCCCCTGAGTATGCCAGCAACGTACAGTCGCACGCGAGCTCGGTAAAGAGGAACCAGATCCCGTCGACATGTTGAGTTGGTCCCTATGC");
         }
         Alignment seq = new Alignment(locus);
@@ -104,7 +143,7 @@ public class NarrowNNI extends TreeOperator {
             int counter = 0;
             int test = 0;
             for(int i = 0; i < runs; i++) {
-                Operator op = new NarrowNNI(tree);
+                Operator op = new WilsonBalding2(tree);
                 double logHR = op.propose();
                 if(logHR != Utils.INVALID_MOVE) counter++;
                 if(tree.checkUltrametric()) test++;
@@ -114,7 +153,6 @@ public class NarrowNNI extends TreeOperator {
             System.out.printf("%d out of %d\n", counter, runs);
         }
         {
-            System.out.println("---------");
             UltrametricTree tree = new UltrametricTree(template);
             System.out.println(tree.getTree().toNewick());
 
@@ -122,14 +160,10 @@ public class NarrowNNI extends TreeOperator {
             int counter = 0;
             int test = 0;
             int diff_topo = 0;
-            int nonzero=0;
             for(int i = 0; i < runs; i++) {
-                Operator op = new NarrowNNI(tree);
+                Operator op = new WilsonBalding2(tree);
                 double logHR = op.propose();
                 if(logHR != Utils.INVALID_MOVE) counter++;
-                if (logHR != 0.0) {
-                    nonzero++;
-                }
                 if(tree.compareTo(template) != 0) {
                     diff_topo++;
                 }
@@ -141,9 +175,9 @@ public class NarrowNNI extends TreeOperator {
                 }
             }
             System.out.println(test == runs);
-            System.out.printf("different topologies %d out of %d\n", diff_topo, runs);
+            System.out.printf("%d out of %d\n", diff_topo, runs);
             System.out.printf("%d out of %d\n", counter, runs);
-            System.out.printf("%d out of %d\n", nonzero, runs);
+//            System.out.printf("%d, %d\n", a, b);
             System.out.println(tree.getTree().toNewick());
         }
     }

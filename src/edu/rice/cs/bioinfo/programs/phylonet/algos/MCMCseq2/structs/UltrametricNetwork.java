@@ -41,7 +41,7 @@ import java.util.*;
 public class UltrametricNetwork extends StateNode {
 
     private Network<NetNodeInfo> _network; // not being copied across states
-    protected List<UltrametricTree> _geneTrees;
+    public List<UltrametricTree> _geneTrees;
     private List<Tree> _oldGeneTrees = null;
     protected List<TreeEmbedding> _embeddings;
     private List<TreeEmbedding> _oldEmbeddings;
@@ -49,8 +49,8 @@ public class UltrametricNetwork extends StateNode {
 
     private int proposes = 0;
 
-    private Map<String, List<String>> _species2alleles;
-    private Map<String, String> _alleles2species;
+    public Map<String, List<String>> _species2alleles;
+    public Map<String, String> _alleles2species;
 
     public double[] _logGeneTreeNetwork = null;
     private double[] _logLtemp = null;
@@ -118,7 +118,21 @@ public class UltrametricNetwork extends StateNode {
             this._network = Networks.readNetwork(s); // adopt topology only
         }
         Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(gts, _species2alleles, _alleles2species);
+        if(Utils.DEBUG_MODE)
+        {
+            for(UltrametricTree gt: gts){
+                System.out.println(gt.toString());
+            }
+            System.out.println();
+            System.out.println("initialized constraints");
+            System.out.println(constraints);
+        }
+
         initNetHeights(popSize, constraints);
+//        System.out.println("\n popsize:"+this._network.getRoot().getRootPopSize());
+        if (Utils._OUTPUTPROB){
+            initNetHeights(Utils._POP_SIZE_MEAN, constraints);
+        }
         setOperators();
         initializeEmbeddings();
         NetBurnin();
@@ -157,9 +171,9 @@ public class UltrametricNetwork extends StateNode {
                     new ScalePopSize(this),
                     new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
                     new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new DeltaExchange(_geneTrees), // for delta exchange
                     new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
                     new AddReticulation(this),
-                    new DeltaExchange(_geneTrees), // for delta exchange
                     new FlipReticulation(this), new MoveHead(this),
                     new DeleteReticulation(this),
                     new ChangeInheritance(this)
@@ -365,10 +379,18 @@ public class UltrametricNetwork extends StateNode {
     public double logDensity() {
         if(_logGeneTreeNetwork == null) {
             _logLtemp = computeLikelihood();
+            if (Utils._OUTPUTPROB){
+                System.out.print("\ngt|psi,");
+                for (int i = 0; i < _logLtemp.length; i++){
+                    System.out.print(_logLtemp[i]+",");
+                }
+            }
+
+
             return Utils.sum(_logLtemp);
         }
         // network changed
-        if(_dirty || true) {
+        if(_dirty) {
             _logLtemp = computeLikelihood();
             return Utils.sum(_logLtemp);
         }
@@ -470,25 +492,46 @@ public class UltrametricNetwork extends StateNode {
     public boolean isValid() {
         if(_network.getRoot().getData().getHeight() > Utils.NET_MAX_HEIGHT) return false;
 
-        Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(_geneTrees, _species2alleles, _alleles2species);
-        Map<String, Double> lowerBound = TemporalConstraints.getLowerBounds(_network);
-        for(String key : lowerBound.keySet()) {
-            if(constraints.get(key) < lowerBound.get(key)) {
-                return false;
-            }
-        }
-        //Bound for population sizes
-        for (NetNode<NetNodeInfo> netnode: _network.dfs()){
-            for (NetNode<NetNodeInfo> parent: netnode.getParents()){
-                if((netnode.getParentSupport(parent) > Utils._GAMMA_MEAN_UPPER_BOUND) || (netnode.getParentSupport(parent) < Utils._GAMMA_MEAN_LOWER_BOUND)){
+        if (_dirty){
+            Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(_geneTrees, _species2alleles, _alleles2species);
+            Map<String, Double> lowerBound = TemporalConstraints.getLowerBounds(_network);
+            for(String key : lowerBound.keySet()) {
+                if(constraints.get(key) < lowerBound.get(key)) {
                     return false;
                 }
             }
         }
-        double rootPopSize = _network.getRoot().getRootPopSize();
-        if((rootPopSize > Utils._GAMMA_MEAN_UPPER_BOUND) || (rootPopSize < Utils._GAMMA_MEAN_LOWER_BOUND)){
-            return false;
+        else{
+            for(int i = 0; i < _geneTrees.size(); i++) {
+                if (_geneTrees.get(i).isDirty()) {
+                    if (Utils.DEBUG_MODE){
+                        System.out.println("isdirty:"+i+":"+_geneTrees.get(i));
+                    }
+
+                    Map<String, Double> constraints = TemporalConstraints.getTemporalConstraints(_geneTrees.get(i), _alleles2species);
+                    Map<String, Double> lowerBound = TemporalConstraints.getLowerBounds(_network);
+                    for (String key : lowerBound.keySet()) {
+                        if (constraints.get(key) < lowerBound.get(key)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
         }
+
+        //Bound for population sizes
+//        for (NetNode<NetNodeInfo> netnode: _network.dfs()){
+//            for (NetNode<NetNodeInfo> parent: netnode.getParents()){
+//                if((netnode.getParentSupport(parent) > Utils._GAMMA_MEAN_UPPER_BOUND) || (netnode.getParentSupport(parent) < Utils._GAMMA_MEAN_LOWER_BOUND)){
+//                    return false;
+//                }
+//            }
+//        }
+//        double rootPopSize = _network.getRoot().getRootPopSize();
+//        if((rootPopSize > Utils._GAMMA_MEAN_UPPER_BOUND) || (rootPopSize < Utils._GAMMA_MEAN_LOWER_BOUND)){
+//            return false;
+//        }
         return true;
     }
 
@@ -645,11 +688,13 @@ public class UltrametricNetwork extends StateNode {
             }
             for(NetNode<NetNodeInfo> par : node.getParents()) {
                 double dist = node.getParentDistance(par);
+                node.setParentSupport(par, Utils._POP_SIZE_MEAN);
                 if(par.getData() == null) {
                     par.setData(new NetNodeInfo(node.getData().getHeight() + dist));
                 }
             }
         }
+        _network.getRoot().setRootPopSize(Utils._POP_SIZE_MEAN);
     }
 
     private static void updateWeights(double[] arr, int start) {
@@ -679,6 +724,10 @@ public class UltrametricNetwork extends StateNode {
                 }
             }
         }
+    }
+
+    public Operator[] getOperators(){
+        return this._operators;
     }
 
     public double rebuildGeneTrees() {

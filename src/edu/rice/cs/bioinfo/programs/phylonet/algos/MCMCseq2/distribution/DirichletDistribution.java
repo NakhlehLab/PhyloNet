@@ -55,9 +55,6 @@ public class DirichletDistribution extends AbstractMultivariateRealDistribution 
             logP += -Math.log(Gamma.gamma(this.alpha[i]));
             alpha_sum += this.alpha[i];
         }
-//        System.out.println(alpha_sum);
-//        System.out.println("gamma(sum alpha)="+Gamma.gamma(alpha_sum));
-//        System.out.println(Gamma.logGamma(alpha_sum));
         logP += Gamma.logGamma(alpha_sum);
         return logP;
     }

@@ -15,6 +15,10 @@ public class JCDistance extends Distance {
     public JCDistance(Map<String, String> sequences) {
         super(sequences);
         _pDistance = new PDistance(sequences);
+        for(String key:sequences.keySet()){
+            MIN_DISTANCE = 1.0/(sequences.get(key).length()+1);
+            break;
+        }
         buildDistanceMap();
     }
 

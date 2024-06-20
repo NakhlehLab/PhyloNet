@@ -36,6 +36,7 @@ public class MC3Core {
     // logging info
     private ESS _posteriorESS = new ESS();
     private ESS _priorESS = new ESS();
+    private ESS _likelihoodESS = new ESS();
     private boolean _sampling = false;
     private int _accept = 0;
     private Map<String, OperatorLogger> _opMap = new HashMap<>();
@@ -151,7 +152,7 @@ public class MC3Core {
                 }
                 main.setPreBurnInParams();
                 System.out.println("----------------------- Logger: -----------------------");
-                System.out.println("Iteration;    Posterior;  ESS;    Likelihood;    Prior;  ESS;    #Reticulation;     Throughput;");
+                System.out.println("Iteration;    Posterior;    PosteriorESS;    Likelihood;    LikelihoodESS;   Prior;    PriorESS;    #Reticulation;    Throughput;");
             }
             if(i > burnin) {
                 _sampling = true;
@@ -245,16 +246,23 @@ public class MC3Core {
         return _sampling ? _posteriorESS.add(ess) : 0;
     }
 
+    public double addLikelihoodESS(double ess){
+        return _sampling ? _likelihoodESS.add(ess) : 0;
+    }
+
     public double addPriorESS(double ess) {
         return _sampling ? _priorESS.add(ess) : 0;
     }
 
-    public void addInfo(boolean ac, String op) {
+    public void addInfo(boolean ac, String op, double loghastings) {
         if(ac) _accept++;
         if(!_opMap.containsKey(op)) _opMap.put(op, new OperatorLogger(op));
         OperatorLogger info = _opMap.get(op);
         info.count++;
         if(ac) info.accept++;
+        if (loghastings == Utils.INVALID_MOVE) {
+            info.rejectOP++;
+        }
     }
 
     private String getOperationDetails() {

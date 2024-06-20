@@ -22,7 +22,7 @@ public class State {
 
     // inferred or fixed topologies/parameters
     List<UltrametricTree> _geneTrees;       // (gene tree and heights)s
-    private UltrametricNetwork _speciesNet;         // species network, heights, population sizes
+    public UltrametricNetwork _speciesNet;         // species network, heights, population sizes
     private double _gtOpWeight;
     private double _popSizeParamWeight = 0.005;
     private PopulationSize _populationSize;
@@ -48,6 +48,11 @@ public class State {
             } else {
                 this._geneTrees.add(new UltrametricTree(trees.get(alignments.get(i).getName()), alignments.get(i)));
             }
+            if (Utils._MUTATION_RATE_INPUT.containsKey(alignments.get(i).getName())){
+                this._geneTrees.get(i).updateMutationRate(Utils._MUTATION_RATE_INPUT.get(alignments.get(i).getName()));
+            }
+            if (Utils._OUTPUTPROB)
+                System.out.print(alignments.get(i).getName()+",");
         }
         Utils.NUM_LOCI = alignments.size();
         this._speciesNet = new UltrametricNetwork(network, this._geneTrees, species2alleles);
@@ -218,34 +223,20 @@ public class State {
         count++;
         if(Utils.DEBUG_MODE) {
             System.out.println("Count: " + count + " Purposed: " + getOperation().getName() + " mayViolate: " + _moveNode.mayViolate() + " : " + _speciesNet.toString());
-            if (getOperation().getName().contains("DeltaExchange")){
-                for(UltrametricTree ut : _geneTrees) {
-                    System.out.print(ut.get_mutationRate()+"\t");
-                }
-                System.out.println();
-            }
         }
-//        if (getOperation().getName().contains("DeltaExchange")){
-//            for(UltrametricTree ut : _geneTrees) {
-//                System.out.print(ut.get_mutationRate()+"\t");
-//            }
-//            System.out.println();
-//        }
 
-//        if(getOperation().getName().contains("Change-Time")){
-//            System.out.println("debug");
-//        }
         if(getOperation().getName().contains("Add-Reticulation") &&
                 _speciesNet.getNetwork().getReticulationCount() > Utils._NET_MAX_RETI) {
             logHR = Utils.INVALID_MOVE;
-        } else if(_moveNode.mayViolate()){
+        }
+        else if(!_populationSize.isValid()){
+            logHR = Utils.INVALID_MOVE;
+        }
+        else if(_moveNode.mayViolate()){
             if(_speciesNet.isDirty() && !_priorDistribution.isValid(_speciesNet.getNetwork())) {
                 if(Utils.DEBUG_MODE) System.err.println(getOperation());
                 logHR = Utils.INVALID_MOVE;
             } else if(!_speciesNet.isValid()) {
-                logHR = Utils.INVALID_MOVE;
-            }
-            else if(!_populationSize.isValid()){
                 logHR = Utils.INVALID_MOVE;
             }
         }
@@ -301,10 +292,12 @@ public class State {
      */
     public double calculateLikelihood() {
         double logL = _speciesNet.logDensity();
-//        System.out.println("species log density:"+logL);
+        if (Utils._OUTPUTPROB){
+            System.out.print("\ngt|s,");
+        }
         for(UltrametricTree gt : _geneTrees) {
             logL += gt.logDensity();
-//            System.out.println("gt log density:"+gt.logDensity());
+//            System.out.print(gt.logDensity()+",");
         }
         return logL;
     }

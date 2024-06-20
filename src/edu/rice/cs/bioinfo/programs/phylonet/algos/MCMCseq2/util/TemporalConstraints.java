@@ -60,7 +60,7 @@ public class TemporalConstraints {
             throw new IllegalArgumentException("List of gene trees cannot be null");
         }
         Map<String, Double> constraints = new HashMap<>();
-        Set<String> keys = (species2alleles == null) ? getTaxaPairs(gts.get(0).getTree().getLeaves()) :
+        Set<String> keys = (species2alleles == null) ? getTaxaPairs(gts.get(0).getTaxa()) :
                 getTaxaPairs(species2alleles.keySet());
         for(String key : keys) {
             constraints.put(key, Double.MAX_VALUE);

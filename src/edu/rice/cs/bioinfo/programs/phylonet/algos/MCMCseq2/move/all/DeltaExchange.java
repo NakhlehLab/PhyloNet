@@ -20,7 +20,7 @@ public class DeltaExchange extends Operator {
     private double _delta = Utils._DELTA;
     private boolean _isIntegerOperator = Utils._IS_INTEGER_OPERATOR;
     private List<UltrametricTree> _alltrees = null;
-    public List<Double> _parameter_input = Utils._PARAMETER_INPUT;
+    public List<Double> _parameter_input = new ArrayList<>();
     public List<Integer> _weight_vector = Utils._WEIGHT_VECTOR;
     private double _lowerbound = Utils._LOWERBOUND;
     private double _upperbound = Double.MAX_VALUE;
@@ -148,10 +148,10 @@ public class DeltaExchange extends Operator {
                 _scalar2 += d;
             }
         }
-        if(Utils.DEBUG_MODE){
-            System.out.println(_dim1 +","+ _scalar1);
-            System.out.println(_dim2 +","+ _scalar2);
-        }
+//        if(Utils.DEBUG_MODE){
+//            System.out.println(_dim1 +","+ _scalar1);
+//            System.out.println(_dim2 +","+ _scalar2);
+//        }
 
         if(_scalar1 < _lowerbound || _scalar1 > _upperbound
                 || _scalar2 < _lowerbound || _scalar2 > _upperbound){
@@ -174,10 +174,10 @@ public class DeltaExchange extends Operator {
                 _alltrees.get(_dim2).updateMutationRate(_scalar2);
                 ut2.setDirty(true);
 
-                if (Utils.DEBUG_MODE) {
-                    System.out.println("Delta Exchange: "+_dim1 + ", "+ _dim2);
-                    System.out.println(_parameter_input);
-                }
+//                if (Utils.DEBUG_MODE) {
+//                    System.out.println("Delta Exchange: "+_dim1 + ", "+ _dim2);
+//                    System.out.println(_parameter_input);
+//                }
 
             }
         }

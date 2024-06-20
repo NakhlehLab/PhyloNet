@@ -17,7 +17,13 @@ public class Randomizer {
     }
 
     public static double getRandomDouble() {
+//        System.out.println(_rand.);
         return _rand.nextDouble();
+    }
+
+
+    public static boolean getRandomBoolean() {
+        return _rand.nextBoolean();
     }
 
     public static void setSeed(long seed) {

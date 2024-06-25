@@ -125,5 +125,7 @@ public interface Network<T> extends Serializable {
      */
     public String toString();
 
+    public void resetRoot(String nodename);
+
 }
 

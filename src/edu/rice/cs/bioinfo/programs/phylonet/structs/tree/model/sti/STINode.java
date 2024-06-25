@@ -40,7 +40,7 @@ public class STINode<D extends Object> implements TMutableNode {
 	protected LinkedList<STINode<D>> _children = new LinkedList<STINode<D>>();
 	protected double _distance = TMutableNode.NO_DISTANCE;
 	protected double _nodeHeight = TMutableNode.NO_NODE_HEIGHT;
-	
+	protected int _label;
 	
 	/**
 	 * Constructor
@@ -128,6 +128,14 @@ public class STINode<D extends Object> implements TMutableNode {
      */
 	public int getID() {
 		return _id;
+	}
+
+	public int getLabel(){
+		return _label;
+	}
+
+	public void setLabel(int label){
+		_label = label;
 	}
 
 

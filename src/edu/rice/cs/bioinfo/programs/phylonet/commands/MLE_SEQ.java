@@ -8,7 +8,6 @@ import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks
 import edu.rice.cs.bioinfo.library.language.richnewick.reading.RichNewickReader;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.Program;
-import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.MC3Core;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.felsenstein.alignment.Alignment;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.optimizer.MLOptimizer;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Randomizer;

@@ -679,6 +679,17 @@ public class BniNetNode<T> implements NetNode<T> {
 		}
 	}
 
+	public NetNode<T> getTheOtherChildren(NetNode<T> child){
+		if(_children.size() == 2){
+			NetNode<T> theOtherChild = null;
+			for(NetNode<T> c: _children){
+				if(!c.equals(child)){
+					return c;
+				}
+			}
+		}
+		return null;
+	}
 
 	// Data members
 	private T _data;		// Additional data we want to store in this node

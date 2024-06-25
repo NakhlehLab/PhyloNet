@@ -29,6 +29,7 @@ import edu.rice.cs.bioinfo.library.programming.MutableTuple;
 import edu.rice.cs.bioinfo.library.programming.Proc3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.coalescent.DeepCoalescencesCounter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
+import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.MutableTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STITree;
@@ -239,19 +240,25 @@ public class DeepCoalCount extends CommandBaseFileOut {
                try
                {
                     Tree speciesTree = nr.readTree();
+                    Trees.autoLabelNodes((MutableTree) speciesTree);
+                    Map<String, Double> branchELCount = new HashMap<>();
                     double coalNum;
 
                     if(_taxonMap == null)
                     {
-                       coalNum = DeepCoalescencesCounter.countExtraCoal(tuples, speciesTree, _treatGeneTreesAsRooted, 100);
+                       coalNum = DeepCoalescencesCounter.countExtraCoal(tuples, speciesTree, _treatGeneTreesAsRooted, branchELCount, 100);
                     }
                     else
                     {
-                       coalNum = DeepCoalescencesCounter.countExtraCoal(tuples, speciesTree, _taxonMap, _treatGeneTreesAsRooted, 100);
+                       coalNum = DeepCoalescencesCounter.countExtraCoal(tuples, speciesTree, _taxonMap, _treatGeneTreesAsRooted, branchELCount, 100);
                     }
                     String speciesTreeString = speciesTree.toStringWD();
                     result.append("\nSpecies_Tree#" + (index++ ) + " = " + speciesTreeString + "\n");
 			        result.append("Total number of extra lineages: " + coalNum);
+                    result.append("\nExtra lineages for branches: ");
+                    for (String branch : branchELCount.keySet()) {
+                        result.append("\nBranch " + branch + "->"+speciesTree.getNode(branch).getParent().getName() +" "+ branchELCount.get(branch));
+                    }
                     this.richNewickGenerated(speciesTreeString);
                }
                catch(Exception e)

@@ -207,6 +207,8 @@ public interface NetNode<T> extends Serializable {
 	 */
 	public void setRootPopSize(double popSize);
 
+	public NetNode<T> getTheOtherChildren(NetNode<T> child);
+
 
 	// Data members
 	public static final double NO_DISTANCE = Double.NEGATIVE_INFINITY;	// Constant for no distances.

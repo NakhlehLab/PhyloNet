@@ -19,6 +19,7 @@
 
 package edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti;
 
+import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.characterization.NetworkTree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickReader;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.io.NewickWriter;
@@ -1017,5 +1018,123 @@ public class STITree<D extends Object> implements MutableTree {
 			}
 		}
 		return true;
+	}
+
+	// get MRCA of two nodes
+	public Tuple<TNode, Double> getNodeDistance(TNode node1, TNode node2){
+		if (node1 == null || node2 == null) {
+			return null;
+		}
+		if (node1 == node2) {
+			return new Tuple<>(node1, 0.0);
+		}
+		// get the path from node1 to root
+		List<TNode> path1 = new ArrayList<>();
+		TNode p1 = node1;
+
+		while (p1 != null) {
+			path1.add(p1);
+			p1 = p1.getParent();
+		}
+
+		// get the path from node2 to root
+		List<TNode> path2 = new ArrayList<>();
+		TNode p2 = node2;
+		while (p2 != null) {
+			path2.add(p2);
+			p2 = p2.getParent();
+		}
+
+
+		// find the MRCA
+		int i = path1.size() - 1;
+		int j = path2.size() - 1;
+		TNode mrca = null;
+		while (i >= 0 && j >= 0) {
+			if (path1.get(i) != path2.get(j)) {
+				break;
+			}
+			mrca = path1.get(i);
+			i--;
+			j--;
+		}
+
+		return new Tuple<>(mrca, i+j+2.0);
+
+	}
+
+	public Tuple<TNode, Double> getNodeDistanceFromDistance(TNode node1, TNode node2){
+		if (node1 == null || node2 == null) {
+			return null;
+		}
+		if (node1 == node2) {
+			return new Tuple<>(node1, 0.0);
+		}
+		// get the path from node1 to root
+		List<TNode> path1 = new ArrayList<>();
+		List<Double> distancelist1 = new ArrayList<>();
+		TNode p1 = node1;
+
+		while (p1 != null) {
+			double dist = p1.getParentDistance();
+			distancelist1.add(dist);
+			path1.add(p1);
+			p1 = p1.getParent();
+
+
+		}
+
+		// get the path from node2 to root
+		List<TNode> path2 = new ArrayList<>();
+		List<Double> distancelist2 = new ArrayList<>();
+		TNode p2 = node2;
+		while (p2 != null) {
+			double dist = p2.getParentDistance();
+			distancelist2.add(dist);
+			path2.add(p2);
+			p2 = p2.getParent();
+		}
+
+
+		// find the MRCA
+		int i = path1.size() - 1;
+		int j = path2.size() - 1;
+		TNode mrca = null;
+		while (i >= 0 && j >= 0) {
+			if (path1.get(i) != path2.get(j)) {
+				break;
+			}
+			mrca = path1.get(i);
+			i--;
+			j--;
+		}
+
+		double distance1 = 0;
+		double distance2 = 0;
+
+		for (int k = 0; !path1.get(k).equals(mrca); k++) {
+			distance1 += distancelist1.get(k);
+		}
+
+		for (int k = 0; !path2.get(k).equals(mrca); k++) {
+			distance2 += distancelist2.get(k);
+		}
+
+		return new Tuple<>(mrca, distance1+distance2);
+
+	}
+
+
+
+	public Tuple<TNode, Double> getNodeDistance(String name1, String name2){
+		TNode node1 = getNode(name1);
+		TNode node2 = getNode(name2);
+		return getNodeDistance(node1, node2);
+	}
+
+	public Tuple<TNode, Double> getNodeDistanceFromDistance(String name1, String name2){
+		TNode node1 = getNode(name1);
+		TNode node2 = getNode(name2);
+		return getNodeDistanceFromDistance(node1, node2);
 	}
 }

@@ -32,6 +32,8 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.NetworkFa
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -54,6 +56,8 @@ public class SimGTinNetwork extends CommandBaseFileOut
     private Map<String, List<String>> _taxonMap = null;
     private String _msPath;
 
+    public String _gtFilePath = null;
+
     public SimGTinNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params, Map<String, NetworkNonEmpty> sourceIdentToNetwork,
                           Proc3<String, Integer, Integer> errorDetected, RichNewickReader<Networks> rnReader) {
         super(motivatingCommand, params, sourceIdentToNetwork, errorDetected, rnReader);
@@ -66,7 +70,7 @@ public class SimGTinNetwork extends CommandBaseFileOut
 
     @Override
     protected int getMaxNumParams() {
-        return 4;  //To change body of implemented methods use File | Settings | File Templates.
+        return 10;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -91,9 +95,9 @@ public class SimGTinNetwork extends CommandBaseFileOut
             }
 
             // taxon map
-            ParamExtractor aParam = new ParamExtractor("a", this.params, this.errorDetected);
+            ParamExtractor aParam = new ParamExtractor("tm", this.params, this.errorDetected);
             if(aParam.ContainsSwitch){
-                ParamExtractorAllelListMap alParam = new ParamExtractorAllelListMap("a",
+                ParamExtractorAllelListMap alParam = new ParamExtractorAllelListMap("tm",
                         this.params, this.errorDetected);
                 noError = noError && alParam.IsValidMap;
                 if(alParam.IsValidMap){
@@ -122,7 +126,20 @@ public class SimGTinNetwork extends CommandBaseFileOut
                 }
             }
 
-            noError = noError && checkForUnknownSwitches("a", "ms");
+            //gt file path
+            ParamExtractor gtfileParam = new ParamExtractor("gtfile", this.params, this.errorDetected);
+            if(gtfileParam.ContainsSwitch){
+                if(gtfileParam.PostSwitchParam != null) {
+                    if (noError) {
+                        _gtFilePath = gtfileParam.PostSwitchValue;
+                    }
+                } else {
+                    errorDetected.execute("Expected string after switch -gtfile.",
+                            gtfileParam.SwitchParam.getLine(), gtfileParam.SwitchParam.getColumn());
+                }
+            }
+
+            noError = noError && checkForUnknownSwitches("gtfile", "tm", "ms");
             checkAndSetOutFile(aParam, msParam);
         }
 
@@ -142,15 +159,22 @@ public class SimGTinNetwork extends CommandBaseFileOut
           if (_msPath == null) {
               SimGTInNetwork sim = new SimGTInNetwork();
               gts = sim.generateGTs(speciesNetwork, _taxonMap, _numGTs);
-          } else {
+          } else if(_gtFilePath == null) {
               SimGTInNetworkByMS sim = new SimGTInNetworkByMS();
               gts = sim.generateGTs(speciesNetwork, _taxonMap, _numGTs, _msPath);
-              result.append("\nms" + sim.getMSCommand() + "\n");
+//              result.append("\nms" + sim.getMSCommand() + "\n");
+          }
+          else{
+              SimGTInNetworkByMS sim = new SimGTInNetworkByMS();
+              gts = sim.generateGTs(speciesNetwork, _taxonMap, _numGTs, _msPath, _gtFilePath);
+//              result.append("\nms" + sim.getMSCommand() + "\n");
           }
 
           for(Tree t: gts){
-              result.append("\n" + t.toNewick());
+              result.append(t.toNewick()+"\n");
           }
+
+
 
           return result.toString();
     }

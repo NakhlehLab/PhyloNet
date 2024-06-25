@@ -105,7 +105,8 @@ public abstract class HeuristicTreeSearchBase extends CommandBaseFileOut
             for(Tree tr: _geneTrees){
                 _gtWithWeight.add(new MutableTuple<Tree, Double>(tr, 1.0));
             }
-            return (double) DeepCoalescencesCounter.countExtraCoal(_gtWithWeight, network, false, _bootstrap);
+            Map<String, Double> branchELCount = new HashMap<>();
+            return (double) DeepCoalescencesCounter.countExtraCoal(_gtWithWeight, network, false, branchELCount, _bootstrap);
         }
     };
 

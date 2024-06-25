@@ -2,6 +2,7 @@ package edu.rice.cs.bioinfo.programs.phylonet.commands;
 
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.Parameter;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterIdentList;
+import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.ParameterTaxaMap;
 import edu.rice.cs.bioinfo.library.language.pyson._1_0.ir.blockcontents.SyntaxCommand;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.NetworkNonEmpty;
 import edu.rice.cs.bioinfo.library.language.richnewick._1_1.reading.ast.Networks;
@@ -391,48 +392,58 @@ public class MCMC_SEQ extends CommandBaseFileOutMultilocusData {
         }
 
         //mutation rate parameter input of loci
-        ParamExtractor murateListParam = new ParamExtractor("mupi", this.params, this.errorDetected);
-        if(murateListParam.ContainsSwitch) {
-            if(murateListParam.PostSwitchParam != null) {
-                try {
-                    if(!(murateListParam.PostSwitchParam instanceof ParameterIdentList)){
-                        throw new RuntimeException();
+        ParamExtractor murateMapParam = new ParamExtractor("mupi", this.params, this.errorDetected);
+        if(murateMapParam.ContainsSwitch) {
+            if(murateMapParam.PostSwitchParam != null) {
+                ParameterTaxaMap map = (ParameterTaxaMap)murateMapParam.PostSwitchParam;
+                HashSet<String> allAlleles = new HashSet<String>();
+                for(Map.Entry<String, List<String>> entry : map._mappings)
+                {
+                    for(String allele : entry.getValue())
+                    {
+                        if(allAlleles.contains(allele))
+                        {
+                            errorDetected.execute("Duplicate allele '" + allele  +"'", map.getLine(), map.getColumn());
+                        }
                     }
-                    ParameterIdentList rates = (ParameterIdentList) murateListParam.PostSwitchParam;
-                    for(String item: rates.Elements){
-                        double r = Double.parseDouble(item.trim());
-                        Utils._PARAMETER_INPUT.add(r);
+                    try {
+                        Utils._MUTATION_RATE_INPUT.put(entry.getKey(), Double.parseDouble(entry.getValue().get(0)));
+                    }catch (NumberFormatException e){
+                        errorDetected.execute("Invalid value after switch -mupi.",
+                                murateMapParam.PostSwitchParam.getLine(), murateMapParam.PostSwitchParam.getColumn());
                     }
-                } catch(NumberFormatException e) {
-                    errorDetected.execute("Invalid value after switch -mupi.",
-                            murateListParam.PostSwitchParam.getLine(), murateListParam.PostSwitchParam.getColumn());
                 }
             } else {
                 errorDetected.execute("Expected value after switch -mupi.",
-                        murateListParam.SwitchParam.getLine(), murateListParam.SwitchParam.getColumn());
+                        murateMapParam.SwitchParam.getLine(), murateMapParam.SwitchParam.getColumn());
             }
         }
 
         //mutation rate weight input of loci
-        ParamExtractor weightListParam = new ParamExtractor("muweight", this.params, this.errorDetected);
-        if(weightListParam.ContainsSwitch) {
-            if(weightListParam.PostSwitchParam != null) {
-                try {
-                    if(!(weightListParam.PostSwitchParam instanceof ParameterIdentList)){
-                        throw new RuntimeException();
+        ParamExtractor weightMapParam = new ParamExtractor("muweight", this.params, this.errorDetected);
+        if(weightMapParam.ContainsSwitch) {
+            if(weightMapParam.PostSwitchParam != null) {
+                ParameterTaxaMap map = (ParameterTaxaMap)weightMapParam.PostSwitchParam;
+                HashSet<String> allAlleles = new HashSet<String>();
+                for(Map.Entry<String, List<String>> entry : map._mappings)
+                {
+                    for(String allele : entry.getValue())
+                    {
+                        if(allAlleles.contains(allele))
+                        {
+                            errorDetected.execute("Duplicate allele '" + allele  +"'", map.getLine(), map.getColumn());
+                        }
                     }
-                    ParameterIdentList rates = (ParameterIdentList) weightListParam.PostSwitchParam;
-                    for(String item: rates.Elements){
-                        int r = Integer.parseInt(item.trim());
-                        Utils._WEIGHT_VECTOR.add(r);
+                    try {
+                        Utils._MUTATION_WEIGHT_INPUT.put(entry.getKey(), Double.parseDouble(entry.getValue().get(0)));
+                    }catch (NumberFormatException e){
+                        errorDetected.execute("Invalid value after switch -muweight.",
+                                weightMapParam.PostSwitchParam.getLine(), weightMapParam.PostSwitchParam.getColumn());
                     }
-                } catch(NumberFormatException e) {
-                    errorDetected.execute("Invalid value after switch -muweight.",
-                            weightListParam.PostSwitchParam.getLine(), murateListParam.PostSwitchParam.getColumn());
                 }
             } else {
                 errorDetected.execute("Expected value after switch -muweight.",
-                        weightListParam.SwitchParam.getLine(), murateListParam.SwitchParam.getColumn());
+                        weightMapParam.SwitchParam.getLine(), weightMapParam.SwitchParam.getColumn());
             }
         }
 

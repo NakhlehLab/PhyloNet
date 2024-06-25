@@ -19,7 +19,6 @@
 //
 //package edu.rice.cs.bioinfo.programs.phylonet.structs.network;
 //
-//import com.sun.org.apache.xalan.internal.xsltc.runtime.Node;
 //import edu.rice.cs.bioinfo.library.phylogenetics.*;
 //import edu.rice.cs.bioinfo.library.programming.Tuple;
 //import edu.rice.cs.bioinfo.library.programming.extensions.java.lang.iterable.IterableHelp;

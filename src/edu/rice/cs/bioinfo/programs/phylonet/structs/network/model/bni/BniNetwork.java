@@ -25,10 +25,9 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.io.RnNewickPrinter;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 
 import java.io.StringWriter;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * This class implements the methodes declared in the interface Network.
@@ -280,6 +279,8 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
     }
 
 
+
+
 	/**
 	 * Returns the string representation
 	 */
@@ -305,6 +306,93 @@ public class BniNetwork<T> implements Network<T>, Cloneable {
 		}
 	}
 
+
+	public void resetRoot(String nodeName) {
+		rerootNetworkAtEdge(this.findNode(nodeName));
+	}
+
+	/**
+	 * Reroot this Network at edge incident with node <code>node</code>
+	 */
+	public void rerootNetworkAtEdge(NetNode<T> node){
+		if (node.isNetworkNode()){
+			System.err.println("Cannot reroot at reticulation node");
+		}
+		NetNode<T> parent = (NetNode) node.getParents().iterator().next();
+		doRerooting(parent);
+		List<NetNode> siblinglist = new ArrayList<>();
+		for (NetNode<T> sibling: parent.getChildren()){
+			if (!sibling.equals(node)){
+				siblinglist.add(sibling);
+			}
+		}
+		NetNode newnode = new BniNetNode();
+		_root.adoptChild(newnode, NetNode.NO_DISTANCE);
+		for(Object o: siblinglist){
+			_root.removeChild((NetNode)o);
+			newnode.adoptChild((NetNode)o, NetNode.NO_DISTANCE);
+		}
+		Networks.removeBinaryNodes(this);
+	}
+
+	/**
+	 * Reroot this Network at node <code>node</code>
+	 */
+//	public void rerootNetworkAtNode(NetNode node){
+//		/*if(!this.contains(node){
+//			throw new RuntimeException("node " + node + " is not in the Network "+ this.toNewick());
+//		}*/
+//		if(node.isRoot()){
+//			return;
+//		}
+//		if(node.isLeaf()){
+//			rerootNetworkAtEdge(node);
+//		}
+//		else{
+//			doRerooting(node);
+//		}
+//		Networks.removeBinaryNodes(this);
+//	}
+
+
+	/**
+	 * Reroot this Network at node <code>node</code>
+	 */
+	private void doRerooting(NetNode<T> node){
+		if (node.isNetworkNode()) {
+			System.err.println("Cannot reroot at reticulation node");
+			return;
+		}
+		if (node.isRoot()){
+			return;
+		}
+		NetNode<T> parent = (NetNode)(node.getParents().iterator().next());
+		if(parent == null){
+			return;
+		}
+		if(!parent.isRoot()){
+			doRerooting(parent);
+		}
+		parent.removeChild(node);
+		NetNode<T> sibling = null;
+		for (NetNode<T> temp: parent.getChildren()){
+			sibling = temp;
+		}
+
+		if(parent.getChildCount()==1){
+			parent.removeChild(sibling);
+			((NetNode)node).adoptChild(sibling, NetNode.NO_DISTANCE);
+		}
+		else{
+			((NetNode)node).adoptChild(parent, NetNode.NO_DISTANCE);
+		}
+		_root = ((BniNetNode)node);
+//		System.out.println(this.toString());
+	}
+
+
 	// Data members
 	private BniNetNode<T> _root;
+
+
 }

@@ -10,6 +10,10 @@ public class NetNodeInfo {
     private int _index; // the index of the node for likelihood calculation
     private double _prevHeight = -1;
 
+    public NetNodeInfo() {
+        this._index = -1;
+    }
+
     public NetNodeInfo(double height) {
         this._height = height;
         this._index = -1;

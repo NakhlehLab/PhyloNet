@@ -12,8 +12,13 @@
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="*.jar"/>
     </path>
+    <!-- <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.Program"/> -->
+    <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.algos.netmerge.Evaluator2"/>
+     <!-- <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.algos.netmerge.divide.ReticulationEvaluator"/> -->
+     <!-- <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.algos.netmerge2.Evaluator"/> -->
+    <!-- <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.algos.chi2.GTProbCalculator"/> -->
+    <!-- <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.algos.mcmcseq.core.Resumer"/> -->
 
-    <property name="main-class"  value="edu.rice.cs.bioinfo.programs.phylonet.Program"/>
 
     <patternset id="excluded.source.files">
         <exclude name="edu/rice/cs/bioinfo/programs/phmm/**"/>
@@ -134,6 +139,10 @@
             <zipfileset excludes="META-INF/*" src="${basedir}/lib/javassist-3.26.0-GA.jar"/>
             <zipfileset excludes="META-INF/*" src="${basedir}/lib/commons-io-2.9.0.jar"/>
             <zipfileset excludes="META-INF/*" src="${basedir}/lib/jahmm-0.6.1.jar"/>
+            <zipfileset excludes="META-INF/*" src="${basedir}/lib/opencsv-5.9.jar"/>
+            <zipfileset excludes="META-INF/*" src="${basedir}/lib/commons-lang3-3.14.0.jar"/>
+            
+
         </jar>
     </target>
 

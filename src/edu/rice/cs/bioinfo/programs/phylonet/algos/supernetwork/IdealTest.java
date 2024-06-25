@@ -1,7 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork;
 
-import com.google.common.collect.Lists;
-import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.NetNodeInfo;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.simulator.SimGTInNetworkByMS;

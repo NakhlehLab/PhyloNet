@@ -54,7 +54,7 @@ public class DeepCoalescencesCounter {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static double countExtraCoal(List<MutableTuple<Tree,Double>> gts,Tree st, boolean rooted, double bootstrap){
+	public static double countExtraCoal(List<MutableTuple<Tree,Double>> gts,Tree st, boolean rooted, Map<String, Double> branchELCount, double bootstrap){
 		double sum = 0;
 		String[] taxa = st.getLeaves();
 
@@ -93,6 +93,7 @@ public class DeepCoalescencesCounter {
 				else{
 					double el = getClusterCoalNum(gts, c, rooted);
 					((STINode<Double>)node).setData(el);
+					branchELCount.put(node.getName(), el);
 					sum += el;
 				}
 			}
@@ -112,8 +113,9 @@ public class DeepCoalescencesCounter {
 	 *
 	 * @return the number of extra lineage
 	 */
-	public static double countExtraCoal(List<MutableTuple<Tree,Double>> gts,Tree st, Map<String, String> taxonMap, boolean rooted, double bootstrap){
+	public static double countExtraCoal(List<MutableTuple<Tree,Double>> gts,Tree st, Map<String, String> taxonMap, boolean rooted, Map<String, Double> branchELCount, double bootstrap){
 		String error = Trees.checkMapping(gts, taxonMap);
+
 		if(error!=null){
 			throw new RuntimeException("Gene trees have leaf named " + error + " that hasn't been defined in the mapping file");
 		}
@@ -158,6 +160,7 @@ public class DeepCoalescencesCounter {
 					double el = getClusterCoalNum(gts, c, taxonMap, rooted);
 					((STINode<Double>)node).setData(el);
 					sum += el;
+					branchELCount.put(node.getName(), el);
 				}
 			}
 

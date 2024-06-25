@@ -89,8 +89,8 @@ public class SimSeqInNetworkByMSSeqGen {
 
     public static void main(String []args) {
         Network network = Networks.readNetwork("(((((C:0.2)#H1:0.6::0.5,B:0.8):0.4)#H2:0.2::0.5,A:1.4):0.6,((D:0.4,#H1:0.2::0.5):1.2,#H2:0.4::0.5):0.4);");
-        String mspath = "/Users/zhujiafan/Documents/Luay/msdir/ms";
-        String seqgenpath = "/Users/zhujiafan/Documents/Luay/Seq-Gen.v1.3.3/source/seq-gen";
+        String mspath = "/Users/zhen/Desktop/Zhen/research/phylogenetics/treeAugment/proj/msdir/ms";
+        String seqgenpath = "/Users/zhen/Desktop/Zhen/research/phylogenetics/treeAugment/proj/Seq-Gen/source/seq-gen";
         double[] base = {0.2112, 0.2888, 0.2896, 0.2104};
         double[] trans = {0.2173, 0.9798, 0.2575, 0.1038, 1, 0.2070};
         List<Map<String, String>> lociSeq = SimSeqInNetworkByMSSeqGen.generateSeqences(network, null, 10, 50, 0.01, base, trans, mspath, seqgenpath, null);

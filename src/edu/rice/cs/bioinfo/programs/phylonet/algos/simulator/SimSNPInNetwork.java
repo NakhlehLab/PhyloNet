@@ -227,7 +227,7 @@ public class SimSNPInNetwork {
             }
         }
 
-        SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, null);
+        SimSNPInNetwork simulator = new SimSNPInNetwork(BAGTRModel, (long)12345);
         simulator._diploid = true;
         simulator._dominant = true;
 

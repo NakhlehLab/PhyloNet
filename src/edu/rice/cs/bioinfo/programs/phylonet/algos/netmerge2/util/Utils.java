@@ -532,6 +532,18 @@ public class Utils {
 //
 //        }
 //        return mrca;
-//    }
+//    }'
+    public NetNode commonParents(NetNode nodeA, NetNode nodeB) {
+        for(Object o1: nodeA.getParents()) {
+            NetNode parentA = (NetNode) o1;
+            for (Object o2: nodeB.getParents()) {
+                NetNode parentB = (NetNode) o2;
+                if (parentA.equals(parentB)) {
+                    return parentA;
+                }
+            }
+        }
+        return null;
+    }
 
 }

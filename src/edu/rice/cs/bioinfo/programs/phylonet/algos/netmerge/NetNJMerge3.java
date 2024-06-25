@@ -280,34 +280,9 @@ public class NetNJMerge3 {
     }
 
 
-    //    public void readDistance()
-    public static void testCase1(){
-        String distPath = "/Users/zhen/Desktop/Zhen/research/phylogenetics/merge/code/njmerge-master/example/100-taxon-dataset/distance-renamed-rows.mat";
-        String subnetPath = "/Users/zhen/Desktop/Zhen/research/phylogenetics/merge/code/njmerge-master/example/100-taxon-dataset/subset-5.txt";
-        NetNJMerge netmerge = new NetNJMerge(distPath, subnetPath);
-        netmerge.mergePairs();
-    }
 
-    public static void testCase2_idealSubnet(){
-        String distPath = "/Users/zhen/Desktop/Zhen/research/phylogenetics/merge/code/distance_matrix.csv";
-        String cluster_info_path = "/Users/zhen/Desktop/Zhen/research/phylogenetics/merge/code/cluster_info.csv";
-        Network truenetwork = Networks.readNetwork("((((M:1.2,N:1.2)S14:0.528,K:1.728)S5:8.971320537907197,(((H:2.48832,G:2.48832)S11:1.8114969599999995,(F:2.9859839999999997,E:2.9859839999999997)S10:1.3138329599999996)S6:4.616283488255998,((((J:2.0736,I:2.0736)S12:1.5095807999999997,(L:1.44,(P:1.0,O:1.0)S15:0.43999999999999995)S13:2.1431807999999997)S9:1.5765995519999998,D:5.159780351999999)S8:1.0319560703999997,C:6.191736422399999)S7:2.7243640258559987)S4:1.7832200896511985)S3:2.139864107581438,(A:7.430083706879999,B:7.430083706879999)S2:5.409100938608636)S1;");
-        List<Network> subnetworklist = new ArrayList<>();
-        List<List<String>> clusters = readClusterInfo(cluster_info_path);
-        for (List<String> cluster: clusters){
-            List<String> selectedLeaves = new ArrayList<>();
-            for (String taxon: cluster){
-                selectedLeaves.add(taxon);
-            }
-            Tuple<Network, Map<NetNode, NetNode>> tuple = SuperNetwork3.getSubNetwork(truenetwork, selectedLeaves, true);
-            subnetworklist.add(tuple.Item1);
-        }
 
-        NetNJMerge netmerge = new NetNJMerge(distPath, subnetworklist);
-//        Network mergednet = netmerge.mergePairs();
-        List<Network> mergednet = netmerge.mergePairs();
-//        System.out.println("Distance from the true network: "+Networks.computeDistanceBetweenTwoNetworks(truenetwork, mergednet));
-    }
+
 
     public static void preprocess(String treepath, String subsetspath){
         List<List<String>> subsetList = new ArrayList<>();
@@ -350,16 +325,16 @@ public class NetNJMerge3 {
 
 
 
-    public static void run(String distpath, String subnetworkpath){
-        NetNJMerge merge = new NetNJMerge(distpath, subnetworkpath);
-        List<Network> netlist = merge.mergePairs();
-        for (Network net: netlist){
-            net.resetRoot("Z");
-            System.out.println(net);
-        }
-
-
-    }
+//    public static void run(String distpath, String subnetworkpath){
+//        NetNJMerge merge = new NetNJMerge(distpath, subnetworkpath);
+//        List<Network> netlist = merge.mergePairs();
+//        for (Network net: netlist){
+//            net.resetRoot("Z");
+//            System.out.println(net);
+//        }
+//
+//
+//    }
 
 
 

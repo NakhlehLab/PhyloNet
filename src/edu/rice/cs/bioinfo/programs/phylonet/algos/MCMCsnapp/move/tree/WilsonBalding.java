@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * Created by wendingqiao on 2/18/16.
- * SPR, Adapted from
+ * CoordindatedWideNNI, Adapted from
  * https://github.com/CompEvol/beast2/blob/master/src/beast/evolution/operators/WilsonBalding.java
  */
 public class WilsonBalding extends TreeOperator {

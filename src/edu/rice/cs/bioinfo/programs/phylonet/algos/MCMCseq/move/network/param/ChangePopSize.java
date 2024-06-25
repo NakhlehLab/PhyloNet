@@ -54,7 +54,7 @@ public class ChangePopSize extends NetworkOperator {
         double newPopSize = Math.abs(_oldPopSize.doubleValue() + (Randomizer.getRandomDouble() - 0.5) * _windowSize);
         setPopSize(newPopSize);
 
-        _violate = true;
+        _violate = false;
         return 0;
     }
 

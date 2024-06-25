@@ -22,19 +22,15 @@ public class SpeciesNetPriorDistribution {
     // topology
     private PoissonDistribution numReticulation;
     // node heights
-//    private ExponentialDistribution nodeHeights;
-//    private ExponentialDistribution diameters;
-    private InverseGammaDistribution nodeHeights;
-    private InverseGammaDistribution diameters;
-//    private AbstractRealDistribution nodeHeights;
-//    private AbstractRealDistribution diameters;
+    private ExponentialDistribution nodeHeights;
+    private ExponentialDistribution diameters;
+
     // pop size
     private PopulationSize popSize;
 
     //mutation rates prior
     private DirichletDistribution mutationRates;
 
-    private BetaDistribution inheritanceProb;
     // valid test
     private Set<String> taxa = null;
 
@@ -44,18 +40,14 @@ public class SpeciesNetPriorDistribution {
 
     public SpeciesNetPriorDistribution(double poissonParam, PopulationSize ps) {
         this.numReticulation = new PoissonDistribution(poissonParam);
-//        nodeHeights = Utils._TIMES_EXP_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
-//        diameters = Utils._DIAMETER_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
-        nodeHeights = Utils._TIMES_EXP_PRIOR ? new InverseGammaDistribution(3, 0.2) : null;
-        diameters = Utils._DIAMETER_PRIOR ? new InverseGammaDistribution(3, 0.2) : null;
-
+        nodeHeights = Utils._TIMES_EXP_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
+        diameters = Utils._DIAMETER_PRIOR ? new ExponentialDistribution(Utils.EXP_PARAM) : null;
         this.popSize = ps;
         double[] alphas = new double[Utils.NUM_LOCI];
         for (int i = 0; i < alphas.length; i++){
             alphas[i] = Utils._DIRICHLET_ALPHA;
         }
         mutationRates = Utils.SAMPLE_MUTATION_RATE ? new DirichletDistribution(alphas) : null;
-        inheritanceProb = new BetaDistribution(4, 2);
     }
 
     public double logPrior(Network<NetNodeInfo> net) {
@@ -114,7 +106,8 @@ public class SpeciesNetPriorDistribution {
         Map<NetNode, Double> distMap = NetworkPrior.getDiameterMap(network.toString());
         double logP = 0.0;
         for(NetNode key: distMap.keySet()) {
-            logP += diameters.logPdf(distMap.get(key));
+            logP += Math.log(diameters.density(distMap.get(key)));
+//            logP += diameters.logPdf(distMap.get(key));
         }
         return logP;
     }
@@ -126,8 +119,8 @@ public class SpeciesNetPriorDistribution {
         double logP = 0;
         for(NetNode<NetNodeInfo> node : net.bfs()) {
             if(node.isLeaf()) continue;
-//            logP += Math.log(nodeHeights.density(node.getData().getHeight()));
-            logP += nodeHeights.logPdf(node.getData().getHeight());
+            logP += Math.log(nodeHeights.density(node.getData().getHeight()));
+//            logP += nodeHeights.logPdf(node.getData().getHeight());
         }
         return logP;
     }
@@ -135,17 +128,17 @@ public class SpeciesNetPriorDistribution {
     //todo: check this prior
     private double getInheritanceProbPrior(Network<NetNodeInfo> net) {
         /* Uniform distribution */
-//        return 0;
+        return 0;
         /* Beta distribution */
-        double logP = 0;
-        for (NetNode<NetNodeInfo> node : net.dfs()){
-            if (node.isNetworkNode()){
-                for (NetNode<NetNodeInfo> parent: node.getParents()) {
-                    logP += this.inheritanceProb.logDensity(node.getParentProbability(parent));
-                }
-            }
-        }
-        return logP;
+//        double logP = 0;
+//        for (NetNode<NetNodeInfo> node : net.dfs()){
+//            if (node.isNetworkNode()){
+//                for (NetNode<NetNodeInfo> parent: node.getParents()) {
+//                    logP += this.inheritanceProb.logDensity(node.getParentProbability(parent));
+//                }
+//            }
+//        }
+//        return logP;
     }
 
     private double getPopSizePrior(Network<NetNodeInfo> net) {
@@ -172,7 +165,7 @@ public class SpeciesNetPriorDistribution {
         return logP + popSize.logDensity(); // prior + hyper-prior
     }
 
-    //todo by zhen: test
+    //prior for substitution rates
     private double getMutationRatePrior(List<UltrametricTree> genetrees){
         if (!Utils.SAMPLE_MUTATION_RATE || !Utils._MUTATION_RATE_PRIOR){
             return 0;
@@ -187,9 +180,9 @@ public class SpeciesNetPriorDistribution {
     }
 
     public boolean isValid(Network<NetNodeInfo> net) {
-        if (this.logPrior(net) == Double.NEGATIVE_INFINITY){
-            return false;
-        }
+//        if (this.logPrior(net) == Double.NEGATIVE_INFINITY){
+//            return false;
+//        }
         if (Networks.hasCycle(net)) {
             if(Utils.DEBUG_MODE) System.err.println("has cycle");
             return false;
@@ -250,9 +243,5 @@ public class SpeciesNetPriorDistribution {
         return true;
     }
 
-    public static void main(String[] args) {
-        GammaDistribution nodeheight = new GammaDistribution(2, 10);
-
-    }
 
 }

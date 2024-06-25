@@ -65,19 +65,13 @@ public class PopulationSize extends StateNode {
 
     @Override
     public boolean mayViolate() {
-        return this._operator.mayViolate();
+        return false;
     }
 
     @Override
     public boolean isValid() {
-        if(_gammaMean > Utils._GAMMA_MEAN_UPPER_BOUND || _gammaMean < Utils._GAMMA_MEAN_LOWER_BOUND){ //bound for gamma mean
-            return false;
-        }
-        else{
-            return true;
-        }
+        return true;
     }
-
 
     public String toString() {
         return Double.toString(_gammaMean);

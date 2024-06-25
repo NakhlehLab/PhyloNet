@@ -127,7 +127,10 @@ public class Test {
                     throw new RuntimeException("!!!");
                 }
                 if(embeddings.containsKey(embedding) && embedding.prob != embeddings.get(embedding).prob) {
-                    //throw new RuntimeException("!!!");
+                    System.out.println(embedding.prob);
+                    System.out.println(embeddings.get(embedding).prob);
+                    System.out.println(embeddings);
+                    throw new RuntimeException("!!!");
                 }
                 embeddings.put(embedding, embedding);
 
@@ -439,7 +442,8 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        testWhetherBiasedOrNot(args);
+//        testWhetherBiasedOrNot(args);
+        testSamplingEmbedding();
 
     }
 }

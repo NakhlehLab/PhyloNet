@@ -14,10 +14,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.Tree;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -83,6 +80,62 @@ public class SimGTInNetworkByMS {
         }catch(Exception e){
             System.err.println(e.getMessage());
             e.getStackTrace();
+        }
+        return gts;
+    }
+
+    public List<Tree> generateGTs(Network network, Map<String, List<String>> species2alleles, int numGTs, String MSPath, String gtFilePath){
+        double epsilon = 0.000001;
+        Map<String,String> MSName2AlleleName = new Hashtable<String, String>();
+
+        String MSCommand = generateMSCommand(network, species2alleles,numGTs, epsilon, MSName2AlleleName);
+        _msCommand = MSCommand;
+        List<Tree> gts = new ArrayList<Tree>();
+        try{
+            Process proc = Runtime.getRuntime().exec(MSPath+MSCommand,null,null);
+            BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line;
+            while((line=stdout.readLine())!=null){
+                line = line.trim();
+                if(line.startsWith("//")){
+                    line=stdout.readLine();
+                    NewickReader nr = new NewickReader(new StringReader(line));
+                    Tree newtr = nr.readTree();
+
+                    for(TNode node: newtr.postTraverse()){
+                        if(node.isLeaf()){
+                            ((STINode)node).setName("MSTemp"+ MSName2AlleleName.get(node.getName()));
+                        }
+                        node.setParentDistance(node.getParentDistance()*2);
+                    }
+                    for(TNode node: newtr.postTraverse()){
+                        if(node.isLeaf()){
+                            ((STINode)node).setName(node.getName().substring(6));
+                        }
+                    }
+                    gts.add(newtr);
+                }
+            }
+            proc.waitFor();
+            stdout.close();
+
+
+
+        }catch(Exception e){
+            System.err.println(e.getMessage());
+            e.getStackTrace();
+        }
+
+        if(gtFilePath != null) {
+            try {
+                PrintWriter out = new PrintWriter(gtFilePath);
+                for(Tree gt : gts) {
+                    out.println(gt.toNewick());
+                }
+                out.close();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
         }
         return gts;
     }
@@ -241,6 +294,8 @@ public class SimGTInNetworkByMS {
                 Double height1 = node2height.get(child1.getData()) + child1.getParentDistance(node)*0.5;
                 Double height2 = node2height.get(child2.getData()) + child2.getParentDistance(node)*0.5;
                 if(Math.abs(height1-height2)>epsilon){
+                    System.out.println(node2height.get(child1.getData())+","+ child1.getParentDistance(node)*0.5);
+                    System.out.println(node2height.get(child2.getData())+","+ child2.getParentDistance(node)*0.5);
                     throw new RuntimeException("The network is not ultrametric! (" + node.getName() + ")");
                 }
                 height = Math.max(height1,height2);

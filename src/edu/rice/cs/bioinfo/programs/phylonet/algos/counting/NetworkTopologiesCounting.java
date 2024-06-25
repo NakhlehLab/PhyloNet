@@ -1,6 +1,7 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.counting;
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork.SuperNetwork3;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
@@ -11,9 +12,7 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.util.Trees;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -228,17 +227,75 @@ public class NetworkTopologiesCounting {
         return result;
     }
 
-    public static void main(String[] args) {
-        /*List<Tree> trees = enumerateTreeTopologies(6);
-        System.out.println(trees.size());
-        for(int i = 0 ; i < trees.size() ; i++) {
-            System.out.println(trees.get(i));
-        }*/
 
-        List<Network> networks = enumerateNetworkTopologies(5, 1);
-        System.out.println(networks.size());
-        for(int i = 0 ; i < networks.size() ; i++) {
-            System.out.println(networks.get(i));
+    public static void get3taxatopologies(){
+        int maxreti = 2;
+        for (int reti = 0; reti <= maxreti; reti++){
+            List<Network> networks = enumerateNetworkTopologies(3, reti);
+            for(int i = 0 ; i < networks.size() ; i++) {
+                Network net = networks.get(i);
+
+                System.out.println(net.toString());
+            }
         }
+    }
+
+    public static void get3taxatopologies_ABC(){
+        int maxreti = 2;
+        Map<String, String> taxon_map = new HashMap<>();
+        taxon_map.put("1", "A");
+        taxon_map.put("2", "B");
+        taxon_map.put("3", "C");
+
+        for (int reti = 0; reti <= maxreti; reti++){
+            List<Network> networks = enumerateNetworkTopologies(3, reti);
+//        List<Network> networks_clone = new ArrayList<>();
+            for(int i = 0 ; i < networks.size() ; i++) {
+//            networks_clone.add(networks.get(i));
+                Network net = networks.get(i);
+                for (String key : taxon_map.keySet()){
+                    net.findNode(key).setName(taxon_map.get(key));
+                }
+                System.out.println(net.toString());
+            }
+        }
+    }
+
+    public static void getTrueNetIndex(){
+        int maxreti = 2;
+        String truenetstr = "(((A:5,((B:2,(C:1)#H1:1::0.7):2)#H2:1::0.8):3,((#H1:2::0.3,D:3):3,#H2:2::0.2):2):2,E:10):0;";
+        Network truenet = Networks.readNetwork(truenetstr);
+        Map<String, String> taxon_map = new HashMap<>();
+        taxon_map.put("1", "A");
+        taxon_map.put("2", "D");
+        taxon_map.put("3", "C");
+
+        List<String> selectedLeaves = Arrays.asList(new String[] {"A", "D", "E"});
+        Tuple<Network, Map<NetNode, NetNode>> tuple = SuperNetwork3.getSubNetwork(truenet, selectedLeaves, true);
+        Network subnet = tuple.Item1;
+        System.out.println(subnet.toString());
+
+        for (int reti = 0; reti <= maxreti; reti++){
+            List<Network> networks = enumerateNetworkTopologies(3, reti);
+            for(int i = 0 ; i < networks.size(); i++) {
+                Network net = networks.get(i);
+                for (String key : taxon_map.keySet()){
+                    net.findNode(key).setName(taxon_map.get(key));
+                }
+
+//                System.out.println(subnet);
+//                System.out.println(net.toString());
+//                System.out.println(Networks.computeDistanceBetweenTwoNetworks(subnet, net));
+                if(Networks.hasTheSameTopology(subnet, net)){
+                    System.out.println("true topology:"+(i+1));
+                    System.out.println(net.toString());
+                    System.out.println(Networks.computeDistanceBetweenTwoNetworks(subnet, net));
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        getTrueNetIndex();
     }
 }

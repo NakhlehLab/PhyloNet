@@ -48,9 +48,9 @@ public class majorTree {
 
         NetNode curReti = retiList.get(retiIndex);
         List<NetNode<NetNodeInfo>> parents = IterableHelp.toList(curReti.getParents());
-        if (_debug) {
-            System.out.println("retiname"+curReti.getName());
-        }
+//        if (_debug) {
+//            System.out.println("retiname"+curReti.getName());
+//        }
         if(parents.size() != 2) {
             System.err.println("parents size() = " + parents.size() + "\n" + network.toString());
         }

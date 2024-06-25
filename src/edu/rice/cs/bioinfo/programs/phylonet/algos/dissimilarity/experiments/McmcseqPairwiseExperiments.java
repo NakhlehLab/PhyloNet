@@ -130,15 +130,15 @@ public class McmcseqPairwiseExperiments {
         return AveragePathDistance.computeNormalized(originalNetwork, currentNetwork);
     }
 
-    private static double getRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+    public static double getRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
         return RootedNetworkBranchScore.compute(originalNetwork, currentNetwork);
     }
 
-    private static double getNormRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+    public static double getNormRNBS(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
         return RootedNetworkBranchScore.computeNormalized(originalNetwork, currentNetwork);
     }
 
-    private static double getNakhleh(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
+    public static double getNakhleh(Network<BniNetwork> originalNetwork, Network<BniNetwork> currentNetwork) {
         return Networks.computeDistanceBetweenTwoNetworks(originalNetwork, currentNetwork);
     }
 }

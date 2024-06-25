@@ -88,9 +88,6 @@ public class InferNetworkMLFromGTT_MultiTreesPerLocus extends InferNetworkMLFrom
                         infoList.get(infoID).Item2 += gtTuple.Item2;
                     }
                 }
-
-
-
             }
             treeCorrespondences.add(infoList);
         }

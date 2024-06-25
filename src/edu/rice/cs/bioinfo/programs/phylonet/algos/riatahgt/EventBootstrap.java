@@ -150,7 +150,7 @@ public class EventBootstrap {
 	/**
 	 * Compute bootstraps for events in this scenario. Update _events and _bootstraps
 	 * if there's any new event in <code>scenario</code>. The implementation here is based
-	 * on the algorithm in the paper "SPR-...".
+	 * on the algorithm in the paper "CoordindatedWideNNI-...".
 	 *
 	 * @param scenario: A set of HGT events for reconciling _st and _gt.
 	 */
@@ -158,7 +158,7 @@ public class EventBootstrap {
 	/**
 	 * Compute bootstraps for events in this scenario. Update _events and _bootstraps
 	 * if there's any new event in <code>scenario</code>. The implementation here is based
-	 * on the algorithm in the paper "SPR-...".
+	 * on the algorithm in the paper "CoordindatedWideNNI-...".
 	 *
 	 * @param scenario: A set of HGT events for reconciling _st and _gt.
 	 */

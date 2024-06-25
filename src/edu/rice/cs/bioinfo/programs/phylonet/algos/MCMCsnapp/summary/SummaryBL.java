@@ -265,11 +265,13 @@ public class SummaryBL {
             String s;
             String[] ss;
             boolean start = false;
+            int iter = 0;
             while((s = in.readLine()) != null) {
                 ss = s.trim().split("\\s+");
-                if(ss.length != 7 || ss[0].startsWith("I") || !ss[0].endsWith(";")) continue;
+                if(ss.length != 10 || ss[0].startsWith("I") || !ss[0].endsWith(";")) continue;
                 s = in.readLine();
-                int iter = Integer.parseInt(ss[0].substring(0, ss[0].length() - 1));
+//                iter = Integer.parseInt(ss[0].substring(0, ss[0].length() - 1));
+                iter ++;
                 if(iter < startIter) {
                     continue;
                 }
@@ -279,7 +281,7 @@ public class SummaryBL {
                 double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
                 double ess = Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
                 double likelihood = Double.parseDouble(ss[3].substring(0, ss[3].length() - 1));
-                double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
+                double prior = Double.parseDouble(ss[5].substring(0, ss[5].length() - 1));
                 if(ess <= 0 && !start) continue;
                 start = true;
                 Network net = Networks.readNetwork(s);
@@ -316,6 +318,7 @@ public class SummaryBL {
                     if(!add) _topologyCount.put(net, new Info(posterior));
                 }
             }
+            System.out.println("iter="+iter+";"+this._samples.size());
             in.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -428,7 +431,6 @@ public class SummaryBL {
             while((s = in.readLine()) != null) {
                 ss = s.split("\\s+");
                 if (notBeast) {
-                    //todo recover
 //                    if(s.contains("MCMC_SEQ") || s.contains("SN_SEQ")) {
 //                        in.close();
 //                        addFileMCMCSEQ(file, startIter, endIter);
@@ -456,7 +458,7 @@ public class SummaryBL {
                     } else if(!currentChain.contains("main")){
                         continue;
                     }
-                    if(ss.length == 7 && ss[0].charAt(0) != 'I') {
+                    if(ss.length == 9 && ss[0].charAt(0) != 'I') {
                         s = in.readLine();
                         int iter = Integer.parseInt(ss[0].substring(0, ss[0].length() - 1));
                         if(iter < startIter) {
@@ -468,7 +470,7 @@ public class SummaryBL {
                         double posterior = Double.parseDouble(ss[1].substring(0, ss[1].length() - 1));
                         double ess = 1; //Double.parseDouble(ss[2].substring(0, ss[2].length() - 1));
                         double likelihood = Double.parseDouble(ss[3].substring(0, ss[3].length() - 1));
-                        double prior = Double.parseDouble(ss[4].substring(0, ss[4].length() - 1));
+                        double prior = Double.parseDouble(ss[5].substring(0, ss[5].length() - 1));
 
                         if(ess > 0 || start) {
                             double popSize = Double.NaN;
@@ -902,12 +904,11 @@ public class SummaryBL {
             nameList.add(node.getName());
         }
 
-        // TODO: disable this debug code
-        if(nameList.size() < 9) {
-            for(int i = 4 ; i < 6 ; i++) {
-                nameList.add("I" + i);
-            }
-        }
+//        if(nameList.size() < 9) {
+//            for(int i = 4 ; i < 6 ; i++) {
+//                nameList.add("I" + i);
+//            }
+//        }
 
         for(String nodeName : nameList) {
             NetNode<NetNodeInfo> node = clonedNet.findNode(nodeName);
@@ -995,19 +996,23 @@ public class SummaryBL {
         String netO8 = "[0.03678804256592915]((mccmcc:0.14889368885248497:0.0401585123579523,(sesspl:0.07484846132667702:0.05334010792803318,((HYB:0.029738544838728925:0.045259539795100646)#H1:0.004500135083003898:0.05739433597670084:0.5786813009538128,sesses:0.03423867992173282:0.03912830945064944):0.0406097814049442:0.021553843442927427):0.07404522752580794:0.11405841692866706):0.058943734376352225:0.04611915359113329,(#H1:0.010502859957408392:0.06686347677981164:0.42131869904618724,cae:0.04024140479613732:0.059065877126376044):0.1675960184326999:0.07103450968740839);";
         String netO4 = "[0.031269291383741966]((cae:0.023498520577909784:0.11453515690711917,(HYB:0.009167547496130975:0.03805835880867663)#H1:0.01433097308177881:0.03423044524104861:0.5101383020949305):0.17382587887270695:0.024235535337852533,(mccmcc:0.18439345369566149:0.06925787527744415,(mcplac:0.1465258072175068:0.08235404912736036,(#H1:0.014564359287868745:0.03939682755966605:0.4898616979050695,mcccal:0.02373190678399972:0.04882348145145685):0.12279390043350707:0.04534154430390398):0.03786764647815469:0.05099477836461758):0.012930945754955264:0.06687609363382643);";
         //String net = "[0.011246994934593928](wal:0.16856764465578844:0.024643805160552118,(((the57:0.005532380717127541:0.0328604191625876)#H1:0.008861256779885193:0.0349981605141176:0.5697578143531001,c513:0.014393637497012734:0.06774556777311104):0.02033133765658179:0.05536861556843345,(m523:0.03221433499579413:0.05265524780165408,(agla569:0.010982981528325176:0.04211202761569184,(#H1:4.459081325119832E-4:0.044983217465569256:0.43024218564689987,amar48:0.0059782888496395245:0.06404852435647355):0.005004692678685652:0.05142074487290094):0.021231353467468954:0.05110140055230508):0.0025106401578003923:0.05027578096009688):0.13384266950219392:0.02824200898517967);";
-        String netR1 = "[0.006](((((Q:0.004:0.006)I5#H1:0.002:0.005:0.7,A:0.006:0.006)I3:0.006:0.005,L:0.012:0.006)I2:0.012:0.005,(I5#H1:0.003:0.005:0.3,R:0.007:0.006)I4:0.017:0.005)I1:0.016:0.005,C:0.04:0.006);";
+//        String netR1 = "[0.006](((((Q:0.004:0.006)I5#H1:0.002:0.005:0.7,A:0.006:0.006)I3:0.006:0.005,L:0.012:0.006)I2:0.012:0.005,(I5#H1:0.003:0.005:0.3,R:0.007:0.006)I4:0.017:0.005)I1:0.016:0.005,C:0.04:0.006);";
         int start = 400, end = 3000;
+//        SummaryBL sbl = new SummaryBL(netR1);
+//        String file = "/Users/zhujiafan/Documents/PhyloDataResults/Parameter/run12/slurm-5094406_39.out";
+//        sbl.addFile(file, true, start, end);
+        String netR1 = "((Hhim:0.03388674397282775:0.004967381891345511,Hhsa:0.03388674397282775:0.0031383422603026264):0.0010739816091052956:7.73238802951669E-4,Hsar:0.03496072558193305:0.005793313731907305);";
         SummaryBL sbl = new SummaryBL(netR1);
-        String file = "/Users/zhujiafan/Documents/PhyloDataResults/Parameter/run12/slurm-5094406_39.out";
+        String file = "/Users/zhen/Desktop/Zhen/research/phylogenetics/butterfly/data/trinets_50loci/slurm-5400438.out";
         sbl.addFile(file, true, start, end);
         //sbl.report( 0.036 / 2, 1);
         //sbl.report( 1, 1);
-        List<String> order = new ArrayList<>();
-        order.add("C");
-        order.add("A");
-        order.add("L");
-        order.add("Q");
-        order.add("R");
+//        List<String> order = new ArrayList<>();
+//        order.add("C");
+//        order.add("A");
+//        order.add("L");
+//        order.add("Q");
+//        order.add("R");
 
         //sbl.reportForSlantedVideo(null,"writer_test.mp4");
         //sbl.reportForDensityPlot(file + ".DP", 1, 1);

@@ -46,7 +46,7 @@ public class ChangePopSizeParam extends Operator {
 
     @Override
     public boolean mayViolate() {
-        return true;
+        return false;
     }
 
     @Override

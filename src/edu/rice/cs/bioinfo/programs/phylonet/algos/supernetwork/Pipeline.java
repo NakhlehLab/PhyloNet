@@ -1,6 +1,5 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork;
 
-import com.google.gson.Gson;
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.core.MC3Core;
@@ -12,7 +11,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.util.Utils;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.SummaryBL;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
-import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.TNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.tree.model.sti.STINode;
@@ -414,7 +412,7 @@ public class Pipeline {
         return summary;
     }
 
-    private static void GetInputFromFolder(List<String> filenames, int start, int end, Map<String, List<String>> file2samples, Map<String, Tuple<String, Double>> file2topsample) {
+    protected static void GetInputFromFolder(List<String> filenames, int start, int end, Map<String, List<String>> file2samples, Map<String, Tuple<String, Double>> file2topsample) {
         for(String filename : filenames) {
             file2samples.put(filename, new ArrayList<>());
 

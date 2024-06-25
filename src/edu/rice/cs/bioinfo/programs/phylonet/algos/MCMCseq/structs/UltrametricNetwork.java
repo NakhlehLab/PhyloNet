@@ -157,9 +157,9 @@ public class UltrametricNetwork extends StateNode {
                     new ScalePopSize(this),
                     new ScaleAll(_geneTrees, this), // TODO by dw20: sometimes this operator perform poorly
                     new ScaleTime(this), new ScaleRootTime(this), new ChangeTime(this),
+                    new DeltaExchange(_geneTrees), // for delta exchange
                     new SlideSubNet(this), new SwapNodes(this), new MoveTail(this),
                     new AddReticulation(this),
-                    new DeltaExchange(_geneTrees), // for delta exchange
                     new FlipReticulation(this), new MoveHead(this),
                     new DeleteReticulation(this),
                     new ChangeInheritance(this)
@@ -386,6 +386,7 @@ public class UltrametricNetwork extends StateNode {
                 }
             }
         }
+        System.out.println(_logLtemp);
         return Utils.sum(_logLtemp);
     }
 
@@ -476,18 +477,6 @@ public class UltrametricNetwork extends StateNode {
             if(constraints.get(key) < lowerBound.get(key)) {
                 return false;
             }
-        }
-        //Bound for population sizes
-        for (NetNode<NetNodeInfo> netnode: _network.dfs()){
-            for (NetNode<NetNodeInfo> parent: netnode.getParents()){
-                if((netnode.getParentSupport(parent) > Utils._GAMMA_MEAN_UPPER_BOUND) || (netnode.getParentSupport(parent) < Utils._GAMMA_MEAN_LOWER_BOUND)){
-                    return false;
-                }
-            }
-        }
-        double rootPopSize = _network.getRoot().getRootPopSize();
-        if((rootPopSize > Utils._GAMMA_MEAN_UPPER_BOUND) || (rootPopSize < Utils._GAMMA_MEAN_LOWER_BOUND)){
-            return false;
         }
         return true;
     }

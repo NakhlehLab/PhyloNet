@@ -529,42 +529,42 @@ public class Evaluator3 {
     }
 
 
-    public static void matchIdealSubsets(Network trunetwork, STITree tree, String outgroup) throws Exception{
-        List<Set<String>> clusters = divideSpecies(trunetwork);
-        List<Network> subnetworks = new ArrayList<>();
-        int i = 0;
-        for (Set<String> cluster: clusters){
-            i += 1;
-            System.out.println(cluster);
-            //test
-            Tuple<Network, Map<NetNode, NetNode>> subNet = SuperNetwork3.getSubNetwork(Networks.readNetwork(trunetwork.toString()), new ArrayList<>(cluster), true);
-
-            if (subNet.Item1.getReticulationCount() >=1){
-                subnetworks.add(subNet.Item1);
-                System.out.println(i+","+subNet.Item1.toString());
-            }
-
-
-        }
-
-
-        List<String> taxonlist = new ArrayList<>();
-//        double [][] matrix = getMatrixFromTree(tree, taxonlist);
-        Network backboneTree = Networks.readNetwork(tree.toString());
-
-        NetMatch matcher = new NetMatch(subnetworks, taxonlist, backboneTree);
-//        merger.setOutgroup(outgroup);
-//        Network net = merger.mergePairs();
-        List<Network> netlist = matcher.matchPairs();
-        System.out.println("true network:"+Networks.readNetwork(trunetwork.toString()));
-        System.out.println("mergednetworks:"+netlist.size());
-        for(Network net: netlist){
-            net.resetRoot(outgroup);
-            System.out.println(net.toString());
-            System.out.println("distance="+Networks.computeDistanceBetweenTwoNetworks(net, Networks.readNetwork(trunetwork.toString())));
-        }
-
-    }
+//    public static void matchIdealSubsets(Network trunetwork, STITree tree, String outgroup) throws Exception{
+//        List<Set<String>> clusters = divideSpecies(trunetwork);
+//        List<Network> subnetworks = new ArrayList<>();
+//        int i = 0;
+//        for (Set<String> cluster: clusters){
+//            i += 1;
+//            System.out.println(cluster);
+//            //test
+//            Tuple<Network, Map<NetNode, NetNode>> subNet = SuperNetwork3.getSubNetwork(Networks.readNetwork(trunetwork.toString()), new ArrayList<>(cluster), true);
+//
+//            if (subNet.Item1.getReticulationCount() >=1){
+//                subnetworks.add(subNet.Item1);
+//                System.out.println(i+","+subNet.Item1.toString());
+//            }
+//
+//
+//        }
+//
+//
+//        List<String> taxonlist = new ArrayList<>();
+////        double [][] matrix = getMatrixFromTree(tree, taxonlist);
+//        Network backboneTree = Networks.readNetwork(tree.toString());
+//
+//        NetMatch matcher = new NetMatch(subnetworks, taxonlist, backboneTree);
+////        merger.setOutgroup(outgroup);
+////        Network net = merger.mergePairs();
+//        List<Network> netlist = matcher.matchPairs();
+//        System.out.println("true network:"+Networks.readNetwork(trunetwork.toString()));
+//        System.out.println("mergednetworks:"+netlist.size());
+//        for(Network net: netlist){
+//            net.resetRoot(outgroup);
+//            System.out.println(net.toString());
+//            System.out.println("distance="+Networks.computeDistanceBetweenTwoNetworks(net, Networks.readNetwork(trunetwork.toString())));
+//        }
+//
+//    }
 
 
 

@@ -25,7 +25,6 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNod
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
 import org.apache.commons.collections15.list.SynchronizedList;
-import sun.nio.ch.Net;
 
 import static edu.rice.cs.bioinfo.programs.phylonet.algos.netmerge.util.Utils.*;
 import static edu.rice.cs.bioinfo.programs.phylonet.algos.netmerge.util.Utils.getAbandonList;

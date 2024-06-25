@@ -37,16 +37,16 @@ public class Utils {
     public static boolean _CONST_POP_SIZE = true;
     public static boolean _ESTIMATE_POP_PARAM = true;
     // priors
-    public static double _POISSON_PARAM = 1.0;
-//    public static double _POISSON_PARAM = 0.5; //butterfly
-//    public static boolean _TIMES_EXP_PRIOR = false;
-    public static boolean _TIMES_EXP_PRIOR = true;//buttefly
+//    public static double _POISSON_PARAM = 1.0;
+    public static double _POISSON_PARAM = 0.5; //butterfly
+    public static boolean _TIMES_EXP_PRIOR = false;
+//    public static boolean _TIMES_EXP_PRIOR = true;//buttefly
     public static boolean _DIAMETER_PRIOR = true;
     public static boolean _DISABLE_ALL_PRIOR = false;
     public static final double _DIRICHLET_ALPHA = 2.0;
     public static int NUM_LOCI = 0;
-    public static double _GAMMA_MEAN_UPPER_BOUND = 0.232;
-    public static double _GAMMA_MEAN_LOWER_BOUND = 0.00232;
+//    public static double _GAMMA_MEAN_UPPER_BOUND = 0.232;
+//    public static double _GAMMA_MEAN_LOWER_BOUND = 0.00232;
     // Substitution model
     public static String _SUBSTITUTION_MODEL = "JC";
     public static double[] _BASE_FREQS = null;
@@ -78,8 +78,8 @@ public class Utils {
     // --- net ---
     public static final double NET_INTI_SCALE = 0.95;
     public static final double DEFAULT_NET_LEAF_HEIGHT = 0;
-    public static final double DEFAULT_NET_ROOT_HEIGHT = 6;
-    public static final double NET_MAX_HEIGHT = 1; // used in debug mode for butterfly
+    public static final double DEFAULT_NET_ROOT_HEIGHT = 1;
+    public static final double NET_MAX_HEIGHT = 1000; // used in debug mode for butterfly
     public static double RESAMPLE_GENE_TREE_RATE = 0.5;
     public static boolean RESAMPLE_GENE_TREES = false;
     public static boolean SAMPLE_EMBEDDINGS = false; // experimental!!!
@@ -99,6 +99,8 @@ public class Utils {
     // --- delta exchange operator ---
     public static List<Integer> _WEIGHT_VECTOR = new ArrayList<>();
     public static List<Double> _PARAMETER_INPUT = new ArrayList<>();
+    public static Map<String, Double> _MUTATION_RATE_INPUT = new HashMap<>();
+    public static Map<String, Double> _MUTATION_WEIGHT_INPUT = new HashMap<>();
     public static boolean _IS_INTEGER_OPERATOR = false;
     public static double _DELTA = 1.0;
     public static double _LOWERBOUND = 0.0;
@@ -108,9 +110,7 @@ public class Utils {
     public static final int SWAP_FREQUENCY = 100;
     // --- priors ---
     public static final double EXP_PARAM = 10; // Mr.Bayes
-//    public static final double EXP_PARAM = 20; //butterfly
-//    public static final double EXP_PARAM = 6.6; //butterfly
-    public static final double GAMMA_SHAPE = 2;
+    public static final double GAMMA_SHAPE = 2; // *BEAST
     // --- substitution model ---
     public static final boolean ESTIMATE_SUBSTITUTION = false; // TODO future improvement
 
@@ -128,12 +128,10 @@ public class Utils {
     // --- samples ---
     public static enum SampleType {Tree, Network, ArrayParam, DoubleParam};
     // --- move weights ---
-//    public static final double DIMENSION_CHANGE_WEIGHT = 0.015;
-    public static final double DIMENSION_CHANGE_WEIGHT = 0.03;
+    public static final double DIMENSION_CHANGE_WEIGHT = 0.015;
     public static final double[] Tree_Op_Weights = new double[] {
             0.4, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05
     };
-    //todo by zhen: just for temp use, need to test
 //    public static final double[] Tree_Op_Weights = new double[] {
 //            0.4, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.1
 //    };
@@ -146,8 +144,8 @@ public class Utils {
             0.03, 0.01,
             0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
             0.04, 0.05, 0.25,
-            0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
             0.05, // deltaexchange: 0.1
+            0.20, 0.03, 0.05, DIMENSION_CHANGE_WEIGHT,
             0.06 - DIMENSION_CHANGE_WEIGHT, 0.05, DIMENSION_CHANGE_WEIGHT,
             0.06 - DIMENSION_CHANGE_WEIGHT
 
@@ -156,8 +154,8 @@ public class Utils {
             0.03, 0.01,
             0.01, // scaleAll TODO by dw20: sometimes this operator perform poorly
             0.04, 0.05, 0.30,
-            0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2,
-            0.1 // deltaexchange TODO by zhen, check mixing
+            0.1, // deltaexchange TODO by zhen, check mixing
+            0.27, 0.06, 0.07 - DIMENSION_CHANGE_WEIGHT * 2, DIMENSION_CHANGE_WEIGHT * 2
     };
 
     public static final double[] Net_Op_Weights = new double[] {
@@ -202,7 +200,11 @@ public class Utils {
 
     public static double[] getOperationWeights(double[] weights, int start, int end, boolean enableTopologyMoves) {
         if(!enableTopologyMoves) {
-            for(int i = 6 ; i < Math.min(end, NUM_OPERATORS-1) ; i++) {
+            int i = 6;
+            if (Utils.SAMPLE_MUTATION_RATE){
+                i = 7;
+            }
+            for(; i < Math.min(end, NUM_OPERATORS-1) ; i++) {
                 weights[i] = 0.0;
             }
         }
@@ -226,7 +228,11 @@ public class Utils {
 
     public static double[] getOperationWeights(double[] weights, boolean enableNetTopologyMoves) {
         if(!enableNetTopologyMoves) {
-            for(int i = 6 ; i < Math.min(weights.length, NUM_OPERATORS-1) ; i++) {
+            int i = 6;
+            if (Utils.SAMPLE_MUTATION_RATE){
+                i = 7;
+            }
+            for(; i < Math.min(weights.length, NUM_OPERATORS-1) ; i++) {
                 weights[i] = 0.0;
             }
         }

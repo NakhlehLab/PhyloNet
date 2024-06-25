@@ -353,16 +353,16 @@ public class NetNJMerge2 {
 
 
 
-    public static void run(String distpath, String subnetworkpath){
-        NetNJMerge merge = new NetNJMerge(distpath, subnetworkpath);
-        List<Network> netlist = merge.mergePairs();
-        for (Network net: netlist){
-            net.resetRoot("Z");
-            System.out.println(net);
-        }
-
-
-    }
+//    public static void run(String distpath, String subnetworkpath){
+//        NetNJMerge merge = new NetNJMerge(distpath, subnetworkpath);
+//        List<Network> netlist = merge.mergePairs();
+//        for (Network net: netlist){
+//            net.resetRoot("Z");
+//            System.out.println(net);
+//        }
+//
+//
+//    }
 
 
 

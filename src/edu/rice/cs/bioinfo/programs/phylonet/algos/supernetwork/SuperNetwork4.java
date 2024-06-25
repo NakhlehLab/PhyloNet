@@ -1,8 +1,17 @@
 package edu.rice.cs.bioinfo.programs.phylonet.algos.supernetwork;
+/*
+ * @ClassName:   SuperNetwork4
+ * @Description:
+ * @Author:      Zhen Cao
+ * @Date:        4/2/23 1:17 PM
+ */
 
 import edu.rice.cs.bioinfo.library.programming.Tuple;
 import edu.rice.cs.bioinfo.library.programming.Tuple3;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq.structs.NetNodeInfo;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCseq2.felsenstein.alignment.Alignment;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.Summary;
+import edu.rice.cs.bioinfo.programs.phylonet.algos.MCMCsnapp.summary.SummaryBL;
 import edu.rice.cs.bioinfo.programs.phylonet.algos.clustering.DisjointSets;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.Network;
@@ -10,13 +19,16 @@ import edu.rice.cs.bioinfo.programs.phylonet.structs.network.NetworkMetricNakhle
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetNode;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.model.bni.BniNetwork;
 import edu.rice.cs.bioinfo.programs.phylonet.structs.network.util.Networks;
-// import javafx.beans.binding.ObjectExpression;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.mockito.internal.exceptions.ExceptionIncludingMockitoWarnings;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,7 +37,7 @@ import java.util.*;
  * Time: 11:30 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SuperNetwork3 {
+public class SuperNetwork4 {
     class NetworkWithInfo {
 
         Network<NetNodeInfo> network;
@@ -142,6 +154,8 @@ public class SuperNetwork3 {
     public static String outgroup = "Z";
     private double popsize = Double.NaN;
 
+
+
     private List<Double> getEH(Map<Tuple<String, String>, List<Double>> ehm, String l1, String l2) {
         if(l1.compareTo(l2) < 0) return ehm.get(new Tuple<>(l1, l2));
         return ehm.get(new Tuple<>(l2, l1));
@@ -212,7 +226,7 @@ public class SuperNetwork3 {
 
     public static Tuple<Network, Map<NetNode, NetNode>> getSubNetwork(Network trueNetwork, List<String> selectedLeaves, boolean removeBinaryNodes) {
         int subsize = selectedLeaves.size();
-        Network currentNetwork = trueNetwork;
+        Network currentNetwork = trueNetwork.clone();
 
         // bottom-up build subnetwork
         Map<NetNode, BniNetNode> old2new = new HashMap<>();
@@ -405,11 +419,11 @@ public class SuperNetwork3 {
         return result;
     }
 
-    SuperNetwork3(SNProblem problem) {
+    SuperNetwork4(SNProblem problem) {
         this(problem.subnetworks);
     }
 
-    SuperNetwork3(List<Tuple3<Network, String, Double>> subnetworks) {
+    public SuperNetwork4(List<Tuple3<Network, String, Double>> subnetworks) {
         if(printDetails_)
             System.out.println(eps);
 
@@ -1153,6 +1167,50 @@ public class SuperNetwork3 {
         }
 
 
+    }
+
+    public void reconcileReticulations(){
+        Map<Set<String>, Map<Network, Integer>> binetsHashTable = new HashMap<>();
+        for(int ii = 0 ; ii < subnetworks_.size() ; ii++) {
+            NetworkWithInfo curNet = subnetworks_.get(ii);
+            for(int i = 0 ; i < curNet.taxa.size() ; i++) {
+                for(int j = i + 1 ; j < curNet.taxa.size() ; j++) {
+                    List<String> selected = new ArrayList<>();
+                    selected.add(curNet.taxa.get(i));
+                    selected.add(curNet.taxa.get(j));
+                    Set<String> taxapair = new HashSet<>(selected);
+                    binetsHashTable.putIfAbsent(taxapair, new HashMap<>());
+                    Tuple<Network, Map<NetNode, NetNode>> tuple1 = getSubNetwork(curNet.network, selected, true);
+                    boolean find = false;
+                    for (Network net: binetsHashTable.get(taxapair).keySet()){
+                        if (Networks.hasTheSameTopology(net, tuple1.Item1)){
+                            binetsHashTable.get(taxapair).put(net, binetsHashTable.get(taxapair).get(net)+1);
+                            find = true;
+                            break;
+                        }
+
+                    }
+                    if (!find){
+                        binetsHashTable.get(taxapair).put(tuple1.Item1, 1);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < leafnames_.size(); i++){
+            for (int j = i+1; j < leafnames_.size(); j++){
+                Set<String> taxaset = new HashSet<>();
+                taxaset.add(leafnames_.get(i));
+                taxaset.add(leafnames_.get(j));
+                Map<Network, Integer> networksMap = binetsHashTable.get(taxaset);
+                System.out.println(leafnames_.get(i)+","+leafnames_.get(j));
+                for (Network net: networksMap.keySet()){
+                    System.out.println(networksMap.get(net)+","+net.toString());
+                }
+
+            }
+
+        }
     }
 
     void ComputeExtendedHeightMatrix(){
@@ -2010,7 +2068,7 @@ public class SuperNetwork3 {
         return bestScore;
     }
 
-    Network compute() {
+    public Network compute() {
         Prepare();
 
         if(DemoMode) {
@@ -2088,7 +2146,7 @@ public class SuperNetwork3 {
                     if(subnetsToTry.containsKey(border1.size())) {
                         Set<NetNode> component3 = getComponent(subnetsToTry.get(border1.size()), targetLeafName);
                         if(component1.size() < component3.size()
-                            || (component1.size() == component3.size() && netinfo.network.findNode(targetLeafName).getParents().iterator().next().getData().getHeight() < subnetsToTry.get(border1.size()).network.findNode(targetLeafName).getParents().iterator().next().getData().getHeight()))
+                                || (component1.size() == component3.size() && netinfo.network.findNode(targetLeafName).getParents().iterator().next().getData().getHeight() < subnetsToTry.get(border1.size()).network.findNode(targetLeafName).getParents().iterator().next().getData().getHeight()))
                             subnetsToTry.put(border1.size(), netinfo);
                     } else {
                         subnetsToTry.put(border1.size(), netinfo);
@@ -2307,42 +2365,158 @@ public class SuperNetwork3 {
         return backbone;
     }
 
-    public static void main(String[] args) {
-        final SuperNetwork superNetwork0 = new SuperNetwork(new ArrayList<>());
-        Random random = new Random(12345);
-        for(int i = 0 ; i < 20000 ; ) {
-            SuperNetwork superNetwork = new SuperNetwork(new ArrayList<>());
-            Network trueNetwork = superNetwork.genRandomNetwork(20, 3);//Networks.readNetwork("(((((((C:1.0,D:1.0)I1:1.0)I2#H1:2.0,B:4.0)I4:3.0,(I2#H1:3.0,E:5.0)I5:2.0)I7:1.0)I8#H2:1.0,A:9.0)I9:2.0,(((F:3.0,G:3.0)I3:3.0,H:6.0)I6:4.0,I8#H2:2.0)I10:1.0)I11;");
-            //trueNetwork = Networks.readNetwork("((J:1.809522611909963,E:1.809522611909963):47.443779683538274,((((((B:8.828999653685607,(((Q:3.1360710730314283,(F:0.8037659932417116)#H3:2.332305079789717):3.0386332557943403,A:6.174704328825769):0.7924204274196303)#H1:1.8618748974402077):1.703767690022044,D:10.53276734370765):4.703185062927272,(I:13.893298700567877,M:13.893298700567877):1.3426537060670451):18.315790815909445,(((L:18.915906609467235,O:18.915906609467235):9.640850499772096,(G:26.58996650181392,(S:24.07610666873296,((R:20.61168828635986,C:20.61168828635986):1.6781330084325248,(H:13.946056937106434)#H2:8.343764357685952):1.7862853739405757):2.513859833080957):1.9667906074254127):3.712924589510809,N:32.26968169875014):1.2820615237942263):9.637188428655186,#H3:42.38516565795784):3.405606828619476,(((K:37.07815781017047,#H2:23.132100873064033):6.051880762067171,(T:40.43214528359408,P:40.43214528359408):2.697893288643556):2.5300562958281816,#H1:38.69297011182042):0.9344436117532098):2.6587638156292073);");
-            //trueNetwork = Networks.readNetwork("((((((T:1.133394744106908,O:1.133394744106908):14.01105789850394,((L:11.886220106106931,(B:7.922000232953535,(((F:4.478626382697977,J:4.478626382697977):0.5763156066476913)#H2:0.5969268903304865)#H1:2.270131353277381):3.9642198731533957):1.6497798510124717,(S:5.711901499653102)#H3:7.824098457466301):1.6084526854914465):5.817170573438924,(H:17.90964277139056,#H3:12.197741271737456):3.0519804446592147):14.746014637337993,((A:24.28845834008711,I:24.28845834008711):9.863752616521403,(E:30.4898896359965,(M:26.840932210788857,(D:7.124877991145295,#H1:1.4730091114691408):19.71605421964356):3.6489574252076444):3.662321320612012):1.5554268967792524):16.946202450449235,(G:50.348416462918735,(N:46.90669342965074,(C:44.12661457891803,((Q:37.94044455538827,R:37.94044455538827):2.920644877746163,P:40.86108943313443):3.2655251457835988):2.780078850732707):3.4417230332679978):2.305423840918266):1.6642900901934965,(K:39.263036689399094,#H2:34.20809470005342):15.055093704631403);");
-            //trueNetwork = Networks.readNetwork("(((B:3.0586500098498957,(((T:0.21737681332974473)#H2:0.6506165917066502)#H1:1.490025662977076,#H2:2.1406422546837263):0.7006309418364247):10.288933052647376,((A:11.237178945612342)#H3:0.86901757748252,(((N:5.97545996630095,F:5.97545996630095):3.480532452392988,I:9.455992418693938):1.0828222348081216,#H1:9.670821248465664):1.5673818695928023):1.2413865394024093):38.244585817584905,((((((Q:15.311501453242885,H:15.311501453242885):7.9553067409298865,((G:17.921294753553088,L:17.921294753553088):1.813935856697416,O:19.735230610250504):3.5315775839222674):6.476454664895083,(C:25.820809702152985,#H3:14.583630756540643):3.9224531569148695):6.735204119920219,((M:33.40394671544683,P:33.40394671544683):1.5301595614594774,E:34.934106276906306):1.544360702081768):4.472187734559647,(K:37.5650879480432,S:37.5650879480432):3.385566765504521):6.6558926194892365,((R:42.45451063917688,D:42.45451063917688):3.8923200366077424,J:46.346830675784624):1.2597166572523335):3.98562154704522);");
-            //trueNetwork = Networks.readNetwork("((((A:2.6049934387824605,T:2.6049934387824605):7.992421957251229,(Q:7.801423397786972,(H:5.3797807017101364,I:5.3797807017101364):2.4216426960768356):2.795991998246717):2.116131427512247,B:12.713546823545936):33.01605990339996,((M:14.28905695216133,E:14.28905695216133):27.644943258597912,(((D:17.86665283292104,S:17.86665283292104):1.6702946814656094,(G:9.644962078989135)#H1:9.891985435397515):21.230926011784906,((O:23.829695590850886,((C:21.367153727311322,P:21.367153727311322):1.307934205997249,(N:4.293091461266711)#H2:18.381996472041862):1.1546076575423143):14.45393640344557,((L:27.01958938067096,(#H1:1.7345921399294593,#H2:7.0864627576518835):15.640035161752367):8.194271252791307,((((K:28.67070240578753,(R:10.797087835984318)#H3:17.873614569803213):2.4216393087428294,J:31.09234171453036):1.7709764862459174,F:32.86331820077628):1.3049271171019043,#H3:23.371157481893864):1.0456153155840866):3.0697713608341886):2.4842415318750994):1.166126684587688):3.795606516186652);");
-            //trueNetwork = Networks.readNetwork("(((((((K:22.617658768976227,(N:19.05301040791268,D:19.05301040791268):3.564648361063547):2.6730114239527296,(P:9.838367146190123)#H1:15.452303046738834):1.165122333694061,M:26.455792526623018):8.03463275092047,((I:30.140085385664086,(R:11.40529595405491)#H2:18.734789431609176):2.0292316025167096,Q:32.169316988180796):2.321108289362691):5.031153625903066,(J:38.01234738277146,S:38.01234738277146):1.509231520675094):2.995252755803527,((A:41.33618751525881,(#H2:10.056647364919943,(L:13.747346663796062,#H1:3.908979517605939):7.7145966551787915):19.874244196283954):0.4458050684497721,(((E:3.7348407863349498,H:3.7348407863349498):11.940435110049194,((C:4.772570008201653,G:4.772570008201653):9.261526551109947,((T:7.09265639242227,O:7.09265639242227):4.362560651863441,(B:9.177172293411338,F:9.177172293411338):2.278044750874372):2.578879515025889):1.6411793370725434):12.622221907053337)#H3:13.484494780271099):0.7348390755415011):2.242948671491824,#H3:16.462282527304424);");
-            //trueNetwork = Networks.readNetwork("((A:6.8191196535208665,(O:5.287988577107271,(S:3.1176958307989935,(N:1.4656508129431318)#H1:1.6520450178558617):2.1702927463082773):1.5311310764135957):42.54198335861826,((((F:40.678920285213806,I:40.678920285213806):1.7951465699313829,Q:42.47406685514519):3.46883920543209,((((J:9.151141986739185,C:9.151141986739185):9.531336338509673,(G:17.549437924672333,(E:13.885915210910277,(((B:10.403285412623116,K:10.403285412623116):1.9302688441885731,M:12.33355425681169):0.6970892583766872)#H3:0.8552716957218998):3.663522713762056):1.133040400576526):18.77570238982458,(H:35.63942148432256,((((D:21.87803272712815,R:21.87803272712815):7.003856507976032,(T:24.984779224678846,P:24.984779224678846):3.8971100104253367):3.8843810326606913,L:32.766270267764874):2.0928272616377157,#H3:21.828454014214213):0.7803239549199716):1.818759230750878):2.2947591321771483)#H2:6.1899662133266915):1.9031873008730642,(#H2:4.273529317766474,#H1:42.56081835207393):3.8196241964332813):1.515009650688782);");
-            //trueNetwork = Networks.readNetwork("((((Q:1.8510447476068266,H:1.8510447476068266):5.980526316451876,(O:4.831431720779742,I:4.831431720779742):3.0001393432789607):10.05515862582396,((C:4.6440918069414305)#H1:10.385179963495576,((((A:11.559272884379528,N:11.559272884379528):0.8211261579441924,#H1:7.73630723538229):0.5639181928523431,(G:5.784512729936338)#H3:7.159804505239725):0.5671717890694961)#H2:1.5177827461914468):2.8574579194456575):30.94236725362942,((((S:34.22880828415031,((K:19.471057409620833,J:19.471057409620833):12.474503094814168,(((M:23.06153836548164,L:23.06153836548164):4.2883607751067565,((P:24.160675607479373,R:24.160675607479373):2.0244898708075,#H2:12.673676454041313):1.164733662301522):2.04065897241847,D:29.390558113006865):2.555002391428136):2.2832477797153103):6.2898647033427295,(B:37.5355658042458,T:37.5355658042458):2.983107183247242):4.342096477233369,(E:43.455701248281315,F:43.455701248281315):1.4050682164450947):1.4827480572436826,#H3:40.559004792033754):2.485579421541992);");
-            trueNetwork = Networks.readNetwork("(Z:1000.0,((((((G:2.9859839999999997,((I:2.0736,J:2.0736)S20:0.41472,H:2.48832)S19:0.4976639999999999)S11:15.502441889503631,(((((((P:1.0)#H5:0.728::0.36,K:1.728)S17:1.8551807999999996,(M:1.44,L:1.44)S18:2.1431807999999997)S16:1.5765995519999998,D:5.159780351999999)S15:1.0319560703999997,C:6.191736422399999)S12:4.507584115507197)#H4:4.707701036679165::0.63)#H3:3.08140431491727::0.62)S10:8.1349073913816)#H1:11.7142666435895::0.4,(((F:4.299816959999999,E:4.299816959999999)S14:3.1302667468799994,B:7.430083706879999)S13:1.486016741375999)#H2:29.421499476218735::0.39)S6:16.868543966768875,#H3:39.79912231665725::0.38)S3:24.29070331214718,((O:1.2,N:1.2)S5:65.04737266949232,((A:12.839184645488634,#H4:2.139864107581438::0.37)S7:33.16593526388104,(#H1:5.324666656177044::0.6,(#H5:21.186111067404358::0.64,#H2:13.27001061914836::0.61)S9:9.761888869657916)S8:14.057119972307401)S4:20.242252760122646)S2:13.249474533898464)S1:920.5031527966092);");
-            System.out.println("True network: " + Networks.getDendroscopeCompatibleString(trueNetwork));
+    public void retiSignal(String markerpath) {
+        List<Alignment>  alignments = new ArrayList<>();
 
-            NetworkUtils.genAllSubNetworks(trueNetwork, 3);
-            List<Tuple3<Network,String,Double>> newnetlist = new ArrayList<>();
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(markerpath));
+            String s;
+            int index = 0;
+            String topSample = null;
+            Map<Network, Integer> count = new HashMap<>();
+            boolean begin = false;
+            int total = 0;
+            double lastESS = 0.0;
 
-            for (Network net : superNetwork._subnetworks) {
-                newnetlist.add(new Tuple3<>(net, "", 1.0));
-                if(net.findNode("I") == null) continue;
-                if(net.findNode("T") == null) continue;
-                if(net.findNode("B") == null) continue;
-                System.out.println(net.toString());
-            }
+            while ((s = in.readLine()) != null) {
 
+                if(s.startsWith("[")){
 
-            SuperNetwork3 superNetwork3 = new SuperNetwork3(newnetlist);
-            Network result = superNetwork3.compute();
-
-            boolean correctness = Networks.hasTheSameTopology(result, trueNetwork);
-            System.out.println("Correctness: " + correctness);
-            if(!correctness) {
-                break;
+                }
+                else{
+                    String[] arr = s.split(" ");
+//                    arr[0];
+                }
             }
         }
+        catch (Exception e){
+
+        }
+    }
+
+    public static void testMergeQuartets(){
+        Network trueNetwork = Networks.readNetwork("(Z:100.0,((((((G:2.9859839999999997,((I:2.0736,J:2.0736)S20:0.41472,H:2.48832)S19:0.4976639999999999)S11:15.502441889503631,(((((((P:1.0)#H5:0.728::0.36,K:1.728)S17:1.8551807999999996,(M:1.44,L:1.44)S18:2.1431807999999997)S16:1.5765995519999998,D:5.159780351999999)S15:1.0319560703999997,C:6.191736422399999)S12:4.507584115507197)#H4:4.707701036679165::0.63)#H3:3.08140431491727::0.62)S10:8.1349073913816)#H1:11.7142666435895::0.4,(((F:4.299816959999999,E:4.299816959999999)S14:3.1302667468799994,B:7.430083706879999)S13:1.486016741375999)#H2:29.421499476218735::0.39)S6:16.868543966768875,#H3:39.79912231665725::0.38)S3:24.29070331214718,((O:1.2,N:1.2)S5:65.04737266949232,((A:12.839184645488634,#H4:2.139864107581438::0.37)S7:33.16593526388104,(#H1:5.324666656177044::0.6,(#H5:21.186111067404358::0.64,#H2:13.27001061914836::0.61)S9:9.761888869657916)S8:14.057119972307401)S4:20.242252760122646)S2:13.249474533898464)S1:920.5031527966092);");
+        System.out.println("True network: " + Networks.getDendroscopeCompatibleString(trueNetwork));
+
+        List<Network> quartet_list = NetworkUtils.genAllSubNetworks(trueNetwork, 4);
+        List<Tuple3<Network,String,Double>> newnetlist = new ArrayList<>();
+
+        for (Network net : quartet_list) {
+            newnetlist.add(new Tuple3<>(net, "", 1.0));
+            System.out.println(net.toString());
+        }
+
+        SuperNetwork4 superNetwork4 = new SuperNetwork4(newnetlist);
+        Network result = superNetwork4.compute();
+
+        boolean correctness = Networks.hasTheSameTopology(result, trueNetwork);
+        System.out.println("Correctness: " + correctness);
+        System.out.println(result);
+    }
+
+    public static void testReconcileReticualtions_true(){
+//        Network trueNetwork = Networks.readNetwork("(Z:100.0,((((F:4.299816959999999)#H2:14.188608929503632::0.65)#H1:19.8491740349711::0.4,(((B:12.839184645488634,((((N:1.2,O:1.2)S19:0.8735999999999999,K:2.0736)S18:3.0861803519999995,#H2:0.859963392::0.35)S17:1.0319560703999997,E:6.191736422399999)S16:6.647448223088635)S15:2.5678369290977265,(H:2.9859839999999997,(J:2.48832,I:2.48832)S14:0.4976639999999999)S13:12.42103757458636)S12:16.54097836247591,#H1:13.459574047558643::0.6)S11:6.389599987412456)S10:16.868543966768875,((A:26.62333328088523,((((M:1.44)#H3:0.28800000000000003::0.29999999999999993,L:1.728)S9:8.971320537907197,(#H3:5.990083706879998::0.7000000000000001,(P:1.0)#H4:6.430083706879999::0.2499999999999999)S8:3.2692368310271975)S7:11.486790529497162,(D:8.916100448255998,C:8.916100448255998)S6:13.27001061914836)S5:4.437222213480872)S4:19.381786628484445,(G:3.5831807999999996,#H4:2.5831807999999996::0.7500000000000001)S3:42.421939109369674)S2:9.20102398187393)S1:44.793856108756394);");
+        Network trueNetwork = Networks.readNetwork("(Z:100.0,((M:1.2,N:1.2)S2:54.0061438912436,(A:46.005119909369675,(((J:1.728,(P:1.0,O:1.0)S19:0.728)S8:30.219999937062273,(L:1.44,K:1.44)S7:30.507999937062273)S5:6.389599987412456,(((B:15.407021574586361,((I:2.0736)#H1:3.0861803519999995::0.4,((E:3.5831807999999996,(H:2.48832)#H3:1.0948607999999997::0.7000000000000001)S18:0.7166361599999997)#H2:0.859963392::0.35)S14:10.24724122258636)S11:6.779089492817997,(((C:10.699320537907196,(#H2:1.8919194623999998::0.65)#H4:4.507584115507197::0.2499999999999999)S15:2.139864107581438,((G:2.9859839999999997,F:2.9859839999999997)S17:5.930116448255998,#H3:6.427780448255998::0.29999999999999993)S16:3.9230841972326367)S13:5.649241244014997,#H4:12.296689467103633::0.7500000000000001)S12:3.697685177900727)S10:4.437222213480872,(D:7.430083706879999,#H1:5.356483706879999::0.6)S9:19.193249574005232)S6:11.7142666435895)S4:7.667519984894945)S3:9.20102398187393)S1:44.793856108756394);");
+
+        List<Network> quartet_list = NetworkUtils.genAllSubNetworks(trueNetwork, 3);
+        List<Tuple3<Network,String,Double>> newnetlist = new ArrayList<>();
+        List<String> leafnames  = new ArrayList<>();
+        for (Object o: trueNetwork.getLeaves()){
+            leafnames.add(((NetNode) o).getName());
+        }
+
+        for (Network net : quartet_list) {
+            newnetlist.add(new Tuple3<>(net, "", 1.0));
+//            System.out.println(net.toString());
+        }
+        SuperNetwork4 superNetwork = new SuperNetwork4(newnetlist);
+        superNetwork.leafnames_ = leafnames;
+        superNetwork.reconcileReticulations();
+
+    }
+
+    public static void testReconcileReticulations_inferredList(){
+        String resultFolder = "/Users/zhen/Desktop/Zhen/research/phylogenetics/trinetInference/data/Archive/Reti4_C/";
+        File path = new File(resultFolder);
+        int chainlen = 2000000;
+        int burnin = 1000000;
+        int sample_freq = 5000;
+        SNOptions options = new SNOptions();
+        List<String> filenames = new ArrayList<>();
+        File[] files = path.listFiles();
+        for (int i = 0; i < files.length; i++){
+            if (files[i].isFile()){ //this line weeds out other directories/folders
+                if(files[i].toString().endsWith(".out")) {
+                    //System.out.println(files[i]);
+                    filenames.add(files[i].toString());
+                }
+            }
+        }
+
+        Collections.sort(filenames);
+        int start = (int)(burnin / sample_freq) + 1;
+        int end = (int)(chainlen / sample_freq);
+
+        Map<String, List<String>> file2samples = new HashMap<>();
+        Map<String, Tuple<String, Double>> file2topsample = new HashMap<>();
+
+        Pipeline.GetInputFromFolder(filenames, start, end, file2samples, file2topsample);
+
+
+//        List<Network> quartet_list = NetworkUtils.genAllSubNetworks(trueNetwork, 3);
+//        List<Tuple3<Network,String,Double>> newnetlist = new ArrayList<>();
+        List<String> leafnames  = new ArrayList<>();
+
+        SNProblem problem0 = new SNProblem();
+        for(String filename : file2topsample.keySet()) {
+            Tuple<String, Double> tuple = file2topsample.get(filename);
+            SummaryBL summaryBL = new SummaryBL(tuple.Item1);
+            for(String sample : file2samples.get(filename)) {
+                Network curnet = Networks.readNetworkWithRootPop(sample);
+                if(Networks.hasTheSameTopology(Networks.readNetworkWithRootPop(tuple.Item1), curnet)) {
+                    summaryBL.addNetwork(curnet);
+                }
+            }
+            summaryBL.computeMean(1,1);
+            Network meannet = summaryBL.getMeanNetwork();
+
+            problem0.AddSubNetwork(meannet, filename, tuple.Item2);
+        }
+        SuperNetwork3 sn0 = new SuperNetwork3(problem0);
+        Network res_net = sn0.compute();
+        List<Tuple3<Network, String, Double>> newnetlist = new ArrayList<>();
+
+        for (Tuple3<Network, String, Double> tuple3 : problem0.subnetworks) {
+            newnetlist.add(new Tuple3<Network, String, Double>(tuple3.Item1, "", 1.0));
+//            System.out.println(tuple3.Item1.toString());
+        }
+        SuperNetwork4 superNetwork = new SuperNetwork4(newnetlist);
+        for(Object o: res_net.getLeaves()){
+
+            leafnames.add(((NetNode) o).getName());
+        }
+        superNetwork.leafnames_ = leafnames;
+        superNetwork.reconcileReticulations();
+
+
+    }
+
+
+
+
+    public static void main(String[] args) {
+
+//        testReconcileReticualtions_true();
+//        testReconcileReticulations_inferredList();
+//        Network inferred = Networks.readNetwork("(Z:0.7302024610844219,((((F:0.029469861945675063)I9#H2:0.10063806355138809::0.7098507817392687)I5#H1:0.15203388401909348::0.529280226566855,(I5#H1:0.1166800741987158::0.4707197734331452,(((J:0.022498129297714144,I:0.022498129297714144)I17:0.004568373651271385,H:0.027066502948985525)I13:0.11376882344538967,(((((O:0.010713562843724166,N:0.010713562843724166)I23:0.0064425478795057545,K:0.01715611072322993)I22:0.029503488553497898,I9#H2:0.017189737331052765::0.290149218260731)I20:0.012342658542457566,E:0.05900225781918538)I16:0.05671488835068837,B:0.11571714616987373)I12:0.0251181802245014)I8:0.1059526733014038)I4:0.03535380982037771)I2:0.17071601217611182,(((P:0.0037057029370507408)I10#H3:0.026178666196637352::0.7662695612740287,G:0.02988436913368809)I6:0.34254599494542465,((((I10#H3:0.06716490425081706::0.23373043872597124,(M:0.01034465391047135)I21#H4:0.06052595327739647::0.6882275937182715)I18:0.02746596185292524,(I21#H4:0.005168292189965638::0.3117724062817286,L:0.015512946100436983)I19:0.08282362294035604)I14:0.09792719429834879,(D:0.08292681555237488,C:0.08292681555237488)I15:0.11333694778676692)I11:0.04134393934883122,A:0.23760770268797313)I7:0.1348226613911398)I3:0.08042745761315559)I1:0.2773446393921535)I0;\n");
+//        Network truenet = Networks.readNetwork("(Z:100.0,((((F:4.299816959999999)#H2:14.188608929503632::0.65)#H1:19.8491740349711::0.4,(((B:12.839184645488634,((((N:1.2,O:1.2)S19:0.8735999999999999,K:2.0736)S18:3.0861803519999995,#H2:0.859963392::0.35)S17:1.0319560703999997,E:6.191736422399999)S16:6.647448223088635)S15:2.5678369290977265,(H:2.9859839999999997,(J:2.48832,I:2.48832)S14:0.4976639999999999)S13:12.42103757458636)S12:16.54097836247591,#H1:13.459574047558643::0.6)S11:6.389599987412456)S10:16.868543966768875,((A:26.62333328088523,((((M:1.44)#H3:0.28800000000000003::0.29999999999999993,L:1.728)S9:8.971320537907197,(#H3:5.990083706879998::0.7000000000000001,(P:1.0)#H4:6.430083706879999::0.2499999999999999)S8:3.2692368310271975)S7:11.486790529497162,(D:8.916100448255998,C:8.916100448255998)S6:13.27001061914836)S5:4.437222213480872)S4:19.381786628484445,(G:3.5831807999999996,#H4:2.5831807999999996::0.7500000000000001)S3:42.421939109369674)S2:9.20102398187393)S1:44.793856108756394);");
+        Network inferred = Networks.readNetwork("(Z:0.7417557890037464,((N:0.009710742382778487,M:0.009710742382778487)I2:0.43921700504538463,((((L:0.010663685536118133,K:0.010663685536118133)I8:0.27373124116794445,((P:0.009149948458584849,O:0.009149948458584849)I11:0.006195141326317949,J:0.015345089784902798)I7:0.2690498369191598)I5:0.0411889657158249,(((I:0.01497883331972496)I12#H1:0.05634926469447858::0.6141198577443985,D:0.07132809801420356)I9:0.1613238479855273,((((H:0.01835091758612275)I20#H2:0.06779794179626444::0.406532991377283,(G:0.02595828219883169,F:0.02595828219883169)I21:0.06019057718355549)I17:0.03391286724502564,((E:0.026536399014194245)I19#H3:0.0713069317566335::0.12929582833789952,C:0.09784333077082775)I16:0.022218395856585072)I14:0.07397674999530428,((I12#H1:0.031062719976999265::0.38588014225560147,(I20#H2:0.015065472766409177::0.593467008622717,I19#H3:0.006879991338337679::0.8707041716621005)I18:0.012625162944192293)I15:0.0988025673179673,B:0.14484412061469154)I13:0.049194356008025575)I10:0.038613469377013744)I6:0.09293194642015667)I4:0.054712978363603074,A:0.3802968707834906)I3:0.06863087664467253)I1:0.2928280415755833)I0;");
+        Network trueNetwork = Networks.readNetwork("(Z:100.0,((M:1.2,N:1.2)S2:54.0061438912436,(A:46.005119909369675,(((J:1.728,(P:1.0,O:1.0)S19:0.728)S8:30.219999937062273,(L:1.44,K:1.44)S7:30.507999937062273)S5:6.389599987412456,(((B:15.407021574586361,((I:2.0736)#H1:3.0861803519999995::0.4,((E:3.5831807999999996,(H:2.48832)#H3:1.0948607999999997::0.7000000000000001)S18:0.7166361599999997)#H2:0.859963392::0.35)S14:10.24724122258636)S11:6.779089492817997,(((C:10.699320537907196,(#H2:1.8919194623999998::0.65)#H4:4.507584115507197::0.2499999999999999)S15:2.139864107581438,((G:2.9859839999999997,F:2.9859839999999997)S17:5.930116448255998,#H3:6.427780448255998::0.29999999999999993)S16:3.9230841972326367)S13:5.649241244014997,#H4:12.296689467103633::0.7500000000000001)S12:3.697685177900727)S10:4.437222213480872,(D:7.430083706879999,#H1:5.356483706879999::0.6)S9:19.193249574005232)S6:11.7142666435895)S4:7.667519984894945)S3:9.20102398187393)S1:44.793856108756394);");
+
+
+
+        System.out.println(Networks.hasTheSameTopology(inferred,trueNetwork));
+        Tuple3<Network, Network, Double> tuple3 = Pipeline.CheckWithTrueNetwork(inferred, trueNetwork);
+        System.out.println(tuple3.Item1.getReticulationCount()+","+ tuple3.Item2.getReticulationCount()+","+ tuple3.Item3);
     }
 }

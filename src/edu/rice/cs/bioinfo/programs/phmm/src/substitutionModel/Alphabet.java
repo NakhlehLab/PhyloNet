@@ -57,7 +57,7 @@ public abstract class Alphabet {
 	// include indel too
 	for (int i = 0; i < getAlphabetPlusIndel().length(); i++) {
 	    Character C = new Character(getAlphabetPlusIndel().charAt(i));
-	    Integer I = new Integer(i);
+	    Integer I = Integer.valueOf(i);
 	    observationIndexMap.put(C, I);
 	}
     }

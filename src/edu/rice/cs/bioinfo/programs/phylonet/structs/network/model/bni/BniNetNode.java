@@ -351,7 +351,7 @@ public class BniNetNode<T> implements NetNode<T> {
 		else {
 			// Update the distance.
 			_parent_distances.remove(i);
-			_parent_distances.add(i, new Double(distance));
+			_parent_distances.add(i, Double.valueOf(distance));
 
 			return true;
 		}
@@ -383,7 +383,7 @@ public class BniNetNode<T> implements NetNode<T> {
 			}else {
 				_parent_pop_sizes = new LinkedList<Double>();
 			}
-			_parent_pop_sizes.add(i, new Double(popSize));
+			_parent_pop_sizes.add(i, Double.valueOf(popSize));
 
 			return true;
 		}
@@ -414,7 +414,7 @@ public class BniNetNode<T> implements NetNode<T> {
 			{
 				_parent_gen_times = new LinkedList<Double>();
 			}
-			_parent_gen_times.add(i, new Double(genTime));
+			_parent_gen_times.add(i, Double.valueOf(genTime));
 
 			return true;
 		}
@@ -454,7 +454,7 @@ public class BniNetNode<T> implements NetNode<T> {
                 ref._parent_probabiliites = new LinkedList<Double>();
 			}
 			ref._parents.add(this);
-			ref._parent_distances.add(new Double(distance));
+			ref._parent_distances.add(Double.valueOf(distance));
             ref._parent_support.add(NetNode.NO_SUPPORT);
             ref._parent_probabiliites.add(NetNode.NO_PROBABILITY);
 
@@ -634,7 +634,7 @@ public class BniNetNode<T> implements NetNode<T> {
 		else {
 			// Update the distance.
 			_parent_support.remove(i);
-			_parent_support.add(i, new Double(support));
+			_parent_support.add(i, Double.valueOf(support));
 		}
 	}
 

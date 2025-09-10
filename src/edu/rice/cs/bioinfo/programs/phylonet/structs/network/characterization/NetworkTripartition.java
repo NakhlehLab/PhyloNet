@@ -76,7 +76,7 @@ public class NetworkTripartition<T>
 				}
 			}
 
-			access.put(nn, new Integer(reach));
+			access.put(nn, Integer.valueOf(reach));
 
 			if (nn.isLeaf()) {
 				int i = leaves.indexOf(nn);
@@ -131,7 +131,7 @@ public class NetworkTripartition<T>
 
 			// Update the map to avoid re-computation.
 			access.remove(nn);
-			access.put(nn, new Integer(reach));
+			access.put(nn, Integer.valueOf(reach));
 		}
 
 		return reach;

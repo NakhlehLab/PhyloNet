@@ -76,7 +76,7 @@ public abstract class NetworkFromGTT<T> implements State {
                 List<MutableTuple<Tree,Double>> wgtList = new ArrayList<MutableTuple<Tree,Double>>();
                 for(MutableTuple<Tree,Double> mt : treeList) {
                     Tree newt = new STITree(mt.Item1.toNewick());
-                    wgtList.add(new MutableTuple<Tree, Double>(newt, new Double(mt.Item2)));
+                    wgtList.add(new MutableTuple<Tree, Double>(newt, Double.valueOf(mt.Item2)));
                 }
                 this._inputWeightedGTs.add(wgtList);
             }

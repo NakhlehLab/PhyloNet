@@ -25,7 +25,7 @@ import java.util.List;
  * See "Maximum Likelihood Inference of Reticulate Evolutionary Histories", Proceedings of the National Academy of Sciences, 2014
  */
 public abstract class HillClimberBase extends SearchBase{
-    private boolean _printResultsAfterEachRun = true;
+    private boolean _printResultsAfterEachRun = false;
 
     /**
      * Constructor / Initializer

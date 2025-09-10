@@ -155,7 +155,7 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
             @Override
             protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
             {
-                return new Long(sequencing1.getGeneticDistance(sequencing2));
+                return Long.valueOf(sequencing1.getGeneticDistance(sequencing2));
             }
 
         }.inferMinTrees(sequeincingToSource.keySet());
@@ -232,7 +232,7 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
             @Override
             protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
             {
-                return new Long(sequencing1.getGeneticDistance(sequencing2));
+                return Long.valueOf(sequencing1.getGeneticDistance(sequencing2));
             }
         }.inferMinTrees(sequeincingToSource.keySet());     */
 
@@ -242,7 +242,7 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
                     @Override
                     protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
                     {
-                        return new Long(sequencing1.getGeneticDistance(sequencing2));
+                        return Long.valueOf(sequencing1.getGeneticDistance(sequencing2));
                     }
                 }.inferMinTrees(sequeincingToSource.keySet());
         /*
@@ -290,7 +290,7 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
             @Override
             protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
             {
-                return  new Long(sequencing1.getGeneticDistance(sequencing2));
+                return  Long.valueOf(sequencing1.getGeneticDistance(sequencing2));
             }
 
         }.inferMinTrees(new HashSet(sequeincingToSource.keySet())); */
@@ -300,7 +300,7 @@ public class AnalysisController<SDR,TDR,FPDR, E, EX extends Throwable>
                     @Override
                     protected Long getSnpDistance(Sequencing sequencing1, Sequencing sequencing2)
                     {
-                        return new Long(sequencing1.getGeneticDistance(sequencing2));
+                        return Long.valueOf(sequencing1.getGeneticDistance(sequencing2));
                     }
                 }.inferMinTrees(new HashSet(sequeincingToSource.keySet())); */
 

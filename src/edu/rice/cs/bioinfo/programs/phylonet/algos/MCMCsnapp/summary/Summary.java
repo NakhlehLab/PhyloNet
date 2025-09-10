@@ -291,7 +291,7 @@ public class Summary<T> {
                     if(currentChain.contains("main")) {
                         String netstring = br.readLine();
                         List<Tuple<String,Double>> netSample = new ArrayList<>();
-                        netSample.add(new Tuple<>(netstring, new Double(logPosterior)));
+                        netSample.add(new Tuple<>(netstring, Double.valueOf(logPosterior)));
                         netSamples.add(netSample);
                     }
                     ready = false;

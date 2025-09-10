@@ -31,7 +31,7 @@ import edu.rice.cs.bioinfo.library.programming.Func1;
 class TransformSupportToBase100 implements Func1<String,String> {
 
          public String execute(String s) {
-                return new Double(Double.parseDouble(s) * 100.0).toString();
+                return Double.valueOf(Double.parseDouble(s) * 100.0).toString();
             }
 
 }

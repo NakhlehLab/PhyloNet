@@ -94,12 +94,12 @@ public class NetworkFactoryFromRNNetwork
 
             public BniNetNode forHybridNodeQualifierNonEmpty(HybridNodeQualifierNonEmpty hybridNodeQualifierNonEmpty, Object o) throws RuntimeException {
 
-                return forHybridNode(principleInfo, new Integer(hybridNodeQualifierNonEmpty.HybridNodeIndex.Content));
+                return forHybridNode(principleInfo, Integer.valueOf(hybridNodeQualifierNonEmpty.HybridNodeIndex.Content));
             }
 
             public BniNetNode forHybridNodeQualifierWithType(HybridNodeQualifierWithType hybridNodeQualifierWithType, Object o) throws RuntimeException {
 
-                return forHybridNode(principleInfo, new Integer(hybridNodeQualifierWithType.HybridNodeIndex.Content));
+                return forHybridNode(principleInfo, Integer.valueOf(hybridNodeQualifierWithType.HybridNodeIndex.Content));
             }
 
             private BniNetNode<T> forHybridNode(NetworkInfo principleInfo, Integer hybidNodeIndex)

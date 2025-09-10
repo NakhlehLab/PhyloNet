@@ -373,7 +373,7 @@ public class Matrix {
 	}
 
 	obuffer[0] = result;
-	obuffer[1] = new Integer(resultS);
+	obuffer[1] = Integer.valueOf(resultS);
     }
 
     /**

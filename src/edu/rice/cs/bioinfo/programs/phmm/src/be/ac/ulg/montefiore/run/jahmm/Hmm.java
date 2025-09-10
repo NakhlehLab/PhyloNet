@@ -278,7 +278,7 @@ public class Hmm<O extends Observation>
 	ViterbiCalculator vc = new ViterbiCalculator(oseq, this);
 	int[] trajectory = vc.stateSequence();
 	double llh = vc.lnProbability();	
-	return (new Tuple<int[],Double>(trajectory, new Double(llh)));
+	return (new Tuple<int[],Double>(trajectory, Double.valueOf(llh)));
     }
 
     /**

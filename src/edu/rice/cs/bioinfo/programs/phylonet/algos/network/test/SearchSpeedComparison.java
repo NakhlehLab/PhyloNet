@@ -126,7 +126,7 @@ public class SearchSpeedComparison {
         clearLogFile(MLlogFile);
         inferML.setLogFile(MLlogFile);
         inferML.setSearchParameter(maxRounds, maxTryPerBranch, improvementThreshold, maxBranchLength, Brent1, Brent2, maxExaminations, maxFailure, moveDiameter, reticulationDiameter, numProcessors, startNetwork, fixedHybrid, operationWeights, numRuns, optimizeBL, seed);
-        inferML.inferNetwork(dataForML, null, hybrids, numResults, false, inferenceResultsML);
+        inferML.inferNetwork(dataForML, null, hybrids, numResults, false, 0, inferenceResultsML);
 
         checkValidity(inferenceResultsML, trueNetwork);
         System.out.println(countLines(MLlogFile) + " lines (networks searched)");

@@ -249,7 +249,7 @@ public class TreeConsensusCalculator
 			if(percent < threshold) {
 				it.remove();
 			} else {
-				e.setValue(new Double(percent));
+				e.setValue(Double.valueOf(percent));
 			}
 		}
 
@@ -345,9 +345,9 @@ public class TreeConsensusCalculator
 			}
 		} else {
 			if(!_input_supports || node.getParentDistance() == TNode.NO_DISTANCE) {
-				_tally.put(name, new Double(((Double) _tally.get(name)).doubleValue() + 1.0));
+				_tally.put(name, Double.valueOf(((Double) _tally.get(name)).doubleValue() + 1.0));
 			} else {
-				_tally.put(name, new Double(((Double) _tally.get(name)).doubleValue() + node.getParentDistance()));
+				_tally.put(name, Double.valueOf(((Double) _tally.get(name)).doubleValue() + node.getParentDistance()));
 			}
 		}
 

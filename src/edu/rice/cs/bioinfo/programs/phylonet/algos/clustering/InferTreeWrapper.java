@@ -122,7 +122,7 @@ public class InferTreeWrapper {
         //calculator.setParallel(8);
         //calculator.setNumRuns(1);
         calculator.setStartNetwork(Networks.readNetwork(startTree.toNewick()));
-        calculator.inferNetwork(originalGTs, species2alleles, 0, 3, false, resultList);
+        calculator.inferNetwork(originalGTs, species2alleles, 0, 3, false, 0, resultList);
 
         return Trees.readTree(resultList.get(0).Item1.toString());
     }

@@ -101,7 +101,7 @@ public abstract class Parameter extends ParameterConstraintSet {
      * Also provide cache and restore feature.
      */
     public void pushCacheValue () {
-	cacheValues.push(new Double(getValue()));
+	cacheValues.push(Double.valueOf(getValue()));
     }
     
     /**

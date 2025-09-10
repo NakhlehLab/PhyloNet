@@ -216,7 +216,7 @@ public class InferNetwork_MP extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _maxExaminations = new Long(Integer.parseInt(mParam.PostSwitchValue));
+                        _maxExaminations = Long.valueOf(Integer.parseInt(mParam.PostSwitchValue));
                     }
                     catch(NumberFormatException e)
                     {

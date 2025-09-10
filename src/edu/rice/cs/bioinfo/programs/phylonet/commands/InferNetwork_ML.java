@@ -198,7 +198,7 @@ public class InferNetwork_ML extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _maxExaminations = new Long(Integer.parseInt(mParam.PostSwitchValue));
+                        _maxExaminations = Long.valueOf(Integer.parseInt(mParam.PostSwitchValue));
                     }
                     catch(NumberFormatException e)
                     {
@@ -706,7 +706,7 @@ public class InferNetwork_ML extends CommandBaseFileOut{
 
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _optimizeBL, _seed);
         LinkedList<Tuple<Network, Double>> resultTuples = new LinkedList<>();
-        inference.inferNetwork(gts,_taxonMap, _maxReticulations, _returnNetworks, _postOptimization, resultTuples);
+        inference.inferNetwork(gts,_taxonMap, _maxReticulations, _returnNetworks, _postOptimization, 0, resultTuples);
 
 
         int index = 1;

@@ -413,7 +413,7 @@ public class HiddenState
 	// meh
 	//
 	// was getRootedGeneGenealogy()
-	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getProcessedRootedGeneGenealogy(), new Double(result));
+	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getProcessedRootedGeneGenealogy(), Double.valueOf(result));
         return (result);
     }
 
@@ -552,7 +552,7 @@ public class HiddenState
     // 	// not quite right - while parental tree objects are unique by topology, gene genealogies aren't
     // 	// under the current model
     // 	// meh
-    // 	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getGeneGenealogy(), new Double(result));
+    // 	calculationCache.cacheProbabilityOfGeneGenealogyInParentalTree.put(getParentalTree(), getGeneGenealogy(), Double.valueOf(result));
     //     return (result);
     // }
 
@@ -566,7 +566,7 @@ public class HiddenState
 	}
 	
 	double result = felsensteinCalculator.getLikelihoodtree(getUnrootedGeneGenealogy(), o);
-	calculationCache.cacheSubstitutionProbability.put(getUnrootedGeneGenealogy(), o, new Double(result));
+	calculationCache.cacheSubstitutionProbability.put(getUnrootedGeneGenealogy(), o, Double.valueOf(result));
 	return (result);
     }
     

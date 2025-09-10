@@ -101,7 +101,7 @@ public class GenCPLEX extends CommandBase  {
         {
             try
             {
-                _deepCoalWeightParam = new Double(deepCoalWeightParam.execute(GetSimpleParamValue.Singleton, null));
+                _deepCoalWeightParam = Double.valueOf(deepCoalWeightParam.execute(GetSimpleParamValue.Singleton, null));
             }
             catch(NumberFormatException e)
             {
@@ -118,7 +118,7 @@ public class GenCPLEX extends CommandBase  {
         {
             try
             {
-                _numCoalCount = new Double(numCoalCountParam.execute(GetSimpleParamValue.Singleton, null));
+                _numCoalCount = Double.valueOf(numCoalCountParam.execute(GetSimpleParamValue.Singleton, null));
             }
             catch(NumberFormatException e)
             {

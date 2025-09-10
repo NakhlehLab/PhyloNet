@@ -48,6 +48,9 @@ import java.util.*;
  * modified by Zhen Cao: add the option to fix the start species network for inference.
  *
  * Edited by Zhen Cao on 6/11/2019: added the option -fs for tree-based inference
+ * 
+ * Edited by Nick Sapoval on 09/10/2025: modified behavior of -po option to allow specifying
+ *   whether the branch length optimization happens under pseudo (0) or full (1) likelihood.
  */
 
 @CommandName("infernetwork_MPL")
@@ -73,6 +76,7 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
     private Set<String> _fixedHybrid = new HashSet<String>();
     private double[] _operationWeight = {0.1,0.1,0.15,0.55,0.15,0.15,2.8};
     private boolean _postOptimization = false;
+    private int _postOptimizationType = 0;
     private boolean _optimizeBL = false;
     private int _numRuns = 10;
     private Long _seed = null;
@@ -215,7 +219,7 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
                 {
                     try
                     {
-                        _maxExaminations = new Long(Integer.parseInt(mParam.PostSwitchValue));
+                        _maxExaminations = Long.valueOf(Integer.parseInt(mParam.PostSwitchValue));
                     }
                     catch(NumberFormatException e)
                     {
@@ -410,15 +414,30 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
             }
 
             ParamExtractor poParam = new ParamExtractor("po", this.params, this.errorDetected);
+            // NS: New behavior
+            //   -po likelihoodToOptimize
+            //   likelihoodToOptimize: Int, 0 -> pseudo-likelihood, 1 -> full likelihood
             if(poParam.ContainsSwitch){
                 if(poParam.PostSwitchParam != null && !poParam.PostSwitchValue.startsWith("-"))
                 {
-                    errorDetected.execute("No value expected after switch -po.", poParam.SwitchParam.getLine(), poParam.SwitchParam.getColumn());
+                    try 
+                    {
+                        _postOptimizationType = Integer.parseInt(poParam.PostSwitchValue);
+                        _postOptimization = true;
+                        if (_postOptimizationType != 0 && _postOptimizationType != 1) 
+                        {
+                            errorDetected.execute("Unrecognized value after switch -po.", poParam.SwitchParam.getLine(), poParam.SwitchParam.getColumn());
+                        }
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        errorDetected.execute("Unrecognized value after switch -po.", poParam.SwitchParam.getLine(), poParam.SwitchParam.getColumn());
+                    }
                 }
-                else
-                {
-                    _postOptimization = true;
-                }
+            }
+            else
+            {
+                _postOptimization = false;
             }
 
 
@@ -694,6 +713,7 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
         Network speciesNetwork = null;
         if(_startSpeciesNetwork!=null){
             speciesNetwork = transformer.makeNetwork(_startSpeciesNetwork);
+            // result.append("\n" + "Starting network: " + speciesNetwork.toString());
         }
 
 
@@ -713,8 +733,8 @@ public class InferNetwork_MPL extends CommandBaseFileOut{
 
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _optimizeBL, _seed);
         LinkedList<Tuple<Network, Double>> resultTuples = new LinkedList<>();
-        inference.inferNetwork(gts,_taxonMap, _maxReticulations, _returnNetworks, _postOptimization, resultTuples);
 
+        inference.inferNetwork(gts, _taxonMap, _maxReticulations, _returnNetworks, _postOptimization, _postOptimizationType, resultTuples);
 
         int index = 1;
         for(Tuple<Network, Double> tuple: resultTuples){

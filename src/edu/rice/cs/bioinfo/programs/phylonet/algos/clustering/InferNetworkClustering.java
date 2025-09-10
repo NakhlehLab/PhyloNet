@@ -374,7 +374,7 @@ public class InferNetworkClustering {
                 continue;
             String speciesTree = _inferTreeWrapper.inferTreeByMethod(currentGTs, null, new String(_inferringMethod));
             System.out.println(speciesTree);
-            inferredTrees.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(speciesTree), new Double(currentGTs.size()))));
+            inferredTrees.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(speciesTree), Double.valueOf(currentGTs.size()))));
 
         }
 

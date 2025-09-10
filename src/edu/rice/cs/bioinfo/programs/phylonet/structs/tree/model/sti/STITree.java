@@ -259,7 +259,7 @@ public class STITree<D extends Object> implements MutableTree {
 	 * Returns the node in the tree whose id is <code>id</code>
 	 */
 	public STINode<D> getNode(int id) {
-		return _nodes.get(new Integer(id));
+		return _nodes.get(Integer.valueOf(id));
 	}
 
 

@@ -297,7 +297,7 @@ public class ParentalTreeOperation {
 
             List<List<MutableTuple<Tree, Double>>> parentalTrees0 = new ArrayList<>();
             for(Tree tree : parentalTrees) {
-                parentalTrees0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), new Double(1.0))));
+                parentalTrees0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), Double.valueOf(1.0))));
 
             }
 

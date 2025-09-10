@@ -32,7 +32,7 @@ class Split extends PopCommand
                 if(backComp != 0)
                     return backComp;
                 else
-                    return new Integer(NewPopulationNumber).compareTo(split.NewPopulationNumber);
+                    return Integer.valueOf(NewPopulationNumber).compareTo(split.NewPopulationNumber);
             }
 
             public Integer forJoin(Join join, Object input) throws RuntimeException {

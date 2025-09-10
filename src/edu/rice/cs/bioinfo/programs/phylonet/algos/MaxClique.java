@@ -213,7 +213,7 @@ public class MaxClique
 		for(int i=0; i < matrixSize; i++) {
 			// IS[v] = 0 iff v is in MIS (see paper)
 			if (IS[i] == 0) {
-				thisIS.add(new Integer(i));
+				thisIS.add(Integer.valueOf(i));
 			}
 		}
 		int[] actualThisIS = new int[thisIS.size()];

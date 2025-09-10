@@ -184,7 +184,7 @@ public class SchieberVishkinLCA {
 		
 		int i = 0;
 		for(TNode n : _tree.getNodes()) {
-			_tnode_idx_lookup.put(n, new Integer(i++));
+			_tnode_idx_lookup.put(n, Integer.valueOf(i++));
 		}
 		
 		return;

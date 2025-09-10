@@ -116,7 +116,7 @@ extends ObservationReader<ObservationVector>
             while(true)
                 switch (st.nextToken()) {
                 case StreamTokenizer.TT_NUMBER:
-                    values.add(new Double(st.nval));
+                    values.add(Double.valueOf(st.nval));
                     break;
 
                 case ']':

@@ -1109,7 +1109,7 @@ public class runHmm {
     // 	    for (int j = 0; j < hiddenStates.size(); j++) {
     // 		if (i == j) {
     // 		    // canonically, self-switching frequency has ratio term 1.0
-    // 		    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(1.0));
+    // 		    result.put(hiddenStates.get(i), hiddenStates.get(j), Double.valueOf(1.0));
     // 		    totalWeight += 1.0;
     // 		    continue;
     // 		}
@@ -1126,7 +1126,7 @@ public class runHmm {
     // 		SwitchingFrequencyRatioTerm term = terms.iterator().next();
 
     // 		// normalize by total weight
-    // 		result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(term.getValue()));
+    // 		result.put(hiddenStates.get(i), hiddenStates.get(j), Double.valueOf(term.getValue()));
     // 		totalWeight += term.getValue();
     // 	    }
 
@@ -1154,7 +1154,7 @@ public class runHmm {
     // 	    // 	    // bizarre behavior - same parameter can "saturate" for one row but not another
     // 	    // 	    double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
     // 	    // 	    double newWeight = originalWeight / ((totalWeight - 1.0) / optimize.SwitchingFrequencyRatioTermParameter.DEFAULT_MAXIMUM_TOTAL_NON_SELF_TRANSITION_TERMS_TOTAL_WEIGHT);
-    // 	    // 	    result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(newWeight));
+    // 	    // 	    result.put(hiddenStates.get(i), hiddenStates.get(j), Double.valueOf(newWeight));
     // 	    // 	    updatedTotalWeight += newWeight;
     // 	    // 	}
     // 	    // 	totalWeight = updatedTotalWeight;
@@ -1164,7 +1164,7 @@ public class runHmm {
     // 	    // to get probabilities
     // 	    for (int j = 0; j < hiddenStates.size(); j++) {
     // 		double originalWeight = result.get(hiddenStates.get(i), hiddenStates.get(j)).doubleValue();
-    // 		result.put(hiddenStates.get(i), hiddenStates.get(j), new Double(originalWeight / totalWeight));
+    // 		result.put(hiddenStates.get(i), hiddenStates.get(j), Double.valueOf(originalWeight / totalWeight));
     // 	    }
     // 	}
 
@@ -1209,7 +1209,7 @@ public class runHmm {
 		for (String g2name : geneGenealogyNameMap.keys()) {
 		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
 		    // if (g1name.equals(g2name)) {
-		    // 	result.put(h1, h2, new Double(1.0));
+		    // 	result.put(h1, h2, Double.valueOf(1.0));
 		    // 	totalWeight += 1.0;
 		    // }
 		    // else {
@@ -1222,7 +1222,7 @@ public class runHmm {
 		    }
 		
 		    SwitchingFrequencyRatioTerm term = terms.iterator().next();
-		    result.put(h1, h2, new Double(term.getValue()));
+		    result.put(h1, h2, Double.valueOf(term.getValue()));
 		    totalWeight += term.getValue();
 			//}
 		}
@@ -1231,13 +1231,13 @@ public class runHmm {
 		for (String g2name : geneGenealogyNameMap.keys()) {
 		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
 		    double originalWeight = result.get(h1, h2).doubleValue();
-		    result.put(h1, h2, new Double(originalWeight / totalWeight));
+		    result.put(h1, h2, Double.valueOf(originalWeight / totalWeight));
 		}
 
 		double totalWeight2 = 0.0;
 		for (String g2name : geneGenealogyNameMap.keys()) {
 		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
-		    result.put (h1, h2, new Double(
+		    result.put (h1, h2, Double.valueOf(
 						   result.get(h1, h2).doubleValue() * 
 						   h2.calculateProbabilityOfRootedGeneGenealogyInParentalTree()
 						   )
@@ -1250,7 +1250,7 @@ public class runHmm {
 		for (String g2name : geneGenealogyNameMap.keys()) {
 		    HiddenState h2 = parentalTreeGeneGenealogyNamePairToHiddenStateMap.get(p1name, g2name);
 		    double originalWeight = result.get(h1, h2).doubleValue();
-		    result.put(h1, h2, new Double((originalWeight / totalWeight2) * (1.0 - gamma.getValue())));
+		    result.put(h1, h2, Double.valueOf((originalWeight / totalWeight2) * (1.0 - gamma.getValue())));
 		}
 	    }
 	}
@@ -1272,7 +1272,7 @@ public class runHmm {
 			//
 			// if this looks promising, can try adding more 
 			// parameterization here, as needed
-			result.put(h1, h2, new Double(
+			result.put(h1, h2, Double.valueOf(
 						      h2.calculateProbabilityOfRootedGeneGenealogyInParentalTree() *
 						      gamma.getValue() / ((gamma.getNumAlternatives() - 1) * 1.0)
 						      ));
@@ -1924,9 +1924,9 @@ public class runHmm {
 		throw (new IOException("ERROR: incorrect number of fields in input line from file " + switchingFrequencyRatioTermFilename + ": " + line));
 	    }
 	    String name = st.nextToken();
-	    Double minimumWeight = new Double(st.nextToken());
+	    Double minimumWeight = Double.valueOf(st.nextToken());
 	    double initialWeight = Double.parseDouble(st.nextToken());
-	    Double maximumWeight = new Double(st.nextToken());
+	    Double maximumWeight = Double.valueOf(st.nextToken());
 	    Boolean optimizeFlag = new Boolean(st.nextToken());
 	    SwitchingFrequencyRatioTerm sfrt = new SwitchingFrequencyRatioTerm(name, initialWeight, calculationCache, numAlternatives);
 	    if (nameToSwitchingFrequencyRatioTermMap.containsKey(name)) {

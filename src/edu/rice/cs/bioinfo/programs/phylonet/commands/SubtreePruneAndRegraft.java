@@ -114,7 +114,7 @@ public class SubtreePruneAndRegraft extends HeuristicTreeSearchBase
 
          Func1<Graph<NetworkToJUNG.Label, NetworkToJUNG.Label[]>, Long> getNodeCount = new Func1<Graph<NetworkToJUNG.Label, NetworkToJUNG.Label[]>, Long>() {
             public Long execute(Graph<NetworkToJUNG.Label, NetworkToJUNG.Label[]> tree) {
-                return new Long(tree.getVertexCount());
+                return Long.valueOf(tree.getVertexCount());
             }
         };
 

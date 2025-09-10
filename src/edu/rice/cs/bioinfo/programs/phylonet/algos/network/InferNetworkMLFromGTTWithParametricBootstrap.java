@@ -58,7 +58,7 @@ public class InferNetworkMLFromGTTWithParametricBootstrap extends InferNetworkML
                 InferNetworkMLFromGTT_SingleTreePerLocus inference = new InferNetworkMLFromGTT_SingleTreePerLocus();
                 inference.setSearchParameter(_maxRounds,_maxTryPerBranch,_improvementThreshold,_maxBranchLength,_Brent1,_Brent2,_maxExaminations,_maxFailure,_moveDiameter,_reticulationDiameter, _numThreads, _startNetwork, _fixedHybrid, _operationWeights, _numRuns, _optimizeBL, _seed);
                 LinkedList<Tuple<Network,Double>> resultList = new LinkedList<>();
-                inference.inferNetwork(gts, species2alleles, maxReticulations, 1, postOptimize, resultList);
+                inference.inferNetwork(gts, species2alleles, maxReticulations, 1, postOptimize, 0, resultList);
                 Tuple<Network,Double> result = resultList.get(0);
                 return result;
             }

@@ -669,7 +669,7 @@ public class MultivariateOptimizer {
 	if (Constants.WARNLEVEL > 2) { System.out.println (debugMessage + " l x u fx fl fu log likelihoods at end of getSearchInterval() : |" + l + " " + x + " " + u + " " + f.value(l) + " " + f.value(x) + " " + f.value(u) + "|"); }
 
 	Tuple3<Double,Double,Double> result = new Tuple3<Double,Double,Double>
-	    (new Double(l), new Double(x), new Double(u));
+	    (Double.valueOf(l), Double.valueOf(x), Double.valueOf(u));
 	return (result);
     }
 

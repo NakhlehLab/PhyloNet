@@ -233,7 +233,7 @@ public class inferML{
 //        int [] acceptCount = new int[6];
         inference.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _maxExaminations, _maxFailure, _moveDiameter, _reticulationDiameter, _parallel, speciesNetwork, _fixedHybrid, _operationWeight, _numRuns, _optimizeBL, _seed);
         LinkedList<Tuple<Network, Double>> resultTuples = new LinkedList<>();
-        inference.inferNetwork(gts,_taxonMap, _maxReticulations, _returnNetworks, _postOptimization, resultTuples);
+        inference.inferNetwork(gts,_taxonMap, _maxReticulations, _returnNetworks, _postOptimization, 0, resultTuples);
 //        int [] acceptCnt = ((treeAugmentInferNetworkMPL) inference).getAcceptCount();
 //        double [] acceptRt = calculateAcceptRate(acceptCnt);
         int index = 1;

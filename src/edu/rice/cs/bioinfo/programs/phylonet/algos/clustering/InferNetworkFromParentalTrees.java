@@ -44,7 +44,7 @@ public class InferNetworkFromParentalTrees {
     protected int _reticulationDiameter = -1;
     protected double[] _topologyOperationWeights = {0.1,0.1,0.15,0.55,0.15,0.15};
     protected double[] _topologyVsParameterOperation = {1,0};
-    protected Long _seed = new Long(12345);
+    protected Long _seed = Long.valueOf(12345);
     protected Set<String> _fixedHybrid = new HashSet<String>();
     protected File _logFile = null;
     protected File _intermediateResultFile = null;
@@ -1187,7 +1187,7 @@ public class InferNetworkFromParentalTrees {
                     if (submast.getLeaves().length < tuple.Item1.size()) {
                         List<List<MutableTuple<Tree, Double>>> subpts = new ArrayList<>();
                         for (Tree tree : subTreesForGroup) {
-                            subpts.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), new Double(1.0))));
+                            subpts.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), Double.valueOf(1.0))));
 
                         }
                         reticulatePart = inferNetwork(subpts);
@@ -1291,7 +1291,7 @@ public class InferNetworkFromParentalTrees {
         List<Tree> parentalTrees = parentalTreeOperation.getParentalTrees(trueNetwork);
         List<List<MutableTuple<Tree, Double>>> parentalTrees0 = new ArrayList<>();
         for(Tree tree : parentalTrees) {
-            parentalTrees0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), new Double(1.0))));
+            parentalTrees0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), Double.valueOf(1.0))));
 
         }
         Network inferredNetwork = inferNetworkFromParentalTrees.inferNetwork(parentalTrees0);
@@ -1300,7 +1300,7 @@ public class InferNetworkFromParentalTrees {
         List<Tree> parentalTreesI = parentalTreeOperation.getParentalTrees(inferredNetwork);
         List<List<MutableTuple<Tree, Double>>> parentalTreesI0 = new ArrayList<>();
         for(Tree tree : parentalTreesI) {
-            parentalTreesI0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), new Double(1.0))));
+            parentalTreesI0.add(Arrays.asList(new MutableTuple<Tree, Double>(Trees.readTree(tree.toNewick()), Double.valueOf(1.0))));
 
         }
 

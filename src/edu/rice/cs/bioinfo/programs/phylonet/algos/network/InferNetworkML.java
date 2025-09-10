@@ -64,7 +64,7 @@ public abstract class InferNetworkML {
     protected int _numThreads = 1;
     protected Long _seed = null;
     protected Set<String> _fixedHybrid = new HashSet<String>();
-    protected File _logFile = null;
+    protected File _logFile = new File("./logfile.txt");
     protected File _intermediateResultFile = null;
     protected boolean _optimizeBL = false;
 
@@ -206,7 +206,9 @@ public abstract class InferNetworkML {
      * @param postOptimization      whether optimizing branch lengths and inheritance probabilities of the inferred species networks is needed
      * @param resultList            resulting species networks along with their log likelihood
      */
-    public void inferNetwork(List originalData, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, boolean postOptimization, LinkedList<Tuple<Network,Double>> resultList){
+    public void inferNetwork(List originalData, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, boolean postOptimization, int postOptimizationType, LinkedList<Tuple<Network,Double>> resultList){
+        // System.out.println("\n"+"Post optimization is now: " + postOptimization);
+
         Map<String,String> allele2species = null;
         if(species2alleles!=null){
             allele2species = new HashMap<String, String>();
@@ -249,7 +251,7 @@ public abstract class InferNetworkML {
         Func1<Network, Double> scorer = getScoreFunction(dataForNetworkInference, dataCorrespondence, species2alleles, singleAlleleSpecies);
 
         searcher.search(speciesNetwork, scorer, numSol, _numRuns, _maxExaminations, _maxFailure, _optimizeBL, resultList); // search starts here
-        if(postOptimization){
+        if(postOptimization && postOptimizationType == 0){
             LinkedList<Tuple<Network,Double>> updatedResult = optimizeResultingNetworks(_likelihoodCalculator, dataForNetworkInference, dataCorrespondence, species2alleles, singleAlleleSpecies, resultList);
             resultList.clear();
             resultList.addAll(updatedResult);
@@ -283,10 +285,18 @@ public abstract class InferNetworkML {
      */
     protected LinkedList<Tuple<Network,Double>> optimizeResultingNetworks(NetworkLikelihood likelihoodCalculator, List summarizedGTs, List treeCorrespondence, Map<String,List<String>> species2alleles, Set<String> singleAlleleSpecies, LinkedList<Tuple<Network,Double>> resultList){
         LinkedList<Tuple<Network, Double>> optimizedResults = new LinkedList<>();
-        for(Tuple<Network, Double> resultTuple: resultList){
+        for(Tuple<Network,Double> resultTuple: resultList){
+            Tuple<Network,Double> originalResult = new Tuple<>(resultTuple.Item1.clone(), resultTuple.Item2);
             likelihoodCalculator.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _numThreads);
             double prob = likelihoodCalculator.computeLikelihood(resultTuple.Item1, species2alleles, summarizedGTs, treeCorrespondence, singleAlleleSpecies, true);
             Tuple<Network,Double> newResult = new Tuple<>(resultTuple.Item1, prob);
+            if (prob < resultTuple.Item2) {
+                if (_printDetails) {
+                    System.out.println("Optimized net has lower score than the starting one: " + prob + " < " + resultTuple.Item2);
+                    System.out.println("Will retain the original network instead of the optimized one.");
+                }
+                newResult = originalResult;
+            }
             int index = 0;
             for(Tuple<Network, Double> updatedTuple: optimizedResults){
                 if(updatedTuple.Item2 < prob){

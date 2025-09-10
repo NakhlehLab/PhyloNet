@@ -118,7 +118,7 @@ public class TreeBisectionAndReconnection extends HeuristicTreeSearchBase
 
          Func1<Graph<NetworkToJUNG.Label, Object>, Long> getNodeCount = new Func1<Graph<NetworkToJUNG.Label, Object>, Long>() {
             public Long execute(Graph<NetworkToJUNG.Label, Object> tree) {
-                return new Long(tree.getVertexCount());
+                return Long.valueOf(tree.getVertexCount());
             }
         };
 

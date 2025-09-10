@@ -65,9 +65,9 @@ public abstract class InferNetworkPseudoMLFromGTT extends InferNetworkMLFromGTT 
      *                              by default, the method optimizes branch lengths and inheritance probabilities of the inferred species networks under maximum pseudo-likelihood
      * @param resultList            resulting species networks along with their log likelihood
      */
-    public void inferNetwork(List gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, boolean postOptimization, LinkedList<Tuple<Network,Double>> resultList){
-        super.inferNetwork(gts, species2alleles, maxReticulations, numSol, !postOptimization, resultList);
-        if(postOptimization){
+    public void inferNetwork(List gts, Map<String,List<String>> species2alleles, int maxReticulations, int numSol, boolean postOptimization, int postOptimizationType, LinkedList<Tuple<Network,Double>> resultList){
+        super.inferNetwork(gts, species2alleles, maxReticulations, numSol, postOptimization, postOptimizationType, resultList);
+        if(postOptimization && postOptimizationType == 1){
             Map<String,String> allele2species = null;
             if(species2alleles!=null){
                 allele2species = new HashMap<String, String>();

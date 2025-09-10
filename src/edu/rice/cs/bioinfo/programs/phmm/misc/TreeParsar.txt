@@ -269,7 +269,7 @@ public class TreeParser
                         System.err.println("Error: can't set value " + tokenizer.nval + " to a null node");
                     lastNamed = null;
                 }
-                progress += (new Double(tokenizer.nval).toString()).length();
+                progress += (Double.valueOf(tokenizer.nval).toString()).length();
                 nameNext = false;
                 break;
               case infoSeparator:

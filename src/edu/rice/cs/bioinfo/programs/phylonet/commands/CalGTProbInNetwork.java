@@ -67,6 +67,7 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
     private int _numRuns = 5;
     private boolean _usingBL = false;
     private boolean _oneGTPerLocus = true;
+    private boolean _pseudoLL = false;
 
     public CalGTProbInNetwork(SyntaxCommand motivatingCommand, ArrayList<Parameter> params,
                               Map<String,NetworkNonEmpty>  sourceIdentToNetwork, Proc3<String, Integer, Integer> errorDetected,
@@ -362,8 +363,14 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
             _inferBL = true;
         }
 
+        // NS: Scoring under pseudo-likelihood
+        ParamExtractor pseudoParam = new ParamExtractor("pseudo", this.params, this.errorDetected);
+        if(pseudoParam.ContainsSwitch)
+        {
+            _pseudoLL = true;
+        }
 
-        noError = noError && checkForUnknownSwitches("m", "a", "b", "r", "t", "l", "i", "p", "pl", "x", "bl", "o");
+        noError = noError && checkForUnknownSwitches("m", "a", "b", "r", "t", "l", "i", "p", "pl", "x", "bl", "o", "pseudo");
         checkAndSetOutFile(aParam, mParam, bParam, rParam, tParam, lParam, iParam, pParam, plParam, xParam, blParam, oParam);
 
         return  noError;
@@ -483,19 +490,36 @@ public class CalGTProbInNetwork extends CommandBaseFileOut{
                 for (int i = 0; i < _numRuns; i++) {
                     NetworkFactoryFromRNNetwork transformer = new NetworkFactoryFromRNNetwork();
                     Network speciesNetwork = transformer.makeNetwork(_speciesNetwork);
-                    NetworkLikelihoodFromGTT scoring;
-                    if(_oneGTPerLocus){
-                        scoring = new NetworkLikelihoodFromGTT_SingleTreePerLocus();
-                    }
-                    else{
-                        scoring = new NetworkLikelihoodFromGTT_MultiTreesPerLocus();
-                    }
-                    scoring.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _parallel);
-                    double score = scoring.computeLikelihood(speciesNetwork, gts, _taxonMap, _inferBL);
+                    if (!_pseudoLL) {
+                        NetworkLikelihoodFromGTT scoring;
+                        if(_oneGTPerLocus){
+                            scoring = new NetworkLikelihoodFromGTT_SingleTreePerLocus();
+                        }
+                        else {
+                            scoring = new NetworkLikelihoodFromGTT_MultiTreesPerLocus();
+                        }
+                        scoring.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _parallel);
+                        double score = scoring.computeLikelihood(speciesNetwork, gts, _taxonMap, _inferBL);
 
-                    if (optimalScore < score) {
-                        optimalScore = score;
-                        optimalNetwork = speciesNetwork;
+                        if (optimalScore < score) {
+                            optimalScore = score;
+                            optimalNetwork = speciesNetwork;
+                        }
+                    } else {
+                        NetworkPseudoLikelihoodFromGTT scoring;
+                        if(_oneGTPerLocus){
+                            scoring = new NetworkPseudoLikelihoodFromGTT_SingleTreePerLocus();
+                        }
+                        else {
+                            scoring = new NetworkPseudoLikelihoodFromGTT_MultiTreesPerLocus();
+                        }
+                        scoring.setSearchParameter(_maxRounds, _maxTryPerBranch, _improvementThreshold, _maxBranchLength, _Brent1, _Brent2, _parallel);
+                        double score = scoring.computeLikelihood(speciesNetwork, gts, _taxonMap, _inferBL);
+
+                        if (optimalScore < score) {
+                            optimalScore = score;
+                            optimalNetwork = speciesNetwork;
+                        }
                     }
                 }
             }

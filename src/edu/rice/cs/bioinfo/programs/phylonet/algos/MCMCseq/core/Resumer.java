@@ -102,7 +102,7 @@ public class Resumer {
         Utils._CGT_DIRECTORY = Utils._OUT_DIRECTORY;
         Utils._OUT_DIRECTORY += String.valueOf(chainLen) + "_" + String.valueOf(subrunIndex) + "/";
         Utils.isExistsDir(Utils._OUT_DIRECTORY);
-        Map<String, Map<String,String>> multiLociSeq = Tools.parseNexusFile(nexFilePath, locisubset);
+        Map<String, Map<String,String>> multiLociSeq = Tools.parseNexusFile(nexFilePath);
 
 
         List<Alignment> alns = Tools.readSeq(multiLociSeq);

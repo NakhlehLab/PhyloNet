@@ -68,7 +68,7 @@ public class NetworkMetricNakhleh<T> {
 
     public double computeDistanceBetweenTwoNetworks(Network<T> network1, Network<T> network2){
         Tuple<Integer, Integer> tuple = computeDistanceTupleBetweenTwoNetworks(network1, network2);
-        return (tuple.Item1 + tuple.Item2) / 2;
+        return (tuple.Item1 + tuple.Item2) / 2.0;
     }
 
     public Tuple<Integer, Integer> computeDistanceTupleBetweenTwoNetworks(Network<T> network1, Network<T> network2){

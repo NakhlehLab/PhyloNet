@@ -264,6 +264,8 @@ public class CmpNets extends CommandBaseFileOut {
        }
        else if(_method == Method.Luay)
        {
+           Networks.removeBinaryNodes(net1);
+           Networks.removeBinaryNodes(net2);
            NetworkMetricNakhleh metric = new NetworkMetricNakhleh();
            double distance = metric.computeDistanceBetweenTwoNetworks(net1, net2);
            result.append("\nThe Luay's distance between two networks: " + distance);
